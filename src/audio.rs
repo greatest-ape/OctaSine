@@ -12,7 +12,6 @@ pub const TAU: f64 = 2.0 * PI;
 
 #[derive(Debug, Copy, Clone)]
 pub struct Note {
-    time: f64,
     duration: f64,
     midi_pitch: u8,
 }
@@ -21,7 +20,6 @@ impl Note {
     pub fn new(midi_pitch: u8) -> Self {
         Self {
             duration: 0.0,
-            time: 0.0,
             midi_pitch: midi_pitch,
         }
     }
@@ -61,24 +59,23 @@ impl FmSynth {
         1.0 / self.sample_rate
     }
 
+    fn limit(&self, value: f32) -> f32 {
+        value.min(1.0).max(-1.0)
+    }
+
     pub fn generate_audio(&mut self, buffer: &mut AudioBuffer<f32>){
         let num_samples = buffer.samples();
         let time_per_sample = self.time_per_sample();
 
         for (input_buffer, output_buffer) in buffer.zip() {
-            for opt_note in self.notes.iter_mut(){
-                if let Some(note) = opt_note {
-                    note.time = self.global_time;
-                    note.duration = self.global_time;
-                }
-            }
+            let mut time = self.global_time;
 
             for (_, output_sample) in input_buffer.iter().zip(output_buffer) {
                 let mut out = 0.0f32;
 
                 for opt_note in self.notes.iter_mut(){
                     if let Some(note) = opt_note {
-                        let signal = (note.time * note.get_frequency(self.master_frequency) * TAU).sin();
+                        let signal = (time * note.get_frequency(self.master_frequency) * TAU).sin();
 
                         // Apply a quick envelope to the attack of the signal to avoid popping.
                         let attack = 0.5;
@@ -90,12 +87,13 @@ impl FmSynth {
 
                         out += (signal * alpha * 0.1) as f32;
 
-                        note.time += time_per_sample;
                         note.duration += time_per_sample;
                     }
                 }
 
-                *output_sample = out;
+                time += time_per_sample;
+
+                *output_sample = self.limit(out);
             }
         }
 
