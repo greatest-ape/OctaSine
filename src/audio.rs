@@ -75,7 +75,9 @@ impl Note {
 
 pub trait Parameter {
     fn get_name(&self, state: &AutomatableState) -> String;
-    fn get_unit_of_measurement(&self, state: &AutomatableState) -> String;
+    fn get_unit_of_measurement(&self, _: &AutomatableState) -> String {
+        "".to_string()
+    }
 
     fn get_value_float(&self, state: &AutomatableState) -> f64;
     fn get_value_text(&self, state: &AutomatableState) -> String {
@@ -89,6 +91,29 @@ pub trait Parameter {
 }
 
 
+pub struct WaveScaleParameter {
+    wave_index: usize,
+    host_value: f64,
+}
+
+
+impl Parameter for WaveScaleParameter {
+    fn get_name(&self, _: &AutomatableState) -> String {
+        format!("Wave {} scale", self.wave_index + 1)
+    }
+
+    fn get_value_float(&self, _: &AutomatableState) -> f64 {
+        self.host_value
+    }
+
+    fn set_value_float(&mut self, state: &mut AutomatableState, value: f64) {
+        state.waves[self.wave_index].scale.0 = (value / 5.0) + 0.9;
+        self.host_value = value
+    }
+}
+
+
+
 pub struct WaveFormParameter {
     wave_index: usize,
 }
@@ -97,10 +122,6 @@ pub struct WaveFormParameter {
 impl Parameter for WaveFormParameter {
     fn get_name(&self, _: &AutomatableState) -> String {
         format!("Wave {} waveform", self.wave_index + 1)
-    }
-
-    fn get_unit_of_measurement(&self, _: &AutomatableState) -> String {
-        "".to_string()
     }
 
     fn get_value_float(&self, _: &AutomatableState) -> f64 {
@@ -167,11 +188,11 @@ impl Default for FmSynth {
     fn default() -> Self {
         let mut waves = smallvec![];
 
-        for _ in 0..1 {
+        for _ in 0..2 {
             waves.push(Wave {
                 scale: WaveScale(1.0),
                 form: WaveForm::Sine,
-            })
+            });
         }
 
         let mut parameters: Vec<Box<Parameter>> = Vec::new();
@@ -179,7 +200,11 @@ impl Default for FmSynth {
         for (i, _) in waves.iter().enumerate(){
             parameters.push(Box::new(WaveFormParameter {
                 wave_index: i,
-            }))
+            }));
+            parameters.push(Box::new(WaveScaleParameter {
+                wave_index: i,
+                host_value: 0.5,
+            }));
         }
 
         let external = AutomatableState {
