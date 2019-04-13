@@ -12,14 +12,16 @@ pub const TAU: f64 = 2.0 * PI;
 
 #[derive(Debug, Copy, Clone)]
 pub enum WaveForm {
-    Sine
+    Sine,
+    Square,
+    Sawtooth,
 }
 
 
 #[derive(Debug, Copy, Clone)]
 pub struct Wave {
     scale: f64,
-    form: WaveForm
+    form: WaveForm,
 }
 
 
@@ -34,7 +36,7 @@ impl Note {
     pub fn new(midi_pitch: u8) -> Self {
         let base_wave = Wave {
             scale: 1.0,
-            form: WaveForm::Sine
+            form: WaveForm::Sine,
         };
 
         Self {
@@ -44,7 +46,7 @@ impl Note {
         }
     }
 
-    pub fn get_base_frequency(&self, master_frequency: f64) -> f64 {
+    fn get_base_frequency(&self, master_frequency: f64) -> f64 {
         let note_diff = (self.midi_pitch as i8 - 69) as f64;
 
         (note_diff / 12.0).exp2() * master_frequency
@@ -55,10 +57,12 @@ impl Note {
         let mut signal = 0.0;
 
         for wave in self.waves.iter() {
+            let p = time * base_frequency * wave.scale;
+
             signal += match wave.form {
-                WaveForm::Sine => {
-                    (time * base_frequency * wave.scale * TAU).sin()
-                }
+                WaveForm::Sine => (p * TAU).sin(),
+                WaveForm::Square => ((p % 1.0).round() - 0.5) * 2.0,
+                WaveForm::Sawtooth => ((p % 1.0) - 0.5) * 2.0,
             }
         }
 
