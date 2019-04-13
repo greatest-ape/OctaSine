@@ -78,11 +78,11 @@ pub type Waves = SmallVec<[Wave; 32]>;
 
 #[derive(Debug)]
 pub struct FmSynth {
-    pub sample_rate: SampleRate,
-    pub master_frequency: MasterFrequency,
-    pub global_time: GlobalTime,
-    pub notes: Notes,
-    pub waves: Waves,
+    sample_rate: SampleRate,
+    master_frequency: MasterFrequency,
+    global_time: GlobalTime,
+    notes: Notes,
+    waves: Waves,
 }
 
 impl Default for FmSynth {
@@ -196,5 +196,9 @@ impl FmSynth {
 
     fn note_off(&mut self, pitch: u8) {
         self.notes[pitch as usize] = None;
+    }
+
+    pub fn set_sample_rate(&mut self, rate: SampleRate) {
+        self.sample_rate = rate;
     }
 }
