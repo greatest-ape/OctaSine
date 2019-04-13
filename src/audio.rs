@@ -63,14 +63,16 @@ impl FmSynth {
         value.min(1.0).max(-1.0)
     }
 
-    pub fn generate_audio(&mut self, buffer: &mut AudioBuffer<f32>){
-        let num_samples = buffer.samples();
+    pub fn generate_audio(&mut self, audio_buffer: &mut AudioBuffer<f32>){
+        let num_samples = audio_buffer.samples();
         let time_per_sample = self.time_per_sample();
 
-        for (input_buffer, output_buffer) in buffer.zip() {
+        let outputs = audio_buffer.split().1;
+
+        for output_buffer in outputs {
             let mut time = self.global_time;
 
-            for (_, output_sample) in input_buffer.iter().zip(output_buffer) {
+            for output_sample in output_buffer {
                 let mut out = 0.0f32;
 
                 for opt_note in self.notes.iter_mut(){

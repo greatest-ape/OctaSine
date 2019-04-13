@@ -32,7 +32,7 @@ impl Plugin for FmSynthPlugin {
             vendor: "Joakim Frostegård".to_string(),
             unique_id: 43789,
             category: Category::Synth,
-            inputs: 2,
+            inputs: 0,
             outputs: 2,
             parameters: 0,
             initial_delay: 0,
