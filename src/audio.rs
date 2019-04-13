@@ -11,27 +11,56 @@ pub const TAU: f64 = 2.0 * PI;
 
 
 #[derive(Debug, Copy, Clone)]
+pub enum WaveForm {
+    Sine
+}
+
+
+#[derive(Debug, Copy, Clone)]
+pub struct Wave {
+    scale: f64,
+    form: WaveForm
+}
+
+
+#[derive(Debug, Clone)]
 pub struct Note {
     duration: f64,
     midi_pitch: u8,
+    waves: SmallVec<[Wave; 32]>,
 }
 
 impl Note {
     pub fn new(midi_pitch: u8) -> Self {
+        let base_wave = Wave {
+            scale: 1.0,
+            form: WaveForm::Sine
+        };
+
         Self {
             duration: 0.0,
             midi_pitch: midi_pitch,
+            waves: smallvec![base_wave]
         }
     }
 
-    pub fn get_frequency(&self, master_frequency: f64) -> f64 {
+    pub fn get_base_frequency(&self, master_frequency: f64) -> f64 {
         let note_diff = (self.midi_pitch as i8 - 69) as f64;
 
         (note_diff / 12.0).exp2() * master_frequency
     }
 
     pub fn generate_sample(&self, master_frequency: f64, time: f64) -> f64 {
-        let signal = (time * self.get_frequency(master_frequency) * TAU).sin();
+        let base_frequency = self.get_base_frequency(master_frequency);
+        let mut signal = 0.0;
+
+        for wave in self.waves.iter() {
+            signal += match wave.form {
+                WaveForm::Sine => {
+                    (time * base_frequency * wave.scale * TAU).sin()
+                }
+            }
+        }
 
         // Apply a quick envelope to the attack of the signal to avoid popping.
         let attack = 0.5;
