@@ -72,39 +72,143 @@ impl Note {
     }
 }
 
+
+pub trait Parameter {
+    fn get_name(&self, state: &AutomatableState) -> String;
+    fn get_unit_of_measurement(&self, state: &AutomatableState) -> String;
+
+    fn get_value_float(&self, state: &AutomatableState) -> f64;
+    fn get_value_text(&self, state: &AutomatableState) -> String {
+        format!("{:.2}", self.get_value_float(state))
+    }
+
+    fn set_value_float(&mut self, state: &mut AutomatableState, value: f64);
+    fn set_value_text(&mut self, _: &mut AutomatableState, _: String) -> bool {
+        false
+    }
+}
+
+
+pub struct WaveFormParameter {
+    wave_index: usize,
+}
+
+
+impl Parameter for WaveFormParameter {
+    fn get_name(&self, _: &AutomatableState) -> String {
+        format!("Wave {} waveform", self.wave_index + 1)
+    }
+
+    fn get_unit_of_measurement(&self, _: &AutomatableState) -> String {
+        "".to_string()
+    }
+
+    fn get_value_float(&self, _: &AutomatableState) -> f64 {
+        0.0
+    }
+
+    fn get_value_text(&self, state: &AutomatableState) -> String {
+        let value = match state.waves[self.wave_index].form {
+            WaveForm::Sine => "Sine",
+            WaveForm::Square => "Square",
+            WaveForm::Sawtooth => "Saw",
+        };
+
+        value.to_string()
+    }
+
+    fn set_value_float(&mut self, state: &mut AutomatableState, value: f64) {
+        state.waves[self.wave_index].form = {
+            if value <= 0.33 {
+                WaveForm::Sine
+            }
+            else if value <= 0.66 {
+                WaveForm::Square
+            }
+            else {
+                WaveForm::Sawtooth
+            }
+        }
+    }
+}
+
+
 pub type Notes = SmallVec<[Option<Note>; 128]>;
 pub type Waves = SmallVec<[Wave; 32]>;
+pub type Parameters = Vec<Box<Parameter>>;
 
 
-#[derive(Debug)]
-pub struct FmSynth {
-    sample_rate: SampleRate,
-    master_frequency: MasterFrequency,
+/// Non-automatable state (but not necessarily impossible to change from host)
+pub struct InternalState {
     global_time: GlobalTime,
-    notes: Notes,
+    sample_rate: SampleRate,
+    parameters: Parameters,
+}
+
+
+/// State that can be automated
+pub struct AutomatableState {
+    master_frequency: MasterFrequency,
     waves: Waves,
+    notes: Notes,
+}
+
+
+/// Main structure
+/// 
+/// Split state between internal/automatable could maybe be avoided using
+/// references and explicit lifetimes
+pub struct FmSynth {
+    internal: InternalState,
+    automatable: AutomatableState,
 }
 
 impl Default for FmSynth {
     fn default() -> Self {
-        let base_wave = Wave {
-            scale: WaveScale(1.0),
-            form: WaveForm::Sine,
+        let mut waves = smallvec![];
+
+        for _ in 0..1 {
+            waves.push(Wave {
+                scale: WaveScale(1.0),
+                form: WaveForm::Sine,
+            })
+        }
+
+        let mut parameters: Vec<Box<Parameter>> = Vec::new();
+
+        for (i, _) in waves.iter().enumerate(){
+            parameters.push(Box::new(WaveFormParameter {
+                wave_index: i,
+            }))
+        }
+
+        let external = AutomatableState {
+            master_frequency: MasterFrequency(440.0),
+            notes: smallvec![None; 128],
+            waves: waves,
+        };
+
+        let internal = InternalState {
+            global_time: GlobalTime(0.0),
+            sample_rate: SampleRate(44100.0),
+            parameters: parameters,
         };
 
         Self {
-            sample_rate: SampleRate(44100.0),
-            master_frequency: MasterFrequency(440.0),
-            global_time: GlobalTime(0.0),
-            notes: smallvec![None; 128],
-            waves: smallvec![base_wave],
+            internal: internal,
+            automatable: external,
         }
     }
 }
 
 impl FmSynth {
+
+    pub fn set_sample_rate(&mut self, rate: SampleRate) {
+        self.internal.sample_rate = rate;
+    }
+
     fn time_per_sample(&self) -> f64 {
-        1.0 / self.sample_rate.0
+        1.0 / self.internal.sample_rate.0
     }
 
     fn limit(&self, value: f32) -> f32 {
@@ -153,16 +257,16 @@ impl FmSynth {
         let outputs = audio_buffer.split().1;
 
         for output_buffer in outputs {
-            let mut time = NoteTime(self.global_time.0);
+            let mut time = NoteTime(self.internal.global_time.0);
 
             for output_sample in output_buffer {
                 let mut out = 0.0f32;
 
-                for opt_note in self.notes.iter_mut(){
+                for opt_note in self.automatable.notes.iter_mut(){
                     if let Some(note) = opt_note {
-                        out += FmSynth::generate_sample(
-                            self.master_frequency,
-                            &mut self.waves,
+                        out += Self::generate_sample(
+                            self.automatable.master_frequency,
+                            &mut self.automatable.waves,
                             note,
                             time
                         ) as f32;
@@ -177,8 +281,10 @@ impl FmSynth {
             }
         }
 
-        self.global_time.0 += num_samples as f64 * time_per_sample;
+        self.internal.global_time.0 += num_samples as f64 * time_per_sample;
     }
+
+    /// MIDI keyboard support
 
     pub fn process_midi_event(&mut self, data: [u8; 3]) {
         match data[0] {
@@ -189,16 +295,69 @@ impl FmSynth {
     }
 
     fn note_on(&mut self, pitch: u8) {
-        if self.notes[pitch as usize].is_none(){
-            self.notes[pitch as usize] = Some(Note::new(MidiPitch(pitch)));
+        if self.automatable.notes[pitch as usize].is_none(){
+            self.automatable.notes[pitch as usize] = Some(Note::new(MidiPitch(pitch)));
         }
     }
 
     fn note_off(&mut self, pitch: u8) {
-        self.notes[pitch as usize] = None;
+        self.automatable.notes[pitch as usize] = None;
     }
 
-    pub fn set_sample_rate(&mut self, rate: SampleRate) {
-        self.sample_rate = rate;
+    /// Parameter plumbing
+
+    fn get_parameter(&self, index: usize) -> Option<&Box<Parameter>> {
+        self.internal.parameters.get(index)
+    }
+
+    fn get_parameter_mut(
+        internal: &mut InternalState,
+        index: usize
+    ) -> Option<&mut Box<Parameter>> {
+
+        internal.parameters.get_mut(index)
+    }
+
+    pub fn get_num_parameters(&self) -> usize {
+        self.internal.parameters.len()
+    }
+
+    pub fn can_parameter_be_automated(&self, index: usize) -> bool {
+        self.get_parameter(index).is_some()
+    }
+
+    pub fn get_parameter_name(&self, index: usize) -> String {
+        self.get_parameter(index)
+            .map_or("".to_string(), |p| p.get_name(&self.automatable))
+    }
+
+    pub fn get_parameter_unit_of_measurement(&self, index: usize) -> String {
+        self.get_parameter(index)
+            .map_or("".to_string(), |p| p.get_unit_of_measurement(&self.automatable))
+    }
+
+    pub fn get_parameter_value_text(&self, index: usize) -> String {
+        self.get_parameter(index)
+            .map_or("".to_string(), |p| p.get_value_text(&self.automatable))
+    }
+
+    pub fn get_parameter_value_float(&self, index: usize) -> f64 {
+        self.get_parameter(index)
+            .map_or(0.0, |p| p.get_value_float(&self.automatable))
+    }
+
+    pub fn set_parameter_value_float(&mut self, index: usize, value: f64) {
+        if let Some(p) = Self::get_parameter_mut(&mut self.internal, index) {
+            p.set_value_float(&mut self.automatable, value.min(1.0).max(0.0))
+        }
+    }
+
+    pub fn set_parameter_value_text(&mut self, index: usize, text: String) -> bool {
+        if let Some(p) = Self::get_parameter_mut(&mut self.internal, index){
+            p.set_value_text(&mut self.automatable, text)
+        }
+        else {
+            false
+        }
     }
 }
