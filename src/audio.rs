@@ -29,6 +29,20 @@ impl Note {
 
         (note_diff / 12.0).exp2() * master_frequency
     }
+
+    pub fn generate_sample(&self, master_frequency: f64, time: f64) -> f64 {
+        let signal = (time * self.get_frequency(master_frequency) * TAU).sin();
+
+        // Apply a quick envelope to the attack of the signal to avoid popping.
+        let attack = 0.5;
+        let alpha = if self.duration < attack {
+            self.duration / attack
+        } else {
+            1.0
+        };
+
+        (signal * alpha * 0.1)
+    }
 }
 
 
@@ -77,17 +91,7 @@ impl FmSynth {
 
                 for opt_note in self.notes.iter_mut(){
                     if let Some(note) = opt_note {
-                        let signal = (time * note.get_frequency(self.master_frequency) * TAU).sin();
-
-                        // Apply a quick envelope to the attack of the signal to avoid popping.
-                        let attack = 0.5;
-                        let alpha = if note.duration < attack {
-                            note.duration / attack
-                        } else {
-                            1.0
-                        };
-
-                        out += (signal * alpha * 0.1) as f32;
+                        out += note.generate_sample(self.master_frequency, time) as f32;
 
                         note.duration += time_per_sample;
                     }
