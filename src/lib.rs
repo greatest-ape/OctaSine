@@ -53,7 +53,7 @@ impl Plugin for FmSynthPlugin {
     }
 
     fn set_sample_rate(&mut self, rate: f32) {
-        self.synth.sample_rate = f64::from(rate);
+        self.synth.sample_rate = SampleRate(f64::from(rate));
     }
 
     fn process(&mut self, buffer: &mut AudioBuffer<f32>) {

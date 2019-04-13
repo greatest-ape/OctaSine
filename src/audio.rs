@@ -11,6 +11,37 @@ pub const TAU: f64 = 2.0 * PI;
 
 
 #[derive(Debug, Copy, Clone)]
+pub struct GlobalTime(pub f64);
+
+#[derive(Debug, Copy, Clone)]
+pub struct NoteTime(pub f64);
+
+#[derive(Debug, Copy, Clone)]
+pub struct MasterFrequency(pub f64);
+
+#[derive(Debug, Copy, Clone)]
+pub struct SampleRate(pub f64);
+
+#[derive(Debug, Copy, Clone)]
+pub struct NoteDuration(pub f64);
+
+#[derive(Debug, Copy, Clone)]
+pub struct WaveScale(pub f64);
+
+
+#[derive(Debug, Copy, Clone)]
+pub struct MidiPitch(pub u8);
+
+impl MidiPitch {
+    pub fn get_frequency(&self, master_frequency: MasterFrequency) -> f64 {
+        let note_diff = (self.0 as i8 - 69) as f64;
+
+        (note_diff / 12.0).exp2() * master_frequency.0
+    }
+}
+
+
+#[derive(Debug, Copy, Clone)]
 pub enum WaveForm {
     Sine,
     Square,
@@ -20,44 +51,43 @@ pub enum WaveForm {
 
 #[derive(Debug, Copy, Clone)]
 pub struct Wave {
-    scale: f64,
+    scale: WaveScale,
     form: WaveForm,
 }
 
 
 #[derive(Debug, Clone)]
 pub struct Note {
-    duration: f64,
-    midi_pitch: u8,
+    duration: NoteDuration,
+    midi_pitch: MidiPitch,
     waves: SmallVec<[Wave; 32]>,
 }
 
 impl Note {
-    pub fn new(midi_pitch: u8) -> Self {
+    pub fn new(midi_pitch: MidiPitch) -> Self {
         let base_wave = Wave {
-            scale: 1.0,
+            scale: WaveScale(1.0),
             form: WaveForm::Sine,
         };
 
         Self {
-            duration: 0.0,
+            duration: NoteDuration(0.0),
             midi_pitch: midi_pitch,
             waves: smallvec![base_wave]
         }
     }
 
-    fn get_base_frequency(&self, master_frequency: f64) -> f64 {
-        let note_diff = (self.midi_pitch as i8 - 69) as f64;
+    pub fn generate_sample(
+        &self,
+        master_frequency: MasterFrequency,
+        time: NoteTime,
+    ) -> f64 {
 
-        (note_diff / 12.0).exp2() * master_frequency
-    }
-
-    pub fn generate_sample(&self, master_frequency: f64, time: f64) -> f64 {
-        let base_frequency = self.get_base_frequency(master_frequency);
+        let base_frequency = self.midi_pitch.get_frequency(master_frequency);
         let mut signal = 0.0;
 
         for wave in self.waves.iter() {
-            let p = time * base_frequency * wave.scale;
+            let p = time.0 * base_frequency * wave.scale.0;
 
             signal += match wave.form {
                 WaveForm::Sine => (p * TAU).sin(),
@@ -68,8 +98,8 @@ impl Note {
 
         // Apply a quick envelope to the attack of the signal to avoid popping.
         let attack = 0.5;
-        let alpha = if self.duration < attack {
-            self.duration / attack
+        let alpha = if self.duration.0 < attack {
+            self.duration.0 / attack
         } else {
             1.0
         };
@@ -84,18 +114,18 @@ pub type Notes = SmallVec<[Option<Note>; 128]>;
 
 #[derive(Debug)]
 pub struct FmSynth {
-    pub sample_rate: f64,
-    pub master_frequency: f64,
-    pub global_time: f64,
+    pub sample_rate: SampleRate,
+    pub master_frequency: MasterFrequency,
+    pub global_time: GlobalTime,
     pub notes: Notes,
 }
 
 impl Default for FmSynth {
     fn default() -> Self {
         Self {
-            sample_rate: 44100.0,
-            master_frequency: 440.0,
-            global_time: 0.0,
+            sample_rate: SampleRate(44100.0),
+            master_frequency: MasterFrequency(440.0),
+            global_time: GlobalTime(0.0),
             notes: smallvec![None; 128],
         }
     }
@@ -103,7 +133,7 @@ impl Default for FmSynth {
 
 impl FmSynth {
     fn time_per_sample(&self) -> f64 {
-        1.0 / self.sample_rate
+        1.0 / self.sample_rate.0
     }
 
     fn limit(&self, value: f32) -> f32 {
@@ -117,26 +147,29 @@ impl FmSynth {
         let outputs = audio_buffer.split().1;
 
         for output_buffer in outputs {
-            let mut time = self.global_time;
+            let mut time = NoteTime(self.global_time.0);
 
             for output_sample in output_buffer {
                 let mut out = 0.0f32;
 
                 for opt_note in self.notes.iter_mut(){
                     if let Some(note) = opt_note {
-                        out += note.generate_sample(self.master_frequency, time) as f32;
+                        out += note.generate_sample(
+                            self.master_frequency,
+                            time
+                        ) as f32;
 
-                        note.duration += time_per_sample;
+                        note.duration.0 += time_per_sample;
                     }
                 }
 
-                time += time_per_sample;
+                time.0 += time_per_sample;
 
                 *output_sample = self.limit(out);
             }
         }
 
-        self.global_time += num_samples as f64 * time_per_sample;
+        self.global_time.0 += num_samples as f64 * time_per_sample;
     }
 
     pub fn process_midi_event(&mut self, data: [u8; 3]) {
@@ -149,7 +182,7 @@ impl FmSynth {
 
     fn note_on(&mut self, pitch: u8) {
         if self.notes[pitch as usize].is_none(){
-            self.notes[pitch as usize] = Some(Note::new(pitch));
+            self.notes[pitch as usize] = Some(Note::new(MidiPitch(pitch)));
         }
     }
 
