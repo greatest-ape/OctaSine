@@ -9,6 +9,10 @@ use vst::buffer::AudioBuffer;
 
 pub const TAU: f64 = 2.0 * PI;
 
+pub const WAIT: f64 = 0.005;
+
+pub const NUM_WAVES: usize = 4;
+
 
 /// Number that gets incremented with 1.0 every second
 #[derive(Debug, Copy, Clone)]
@@ -29,6 +33,9 @@ pub struct NoteDuration(pub f64);
 #[derive(Debug, Copy, Clone)]
 pub struct WaveScale(pub f64);
 
+#[derive(Debug, Copy, Clone)]
+pub struct WaveDuration(pub f64);
+
 
 #[derive(Debug, Copy, Clone)]
 pub struct MidiPitch(pub u8);
@@ -43,17 +50,18 @@ impl MidiPitch {
 
 
 #[derive(Debug, Copy, Clone)]
-pub enum WaveForm {
-    Sine,
-    Square,
-    Sawtooth,
-}
-
-
-#[derive(Debug, Copy, Clone)]
 pub struct Wave {
     scale: WaveScale,
-    form: WaveForm,
+    duration: WaveDuration,
+}
+
+impl Default for Wave {
+    fn default() -> Self {
+        Self {
+            scale: WaveScale(1.1),
+            duration: WaveDuration(0.0),
+        }
+    }
 }
 
 
@@ -66,8 +74,8 @@ pub struct Note {
 impl Note {
     pub fn new(midi_pitch: MidiPitch) -> Self {
         Self {
-            duration: NoteDuration(0.0),
             midi_pitch: midi_pitch,
+            duration: NoteDuration(0.0),
         }
     }
 }
@@ -107,55 +115,15 @@ impl Parameter for WaveScaleParameter {
     }
 
     fn set_value_float(&mut self, state: &mut AutomatableState, value: f64) {
-        state.waves[self.wave_index].scale.0 = (value / 5.0) + 0.9;
+        state.waves[self.wave_index].scale.0 = value * 5.0;
+        state.waves[self.wave_index].duration.0 = 0.0;
         self.host_value = value
     }
 }
 
 
-
-pub struct WaveFormParameter {
-    wave_index: usize,
-}
-
-
-impl Parameter for WaveFormParameter {
-    fn get_name(&self, _: &AutomatableState) -> String {
-        format!("Wave {} waveform", self.wave_index + 1)
-    }
-
-    fn get_value_float(&self, _: &AutomatableState) -> f64 {
-        0.0
-    }
-
-    fn get_value_text(&self, state: &AutomatableState) -> String {
-        let value = match state.waves[self.wave_index].form {
-            WaveForm::Sine => "Sine",
-            WaveForm::Square => "Square",
-            WaveForm::Sawtooth => "Saw",
-        };
-
-        value.to_string()
-    }
-
-    fn set_value_float(&mut self, state: &mut AutomatableState, value: f64) {
-        state.waves[self.wave_index].form = {
-            if value <= 0.33 {
-                WaveForm::Sine
-            }
-            else if value <= 0.66 {
-                WaveForm::Square
-            }
-            else {
-                WaveForm::Sawtooth
-            }
-        }
-    }
-}
-
-
 pub type Notes = SmallVec<[Option<Note>; 128]>;
-pub type Waves = SmallVec<[Wave; 32]>;
+pub type Waves = SmallVec<[Wave; NUM_WAVES]>;
 pub type Parameters = Vec<Box<Parameter>>;
 
 
@@ -188,19 +156,13 @@ impl Default for FmSynth {
     fn default() -> Self {
         let mut waves = smallvec![];
 
-        for _ in 0..2 {
-            waves.push(Wave {
-                scale: WaveScale(1.0),
-                form: WaveForm::Sine,
-            });
+        for _ in 0..NUM_WAVES {
+            waves.push(Wave::default());
         }
 
         let mut parameters: Vec<Box<Parameter>> = Vec::new();
 
         for (i, _) in waves.iter().enumerate(){
-            parameters.push(Box::new(WaveFormParameter {
-                wave_index: i,
-            }));
             parameters.push(Box::new(WaveScaleParameter {
                 wave_index: i,
                 host_value: 0.5,
@@ -227,7 +189,6 @@ impl Default for FmSynth {
 }
 
 impl FmSynth {
-
     pub fn set_sample_rate(&mut self, rate: SampleRate) {
         self.internal.sample_rate = rate;
     }
@@ -254,14 +215,18 @@ impl FmSynth {
         let base_frequency = note.midi_pitch.get_frequency(master_frequency);
         let mut signal = 0.0;
 
-        for wave in waves.iter() {
+        for wave in waves.iter_mut() {
             let p = time.0 * base_frequency * wave.scale.0;
 
-            signal += match wave.form {
-                WaveForm::Sine => (p * TAU).sin(),
-                WaveForm::Square => ((p % 1.0).round() - 0.5) * 2.0,
-                WaveForm::Sawtooth => ((p % 1.0) - 0.5) * 2.0,
-            }
+            // Try to prevent popping by slowly adding the signal
+            let attack = 0.0002;
+            let alpha = if wave.duration.0 < attack {
+                wave.duration.0 / attack
+            } else {
+                1.0
+            };
+
+            signal = (alpha * p * TAU + signal).sin();
         }
 
         // Apply a quick envelope to the attack of the signal to avoid popping.
@@ -293,10 +258,14 @@ impl FmSynth {
                             self.automatable.master_frequency,
                             &mut self.automatable.waves,
                             note,
-                            time
+                            time,
                         ) as f32;
 
                         note.duration.0 += time_per_sample;
+
+                        for wave in self.automatable.waves.iter_mut(){
+                            wave.duration.0 += time_per_sample;
+                        }
                     }
                 }
 
