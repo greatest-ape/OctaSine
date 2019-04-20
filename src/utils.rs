@@ -1,7 +1,7 @@
 
 
 
-pub fn map_host_param_value_to_step(steps: Vec<f64>, value: f64) -> f64 {
+pub fn map_host_param_value_to_step<T: Copy>(steps: &[T], value: f64) -> T {
     let increment = 1.0 / steps.len() as f64;
     let mut s = 0.0;
 

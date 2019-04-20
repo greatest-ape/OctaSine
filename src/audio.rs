@@ -176,9 +176,9 @@ impl Parameter for WaveRatioParameter {
     }
 
     fn set_value_float(&mut self, state: &mut AutomatableState, value: f64) {
-        let steps = WAVE_RATIO_STEPS[..].to_vec();
+        let step = map_host_param_value_to_step(&WAVE_RATIO_STEPS[..], value);
+        state.waves[self.wave_index].ratio.0 = step;
 
-        state.waves[self.wave_index].ratio.0 = map_host_param_value_to_step(steps, value);
         state.waves[self.wave_index].duration.0 = 0.0;
         self.host_value = value
     }
