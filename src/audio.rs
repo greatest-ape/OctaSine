@@ -20,6 +20,7 @@ pub const WAVE_DEFAULT_FEEDBACK: f64 = 0.0;
 pub const WAVE_DEFAULT_BETA: f64 = 1.0;
 
 pub const WAVE_RATIO_STEPS: [f64; 18] = [0.125, 0.2, 0.25, 0.33, 0.5, 0.66, 0.75, 1.0, 1.25, 1.33, 1.5, 1.66, 1.75, 2.0, 2.25, 2.5, 2.75, 3.0];
+pub const WAVE_BETA_STEPS: [f64; 16] = [0.0, 0.01, 0.1, 0.2, 0.5, 1.0, 2.0, 3.0, 5.0, 10.0, 20.0, 35.0, 50.0, 75.0, 100.0, 1000.0];
 
 
 /// Number that gets incremented with 1.0 every second
@@ -260,8 +261,10 @@ impl Parameter for WaveBetaParameter {
     }
 
     fn set_value_float(&mut self, state: &mut AutomatableState, value: f64) {
-        state.waves[self.wave_index].beta = WaveBeta(value * 100.0);
-        state.waves[self.wave_index].duration = WaveDuration(0.0);
+        let step = map_host_param_value_to_step_smooth(&WAVE_BETA_STEPS[..], value);
+        state.waves[self.wave_index].beta.0 = step;
+
+        state.waves[self.wave_index].duration.0 = 0.0;
         self.host_value = value
     }
 
@@ -346,7 +349,7 @@ impl Default for FmSynth {
             }));
             parameters.push(Box::new(WaveRatioParameter {
                 wave_index: i,
-                host_value: get_host_value_for_default_step(WAVE_RATIO_STEPS[..].to_vec(), 1.0),
+                host_value: get_host_value_for_default_step(&WAVE_RATIO_STEPS[..], 1.0),
             }));
             // parameters.push(Box::new(WaveFeedbackParameter {
             //     wave_index: i,
@@ -358,7 +361,7 @@ impl Default for FmSynth {
             }));
             parameters.push(Box::new(WaveBetaParameter {
                 wave_index: i,
-                host_value: 1.0 / 100.0,
+                host_value: get_host_value_for_default_step(&WAVE_BETA_STEPS[..], 1.0),
             }));
         }
 
