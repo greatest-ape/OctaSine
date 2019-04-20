@@ -15,7 +15,7 @@ pub const NUM_WAVES: usize = 4;
 
 pub const WAVE_DEFAULT_VOLUME: f64 = 1.0;
 pub const WAVE_DEFAULT_RATIO: f64 = 1.0;
-pub const WAVE_DEFAULT_FINE: f64 = 1.0;
+pub const WAVE_DEFAULT_FREQUENCY_FREE: f64 = 1.0;
 pub const WAVE_DEFAULT_FEEDBACK: f64 = 0.0;
 pub const WAVE_DEFAULT_BETA: f64 = 1.0;
 
@@ -86,7 +86,7 @@ impl Default for Wave {
             duration: WaveDuration(0.0),
             volume: WaveVolume(WAVE_DEFAULT_VOLUME),
             ratio: WaveRatio(WAVE_DEFAULT_RATIO),
-            frequency_free: WaveFrequencyFree(WAVE_DEFAULT_FINE),
+            frequency_free: WaveFrequencyFree(WAVE_DEFAULT_FREQUENCY_FREE),
             feedback: WaveFeedback(WAVE_DEFAULT_FEEDBACK),
             beta: WaveBeta(WAVE_DEFAULT_BETA),
         }
