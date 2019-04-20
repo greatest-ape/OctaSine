@@ -186,6 +186,33 @@ impl Parameter for WaveRatioParameter {
 }
 
 
+pub struct WaveFineParameter {
+    wave_index: usize,
+    host_value: f64,
+}
+
+
+impl Parameter for WaveFineParameter {
+    fn get_name(&self, _: &AutomatableState) -> String {
+        format!("Wave {} fine", self.wave_index + 1)
+    }
+
+    fn get_value_float(&self, _: &AutomatableState) -> f64 {
+        self.host_value
+    }
+
+    fn set_value_float(&mut self, state: &mut AutomatableState, value: f64) {
+        state.waves[self.wave_index].fine.0 = value + 0.5;
+        state.waves[self.wave_index].duration.0 = 0.0;
+        self.host_value = value
+    }
+
+    fn get_value_text(&self, state: &AutomatableState) -> String {
+        format!("{:.2}", state.waves[self.wave_index].fine.0)
+    }
+}
+
+
 pub struct WaveFeedbackParameter {
     wave_index: usize,
     host_value: f64,
@@ -318,9 +345,13 @@ impl Default for FmSynth {
                 wave_index: i,
                 host_value: get_host_value_for_default_step(WAVE_RATIO_STEPS[..].to_vec(), 1.0),
             }));
-            parameters.push(Box::new(WaveFeedbackParameter {
+            // parameters.push(Box::new(WaveFeedbackParameter {
+            //     wave_index: i,
+            //     host_value: 0.0,
+            // }));
+            parameters.push(Box::new(WaveFineParameter {
                 wave_index: i,
-                host_value: 0.0,
+                host_value: 0.5,
             }));
             parameters.push(Box::new(WaveBetaParameter {
                 wave_index: i,
@@ -375,7 +406,7 @@ impl FmSynth {
         let mut signal = 0.0;
 
         for wave in (waves.iter_mut()).rev() {
-            let p = time.0 * base_frequency * wave.ratio.0;
+            let p = time.0 * base_frequency * wave.ratio.0 * wave.fine.0;
 
             // Try to prevent popping by slowly adding the signal
             let attack = 0.0002;
