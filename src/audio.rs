@@ -36,6 +36,9 @@ pub struct WaveScale(pub f64);
 #[derive(Debug, Copy, Clone)]
 pub struct WaveDuration(pub f64);
 
+#[derive(Debug, Copy, Clone)]
+pub struct WaveFeedback(pub f64);
+
 
 #[derive(Debug, Copy, Clone)]
 pub struct MidiPitch(pub u8);
@@ -53,6 +56,7 @@ impl MidiPitch {
 pub struct Wave {
     scale: WaveScale,
     duration: WaveDuration,
+    feedback: WaveFeedback,
 }
 
 impl Default for Wave {
@@ -60,6 +64,7 @@ impl Default for Wave {
         Self {
             scale: WaveScale(1.1),
             duration: WaveDuration(0.0),
+            feedback: WaveFeedback(0.0),
         }
     }
 }
@@ -122,6 +127,29 @@ impl Parameter for WaveScaleParameter {
 }
 
 
+pub struct WaveFeedbackParameter {
+    wave_index: usize,
+    host_value: f64,
+}
+
+
+impl Parameter for WaveFeedbackParameter {
+    fn get_name(&self, _: &AutomatableState) -> String {
+        format!("Wave {} feedback", self.wave_index + 1)
+    }
+
+    fn get_value_float(&self, _: &AutomatableState) -> f64 {
+        self.host_value
+    }
+
+    fn set_value_float(&mut self, state: &mut AutomatableState, value: f64) {
+        state.waves[self.wave_index].feedback.0 = value * 5.0;
+        state.waves[self.wave_index].duration.0 = 0.0;
+        self.host_value = value
+    }
+}
+
+
 pub type Notes = SmallVec<[Option<Note>; 128]>;
 pub type Waves = SmallVec<[Wave; NUM_WAVES]>;
 pub type Parameters = Vec<Box<Parameter>>;
@@ -166,6 +194,10 @@ impl Default for FmSynth {
             parameters.push(Box::new(WaveScaleParameter {
                 wave_index: i,
                 host_value: 0.5,
+            }));
+            parameters.push(Box::new(WaveFeedbackParameter {
+                wave_index: i,
+                host_value: 0.0,
             }));
         }
 
@@ -226,7 +258,10 @@ impl FmSynth {
                 1.0
             };
 
-            signal = (alpha * p * TAU + signal).sin();
+            let new = alpha * p * TAU;
+            let feedback = wave.feedback.0 * new.sin();
+
+            signal = (new + signal + feedback).sin();
         }
 
         // Apply a quick envelope to the attack of the signal to avoid popping.
