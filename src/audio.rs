@@ -29,10 +29,13 @@ pub struct SampleRate(pub f64);
 pub struct NoteDuration(pub f64);
 
 #[derive(Debug, Copy, Clone)]
-pub struct WaveScale(pub f64);
+pub struct WaveDuration(pub f64);
 
 #[derive(Debug, Copy, Clone)]
-pub struct WaveDuration(pub f64);
+pub struct WaveVolume(pub f64);
+
+#[derive(Debug, Copy, Clone)]
+pub struct WaveScale(pub f64);
 
 #[derive(Debug, Copy, Clone)]
 pub struct WaveFeedback(pub f64);
@@ -57,6 +60,7 @@ impl MidiPitch {
 pub struct Wave {
     scale: WaveScale,
     duration: WaveDuration,
+    volume: WaveVolume,
     feedback: WaveFeedback,
     beta: WaveBeta,
 }
@@ -65,6 +69,7 @@ impl Default for Wave {
     fn default() -> Self {
         Self {
             scale: WaveScale(1.1),
+            volume: WaveVolume(1.0),
             duration: WaveDuration(0.0),
             feedback: WaveFeedback(0.0),
             beta: WaveBeta(1.0),
@@ -181,6 +186,34 @@ impl Parameter for WaveBetaParameter {
 }
 
 
+/// Frequency modulation index
+pub struct WaveVolumeParameter {
+    wave_index: usize,
+    host_value: f64,
+}
+
+
+impl Parameter for WaveVolumeParameter {
+    fn get_name(&self, _: &AutomatableState) -> String {
+        format!("Wave {} volume", self.wave_index + 1)
+    }
+
+    fn get_value_float(&self, _: &AutomatableState) -> f64 {
+        self.host_value
+    }
+
+    fn set_value_float(&mut self, state: &mut AutomatableState, value: f64) {
+        state.waves[self.wave_index].volume = WaveVolume(value * 2.0);
+        state.waves[self.wave_index].duration = WaveDuration(0.0);
+        self.host_value = value
+    }
+
+    fn get_value_text(&self, state: &AutomatableState) -> String {
+        format!("{:.2}%", state.waves[self.wave_index].volume.0 * 100.0)
+    }
+}
+
+
 pub type Notes = SmallVec<[Option<Note>; 128]>;
 pub type Waves = SmallVec<[Wave; NUM_WAVES]>;
 pub type Parameters = Vec<Box<Parameter>>;
@@ -222,6 +255,10 @@ impl Default for FmSynth {
         let mut parameters: Vec<Box<Parameter>> = Vec::new();
 
         for (i, _) in waves.iter().enumerate(){
+            parameters.push(Box::new(WaveVolumeParameter {
+                wave_index: i,
+                host_value: 1.0,
+            }));
             parameters.push(Box::new(WaveScaleParameter {
                 wave_index: i,
                 host_value: 0.5,
@@ -293,7 +330,7 @@ impl FmSynth {
                 1.0
             };
 
-            let new = alpha * p * TAU;
+            let new = alpha * p * TAU * wave.volume.0;
             let feedback = wave.feedback.0 * new.sin();
 
             signal = (new + wave.beta.0 * signal + feedback).sin();
