@@ -48,7 +48,7 @@ pub struct WaveVolume(pub f64);
 pub struct WaveRatio(pub f64);
 
 #[derive(Debug, Copy, Clone)]
-pub struct WaveFine(pub f64);
+pub struct WaveFrequencyFree(pub f64);
 
 #[derive(Debug, Copy, Clone)]
 pub struct WaveFeedback(pub f64);
@@ -74,7 +74,7 @@ pub struct Wave {
     duration: WaveDuration,
     volume: WaveVolume,
     ratio: WaveRatio,
-    fine: WaveFine,
+    frequency_free: WaveFrequencyFree,
     feedback: WaveFeedback,
     beta: WaveBeta,
 }
@@ -85,7 +85,7 @@ impl Default for Wave {
             duration: WaveDuration(0.0),
             volume: WaveVolume(WAVE_DEFAULT_VOLUME),
             ratio: WaveRatio(WAVE_DEFAULT_RATIO),
-            fine: WaveFine(WAVE_DEFAULT_FINE),
+            frequency_free: WaveFrequencyFree(WAVE_DEFAULT_FINE),
             feedback: WaveFeedback(WAVE_DEFAULT_FEEDBACK),
             beta: WaveBeta(WAVE_DEFAULT_BETA),
         }
@@ -189,15 +189,15 @@ impl Parameter for WaveRatioParameter {
 }
 
 
-pub struct WaveFineParameter {
+pub struct WaveFrequencyFreeParameter {
     wave_index: usize,
     host_value: f64,
 }
 
 
-impl Parameter for WaveFineParameter {
+impl Parameter for WaveFrequencyFreeParameter {
     fn get_name(&self, _: &AutomatableState) -> String {
-        format!("Wave {} fine", self.wave_index + 1)
+        format!("Wave {} free", self.wave_index + 1)
     }
 
     fn get_value_float(&self, _: &AutomatableState) -> f64 {
@@ -205,13 +205,13 @@ impl Parameter for WaveFineParameter {
     }
 
     fn set_value_float(&mut self, state: &mut AutomatableState, value: f64) {
-        state.waves[self.wave_index].fine.0 = value + 0.5;
+        state.waves[self.wave_index].frequency_free.0 = (value + 0.5).powf(3.0);
         state.waves[self.wave_index].duration.0 = 0.0;
         self.host_value = value
     }
 
     fn get_value_text(&self, state: &AutomatableState) -> String {
-        format!("{:.2}", state.waves[self.wave_index].fine.0)
+        format!("{:.2}", state.waves[self.wave_index].frequency_free.0)
     }
 }
 
@@ -352,7 +352,7 @@ impl Default for FmSynth {
             //     wave_index: i,
             //     host_value: 0.0,
             // }));
-            parameters.push(Box::new(WaveFineParameter {
+            parameters.push(Box::new(WaveFrequencyFreeParameter {
                 wave_index: i,
                 host_value: 0.5,
             }));
@@ -409,7 +409,7 @@ impl FmSynth {
         let mut signal = 0.0;
 
         for wave in (waves.iter_mut()).rev() {
-            let p = time.0 * base_frequency * wave.ratio.0 * wave.fine.0;
+            let p = time.0 * base_frequency * wave.ratio.0 * wave.frequency_free.0;
 
             // Try to prevent popping by slowly adding the signal
             let attack = 0.0002;
