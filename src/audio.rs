@@ -9,8 +9,6 @@ use vst::buffer::AudioBuffer;
 
 pub const TAU: f64 = 2.0 * PI;
 
-pub const WAIT: f64 = 0.005;
-
 pub const NUM_WAVES: usize = 4;
 
 
