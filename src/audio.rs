@@ -6,15 +6,20 @@ use std::f64::consts::PI;
 use smallvec::{SmallVec, smallvec};
 use vst::buffer::AudioBuffer;
 
+use crate::utils::*;
+
 
 pub const TAU: f64 = 2.0 * PI;
 
 pub const NUM_WAVES: usize = 4;
 
 pub const WAVE_DEFAULT_VOLUME: f64 = 1.0;
-pub const WAVE_DEFAULT_SCALE: f64 = 1.0;
+pub const WAVE_DEFAULT_RATIO: f64 = 1.0;
+pub const WAVE_DEFAULT_FINE: f64 = 1.0;
 pub const WAVE_DEFAULT_FEEDBACK: f64 = 0.0;
 pub const WAVE_DEFAULT_BETA: f64 = 1.0;
+
+pub const WAVE_RATIO_STEPS: [f64; 18] = [0.125, 0.2, 0.25, 0.33, 0.5, 0.66, 0.75, 1.0, 1.25, 1.33, 1.5, 1.66, 1.75, 2.0, 2.25, 2.5, 2.75, 3.0];
 
 
 /// Number that gets incremented with 1.0 every second
@@ -40,7 +45,10 @@ pub struct WaveDuration(pub f64);
 pub struct WaveVolume(pub f64);
 
 #[derive(Debug, Copy, Clone)]
-pub struct WaveScale(pub f64);
+pub struct WaveRatio(pub f64);
+
+#[derive(Debug, Copy, Clone)]
+pub struct WaveFine(pub f64);
 
 #[derive(Debug, Copy, Clone)]
 pub struct WaveFeedback(pub f64);
@@ -65,7 +73,8 @@ impl MidiPitch {
 pub struct Wave {
     duration: WaveDuration,
     volume: WaveVolume,
-    scale: WaveScale,
+    ratio: WaveRatio,
+    fine: WaveFine,
     feedback: WaveFeedback,
     beta: WaveBeta,
 }
@@ -75,7 +84,8 @@ impl Default for Wave {
         Self {
             duration: WaveDuration(0.0),
             volume: WaveVolume(WAVE_DEFAULT_VOLUME),
-            scale: WaveScale(WAVE_DEFAULT_SCALE),
+            ratio: WaveRatio(WAVE_DEFAULT_RATIO),
+            fine: WaveFine(WAVE_DEFAULT_FINE),
             feedback: WaveFeedback(WAVE_DEFAULT_FEEDBACK),
             beta: WaveBeta(WAVE_DEFAULT_BETA),
         }
@@ -147,13 +157,13 @@ pub trait WaveFieldParameter: Parameter {
 }
 
 
-pub struct WaveScaleParameter {
+pub struct WaveRatioParameter {
     wave_index: usize,
     host_value: f64,
 }
 
 
-impl Parameter for WaveScaleParameter {
+impl Parameter for WaveRatioParameter {
     fn get_name(&self, _: &AutomatableState) -> String {
         format!("Wave {} scale", self.wave_index + 1)
     }
@@ -163,13 +173,15 @@ impl Parameter for WaveScaleParameter {
     }
 
     fn set_value_float(&mut self, state: &mut AutomatableState, value: f64) {
-        state.waves[self.wave_index].scale.0 = value * 5.0;
+        let steps = WAVE_RATIO_STEPS[..].to_vec();
+
+        state.waves[self.wave_index].ratio.0 = map_host_param_value_to_step(steps, value);
         state.waves[self.wave_index].duration.0 = 0.0;
         self.host_value = value
     }
 
     fn get_value_text(&self, state: &AutomatableState) -> String {
-        format!("{:.2}", state.waves[self.wave_index].scale.0)
+        format!("{:.2}", state.waves[self.wave_index].ratio.0)
     }
 }
 
@@ -302,9 +314,9 @@ impl Default for FmSynth {
                 wave_index: i,
                 host_value: 0.5,
             }));
-            parameters.push(Box::new(WaveScaleParameter {
+            parameters.push(Box::new(WaveRatioParameter {
                 wave_index: i,
-                host_value: 1.0 / 5.0,
+                host_value: get_host_value_for_default_step(WAVE_RATIO_STEPS[..].to_vec(), 1.0),
             }));
             parameters.push(Box::new(WaveFeedbackParameter {
                 wave_index: i,
@@ -363,7 +375,7 @@ impl FmSynth {
         let mut signal = 0.0;
 
         for wave in (waves.iter_mut()).rev() {
-            let p = time.0 * base_frequency * wave.scale.0;
+            let p = time.0 * base_frequency * wave.ratio.0;
 
             // Try to prevent popping by slowly adding the signal
             let attack = 0.0002;

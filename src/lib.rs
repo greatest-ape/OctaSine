@@ -6,6 +6,7 @@ use vst::plugin_main;
 
 
 pub mod audio;
+pub mod utils;
 
 pub use audio::*;
 
