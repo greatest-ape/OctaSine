@@ -11,6 +11,11 @@ pub const TAU: f64 = 2.0 * PI;
 
 pub const NUM_WAVES: usize = 4;
 
+pub const WAVE_DEFAULT_VOLUME: f64 = 1.0;
+pub const WAVE_DEFAULT_SCALE: f64 = 1.0;
+pub const WAVE_DEFAULT_FEEDBACK: f64 = 0.0;
+pub const WAVE_DEFAULT_BETA: f64 = 1.0;
+
 
 /// Number that gets incremented with 1.0 every second
 #[derive(Debug, Copy, Clone)]
@@ -58,9 +63,9 @@ impl MidiPitch {
 
 #[derive(Debug, Copy, Clone)]
 pub struct Wave {
-    scale: WaveScale,
     duration: WaveDuration,
     volume: WaveVolume,
+    scale: WaveScale,
     feedback: WaveFeedback,
     beta: WaveBeta,
 }
@@ -68,11 +73,11 @@ pub struct Wave {
 impl Default for Wave {
     fn default() -> Self {
         Self {
-            scale: WaveScale(1.1),
-            volume: WaveVolume(1.0),
             duration: WaveDuration(0.0),
-            feedback: WaveFeedback(0.0),
-            beta: WaveBeta(1.0),
+            volume: WaveVolume(WAVE_DEFAULT_VOLUME),
+            scale: WaveScale(WAVE_DEFAULT_SCALE),
+            feedback: WaveFeedback(WAVE_DEFAULT_FEEDBACK),
+            beta: WaveBeta(WAVE_DEFAULT_BETA),
         }
     }
 }
@@ -132,6 +137,10 @@ impl Parameter for WaveScaleParameter {
         state.waves[self.wave_index].duration.0 = 0.0;
         self.host_value = value
     }
+
+    fn get_value_text(&self, state: &AutomatableState) -> String {
+        format!("{:.2}", state.waves[self.wave_index].scale.0)
+    }
 }
 
 
@@ -154,6 +163,10 @@ impl Parameter for WaveFeedbackParameter {
         state.waves[self.wave_index].feedback.0 = value * 5.0;
         state.waves[self.wave_index].duration.0 = 0.0;
         self.host_value = value
+    }
+
+    fn get_value_text(&self, state: &AutomatableState) -> String {
+        format!("{:.2}", state.waves[self.wave_index].feedback.0)
     }
 }
 
@@ -257,11 +270,11 @@ impl Default for FmSynth {
         for (i, _) in waves.iter().enumerate(){
             parameters.push(Box::new(WaveVolumeParameter {
                 wave_index: i,
-                host_value: 1.0,
+                host_value: 0.5,
             }));
             parameters.push(Box::new(WaveScaleParameter {
                 wave_index: i,
-                host_value: 0.5,
+                host_value: 1.0 / 5.0,
             }));
             parameters.push(Box::new(WaveFeedbackParameter {
                 wave_index: i,
@@ -269,7 +282,7 @@ impl Default for FmSynth {
             }));
             parameters.push(Box::new(WaveBetaParameter {
                 wave_index: i,
-                host_value: 0.01,
+                host_value: 1.0 / 100.0,
             }));
         }
 
