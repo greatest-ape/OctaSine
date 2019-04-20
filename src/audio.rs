@@ -37,6 +37,9 @@ pub struct WaveDuration(pub f64);
 #[derive(Debug, Copy, Clone)]
 pub struct WaveFeedback(pub f64);
 
+#[derive(Debug, Copy, Clone)]
+pub struct WaveBeta(pub f64);
+
 
 #[derive(Debug, Copy, Clone)]
 pub struct MidiPitch(pub u8);
@@ -55,6 +58,7 @@ pub struct Wave {
     scale: WaveScale,
     duration: WaveDuration,
     feedback: WaveFeedback,
+    beta: WaveBeta,
 }
 
 impl Default for Wave {
@@ -63,6 +67,7 @@ impl Default for Wave {
             scale: WaveScale(1.1),
             duration: WaveDuration(0.0),
             feedback: WaveFeedback(0.0),
+            beta: WaveBeta(1.0),
         }
     }
 }
@@ -148,6 +153,34 @@ impl Parameter for WaveFeedbackParameter {
 }
 
 
+/// Frequency modulation index
+pub struct WaveBetaParameter {
+    wave_index: usize,
+    host_value: f64,
+}
+
+
+impl Parameter for WaveBetaParameter {
+    fn get_name(&self, _: &AutomatableState) -> String {
+        format!("Wave {} beta", self.wave_index + 1)
+    }
+
+    fn get_value_float(&self, _: &AutomatableState) -> f64 {
+        self.host_value
+    }
+
+    fn set_value_float(&mut self, state: &mut AutomatableState, value: f64) {
+        state.waves[self.wave_index].beta = WaveBeta(value * 100.0);
+        state.waves[self.wave_index].duration = WaveDuration(0.0);
+        self.host_value = value
+    }
+
+    fn get_value_text(&self, state: &AutomatableState) -> String {
+        format!("{:.2}", state.waves[self.wave_index].beta.0)
+    }
+}
+
+
 pub type Notes = SmallVec<[Option<Note>; 128]>;
 pub type Waves = SmallVec<[Wave; NUM_WAVES]>;
 pub type Parameters = Vec<Box<Parameter>>;
@@ -197,6 +230,10 @@ impl Default for FmSynth {
                 wave_index: i,
                 host_value: 0.0,
             }));
+            parameters.push(Box::new(WaveBetaParameter {
+                wave_index: i,
+                host_value: 0.01,
+            }));
         }
 
         let external = AutomatableState {
@@ -245,7 +282,7 @@ impl FmSynth {
         let base_frequency = note.midi_pitch.get_frequency(master_frequency);
         let mut signal = 0.0;
 
-        for wave in waves.iter_mut() {
+        for wave in (waves.iter_mut()).rev() {
             let p = time.0 * base_frequency * wave.scale.0;
 
             // Try to prevent popping by slowly adding the signal
@@ -259,7 +296,7 @@ impl FmSynth {
             let new = alpha * p * TAU;
             let feedback = wave.feedback.0 * new.sin();
 
-            signal = (new + signal + feedback).sin();
+            signal = (new + wave.beta.0 * signal + feedback).sin();
         }
 
         // Apply a quick envelope to the attack of the signal to avoid popping.
