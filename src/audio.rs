@@ -117,6 +117,36 @@ pub trait Parameter {
 }
 
 
+/// Trait to be auto-derived in parameter structs using not yet existing macro
+pub trait WaveFieldParameter: Parameter {
+    fn get_wave_index(&self) -> usize;
+
+    fn get_host_value(&self) -> f64;
+    fn set_host_value(&self, value: f64);
+
+    fn transform_value(&self, value: f64) -> f64;
+
+    fn get_wave_field_value(&self, state: &AutomatableState) -> f64;
+    fn set_wave_field_value(&mut self, state: &mut AutomatableState, value: f64);
+
+    fn get_value_float(&self, _: &AutomatableState) -> f64 {
+        self.get_host_value()
+    }
+
+    fn set_value_float(&mut self, state: &mut AutomatableState, value: f64) {
+        self.set_wave_field_value(state, self.transform_value(value));
+
+        state.waves[self.get_wave_index()].duration.0 = 0.0;
+
+        self.set_host_value(value);
+    }
+
+    fn get_value_text(&self, state: &AutomatableState) -> String {
+        format!("{:.2}", self.get_wave_field_value(state))
+    }
+}
+
+
 pub struct WaveScaleParameter {
     wave_index: usize,
     host_value: f64,
