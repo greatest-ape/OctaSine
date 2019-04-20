@@ -318,11 +318,11 @@ impl FmSynth {
         value.min(1.0).max(-1.0)
     }
 
-    /// Generate a sample
+    /// Generate a sample for a note
     /// 
     /// Doesn't take self parameter due to conflicting borrowing (Self.notes
     /// is borrowed mutably in the generate_audio inner loop)
-    fn generate_sample(
+    fn generate_note_sample(
         master_frequency: MasterFrequency,
         waves: &mut Waves,
         note: &mut Note,
@@ -374,7 +374,7 @@ impl FmSynth {
 
                 for opt_note in self.automatable.notes.iter_mut(){
                     if let Some(note) = opt_note {
-                        out += Self::generate_sample(
+                        out += Self::generate_note_sample(
                             self.automatable.master_frequency,
                             &mut self.automatable.waves,
                             note,
