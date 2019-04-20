@@ -343,10 +343,10 @@ impl FmSynth {
                 1.0
             };
 
-            let new = alpha * p * TAU * wave.volume.0;
+            let new = alpha * p * TAU;
             let feedback = wave.feedback.0 * new.sin();
 
-            signal = (new + wave.beta.0 * signal + feedback).sin();
+            signal = signal * (1.0 - wave.volume.0) + wave.volume.0 * (new + wave.beta.0 * signal + feedback).sin();
         }
 
         // Apply a quick envelope to the attack of the signal to avoid popping.
