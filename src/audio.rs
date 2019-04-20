@@ -169,7 +169,7 @@ pub struct WaveRatioParameter {
 
 impl Parameter for WaveRatioParameter {
     fn get_name(&self, _: &AutomatableState) -> String {
-        format!("Wave {} scale", self.wave_index + 1)
+        format!("Wave {} ratio", self.wave_index + 1)
     }
 
     fn get_value_float(&self, _: &AutomatableState) -> f64 {
