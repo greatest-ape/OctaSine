@@ -1,26 +1,9 @@
-extern crate vst;
-extern crate smallvec;
-
-use std::f64::consts::PI;
-
 use smallvec::{SmallVec, smallvec};
 use vst::buffer::AudioBuffer;
 
-use crate::utils::*;
-
-
-pub const TAU: f64 = 2.0 * PI;
-
-pub const NUM_WAVES: usize = 4;
-
-pub const WAVE_DEFAULT_VOLUME: f64 = 1.0;
-pub const WAVE_DEFAULT_RATIO: f64 = 1.0;
-pub const WAVE_DEFAULT_FREQUENCY_FREE: f64 = 1.0;
-pub const WAVE_DEFAULT_FEEDBACK: f64 = 0.0;
-pub const WAVE_DEFAULT_BETA: f64 = 1.0;
-
-pub const WAVE_RATIO_STEPS: [f64; 18] = [0.125, 0.2, 0.25, 0.33, 0.5, 0.66, 0.75, 1.0, 1.25, 1.33, 1.5, 1.66, 1.75, 2.0, 2.25, 2.5, 2.75, 3.0];
-pub const WAVE_BETA_STEPS: [f64; 16] = [0.0, 0.01, 0.1, 0.2, 0.5, 1.0, 2.0, 3.0, 5.0, 10.0, 20.0, 35.0, 50.0, 75.0, 100.0, 1000.0];
+use crate::constants::*;
+use crate::parameters::*;
+use crate::waves::*;
 
 
 /// Number that gets incremented with 1.0 every second
@@ -39,70 +22,6 @@ pub struct SampleRate(pub f64);
 #[derive(Debug, Copy, Clone)]
 pub struct NoteDuration(pub f64);
 
-#[derive(Debug, Copy, Clone)]
-pub struct WaveDuration(pub f64);
-
-
-#[derive(Debug, Copy, Clone)]
-pub struct WaveVolume(pub f64);
-
-impl WaveVolume {
-    pub fn from_host_value(&self, value: f64) -> f64 {
-        value * 2.0
-    }
-    pub fn get_default_host_value(&self) -> f64 {
-        WAVE_DEFAULT_VOLUME / 2.0
-    }
-}
-
-#[derive(Debug, Copy, Clone)]
-pub struct WaveRatio(pub f64);
-
-impl WaveRatio {
-    pub fn from_host_value(&self, value: f64) -> f64 {
-        map_host_param_value_to_step(&WAVE_RATIO_STEPS[..], value)
-    }
-    pub fn get_default_host_value(&self) -> f64 {
-        get_host_value_for_default_step(&WAVE_RATIO_STEPS[..], 1.0)
-    }
-}
-
-#[derive(Debug, Copy, Clone)]
-pub struct WaveFrequencyFree(pub f64);
-
-impl WaveFrequencyFree {
-    pub fn from_host_value(&self, value: f64) -> f64 {
-        (value + 0.5).powf(3.0)
-    }
-    pub fn get_default_host_value(&self) -> f64 {
-        0.5
-    }
-}
-
-#[derive(Debug, Copy, Clone)]
-pub struct WaveFeedback(pub f64);
-
-impl WaveFeedback {
-    pub fn from_host_value(&self, value: f64) -> f64 {
-        value * 5.0
-    }
-    pub fn get_default_host_value(&self) -> f64 {
-        WAVE_DEFAULT_FEEDBACK / 5.0
-    }
-}
-
-#[derive(Debug, Copy, Clone)]
-pub struct WaveBeta(pub f64);
-
-impl WaveBeta {
-    pub fn from_host_value(&self, value: f64) -> f64 {
-        map_host_param_value_to_step_smooth(&WAVE_BETA_STEPS[..], value)
-    }
-    pub fn get_default_host_value(&self) -> f64 {
-        get_host_value_for_default_step(&WAVE_BETA_STEPS[..], WAVE_DEFAULT_BETA)
-    }
-}
-
 
 #[derive(Debug, Copy, Clone)]
 pub struct MidiPitch(pub u8);
@@ -112,30 +31,6 @@ impl MidiPitch {
         let note_diff = (self.0 as i8 - 69) as f64;
 
         (note_diff / 12.0).exp2() * master_frequency.0
-    }
-}
-
-
-#[derive(Debug, Copy, Clone)]
-pub struct Wave {
-    duration: WaveDuration,
-    volume: WaveVolume,
-    ratio: WaveRatio,
-    frequency_free: WaveFrequencyFree,
-    feedback: WaveFeedback,
-    beta: WaveBeta,
-}
-
-impl Default for Wave {
-    fn default() -> Self {
-        Self {
-            duration: WaveDuration(0.0),
-            volume: WaveVolume(WAVE_DEFAULT_VOLUME),
-            ratio: WaveRatio(WAVE_DEFAULT_RATIO),
-            frequency_free: WaveFrequencyFree(WAVE_DEFAULT_FREQUENCY_FREE),
-            feedback: WaveFeedback(WAVE_DEFAULT_FEEDBACK),
-            beta: WaveBeta(WAVE_DEFAULT_BETA),
-        }
     }
 }
 
@@ -156,110 +51,6 @@ impl Note {
 }
 
 
-pub trait Parameter {
-    fn get_name(&self, state: &AutomatableState) -> String;
-    fn get_unit_of_measurement(&self, _: &AutomatableState) -> String {
-        "".to_string()
-    }
-
-    fn get_value_float(&self, state: &AutomatableState) -> f64;
-    fn get_value_text(&self, state: &AutomatableState) -> String {
-        format!("{:.2}", self.get_value_float(state))
-    }
-
-    fn set_value_float(&mut self, state: &mut AutomatableState, value: f64);
-    fn set_value_text(&mut self, _: &mut AutomatableState, _: String) -> bool {
-        false
-    }
-}
-
-
-#[macro_export]
-macro_rules! derive_wave_field_parameter {
-    ($parameter_struct:ident, $field:ident, $field_name:expr) => {
-        impl $parameter_struct {
-            pub fn get_wave_index(&self) -> usize {
-                self.wave_index
-            }
-
-            pub fn new(waves: &Waves, wave_index: usize) -> Self {
-                Self {
-                    wave_index: wave_index,
-                    host_value: waves[wave_index].$field.get_default_host_value(),
-                }
-            }
-        }
-        impl Parameter for $parameter_struct {
-            fn get_name(&self, _: &AutomatableState) -> String {
-                format!("Wave {} {}", self.wave_index + 1, $field_name)
-            }
-
-            fn get_value_float(&self, _: &AutomatableState) -> f64 {
-                self.host_value
-            }
-            fn get_value_text(&self, state: &AutomatableState) -> String {
-                format!("{:.2}", state.waves[self.get_wave_index()].$field.0)
-            }
-
-            fn set_value_float(&mut self, state: &mut AutomatableState, value: f64) {
-                let transformed = state.waves[
-                    self.get_wave_index()
-                ].$field.from_host_value(value);
-
-                state.waves[self.get_wave_index()].$field.0 = transformed;
-
-                state.waves[self.get_wave_index()].duration.0 = 0.0;
-
-                self.host_value = value;
-            }
-        }
-    };  
-}
-
-
-pub struct WaveRatioParameter {
-    wave_index: usize,
-    host_value: f64,
-}
-
-derive_wave_field_parameter!(WaveRatioParameter, ratio, "ratio");
-
-
-pub struct WaveFrequencyFreeParameter {
-    wave_index: usize,
-    host_value: f64,
-}
-
-derive_wave_field_parameter!(WaveFrequencyFreeParameter, frequency_free, "free");
-
-
-pub struct WaveFeedbackParameter {
-    wave_index: usize,
-    host_value: f64,
-}
-
-derive_wave_field_parameter!(WaveFeedbackParameter, feedback, "feedback");
-
-
-/// Frequency modulation index
-pub struct WaveBetaParameter {
-    wave_index: usize,
-    host_value: f64,
-}
-
-derive_wave_field_parameter!(WaveBetaParameter, beta, "beta");
-
-
-/// Frequency modulation index
-pub struct WaveVolumeParameter {
-    wave_index: usize,
-    host_value: f64,
-}
-
-derive_wave_field_parameter!(WaveVolumeParameter, volume, "volume");
-
-
-
 pub type Notes = SmallVec<[Option<Note>; 128]>;
 pub type Waves = SmallVec<[Wave; NUM_WAVES]>;
 pub type Parameters = Vec<Box<Parameter>>;
@@ -267,17 +58,17 @@ pub type Parameters = Vec<Box<Parameter>>;
 
 /// Non-automatable state (but not necessarily impossible to change from host)
 pub struct InternalState {
-    global_time: GlobalTime,
-    sample_rate: SampleRate,
-    parameters: Parameters,
+    pub global_time: GlobalTime,
+    pub sample_rate: SampleRate,
+    pub parameters: Parameters,
 }
 
 
 /// State that can be automated
 pub struct AutomatableState {
-    master_frequency: MasterFrequency,
-    waves: Waves,
-    notes: Notes,
+    pub master_frequency: MasterFrequency,
+    pub waves: Waves,
+    pub notes: Notes,
 }
 
 
@@ -303,9 +94,9 @@ impl Default for FmSynth {
         for (i, _) in waves.iter().enumerate(){
             parameters.push(Box::new(WaveVolumeParameter::new(&waves, i)));
             parameters.push(Box::new(WaveRatioParameter::new(&waves, i)));
-            // parameters.push(Box::new(WaveFeedbackParameter::new(&waves, i)));
             parameters.push(Box::new(WaveFrequencyFreeParameter::new(&waves, i)));
             parameters.push(Box::new(WaveBetaParameter::new(&waves, i)));
+            // parameters.push(Box::new(WaveFeedbackParameter::new(&waves, i)));
         }
 
         let external = AutomatableState {

@@ -1,14 +1,19 @@
+extern crate vst;
+extern crate smallvec;
+
 use vst::api::{Supported, Events};
 use vst::buffer::AudioBuffer;
 use vst::event::Event;
 use vst::plugin::{Category, Plugin, Info, CanDo};
 use vst::plugin_main;
 
-
-pub mod audio;
+pub mod constants;
+pub mod parameters;
+pub mod synth;
 pub mod utils;
+pub mod waves;
 
-pub use audio::*;
+pub use synth::*;
 
 
 plugin_main!(FmSynthPlugin);
