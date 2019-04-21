@@ -9,14 +9,9 @@ name = "fm"
 crate-type = ["cdylib"]
 
 [dependencies]
-asprim = "0.1"
-num-traits = "0.1"
-
+dirs = "1"
 log = "0.3"
-log-panics = "1.1"
+log-panics = "2"
 simplelog = "0.4"
-
 smallvec = "0.6"
-
 vst = "^0.0"
-# easyvst = { git = "https://github.com/Boscop/easyvst.git" }

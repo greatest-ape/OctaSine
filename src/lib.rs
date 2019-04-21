@@ -1,5 +1,9 @@
-extern crate vst;
+extern crate dirs;
+#[macro_use] extern crate log;
+extern crate log_panics;
+extern crate simplelog;
 extern crate smallvec;
+extern crate vst;
 
 use vst::api::{Supported, Events};
 use vst::buffer::AudioBuffer;
@@ -72,6 +76,28 @@ impl Plugin for FmSynthPlugin {
             _ => Supported::Maybe,
         }
     }
+
+	fn init(&mut self) {
+        let log_folder = dirs::home_dir().unwrap().join("tmp");
+
+        let _ = ::std::fs::create_dir(log_folder.clone());
+
+		let log_file = ::std::fs::File::create(
+            log_folder.join("rust-vst.log")
+        ).unwrap();
+
+		let _ = simplelog::CombinedLogger::init(vec![
+            simplelog::WriteLogger::new(
+                simplelog::LogLevelFilter::Info,
+                simplelog::Config::default(),
+                log_file
+            )
+        ]);
+
+        log_panics::init();
+
+		info!("init");
+	}
 
     /// Parameter plumbing
 
