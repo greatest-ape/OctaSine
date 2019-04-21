@@ -60,7 +60,7 @@ pub struct WaveRatio(pub f64);
 
 impl WaveRatio {
     pub fn from_host_value(&self, value: f64) -> f64 {
-        map_host_param_value_to_step_smooth(&WAVE_RATIO_STEPS[..], value)
+        map_host_param_value_to_step(&WAVE_RATIO_STEPS[..], value)
     }
     pub fn get_default_host_value(&self) -> f64 {
         get_host_value_for_default_step(&WAVE_RATIO_STEPS[..], 1.0)
