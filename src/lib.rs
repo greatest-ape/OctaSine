@@ -8,7 +8,7 @@ extern crate vst;
 use vst::api::{Supported, Events};
 use vst::buffer::AudioBuffer;
 use vst::event::Event;
-use vst::plugin::{Category, Plugin, Info, CanDo};
+use vst::plugin::{Category, Plugin, Info, CanDo, HostCallback};
 use vst::plugin_main;
 
 pub mod constants;
@@ -30,12 +30,17 @@ pub struct FmSynthPlugin {
 impl Default for FmSynthPlugin {
     fn default() -> Self {
         Self {
-            synth: FmSynth::default(),
+            synth: FmSynth::new(HostCallback::default()),
         }
     }
 }
 
 impl Plugin for FmSynthPlugin {
+    fn new(host: HostCallback) -> Self {
+        Self {
+            synth: FmSynth::new(host),
+        }
+    }
     fn get_info(&self) -> Info {
         Info {
             name: "FM".to_string(),
@@ -72,7 +77,7 @@ impl Plugin for FmSynthPlugin {
 
     fn can_do(&self, can_do: CanDo) -> Supported {
         match can_do {
-            CanDo::ReceiveMidiEvent => Supported::Yes,
+            CanDo::ReceiveMidiEvent | CanDo::ReceiveTimeInfo | CanDo::SendEvents | CanDo::ReceiveEvents => Supported::Yes,
             _ => Supported::Maybe,
         }
     }
@@ -97,6 +102,8 @@ impl Plugin for FmSynthPlugin {
         log_panics::init();
 
 		info!("init");
+
+        self.synth.init();
 	}
 
     /// Parameter plumbing

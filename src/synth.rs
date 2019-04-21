@@ -1,5 +1,8 @@
 use smallvec::{SmallVec, smallvec};
+
 use vst::buffer::AudioBuffer;
+use vst::host::Host;
+use vst::plugin::HostCallback;
 
 use crate::constants::*;
 use crate::parameters::*;
@@ -18,6 +21,9 @@ pub struct MasterFrequency(pub f64);
 
 #[derive(Debug, Copy, Clone)]
 pub struct SampleRate(pub f64);
+
+#[derive(Debug, Copy, Clone)]
+pub struct BeatsPerMinute(pub f64);
 
 #[derive(Debug, Copy, Clone)]
 pub struct NoteDuration(pub f64);
@@ -61,6 +67,7 @@ pub struct InternalState {
     pub global_time: GlobalTime,
     pub sample_rate: SampleRate,
     pub parameters: Parameters,
+    pub bpm: BeatsPerMinute,
 }
 
 
@@ -79,10 +86,11 @@ pub struct AutomatableState {
 pub struct FmSynth {
     internal: InternalState,
     automatable: AutomatableState,
+    host: HostCallback,
 }
 
-impl Default for FmSynth {
-    fn default() -> Self {
+impl FmSynth {
+    pub fn new(host: HostCallback) -> Self {
         let mut waves = smallvec![];
 
         for _ in 0..NUM_WAVES {
@@ -109,18 +117,30 @@ impl Default for FmSynth {
             global_time: GlobalTime(0.0),
             sample_rate: SampleRate(44100.0),
             parameters: parameters,
+            bpm: BeatsPerMinute(120.0),
         };
 
         Self {
             internal: internal,
             automatable: external,
+            host: host,
         }
     }
-}
 
-impl FmSynth {
+    pub fn init(&mut self){
+        self.request_bpm();
+    }
+
     pub fn set_sample_rate(&mut self, rate: SampleRate) {
         self.internal.sample_rate = rate;
+    }
+
+    fn request_bpm(&mut self){
+        // Use TEMPO_VALID constant content as mask directly because
+        // of problems with using TimeInfoFlags
+        if let Some(time_info) = self.host.get_time_info(1 << 10) {
+            self.internal.bpm = BeatsPerMinute(time_info.tempo);
+        }
     }
 
     fn time_per_sample(&self) -> f64 {
@@ -217,7 +237,9 @@ impl FmSynth {
         match data[0] {
             128 => self.note_off(data[1]),
             144 => self.note_on(data[1]),
-            _ => (),
+            m => {
+                info!("got midi message {}", m);
+            }
         }
     }
 
