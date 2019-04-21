@@ -50,6 +50,9 @@ impl WaveVolume {
     pub fn from_host_value(&self, value: f64) -> f64 {
         value * 2.0
     }
+    pub fn get_default_host_value(&self) -> f64 {
+        WAVE_DEFAULT_VOLUME / 2.0
+    }
 }
 
 #[derive(Debug, Copy, Clone)]
@@ -58,6 +61,9 @@ pub struct WaveRatio(pub f64);
 impl WaveRatio {
     pub fn from_host_value(&self, value: f64) -> f64 {
         map_host_param_value_to_step_smooth(&WAVE_RATIO_STEPS[..], value)
+    }
+    pub fn get_default_host_value(&self) -> f64 {
+        get_host_value_for_default_step(&WAVE_RATIO_STEPS[..], 1.0)
     }
 }
 
@@ -68,6 +74,9 @@ impl WaveFrequencyFree {
     pub fn from_host_value(&self, value: f64) -> f64 {
         (value + 0.5).powf(3.0)
     }
+    pub fn get_default_host_value(&self) -> f64 {
+        0.5
+    }
 }
 
 #[derive(Debug, Copy, Clone)]
@@ -77,6 +86,9 @@ impl WaveFeedback {
     pub fn from_host_value(&self, value: f64) -> f64 {
         value * 5.0
     }
+    pub fn get_default_host_value(&self) -> f64 {
+        WAVE_DEFAULT_FEEDBACK / 5.0
+    }
 }
 
 #[derive(Debug, Copy, Clone)]
@@ -85,6 +97,9 @@ pub struct WaveBeta(pub f64);
 impl WaveBeta {
     pub fn from_host_value(&self, value: f64) -> f64 {
         map_host_param_value_to_step_smooth(&WAVE_BETA_STEPS[..], value)
+    }
+    pub fn get_default_host_value(&self) -> f64 {
+        get_host_value_for_default_step(&WAVE_BETA_STEPS[..], WAVE_DEFAULT_BETA)
     }
 }
 
@@ -163,10 +178,16 @@ pub trait Parameter {
 macro_rules! derive_wave_field_parameter {
     ($parameter_struct:ident, $field:ident, $field_name:expr) => {
         impl $parameter_struct {
-            fn get_wave_index(&self) -> usize {
+            pub fn get_wave_index(&self) -> usize {
                 self.wave_index
             }
 
+            pub fn new(waves: &Waves, wave_index: usize) -> Self {
+                Self {
+                    wave_index: wave_index,
+                    host_value: waves[wave_index].$field.get_default_host_value(),
+                }
+            }
         }
         impl Parameter for $parameter_struct {
             fn get_name(&self, _: &AutomatableState) -> String {
@@ -280,26 +301,11 @@ impl Default for FmSynth {
         let mut parameters: Vec<Box<Parameter>> = Vec::new();
 
         for (i, _) in waves.iter().enumerate(){
-            parameters.push(Box::new(WaveVolumeParameter {
-                wave_index: i,
-                host_value: 0.5,
-            }));
-            parameters.push(Box::new(WaveRatioParameter {
-                wave_index: i,
-                host_value: get_host_value_for_default_step(&WAVE_RATIO_STEPS[..], 1.0),
-            }));
-            // parameters.push(Box::new(WaveFeedbackParameter {
-            //     wave_index: i,
-            //     host_value: 0.0,
-            // }));
-            parameters.push(Box::new(WaveFrequencyFreeParameter {
-                wave_index: i,
-                host_value: 0.5,
-            }));
-            parameters.push(Box::new(WaveBetaParameter {
-                wave_index: i,
-                host_value: get_host_value_for_default_step(&WAVE_BETA_STEPS[..], 1.0),
-            }));
+            parameters.push(Box::new(WaveVolumeParameter::new(&waves, i)));
+            parameters.push(Box::new(WaveRatioParameter::new(&waves, i)));
+            // parameters.push(Box::new(WaveFeedbackParameter::new(&waves, i)));
+            parameters.push(Box::new(WaveFrequencyFreeParameter::new(&waves, i)));
+            parameters.push(Box::new(WaveBetaParameter::new(&waves, i)));
         }
 
         let external = AutomatableState {
