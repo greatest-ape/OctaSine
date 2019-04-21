@@ -95,10 +95,9 @@ pub struct WaveBetaParameter {
 derive_wave_field_parameter!(WaveBetaParameter, beta, "beta");
 
 
-/// Frequency modulation index
-pub struct WaveVolumeParameter {
+pub struct WaveMixParameter {
     wave_index: usize,
     host_value: f64,
 }
 
-derive_wave_field_parameter!(WaveVolumeParameter, volume, "volume");
+derive_wave_field_parameter!(WaveMixParameter, mix, "mix");
