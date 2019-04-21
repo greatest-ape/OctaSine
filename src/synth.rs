@@ -41,17 +41,64 @@ impl MidiPitch {
 }
 
 
+#[derive(Debug, Copy, Clone)]
+pub enum EnvelopeStage {
+    Attack,
+    Sustain,
+    After,
+}
+
+
+#[derive(Debug, Copy, Clone)]
+pub struct NoteWaveVolumeEnvelope {
+    stage: EnvelopeStage,
+}
+
+impl Default for NoteWaveVolumeEnvelope {
+    fn default() -> Self {
+        Self {
+            stage: EnvelopeStage::Attack,
+        }
+    }
+}
+
+
+#[derive(Debug, Copy, Clone)]
+pub struct NoteWave {
+    volume_envelope: NoteWaveVolumeEnvelope,
+}
+
+impl Default for NoteWave {
+    fn default() -> Self {
+        Self {
+            volume_envelope: NoteWaveVolumeEnvelope::default(),
+        }
+    }
+}
+
+
+pub type NoteWaves = SmallVec<[NoteWave; NUM_WAVES]>;
+
+
 #[derive(Debug, Clone)]
 pub struct Note {
     duration: NoteDuration,
     midi_pitch: MidiPitch,
+    waves: NoteWaves,
 }
 
 impl Note {
     pub fn new(midi_pitch: MidiPitch) -> Self {
+        let mut waves = SmallVec::new();
+
+        for _ in 0..NUM_WAVES {
+            waves.push(NoteWave::default());
+        }
+
         Self {
             midi_pitch: midi_pitch,
             duration: NoteDuration(0.0),
+            waves: waves,
         }
     }
 }
@@ -105,6 +152,7 @@ impl FmSynth {
             parameters.push(Box::new(WaveFrequencyFreeParameter::new(&waves, i)));
             parameters.push(Box::new(WaveBetaParameter::new(&waves, i)));
             // parameters.push(Box::new(WaveFeedbackParameter::new(&waves, i)));
+            parameters.push(Box::new(WaveVolumeEnvelopeAttackDurationParameter::new(&waves, i)));
         }
 
         let external = AutomatableState {
@@ -165,7 +213,7 @@ impl FmSynth {
         let base_frequency = note.midi_pitch.get_frequency(master_frequency);
         let mut signal = 0.0;
 
-        for wave in (waves.iter_mut()).rev() {
+        for (wave_index, wave) in (waves.iter_mut().enumerate()).rev() {
             let p = time.0 * base_frequency * wave.ratio.0 * wave.frequency_free.0;
 
             // Calculate attack to use to try to prevent popping
@@ -184,6 +232,33 @@ impl FmSynth {
                 (new + wave.feedback.0 * new_feedback + wave.beta.0 * signal).sin()
             };
 
+            // Volume envelope
+            let new_signal = new_signal * {
+                let wave_envelope = wave.volume_envelope;
+                let note_envelope = &mut note.waves[wave_index].volume_envelope;
+
+                let volume = match note_envelope.stage {
+                    EnvelopeStage::Attack => {
+                        if note.duration.0 < wave_envelope.attack_duration.0 {
+                            (note.duration.0 / wave_envelope.attack_duration.0) * wave_envelope.attack_end_value
+                        }
+                        else {
+                            note_envelope.stage = EnvelopeStage::Sustain;
+
+                            wave_envelope.attack_end_value
+                        }
+                    },
+                    EnvelopeStage::Sustain => {
+                        wave_envelope.attack_end_value
+                    },
+                    EnvelopeStage::After => {
+                        0.0
+                    },
+                };
+
+                volume
+            };
+
             // Calculate mix between old and new signal
             let mix = {
                 let old_signal_mix = signal * (1.0 - wave.mix.0);
@@ -196,7 +271,7 @@ impl FmSynth {
         }
 
         // Apply a quick envelope to the attack of the signal to avoid popping.
-        let attack = 0.5;
+        let attack = 0.01;
         let alpha = if note.duration.0 < attack {
             note.duration.0 / attack
         } else {
