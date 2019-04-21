@@ -52,12 +52,56 @@ pub enum EnvelopeStage {
 #[derive(Debug, Copy, Clone)]
 pub struct NoteWaveVolumeEnvelope {
     stage: EnvelopeStage,
+    duration_at_state_change: f64,
+}
+
+impl NoteWaveVolumeEnvelope {
+
+    /// Calculate volume and possibly advance envelope stage
+    pub fn calculate_volume(
+        &mut self,
+        note_duration: NoteDuration,
+        wave_envelope: &WaveVolumeEnvelope
+    ) -> f64 {
+        let effective_duration = note_duration.0 - self.duration_at_state_change;
+
+        let (stage_duration, stage_end_value, previous_end_value) = match self.stage {
+            EnvelopeStage::Attack => (
+                wave_envelope.attack_duration.0,
+                wave_envelope.attack_end_value,
+                0.0
+            ),
+            EnvelopeStage::Sustain => (
+                wave_envelope.sustain_duration.0,
+                wave_envelope.sustain_end_value,
+                wave_envelope.attack_end_value,
+            ),
+            EnvelopeStage::After => (0.0, 0.0, 0.0),
+        };
+
+        if note_duration.0 < wave_envelope.get_duration_sum(self.stage) {
+            previous_end_value + (effective_duration / stage_duration) * (stage_end_value - previous_end_value)
+        }
+        else {
+            // Maybe advance stage
+            match self.stage {
+                EnvelopeStage::Attack => {
+                    self.stage = EnvelopeStage::Sustain;
+                },
+                _ => ()
+            }
+            self.duration_at_state_change = note_duration.0;
+
+            stage_end_value
+        }
+    }
 }
 
 impl Default for NoteWaveVolumeEnvelope {
     fn default() -> Self {
         Self {
             stage: EnvelopeStage::Attack,
+            duration_at_state_change: 0.0,
         }
     }
 }
@@ -234,29 +278,9 @@ impl FmSynth {
 
             // Volume envelope
             let new_signal = new_signal * {
-                let wave_envelope = wave.volume_envelope;
                 let note_envelope = &mut note.waves[wave_index].volume_envelope;
 
-                let volume = match note_envelope.stage {
-                    EnvelopeStage::Attack => {
-                        if note.duration.0 < wave_envelope.attack_duration.0 {
-                            (note.duration.0 / wave_envelope.attack_duration.0) * wave_envelope.attack_end_value
-                        }
-                        else {
-                            note_envelope.stage = EnvelopeStage::Sustain;
-
-                            wave_envelope.attack_end_value
-                        }
-                    },
-                    EnvelopeStage::Sustain => {
-                        wave_envelope.attack_end_value
-                    },
-                    EnvelopeStage::After => {
-                        0.0
-                    },
-                };
-
-                volume
+                note_envelope.calculate_volume(note.duration, &wave.volume_envelope)
             };
 
             // Calculate mix between old and new signal

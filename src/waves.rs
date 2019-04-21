@@ -1,4 +1,5 @@
 use crate::constants::*;
+use crate::synth::EnvelopeStage;
 use crate::utils::*;
 
 
@@ -84,9 +85,38 @@ impl VolumeEnvelopeAttackDuration {
 
 
 #[derive(Debug, Copy, Clone)]
+pub struct VolumeEnvelopeSustainDuration(pub f64);
+
+impl VolumeEnvelopeSustainDuration {
+    pub fn new() -> Self {
+        Self(WAVE_DEFAULT_VOLUME_ENVELOPE_ATTACK_DURATION) // TODO change constant
+    }
+
+    pub fn from_host_value(&self, value: f64) -> f64 {
+        value
+    }
+    pub fn get_default_host_value(&self) -> f64 {
+        WAVE_DEFAULT_VOLUME_ENVELOPE_ATTACK_DURATION // TODO
+    }
+}
+
+
+#[derive(Debug, Copy, Clone)]
 pub struct WaveVolumeEnvelope {
     pub attack_duration: VolumeEnvelopeAttackDuration,
     pub attack_end_value: f64,
+    pub sustain_duration: VolumeEnvelopeSustainDuration,
+    pub sustain_end_value: f64,
+}
+
+impl WaveVolumeEnvelope {
+    pub fn get_duration_sum(&self, stage: EnvelopeStage) -> f64 {
+        match stage {
+            EnvelopeStage::Attack => self.attack_duration.0,
+            EnvelopeStage::Sustain => self.sustain_duration.0 + self.get_duration_sum(EnvelopeStage::Attack),
+            EnvelopeStage::After => 0.0 + self.get_duration_sum(EnvelopeStage::Sustain),
+        }
+    }
 }
 
 impl Default for WaveVolumeEnvelope {
@@ -94,6 +124,8 @@ impl Default for WaveVolumeEnvelope {
         Self {
             attack_duration: VolumeEnvelopeAttackDuration::new(),
             attack_end_value: 1.0,
+            sustain_duration: VolumeEnvelopeSustainDuration::new(),
+            sustain_end_value: 1.0,
         }
     }
 }
