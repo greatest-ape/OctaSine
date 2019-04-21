@@ -168,7 +168,7 @@ impl FmSynth {
         for wave in (waves.iter_mut()).rev() {
             let p = time.0 * base_frequency * wave.ratio.0 * wave.frequency_free.0;
 
-            // Try to prevent popping by slowly adding the signal
+            // Calculate attack to use to try to prevent popping
             let attack = 0.0002;
             let alpha = if wave.duration.0 < attack {
                 wave.duration.0 / attack
@@ -176,10 +176,23 @@ impl FmSynth {
                 1.0
             };
 
-            let new = alpha * p * TAU;
-            let feedback = wave.feedback.0 * new.sin();
+            // New signal generation for sine FM
+            let new_signal = {
+                let new = alpha * p * TAU;
+                let new_feedback = new.sin();
 
-            signal = signal * (1.0 - wave.volume.0) + wave.volume.0 * (new + wave.beta.0 * signal + feedback).sin();
+                (new + wave.feedback.0 * new_feedback + wave.beta.0 * signal).sin()
+            };
+
+            // Calculate mix between old and new signal
+            let mix = {
+                let old_signal_mix = signal * (1.0 - wave.volume.0);
+                let new_signal_mix = wave.volume.0 * new_signal;
+
+                old_signal_mix + new_signal_mix
+            };
+
+            signal = mix;
         }
 
         // Apply a quick envelope to the attack of the signal to avoid popping.
