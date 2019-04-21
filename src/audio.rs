@@ -42,20 +42,51 @@ pub struct NoteDuration(pub f64);
 #[derive(Debug, Copy, Clone)]
 pub struct WaveDuration(pub f64);
 
+
 #[derive(Debug, Copy, Clone)]
 pub struct WaveVolume(pub f64);
+
+impl WaveVolume {
+    pub fn from_host_value(&self, value: f64) -> f64 {
+        value * 2.0
+    }
+}
 
 #[derive(Debug, Copy, Clone)]
 pub struct WaveRatio(pub f64);
 
+impl WaveRatio {
+    pub fn from_host_value(&self, value: f64) -> f64 {
+        map_host_param_value_to_step_smooth(&WAVE_RATIO_STEPS[..], value)
+    }
+}
+
 #[derive(Debug, Copy, Clone)]
 pub struct WaveFrequencyFree(pub f64);
+
+impl WaveFrequencyFree {
+    pub fn from_host_value(&self, value: f64) -> f64 {
+        (value + 0.5).powf(3.0)
+    }
+}
 
 #[derive(Debug, Copy, Clone)]
 pub struct WaveFeedback(pub f64);
 
+impl WaveFeedback {
+    pub fn from_host_value(&self, value: f64) -> f64 {
+        value * 5.0
+    }
+}
+
 #[derive(Debug, Copy, Clone)]
 pub struct WaveBeta(pub f64);
+
+impl WaveBeta {
+    pub fn from_host_value(&self, value: f64) -> f64 {
+        map_host_param_value_to_step_smooth(&WAVE_BETA_STEPS[..], value)
+    }
+}
 
 
 #[derive(Debug, Copy, Clone)]
@@ -128,36 +159,40 @@ pub trait Parameter {
 }
 
 
-/// Trait to be auto-derived in parameter structs using not yet existing macro
-pub trait WaveFieldParameter: Parameter {
+#[macro_export]
+macro_rules! derive_wave_field_parameter {
+    ($parameter_struct:ident, $field:ident, $field_name:expr) => {
+        impl $parameter_struct {
+            fn get_wave_index(&self) -> usize {
+                self.wave_index
+            }
 
-    /// Functions to implement on struct
+        }
+        impl Parameter for $parameter_struct {
+            fn get_name(&self, _: &AutomatableState) -> String {
+                format!("Wave {} {}", self.wave_index + 1, $field_name)
+            }
 
-    fn transform_host_value(&self, value: f64) -> f64;
-    fn get_wave_index(&self) -> usize;
+            fn get_value_float(&self, _: &AutomatableState) -> f64 {
+                self.host_value
+            }
+            fn get_value_text(&self, state: &AutomatableState) -> String {
+                format!("{:.2}", state.waves[self.get_wave_index()].$field.0)
+            }
 
-    fn get_host_value(&self) -> f64;
-    fn set_host_value(&self, value: f64);
+            fn set_value_float(&mut self, state: &mut AutomatableState, value: f64) {
+                let transformed = state.waves[
+                    self.get_wave_index()
+                ].$field.from_host_value(value);
 
-    fn get_wave_field_value(&self, state: &AutomatableState) -> f64;
-    fn set_wave_field_value(&mut self, state: &mut AutomatableState, value: f64);
+                state.waves[self.get_wave_index()].$field.0 = transformed;
 
-    /// Automatic Parameter trait implementation
+                state.waves[self.get_wave_index()].duration.0 = 0.0;
 
-    fn get_value_float(&self, _: &AutomatableState) -> f64 {
-        self.get_host_value()
-    }
-    fn get_value_text(&self, state: &AutomatableState) -> String {
-        format!("{:.2}", self.get_wave_field_value(state))
-    }
-
-    fn set_value_float(&mut self, state: &mut AutomatableState, value: f64) {
-        self.set_wave_field_value(state, self.transform_host_value(value));
-
-        state.waves[self.get_wave_index()].duration.0 = 0.0;
-
-        self.set_host_value(value);
-    }
+                self.host_value = value;
+            }
+        }
+    };  
 }
 
 
@@ -166,28 +201,7 @@ pub struct WaveRatioParameter {
     host_value: f64,
 }
 
-
-impl Parameter for WaveRatioParameter {
-    fn get_name(&self, _: &AutomatableState) -> String {
-        format!("Wave {} ratio", self.wave_index + 1)
-    }
-
-    fn get_value_float(&self, _: &AutomatableState) -> f64 {
-        self.host_value
-    }
-
-    fn set_value_float(&mut self, state: &mut AutomatableState, value: f64) {
-        let step = map_host_param_value_to_step(&WAVE_RATIO_STEPS[..], value);
-        state.waves[self.wave_index].ratio.0 = step;
-
-        state.waves[self.wave_index].duration.0 = 0.0;
-        self.host_value = value
-    }
-
-    fn get_value_text(&self, state: &AutomatableState) -> String {
-        format!("{:.2}", state.waves[self.wave_index].ratio.0)
-    }
-}
+derive_wave_field_parameter!(WaveRatioParameter, ratio, "ratio");
 
 
 pub struct WaveFrequencyFreeParameter {
@@ -195,26 +209,7 @@ pub struct WaveFrequencyFreeParameter {
     host_value: f64,
 }
 
-
-impl Parameter for WaveFrequencyFreeParameter {
-    fn get_name(&self, _: &AutomatableState) -> String {
-        format!("Wave {} free", self.wave_index + 1)
-    }
-
-    fn get_value_float(&self, _: &AutomatableState) -> f64 {
-        self.host_value
-    }
-
-    fn set_value_float(&mut self, state: &mut AutomatableState, value: f64) {
-        state.waves[self.wave_index].frequency_free.0 = (value + 0.5).powf(3.0);
-        state.waves[self.wave_index].duration.0 = 0.0;
-        self.host_value = value
-    }
-
-    fn get_value_text(&self, state: &AutomatableState) -> String {
-        format!("{:.2}", state.waves[self.wave_index].frequency_free.0)
-    }
-}
+derive_wave_field_parameter!(WaveFrequencyFreeParameter, frequency_free, "free");
 
 
 pub struct WaveFeedbackParameter {
@@ -222,26 +217,7 @@ pub struct WaveFeedbackParameter {
     host_value: f64,
 }
 
-
-impl Parameter for WaveFeedbackParameter {
-    fn get_name(&self, _: &AutomatableState) -> String {
-        format!("Wave {} feedback", self.wave_index + 1)
-    }
-
-    fn get_value_float(&self, _: &AutomatableState) -> f64 {
-        self.host_value
-    }
-
-    fn set_value_float(&mut self, state: &mut AutomatableState, value: f64) {
-        state.waves[self.wave_index].feedback.0 = value * 5.0;
-        state.waves[self.wave_index].duration.0 = 0.0;
-        self.host_value = value
-    }
-
-    fn get_value_text(&self, state: &AutomatableState) -> String {
-        format!("{:.2}", state.waves[self.wave_index].feedback.0)
-    }
-}
+derive_wave_field_parameter!(WaveFeedbackParameter, feedback, "feedback");
 
 
 /// Frequency modulation index
@@ -250,28 +226,7 @@ pub struct WaveBetaParameter {
     host_value: f64,
 }
 
-
-impl Parameter for WaveBetaParameter {
-    fn get_name(&self, _: &AutomatableState) -> String {
-        format!("Wave {} beta", self.wave_index + 1)
-    }
-
-    fn get_value_float(&self, _: &AutomatableState) -> f64 {
-        self.host_value
-    }
-
-    fn set_value_float(&mut self, state: &mut AutomatableState, value: f64) {
-        let step = map_host_param_value_to_step_smooth(&WAVE_BETA_STEPS[..], value);
-        state.waves[self.wave_index].beta.0 = step;
-
-        state.waves[self.wave_index].duration.0 = 0.0;
-        self.host_value = value
-    }
-
-    fn get_value_text(&self, state: &AutomatableState) -> String {
-        format!("{:.2}", state.waves[self.wave_index].beta.0)
-    }
-}
+derive_wave_field_parameter!(WaveBetaParameter, beta, "beta");
 
 
 /// Frequency modulation index
@@ -280,26 +235,8 @@ pub struct WaveVolumeParameter {
     host_value: f64,
 }
 
+derive_wave_field_parameter!(WaveVolumeParameter, volume, "volume");
 
-impl Parameter for WaveVolumeParameter {
-    fn get_name(&self, _: &AutomatableState) -> String {
-        format!("Wave {} volume", self.wave_index + 1)
-    }
-
-    fn get_value_float(&self, _: &AutomatableState) -> f64 {
-        self.host_value
-    }
-
-    fn set_value_float(&mut self, state: &mut AutomatableState, value: f64) {
-        state.waves[self.wave_index].volume = WaveVolume(value * 2.0);
-        state.waves[self.wave_index].duration = WaveDuration(0.0);
-        self.host_value = value
-    }
-
-    fn get_value_text(&self, state: &AutomatableState) -> String {
-        format!("{:.2}%", state.waves[self.wave_index].volume.0 * 100.0)
-    }
-}
 
 
 pub type Notes = SmallVec<[Option<Note>; 128]>;
