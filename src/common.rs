@@ -1,0 +1,24 @@
+
+
+/// Number that gets incremented with 1.0 every second
+#[derive(Debug, Copy, Clone)]
+pub struct GlobalTime(pub f64);
+
+#[derive(Debug, Copy, Clone)]
+pub struct NoteTime(pub f64);
+
+#[derive(Debug, Copy, Clone)]
+pub struct MasterFrequency(pub f64);
+
+#[derive(Debug, Copy, Clone)]
+pub struct SampleRate(pub f64);
+
+#[derive(Debug, Copy, Clone)]
+pub struct BeatsPerMinute(pub f64);
+
+#[derive(Debug, Copy, Clone, PartialEq)]
+pub enum EnvelopeStage {
+    Attack,
+    Sustain,
+    Release,
+}

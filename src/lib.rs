@@ -11,13 +11,16 @@ use vst::event::Event;
 use vst::plugin::{Category, Plugin, Info, CanDo, HostCallback};
 use vst::plugin_main;
 
+pub mod common;
 pub mod constants;
+pub mod notes;
 pub mod parameters;
 pub mod synth;
 pub mod utils;
 pub mod waves;
 
-pub use synth::*;
+pub use common::SampleRate;
+pub use synth::FmSynth;
 
 
 plugin_main!(FmSynthPlugin);
