@@ -57,7 +57,7 @@ impl FmSynth {
             parameters.push(Box::new(WaveMixParameter::new(&waves, i)));
             parameters.push(Box::new(WaveRatioParameter::new(&waves, i)));
             parameters.push(Box::new(WaveFrequencyFreeParameter::new(&waves, i)));
-            parameters.push(Box::new(WaveBetaParameter::new(&waves, i)));
+            parameters.push(Box::new(WaveModulationIndexParameter::new(&waves, i)));
             parameters.push(Box::new(WaveFeedbackParameter::new(&waves, i)));
             parameters.push(Box::new(WaveVolumeEnvelopeAttackDurationParameter::new(&waves, i)));
             parameters.push(Box::new(WaveVolumeEnvelopeAttackValueParameter::new(&waves, i)));
@@ -145,7 +145,7 @@ impl FmSynth {
                 let new = alpha * p * TAU;
                 let new_feedback = new.sin();
 
-                (new + wave.feedback.0 * new_feedback + wave.beta.0 * signal).sin()
+                (new + wave.feedback.0 * new_feedback + wave.modulation_index.0 * signal).sin()
             };
 
             // Volume envelope

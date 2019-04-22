@@ -55,14 +55,14 @@ impl WaveFeedback {
 }
 
 #[derive(Debug, Copy, Clone)]
-pub struct WaveBeta(pub f64);
+pub struct WaveModulationIndex(pub f64);
 
-impl WaveBeta {
+impl WaveModulationIndex {
     pub fn from_host_value(&self, value: f64) -> f64 {
         map_host_param_value_to_step_smooth(&WAVE_BETA_STEPS[..], value)
     }
     pub fn get_default_host_value(&self) -> f64 {
-        get_host_value_for_default_step(&WAVE_BETA_STEPS[..], WAVE_DEFAULT_BETA)
+        get_host_value_for_default_step(&WAVE_BETA_STEPS[..], WAVE_DEFAULT_MODULATION_INDEX)
     }
 }
 
@@ -142,7 +142,7 @@ pub struct Wave {
     pub ratio: WaveRatio,
     pub frequency_free: WaveFrequencyFree,
     pub feedback: WaveFeedback,
-    pub beta: WaveBeta,
+    pub modulation_index: WaveModulationIndex,
     pub volume_envelope: WaveVolumeEnvelope,
 }
 
@@ -154,7 +154,7 @@ impl Default for Wave {
             ratio: WaveRatio(WAVE_DEFAULT_RATIO),
             frequency_free: WaveFrequencyFree(WAVE_DEFAULT_FREQUENCY_FREE),
             feedback: WaveFeedback(WAVE_DEFAULT_FEEDBACK),
-            beta: WaveBeta(WAVE_DEFAULT_BETA),
+            modulation_index: WaveModulationIndex(WAVE_DEFAULT_MODULATION_INDEX),
             volume_envelope: WaveVolumeEnvelope::default(),
         }
     }
