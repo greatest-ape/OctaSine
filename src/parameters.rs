@@ -115,7 +115,7 @@ pub struct WaveRatioParameter {
     host_value: f64,
 }
 
-derive_wave_field_parameter!(WaveRatioParameter, ratio, "ratio");
+derive_wave_field_parameter!(WaveRatioParameter, ratio, "freq ratio");
 
 
 pub struct WaveFrequencyFreeParameter {
@@ -123,7 +123,7 @@ pub struct WaveFrequencyFreeParameter {
     host_value: f64,
 }
 
-derive_wave_field_parameter!(WaveFrequencyFreeParameter, frequency_free, "free");
+derive_wave_field_parameter!(WaveFrequencyFreeParameter, frequency_free, "freq free");
 
 
 pub struct WaveFeedbackParameter {
