@@ -53,6 +53,7 @@ pub enum EnvelopeStage {
 pub struct NoteWaveVolumeEnvelope {
     stage: EnvelopeStage,
     duration_at_state_change: f64,
+    pre_state_change_volume: f64,
     last_volume: f64,
 }
 
@@ -93,7 +94,7 @@ impl NoteWaveVolumeEnvelope {
             },
             EnvelopeStage::Release => {
                 if effective_duration < wave_envelope.release_duration.0 {
-                    wave_envelope.attack_end_value - ((effective_duration / wave_envelope.release_duration.0) * wave_envelope.attack_end_value)
+                    ((1.0 - (effective_duration / wave_envelope.release_duration.0)) * self.pre_state_change_volume)
                 }
                 else {
                     self.change_stage(EnvelopeStage::Attack, NoteDuration(0.0));
@@ -113,6 +114,7 @@ impl NoteWaveVolumeEnvelope {
     pub fn change_stage(&mut self, new_stage: EnvelopeStage, note_duration: NoteDuration){
         self.stage = new_stage;
         self.duration_at_state_change = note_duration.0;
+        self.pre_state_change_volume = self.last_volume;
     }
 }
 
@@ -121,6 +123,7 @@ impl Default for NoteWaveVolumeEnvelope {
         Self {
             stage: EnvelopeStage::Attack,
             duration_at_state_change: 0.0,
+            pre_state_change_volume: 0.0,
             last_volume: 0.0
         }
     }
