@@ -35,7 +35,6 @@ impl NoteWaveVolumeEnvelope {
     pub fn calculate_volume(
         &mut self,
         wave_envelope: &WaveVolumeEnvelope,
-        note_active: &mut bool,
         note_pressed: bool,
         note_duration: NoteDuration,
     ) -> f64 {
@@ -52,9 +51,25 @@ impl NoteWaveVolumeEnvelope {
                     (effective_duration / wave_envelope.attack_duration.0) * wave_envelope.attack_end_value.0
                 }
                 else {
-                    self.change_stage(EnvelopeStage::Sustain, note_duration);
+                    self.change_stage(EnvelopeStage::Decay, note_duration);
 
                     wave_envelope.attack_end_value.0
+                }
+            },
+            EnvelopeStage::Decay => {
+                if !note_pressed {
+                    self.change_stage(EnvelopeStage::Release, note_duration);
+
+                    self.last_volume
+                }
+                else if effective_duration < wave_envelope.decay_duration.0 {
+                    self.pre_state_change_volume + ((effective_duration / wave_envelope.decay_duration.0) *
+                        (wave_envelope.decay_end_value.0 - self.pre_state_change_volume))
+                }
+                else {
+                    self.change_stage(EnvelopeStage::Sustain, note_duration);
+
+                    wave_envelope.decay_end_value.0
                 }
             },
             EnvelopeStage::Sustain => {
@@ -62,20 +77,21 @@ impl NoteWaveVolumeEnvelope {
                     self.change_stage(EnvelopeStage::Release, note_duration);
                 }
 
-                wave_envelope.attack_end_value.0
+                wave_envelope.decay_end_value.0
             },
             EnvelopeStage::Release => {
                 if effective_duration < wave_envelope.release_duration.0 {
                     ((1.0 - (effective_duration / wave_envelope.release_duration.0)) * self.pre_state_change_volume)
                 }
                 else {
-                    self.change_stage(EnvelopeStage::Attack, NoteDuration(0.0));
-
-                    *note_active = false;
+                    self.change_stage(EnvelopeStage::Ended, NoteDuration(0.0));
 
                     0.0
                 }
             },
+            EnvelopeStage::Ended => {
+                0.0
+            }
         };
 
         self.last_volume = volume;
@@ -158,6 +174,16 @@ impl Note {
     pub fn release(&mut self){
         if self.active {
             self.pressed = false;
+        }
+    }
+
+    pub fn deactivate_if_all_waves_finished(&mut self) {
+        let finished = self.waves.iter().all(|note_wave|
+            note_wave.volume_envelope.stage == EnvelopeStage::Ended
+        );
+
+        if finished {
+            self.active = false;
         }
     }
 }

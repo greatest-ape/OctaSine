@@ -61,6 +61,8 @@ impl FmSynth {
             // parameters.push(Box::new(WaveFeedbackParameter::new(&waves, i)));
             parameters.push(Box::new(WaveVolumeEnvelopeAttackDurationParameter::new(&waves, i)));
             parameters.push(Box::new(WaveVolumeEnvelopeAttackValueParameter::new(&waves, i)));
+            parameters.push(Box::new(WaveVolumeEnvelopeDecayDurationParameter::new(&waves, i)));
+            parameters.push(Box::new(WaveVolumeEnvelopeDecayValueParameter::new(&waves, i)));
             parameters.push(Box::new(WaveVolumeEnvelopeReleaseDurationParameter::new(&waves, i)));
         }
 
@@ -154,7 +156,6 @@ impl FmSynth {
 
                 note_envelope.calculate_volume(
                     &wave.volume_envelope,
-                    &mut note.active,
                     note.pressed,
                     note.duration
                 )
@@ -201,6 +202,8 @@ impl FmSynth {
                         note,
                         time,
                     ) as f32;
+
+                    note.deactivate_if_all_waves_finished();
 
                     note.duration.0 += time_per_sample;
 

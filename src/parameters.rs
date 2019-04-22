@@ -177,6 +177,32 @@ derive_wave_envelope_field_parameter!(
 );
 
 
+pub struct WaveVolumeEnvelopeDecayDurationParameter {
+    wave_index: usize,
+    host_value: f64,
+}
+
+derive_wave_envelope_field_parameter!(
+    WaveVolumeEnvelopeDecayDurationParameter,
+    volume_envelope,
+    decay_duration,
+    "env dec dur"
+);
+
+
+pub struct WaveVolumeEnvelopeDecayValueParameter {
+    wave_index: usize,
+    host_value: f64,
+}
+
+derive_wave_envelope_field_parameter!(
+    WaveVolumeEnvelopeDecayValueParameter,
+    volume_envelope,
+    decay_end_value,
+    "env dec vol"
+);
+
+
 pub struct WaveVolumeEnvelopeReleaseDurationParameter {
     wave_index: usize,
     host_value: f64,

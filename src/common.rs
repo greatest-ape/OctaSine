@@ -19,6 +19,8 @@ pub struct BeatsPerMinute(pub f64);
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum EnvelopeStage {
     Attack,
+    Decay,
     Sustain,
     Release,
+    Ended
 }
