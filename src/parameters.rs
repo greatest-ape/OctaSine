@@ -160,7 +160,7 @@ derive_wave_envelope_field_parameter!(
     WaveVolumeEnvelopeAttackDurationParameter,
     volume_envelope,
     attack_duration,
-    "env atk dur"
+    "attack time"
 );
 
 
@@ -173,7 +173,7 @@ derive_wave_envelope_field_parameter!(
     WaveVolumeEnvelopeAttackValueParameter,
     volume_envelope,
     attack_end_value,
-    "env atk vol"
+    "attack vol"
 );
 
 
@@ -186,7 +186,7 @@ derive_wave_envelope_field_parameter!(
     WaveVolumeEnvelopeDecayDurationParameter,
     volume_envelope,
     decay_duration,
-    "env dec dur"
+    "decay time"
 );
 
 
@@ -199,7 +199,7 @@ derive_wave_envelope_field_parameter!(
     WaveVolumeEnvelopeDecayValueParameter,
     volume_envelope,
     decay_end_value,
-    "env dec vol"
+    "decay vol"
 );
 
 
@@ -212,5 +212,5 @@ derive_wave_envelope_field_parameter!(
     WaveVolumeEnvelopeReleaseDurationParameter,
     volume_envelope,
     release_duration,
-    "env rls dur"
+    "release time"
 );
