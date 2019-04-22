@@ -41,11 +41,11 @@ impl MidiPitch {
 }
 
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub enum EnvelopeStage {
     Attack,
     Sustain,
-    After,
+    Release,
 }
 
 
@@ -53,6 +53,7 @@ pub enum EnvelopeStage {
 pub struct NoteWaveVolumeEnvelope {
     stage: EnvelopeStage,
     duration_at_state_change: f64,
+    last_volume: f64,
 }
 
 impl NoteWaveVolumeEnvelope {
@@ -60,40 +61,58 @@ impl NoteWaveVolumeEnvelope {
     /// Calculate volume and possibly advance envelope stage
     pub fn calculate_volume(
         &mut self,
+        wave_envelope: &WaveVolumeEnvelope,
+        note_active: &mut bool,
+        note_pressed: bool,
         note_duration: NoteDuration,
-        wave_envelope: &WaveVolumeEnvelope
     ) -> f64 {
         let effective_duration = note_duration.0 - self.duration_at_state_change;
 
-        let (stage_duration, stage_end_value, previous_end_value) = match self.stage {
-            EnvelopeStage::Attack => (
-                wave_envelope.attack_duration.0,
-                wave_envelope.attack_end_value,
-                0.0
-            ),
-            EnvelopeStage::Sustain => (
-                wave_envelope.sustain_duration.0,
-                wave_envelope.sustain_end_value,
-                wave_envelope.attack_end_value,
-            ),
-            EnvelopeStage::After => (0.0, 0.0, 0.0),
+        let volume = match self.stage {
+            EnvelopeStage::Attack => {
+                if !note_pressed {
+                    self.change_stage(EnvelopeStage::Release, note_duration);
+
+                    self.last_volume
+                }
+                else if effective_duration < wave_envelope.attack_duration.0 {
+                    (effective_duration / wave_envelope.attack_duration.0) * wave_envelope.attack_end_value
+                }
+                else {
+                    self.change_stage(EnvelopeStage::Sustain, note_duration);
+
+                    wave_envelope.attack_end_value
+                }
+            },
+            EnvelopeStage::Sustain => {
+                if !note_pressed {
+                    self.change_stage(EnvelopeStage::Release, note_duration);
+                }
+
+                wave_envelope.attack_end_value
+            },
+            EnvelopeStage::Release => {
+                if effective_duration < wave_envelope.release_duration.0 {
+                    wave_envelope.attack_end_value - ((effective_duration / wave_envelope.release_duration.0) * wave_envelope.attack_end_value)
+                }
+                else {
+                    self.change_stage(EnvelopeStage::Attack, NoteDuration(0.0));
+
+                    *note_active = false;
+
+                    0.0
+                }
+            },
         };
 
-        if note_duration.0 < wave_envelope.get_duration_sum(self.stage) {
-            previous_end_value + (effective_duration / stage_duration) * (stage_end_value - previous_end_value)
-        }
-        else {
-            // Maybe advance stage
-            match self.stage {
-                EnvelopeStage::Attack => {
-                    self.stage = EnvelopeStage::Sustain;
-                },
-                _ => ()
-            }
-            self.duration_at_state_change = note_duration.0;
+        self.last_volume = volume;
 
-            stage_end_value
-        }
+        volume
+    }
+
+    pub fn change_stage(&mut self, new_stage: EnvelopeStage, note_duration: NoteDuration){
+        self.stage = new_stage;
+        self.duration_at_state_change = note_duration.0;
     }
 }
 
@@ -102,6 +121,7 @@ impl Default for NoteWaveVolumeEnvelope {
         Self {
             stage: EnvelopeStage::Attack,
             duration_at_state_change: 0.0,
+            last_volume: 0.0
         }
     }
 }
@@ -126,6 +146,8 @@ pub type NoteWaves = SmallVec<[NoteWave; NUM_WAVES]>;
 
 #[derive(Debug, Clone)]
 pub struct Note {
+    pressed: bool,
+    active: bool,
     duration: NoteDuration,
     midi_pitch: MidiPitch,
     waves: NoteWaves,
@@ -140,15 +162,33 @@ impl Note {
         }
 
         Self {
+            pressed: false,
+            active: false,
             midi_pitch: midi_pitch,
             duration: NoteDuration(0.0),
             waves: waves,
         }
     }
+
+    pub fn press(&mut self){
+        self.pressed = true;
+        self.active = true;
+        self.duration = NoteDuration(0.0);
+
+        for wave in self.waves.iter_mut(){
+            *wave = NoteWave::default();
+        }
+    }
+
+    pub fn release(&mut self){
+        if self.active {
+            self.pressed = false;
+        }
+    }
 }
 
 
-pub type Notes = SmallVec<[Option<Note>; 128]>;
+pub type Notes = SmallVec<[Note; 128]>;
 pub type Waves = SmallVec<[Wave; NUM_WAVES]>;
 pub type Parameters = Vec<Box<Parameter>>;
 
@@ -197,11 +237,18 @@ impl FmSynth {
             parameters.push(Box::new(WaveBetaParameter::new(&waves, i)));
             // parameters.push(Box::new(WaveFeedbackParameter::new(&waves, i)));
             parameters.push(Box::new(WaveVolumeEnvelopeAttackDurationParameter::new(&waves, i)));
+            parameters.push(Box::new(WaveVolumeEnvelopeReleaseDurationParameter::new(&waves, i)));
+        }
+
+        let mut notes = SmallVec::new();
+
+        for i in 0..128 {
+            notes.push(Note::new(MidiPitch(i)));
         }
 
         let external = AutomatableState {
             master_frequency: MasterFrequency(440.0),
-            notes: smallvec![None; 128],
+            notes: notes,
             waves: waves,
         };
 
@@ -257,6 +304,7 @@ impl FmSynth {
         let base_frequency = note.midi_pitch.get_frequency(master_frequency);
         let mut signal = 0.0;
 
+
         for (wave_index, wave) in (waves.iter_mut().enumerate()).rev() {
             let p = time.0 * base_frequency * wave.ratio.0 * wave.frequency_free.0;
 
@@ -280,7 +328,12 @@ impl FmSynth {
             let new_signal = new_signal * {
                 let note_envelope = &mut note.waves[wave_index].volume_envelope;
 
-                note_envelope.calculate_volume(note.duration, &wave.volume_envelope)
+                note_envelope.calculate_volume(
+                    &wave.volume_envelope,
+                    &mut note.active,
+                    note.pressed,
+                    note.duration
+                )
             };
 
             // Calculate mix between old and new signal
@@ -311,33 +364,34 @@ impl FmSynth {
 
         let outputs = audio_buffer.split().1;
 
-        for output_buffer in outputs {
-            let mut time = NoteTime(self.internal.global_time.0);
+        let mut time = NoteTime(self.internal.global_time.0);
 
-            for output_sample in output_buffer {
-                let mut out = 0.0f32;
+        for (output_sample_left, output_sample_right) in outputs.get_mut(0).iter_mut().zip(outputs.get_mut(1).iter_mut()) {
+            let mut out = 0.0f32;
 
-                for opt_note in self.automatable.notes.iter_mut(){
-                    if let Some(note) = opt_note {
-                        out += Self::generate_note_sample(
-                            self.automatable.master_frequency,
-                            &mut self.automatable.waves,
-                            note,
-                            time,
-                        ) as f32;
+            for note in self.automatable.notes.iter_mut(){
+                if note.active {
+                    out += Self::generate_note_sample(
+                        self.automatable.master_frequency,
+                        &mut self.automatable.waves,
+                        note,
+                        time,
+                    ) as f32;
 
-                        note.duration.0 += time_per_sample;
+                    note.duration.0 += time_per_sample;
 
-                        for wave in self.automatable.waves.iter_mut(){
-                            wave.duration.0 += time_per_sample;
-                        }
+                    for wave in self.automatable.waves.iter_mut(){
+                        wave.duration.0 += time_per_sample;
                     }
                 }
-
-                time.0 += time_per_sample;
-
-                *output_sample = self.limit(out);
             }
+
+            time.0 += time_per_sample;
+
+            let output_sample = self.limit(out);
+
+            *output_sample_left = output_sample;
+            *output_sample_right = output_sample;
         }
 
         self.internal.global_time.0 += num_samples as f64 * time_per_sample;
@@ -356,13 +410,11 @@ impl FmSynth {
     }
 
     fn note_on(&mut self, pitch: u8) {
-        if self.automatable.notes[pitch as usize].is_none(){
-            self.automatable.notes[pitch as usize] = Some(Note::new(MidiPitch(pitch)));
-        }
+        self.automatable.notes[pitch as usize].press();
     }
 
     fn note_off(&mut self, pitch: u8) {
-        self.automatable.notes[pitch as usize] = None;
+        self.automatable.notes[pitch as usize].release();
     }
 
     /// Parameter plumbing
