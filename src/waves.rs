@@ -84,6 +84,23 @@ impl VolumeEnvelopeAttackDuration {
 
 
 #[derive(Debug, Copy, Clone)]
+pub struct VolumeEnvelopeAttackValue(pub f64);
+
+impl VolumeEnvelopeAttackValue {
+    pub fn new() -> Self {
+        Self(WAVE_DEFAULT_VOLUME_ENVELOPE_ATTACK_VALUE)
+    }
+
+    pub fn from_host_value(&self, value: f64) -> f64 {
+        value
+    }
+    pub fn get_default_host_value(&self) -> f64 {
+        WAVE_DEFAULT_VOLUME_ENVELOPE_ATTACK_VALUE
+    }
+}
+
+
+#[derive(Debug, Copy, Clone)]
 pub struct VolumeEnvelopeReleaseDuration(pub f64);
 
 impl VolumeEnvelopeReleaseDuration {
@@ -103,7 +120,7 @@ impl VolumeEnvelopeReleaseDuration {
 #[derive(Debug, Copy, Clone)]
 pub struct WaveVolumeEnvelope {
     pub attack_duration: VolumeEnvelopeAttackDuration,
-    pub attack_end_value: f64,
+    pub attack_end_value: VolumeEnvelopeAttackValue,
     pub release_duration: VolumeEnvelopeReleaseDuration,
 }
 
@@ -111,7 +128,7 @@ impl Default for WaveVolumeEnvelope {
     fn default() -> Self {
         Self {
             attack_duration: VolumeEnvelopeAttackDuration::new(),
-            attack_end_value: 1.0,
+            attack_end_value: VolumeEnvelopeAttackValue::new(),
             release_duration: VolumeEnvelopeReleaseDuration::new(),
         }
     }

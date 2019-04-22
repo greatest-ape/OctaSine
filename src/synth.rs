@@ -58,8 +58,9 @@ impl FmSynth {
             parameters.push(Box::new(WaveRatioParameter::new(&waves, i)));
             parameters.push(Box::new(WaveFrequencyFreeParameter::new(&waves, i)));
             parameters.push(Box::new(WaveBetaParameter::new(&waves, i)));
-            // parameters.push(Box::new(WaveFeedbackParameter::new(&waves, i)));
+            parameters.push(Box::new(WaveFeedbackParameter::new(&waves, i)));
             parameters.push(Box::new(WaveVolumeEnvelopeAttackDurationParameter::new(&waves, i)));
+            parameters.push(Box::new(WaveVolumeEnvelopeAttackValueParameter::new(&waves, i)));
             parameters.push(Box::new(WaveVolumeEnvelopeReleaseDurationParameter::new(&waves, i)));
         }
 

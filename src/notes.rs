@@ -49,12 +49,12 @@ impl NoteWaveVolumeEnvelope {
                     self.last_volume
                 }
                 else if effective_duration < wave_envelope.attack_duration.0 {
-                    (effective_duration / wave_envelope.attack_duration.0) * wave_envelope.attack_end_value
+                    (effective_duration / wave_envelope.attack_duration.0) * wave_envelope.attack_end_value.0
                 }
                 else {
                     self.change_stage(EnvelopeStage::Sustain, note_duration);
 
-                    wave_envelope.attack_end_value
+                    wave_envelope.attack_end_value.0
                 }
             },
             EnvelopeStage::Sustain => {
@@ -62,7 +62,7 @@ impl NoteWaveVolumeEnvelope {
                     self.change_stage(EnvelopeStage::Release, note_duration);
                 }
 
-                wave_envelope.attack_end_value
+                wave_envelope.attack_end_value.0
             },
             EnvelopeStage::Release => {
                 if effective_duration < wave_envelope.release_duration.0 {

@@ -160,7 +160,20 @@ derive_wave_envelope_field_parameter!(
     WaveVolumeEnvelopeAttackDurationParameter,
     volume_envelope,
     attack_duration,
-    "vol env atk"
+    "env atk dur"
+);
+
+
+pub struct WaveVolumeEnvelopeAttackValueParameter {
+    wave_index: usize,
+    host_value: f64,
+}
+
+derive_wave_envelope_field_parameter!(
+    WaveVolumeEnvelopeAttackValueParameter,
+    volume_envelope,
+    attack_end_value,
+    "env atk vol"
 );
 
 
@@ -173,5 +186,5 @@ derive_wave_envelope_field_parameter!(
     WaveVolumeEnvelopeReleaseDurationParameter,
     volume_envelope,
     release_duration,
-    "vol env rls"
+    "env rls dur"
 );
