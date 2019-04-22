@@ -20,8 +20,13 @@ pub trait Parameter {
 
 
 #[macro_export]
-macro_rules! derive_wave_field_parameter {
+macro_rules! create_wave_field_parameter {
     ($parameter_struct:ident, $field:ident, $field_name:expr) => {
+        pub struct $parameter_struct {
+            wave_index: usize,
+            host_value: f64,
+        }
+
         impl $parameter_struct {
             pub fn get_wave_index(&self) -> usize {
                 self.wave_index
@@ -34,6 +39,7 @@ macro_rules! derive_wave_field_parameter {
                 }
             }
         }
+
         impl Parameter for $parameter_struct {
             fn get_name(&self, _: &AutomatableState) -> String {
                 format!("Wave {} {}", self.wave_index + 1, $field_name)
@@ -68,8 +74,13 @@ macro_rules! derive_wave_field_parameter {
 /// difficult with the envelope being inside of its own variable. It might
 /// prove useful with envelope-specific features anyway.
 #[macro_export]
-macro_rules! derive_wave_envelope_field_parameter {
+macro_rules! create_wave_envelope_field_parameter {
     ($parameter_struct:ident, $envelope_field:ident, $field:ident, $field_name:expr) => {
+        pub struct $parameter_struct {
+            wave_index: usize,
+            host_value: f64,
+        }
+
         impl $parameter_struct {
             pub fn get_wave_index(&self) -> usize {
                 self.wave_index
@@ -82,6 +93,7 @@ macro_rules! derive_wave_envelope_field_parameter {
                 }
             }
         }
+
         impl Parameter for $parameter_struct {
             fn get_name(&self, _: &AutomatableState) -> String {
                 format!("Wave {} {}", self.wave_index + 1, $field_name)
@@ -110,105 +122,66 @@ macro_rules! derive_wave_envelope_field_parameter {
 }
 
 
-pub struct WaveRatioParameter {
-    wave_index: usize,
-    host_value: f64,
-}
+create_wave_field_parameter!(
+    WaveRatioParameter,
+    ratio,
+    "freq ratio"
+);
 
-derive_wave_field_parameter!(WaveRatioParameter, ratio, "freq ratio");
+create_wave_field_parameter!(
+    WaveFrequencyFreeParameter,
+    frequency_free,
+    "freq free"
+);
 
+create_wave_field_parameter!(
+    WaveFeedbackParameter,
+    feedback,
+    "feedback"
+);
 
-pub struct WaveFrequencyFreeParameter {
-    wave_index: usize,
-    host_value: f64,
-}
+create_wave_field_parameter!(
+    WaveModulationIndexParameter,
+    modulation_index,
+    "mod index"
+);
 
-derive_wave_field_parameter!(WaveFrequencyFreeParameter, frequency_free, "freq free");
-
-
-pub struct WaveFeedbackParameter {
-    wave_index: usize,
-    host_value: f64,
-}
-
-derive_wave_field_parameter!(WaveFeedbackParameter, feedback, "feedback");
-
-
-/// Frequency modulation index
-pub struct WaveModulationIndexParameter {
-    wave_index: usize,
-    host_value: f64,
-}
-
-derive_wave_field_parameter!(WaveModulationIndexParameter, modulation_index, "mod index");
+create_wave_field_parameter!(
+    WaveMixParameter,
+    mix,
+    "mix"
+);
 
 
-pub struct WaveMixParameter {
-    wave_index: usize,
-    host_value: f64,
-}
-
-derive_wave_field_parameter!(WaveMixParameter, mix, "mix");
-
-
-pub struct WaveVolumeEnvelopeAttackDurationParameter {
-    wave_index: usize,
-    host_value: f64,
-}
-
-derive_wave_envelope_field_parameter!(
+create_wave_envelope_field_parameter!(
     WaveVolumeEnvelopeAttackDurationParameter,
     volume_envelope,
     attack_duration,
     "attack time"
 );
 
-
-pub struct WaveVolumeEnvelopeAttackValueParameter {
-    wave_index: usize,
-    host_value: f64,
-}
-
-derive_wave_envelope_field_parameter!(
+create_wave_envelope_field_parameter!(
     WaveVolumeEnvelopeAttackValueParameter,
     volume_envelope,
     attack_end_value,
     "attack vol"
 );
 
-
-pub struct WaveVolumeEnvelopeDecayDurationParameter {
-    wave_index: usize,
-    host_value: f64,
-}
-
-derive_wave_envelope_field_parameter!(
+create_wave_envelope_field_parameter!(
     WaveVolumeEnvelopeDecayDurationParameter,
     volume_envelope,
     decay_duration,
     "decay time"
 );
 
-
-pub struct WaveVolumeEnvelopeDecayValueParameter {
-    wave_index: usize,
-    host_value: f64,
-}
-
-derive_wave_envelope_field_parameter!(
+create_wave_envelope_field_parameter!(
     WaveVolumeEnvelopeDecayValueParameter,
     volume_envelope,
     decay_end_value,
     "decay vol"
 );
 
-
-pub struct WaveVolumeEnvelopeReleaseDurationParameter {
-    wave_index: usize,
-    host_value: f64,
-}
-
-derive_wave_envelope_field_parameter!(
+create_wave_envelope_field_parameter!(
     WaveVolumeEnvelopeReleaseDurationParameter,
     volume_envelope,
     release_duration,
