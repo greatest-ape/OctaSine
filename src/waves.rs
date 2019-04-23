@@ -43,6 +43,18 @@ impl WaveFrequencyFree {
 }
 
 #[derive(Debug, Copy, Clone)]
+pub struct WaveFrequencyFine(pub f64);
+
+impl WaveFrequencyFine {
+    pub fn from_host_value(&self, value: f64) -> f64 {
+        (value + 0.5).sqrt()
+    }
+    pub fn get_default_host_value(&self) -> f64 {
+        0.5
+    }
+}
+
+#[derive(Debug, Copy, Clone)]
 pub struct WaveFeedback(pub f64);
 
 impl WaveFeedback {
@@ -179,6 +191,7 @@ pub struct Wave {
     pub mix: WaveMix,
     pub ratio: WaveRatio,
     pub frequency_free: WaveFrequencyFree,
+    pub frequency_fine: WaveFrequencyFine,
     pub feedback: WaveFeedback,
     pub modulation_index: WaveModulationIndex,
     pub volume_envelope: WaveVolumeEnvelope,
@@ -191,6 +204,7 @@ impl Default for Wave {
             mix: WaveMix(WAVE_DEFAULT_MIX),
             ratio: WaveRatio(WAVE_DEFAULT_RATIO),
             frequency_free: WaveFrequencyFree(WAVE_DEFAULT_FREQUENCY_FREE),
+            frequency_fine: WaveFrequencyFine(WAVE_DEFAULT_FREQUENCY_FINE),
             feedback: WaveFeedback(WAVE_DEFAULT_FEEDBACK),
             modulation_index: WaveModulationIndex(WAVE_DEFAULT_MODULATION_INDEX),
             volume_envelope: WaveVolumeEnvelope::default(),

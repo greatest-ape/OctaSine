@@ -135,6 +135,12 @@ create_wave_field_parameter!(
 );
 
 create_wave_field_parameter!(
+    WaveFrequencyFineParameter,
+    frequency_fine,
+    "freq fine"
+);
+
+create_wave_field_parameter!(
     WaveFeedbackParameter,
     feedback,
     "feedback"

@@ -57,8 +57,8 @@ impl FmSynth {
             parameters.push(Box::new(WaveMixParameter::new(&waves, i)));
             parameters.push(Box::new(WaveRatioParameter::new(&waves, i)));
             parameters.push(Box::new(WaveFrequencyFreeParameter::new(&waves, i)));
+            parameters.push(Box::new(WaveFrequencyFineParameter::new(&waves, i)));
             parameters.push(Box::new(WaveModulationIndexParameter::new(&waves, i)));
-            // parameters.push(Box::new(WaveFeedbackParameter::new(&waves, i)));
             parameters.push(Box::new(WaveVolumeEnvelopeAttackDurationParameter::new(&waves, i)));
             parameters.push(Box::new(WaveVolumeEnvelopeAttackValueParameter::new(&waves, i)));
             parameters.push(Box::new(WaveVolumeEnvelopeDecayDurationParameter::new(&waves, i)));
@@ -132,7 +132,7 @@ impl FmSynth {
 
 
         for (wave_index, wave) in (waves.iter_mut().enumerate()).rev() {
-            let p = time.0 * base_frequency * wave.ratio.0 * wave.frequency_free.0;
+            let p = time.0 * base_frequency * wave.ratio.0 * wave.frequency_free.0 * wave.frequency_fine.0;
 
             // Calculate attack to use to try to prevent popping
             let attack = 0.0002;
