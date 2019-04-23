@@ -6,6 +6,7 @@ pub const TAU: f64 = 2.0 * PI;
 pub const NUM_WAVES: usize = 4;
 
 pub const WAVE_DEFAULT_MIX: f64 = 1.0;
+pub const WAVE_DEFAULT_VOLUME: f64 = 1.0;
 pub const WAVE_DEFAULT_FREQUENCY_RATIO: f64 = 1.0;
 pub const WAVE_DEFAULT_FREQUENCY_FREE: f64 = 1.0;
 pub const WAVE_DEFAULT_FREQUENCY_FINE: f64 = 1.0;

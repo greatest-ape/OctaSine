@@ -54,6 +54,7 @@ impl FmSynth {
         let mut parameters: Vec<Box<Parameter>> = Vec::new();
 
         for (i, _) in waves.iter().enumerate(){
+            parameters.push(Box::new(WaveVolumeParameter::new(&waves, i)));
             parameters.push(Box::new(WaveMixParameter::new(&waves, i)));
             parameters.push(Box::new(WaveRatioParameter::new(&waves, i)));
             parameters.push(Box::new(WaveFrequencyFreeParameter::new(&waves, i)));
@@ -164,7 +165,7 @@ impl FmSynth {
             // Calculate mix between old and new signal
             let mix = {
                 let old_signal_mix = signal * (1.0 - wave.mix.0);
-                let new_signal_mix = wave.mix.0 * new_signal;
+                let new_signal_mix = wave.volume.0 * wave.mix.0 * new_signal;
 
                 old_signal_mix + new_signal_mix
             };

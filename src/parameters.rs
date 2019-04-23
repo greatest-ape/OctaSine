@@ -123,6 +123,18 @@ macro_rules! create_wave_envelope_field_parameter {
 
 
 create_wave_field_parameter!(
+    WaveVolumeParameter,
+    volume,
+    "volume"
+);
+
+create_wave_field_parameter!(
+    WaveMixParameter,
+    mix,
+    "mix"
+);
+
+create_wave_field_parameter!(
     WaveRatioParameter,
     frequency_ratio,
     "freq ratio"
@@ -150,12 +162,6 @@ create_wave_field_parameter!(
     WaveModulationIndexParameter,
     modulation_index,
     "mod index"
-);
-
-create_wave_field_parameter!(
-    WaveMixParameter,
-    mix,
-    "mix"
 );
 
 

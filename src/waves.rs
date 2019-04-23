@@ -7,6 +7,19 @@ pub struct WaveDuration(pub f64);
 
 
 #[derive(Debug, Copy, Clone)]
+pub struct WaveVolume(pub f64);
+
+impl WaveVolume {
+    pub fn from_host_value(&self, value: f64) -> f64 {
+        value * 2.0
+    }
+    pub fn get_default_host_value(&self) -> f64 {
+        WAVE_DEFAULT_VOLUME / 2.0
+    }
+}
+
+
+#[derive(Debug, Copy, Clone)]
 pub struct WaveMix(pub f64);
 
 impl WaveMix {
@@ -188,6 +201,7 @@ impl Default for WaveVolumeEnvelope {
 #[derive(Debug, Copy, Clone)]
 pub struct Wave {
     pub duration: WaveDuration,
+    pub volume: WaveVolume,
     pub mix: WaveMix,
     pub frequency_ratio: WaveFrequencyRatio,
     pub frequency_free: WaveFrequencyFree,
@@ -202,6 +216,7 @@ impl Default for Wave {
         Self {
             duration: WaveDuration(0.0),
             mix: WaveMix(WAVE_DEFAULT_MIX),
+            volume: WaveVolume(WAVE_DEFAULT_VOLUME),
             frequency_ratio: WaveFrequencyRatio(WAVE_DEFAULT_FREQUENCY_RATIO),
             frequency_free: WaveFrequencyFree(WAVE_DEFAULT_FREQUENCY_FREE),
             frequency_fine: WaveFrequencyFine(WAVE_DEFAULT_FREQUENCY_FINE),
