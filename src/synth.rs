@@ -132,7 +132,7 @@ impl FmSynth {
 
 
         for (wave_index, wave) in (waves.iter_mut().enumerate()).rev() {
-            let p = time.0 * base_frequency * wave.ratio.0 * wave.frequency_free.0 * wave.frequency_fine.0;
+            let p = time.0 * base_frequency * wave.frequency_ratio.0 * wave.frequency_free.0 * wave.frequency_fine.0;
 
             // Calculate attack to use to try to prevent popping
             let attack = 0.0002;

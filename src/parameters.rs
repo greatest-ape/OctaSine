@@ -124,7 +124,7 @@ macro_rules! create_wave_envelope_field_parameter {
 
 create_wave_field_parameter!(
     WaveRatioParameter,
-    ratio,
+    frequency_ratio,
     "freq ratio"
 );
 
