@@ -135,7 +135,7 @@ create_wave_field_parameter!(
 );
 
 create_wave_field_parameter!(
-    WaveRatioParameter,
+    WaveFrequencyRatioParameter,
     frequency_ratio,
     "freq ratio"
 );
