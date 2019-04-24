@@ -56,10 +56,11 @@ impl FmSynth {
         for (i, _) in waves.iter().enumerate(){
             parameters.push(Box::new(WaveVolumeParameter::new(&waves, i)));
             parameters.push(Box::new(WaveMixParameter::new(&waves, i)));
+            parameters.push(Box::new(WaveModulationIndexParameter::new(&waves, i)));
+            parameters.push(Box::new(WaveFeedbackParameter::new(&waves, i)));
             parameters.push(Box::new(WaveRatioParameter::new(&waves, i)));
             parameters.push(Box::new(WaveFrequencyFreeParameter::new(&waves, i)));
             parameters.push(Box::new(WaveFrequencyFineParameter::new(&waves, i)));
-            parameters.push(Box::new(WaveModulationIndexParameter::new(&waves, i)));
             parameters.push(Box::new(WaveVolumeEnvelopeAttackDurationParameter::new(&waves, i)));
             parameters.push(Box::new(WaveVolumeEnvelopeAttackValueParameter::new(&waves, i)));
             parameters.push(Box::new(WaveVolumeEnvelopeDecayDurationParameter::new(&waves, i)));
@@ -146,9 +147,9 @@ impl FmSynth {
             // New signal generation for sine FM
             let new_signal = {
                 let new = alpha * p * TAU;
-                let new_feedback = new.sin();
+                let new_feedback = wave.feedback.0 * new.sin();
 
-                (new + wave.feedback.0 * new_feedback + wave.modulation_index.0 * signal).sin()
+                (new + wave.modulation_index.0 * (signal + new_feedback)).sin()
             };
 
             // Volume envelope

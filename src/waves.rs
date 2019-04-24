@@ -72,10 +72,10 @@ pub struct WaveFeedback(pub f64);
 
 impl WaveFeedback {
     pub fn from_host_value(&self, value: f64) -> f64 {
-        value * 5.0
+        value
     }
     pub fn get_default_host_value(&self) -> f64 {
-        WAVE_DEFAULT_FEEDBACK / 5.0
+        WAVE_DEFAULT_FEEDBACK
     }
 }
 
