@@ -55,7 +55,7 @@ impl FmSynth {
 
         for (i, _) in waves.iter().enumerate(){
             parameters.push(Box::new(WaveVolumeParameter::new(&waves, i)));
-            parameters.push(Box::new(WaveMixParameter::new(&waves, i)));
+            parameters.push(Box::new(WaveSkipModulationParameter::new(&waves, i)));
             parameters.push(Box::new(WaveModulationIndexParameter::new(&waves, i)));
             parameters.push(Box::new(WaveFeedbackParameter::new(&waves, i)));
             parameters.push(Box::new(WaveFrequencyRatioParameter::new(&waves, i)));
@@ -130,6 +130,7 @@ impl FmSynth {
     ) -> f64 {
 
         let base_frequency = note.midi_pitch.get_frequency(master_frequency);
+        let mut side_signal = 0.0;
         let mut signal = 0.0;
 
 
@@ -163,16 +164,11 @@ impl FmSynth {
                 )
             };
 
-            // Calculate mix between old and new signal
-            let mix = {
-                let old_signal_mix = signal * (1.0 - wave.mix.0);
-                let new_signal_mix = wave.volume.0 * wave.mix.0 * new_signal;
-
-                old_signal_mix + new_signal_mix
-            };
-
-            signal = mix;
+            side_signal += wave.volume.0 * new_signal * wave.skip_modulation.0;
+            signal = (signal * wave.skip_modulation.0) + wave.volume.0 * (1.0 - wave.skip_modulation.0) * new_signal;;
         }
+
+        signal = signal + side_signal;
 
         // Apply a quick envelope to the attack of the signal to avoid popping.
         let attack = 0.01;

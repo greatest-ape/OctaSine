@@ -129,9 +129,9 @@ create_wave_field_parameter!(
 );
 
 create_wave_field_parameter!(
-    WaveMixParameter,
-    mix,
-    "mix"
+    WaveSkipModulationParameter,
+    skip_modulation,
+    "skip mod"
 );
 
 create_wave_field_parameter!(
