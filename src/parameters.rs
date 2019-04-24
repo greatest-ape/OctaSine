@@ -129,9 +129,9 @@ create_wave_field_parameter!(
 );
 
 create_wave_field_parameter!(
-    WaveSkipModulationParameter,
-    skip_modulation,
-    "skip mod"
+    WaveSkipChainFactorParameter,
+    skip_chain_factor,
+    "skip chain"
 );
 
 create_wave_field_parameter!(

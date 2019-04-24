@@ -20,14 +20,14 @@ impl WaveVolume {
 
 
 #[derive(Debug, Copy, Clone)]
-pub struct WaveSkipModulation(pub f64);
+pub struct WaveSkipChainFactor(pub f64);
 
-impl WaveSkipModulation {
+impl WaveSkipChainFactor {
     pub fn from_host_value(&self, value: f64) -> f64 {
         value
     }
     pub fn get_default_host_value(&self) -> f64 {
-        WAVE_DEFAULT_SKIP_MODULATION
+        WAVE_DEFAULT_SKIP_CHAIN_FACTOR
     }
 }
 
@@ -202,7 +202,7 @@ impl Default for WaveVolumeEnvelope {
 pub struct Wave {
     pub duration: WaveDuration,
     pub volume: WaveVolume,
-    pub skip_modulation: WaveSkipModulation,
+    pub skip_chain_factor: WaveSkipChainFactor,
     pub frequency_ratio: WaveFrequencyRatio,
     pub frequency_free: WaveFrequencyFree,
     pub frequency_fine: WaveFrequencyFine,
@@ -215,7 +215,7 @@ impl Default for Wave {
     fn default() -> Self {
         Self {
             duration: WaveDuration(0.0),
-            skip_modulation: WaveSkipModulation(WAVE_DEFAULT_SKIP_MODULATION),
+            skip_chain_factor: WaveSkipChainFactor(WAVE_DEFAULT_SKIP_CHAIN_FACTOR),
             volume: WaveVolume(WAVE_DEFAULT_VOLUME),
             frequency_ratio: WaveFrequencyRatio(WAVE_DEFAULT_FREQUENCY_RATIO),
             frequency_free: WaveFrequencyFree(WAVE_DEFAULT_FREQUENCY_FREE),

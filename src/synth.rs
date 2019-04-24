@@ -55,7 +55,7 @@ impl FmSynth {
 
         for (i, _) in waves.iter().enumerate(){
             parameters.push(Box::new(WaveVolumeParameter::new(&waves, i)));
-            parameters.push(Box::new(WaveSkipModulationParameter::new(&waves, i)));
+            parameters.push(Box::new(WaveSkipChainFactorParameter::new(&waves, i)));
             parameters.push(Box::new(WaveModulationIndexParameter::new(&waves, i)));
             parameters.push(Box::new(WaveFeedbackParameter::new(&waves, i)));
             parameters.push(Box::new(WaveFrequencyRatioParameter::new(&waves, i)));
@@ -128,11 +128,10 @@ impl FmSynth {
         note: &mut Note,
         time: NoteTime,
     ) -> f64 {
-
         let base_frequency = note.midi_pitch.get_frequency(master_frequency);
-        let mut side_signal = 0.0;
-        let mut signal = 0.0;
 
+        let mut side_signal = 0.0;
+        let mut chain_signal = 0.0;
 
         for (wave_index, wave) in (waves.iter_mut().enumerate()).rev() {
             let p = time.0 * base_frequency * wave.frequency_ratio.0 * wave.frequency_free.0 * wave.frequency_fine.0;
@@ -150,7 +149,7 @@ impl FmSynth {
                 let new = alpha * p * TAU;
                 let new_feedback = wave.feedback.0 * new.sin();
 
-                (new + wave.modulation_index.0 * (signal + new_feedback)).sin()
+                (new + wave.modulation_index.0 * (chain_signal + new_feedback)).sin()
             };
 
             // Volume envelope
@@ -164,11 +163,11 @@ impl FmSynth {
                 )
             };
 
-            side_signal += wave.volume.0 * new_signal * wave.skip_modulation.0;
-            signal = (signal * wave.skip_modulation.0) + wave.volume.0 * (1.0 - wave.skip_modulation.0) * new_signal;;
+            side_signal += wave.volume.0 * new_signal * wave.skip_chain_factor.0;
+            chain_signal = (chain_signal * wave.skip_chain_factor.0) + wave.volume.0 * (1.0 - wave.skip_chain_factor.0) * new_signal;;
         }
 
-        signal = signal + side_signal;
+        let signal = chain_signal + side_signal;
 
         // Apply a quick envelope to the attack of the signal to avoid popping.
         let attack = 0.01;
