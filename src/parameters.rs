@@ -1,4 +1,5 @@
 use crate::synth::{AutomatableState, Waves};
+use crate::waves::*;
 
 
 pub trait Parameter {
@@ -24,18 +25,12 @@ macro_rules! create_wave_field_parameter {
     ($parameter_struct:ident, $field:ident, $field_name:expr) => {
         pub struct $parameter_struct {
             wave_index: usize,
-            host_value: f64,
         }
 
         impl $parameter_struct {
-            pub fn get_wave_index(&self) -> usize {
-                self.wave_index
-            }
-
-            pub fn new(waves: &Waves, wave_index: usize) -> Self {
+            pub fn new(wave_index: usize) -> Self {
                 Self {
                     wave_index: wave_index,
-                    host_value: waves[wave_index].$field.get_default_host_value(),
                 }
             }
         }
@@ -45,23 +40,17 @@ macro_rules! create_wave_field_parameter {
                 format!("Wave {} {}", self.wave_index + 1, $field_name)
             }
 
-            fn get_value_float(&self, _: &AutomatableState) -> f64 {
-                self.host_value
+            fn get_value_float(&self, state: &AutomatableState) -> f64 {
+                state.waves[self.wave_index].$field.get_host_value_float()
             }
             fn get_value_text(&self, state: &AutomatableState) -> String {
-                format!("{:.2}", state.waves[self.get_wave_index()].$field.0)
+                state.waves[self.wave_index].$field.get_host_value_text()
             }
 
             fn set_value_float(&mut self, state: &mut AutomatableState, value: f64) {
-                let transformed = state.waves[
-                    self.get_wave_index()
-                ].$field.from_host_value(value);
+                state.waves[self.wave_index].$field.set_host_value_float(value);
 
-                state.waves[self.get_wave_index()].$field.0 = transformed;
-
-                state.waves[self.get_wave_index()].duration.0 = 0.0;
-
-                self.host_value = value;
+                state.waves[self.wave_index].duration.0 = 0.0;
             }
         }
     };  

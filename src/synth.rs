@@ -54,13 +54,13 @@ impl FmSynth {
         let mut parameters: Vec<Box<Parameter>> = Vec::new();
 
         for (i, _) in waves.iter().enumerate(){
-            parameters.push(Box::new(WaveVolumeParameter::new(&waves, i)));
-            parameters.push(Box::new(WaveSkipChainFactorParameter::new(&waves, i)));
-            parameters.push(Box::new(WaveModulationIndexParameter::new(&waves, i)));
-            parameters.push(Box::new(WaveFeedbackParameter::new(&waves, i)));
-            parameters.push(Box::new(WaveFrequencyRatioParameter::new(&waves, i)));
-            parameters.push(Box::new(WaveFrequencyFreeParameter::new(&waves, i)));
-            parameters.push(Box::new(WaveFrequencyFineParameter::new(&waves, i)));
+            parameters.push(Box::new(WaveVolumeParameter::new(i)));
+            parameters.push(Box::new(WaveSkipChainFactorParameter::new(i)));
+            parameters.push(Box::new(WaveModulationIndexParameter::new(i)));
+            parameters.push(Box::new(WaveFeedbackParameter::new(i)));
+            parameters.push(Box::new(WaveFrequencyRatioParameter::new(i)));
+            parameters.push(Box::new(WaveFrequencyFreeParameter::new(i)));
+            parameters.push(Box::new(WaveFrequencyFineParameter::new(i)));
             parameters.push(Box::new(WaveVolumeEnvelopeAttackDurationParameter::new(&waves, i)));
             parameters.push(Box::new(WaveVolumeEnvelopeAttackValueParameter::new(&waves, i)));
             parameters.push(Box::new(WaveVolumeEnvelopeDecayDurationParameter::new(&waves, i)));
@@ -134,22 +134,22 @@ impl FmSynth {
         let mut chain_signal = 0.0;
 
         for (wave_index, wave) in (waves.iter_mut().enumerate()).rev() {
-            let p = time.0 * base_frequency * wave.frequency_ratio.0 * wave.frequency_free.0 * wave.frequency_fine.0;
+            let p = time.0 * base_frequency * wave.frequency_ratio.get_value(time) * wave.frequency_free.get_value(time) * wave.frequency_fine.get_value(time);
 
             // Calculate attack to use to try to prevent popping
-            let attack = 0.0002;
-            let alpha = if wave.duration.0 < attack {
-                wave.duration.0 / attack
-            } else {
-                1.0
-            };
+            // let attack = 0.0002;
+            // let alpha = if wave.duration.0 < attack {
+            //     wave.duration.0 / attack
+            // } else {
+            //     1.0
+            // };
 
             // New signal generation for sine FM
             let new_signal = {
-                let new = alpha * p * TAU;
-                let new_feedback = wave.feedback.0 * new.sin();
+                let new = p * TAU; // alpha * p * TAU;
+                let new_feedback = wave.feedback.get_value(time) * new.sin();
 
-                (new + wave.modulation_index.0 * (chain_signal + new_feedback)).sin()
+                (new + wave.modulation_index.get_value(time) * (chain_signal + new_feedback)).sin()
             };
 
             // Volume envelope
@@ -163,8 +163,8 @@ impl FmSynth {
                 )
             };
 
-            side_signal += wave.volume.0 * new_signal * wave.skip_chain_factor.0;
-            chain_signal = (chain_signal * wave.skip_chain_factor.0) + wave.volume.0 * (1.0 - wave.skip_chain_factor.0) * new_signal;;
+            side_signal += wave.volume.get_value(time) * new_signal * wave.skip_chain_factor.get_value(time);
+            chain_signal = (chain_signal * wave.skip_chain_factor.get_value(time)) + wave.volume.get_value(time) * (1.0 - wave.skip_chain_factor.get_value(time)) * new_signal;
         }
 
         let signal = chain_signal + side_signal;
@@ -187,6 +187,7 @@ impl FmSynth {
         let outputs = audio_buffer.split().1;
 
         let mut time = NoteTime(self.internal.global_time.0);
+        let mut last_sample = 0.0f32;
 
         for (output_sample_left, output_sample_right) in outputs.get_mut(0).iter_mut().zip(outputs.get_mut(1).iter_mut()) {
             let mut out = 0.0f32;
@@ -227,9 +228,7 @@ impl FmSynth {
         match data[0] {
             128 => self.note_off(data[1]),
             144 => self.note_on(data[1]),
-            m => {
-                info!("got midi message {}", m);
-            }
+            _   => ()
         }
     }
 

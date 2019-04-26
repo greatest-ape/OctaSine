@@ -40,19 +40,19 @@ pub fn map_host_param_value_to_step_smooth(steps: &[f64], value: f64) -> f64 {
 }
 
 
-pub fn get_host_value_for_default_step<T: Copy + PartialEq>(
+pub fn get_host_value_for_step<T: Copy + PartialEq>(
     steps: &[T],
-    default_step: T,
+    value: T,
 ) -> f64 {
     let increment = 1.0 / steps.len() as f64;
-    let mut s = 0.0;
+    let mut sum = 0.0;
 
     for step in steps.iter() {
-        s += increment;
-
-        if *step == default_step {
-            return s;
+        if *step == value {
+            return sum;
         }
+
+        sum += increment;
     }
 
     0.5

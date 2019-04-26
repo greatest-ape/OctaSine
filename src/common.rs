@@ -4,7 +4,7 @@
 #[derive(Debug, Copy, Clone)]
 pub struct GlobalTime(pub f64);
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub struct NoteTime(pub f64);
 
 #[derive(Debug, Copy, Clone)]
