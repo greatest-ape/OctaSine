@@ -40,7 +40,7 @@ pub fn map_host_param_value_to_step_smooth(steps: &[f64], value: f64) -> f64 {
 }
 
 
-pub fn get_host_value_for_step<T: Copy + PartialEq>(
+pub fn map_step_to_host_param_value<T: Copy + PartialEq>(
     steps: &[T],
     value: T,
 ) -> f64 {

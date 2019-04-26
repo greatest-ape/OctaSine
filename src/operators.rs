@@ -143,7 +143,7 @@ impl OperatorFrequencyRatio {
         map_host_param_value_to_step(&OPERATOR_RATIO_STEPS[..], value)
     }
     pub fn to_host_value(&self, value: f64) -> f64 {
-        get_host_value_for_step(&OPERATOR_RATIO_STEPS[..], value)
+        map_step_to_host_param_value(&OPERATOR_RATIO_STEPS[..], value)
     }
 }
 
@@ -191,7 +191,7 @@ impl OperatorModulationIndex {
         map_host_param_value_to_step_smooth(&OPERATOR_BETA_STEPS[..], value)
     }
     pub fn to_host_value(&self, value: f64) -> f64 {
-        get_host_value_for_step(&OPERATOR_BETA_STEPS[..], value) // TODO: add util for smooth reverse step finding
+        map_step_to_host_param_value(&OPERATOR_BETA_STEPS[..], value) // TODO: add util for smooth reverse step finding
     }
 }
 
