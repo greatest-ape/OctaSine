@@ -61,11 +61,11 @@ impl FmSynth {
             parameters.push(Box::new(OperatorFrequencyRatioParameter::new(i)));
             parameters.push(Box::new(OperatorFrequencyFreeParameter::new(i)));
             parameters.push(Box::new(OperatorFrequencyFineParameter::new(i)));
-            parameters.push(Box::new(OperatorVolumeEnvelopeAttackDurationParameter::new(&operators, i)));
-            parameters.push(Box::new(OperatorVolumeEnvelopeAttackValueParameter::new(&operators, i)));
-            parameters.push(Box::new(OperatorVolumeEnvelopeDecayDurationParameter::new(&operators, i)));
-            parameters.push(Box::new(OperatorVolumeEnvelopeDecayValueParameter::new(&operators, i)));
-            parameters.push(Box::new(OperatorVolumeEnvelopeReleaseDurationParameter::new(&operators, i)));
+            parameters.push(Box::new(OperatorVolumeEnvelopeAttackDurationParameter::new(i)));
+            parameters.push(Box::new(OperatorVolumeEnvelopeAttackValueParameter::new(i)));
+            parameters.push(Box::new(OperatorVolumeEnvelopeDecayDurationParameter::new(i)));
+            parameters.push(Box::new(OperatorVolumeEnvelopeDecayValueParameter::new(i)));
+            parameters.push(Box::new(OperatorVolumeEnvelopeReleaseDurationParameter::new(i)));
         }
 
         let mut notes = SmallVec::new();

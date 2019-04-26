@@ -111,6 +111,34 @@ macro_rules! create_operator_value {
 }
 
 
+#[macro_export]
+macro_rules! create_operator_envelope_value {
+    ($struct_name:ident, $default_value:ident) => {
+
+        #[derive(Debug, Copy, Clone)]
+        pub struct $struct_name(pub f64);
+
+        impl Default for $struct_name {
+            fn default() -> Self {
+                $struct_name($default_value)
+            }
+        }
+
+        impl AutomatableValue for $struct_name {
+            fn set_host_value_float(&mut self, value: f64){
+                self.0 = self.from_host_value(value);
+            }
+            fn get_host_value_float(&self) -> f64 {
+                self.to_host_value(self.0)
+            }
+            fn get_host_value_text(&self) -> String {
+                format!("{:.2}", self.to_host_value(self.0))
+            }
+        }
+    };  
+}
+
+
 
 create_operator_value!(OperatorVolume, OPERATOR_DEFAULT_VOLUME);
 
@@ -196,87 +224,62 @@ impl OperatorModulationIndex {
 }
 
 
-#[derive(Debug, Copy, Clone)]
-pub struct VolumeEnvelopeAttackDuration(pub f64);
+create_operator_envelope_value!(VolumeEnvelopeAttackDuration, OPERATOR_DEFAULT_VOLUME_ENVELOPE_ATTACK_DURATION);
 
 impl VolumeEnvelopeAttackDuration {
-    pub fn new() -> Self {
-        Self(OPERATOR_DEFAULT_VOLUME_ENVELOPE_ATTACK_DURATION)
-    }
-
     pub fn from_host_value(&self, value: f64) -> f64 {
         value
     }
-    pub fn get_default_host_value(&self) -> f64 {
-        OPERATOR_DEFAULT_VOLUME_ENVELOPE_ATTACK_DURATION
+    pub fn to_host_value(&self, value: f64) -> f64 {
+        value
     }
 }
 
 
-#[derive(Debug, Copy, Clone)]
-pub struct VolumeEnvelopeAttackValue(pub f64);
+create_operator_envelope_value!(VolumeEnvelopeAttackValue, OPERATOR_DEFAULT_VOLUME_ENVELOPE_ATTACK_VALUE);
 
 impl VolumeEnvelopeAttackValue {
-    pub fn new() -> Self {
-        Self(OPERATOR_DEFAULT_VOLUME_ENVELOPE_ATTACK_VALUE)
-    }
-
     pub fn from_host_value(&self, value: f64) -> f64 {
         value
     }
-    pub fn get_default_host_value(&self) -> f64 {
-        OPERATOR_DEFAULT_VOLUME_ENVELOPE_ATTACK_VALUE
+    pub fn to_host_value(&self, value: f64) -> f64 {
+        value
     }
 }
 
 
-#[derive(Debug, Copy, Clone)]
-pub struct VolumeEnvelopeDecayDuration(pub f64);
+create_operator_envelope_value!(VolumeEnvelopeDecayDuration, OPERATOR_DEFAULT_VOLUME_ENVELOPE_DECAY_DURATION);
 
 impl VolumeEnvelopeDecayDuration {
-    pub fn new() -> Self {
-        Self(OPERATOR_DEFAULT_VOLUME_ENVELOPE_DECAY_DURATION)
-    }
-
     pub fn from_host_value(&self, value: f64) -> f64 {
         value
     }
-    pub fn get_default_host_value(&self) -> f64 {
-        OPERATOR_DEFAULT_VOLUME_ENVELOPE_DECAY_DURATION
+    pub fn to_host_value(&self, value: f64) -> f64 {
+        value
     }
 }
 
 
-#[derive(Debug, Copy, Clone)]
-pub struct VolumeEnvelopeDecayValue(pub f64);
+create_operator_envelope_value!(VolumeEnvelopeDecayValue, OPERATOR_DEFAULT_VOLUME_ENVELOPE_DECAY_VALUE);
 
 impl VolumeEnvelopeDecayValue {
-    pub fn new() -> Self {
-        Self(OPERATOR_DEFAULT_VOLUME_ENVELOPE_DECAY_VALUE)
-    }
-
     pub fn from_host_value(&self, value: f64) -> f64 {
         value
     }
-    pub fn get_default_host_value(&self) -> f64 {
-        OPERATOR_DEFAULT_VOLUME_ENVELOPE_DECAY_VALUE
+    pub fn to_host_value(&self, value: f64) -> f64 {
+        value
     }
 }
 
 
-#[derive(Debug, Copy, Clone)]
-pub struct VolumeEnvelopeReleaseDuration(pub f64);
+create_operator_envelope_value!(VolumeEnvelopeReleaseDuration, OPERATOR_DEFAULT_VOLUME_ENVELOPE_RELEASE_DURATION);
 
 impl VolumeEnvelopeReleaseDuration {
-    pub fn new() -> Self {
-        Self(OPERATOR_DEFAULT_VOLUME_ENVELOPE_RELEASE_DURATION)
-    }
-
     pub fn from_host_value(&self, value: f64) -> f64 {
         value
     }
-    pub fn get_default_host_value(&self) -> f64 {
-        OPERATOR_DEFAULT_VOLUME_ENVELOPE_RELEASE_DURATION
+    pub fn to_host_value(&self, value: f64) -> f64 {
+        value
     }
 }
 
@@ -293,11 +296,11 @@ pub struct OperatorVolumeEnvelope {
 impl Default for OperatorVolumeEnvelope {
     fn default() -> Self {
         Self {
-            attack_duration: VolumeEnvelopeAttackDuration::new(),
-            attack_end_value: VolumeEnvelopeAttackValue::new(),
-            decay_duration: VolumeEnvelopeDecayDuration::new(),
-            decay_end_value: VolumeEnvelopeDecayValue::new(),
-            release_duration: VolumeEnvelopeReleaseDuration::new(),
+            attack_duration: VolumeEnvelopeAttackDuration::default(),
+            attack_end_value: VolumeEnvelopeAttackValue::default(),
+            decay_duration: VolumeEnvelopeDecayDuration::default(),
+            decay_end_value: VolumeEnvelopeDecayValue::default(),
+            release_duration: VolumeEnvelopeReleaseDuration::default(),
         }
     }
 }

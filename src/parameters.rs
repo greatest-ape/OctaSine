@@ -1,4 +1,4 @@
-use crate::synth::{AutomatableState, Operators};
+use crate::synth::AutomatableState;
 use crate::operators::*;
 
 
@@ -67,18 +67,12 @@ macro_rules! create_operator_envelope_field_parameter {
     ($parameter_struct:ident, $envelope_field:ident, $field:ident, $field_name:expr) => {
         pub struct $parameter_struct {
             operator_index: usize,
-            host_value: f64,
         }
 
         impl $parameter_struct {
-            pub fn get_operator_index(&self) -> usize {
-                self.operator_index
-            }
-
-            pub fn new(operators: &Operators, operator_index: usize) -> Self {
+            pub fn new(operator_index: usize) -> Self {
                 Self {
                     operator_index: operator_index,
-                    host_value: operators[operator_index].$envelope_field.$field.get_default_host_value(),
                 }
             }
         }
@@ -88,23 +82,17 @@ macro_rules! create_operator_envelope_field_parameter {
                 format!("Op. {} {}", self.operator_index + 1, $field_name)
             }
 
-            fn get_value_float(&self, _: &AutomatableState) -> f64 {
-                self.host_value
+            fn get_value_float(&self, state: &AutomatableState) -> f64 {
+                state.operators[self.operator_index].$envelope_field.$field.get_host_value_float()
             }
             fn get_value_text(&self, state: &AutomatableState) -> String {
-                format!("{:.2}", state.operators[self.get_operator_index()].$envelope_field.$field.0)
+                state.operators[self.operator_index].$envelope_field.$field.get_host_value_text()
             }
 
             fn set_value_float(&mut self, state: &mut AutomatableState, value: f64) {
-                let transformed = state.operators[
-                    self.get_operator_index()
-                ].$envelope_field.$field.from_host_value(value);
+                state.operators[self.operator_index].$envelope_field.$field.set_host_value_float(value);
 
-                state.operators[self.get_operator_index()].$envelope_field.$field.0 = transformed;
-
-                state.operators[self.get_operator_index()].duration.0 = 0.0;
-
-                self.host_value = value;
+                state.operators[self.operator_index].duration.0 = 0.0;
             }
         }
     };  
