@@ -8,11 +8,11 @@ use crate::common::*;
 use crate::constants::*;
 use crate::notes::*;
 use crate::parameters::*;
-use crate::waves::*;
+use crate::operators::*;
 
 
 pub type Notes = SmallVec<[Note; 128]>;
-pub type Waves = SmallVec<[Wave; NUM_WAVES]>;
+pub type Operators = SmallVec<[Operator; NUM_OPERATORS]>;
 pub type Parameters = Vec<Box<Parameter>>;
 
 
@@ -28,7 +28,7 @@ pub struct InternalState {
 /// State that can be automated
 pub struct AutomatableState {
     pub master_frequency: MasterFrequency,
-    pub waves: Waves,
+    pub operators: Operators,
     pub notes: Notes,
 }
 
@@ -45,27 +45,27 @@ pub struct FmSynth {
 
 impl FmSynth {
     pub fn new(host: HostCallback) -> Self {
-        let mut waves = smallvec![];
+        let mut operators = smallvec![];
 
-        for _ in 0..NUM_WAVES {
-            waves.push(Wave::default());
+        for _ in 0..NUM_OPERATORS {
+            operators.push(Operator::default());
         }
 
         let mut parameters: Vec<Box<Parameter>> = Vec::new();
 
-        for (i, _) in waves.iter().enumerate(){
-            parameters.push(Box::new(WaveVolumeParameter::new(i)));
-            parameters.push(Box::new(WaveSkipChainFactorParameter::new(i)));
-            parameters.push(Box::new(WaveModulationIndexParameter::new(i)));
-            parameters.push(Box::new(WaveFeedbackParameter::new(i)));
-            parameters.push(Box::new(WaveFrequencyRatioParameter::new(i)));
-            parameters.push(Box::new(WaveFrequencyFreeParameter::new(i)));
-            parameters.push(Box::new(WaveFrequencyFineParameter::new(i)));
-            parameters.push(Box::new(WaveVolumeEnvelopeAttackDurationParameter::new(&waves, i)));
-            parameters.push(Box::new(WaveVolumeEnvelopeAttackValueParameter::new(&waves, i)));
-            parameters.push(Box::new(WaveVolumeEnvelopeDecayDurationParameter::new(&waves, i)));
-            parameters.push(Box::new(WaveVolumeEnvelopeDecayValueParameter::new(&waves, i)));
-            parameters.push(Box::new(WaveVolumeEnvelopeReleaseDurationParameter::new(&waves, i)));
+        for (i, _) in operators.iter().enumerate(){
+            parameters.push(Box::new(OperatorVolumeParameter::new(i)));
+            parameters.push(Box::new(OperatorSkipChainFactorParameter::new(i)));
+            parameters.push(Box::new(OperatorModulationIndexParameter::new(i)));
+            parameters.push(Box::new(OperatorFeedbackParameter::new(i)));
+            parameters.push(Box::new(OperatorFrequencyRatioParameter::new(i)));
+            parameters.push(Box::new(OperatorFrequencyFreeParameter::new(i)));
+            parameters.push(Box::new(OperatorFrequencyFineParameter::new(i)));
+            parameters.push(Box::new(OperatorVolumeEnvelopeAttackDurationParameter::new(&operators, i)));
+            parameters.push(Box::new(OperatorVolumeEnvelopeAttackValueParameter::new(&operators, i)));
+            parameters.push(Box::new(OperatorVolumeEnvelopeDecayDurationParameter::new(&operators, i)));
+            parameters.push(Box::new(OperatorVolumeEnvelopeDecayValueParameter::new(&operators, i)));
+            parameters.push(Box::new(OperatorVolumeEnvelopeReleaseDurationParameter::new(&operators, i)));
         }
 
         let mut notes = SmallVec::new();
@@ -77,7 +77,7 @@ impl FmSynth {
         let external = AutomatableState {
             master_frequency: MasterFrequency(440.0),
             notes: notes,
-            waves: waves,
+            operators: operators,
         };
 
         let internal = InternalState {
@@ -124,7 +124,7 @@ impl FmSynth {
     /// is borrowed mutably in the generate_audio inner loop)
     fn generate_note_sample(
         master_frequency: MasterFrequency,
-        waves: &mut Waves,
+        operators: &mut Operators,
         note: &mut Note,
         time: NoteTime,
     ) -> f64 {
@@ -133,13 +133,13 @@ impl FmSynth {
         let mut side_signal = 0.0;
         let mut chain_signal = 0.0;
 
-        for (wave_index, wave) in (waves.iter_mut().enumerate()).rev() {
-            let p = time.0 * base_frequency * wave.frequency_ratio.get_value(time) * wave.frequency_free.get_value(time) * wave.frequency_fine.get_value(time);
+        for (operator_index, operator) in (operators.iter_mut().enumerate()).rev() {
+            let p = time.0 * base_frequency * operator.frequency_ratio.get_value(time) * operator.frequency_free.get_value(time) * operator.frequency_fine.get_value(time);
 
             // Calculate attack to use to try to prevent popping
             // let attack = 0.0002;
-            // let alpha = if wave.duration.0 < attack {
-            //     wave.duration.0 / attack
+            // let alpha = if operator.duration.0 < attack {
+            //     operator.duration.0 / attack
             // } else {
             //     1.0
             // };
@@ -147,24 +147,24 @@ impl FmSynth {
             // New signal generation for sine FM
             let new_signal = {
                 let new = p * TAU; // alpha * p * TAU;
-                let new_feedback = wave.feedback.get_value(time) * new.sin();
+                let new_feedback = operator.feedback.get_value(time) * new.sin();
 
-                (new + wave.modulation_index.get_value(time) * (chain_signal + new_feedback)).sin()
+                (new + operator.modulation_index.get_value(time) * (chain_signal + new_feedback)).sin()
             };
 
             // Volume envelope
             let new_signal = new_signal * {
-                let note_envelope = &mut note.waves[wave_index].volume_envelope;
+                let note_envelope = &mut note.operators[operator_index].volume_envelope;
 
                 note_envelope.calculate_volume(
-                    &wave.volume_envelope,
+                    &operator.volume_envelope,
                     note.pressed,
                     note.duration
                 )
             };
 
-            side_signal += wave.volume.get_value(time) * new_signal * wave.skip_chain_factor.get_value(time);
-            chain_signal = (chain_signal * wave.skip_chain_factor.get_value(time)) + wave.volume.get_value(time) * (1.0 - wave.skip_chain_factor.get_value(time)) * new_signal;
+            side_signal += operator.volume.get_value(time) * new_signal * operator.skip_chain_factor.get_value(time);
+            chain_signal = (chain_signal * operator.skip_chain_factor.get_value(time)) + operator.volume.get_value(time) * (1.0 - operator.skip_chain_factor.get_value(time)) * new_signal;
         }
 
         let signal = chain_signal + side_signal;
@@ -196,17 +196,17 @@ impl FmSynth {
                 if note.active {
                     out += Self::generate_note_sample(
                         self.automatable.master_frequency,
-                        &mut self.automatable.waves,
+                        &mut self.automatable.operators,
                         note,
                         time,
                     ) as f32;
 
-                    note.deactivate_if_all_waves_finished();
+                    note.deactivate_if_all_operators_finished();
 
                     note.duration.0 += time_per_sample;
 
-                    for wave in self.automatable.waves.iter_mut(){
-                        wave.duration.0 += time_per_sample;
+                    for operator in self.automatable.operators.iter_mut(){
+                        operator.duration.0 += time_per_sample;
                     }
                 }
             }

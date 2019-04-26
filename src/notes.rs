@@ -2,7 +2,7 @@ use smallvec::SmallVec;
 
 use crate::common::*;
 use crate::constants::*;
-use crate::waves::*;
+use crate::operators::*;
 
 
 #[derive(Debug, Copy, Clone)]
@@ -22,19 +22,19 @@ impl MidiPitch {
 
 
 #[derive(Debug, Copy, Clone)]
-pub struct NoteWaveVolumeEnvelope {
+pub struct NoteOperatorVolumeEnvelope {
     stage: EnvelopeStage,
     duration_at_state_change: f64,
     pre_state_change_volume: f64,
     last_volume: f64,
 }
 
-impl NoteWaveVolumeEnvelope {
+impl NoteOperatorVolumeEnvelope {
 
     /// Calculate volume and possibly advance envelope stage
     pub fn calculate_volume(
         &mut self,
-        wave_envelope: &WaveVolumeEnvelope,
+        operator_envelope: &OperatorVolumeEnvelope,
         note_pressed: bool,
         note_duration: NoteDuration,
     ) -> f64 {
@@ -47,13 +47,13 @@ impl NoteWaveVolumeEnvelope {
 
                     self.last_volume
                 }
-                else if effective_duration < wave_envelope.attack_duration.0 {
-                    (effective_duration / wave_envelope.attack_duration.0) * wave_envelope.attack_end_value.0
+                else if effective_duration < operator_envelope.attack_duration.0 {
+                    (effective_duration / operator_envelope.attack_duration.0) * operator_envelope.attack_end_value.0
                 }
                 else {
                     self.change_stage(EnvelopeStage::Decay, note_duration);
 
-                    wave_envelope.attack_end_value.0
+                    operator_envelope.attack_end_value.0
                 }
             },
             EnvelopeStage::Decay => {
@@ -62,14 +62,14 @@ impl NoteWaveVolumeEnvelope {
 
                     self.last_volume
                 }
-                else if effective_duration < wave_envelope.decay_duration.0 {
-                    self.pre_state_change_volume + ((effective_duration / wave_envelope.decay_duration.0) *
-                        (wave_envelope.decay_end_value.0 - self.pre_state_change_volume))
+                else if effective_duration < operator_envelope.decay_duration.0 {
+                    self.pre_state_change_volume + ((effective_duration / operator_envelope.decay_duration.0) *
+                        (operator_envelope.decay_end_value.0 - self.pre_state_change_volume))
                 }
                 else {
                     self.change_stage(EnvelopeStage::Sustain, note_duration);
 
-                    wave_envelope.decay_end_value.0
+                    operator_envelope.decay_end_value.0
                 }
             },
             EnvelopeStage::Sustain => {
@@ -77,11 +77,11 @@ impl NoteWaveVolumeEnvelope {
                     self.change_stage(EnvelopeStage::Release, note_duration);
                 }
 
-                wave_envelope.decay_end_value.0
+                operator_envelope.decay_end_value.0
             },
             EnvelopeStage::Release => {
-                if effective_duration < wave_envelope.release_duration.0 {
-                    ((1.0 - (effective_duration / wave_envelope.release_duration.0)) * self.pre_state_change_volume)
+                if effective_duration < operator_envelope.release_duration.0 {
+                    ((1.0 - (effective_duration / operator_envelope.release_duration.0)) * self.pre_state_change_volume)
                 }
                 else {
                     self.change_stage(EnvelopeStage::Ended, NoteDuration(0.0));
@@ -106,7 +106,7 @@ impl NoteWaveVolumeEnvelope {
     }
 }
 
-impl Default for NoteWaveVolumeEnvelope {
+impl Default for NoteOperatorVolumeEnvelope {
     fn default() -> Self {
         Self {
             stage: EnvelopeStage::Attack,
@@ -119,20 +119,20 @@ impl Default for NoteWaveVolumeEnvelope {
 
 
 #[derive(Debug, Copy, Clone)]
-pub struct NoteWave {
-    pub volume_envelope: NoteWaveVolumeEnvelope,
+pub struct NoteOperator {
+    pub volume_envelope: NoteOperatorVolumeEnvelope,
 }
 
-impl Default for NoteWave {
+impl Default for NoteOperator {
     fn default() -> Self {
         Self {
-            volume_envelope: NoteWaveVolumeEnvelope::default(),
+            volume_envelope: NoteOperatorVolumeEnvelope::default(),
         }
     }
 }
 
 
-pub type NoteWaves = SmallVec<[NoteWave; NUM_WAVES]>;
+pub type NoteOperators = SmallVec<[NoteOperator; NUM_OPERATORS]>;
 
 
 #[derive(Debug, Clone)]
@@ -141,15 +141,15 @@ pub struct Note {
     pub active: bool,
     pub duration: NoteDuration,
     pub midi_pitch: MidiPitch,
-    pub waves: NoteWaves,
+    pub operators: NoteOperators,
 }
 
 impl Note {
     pub fn new(midi_pitch: MidiPitch) -> Self {
-        let mut waves = SmallVec::new();
+        let mut operators = SmallVec::new();
 
-        for _ in 0..NUM_WAVES {
-            waves.push(NoteWave::default());
+        for _ in 0..NUM_OPERATORS {
+            operators.push(NoteOperator::default());
         }
 
         Self {
@@ -157,7 +157,7 @@ impl Note {
             active: false,
             midi_pitch: midi_pitch,
             duration: NoteDuration(0.0),
-            waves: waves,
+            operators: operators,
         }
     }
 
@@ -166,8 +166,8 @@ impl Note {
         self.active = true;
         self.duration = NoteDuration(0.0);
 
-        for wave in self.waves.iter_mut(){
-            *wave = NoteWave::default();
+        for operator in self.operators.iter_mut(){
+            *operator = NoteOperator::default();
         }
     }
 
@@ -177,9 +177,9 @@ impl Note {
         }
     }
 
-    pub fn deactivate_if_all_waves_finished(&mut self) {
-        let finished = self.waves.iter().all(|note_wave|
-            note_wave.volume_envelope.stage == EnvelopeStage::Ended
+    pub fn deactivate_if_all_operators_finished(&mut self) {
+        let finished = self.operators.iter().all(|note_operator|
+            note_operator.volume_envelope.stage == EnvelopeStage::Ended
         );
 
         if finished {

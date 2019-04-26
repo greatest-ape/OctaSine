@@ -17,7 +17,7 @@ pub mod notes;
 pub mod parameters;
 pub mod synth;
 pub mod utils;
-pub mod waves;
+pub mod operators;
 
 pub use common::SampleRate;
 pub use synth::FmSynth;

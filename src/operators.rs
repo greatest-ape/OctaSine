@@ -4,18 +4,18 @@ use crate::utils::*;
 
 
 #[derive(Debug, Copy, Clone)]
-pub struct WaveDuration(pub f64);
+pub struct OperatorDuration(pub f64);
 
 
 #[derive(Debug, Copy, Clone)]
-pub struct WaveStepData {
+pub struct OperatorStepData {
     pub step_size: f64,
     pub steps_remaining: usize,
     pub last_time: NoteTime,
     pub num_steps: usize
 }
 
-impl Default for WaveStepData {
+impl Default for OperatorStepData {
     fn default() -> Self {
         Self {
             step_size: 0.0,
@@ -40,14 +40,14 @@ pub trait AutomatableValue {
 
 
 #[macro_export]
-macro_rules! create_wave_value {
+macro_rules! create_operator_value {
     ($struct_name:ident, $default_value:ident) => {
 
         #[derive(Debug, Copy, Clone)]
         pub struct $struct_name {
             current_value: f64,
             target_value: f64,
-            step_data: WaveStepData,
+            step_data: OperatorStepData,
         }
 
         impl Default for $struct_name {
@@ -55,7 +55,7 @@ macro_rules! create_wave_value {
                 Self {
                     current_value: $default_value,
                     target_value: $default_value,
-                    step_data: WaveStepData::default(),
+                    step_data: OperatorStepData::default(),
                 }
             }
         }
@@ -112,9 +112,9 @@ macro_rules! create_wave_value {
 
 
 
-create_wave_value!(WaveVolume, WAVE_DEFAULT_VOLUME);
+create_operator_value!(OperatorVolume, OPERATOR_DEFAULT_VOLUME);
 
-impl WaveVolume {
+impl OperatorVolume {
     pub fn from_host_value(&self, value: f64) -> f64 {
         value * 2.0
     }
@@ -124,9 +124,9 @@ impl WaveVolume {
 }
 
 
-create_wave_value!(WaveSkipChainFactor, WAVE_DEFAULT_SKIP_CHAIN_FACTOR);
+create_operator_value!(OperatorSkipChainFactor, OPERATOR_DEFAULT_SKIP_CHAIN_FACTOR);
 
-impl WaveSkipChainFactor {
+impl OperatorSkipChainFactor {
     pub fn from_host_value(&self, value: f64) -> f64 {
         value
     }
@@ -136,21 +136,21 @@ impl WaveSkipChainFactor {
 }
 
 
-create_wave_value!(WaveFrequencyRatio, WAVE_DEFAULT_FREQUENCY_RATIO);
+create_operator_value!(OperatorFrequencyRatio, OPERATOR_DEFAULT_FREQUENCY_RATIO);
 
-impl WaveFrequencyRatio {
+impl OperatorFrequencyRatio {
     pub fn from_host_value(&self, value: f64) -> f64 {
-        map_host_param_value_to_step(&WAVE_RATIO_STEPS[..], value)
+        map_host_param_value_to_step(&OPERATOR_RATIO_STEPS[..], value)
     }
     pub fn to_host_value(&self, value: f64) -> f64 {
-        get_host_value_for_step(&WAVE_RATIO_STEPS[..], value)
+        get_host_value_for_step(&OPERATOR_RATIO_STEPS[..], value)
     }
 }
 
 
-create_wave_value!(WaveFrequencyFree, WAVE_DEFAULT_FREQUENCY_FREE);
+create_operator_value!(OperatorFrequencyFree, OPERATOR_DEFAULT_FREQUENCY_FREE);
 
-impl WaveFrequencyFree {
+impl OperatorFrequencyFree {
     pub fn from_host_value(&self, value: f64) -> f64 {
         (value + 0.5).powf(3.0)
     }
@@ -160,9 +160,9 @@ impl WaveFrequencyFree {
 }
 
 
-create_wave_value!(WaveFrequencyFine, WAVE_DEFAULT_FREQUENCY_FINE);
+create_operator_value!(OperatorFrequencyFine, OPERATOR_DEFAULT_FREQUENCY_FINE);
 
-impl WaveFrequencyFine {
+impl OperatorFrequencyFine {
     pub fn from_host_value(&self, value: f64) -> f64 {
         (value + 0.5).sqrt()
     }
@@ -172,9 +172,9 @@ impl WaveFrequencyFine {
 }
 
 
-create_wave_value!(WaveFeedback, WAVE_DEFAULT_FEEDBACK);
+create_operator_value!(OperatorFeedback, OPERATOR_DEFAULT_FEEDBACK);
 
-impl WaveFeedback {
+impl OperatorFeedback {
     pub fn from_host_value(&self, value: f64) -> f64 {
         value
     }
@@ -184,14 +184,14 @@ impl WaveFeedback {
 }
 
 
-create_wave_value!(WaveModulationIndex, WAVE_DEFAULT_MODULATION_INDEX);
+create_operator_value!(OperatorModulationIndex, OPERATOR_DEFAULT_MODULATION_INDEX);
 
-impl WaveModulationIndex {
+impl OperatorModulationIndex {
     pub fn from_host_value(&self, value: f64) -> f64 {
-        map_host_param_value_to_step_smooth(&WAVE_BETA_STEPS[..], value)
+        map_host_param_value_to_step_smooth(&OPERATOR_BETA_STEPS[..], value)
     }
     pub fn to_host_value(&self, value: f64) -> f64 {
-        get_host_value_for_step(&WAVE_BETA_STEPS[..], value) // TODO: add util for smooth reverse step finding
+        get_host_value_for_step(&OPERATOR_BETA_STEPS[..], value) // TODO: add util for smooth reverse step finding
     }
 }
 
@@ -201,14 +201,14 @@ pub struct VolumeEnvelopeAttackDuration(pub f64);
 
 impl VolumeEnvelopeAttackDuration {
     pub fn new() -> Self {
-        Self(WAVE_DEFAULT_VOLUME_ENVELOPE_ATTACK_DURATION)
+        Self(OPERATOR_DEFAULT_VOLUME_ENVELOPE_ATTACK_DURATION)
     }
 
     pub fn from_host_value(&self, value: f64) -> f64 {
         value
     }
     pub fn get_default_host_value(&self) -> f64 {
-        WAVE_DEFAULT_VOLUME_ENVELOPE_ATTACK_DURATION
+        OPERATOR_DEFAULT_VOLUME_ENVELOPE_ATTACK_DURATION
     }
 }
 
@@ -218,14 +218,14 @@ pub struct VolumeEnvelopeAttackValue(pub f64);
 
 impl VolumeEnvelopeAttackValue {
     pub fn new() -> Self {
-        Self(WAVE_DEFAULT_VOLUME_ENVELOPE_ATTACK_VALUE)
+        Self(OPERATOR_DEFAULT_VOLUME_ENVELOPE_ATTACK_VALUE)
     }
 
     pub fn from_host_value(&self, value: f64) -> f64 {
         value
     }
     pub fn get_default_host_value(&self) -> f64 {
-        WAVE_DEFAULT_VOLUME_ENVELOPE_ATTACK_VALUE
+        OPERATOR_DEFAULT_VOLUME_ENVELOPE_ATTACK_VALUE
     }
 }
 
@@ -235,14 +235,14 @@ pub struct VolumeEnvelopeDecayDuration(pub f64);
 
 impl VolumeEnvelopeDecayDuration {
     pub fn new() -> Self {
-        Self(WAVE_DEFAULT_VOLUME_ENVELOPE_DECAY_DURATION)
+        Self(OPERATOR_DEFAULT_VOLUME_ENVELOPE_DECAY_DURATION)
     }
 
     pub fn from_host_value(&self, value: f64) -> f64 {
         value
     }
     pub fn get_default_host_value(&self) -> f64 {
-        WAVE_DEFAULT_VOLUME_ENVELOPE_DECAY_DURATION
+        OPERATOR_DEFAULT_VOLUME_ENVELOPE_DECAY_DURATION
     }
 }
 
@@ -252,14 +252,14 @@ pub struct VolumeEnvelopeDecayValue(pub f64);
 
 impl VolumeEnvelopeDecayValue {
     pub fn new() -> Self {
-        Self(WAVE_DEFAULT_VOLUME_ENVELOPE_DECAY_VALUE)
+        Self(OPERATOR_DEFAULT_VOLUME_ENVELOPE_DECAY_VALUE)
     }
 
     pub fn from_host_value(&self, value: f64) -> f64 {
         value
     }
     pub fn get_default_host_value(&self) -> f64 {
-        WAVE_DEFAULT_VOLUME_ENVELOPE_DECAY_VALUE
+        OPERATOR_DEFAULT_VOLUME_ENVELOPE_DECAY_VALUE
     }
 }
 
@@ -269,20 +269,20 @@ pub struct VolumeEnvelopeReleaseDuration(pub f64);
 
 impl VolumeEnvelopeReleaseDuration {
     pub fn new() -> Self {
-        Self(WAVE_DEFAULT_VOLUME_ENVELOPE_RELEASE_DURATION)
+        Self(OPERATOR_DEFAULT_VOLUME_ENVELOPE_RELEASE_DURATION)
     }
 
     pub fn from_host_value(&self, value: f64) -> f64 {
         value
     }
     pub fn get_default_host_value(&self) -> f64 {
-        WAVE_DEFAULT_VOLUME_ENVELOPE_RELEASE_DURATION
+        OPERATOR_DEFAULT_VOLUME_ENVELOPE_RELEASE_DURATION
     }
 }
 
 
 #[derive(Debug, Copy, Clone)]
-pub struct WaveVolumeEnvelope {
+pub struct OperatorVolumeEnvelope {
     pub attack_duration: VolumeEnvelopeAttackDuration,
     pub attack_end_value: VolumeEnvelopeAttackValue,
     pub decay_duration: VolumeEnvelopeDecayDuration,
@@ -290,7 +290,7 @@ pub struct WaveVolumeEnvelope {
     pub release_duration: VolumeEnvelopeReleaseDuration,
 }
 
-impl Default for WaveVolumeEnvelope {
+impl Default for OperatorVolumeEnvelope {
     fn default() -> Self {
         Self {
             attack_duration: VolumeEnvelopeAttackDuration::new(),
@@ -304,30 +304,30 @@ impl Default for WaveVolumeEnvelope {
 
 
 #[derive(Debug, Copy, Clone)]
-pub struct Wave {
-    pub duration: WaveDuration,
-    pub volume: WaveVolume,
-    pub skip_chain_factor: WaveSkipChainFactor,
-    pub frequency_ratio: WaveFrequencyRatio,
-    pub frequency_free: WaveFrequencyFree,
-    pub frequency_fine: WaveFrequencyFine,
-    pub feedback: WaveFeedback,
-    pub modulation_index: WaveModulationIndex,
-    pub volume_envelope: WaveVolumeEnvelope,
+pub struct Operator {
+    pub duration: OperatorDuration,
+    pub volume: OperatorVolume,
+    pub skip_chain_factor: OperatorSkipChainFactor,
+    pub frequency_ratio: OperatorFrequencyRatio,
+    pub frequency_free: OperatorFrequencyFree,
+    pub frequency_fine: OperatorFrequencyFine,
+    pub feedback: OperatorFeedback,
+    pub modulation_index: OperatorModulationIndex,
+    pub volume_envelope: OperatorVolumeEnvelope,
 }
 
-impl Default for Wave {
+impl Default for Operator {
     fn default() -> Self {
         Self {
-            duration: WaveDuration(0.0),
-            skip_chain_factor: WaveSkipChainFactor::default(),
-            volume: WaveVolume::default(),
-            frequency_ratio: WaveFrequencyRatio::default(),
-            frequency_free: WaveFrequencyFree::default(),
-            frequency_fine: WaveFrequencyFine::default(),
-            feedback: WaveFeedback::default(),
-            modulation_index: WaveModulationIndex::default(),
-            volume_envelope: WaveVolumeEnvelope::default(),
+            duration: OperatorDuration(0.0),
+            skip_chain_factor: OperatorSkipChainFactor::default(),
+            volume: OperatorVolume::default(),
+            frequency_ratio: OperatorFrequencyRatio::default(),
+            frequency_free: OperatorFrequencyFree::default(),
+            frequency_fine: OperatorFrequencyFine::default(),
+            feedback: OperatorFeedback::default(),
+            modulation_index: OperatorModulationIndex::default(),
+            volume_envelope: OperatorVolumeEnvelope::default(),
         }
     }
 }
