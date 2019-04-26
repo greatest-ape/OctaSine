@@ -136,14 +136,6 @@ impl FmSynth {
         for (operator_index, operator) in (operators.iter_mut().enumerate()).rev() {
             let p = time.0 * base_frequency * operator.frequency_ratio.get_value(time) * operator.frequency_free.get_value(time) * operator.frequency_fine.get_value(time);
 
-            // Calculate attack to use to try to prevent popping
-            // let attack = 0.0002;
-            // let alpha = if operator.duration.0 < attack {
-            //     operator.duration.0 / attack
-            // } else {
-            //     1.0
-            // };
-
             // New signal generation for sine FM
             let new_signal = {
                 let new = p * TAU; // alpha * p * TAU;
@@ -187,7 +179,6 @@ impl FmSynth {
         let outputs = audio_buffer.split().1;
 
         let mut time = NoteTime(self.internal.global_time.0);
-        let mut last_sample = 0.0f32;
 
         for (output_sample_left, output_sample_right) in outputs.get_mut(0).iter_mut().zip(outputs.get_mut(1).iter_mut()) {
             let mut out = 0.0f32;
