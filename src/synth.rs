@@ -13,7 +13,7 @@ use crate::operators::*;
 
 pub type Notes = SmallVec<[Note; 128]>;
 pub type Operators = SmallVec<[Operator; NUM_OPERATORS]>;
-pub type Parameters = Vec<Box<Parameter>>;
+pub type Parameters = SmallVec<[Box<Parameter>; 256]>;
 
 
 /// Non-automatable state (but not necessarily impossible to change from host)
@@ -51,7 +51,7 @@ impl FmSynth {
             operators.push(Operator::default());
         }
 
-        let mut parameters: Vec<Box<Parameter>> = Vec::new();
+        let mut parameters: SmallVec<[Box<Parameter>; 256]> = SmallVec::new();
 
         for (i, _) in operators.iter().enumerate(){
             parameters.push(Box::new(OperatorVolumeParameter::new(i)));
