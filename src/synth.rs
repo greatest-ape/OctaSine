@@ -235,8 +235,6 @@ impl FmSynth {
                 }
             }
 
-            self.automatable.fadeout_notes.retain(|note| note.active);
-
             self.internal.global_time.0 += time_per_sample;
 
             let output_sample = self.limit(out);
@@ -244,6 +242,8 @@ impl FmSynth {
             *output_sample_left = output_sample;
             *output_sample_right = output_sample;
         }
+
+        self.automatable.fadeout_notes.retain(|note| note.active);
     }
 
     /// MIDI keyboard support
