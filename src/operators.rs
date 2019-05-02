@@ -192,10 +192,10 @@ create_automatable!(OperatorFrequencyFine, OPERATOR_DEFAULT_FREQUENCY_FINE);
 
 impl OperatorFrequencyFine {
     pub fn from_host_value(&self, value: f64) -> f64 {
-        (value + 0.5).sqrt()
+        (value + 0.5).powf(1.0/3.0)
     }
     pub fn to_host_value(&self, value: f64) -> f64 {
-        value.powf(2.0) - 0.5
+        value.powf(3.0) - 0.5
     }
 }
 
