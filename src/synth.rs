@@ -257,12 +257,12 @@ impl FmSynth {
     }
 
     fn note_on(&mut self, pitch: u8) {
-        let mut note = self.automatable.notes[pitch as usize].clone();
+        let mut note_clone = self.automatable.notes[pitch as usize].clone();
 
-        if note.active {
-            note.release();
+        if note_clone.active {
+            note_clone.release();
 
-            self.automatable.fadeout_notes.push(note);
+            self.automatable.fadeout_notes.push(note_clone);
         }
 
         self.automatable.notes[pitch as usize].press();
