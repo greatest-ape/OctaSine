@@ -135,11 +135,11 @@ impl FmSynth {
     /// is borrowed mutably in the generate_audio inner loop)
     fn generate_note_sample(
         rng: &mut impl Rng,
+        time: TimeCounter,
         sample_rate: SampleRate,
         master_frequency: MasterFrequency,
         operators: &mut Operators,
         note: &mut Note,
-        time: TimeCounter,
     ) -> f64 {
         let base_frequency = note.midi_pitch.get_frequency(master_frequency);
 
@@ -147,7 +147,7 @@ impl FmSynth {
         let mut chain_signal = 0.0;
 
         for (operator_index, operator) in (operators.iter_mut().enumerate()).rev() {
-            // New signal generation for sine FM
+            // New signal generation for sine FM / white noise
             let new_signal = match operator.wave_type.0 {
                 WaveType::Sine => {
                     let frequency = base_frequency *
@@ -218,11 +218,11 @@ impl FmSynth {
                 if note.active {
                     out += Self::generate_note_sample(
                         &mut self.internal.rng,
+                        self.internal.global_time,
                         self.internal.sample_rate,
                         self.automatable.master_frequency,
                         &mut self.automatable.operators,
                         note,
-                        self.internal.global_time,
                     ) as f32;
 
                     note.deactivate_if_all_operators_finished();
