@@ -11,7 +11,7 @@ pub struct OperatorDuration(pub f64);
 pub struct OperatorStepData {
     pub step_size: f64,
     pub steps_remaining: usize,
-    pub last_time: NoteTime,
+    pub last_time: TimeCounter,
     pub num_steps: usize
 }
 
@@ -20,14 +20,14 @@ impl Default for OperatorStepData {
         Self {
             step_size: 0.0,
             steps_remaining: 0,
-            last_time: NoteTime(0.0),
+            last_time: TimeCounter(0.0),
             num_steps: 32,
         }
     }
 }
 
 pub trait InterpolatableValue {
-    fn get_value(&mut self, time: NoteTime) -> f64;
+    fn get_value(&mut self, time: TimeCounter) -> f64;
     fn set_value(&mut self, value: f64);
 }
 
@@ -61,7 +61,7 @@ macro_rules! create_interpolatable_automatable {
         }
 
         impl InterpolatableValue for $struct_name {
-            fn get_value(&mut self, time: NoteTime) -> f64 {
+            fn get_value(&mut self, time: TimeCounter) -> f64 {
                 if self.step_data.num_steps == 0 {
                     return self.current_value;
                 }

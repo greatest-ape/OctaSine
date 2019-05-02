@@ -18,7 +18,7 @@ pub type Parameters = SmallVec<[Box<Parameter>; 256]>;
 
 /// Non-automatable state (but not necessarily impossible to change from host)
 pub struct InternalState {
-    pub global_time: GlobalTime,
+    pub global_time: TimeCounter,
     pub sample_rate: SampleRate,
     pub parameters: Parameters,
     pub bpm: BeatsPerMinute,
@@ -81,7 +81,7 @@ impl FmSynth {
         };
 
         let internal = InternalState {
-            global_time: GlobalTime(0.0),
+            global_time: TimeCounter(0.0),
             sample_rate: SampleRate(44100.0),
             parameters: parameters,
             bpm: BeatsPerMinute(120.0),
@@ -127,7 +127,7 @@ impl FmSynth {
         master_frequency: MasterFrequency,
         operators: &mut Operators,
         note: &mut Note,
-        time: NoteTime,
+        time: TimeCounter,
     ) -> f64 {
         let base_frequency = note.midi_pitch.get_frequency(master_frequency);
 
@@ -185,12 +185,9 @@ impl FmSynth {
     }
 
     pub fn generate_audio(&mut self, audio_buffer: &mut AudioBuffer<f32>){
-        let num_samples = audio_buffer.samples();
         let time_per_sample = self.time_per_sample();
 
         let outputs = audio_buffer.split().1;
-
-        let mut time = NoteTime(self.internal.global_time.0);
 
         for (output_sample_left, output_sample_right) in outputs.get_mut(0)
             .iter_mut()
@@ -205,7 +202,7 @@ impl FmSynth {
                         self.automatable.master_frequency,
                         &mut self.automatable.operators,
                         note,
-                        time,
+                        self.internal.global_time,
                     ) as f32;
 
                     note.deactivate_if_all_operators_finished();
@@ -218,15 +215,13 @@ impl FmSynth {
                 }
             }
 
-            time.0 += time_per_sample;
+            self.internal.global_time.0 += time_per_sample;
 
             let output_sample = self.limit(out);
 
             *output_sample_left = output_sample;
             *output_sample_right = output_sample;
         }
-
-        self.internal.global_time.0 += num_samples as f64 * time_per_sample;
     }
 
     /// MIDI keyboard support

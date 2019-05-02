@@ -1,14 +1,11 @@
 
 
 /// Number that gets incremented with 1.0 every second
-#[derive(Debug, Copy, Clone)]
-pub struct GlobalTime(pub f64);
+#[derive(Debug, Copy, Clone, PartialEq)]
+pub struct TimeCounter(pub f64);
 
 #[derive(Debug, Copy, Clone)]
 pub struct Phase(pub f64);
-
-#[derive(Debug, Copy, Clone, PartialEq)]
-pub struct NoteTime(pub f64);
 
 #[derive(Debug, Copy, Clone)]
 pub struct MasterFrequency(pub f64);
