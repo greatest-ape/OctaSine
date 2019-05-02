@@ -12,6 +12,7 @@ use crate::operators::*;
 
 
 pub type Notes = SmallVec<[Note; 128]>;
+pub type FadeoutNotes = SmallVec<[Note; 1024]>;
 pub type Operators = SmallVec<[Operator; NUM_OPERATORS]>;
 pub type Parameters = SmallVec<[Box<Parameter>; 256]>;
 
@@ -30,6 +31,10 @@ pub struct AutomatableState {
     pub master_frequency: MasterFrequency,
     pub operators: Operators,
     pub notes: Notes,
+
+    /// When notes are pressed again while they're still active, they get
+    /// copied here so they can fade out in peace
+    pub fadeout_notes: FadeoutNotes,
 }
 
 
@@ -77,6 +82,7 @@ impl FmSynth {
         let external = AutomatableState {
             master_frequency: MasterFrequency(440.0),
             notes: notes,
+            fadeout_notes: SmallVec::new(),
             operators: operators,
         };
 
@@ -195,7 +201,9 @@ impl FmSynth {
 
             let mut out = 0.0f32;
 
-            for note in self.automatable.notes.iter_mut(){
+            for note in self.automatable.notes.iter_mut()
+                .chain(self.automatable.fadeout_notes.iter_mut()){
+
                 if note.active {
                     out += Self::generate_note_sample(
                         self.internal.sample_rate,
@@ -214,6 +222,8 @@ impl FmSynth {
                     }
                 }
             }
+
+            self.automatable.fadeout_notes.retain(|note| note.active);
 
             self.internal.global_time.0 += time_per_sample;
 
@@ -235,6 +245,14 @@ impl FmSynth {
     }
 
     fn note_on(&mut self, pitch: u8) {
+        let mut note = self.automatable.notes[pitch as usize].clone();
+
+        if note.active {
+            note.release();
+
+            self.automatable.fadeout_notes.push(note);
+        }
+
         self.automatable.notes[pitch as usize].press();
     }
 
