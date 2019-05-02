@@ -106,6 +106,12 @@ create_operator_field_parameter!(
 );
 
 create_operator_field_parameter!(
+    OperatorWaveTypeParameter,
+    wave_type,
+    "wave type"
+);
+
+create_operator_field_parameter!(
     OperatorSkipChainFactorParameter,
     skip_chain_factor,
     "skip chain"

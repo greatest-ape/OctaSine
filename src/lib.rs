@@ -1,6 +1,7 @@
 extern crate dirs;
 #[macro_use] extern crate log;
 extern crate log_panics;
+extern crate rand;
 extern crate simplelog;
 extern crate smallvec;
 extern crate vst;

@@ -24,3 +24,9 @@ pub enum EnvelopeStage {
     Release,
     Ended
 }
+
+#[derive(Debug, Copy, Clone)]
+pub enum WaveType {
+    Sine,
+    WhiteNoise
+}

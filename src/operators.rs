@@ -224,6 +224,49 @@ impl OperatorModulationIndex {
 }
 
 
+
+#[derive(Debug, Copy, Clone)]
+pub struct OperatorWaveType(pub WaveType);
+
+impl Default for OperatorWaveType {
+    fn default() -> Self {
+        Self(WaveType::Sine)
+    }
+}
+
+impl OperatorWaveType {
+    pub fn from_host_value(&self, value: f64) -> WaveType {
+        if value <= 0.5 {
+            WaveType::Sine
+        }
+        else {
+            WaveType::WhiteNoise
+        }
+    }
+    pub fn to_host_value(&self, value: WaveType) -> f64 {
+        match value {
+            WaveType::Sine => 0.0,
+            WaveType::WhiteNoise => 1.0,
+        }
+    }
+}
+
+impl AutomatableValue for OperatorWaveType {
+    fn set_host_value_float(&mut self, value: f64){
+        self.0 = self.from_host_value(value);
+    }
+    fn get_host_value_float(&self) -> f64 {
+        self.to_host_value(self.0)
+    }
+    fn get_host_value_text(&self) -> String {
+        match self.0 {
+            WaveType::Sine => "Sine".to_string(),
+            WaveType::WhiteNoise => "White noise".to_string(),
+        }
+    }
+}
+
+
 create_automatable!(VolumeEnvelopeAttackDuration, OPERATOR_DEFAULT_VOLUME_ENVELOPE_ATTACK_DURATION);
 
 impl VolumeEnvelopeAttackDuration {
@@ -310,6 +353,7 @@ impl Default for OperatorVolumeEnvelope {
 pub struct Operator {
     pub duration: OperatorDuration,
     pub volume: OperatorVolume,
+    pub wave_type: OperatorWaveType,
     pub skip_chain_factor: OperatorSkipChainFactor,
     pub frequency_ratio: OperatorFrequencyRatio,
     pub frequency_free: OperatorFrequencyFree,
@@ -325,6 +369,7 @@ impl Default for Operator {
             duration: OperatorDuration(0.0),
             skip_chain_factor: OperatorSkipChainFactor::default(),
             volume: OperatorVolume::default(),
+            wave_type: OperatorWaveType::default(),
             frequency_ratio: OperatorFrequencyRatio::default(),
             frequency_free: OperatorFrequencyFree::default(),
             frequency_fine: OperatorFrequencyFine::default(),

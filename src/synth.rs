@@ -1,3 +1,5 @@
+use rand::{FromEntropy, Rng};
+use rand::rngs::SmallRng;
 use smallvec::{SmallVec, smallvec};
 
 use vst::buffer::AudioBuffer;
@@ -23,6 +25,7 @@ pub struct InternalState {
     pub sample_rate: SampleRate,
     pub parameters: Parameters,
     pub bpm: BeatsPerMinute,
+    pub rng: SmallRng,
 }
 
 
@@ -60,6 +63,7 @@ impl FmSynth {
 
         for (i, _) in operators.iter().enumerate(){
             parameters.push(Box::new(OperatorVolumeParameter::new(i)));
+            parameters.push(Box::new(OperatorWaveTypeParameter::new(i)));
             parameters.push(Box::new(OperatorSkipChainFactorParameter::new(i)));
             parameters.push(Box::new(OperatorModulationIndexParameter::new(i)));
             parameters.push(Box::new(OperatorFeedbackParameter::new(i)));
@@ -91,6 +95,7 @@ impl FmSynth {
             sample_rate: SampleRate(44100.0),
             parameters: parameters,
             bpm: BeatsPerMinute(120.0),
+            rng: SmallRng::from_entropy(),
         };
 
         Self {
@@ -129,6 +134,7 @@ impl FmSynth {
     /// Doesn't take self parameter due to conflicting borrowing (Self.notes
     /// is borrowed mutably in the generate_audio inner loop)
     fn generate_note_sample(
+        rng: &mut impl Rng,
         sample_rate: SampleRate,
         master_frequency: MasterFrequency,
         operators: &mut Operators,
@@ -142,26 +148,31 @@ impl FmSynth {
 
         for (operator_index, operator) in (operators.iter_mut().enumerate()).rev() {
             // New signal generation for sine FM
-            let new_signal = {
-                let frequency = base_frequency *
-                    operator.frequency_ratio.0 *
-                    operator.frequency_free.0 *
-                    operator.frequency_fine.0;
+            let new_signal = match operator.wave_type.0 {
+                WaveType::Sine => {
+                    let frequency = base_frequency *
+                        operator.frequency_ratio.0 *
+                        operator.frequency_free.0 *
+                        operator.frequency_fine.0;
 
-                let phase_increment = (frequency / sample_rate.0) * TAU;
-                let new_phase = note.operators[operator_index].last_phase.0 + phase_increment;
+                    let phase_increment = (frequency / sample_rate.0) * TAU;
+                    let new_phase = note.operators[operator_index].last_phase.0 + phase_increment;
 
-                let new_feedback = operator.feedback.get_value(time) * new_phase.sin();
+                    let new_feedback = operator.feedback.get_value(time) * new_phase.sin();
 
-                let signal = (
-                    new_phase +
-                    operator.modulation_index.get_value(time) *
-                    (chain_signal + new_feedback)
-                ).sin();
+                    let signal = (
+                        new_phase +
+                        operator.modulation_index.get_value(time) *
+                        (chain_signal + new_feedback)
+                    ).sin();
 
-                note.operators[operator_index].last_phase.0 = new_phase;
+                    note.operators[operator_index].last_phase.0 = new_phase;
 
-                signal
+                    signal
+                },
+                WaveType::WhiteNoise => {
+                    (rng.gen::<f64>() - 0.5) * 2.0
+                }
             };
 
             // Volume envelope
@@ -206,6 +217,7 @@ impl FmSynth {
 
                 if note.active {
                     out += Self::generate_note_sample(
+                        &mut self.internal.rng,
                         self.internal.sample_rate,
                         self.automatable.master_frequency,
                         &mut self.automatable.operators,
