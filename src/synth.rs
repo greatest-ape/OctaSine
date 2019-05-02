@@ -138,9 +138,9 @@ impl FmSynth {
             // New signal generation for sine FM
             let new_signal = {
                 let frequency = base_frequency *
-                    operator.frequency_ratio.target_value *
-                    operator.frequency_free.target_value *
-                    operator.frequency_fine.target_value;
+                    operator.frequency_ratio.0 *
+                    operator.frequency_free.0 *
+                    operator.frequency_fine.0;
 
                 let phase_increment = (frequency / sample_rate.0) * TAU;
                 let new_phase = note.operators[operator_index].last_phase.0 + phase_increment;

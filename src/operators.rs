@@ -40,7 +40,7 @@ pub trait AutomatableValue {
 
 
 #[macro_export]
-macro_rules! create_operator_value {
+macro_rules! create_interpolatable_automatable {
     ($struct_name:ident, $default_value:ident) => {
 
         #[derive(Debug, Copy, Clone)]
@@ -112,7 +112,7 @@ macro_rules! create_operator_value {
 
 
 #[macro_export]
-macro_rules! create_operator_envelope_value {
+macro_rules! create_automatable {
     ($struct_name:ident, $default_value:ident) => {
 
         #[derive(Debug, Copy, Clone)]
@@ -132,7 +132,7 @@ macro_rules! create_operator_envelope_value {
                 self.to_host_value(self.0)
             }
             fn get_host_value_text(&self) -> String {
-                format!("{:.2}", self.to_host_value(self.0))
+                format!("{:.2}", self.0)
             }
         }
     };  
@@ -140,7 +140,7 @@ macro_rules! create_operator_envelope_value {
 
 
 
-create_operator_value!(OperatorVolume, OPERATOR_DEFAULT_VOLUME);
+create_interpolatable_automatable!(OperatorVolume, OPERATOR_DEFAULT_VOLUME);
 
 impl OperatorVolume {
     pub fn from_host_value(&self, value: f64) -> f64 {
@@ -152,7 +152,7 @@ impl OperatorVolume {
 }
 
 
-create_operator_value!(OperatorSkipChainFactor, OPERATOR_DEFAULT_SKIP_CHAIN_FACTOR);
+create_interpolatable_automatable!(OperatorSkipChainFactor, OPERATOR_DEFAULT_SKIP_CHAIN_FACTOR);
 
 impl OperatorSkipChainFactor {
     pub fn from_host_value(&self, value: f64) -> f64 {
@@ -164,7 +164,7 @@ impl OperatorSkipChainFactor {
 }
 
 
-create_operator_value!(OperatorFrequencyRatio, OPERATOR_DEFAULT_FREQUENCY_RATIO);
+create_automatable!(OperatorFrequencyRatio, OPERATOR_DEFAULT_FREQUENCY_RATIO);
 
 impl OperatorFrequencyRatio {
     pub fn from_host_value(&self, value: f64) -> f64 {
@@ -176,7 +176,7 @@ impl OperatorFrequencyRatio {
 }
 
 
-create_operator_value!(OperatorFrequencyFree, OPERATOR_DEFAULT_FREQUENCY_FREE);
+create_automatable!(OperatorFrequencyFree, OPERATOR_DEFAULT_FREQUENCY_FREE);
 
 impl OperatorFrequencyFree {
     pub fn from_host_value(&self, value: f64) -> f64 {
@@ -188,7 +188,7 @@ impl OperatorFrequencyFree {
 }
 
 
-create_operator_value!(OperatorFrequencyFine, OPERATOR_DEFAULT_FREQUENCY_FINE);
+create_automatable!(OperatorFrequencyFine, OPERATOR_DEFAULT_FREQUENCY_FINE);
 
 impl OperatorFrequencyFine {
     pub fn from_host_value(&self, value: f64) -> f64 {
@@ -200,7 +200,7 @@ impl OperatorFrequencyFine {
 }
 
 
-create_operator_value!(OperatorFeedback, OPERATOR_DEFAULT_FEEDBACK);
+create_interpolatable_automatable!(OperatorFeedback, OPERATOR_DEFAULT_FEEDBACK);
 
 impl OperatorFeedback {
     pub fn from_host_value(&self, value: f64) -> f64 {
@@ -212,7 +212,7 @@ impl OperatorFeedback {
 }
 
 
-create_operator_value!(OperatorModulationIndex, OPERATOR_DEFAULT_MODULATION_INDEX);
+create_interpolatable_automatable!(OperatorModulationIndex, OPERATOR_DEFAULT_MODULATION_INDEX);
 
 impl OperatorModulationIndex {
     pub fn from_host_value(&self, value: f64) -> f64 {
@@ -224,7 +224,7 @@ impl OperatorModulationIndex {
 }
 
 
-create_operator_envelope_value!(VolumeEnvelopeAttackDuration, OPERATOR_DEFAULT_VOLUME_ENVELOPE_ATTACK_DURATION);
+create_automatable!(VolumeEnvelopeAttackDuration, OPERATOR_DEFAULT_VOLUME_ENVELOPE_ATTACK_DURATION);
 
 impl VolumeEnvelopeAttackDuration {
     pub fn from_host_value(&self, value: f64) -> f64 {
@@ -236,7 +236,7 @@ impl VolumeEnvelopeAttackDuration {
 }
 
 
-create_operator_envelope_value!(VolumeEnvelopeAttackValue, OPERATOR_DEFAULT_VOLUME_ENVELOPE_ATTACK_VALUE);
+create_automatable!(VolumeEnvelopeAttackValue, OPERATOR_DEFAULT_VOLUME_ENVELOPE_ATTACK_VALUE);
 
 impl VolumeEnvelopeAttackValue {
     pub fn from_host_value(&self, value: f64) -> f64 {
@@ -248,7 +248,7 @@ impl VolumeEnvelopeAttackValue {
 }
 
 
-create_operator_envelope_value!(VolumeEnvelopeDecayDuration, OPERATOR_DEFAULT_VOLUME_ENVELOPE_DECAY_DURATION);
+create_automatable!(VolumeEnvelopeDecayDuration, OPERATOR_DEFAULT_VOLUME_ENVELOPE_DECAY_DURATION);
 
 impl VolumeEnvelopeDecayDuration {
     pub fn from_host_value(&self, value: f64) -> f64 {
@@ -260,7 +260,7 @@ impl VolumeEnvelopeDecayDuration {
 }
 
 
-create_operator_envelope_value!(VolumeEnvelopeDecayValue, OPERATOR_DEFAULT_VOLUME_ENVELOPE_DECAY_VALUE);
+create_automatable!(VolumeEnvelopeDecayValue, OPERATOR_DEFAULT_VOLUME_ENVELOPE_DECAY_VALUE);
 
 impl VolumeEnvelopeDecayValue {
     pub fn from_host_value(&self, value: f64) -> f64 {
@@ -272,7 +272,7 @@ impl VolumeEnvelopeDecayValue {
 }
 
 
-create_operator_envelope_value!(VolumeEnvelopeReleaseDuration, OPERATOR_DEFAULT_VOLUME_ENVELOPE_RELEASE_DURATION);
+create_automatable!(VolumeEnvelopeReleaseDuration, OPERATOR_DEFAULT_VOLUME_ENVELOPE_RELEASE_DURATION);
 
 impl VolumeEnvelopeReleaseDuration {
     pub fn from_host_value(&self, value: f64) -> f64 {
