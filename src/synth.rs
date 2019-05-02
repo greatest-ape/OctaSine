@@ -123,6 +123,7 @@ impl FmSynth {
     /// Doesn't take self parameter due to conflicting borrowing (Self.notes
     /// is borrowed mutably in the generate_audio inner loop)
     fn generate_note_sample(
+        sample_rate: SampleRate,
         master_frequency: MasterFrequency,
         operators: &mut Operators,
         note: &mut Note,
@@ -134,14 +135,27 @@ impl FmSynth {
         let mut chain_signal = 0.0;
 
         for (operator_index, operator) in (operators.iter_mut().enumerate()).rev() {
-            let p = time.0 * base_frequency * operator.frequency_ratio.get_value(time) * operator.frequency_free.get_value(time) * operator.frequency_fine.get_value(time);
-
             // New signal generation for sine FM
             let new_signal = {
-                let new = p * TAU; // alpha * p * TAU;
-                let new_feedback = operator.feedback.get_value(time) * new.sin();
+                let frequency = base_frequency *
+                    operator.frequency_ratio.target_value *
+                    operator.frequency_free.target_value *
+                    operator.frequency_fine.target_value;
 
-                (new + operator.modulation_index.get_value(time) * (chain_signal + new_feedback)).sin()
+                let phase_increment = (frequency / sample_rate.0) * TAU;
+                let new_phase = note.operators[operator_index].last_phase.0 + phase_increment;
+
+                let new_feedback = operator.feedback.get_value(time) * new_phase.sin();
+
+                let signal = (
+                    new_phase +
+                    operator.modulation_index.get_value(time) *
+                    (chain_signal + new_feedback)
+                ).sin();
+
+                note.operators[operator_index].last_phase.0 = new_phase;
+
+                signal
             };
 
             // Volume envelope
@@ -155,8 +169,14 @@ impl FmSynth {
                 )
             };
 
-            side_signal += operator.volume.get_value(time) * new_signal * operator.skip_chain_factor.get_value(time);
-            chain_signal = (chain_signal * operator.skip_chain_factor.get_value(time)) + operator.volume.get_value(time) * (1.0 - operator.skip_chain_factor.get_value(time)) * new_signal;
+            side_signal += operator.volume.get_value(time) * new_signal *
+                operator.skip_chain_factor.get_value(time);
+
+            chain_signal =
+                chain_signal * operator.skip_chain_factor.get_value(time) +
+                operator.volume.get_value(time) *
+                (1.0 - operator.skip_chain_factor.get_value(time)) *
+                new_signal;
         }
 
         let signal = chain_signal + side_signal;
@@ -186,6 +206,7 @@ impl FmSynth {
             for note in self.automatable.notes.iter_mut(){
                 if note.active {
                     out += Self::generate_note_sample(
+                        self.internal.sample_rate,
                         self.automatable.master_frequency,
                         &mut self.automatable.operators,
                         note,

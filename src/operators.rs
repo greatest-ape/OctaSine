@@ -46,7 +46,7 @@ macro_rules! create_operator_value {
         #[derive(Debug, Copy, Clone)]
         pub struct $struct_name {
             current_value: f64,
-            target_value: f64,
+            pub target_value: f64,
             step_data: OperatorStepData,
         }
 
@@ -317,6 +317,7 @@ pub struct Operator {
     pub feedback: OperatorFeedback,
     pub modulation_index: OperatorModulationIndex,
     pub volume_envelope: OperatorVolumeEnvelope,
+    pub last_phase: f64,
 }
 
 impl Default for Operator {
@@ -331,6 +332,7 @@ impl Default for Operator {
             feedback: OperatorFeedback::default(),
             modulation_index: OperatorModulationIndex::default(),
             volume_envelope: OperatorVolumeEnvelope::default(),
+            last_phase: 0.0,
         }
     }
 }

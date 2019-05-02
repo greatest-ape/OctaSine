@@ -121,12 +121,14 @@ impl Default for NoteOperatorVolumeEnvelope {
 #[derive(Debug, Copy, Clone)]
 pub struct NoteOperator {
     pub volume_envelope: NoteOperatorVolumeEnvelope,
+    pub last_phase: Phase,
 }
 
 impl Default for NoteOperator {
     fn default() -> Self {
         Self {
             volume_envelope: NoteOperatorVolumeEnvelope::default(),
+            last_phase: Phase(0.0),
         }
     }
 }
