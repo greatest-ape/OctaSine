@@ -181,15 +181,7 @@ impl FmSynth {
 
         let signal = chain_signal + side_signal;
 
-        // Apply a quick envelope to the attack of the signal to avoid popping.
-        let attack = 0.01;
-        let alpha = if note.duration.0 < attack {
-            note.duration.0 / attack
-        } else {
-            1.0
-        };
-
-        (signal * alpha * 0.1)
+        (signal * 0.1)
     }
 
     pub fn generate_audio(&mut self, audio_buffer: &mut AudioBuffer<f32>){
@@ -200,7 +192,10 @@ impl FmSynth {
 
         let mut time = NoteTime(self.internal.global_time.0);
 
-        for (output_sample_left, output_sample_right) in outputs.get_mut(0).iter_mut().zip(outputs.get_mut(1).iter_mut()) {
+        for (output_sample_left, output_sample_right) in outputs.get_mut(0)
+            .iter_mut()
+            .zip(outputs.get_mut(1).iter_mut()) {
+
             let mut out = 0.0f32;
 
             for note in self.automatable.notes.iter_mut(){

@@ -228,7 +228,7 @@ create_automatable!(VolumeEnvelopeAttackDuration, OPERATOR_DEFAULT_VOLUME_ENVELO
 
 impl VolumeEnvelopeAttackDuration {
     pub fn from_host_value(&self, value: f64) -> f64 {
-        value
+        value.max(0.004)
     }
     pub fn to_host_value(&self, value: f64) -> f64 {
         value
@@ -276,7 +276,7 @@ create_automatable!(VolumeEnvelopeReleaseDuration, OPERATOR_DEFAULT_VOLUME_ENVEL
 
 impl VolumeEnvelopeReleaseDuration {
     pub fn from_host_value(&self, value: f64) -> f64 {
-        value.max(0.01) // Force some release to avoid clicks
+        value.max(0.004) // Force some release to avoid clicks
     }
     pub fn to_host_value(&self, value: f64) -> f64 {
         value
