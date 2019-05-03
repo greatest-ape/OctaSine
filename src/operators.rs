@@ -296,7 +296,8 @@ create_automatable!(VolumeEnvelopeDecayDuration, OPERATOR_DEFAULT_VOLUME_ENVELOP
 
 impl VolumeEnvelopeDecayDuration {
     pub fn from_host_value(&self, value: f64) -> f64 {
-        value * OPERATOR_ENVELOPE_MAX_DURATION
+        // Force some decay to avoid clicks
+        (value * OPERATOR_ENVELOPE_MAX_DURATION).max(0.004)
     }
     pub fn to_host_value(&self, value: f64) -> f64 {
         value / OPERATOR_ENVELOPE_MAX_DURATION
