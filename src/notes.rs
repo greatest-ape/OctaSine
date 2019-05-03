@@ -8,6 +8,26 @@ use crate::operators::*;
 #[derive(Debug, Copy, Clone)]
 pub struct NoteDuration(pub f64);
 
+#[derive(Debug, Copy, Clone)]
+pub struct NoteVelocity(pub f64);
+
+impl NoteVelocity {
+    pub fn from_midi_velocity(midi_velocity: u8) -> Self {
+        if midi_velocity == 0 {
+            Self::default()
+        }
+        else {
+            Self(midi_velocity as f64 / 127.0)
+        }
+    }
+}
+
+impl Default for NoteVelocity {
+    fn default() -> Self {
+        Self(100.0 / 127.0)
+    }
+}
+
 
 #[derive(Debug, Copy, Clone)]
 pub struct MidiPitch(pub u8);
@@ -142,6 +162,7 @@ pub struct Note {
     pub pressed: bool,
     pub active: bool,
     pub duration: NoteDuration,
+    pub velocity: NoteVelocity,
     pub midi_pitch: MidiPitch,
     pub operators: NoteOperators,
 }
@@ -157,13 +178,15 @@ impl Note {
         Self {
             pressed: false,
             active: false,
+            velocity: NoteVelocity::default(),
             midi_pitch: midi_pitch,
             duration: NoteDuration(0.0),
             operators: operators,
         }
     }
 
-    pub fn press(&mut self){
+    pub fn press(&mut self, velocity: u8){
+        self.velocity = NoteVelocity::from_midi_velocity(velocity);
         self.pressed = true;
         self.active = true;
         self.duration = NoteDuration(0.0);

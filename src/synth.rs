@@ -198,7 +198,7 @@ impl FmSynth {
 
         let signal = chain_signal + side_signal;
 
-        (signal * 0.1)
+        (signal * 0.1) * note.velocity.0
     }
 
     pub fn generate_audio(&mut self, audio_buffer: &mut AudioBuffer<f32>){
@@ -251,12 +251,12 @@ impl FmSynth {
     pub fn process_midi_event(&mut self, data: [u8; 3]) {
         match data[0] {
             128 => self.note_off(data[1]),
-            144 => self.note_on(data[1]),
+            144 => self.note_on(data[1], data[2]),
             _   => ()
         }
     }
 
-    fn note_on(&mut self, pitch: u8) {
+    fn note_on(&mut self, pitch: u8, velocity: u8) {
         let mut note_clone = self.automatable.notes[pitch as usize].clone();
 
         if note_clone.active {
@@ -265,7 +265,7 @@ impl FmSynth {
             self.automatable.fadeout_notes.push(note_clone);
         }
 
-        self.automatable.notes[pitch as usize].press();
+        self.automatable.notes[pitch as usize].press(velocity);
     }
 
     fn note_off(&mut self, pitch: u8) {
