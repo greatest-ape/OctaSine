@@ -271,10 +271,11 @@ create_automatable!(VolumeEnvelopeAttackDuration, OPERATOR_DEFAULT_VOLUME_ENVELO
 
 impl VolumeEnvelopeAttackDuration {
     pub fn from_host_value(&self, value: f64) -> f64 {
-        value.max(0.004)
+        // Force some attack to avoid clicks
+        (value * OPERATOR_ENVELOPE_MAX_DURATION).max(0.004)
     }
     pub fn to_host_value(&self, value: f64) -> f64 {
-        value
+        value / OPERATOR_ENVELOPE_MAX_DURATION
     }
 }
 
@@ -295,10 +296,10 @@ create_automatable!(VolumeEnvelopeDecayDuration, OPERATOR_DEFAULT_VOLUME_ENVELOP
 
 impl VolumeEnvelopeDecayDuration {
     pub fn from_host_value(&self, value: f64) -> f64 {
-        value
+        value * OPERATOR_ENVELOPE_MAX_DURATION
     }
     pub fn to_host_value(&self, value: f64) -> f64 {
-        value
+        value / OPERATOR_ENVELOPE_MAX_DURATION
     }
 }
 
@@ -319,10 +320,11 @@ create_automatable!(VolumeEnvelopeReleaseDuration, OPERATOR_DEFAULT_VOLUME_ENVEL
 
 impl VolumeEnvelopeReleaseDuration {
     pub fn from_host_value(&self, value: f64) -> f64 {
-        value.max(0.004) // Force some release to avoid clicks
+        // Force some release to avoid clicks
+        (value * OPERATOR_ENVELOPE_MAX_DURATION).max(0.004)
     }
     pub fn to_host_value(&self, value: f64) -> f64 {
-        value
+        value / OPERATOR_ENVELOPE_MAX_DURATION
     }
 }
 
