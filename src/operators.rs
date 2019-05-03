@@ -216,10 +216,10 @@ create_interpolatable_automatable!(OperatorModulationIndex, OPERATOR_DEFAULT_MOD
 
 impl OperatorModulationIndex {
     pub fn from_host_value(&self, value: f64) -> f64 {
-        map_host_param_value_to_step_smooth(&OPERATOR_BETA_STEPS[..], value)
+        map_host_param_value_to_value_with_steps(&OPERATOR_BETA_STEPS[..], value)
     }
     pub fn to_host_value(&self, value: f64) -> f64 {
-        map_step_to_host_param_value(&OPERATOR_BETA_STEPS[..], value) // TODO: add util for smooth reverse step finding
+        map_value_to_host_param_value_with_steps(&OPERATOR_BETA_STEPS[..], value)
     }
 }
 
