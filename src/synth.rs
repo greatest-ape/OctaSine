@@ -158,7 +158,16 @@ impl FmSynth {
                     let phase_increment = (frequency / sample_rate.0) * TAU;
                     let new_phase = note.operators[operator_index].last_phase.0 + phase_increment;
 
-                    let new_feedback = operator.feedback.get_value(time) * new_phase.sin();
+                    let new_feedback = {
+                        let operator_feedback_value = operator.feedback.get_value(time);
+
+                        if operator_feedback_value < 0.0001 {
+                            0.0
+                        }
+                        else {
+                            operator_feedback_value * new_phase.sin()
+                        }
+                    };
 
                     let signal = (
                         new_phase +
