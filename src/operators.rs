@@ -4,10 +4,6 @@ use crate::utils::*;
 
 
 #[derive(Debug, Copy, Clone)]
-pub struct OperatorDuration(pub f64);
-
-
-#[derive(Debug, Copy, Clone)]
 pub struct OperatorStepData {
     pub step_size: f64,
     pub steps_remaining: usize,
@@ -354,7 +350,6 @@ impl Default for OperatorVolumeEnvelope {
 
 #[derive(Debug, Copy, Clone)]
 pub struct Operator {
-    pub duration: OperatorDuration,
     pub volume: OperatorVolume,
     pub wave_type: OperatorWaveType,
     pub skip_chain_factor: OperatorSkipChainFactor,
@@ -369,7 +364,6 @@ pub struct Operator {
 impl Default for Operator {
     fn default() -> Self {
         Self {
-            duration: OperatorDuration(0.0),
             skip_chain_factor: OperatorSkipChainFactor::default(),
             volume: OperatorVolume::default(),
             wave_type: OperatorWaveType::default(),

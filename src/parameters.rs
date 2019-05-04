@@ -49,8 +49,6 @@ macro_rules! create_operator_field_parameter {
 
             fn set_value_float(&mut self, state: &mut AutomatableState, value: f64) {
                 state.operators[self.operator_index].$field.set_host_value_float(value);
-
-                state.operators[self.operator_index].duration.0 = 0.0;
             }
         }
     };  
@@ -91,8 +89,6 @@ macro_rules! create_operator_envelope_field_parameter {
 
             fn set_value_float(&mut self, state: &mut AutomatableState, value: f64) {
                 state.operators[self.operator_index].$envelope_field.$field.set_host_value_float(value);
-
-                state.operators[self.operator_index].duration.0 = 0.0;
             }
         }
     };  

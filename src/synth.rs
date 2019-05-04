@@ -228,10 +228,6 @@ impl FmSynth {
                     note.deactivate_if_all_operators_finished();
 
                     note.duration.0 += time_per_sample;
-
-                    for operator in self.automatable.operators.iter_mut(){
-                        operator.duration.0 += time_per_sample;
-                    }
                 }
             }
 
