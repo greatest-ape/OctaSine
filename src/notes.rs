@@ -162,6 +162,7 @@ pub struct Note {
     pub pressed: bool,
     pub active: bool,
     pub duration: NoteDuration,
+    pub duration_at_key_release: Option<NoteDuration>,
     pub velocity: NoteVelocity,
     pub midi_pitch: MidiPitch,
     pub operators: NoteOperators,
@@ -181,6 +182,7 @@ impl Note {
             velocity: NoteVelocity::default(),
             midi_pitch: midi_pitch,
             duration: NoteDuration(0.0),
+            duration_at_key_release: None,
             operators: operators,
         }
     }
@@ -190,6 +192,7 @@ impl Note {
         self.pressed = true;
         self.active = true;
         self.duration = NoteDuration(0.0);
+        self.duration_at_key_release = None;
 
         for operator in self.operators.iter_mut(){
             *operator = NoteOperator::default();
@@ -198,14 +201,26 @@ impl Note {
 
     pub fn release(&mut self){
         self.pressed = false;
+        self.duration_at_key_release = Some(self.duration);
     }
 
-    pub fn deactivate_if_all_operators_finished(&mut self) {
-        let finished = self.operators.iter().all(|note_operator|
+    pub fn deactivate_if_finished(&mut self) {
+        // When CPU load gets very high, envelopes seem not to be completed,
+        // correctly, causing lots of fadeout noted to be left in the list
+        // still set to active although they should be silent. I try to check
+        // for that here.
+        let left_behind = if let Some(d) = self.duration_at_key_release {
+            self.duration.0 > d.0 + OPERATOR_ENVELOPE_MAX_DURATION + 1.0
+        }
+        else {
+            false
+        };
+
+        let envelope_finished = self.operators.iter().all(|note_operator|
             note_operator.volume_envelope.stage == EnvelopeStage::Ended
         );
 
-        if finished {
+        if left_behind || envelope_finished {
             self.active = false;
         }
     }

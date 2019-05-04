@@ -234,7 +234,7 @@ impl FmSynth {
                         note,
                     ) as f32;
 
-                    note.deactivate_if_all_operators_finished();
+                    note.deactivate_if_finished();
 
                     note.duration.0 += time_per_sample;
                 }
