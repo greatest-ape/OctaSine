@@ -147,45 +147,21 @@ impl FmSynth {
         let mut chain_signal = 0.0;
 
         for (operator_index, operator) in (operators.iter_mut().enumerate()).rev() {
-            // New signal generation for sine FM / white noise
-            let new_signal = match operator.wave_type.0 {
-                WaveType::Sine => {
-                    let frequency = base_frequency *
-                        operator.frequency_ratio.0 *
-                        operator.frequency_free.0 *
-                        operator.frequency_fine.0;
+            // Fetch all operator values here to make sure all interpolatable
+            // ones are advanced even if calculations are skipped below.
 
-                    let phase_increment = (frequency / sample_rate.0) * TAU;
-                    let new_phase = note.operators[operator_index].last_phase.0 + phase_increment;
+            let operator_volume = operator.volume.get_value(time);
+            let operator_skip_chain = operator.skip_chain_factor.get_value(time);
+            let operator_feedback = operator.feedback.get_value(time);
+            let operator_modulation_index = operator.modulation_index.get_value(time);
 
-                    let new_feedback = {
-                        let operator_feedback_value = operator.feedback.get_value(time);
+            let operator_frequency = base_frequency *
+                operator.frequency_ratio.0 *
+                operator.frequency_free.0 *
+                operator.frequency_fine.0;
 
-                        if operator_feedback_value < 0.0001 {
-                            0.0
-                        }
-                        else {
-                            operator_feedback_value * new_phase.sin()
-                        }
-                    };
-
-                    let signal = (
-                        new_phase +
-                        operator.modulation_index.get_value(time) *
-                        (chain_signal + new_feedback)
-                    ).sin();
-
-                    note.operators[operator_index].last_phase.0 = new_phase;
-
-                    signal
-                },
-                WaveType::WhiteNoise => {
-                    (rng.gen::<f64>() - 0.5) * 2.0
-                }
-            };
-
-            // Volume envelope
-            let new_signal = new_signal * {
+            // Always calculate envelope to make sure it advances
+            let envelope_volume = {
                 let note_envelope = &mut note.operators[operator_index].volume_envelope;
 
                 note_envelope.calculate_volume(
@@ -195,14 +171,50 @@ impl FmSynth {
                 )
             };
 
-            side_signal += operator.volume.get_value(time) * new_signal *
-                operator.skip_chain_factor.get_value(time);
+            // Only do sound generation if volume is on
 
-            chain_signal =
-                chain_signal * operator.skip_chain_factor.get_value(time) +
-                operator.volume.get_value(time) *
-                (1.0 - operator.skip_chain_factor.get_value(time)) *
-                new_signal;
+            let volume_on = operator_volume > ZERO_VALUE_LIMIT &&
+                envelope_volume > ZERO_VALUE_LIMIT;
+
+            let new_signal = if volume_on {
+                envelope_volume * match operator.wave_type.0 {
+                    WaveType::Sine => {
+                        let phase_increment = (operator_frequency / sample_rate.0) * TAU;
+                        let new_phase = note.operators[operator_index].last_phase.0 + phase_increment;
+
+                        // Only do feedback calculation if feedback is on
+                        let new_feedback = {
+                            if operator_feedback > ZERO_VALUE_LIMIT {
+                                operator_feedback * new_phase.sin()
+                            }
+                            else {
+                                0.0
+                            }
+                        };
+
+                        let signal = (
+                            new_phase +
+                            operator_modulation_index *
+                            (chain_signal + new_feedback)
+                        ).sin();
+
+                        note.operators[operator_index].last_phase.0 = new_phase;
+
+                        signal
+                    },
+                    WaveType::WhiteNoise => {
+                        (rng.gen::<f64>() - 0.5) * 2.0
+                    }
+                }
+            }
+            else {
+                0.0
+            };
+
+            side_signal += operator_volume * new_signal * operator_skip_chain;
+
+            chain_signal = chain_signal * operator_skip_chain +
+                operator_volume * (1.0 - operator_skip_chain) * new_signal;
         }
 
         let signal = chain_signal + side_signal;

@@ -3,6 +3,9 @@ use std::f64::consts::PI;
 
 pub const TAU: f64 = 2.0 * PI;
 
+/// Lower values can be considered to be zero for optimization purposes
+pub const ZERO_VALUE_LIMIT: f64 = 0.001;
+
 pub const NUM_OPERATORS: usize = 4;
 
 pub const OPERATOR_DEFAULT_VOLUME: f64 = 1.0;
