@@ -197,9 +197,7 @@ impl Note {
     }
 
     pub fn release(&mut self){
-        if self.active {
-            self.pressed = false;
-        }
+        self.pressed = false;
     }
 
     pub fn deactivate_if_all_operators_finished(&mut self) {
