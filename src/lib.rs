@@ -66,6 +66,23 @@ pub struct SyncOnlyState {
 }
 
 
+pub struct OutputChannel {
+    pub additive: f64,
+    pub chain: f64,
+    pub skip_chain: f64,
+}
+
+impl Default for OutputChannel {
+    fn default() -> Self {
+        Self {
+            additive: 0.0,
+            chain: 0.0,
+            skip_chain: 0.0,
+        }
+    }
+}
+
+
 /// Main structure
 pub struct FmSynth {
     processing: ProcessingState,
@@ -84,7 +101,7 @@ impl FmSynth {
         1.0 / self.processing.sample_rate.0
     }
 
-    fn limit(&self, value: f64) -> f64 {
+    fn limit(value: f64) -> f64 {
         value.min(1.0).max(-1.0)
     }
 
@@ -99,20 +116,22 @@ impl FmSynth {
         master_frequency: MasterFrequency,
         operators: &mut Operators,
         note: &mut Note,
-    ) -> f64 {
+    ) -> (f64, f64) {
         let base_frequency = note.midi_pitch.get_frequency(master_frequency);
 
-        let mut side_signal = 0.0;
-        let mut chain_signal = 0.0;
+        let mut output_channels: SmallVec<[OutputChannel; 2]> =
+            smallvec![OutputChannel::default(), OutputChannel::default()];
 
         for (operator_index, operator) in (operators.iter_mut().enumerate()).rev() {
             // Fetch all operator values here to make sure all interpolatable
             // ones are advanced even if calculations are skipped below.
 
             let operator_volume = operator.volume.get_value(time);
-            let operator_skip_chain = operator.skip_chain_factor.get_value(time);
+            // let operator_output_operator = operator.output_operator.get_value(time);
+            let operator_additive = operator.additive_factor.get_value(time);
             let operator_feedback = operator.feedback.get_value(time);
             let operator_modulation_index = operator.modulation_index.get_value(time);
+            let operator_panning = operator.panning.get_value(time);
 
             let operator_frequency = base_frequency *
                 operator.frequency_ratio.0 *
@@ -135,50 +154,101 @@ impl FmSynth {
             let volume_on = operator_volume > ZERO_VALUE_LIMIT &&
                 envelope_volume > ZERO_VALUE_LIMIT;
 
-            let new_signal = if volume_on {
-                envelope_volume * match operator.wave_type.0 {
-                    WaveType::Sine => {
-                        let phase_increment = (operator_frequency / sample_rate.0) * TAU;
-                        let new_phase = note.operators[operator_index].last_phase.0 + phase_increment;
-
-                        // Only do feedback calculation if feedback is on
-                        let new_feedback = {
-                            if operator_feedback > ZERO_VALUE_LIMIT {
-                                operator_feedback * new_phase.sin()
-                            }
-                            else {
-                                0.0
-                            }
-                        };
-
-                        let signal = (
-                            new_phase +
-                            operator_modulation_index *
-                            (chain_signal + new_feedback)
-                        ).sin();
-
-                        note.operators[operator_index].last_phase.0 = new_phase;
-
-                        signal
-                    },
-                    WaveType::WhiteNoise => {
-                        (rng.gen::<f64>() - 0.5) * 2.0
-                    }
+            // Only calculate panning if volume is on (is irrelevant otherwise)
+            let (pan_left, pan_right) = {
+                if volume_on {
+                    OperatorPanning::get_left_and_right(operator_panning)
+                } else {
+                    (0.0, 0.0)
                 }
-            }
-            else {
-                0.0
             };
 
-            side_signal += operator_volume * new_signal * operator_skip_chain;
+            {
+                // Mix modulator into current operator depending on panning of
+                // current operator. If panned to the middle, just pass through
+                // the stereo signals: if panned to any side, mix out the
+                // original stereo signals and mix in mono.
 
-            chain_signal = chain_signal * operator_skip_chain +
-                operator_volume * (1.0 - operator_skip_chain) * new_signal;
+                let left_chain = output_channels[0].chain;
+                let right_chain = output_channels[1].chain;
+
+                let pan_transformed = 2.0 * (operator_panning - 0.5);
+
+                let right_tendency = pan_transformed.max(0.0);
+                let left_tendency = (-pan_transformed).max(0.0);
+
+                let mono = left_chain + right_chain;
+
+                output_channels[0].chain = left_chain * (1.0 - left_tendency) + left_tendency * mono;
+                output_channels[1].chain = right_chain * (1.0 - right_tendency) + right_tendency * mono;
+            }
+
+            for i in 0..2 {
+                let new_signal = if volume_on {
+                    envelope_volume * match operator.wave_type.0 {
+                        WaveType::Sine => {
+                            let phase_increment = (operator_frequency / sample_rate.0) * TAU;
+                            let new_phase = note.operators[operator_index].last_phase.0 + phase_increment;
+
+                            // Only do feedback calculation if feedback is on
+                            let new_feedback = {
+                                if operator_feedback > ZERO_VALUE_LIMIT {
+                                    operator_feedback * new_phase.sin()
+                                }
+                                else {
+                                    0.0
+                                }
+                            };
+
+                            let chain_input = if operator_index == 0 {
+                                output_channels[i].chain + output_channels[i].skip_chain
+                            } else {
+                                output_channels[i].chain
+                            };
+
+                            let signal = (
+                                new_phase +
+                                operator_modulation_index *
+                                (chain_input + new_feedback)
+                            ).sin();
+
+                            note.operators[operator_index].last_phase.0 = new_phase;
+
+                            signal
+                        },
+                        WaveType::WhiteNoise => {
+                            (rng.gen::<f64>() - 0.5) * 2.0
+                        }
+                    }
+                }
+                else {
+                    0.0
+                };
+
+                let pan_volume = if i == 0 {
+                    pan_left
+                } else {
+                    pan_right
+                };
+
+                output_channels[i].additive += operator_additive *
+                    operator_volume * pan_volume * new_signal;
+                
+                // output_channels[i].skip_chain += operator_skip_chain *
+                //     operator_volume * pan_volume * new_signal * (1.0 - operator_additive);
+
+                output_channels[i].chain =
+                    output_channels[i].chain * operator_additive +
+                    operator_volume * pan_volume * new_signal * (1.0 - operator_additive);
+            }
         }
 
-        let signal = chain_signal + side_signal;
+        let signal_left = output_channels[0].chain + output_channels[0].additive;
+        let signal_right = output_channels[1].chain + output_channels[1].additive;
 
-        (signal * 0.1) * note.velocity.0
+        let volume_factor = 0.1 * note.velocity.0;
+
+        (signal_left * volume_factor, signal_right * volume_factor)
     }
 
     /// MIDI keyboard support
@@ -228,7 +298,8 @@ impl Plugin for FmSynth {
             .iter_mut()
             .zip(outputs.get_mut(1).iter_mut()) {
 
-            let mut out = 0.0f64;
+            *output_sample_left = 0.0;
+            *output_sample_right = 0.0;
 
             let mut automatable = self.processing.automatable.lock();
 
@@ -236,7 +307,7 @@ impl Plugin for FmSynth {
                 .chain(self.processing.fadeout_notes.iter_mut()){
 
                 if note.active {
-                    out += Self::generate_note_sample(
+                    let (out_left, out_right) = Self::generate_note_sample(
                         &mut self.processing.rng,
                         self.processing.global_time,
                         self.processing.sample_rate,
@@ -245,6 +316,9 @@ impl Plugin for FmSynth {
                         note,
                     );
 
+                    *output_sample_left += Self::limit(out_left) as f32;
+                    *output_sample_right += Self::limit(out_right) as f32;
+
                     note.deactivate_if_finished();
 
                     note.duration.0 += time_per_sample;
@@ -252,11 +326,6 @@ impl Plugin for FmSynth {
             }
 
             self.processing.global_time.0 += time_per_sample;
-
-            let output_sample = self.limit(out) as f32;
-
-            *output_sample_left = output_sample;
-            *output_sample_right = output_sample;
         }
 
         self.processing.fadeout_notes.retain(|note| note.active);
@@ -265,8 +334,8 @@ impl Plugin for FmSynth {
     fn new(host: HostCallback) -> Self {
         let mut operators = smallvec![];
 
-        for _ in 0..NUM_OPERATORS {
-            operators.push(Operator::default());
+        for operator_index in 0..NUM_OPERATORS {
+            operators.push(Operator::new(operator_index));
         }
 
         let mut notes = SmallVec::new();
@@ -342,7 +411,6 @@ impl Plugin for FmSynth {
         self.fetch_bpm();
 	}
 
-    // Supresses warning about match statment only having one arm
     fn process_events(&mut self, events: &Events) {
         for event in events.events() {
             if let Event::Midi(ev) = event {

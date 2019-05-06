@@ -107,10 +107,22 @@ create_operator_field_parameter!(
     "wave type"
 );
 
+// create_operator_field_parameter!(
+//     OperatorSkipChainFactorParameter,
+//     skip_chain_factor,
+//     "skip chain"
+// );
+
 create_operator_field_parameter!(
-    OperatorSkipChainFactorParameter,
-    skip_chain_factor,
-    "skip chain"
+    OperatorAdditiveFactorParameter,
+    additive_factor,
+    "additive"
+);
+
+create_operator_field_parameter!(
+    OperatorPanningParameter,
+    panning,
+    "pan"
 );
 
 create_operator_field_parameter!(
@@ -182,8 +194,10 @@ create_operator_envelope_field_parameter!(
 
 pub struct OperatorParameters {
     volume: OperatorVolumeParameter,
+    panning: OperatorPanningParameter,
     wave_type: OperatorWaveTypeParameter,
-    skip_chain_factor: OperatorSkipChainFactorParameter,
+    additive_factor: OperatorAdditiveFactorParameter,
+    // skip_chain_factor: OperatorSkipChainFactorParameter,
     modulation_index: OperatorModulationIndexParameter,
     feedback: OperatorFeedbackParameter,
     frequency_ratio: OperatorFrequencyRatioParameter,
@@ -201,7 +215,9 @@ impl OperatorParameters {
         Self {
             volume: OperatorVolumeParameter::new(operator_index),
             wave_type: OperatorWaveTypeParameter::new(operator_index),
-            skip_chain_factor: OperatorSkipChainFactorParameter::new(operator_index),
+            additive_factor: OperatorAdditiveFactorParameter::new(operator_index),
+            // skip_chain_factor: OperatorSkipChainFactorParameter::new(operator_index),
+            panning: OperatorPanningParameter::new(operator_index),
             modulation_index: OperatorModulationIndexParameter::new(operator_index),
             feedback: OperatorFeedbackParameter::new(operator_index),
             frequency_ratio: OperatorFrequencyRatioParameter::new(operator_index),
@@ -240,7 +256,7 @@ impl Parameters {
         match index {
             0  => Some(&self.operator_1.volume),
             1  => Some(&self.operator_1.wave_type),
-            2  => Some(&self.operator_1.skip_chain_factor),
+            2  => Some(&self.operator_1.additive_factor),
             3  => Some(&self.operator_1.modulation_index),
             4  => Some(&self.operator_1.feedback),
             5  => Some(&self.operator_1.frequency_ratio),
@@ -253,7 +269,7 @@ impl Parameters {
             12 => Some(&self.operator_1.volume_envelope_release_duration),
             13 => Some(&self.operator_2.volume),
             14 => Some(&self.operator_2.wave_type),
-            15 => Some(&self.operator_2.skip_chain_factor),
+            15 => Some(&self.operator_2.additive_factor),
             16 => Some(&self.operator_2.modulation_index),
             17 => Some(&self.operator_2.feedback),
             18 => Some(&self.operator_2.frequency_ratio),
@@ -266,7 +282,7 @@ impl Parameters {
             25 => Some(&self.operator_2.volume_envelope_release_duration),
             26 => Some(&self.operator_3.volume),
             27 => Some(&self.operator_3.wave_type),
-            28 => Some(&self.operator_3.skip_chain_factor),
+            28 => Some(&self.operator_3.additive_factor),
             29 => Some(&self.operator_3.modulation_index),
             30 => Some(&self.operator_3.feedback),
             31 => Some(&self.operator_3.frequency_ratio),
@@ -279,7 +295,7 @@ impl Parameters {
             38 => Some(&self.operator_3.volume_envelope_release_duration),
             39 => Some(&self.operator_4.volume),
             40 => Some(&self.operator_4.wave_type),
-            41 => Some(&self.operator_4.skip_chain_factor),
+            41 => Some(&self.operator_4.additive_factor),
             42 => Some(&self.operator_4.modulation_index),
             43 => Some(&self.operator_4.feedback),
             44 => Some(&self.operator_4.frequency_ratio),
@@ -290,11 +306,16 @@ impl Parameters {
             49 => Some(&self.operator_4.volume_envelope_decay_duration),
             50 => Some(&self.operator_4.volume_envelope_decay_value),
             51 => Some(&self.operator_4.volume_envelope_release_duration),
+
+            52  => Some(&self.operator_1.panning),
+            53  => Some(&self.operator_2.panning),
+            54  => Some(&self.operator_3.panning),
+            55  => Some(&self.operator_4.panning),
             _  => None
         }
     }
 
     pub fn len(&self) -> usize {
-        52
+        52 + 4
     }
 }

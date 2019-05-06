@@ -2,6 +2,7 @@ use std::f64::consts::PI;
 
 
 pub const TAU: f64 = 2.0 * PI;
+pub const HALF_PI: f64 = PI / 2.0;
 
 /// Lower values can be considered to be zero for optimization purposes
 pub const ZERO_VALUE_LIMIT: f64 = 0.001;
@@ -10,6 +11,8 @@ pub const NUM_OPERATORS: usize = 4;
 
 pub const OPERATOR_DEFAULT_VOLUME: f64 = 1.0;
 pub const OPERATOR_DEFAULT_SKIP_CHAIN_FACTOR: f64 = 0.0;
+pub const OPERATOR_DEFAULT_ADDITIVE_FACTOR: f64 = 0.0;
+pub const OPERATOR_DEFAULT_PANNING: f64 = 0.5;
 pub const OPERATOR_DEFAULT_FREQUENCY_RATIO: f64 = 1.0;
 pub const OPERATOR_DEFAULT_FREQUENCY_FREE: f64 = 1.0;
 pub const OPERATOR_DEFAULT_FREQUENCY_FINE: f64 = 1.0;

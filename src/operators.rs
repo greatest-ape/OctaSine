@@ -148,14 +148,43 @@ impl OperatorVolume {
 }
 
 
-create_interpolatable_automatable!(OperatorSkipChainFactor, OPERATOR_DEFAULT_SKIP_CHAIN_FACTOR);
+create_interpolatable_automatable!(OperatorOutputOperator, OPERATOR_DEFAULT_SKIP_CHAIN_FACTOR);
 
-impl OperatorSkipChainFactor {
+impl OperatorOutputOperator {
     pub fn from_host_value(&self, value: f64) -> f64 {
         value
     }
     pub fn to_host_value(&self, value: f64) -> f64 {
         value
+    }
+}
+
+create_interpolatable_automatable!(OperatorAdditiveFactor, OPERATOR_DEFAULT_ADDITIVE_FACTOR);
+
+impl OperatorAdditiveFactor {
+    pub fn from_host_value(&self, value: f64) -> f64 {
+        value
+    }
+    pub fn to_host_value(&self, value: f64) -> f64 {
+        value
+    }
+}
+
+
+create_interpolatable_automatable!(OperatorPanning, OPERATOR_DEFAULT_PANNING);
+
+impl OperatorPanning {
+    pub fn from_host_value(&self, value: f64) -> f64 {
+        value
+    }
+    pub fn to_host_value(&self, value: f64) -> f64 {
+        value
+    }
+
+    pub fn get_left_and_right(panning: f64) -> (f64, f64) {
+        let pan_phase = panning * HALF_PI;
+
+        (pan_phase.cos(), pan_phase.sin())
     }
 }
 
@@ -352,7 +381,9 @@ impl Default for OperatorVolumeEnvelope {
 pub struct Operator {
     pub volume: OperatorVolume,
     pub wave_type: OperatorWaveType,
-    pub skip_chain_factor: OperatorSkipChainFactor,
+    pub panning: OperatorPanning,
+    pub additive_factor: OperatorAdditiveFactor,
+    pub output_operator: Option<OperatorOutputOperator>,
     pub frequency_ratio: OperatorFrequencyRatio,
     pub frequency_free: OperatorFrequencyFree,
     pub frequency_fine: OperatorFrequencyFine,
@@ -361,12 +392,20 @@ pub struct Operator {
     pub volume_envelope: OperatorVolumeEnvelope,
 }
 
-impl Default for Operator {
-    fn default() -> Self {
+impl Operator {
+    pub fn new(operator_index: usize) -> Self {
+        let opt_output_operator = if operator_index == 0 {
+            None
+        } else {
+            Some(OperatorOutputOperator::default())
+        };
+
         Self {
-            skip_chain_factor: OperatorSkipChainFactor::default(),
             volume: OperatorVolume::default(),
+            panning: OperatorPanning::default(),
             wave_type: OperatorWaveType::default(),
+            additive_factor: OperatorAdditiveFactor::default(),
+            output_operator: opt_output_operator,
             frequency_ratio: OperatorFrequencyRatio::default(),
             frequency_free: OperatorFrequencyFree::default(),
             frequency_fine: OperatorFrequencyFine::default(),
