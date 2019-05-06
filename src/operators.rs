@@ -1,3 +1,5 @@
+use smallvec::SmallVec;
+
 use crate::constants::*;
 use crate::common::*;
 use crate::utils::*;
@@ -148,20 +150,70 @@ impl OperatorVolume {
 }
 
 
-create_interpolatable_automatable!(OperatorOutputOperator, OPERATOR_DEFAULT_SKIP_CHAIN_FACTOR);
+#[derive(Debug, Clone)]
+pub struct OperatorOutputOperator {
+    targets: SmallVec<[usize; NUM_OPERATORS]>,
+    pub target: usize,
+}
 
 impl OperatorOutputOperator {
-    pub fn from_host_value(&self, value: f64) -> f64 {
-        value
+    pub fn opt_new(operator_index: usize) -> Option<Self> {
+        if operator_index <= 1 {
+            None
+        }
+        else {
+            Some(Self {
+                targets: (0..operator_index).into_iter().collect(),
+                target: operator_index - 1,
+            })
+        }
     }
-    pub fn to_host_value(&self, value: f64) -> f64 {
-        value
+
+    pub fn from_host_value(&self, value: f64) -> usize {
+        let step = 1.0 / self.targets.len() as f64;
+        let mut sum = 0.0;
+
+        for t in self.targets.iter() {
+            sum += step;
+
+            if value <= sum {
+                return *t
+            }
+        }
+
+        *self.targets.last().expect("No targets")
+    }
+    pub fn to_host_value(&self, value: usize) -> f64 {
+        let step = 1.0 / self.targets.len() as f64;
+
+        value as f64 * step + 0.0001
     }
 }
+
+impl AutomatableValue for OperatorOutputOperator {
+    fn set_host_value_float(&mut self, value: f64){
+        self.target = self.from_host_value(value);
+    }
+    fn get_host_value_float(&self) -> f64 {
+        self.to_host_value(self.target)
+    }
+    fn get_host_value_text(&self) -> String {
+        format!("Operator {}", self.target + 1)
+    }
+}
+
 
 create_interpolatable_automatable!(OperatorAdditiveFactor, OPERATOR_DEFAULT_ADDITIVE_FACTOR);
 
 impl OperatorAdditiveFactor {
+    pub fn opt_new(operator_index: usize) -> Option<Self> {
+        if operator_index == 0 {
+            None
+        } else {
+            Some(Self::default())
+        }
+    }
+
     pub fn from_host_value(&self, value: f64) -> f64 {
         value
     }
@@ -377,12 +429,12 @@ impl Default for OperatorVolumeEnvelope {
 }
 
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub struct Operator {
     pub volume: OperatorVolume,
     pub wave_type: OperatorWaveType,
     pub panning: OperatorPanning,
-    pub additive_factor: OperatorAdditiveFactor,
+    pub additive_factor: Option<OperatorAdditiveFactor>,
     pub output_operator: Option<OperatorOutputOperator>,
     pub frequency_ratio: OperatorFrequencyRatio,
     pub frequency_free: OperatorFrequencyFree,
@@ -394,18 +446,12 @@ pub struct Operator {
 
 impl Operator {
     pub fn new(operator_index: usize) -> Self {
-        let opt_output_operator = if operator_index == 0 {
-            None
-        } else {
-            Some(OperatorOutputOperator::default())
-        };
-
         Self {
             volume: OperatorVolume::default(),
             panning: OperatorPanning::default(),
             wave_type: OperatorWaveType::default(),
-            additive_factor: OperatorAdditiveFactor::default(),
-            output_operator: opt_output_operator,
+            additive_factor: OperatorAdditiveFactor::opt_new(operator_index),
+            output_operator: OperatorOutputOperator::opt_new(operator_index),
             frequency_ratio: OperatorFrequencyRatio::default(),
             frequency_free: OperatorFrequencyFree::default(),
             frequency_fine: OperatorFrequencyFine::default(),

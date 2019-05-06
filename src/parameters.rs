@@ -21,6 +21,57 @@ pub trait Parameter {
 
 
 #[macro_export]
+macro_rules! create_operator_opt_field_parameter {
+    ($parameter_struct:ident, $field:ident, $field_name:expr) => {
+        pub struct $parameter_struct {
+            operator_index: usize,
+        }
+
+        impl $parameter_struct {
+            pub fn new(operator_index: usize) -> Self {
+                Self {
+                    operator_index: operator_index,
+                }
+            }
+        }
+
+        impl Parameter for $parameter_struct {
+            fn get_name(&self, _: &AutomatableState) -> String {
+                format!("Op. {} {}", self.operator_index + 1, $field_name)
+            }
+
+            fn get_value_float(&self, state: &AutomatableState) -> f64 {
+                if let Some(ref o) = state.operators[self.operator_index].$field {
+                    o.get_host_value_float()
+                }
+                else {
+                    error!("tried to access operator field with index {}", self.operator_index);
+
+                    0.0
+                }
+            }
+            fn get_value_text(&self, state: &AutomatableState) -> String {
+                if let Some(ref o ) = state.operators[self.operator_index].$field {
+                    o.get_host_value_text().to_owned()
+                }
+                else {
+                    error!("tried to access operator field with index {}", self.operator_index);
+
+                    "error".to_string()
+                }
+            }
+
+            fn set_value_float(&self, state: &mut AutomatableState, value: f64) {
+                if let Some(o) = &mut state.operators[self.operator_index].$field {
+                    o.set_host_value_float(value);
+                }
+            }
+        }
+
+    };  
+}
+
+#[macro_export]
 macro_rules! create_operator_field_parameter {
     ($parameter_struct:ident, $field:ident, $field_name:expr) => {
         pub struct $parameter_struct {
@@ -107,16 +158,16 @@ create_operator_field_parameter!(
     "wave type"
 );
 
-// create_operator_field_parameter!(
-//     OperatorSkipChainFactorParameter,
-//     skip_chain_factor,
-//     "skip chain"
-// );
-
-create_operator_field_parameter!(
+create_operator_opt_field_parameter!(
     OperatorAdditiveFactorParameter,
     additive_factor,
     "additive"
+);
+
+create_operator_opt_field_parameter!(
+    OperatorOutputOperatorParameter,
+    output_operator,
+    "mod out"
 );
 
 create_operator_field_parameter!(
@@ -197,7 +248,7 @@ pub struct OperatorParameters {
     panning: OperatorPanningParameter,
     wave_type: OperatorWaveTypeParameter,
     additive_factor: OperatorAdditiveFactorParameter,
-    // skip_chain_factor: OperatorSkipChainFactorParameter,
+    output_operator: OperatorOutputOperatorParameter,
     modulation_index: OperatorModulationIndexParameter,
     feedback: OperatorFeedbackParameter,
     frequency_ratio: OperatorFrequencyRatioParameter,
@@ -216,7 +267,7 @@ impl OperatorParameters {
             volume: OperatorVolumeParameter::new(operator_index),
             wave_type: OperatorWaveTypeParameter::new(operator_index),
             additive_factor: OperatorAdditiveFactorParameter::new(operator_index),
-            // skip_chain_factor: OperatorSkipChainFactorParameter::new(operator_index),
+            output_operator: OperatorOutputOperatorParameter::new(operator_index),
             panning: OperatorPanningParameter::new(operator_index),
             modulation_index: OperatorModulationIndexParameter::new(operator_index),
             feedback: OperatorFeedbackParameter::new(operator_index),
@@ -256,7 +307,7 @@ impl Parameters {
         match index {
             0  => Some(&self.operator_1.volume),
             1  => Some(&self.operator_1.wave_type),
-            2  => Some(&self.operator_1.additive_factor),
+            2  => Some(&self.operator_1.additive_factor), // TODO remove
             3  => Some(&self.operator_1.modulation_index),
             4  => Some(&self.operator_1.feedback),
             5  => Some(&self.operator_1.frequency_ratio),
@@ -311,11 +362,14 @@ impl Parameters {
             53  => Some(&self.operator_2.panning),
             54  => Some(&self.operator_3.panning),
             55  => Some(&self.operator_4.panning),
+
+            56  => Some(&self.operator_3.output_operator),
+            57  => Some(&self.operator_4.output_operator),
             _  => None
         }
     }
 
     pub fn len(&self) -> usize {
-        52 + 4
+        52 + 4 + 2
     }
 }

@@ -68,16 +68,14 @@ pub struct SyncOnlyState {
 
 pub struct OutputChannel {
     pub additive: f64,
-    pub chain: f64,
-    pub skip_chain: f64,
+    pub operator_inputs: SmallVec<[f64; NUM_OPERATORS]>,
 }
 
 impl Default for OutputChannel {
     fn default() -> Self {
         Self {
             additive: 0.0,
-            chain: 0.0,
-            skip_chain: 0.0,
+            operator_inputs: smallvec![0.0; NUM_OPERATORS],
         }
     }
 }
@@ -170,11 +168,23 @@ impl FmSynth {
             // ones are advanced even if calculations are skipped below.
 
             let operator_volume = operator.volume.get_value(time);
-            // let operator_output_operator = operator.output_operator.get_value(time);
-            let operator_additive = operator.additive_factor.get_value(time);
             let operator_feedback = operator.feedback.get_value(time);
             let operator_modulation_index = operator.modulation_index.get_value(time);
             let operator_panning = operator.panning.get_value(time);
+
+            // 1.0 additive for operator 1
+            let operator_additive = if let Some(o) = &mut operator.additive_factor {
+                o.get_value(time)
+            }
+            else {
+                1.0
+            };
+
+            let operator_mod_output = if let Some(ref o) = operator.output_operator {
+                o.target
+            } else {
+                0
+            };
 
             let operator_frequency = base_frequency *
                 operator.frequency_ratio.0 *
@@ -211,8 +221,8 @@ impl FmSynth {
             // the stereo signals: if panned to any side, mix out the
             // original stereo signals and mix in mono.
             {
-                let left_chain = output_channels[0].chain;
-                let right_chain = output_channels[1].chain;
+                let left_chain = output_channels[0].operator_inputs[operator_index];
+                let right_chain = output_channels[1].operator_inputs[operator_index];
 
                 let pan_transformed = 2.0 * (operator_panning - 0.5);
 
@@ -221,17 +231,13 @@ impl FmSynth {
 
                 let mono = left_chain + right_chain;
 
-                output_channels[0].chain = left_chain * (1.0 - left_tendency) + left_tendency * mono;
-                output_channels[1].chain = right_chain * (1.0 - right_tendency) + right_tendency * mono;
+                output_channels[0].operator_inputs[operator_index] =
+                    left_chain * (1.0 - left_tendency) + left_tendency * mono;
+                output_channels[1].operator_inputs[operator_index] =
+                    right_chain * (1.0 - right_tendency) + right_tendency * mono;
             }
 
-            for i in 0..2 {
-                let chain_input = if operator_index == 0 {
-                    output_channels[i].chain + output_channels[i].skip_chain
-                } else {
-                    output_channels[i].chain
-                };
-
+            for stereo_channel_index in 0..2 {
                 let new_signal = if volume_on {
                     envelope_volume * Self::synthesize_single_channel_sample(
                         rng,
@@ -242,33 +248,29 @@ impl FmSynth {
                         operator_feedback,
                         operator_modulation_index,
                         note,
-                        chain_input
+                        output_channels[stereo_channel_index].operator_inputs[operator_index]
                     )
                 }
                 else {
                     0.0
                 };
 
-                let pan_volume = if i == 0 {
+                let pan_volume = if stereo_channel_index == 0 {
                     pan_left
                 } else {
                     pan_right
                 };
 
-                output_channels[i].additive += operator_additive *
-                    operator_volume * pan_volume * new_signal;
-                
-                // output_channels[i].skip_chain += operator_skip_chain *
-                //     operator_volume * pan_volume * new_signal * (1.0 - operator_additive);
+                output_channels[stereo_channel_index].additive +=
+                    operator_additive * operator_volume * pan_volume * new_signal;
 
-                output_channels[i].chain =
-                    output_channels[i].chain * operator_additive +
+                output_channels[stereo_channel_index].operator_inputs[operator_mod_output] +=
                     operator_volume * pan_volume * new_signal * (1.0 - operator_additive);
             }
         }
 
-        let signal_left = output_channels[0].chain + output_channels[0].additive;
-        let signal_right = output_channels[1].chain + output_channels[1].additive;
+        let signal_left = output_channels[0].additive;
+        let signal_right = output_channels[1].additive;
 
         let volume_factor = 0.1 * note.velocity.0;
 
