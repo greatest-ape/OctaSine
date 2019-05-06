@@ -105,11 +105,54 @@ impl FmSynth {
         value.min(1.0).max(-1.0)
     }
 
-    /// Generate a sample for a note
+    fn synthesize_single_channel_sample(
+        rng: &mut impl Rng,
+        sample_rate: SampleRate,
+        operator_index: usize,
+        operator_wave_type: OperatorWaveType,
+        operator_frequency: f64,
+        operator_feedback: f64,
+        operator_modulation_index: f64,
+        note: &mut Note,
+        input: f64,
+    ) -> f64 {
+
+        match operator_wave_type.0 {
+            WaveType::Sine => {
+                let phase_increment = (operator_frequency / sample_rate.0) * TAU;
+                let new_phase = note.operators[operator_index].last_phase.0 + phase_increment;
+
+                // Only do feedback calculation if feedback is on
+                let new_feedback = {
+                    if operator_feedback > ZERO_VALUE_LIMIT {
+                        operator_feedback * new_phase.sin()
+                    }
+                    else {
+                        0.0
+                    }
+                };
+
+                let signal = (
+                    new_phase +
+                    operator_modulation_index *
+                    (input + new_feedback)
+                ).sin();
+
+                note.operators[operator_index].last_phase.0 = new_phase;
+
+                signal
+            },
+            WaveType::WhiteNoise => {
+                (rng.gen::<f64>() - 0.5) * 2.0
+            }
+        }
+    }
+
+    /// Generate stereo samples for a note
     /// 
     /// Doesn't take self parameter due to conflicting borrowing of Notes
     /// in calling function `process`
-    fn generate_note_sample(
+    fn generate_note_samples(
         rng: &mut impl Rng,
         time: TimeCounter,
         sample_rate: SampleRate,
@@ -163,12 +206,11 @@ impl FmSynth {
                 }
             };
 
+            // Mix modulator into current operator depending on panning of
+            // current operator. If panned to the middle, just pass through
+            // the stereo signals: if panned to any side, mix out the
+            // original stereo signals and mix in mono.
             {
-                // Mix modulator into current operator depending on panning of
-                // current operator. If panned to the middle, just pass through
-                // the stereo signals: if panned to any side, mix out the
-                // original stereo signals and mix in mono.
-
                 let left_chain = output_channels[0].chain;
                 let right_chain = output_channels[1].chain;
 
@@ -184,42 +226,24 @@ impl FmSynth {
             }
 
             for i in 0..2 {
+                let chain_input = if operator_index == 0 {
+                    output_channels[i].chain + output_channels[i].skip_chain
+                } else {
+                    output_channels[i].chain
+                };
+
                 let new_signal = if volume_on {
-                    envelope_volume * match operator.wave_type.0 {
-                        WaveType::Sine => {
-                            let phase_increment = (operator_frequency / sample_rate.0) * TAU;
-                            let new_phase = note.operators[operator_index].last_phase.0 + phase_increment;
-
-                            // Only do feedback calculation if feedback is on
-                            let new_feedback = {
-                                if operator_feedback > ZERO_VALUE_LIMIT {
-                                    operator_feedback * new_phase.sin()
-                                }
-                                else {
-                                    0.0
-                                }
-                            };
-
-                            let chain_input = if operator_index == 0 {
-                                output_channels[i].chain + output_channels[i].skip_chain
-                            } else {
-                                output_channels[i].chain
-                            };
-
-                            let signal = (
-                                new_phase +
-                                operator_modulation_index *
-                                (chain_input + new_feedback)
-                            ).sin();
-
-                            note.operators[operator_index].last_phase.0 = new_phase;
-
-                            signal
-                        },
-                        WaveType::WhiteNoise => {
-                            (rng.gen::<f64>() - 0.5) * 2.0
-                        }
-                    }
+                    envelope_volume * Self::synthesize_single_channel_sample(
+                        rng,
+                        sample_rate,
+                        operator_index,
+                        operator.wave_type,
+                        operator_frequency,
+                        operator_feedback,
+                        operator_modulation_index,
+                        note,
+                        chain_input
+                    )
                 }
                 else {
                     0.0
@@ -307,7 +331,7 @@ impl Plugin for FmSynth {
                 .chain(self.processing.fadeout_notes.iter_mut()){
 
                 if note.active {
-                    let (out_left, out_right) = Self::generate_note_sample(
+                    let (out_left, out_right) = Self::generate_note_samples(
                         &mut self.processing.rng,
                         self.processing.global_time,
                         self.processing.sample_rate,
