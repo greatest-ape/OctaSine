@@ -20,6 +20,7 @@ pub trait Parameter {
 }
 
 
+/// Create parameter for optional parameter field
 #[macro_export]
 macro_rules! create_operator_opt_field_parameter {
     ($parameter_struct:ident, $field:ident, $field_name:expr) => {
@@ -45,7 +46,11 @@ macro_rules! create_operator_opt_field_parameter {
                     o.get_host_value_float()
                 }
                 else {
-                    error!("tried to access operator field with index {}", self.operator_index);
+                    error!(
+                        "tried to access field {} on operator with index {}",
+                        $field_name,
+                        self.operator_index
+                    );
 
                     0.0
                 }
@@ -55,7 +60,11 @@ macro_rules! create_operator_opt_field_parameter {
                     o.get_host_value_text().to_owned()
                 }
                 else {
-                    error!("tried to access operator field with index {}", self.operator_index);
+                    error!(
+                        "tried to access field {} on operator with index {}",
+                        $field_name,
+                        self.operator_index
+                    );
 
                     "error".to_string()
                 }
@@ -71,6 +80,7 @@ macro_rules! create_operator_opt_field_parameter {
     };  
 }
 
+/// Create parameter for operator field
 #[macro_export]
 macro_rules! create_operator_field_parameter {
     ($parameter_struct:ident, $field:ident, $field_name:expr) => {
