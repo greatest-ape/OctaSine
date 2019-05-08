@@ -99,7 +99,7 @@ impl FmSynth {
         1.0 / self.processing.sample_rate.0
     }
 
-    fn limit(value: f64) -> f64 {
+    fn hard_limit(value: f64) -> f64 {
         value.min(1.0).max(-1.0)
     }
 
@@ -319,11 +319,10 @@ impl Plugin for FmSynth {
         let time_per_sample = self.time_per_sample();
 
         let outputs = audio_buffer.split().1;
+        let lefts = outputs.get_mut(0).iter_mut();
+        let rights = outputs.get_mut(1).iter_mut();
 
-        for (output_sample_left, output_sample_right) in outputs.get_mut(0)
-            .iter_mut()
-            .zip(outputs.get_mut(1).iter_mut()) {
-
+        for (output_sample_left, output_sample_right) in lefts.zip(rights) {
             *output_sample_left = 0.0;
             *output_sample_right = 0.0;
 
@@ -342,8 +341,8 @@ impl Plugin for FmSynth {
                         note,
                     );
 
-                    *output_sample_left += Self::limit(out_left) as f32;
-                    *output_sample_right += Self::limit(out_right) as f32;
+                    *output_sample_left += Self::hard_limit(out_left) as f32;
+                    *output_sample_right += Self::hard_limit(out_right) as f32;
 
                     note.deactivate_if_finished();
 
