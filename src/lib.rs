@@ -223,7 +223,7 @@ impl FmSynth {
             // current operator. If panned to the middle, just pass through
             // the stereo signals: if panned to any side, mix out the
             // original stereo signals and mix in mono.
-            {
+            if volume_on && operator_panning != 0.5 {
                 let left_chain = output_channels[0].operator_inputs[operator_index];
                 let right_chain = output_channels[1].operator_inputs[operator_index];
 
