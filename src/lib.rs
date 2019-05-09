@@ -3,10 +3,11 @@ extern crate log;
 
 use std::sync::Arc;
 
+use array_init::array_init;
 use parking_lot::Mutex;
 use rand::{FromEntropy, Rng};
 use rand::rngs::SmallRng;
-use smallvec::{SmallVec, smallvec};
+use smallvec::SmallVec;
 
 use vst::api::{Supported, Events};
 use vst::buffer::AudioBuffer;
@@ -29,9 +30,9 @@ use crate::parameters::*;
 use crate::operators::*;
 
 
-type Notes = SmallVec<[Note; 128]>;
+type Notes = [Note; 128];
 type FadeoutNotes = SmallVec<[Note; 1024]>;
-type Operators = SmallVec<[Operator; NUM_OPERATORS]>;
+type Operators = [Operator; NUM_OPERATORS];
 
 
 /// State that can be changed with parameters. Only accessed through mutex
@@ -68,14 +69,14 @@ pub struct SyncOnlyState {
 
 pub struct OutputChannel {
     pub additive: f64,
-    pub operator_inputs: SmallVec<[f64; NUM_OPERATORS]>,
+    pub operator_inputs: [f64; NUM_OPERATORS],
 }
 
 impl Default for OutputChannel {
     fn default() -> Self {
         Self {
             additive: 0.0,
-            operator_inputs: smallvec![0.0; NUM_OPERATORS],
+            operator_inputs: [0.0; NUM_OPERATORS],
         }
     }
 }
@@ -160,8 +161,10 @@ impl FmSynth {
     ) -> (f64, f64) {
         let base_frequency = note.midi_pitch.get_frequency(master_frequency);
 
-        let mut output_channels: SmallVec<[OutputChannel; 2]> =
-            smallvec![OutputChannel::default(), OutputChannel::default()];
+        let mut output_channels = [
+            OutputChannel::default(),
+            OutputChannel::default()
+        ];
 
         for (operator_index, operator) in (operators.iter_mut().enumerate()).rev() {
             // Fetch all operator values here to make sure all interpolatable
@@ -357,23 +360,11 @@ impl Plugin for FmSynth {
     }
 
     fn new(host: HostCallback) -> Self {
-        let mut operators = smallvec![];
-
-        for operator_index in 0..NUM_OPERATORS {
-            operators.push(Operator::new(operator_index));
-        }
-
-        let mut notes = SmallVec::new();
-
-        for i in 0..128 {
-            notes.push(Note::new(MidiPitch(i)));
-        }
-
         let parameters = Parameters::new();
 
         let automatable = Arc::new(Mutex::new(AutomatableState {
             master_frequency: MasterFrequency(440.0),
-            operators: operators,
+            operators: array_init(|i| Operator::new(i)),
         }));
 
         let sync_only = Arc::new(SyncOnlyState {
@@ -387,7 +378,7 @@ impl Plugin for FmSynth {
             sample_rate: SampleRate(44100.0),
             bpm: BeatsPerMinute(120.0),
             rng: SmallRng::from_entropy(),
-            notes: notes,
+            notes: array_init(|i| Note::new(MidiPitch(i as u8))),
             fadeout_notes: SmallVec::new(),
             automatable: automatable.clone(),
         };

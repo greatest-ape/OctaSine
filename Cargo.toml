@@ -9,6 +9,7 @@ name = "fm"
 crate-type = ["cdylib"]
 
 [dependencies]
+array-init = "0.0.4"
 dirs = "1"
 log = "0.3"
 log-panics = "2"

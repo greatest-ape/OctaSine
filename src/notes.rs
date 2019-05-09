@@ -1,5 +1,3 @@
-use smallvec::SmallVec;
-
 use crate::common::*;
 use crate::constants::*;
 use crate::operators::*;
@@ -154,9 +152,6 @@ impl Default for NoteOperator {
 }
 
 
-pub type NoteOperators = SmallVec<[NoteOperator; NUM_OPERATORS]>;
-
-
 #[derive(Debug, Clone)]
 pub struct Note {
     pub pressed: bool,
@@ -165,16 +160,12 @@ pub struct Note {
     pub duration_at_key_release: Option<NoteDuration>,
     pub velocity: NoteVelocity,
     pub midi_pitch: MidiPitch,
-    pub operators: NoteOperators,
+    pub operators: [NoteOperator; NUM_OPERATORS],
 }
 
 impl Note {
     pub fn new(midi_pitch: MidiPitch) -> Self {
-        let mut operators = SmallVec::new();
-
-        for _ in 0..NUM_OPERATORS {
-            operators.push(NoteOperator::default());
-        }
+        let operators = [NoteOperator::default(); NUM_OPERATORS];
 
         Self {
             pressed: false,
