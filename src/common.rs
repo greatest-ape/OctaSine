@@ -14,6 +14,9 @@ pub struct MasterFrequency(pub f64);
 pub struct SampleRate(pub f64);
 
 #[derive(Debug, Copy, Clone)]
+pub struct TimePerSample(pub f64);
+
+#[derive(Debug, Copy, Clone)]
 pub struct BeatsPerMinute(pub f64);
 
 #[derive(Debug, Copy, Clone, PartialEq)]

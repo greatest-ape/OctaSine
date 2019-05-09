@@ -46,6 +46,7 @@ pub struct AutomatableState {
 pub struct ProcessingState {
     pub global_time: TimeCounter,
     pub sample_rate: SampleRate,
+    pub time_per_sample: TimePerSample,
     pub bpm: BeatsPerMinute,
     pub rng: SmallRng,
     pub notes: Notes,
@@ -96,8 +97,8 @@ impl Default for FmSynth {
 
 
 impl FmSynth {
-    fn time_per_sample(&self) -> f64 {
-        1.0 / self.processing.sample_rate.0
+    fn time_per_sample(sample_rate: SampleRate) -> TimePerSample {
+        TimePerSample(1.0 / sample_rate.0)
     }
 
     fn hard_limit(value: f64) -> f64 {
@@ -106,7 +107,7 @@ impl FmSynth {
 
     fn synthesize_single_channel_sample(
         rng: &mut impl Rng,
-        sample_rate: SampleRate,
+        time_per_sample: TimePerSample,
         operator_index: usize,
         operator_wave_type: OperatorWaveType,
         operator_frequency: f64,
@@ -118,7 +119,7 @@ impl FmSynth {
 
         match operator_wave_type.0 {
             WaveType::Sine => {
-                let phase_increment = (operator_frequency / sample_rate.0) * TAU;
+                let phase_increment = (operator_frequency * time_per_sample.0) * TAU;
                 let new_phase = note.operators[operator_index].last_phase.0 + phase_increment;
 
                 // Only do feedback calculation if feedback is on
@@ -154,7 +155,7 @@ impl FmSynth {
     fn generate_note_samples(
         rng: &mut impl Rng,
         time: TimeCounter,
-        sample_rate: SampleRate,
+        time_per_sample: TimePerSample,
         master_frequency: MasterFrequency,
         operators: &mut Operators,
         note: &mut Note,
@@ -244,7 +245,7 @@ impl FmSynth {
                 let new_signal = if volume_on {
                     envelope_volume * Self::synthesize_single_channel_sample(
                         rng,
-                        sample_rate,
+                        time_per_sample,
                         operator_index,
                         operator.wave_type,
                         operator_frequency,
@@ -319,7 +320,7 @@ impl FmSynth {
 impl Plugin for FmSynth {
 
     fn process(&mut self, audio_buffer: &mut AudioBuffer<f32>){
-        let time_per_sample = self.time_per_sample();
+        let time_per_sample = self.processing.time_per_sample;
 
         let outputs = audio_buffer.split().1;
         let lefts = outputs.get_mut(0).iter_mut();
@@ -338,7 +339,7 @@ impl Plugin for FmSynth {
                     let (out_left, out_right) = Self::generate_note_samples(
                         &mut self.processing.rng,
                         self.processing.global_time,
-                        self.processing.sample_rate,
+                        time_per_sample,
                         automatable.master_frequency,
                         &mut automatable.operators,
                         note,
@@ -349,11 +350,11 @@ impl Plugin for FmSynth {
 
                     note.deactivate_if_finished();
 
-                    note.duration.0 += time_per_sample;
+                    note.duration.0 += time_per_sample.0;
                 }
             }
 
-            self.processing.global_time.0 += time_per_sample;
+            self.processing.global_time.0 += time_per_sample.0;
         }
 
         self.processing.fadeout_notes.retain(|note| note.active);
@@ -373,9 +374,12 @@ impl Plugin for FmSynth {
             automatable: automatable.clone(),
         });
 
+        let sample_rate = SampleRate(44100.0);
+
         let processing = ProcessingState {
             global_time: TimeCounter(0.0),
-            sample_rate: SampleRate(44100.0),
+            sample_rate: sample_rate,
+            time_per_sample: Self::time_per_sample(sample_rate),
             bpm: BeatsPerMinute(120.0),
             rng: SmallRng::from_entropy(),
             notes: array_init(|i| Note::new(MidiPitch(i as u8))),
@@ -436,7 +440,10 @@ impl Plugin for FmSynth {
     }
 
     fn set_sample_rate(&mut self, rate: f32) {
-        self.processing.sample_rate = SampleRate(f64::from(rate));
+        let sample_rate = SampleRate(f64::from(rate));
+
+        self.processing.sample_rate = sample_rate;
+        self.processing.time_per_sample = Self::time_per_sample(sample_rate);
     }
 
     fn can_do(&self, can_do: CanDo) -> Supported {
