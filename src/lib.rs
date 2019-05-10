@@ -32,14 +32,6 @@ use crate::operators::*;
 
 type Notes = [Note; 128];
 type FadeoutNotes = SmallVec<[Note; 1024]>;
-type Operators = [Operator; NUM_OPERATORS];
-
-
-/// State that can be changed with parameters. Only accessed through mutex
-pub struct AutomatableState {
-    pub master_frequency: MasterFrequency,
-    pub operators: Operators,
-}
 
 
 /// State used for processing
@@ -55,19 +47,18 @@ pub struct ProcessingState {
     /// copied here so they can fade out in peace
     pub fadeout_notes: FadeoutNotes,
 
-    /// Reference to automatable state
-    pub automatable: Arc<Mutex<AutomatableState>>,
+    pub parameters: Arc<Mutex<Parameters>>,
 }
 
 
 /// Thread-safe state used for parameter and preset calls
 pub struct SyncOnlyState {
-    pub parameters: Parameters,
     pub host: HostCallback,
-    pub automatable: Arc<Mutex<AutomatableState>>,
+    pub parameters: Arc<Mutex<Parameters>>,
 }
 
 
+/// One for left channel, one for right
 pub struct OutputChannel {
     pub additive: f64,
     pub operator_inputs: [f64; NUM_OPERATORS],
@@ -117,7 +108,7 @@ impl FmSynth {
         input: f64,
     ) -> f64 {
 
-        match operator_wave_type.0 {
+        match operator_wave_type.value {
             WaveType::Sine => {
                 let phase_increment = (operator_frequency * time_per_sample.0) * TAU;
                 let new_phase = note.operators[operator_index].last_phase.0 + phase_increment;
@@ -191,9 +182,9 @@ impl FmSynth {
             };
 
             let operator_frequency = base_frequency *
-                operator.frequency_ratio.0 *
-                operator.frequency_free.0 *
-                operator.frequency_fine.0;
+                operator.frequency_ratio.value *
+                operator.frequency_free.value *
+                operator.frequency_fine.value;
 
             // Always calculate envelope to make sure it advances
             let envelope_volume = {
@@ -318,7 +309,6 @@ impl FmSynth {
 
 
 impl Plugin for FmSynth {
-
     fn process(&mut self, audio_buffer: &mut AudioBuffer<f32>){
         let time_per_sample = self.processing.time_per_sample;
 
@@ -330,7 +320,7 @@ impl Plugin for FmSynth {
             *output_sample_left = 0.0;
             *output_sample_right = 0.0;
 
-            let mut automatable = self.processing.automatable.lock();
+            let mut parameters = self.processing.parameters.lock();
 
             for note in self.processing.notes.iter_mut()
                 .chain(self.processing.fadeout_notes.iter_mut()){
@@ -340,8 +330,8 @@ impl Plugin for FmSynth {
                         &mut self.processing.rng,
                         self.processing.global_time,
                         time_per_sample,
-                        automatable.master_frequency,
-                        &mut automatable.operators,
+                        parameters.master_frequency,
+                        &mut parameters.operators,
                         note,
                     );
 
@@ -361,17 +351,14 @@ impl Plugin for FmSynth {
     }
 
     fn new(host: HostCallback) -> Self {
-        let parameters = Parameters::new();
-
-        let automatable = Arc::new(Mutex::new(AutomatableState {
+        let parameters = Arc::new(Mutex::new(Parameters {
             master_frequency: MasterFrequency(440.0),
             operators: array_init(|i| Operator::new(i)),
         }));
 
         let sync_only = Arc::new(SyncOnlyState {
             host: host,
-            parameters: parameters,
-            automatable: automatable.clone(),
+            parameters: parameters.clone(),
         });
 
         let sample_rate = SampleRate(44100.0);
@@ -384,7 +371,7 @@ impl Plugin for FmSynth {
             rng: SmallRng::from_entropy(),
             notes: array_init(|i| Note::new(MidiPitch(i as u8))),
             fadeout_notes: SmallVec::new(),
-            automatable: automatable.clone(),
+            parameters: parameters.clone(),
         };
 
         Self {
@@ -401,7 +388,7 @@ impl Plugin for FmSynth {
             category: Category::Synth,
             inputs: 0,
             outputs: 2,
-            parameters: self.sync_only.parameters.len() as i32,
+            parameters: self.sync_only.parameters.lock().len() as i32,
             initial_delay: 0,
             ..Info::default()
         }
@@ -464,32 +451,32 @@ impl PluginParameters for SyncOnlyState {
 
     /// Get parameter label for parameter at `index` (e.g. "db", "sec", "ms", "%").
     fn get_parameter_label(&self, index: i32) -> String {
-        self.parameters.get(index as usize)
-            .map_or("".to_string(), |p| p.get_unit_of_measurement(&self.automatable.lock()))
+        self.parameters.lock().get_index(index as usize)
+            .map_or("".to_string(), |p| p.get_parameter_unit_of_measurement())
     }
 
     /// Get the parameter value for parameter at `index` (e.g. "1.0", "150", "Plate", "Off").
     fn get_parameter_text(&self, index: i32) -> String {
-        self.parameters.get(index as usize)
-            .map_or("".to_string(), |p| p.get_value_text(&self.automatable.lock()))
+        self.parameters.lock().get_index(index as usize)
+            .map_or("".to_string(), |p| p.get_parameter_value_text())
     }
 
     /// Get the name of parameter at `index`.
     fn get_parameter_name(&self, index: i32) -> String {
-        self.parameters.get(index as usize)
-            .map_or("".to_string(), |p| p.get_name(&self.automatable.lock()))
+        self.parameters.lock().get_index(index as usize)
+            .map_or("".to_string(), |p| p.get_parameter_name())
     }
 
     /// Get the value of paramater at `index`. Should be value between 0.0 and 1.0.
     fn get_parameter(&self, index: i32) -> f32 {
-        self.parameters.get(index as usize)
-            .map_or(0.0, |p| p.get_value_float(&self.automatable.lock())) as f32
+        self.parameters.lock().get_index(index as usize)
+            .map_or(0.0, |p| p.get_parameter_value_float()) as f32
     }
 
     /// Set the value of parameter at `index`. `value` is between 0.0 and 1.0.
     fn set_parameter(&self, index: i32, value: f32) {
-        if let Some(p) = self.parameters.get(index as usize) {
-            p.set_value_float(&mut self.automatable.lock(), f64::from(value).min(1.0).max(0.0))
+        if let Some(p) = self.parameters.lock().get_index(index as usize) {
+            p.set_parameter_value_float(f64::from(value).min(1.0).max(0.0))
         }
     }
 
@@ -497,8 +484,8 @@ impl PluginParameters for SyncOnlyState {
     /// adjust a parameter value. E.g. "100" may be interpreted as 100hz for parameter. Returns if
     /// the input string was used.
     fn string_to_parameter(&self, index: i32, text: String) -> bool {
-        if let Some(p) = self.parameters.get(index as usize){
-            p.set_value_text(&mut self.automatable.lock(), text)
+        if let Some(p) = self.parameters.lock().get_index(index as usize){
+            p.set_parameter_value_text(text)
         }
         else {
             false
@@ -507,7 +494,7 @@ impl PluginParameters for SyncOnlyState {
 
     /// Return whether parameter at `index` can be automated.
     fn can_be_automated(&self, index: i32) -> bool {
-        self.parameters.get(index as usize).is_some()
+        self.parameters.lock().get_index(index as usize).is_some()
     }
 }
 

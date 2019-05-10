@@ -1,7 +1,8 @@
 use smallvec::SmallVec;
 
-use crate::constants::*;
 use crate::common::*;
+use crate::constants::*;
+use crate::parameters::Parameter;
 use crate::utils::*;
 
 
@@ -30,30 +31,25 @@ pub trait InterpolatableValue {
 }
 
 
-pub trait AutomatableValue {
-    fn set_host_value_float(&mut self, value: f64);
-    fn get_host_value_float(&self) -> f64;
-    fn get_host_value_text(&self) -> String;
-}
-
-
 #[macro_export]
 macro_rules! create_interpolatable_automatable {
-    ($struct_name:ident, $default_value:ident) => {
+    ($struct_name:ident, $default_value:ident, $parameter_name:expr) => {
 
         #[derive(Debug, Copy, Clone)]
         pub struct $struct_name {
             current_value: f64,
             pub target_value: f64,
             step_data: OperatorStepData,
+            operator_index: usize,
         }
 
-        impl Default for $struct_name {
-            fn default() -> Self {
+        impl $struct_name {
+            fn new(operator_index: usize) -> Self {
                 Self {
                     current_value: $default_value,
                     target_value: $default_value,
                     step_data: OperatorStepData::default(),
+                    operator_index: operator_index,
                 }
             }
         }
@@ -94,14 +90,18 @@ macro_rules! create_interpolatable_automatable {
             }
         }
 
-        impl AutomatableValue for $struct_name {
-            fn set_host_value_float(&mut self, value: f64){
-                self.set_value(self.from_host_value(value));
+        impl Parameter for $struct_name {
+            fn get_parameter_name(&self) -> String {
+                format!("Op. {} {}", self.operator_index + 1, $parameter_name)
             }
-            fn get_host_value_float(&self) -> f64 {
-                self.to_host_value(self.target_value)
+
+            fn set_parameter_value_float(&mut self, value: f64){
+                self.set_value(self.from_parameter_value(value));
             }
-            fn get_host_value_text(&self) -> String {
+            fn get_parameter_value_float(&self) -> f64 {
+                self.to_parameter_value(self.target_value)
+            }
+            fn get_parameter_value_text(&self) -> String {
                 format!("{:.2}", self.target_value)
             }
         }
@@ -111,40 +111,53 @@ macro_rules! create_interpolatable_automatable {
 
 #[macro_export]
 macro_rules! create_automatable {
-    ($struct_name:ident, $default_value:ident) => {
+    ($struct_name:ident, $default_value:ident, $parameter_name:expr) => {
 
         #[derive(Debug, Copy, Clone)]
-        pub struct $struct_name(pub f64);
+        pub struct $struct_name {
+            pub value: f64,
+            operator_index: usize,
+        }
 
-        impl Default for $struct_name {
-            fn default() -> Self {
-                $struct_name($default_value)
+        impl $struct_name {
+            fn new(operator_index: usize) -> Self {
+                $struct_name {
+                    value: $default_value,
+                    operator_index: operator_index,
+                }
             }
         }
 
-        impl AutomatableValue for $struct_name {
-            fn set_host_value_float(&mut self, value: f64){
-                self.0 = self.from_host_value(value);
+        impl Parameter for $struct_name {
+            fn get_parameter_name(&self) -> String {
+                format!("Op. {} {}", self.operator_index + 1, $parameter_name)
             }
-            fn get_host_value_float(&self) -> f64 {
-                self.to_host_value(self.0)
+
+            fn set_parameter_value_float(&mut self, value: f64){
+                self.value = self.from_parameter_value(value);
             }
-            fn get_host_value_text(&self) -> String {
-                format!("{:.2}", self.0)
+            fn get_parameter_value_float(&self) -> f64 {
+                self.to_parameter_value(self.value)
+            }
+            fn get_parameter_value_text(&self) -> String {
+                format!("{:.2}", self.value)
             }
         }
     };  
 }
 
 
-
-create_interpolatable_automatable!(OperatorVolume, OPERATOR_DEFAULT_VOLUME);
+create_interpolatable_automatable!(
+    OperatorVolume,
+    OPERATOR_DEFAULT_VOLUME,
+    "volume"
+);
 
 impl OperatorVolume {
-    pub fn from_host_value(&self, value: f64) -> f64 {
+    pub fn from_parameter_value(&self, value: f64) -> f64 {
         value * 2.0
     }
-    pub fn to_host_value(&self, value: f64) -> f64 {
+    pub fn to_parameter_value(&self, value: f64) -> f64 {
         value / 2.0
     }
 }
@@ -154,6 +167,7 @@ impl OperatorVolume {
 pub struct OperatorOutputOperator {
     targets: SmallVec<[usize; NUM_OPERATORS]>,
     pub target: usize,
+    pub operator_index: usize,
 }
 
 impl OperatorOutputOperator {
@@ -165,11 +179,12 @@ impl OperatorOutputOperator {
             Some(Self {
                 targets: (0..operator_index).into_iter().collect(),
                 target: operator_index - 1,
+                operator_index: operator_index,
             })
         }
     }
 
-    pub fn from_host_value(&self, value: f64) -> usize {
+    pub fn from_parameter_value(&self, value: f64) -> usize {
         let step = 1.0 / self.targets.len() as f64;
         let mut sum = 0.0;
 
@@ -183,53 +198,65 @@ impl OperatorOutputOperator {
 
         *self.targets.last().expect("No targets")
     }
-    pub fn to_host_value(&self, value: usize) -> f64 {
+    pub fn to_parameter_value(&self, value: usize) -> f64 {
         let step = 1.0 / self.targets.len() as f64;
 
         value as f64 * step + 0.0001
     }
 }
 
-impl AutomatableValue for OperatorOutputOperator {
-    fn set_host_value_float(&mut self, value: f64){
-        self.target = self.from_host_value(value);
+impl Parameter for OperatorOutputOperator {
+    fn get_parameter_name(&self) -> String {
+        format!("Op. {} {}", self.operator_index + 1, "mod out")
     }
-    fn get_host_value_float(&self) -> f64 {
-        self.to_host_value(self.target)
+
+    fn set_parameter_value_float(&mut self, value: f64){
+        self.target = self.from_parameter_value(value);
     }
-    fn get_host_value_text(&self) -> String {
+    fn get_parameter_value_float(&self) -> f64 {
+        self.to_parameter_value(self.target)
+    }
+    fn get_parameter_value_text(&self) -> String {
         format!("Operator {}", self.target + 1)
     }
 }
 
 
-create_interpolatable_automatable!(OperatorAdditiveFactor, OPERATOR_DEFAULT_ADDITIVE_FACTOR);
+create_interpolatable_automatable!(
+    OperatorAdditiveFactor,
+    OPERATOR_DEFAULT_ADDITIVE_FACTOR,
+    "additive"
+);
 
 impl OperatorAdditiveFactor {
     pub fn opt_new(operator_index: usize) -> Option<Self> {
         if operator_index == 0 {
             None
         } else {
-            Some(Self::default())
+            Some(Self::new(operator_index))
         }
     }
 
-    pub fn from_host_value(&self, value: f64) -> f64 {
+    pub fn from_parameter_value(&self, value: f64) -> f64 {
         value
     }
-    pub fn to_host_value(&self, value: f64) -> f64 {
+    pub fn to_parameter_value(&self, value: f64) -> f64 {
         value
     }
 }
 
 
-create_interpolatable_automatable!(OperatorPanning, OPERATOR_DEFAULT_PANNING);
+create_interpolatable_automatable!(
+    OperatorPanning,
+    OPERATOR_DEFAULT_PANNING,
+    "pan"
+);
 
 impl OperatorPanning {
-    pub fn from_host_value(&self, value: f64) -> f64 {
+    pub fn from_parameter_value(&self, value: f64) -> f64 {
         value
     }
-    pub fn to_host_value(&self, value: f64) -> f64 {
+    pub fn to_parameter_value(&self, value: f64) -> f64 {
         value
     }
 
@@ -241,78 +268,100 @@ impl OperatorPanning {
 }
 
 
-create_automatable!(OperatorFrequencyRatio, OPERATOR_DEFAULT_FREQUENCY_RATIO);
+create_automatable!(
+    OperatorFrequencyRatio,
+    OPERATOR_DEFAULT_FREQUENCY_RATIO,
+    "freq ratio"
+);
 
 impl OperatorFrequencyRatio {
-    pub fn from_host_value(&self, value: f64) -> f64 {
-        map_host_param_value_to_step(&OPERATOR_RATIO_STEPS[..], value)
+    pub fn from_parameter_value(&self, value: f64) -> f64 {
+        map_parameter_value_to_step(&OPERATOR_RATIO_STEPS[..], value)
     }
-    pub fn to_host_value(&self, value: f64) -> f64 {
-        map_step_to_host_param_value(&OPERATOR_RATIO_STEPS[..], value)
+    pub fn to_parameter_value(&self, value: f64) -> f64 {
+        map_step_to_parameter_value(&OPERATOR_RATIO_STEPS[..], value)
     }
 }
 
 
-create_automatable!(OperatorFrequencyFree, OPERATOR_DEFAULT_FREQUENCY_FREE);
+create_automatable!(
+    OperatorFrequencyFree,
+    OPERATOR_DEFAULT_FREQUENCY_FREE,
+    "freq free"
+);
 
 impl OperatorFrequencyFree {
-    pub fn from_host_value(&self, value: f64) -> f64 {
+    pub fn from_parameter_value(&self, value: f64) -> f64 {
         (value + 0.5).powf(3.0)
     }
-    pub fn to_host_value(&self, value: f64) -> f64 {
+    pub fn to_parameter_value(&self, value: f64) -> f64 {
         value.powf(1.0/3.0) - 0.5
     }
 }
 
 
-create_automatable!(OperatorFrequencyFine, OPERATOR_DEFAULT_FREQUENCY_FINE);
+create_automatable!(
+    OperatorFrequencyFine,
+    OPERATOR_DEFAULT_FREQUENCY_FINE,
+    "freq fine"
+);
 
 impl OperatorFrequencyFine {
-    pub fn from_host_value(&self, value: f64) -> f64 {
+    pub fn from_parameter_value(&self, value: f64) -> f64 {
         (value + 0.5).powf(1.0/3.0)
     }
-    pub fn to_host_value(&self, value: f64) -> f64 {
+    pub fn to_parameter_value(&self, value: f64) -> f64 {
         value.powf(3.0) - 0.5
     }
 }
 
 
-create_interpolatable_automatable!(OperatorFeedback, OPERATOR_DEFAULT_FEEDBACK);
+create_interpolatable_automatable!(
+    OperatorFeedback,
+    OPERATOR_DEFAULT_FEEDBACK,
+    "feedback"
+);
 
 impl OperatorFeedback {
-    pub fn from_host_value(&self, value: f64) -> f64 {
+    pub fn from_parameter_value(&self, value: f64) -> f64 {
         value
     }
-    pub fn to_host_value(&self, value: f64) -> f64 {
+    pub fn to_parameter_value(&self, value: f64) -> f64 {
         value
     }
 }
 
 
-create_interpolatable_automatable!(OperatorModulationIndex, OPERATOR_DEFAULT_MODULATION_INDEX);
+create_interpolatable_automatable!(
+    OperatorModulationIndex,
+    OPERATOR_DEFAULT_MODULATION_INDEX,
+    "mod index"
+);
 
 impl OperatorModulationIndex {
-    pub fn from_host_value(&self, value: f64) -> f64 {
-        map_host_param_value_to_value_with_steps(&OPERATOR_BETA_STEPS[..], value)
+    pub fn from_parameter_value(&self, value: f64) -> f64 {
+        map_parameter_value_to_value_with_steps(&OPERATOR_BETA_STEPS[..], value)
     }
-    pub fn to_host_value(&self, value: f64) -> f64 {
-        map_value_to_host_param_value_with_steps(&OPERATOR_BETA_STEPS[..], value)
+    pub fn to_parameter_value(&self, value: f64) -> f64 {
+        map_value_to_parameter_value_with_steps(&OPERATOR_BETA_STEPS[..], value)
     }
 }
-
 
 
 #[derive(Debug, Copy, Clone)]
-pub struct OperatorWaveType(pub WaveType);
-
-impl Default for OperatorWaveType {
-    fn default() -> Self {
-        Self(WaveType::Sine)
-    }
+pub struct OperatorWaveType {
+    pub value: WaveType,
+    pub operator_index: usize,
 }
 
 impl OperatorWaveType {
-    pub fn from_host_value(&self, value: f64) -> WaveType {
+    fn new(operator_index: usize) -> Self {
+        Self {
+            value: WaveType::Sine,
+            operator_index
+        }
+    }
+    pub fn from_parameter_value(&self, value: f64) -> WaveType {
         if value <= 0.5 {
             WaveType::Sine
         }
@@ -320,7 +369,7 @@ impl OperatorWaveType {
             WaveType::WhiteNoise
         }
     }
-    pub fn to_host_value(&self, value: WaveType) -> f64 {
+    pub fn to_parameter_value(&self, value: WaveType) -> f64 {
         match value {
             WaveType::Sine => 0.0,
             WaveType::WhiteNoise => 1.0,
@@ -328,15 +377,19 @@ impl OperatorWaveType {
     }
 }
 
-impl AutomatableValue for OperatorWaveType {
-    fn set_host_value_float(&mut self, value: f64){
-        self.0 = self.from_host_value(value);
+impl Parameter for OperatorWaveType {
+    fn get_parameter_name(&self) -> String {
+        format!("Op. {} {}", self.operator_index + 1, "wave type")
     }
-    fn get_host_value_float(&self) -> f64 {
-        self.to_host_value(self.0)
+
+    fn set_parameter_value_float(&mut self, value: f64){
+        self.value = self.from_parameter_value(value);
     }
-    fn get_host_value_text(&self) -> String {
-        match self.0 {
+    fn get_parameter_value_float(&self) -> f64 {
+        self.to_parameter_value(self.value)
+    }
+    fn get_parameter_value_text(&self) -> String {
+        match self.value {
             WaveType::Sine => "Sine".to_string(),
             WaveType::WhiteNoise => "White noise".to_string(),
         }
@@ -344,64 +397,84 @@ impl AutomatableValue for OperatorWaveType {
 }
 
 
-create_automatable!(VolumeEnvelopeAttackDuration, OPERATOR_DEFAULT_VOLUME_ENVELOPE_ATTACK_DURATION);
+create_automatable!(
+    VolumeEnvelopeAttackDuration,
+    OPERATOR_DEFAULT_VOLUME_ENVELOPE_ATTACK_DURATION,
+    "attack time"
+);
 
 impl VolumeEnvelopeAttackDuration {
-    pub fn from_host_value(&self, value: f64) -> f64 {
+    pub fn from_parameter_value(&self, value: f64) -> f64 {
         // Force some attack to avoid clicks
         (value * OPERATOR_ENVELOPE_MAX_DURATION).max(0.004)
     }
-    pub fn to_host_value(&self, value: f64) -> f64 {
+    pub fn to_parameter_value(&self, value: f64) -> f64 {
         value / OPERATOR_ENVELOPE_MAX_DURATION
     }
 }
 
 
-create_automatable!(VolumeEnvelopeAttackValue, OPERATOR_DEFAULT_VOLUME_ENVELOPE_ATTACK_VALUE);
+create_automatable!(
+    VolumeEnvelopeAttackValue,
+    OPERATOR_DEFAULT_VOLUME_ENVELOPE_ATTACK_VALUE,
+    "attack vol"
+);
 
 impl VolumeEnvelopeAttackValue {
-    pub fn from_host_value(&self, value: f64) -> f64 {
+    pub fn from_parameter_value(&self, value: f64) -> f64 {
         value
     }
-    pub fn to_host_value(&self, value: f64) -> f64 {
+    pub fn to_parameter_value(&self, value: f64) -> f64 {
         value
     }
 }
 
 
-create_automatable!(VolumeEnvelopeDecayDuration, OPERATOR_DEFAULT_VOLUME_ENVELOPE_DECAY_DURATION);
+create_automatable!(
+    VolumeEnvelopeDecayDuration,
+    OPERATOR_DEFAULT_VOLUME_ENVELOPE_DECAY_DURATION,
+    "decay time"
+);
 
 impl VolumeEnvelopeDecayDuration {
-    pub fn from_host_value(&self, value: f64) -> f64 {
+    pub fn from_parameter_value(&self, value: f64) -> f64 {
         // Force some decay to avoid clicks
         (value * OPERATOR_ENVELOPE_MAX_DURATION).max(0.004)
     }
-    pub fn to_host_value(&self, value: f64) -> f64 {
+    pub fn to_parameter_value(&self, value: f64) -> f64 {
         value / OPERATOR_ENVELOPE_MAX_DURATION
     }
 }
 
 
-create_automatable!(VolumeEnvelopeDecayValue, OPERATOR_DEFAULT_VOLUME_ENVELOPE_DECAY_VALUE);
+create_automatable!(
+    VolumeEnvelopeDecayValue,
+    OPERATOR_DEFAULT_VOLUME_ENVELOPE_DECAY_VALUE,
+    "decay vol"
+);
 
 impl VolumeEnvelopeDecayValue {
-    pub fn from_host_value(&self, value: f64) -> f64 {
+    pub fn from_parameter_value(&self, value: f64) -> f64 {
         value
     }
-    pub fn to_host_value(&self, value: f64) -> f64 {
+    pub fn to_parameter_value(&self, value: f64) -> f64 {
         value
     }
 }
 
 
-create_automatable!(VolumeEnvelopeReleaseDuration, OPERATOR_DEFAULT_VOLUME_ENVELOPE_RELEASE_DURATION);
+create_automatable!(
+    VolumeEnvelopeReleaseDuration,
+    OPERATOR_DEFAULT_VOLUME_ENVELOPE_RELEASE_DURATION,
+    "release time"
+);
 
 impl VolumeEnvelopeReleaseDuration {
-    pub fn from_host_value(&self, value: f64) -> f64 {
+    pub fn from_parameter_value(&self, value: f64) -> f64 {
         // Force some release to avoid clicks
         (value * OPERATOR_ENVELOPE_MAX_DURATION).max(0.004)
     }
-    pub fn to_host_value(&self, value: f64) -> f64 {
+    pub fn to_parameter_value(&self, value: f64) -> f64 {
         value / OPERATOR_ENVELOPE_MAX_DURATION
     }
 }
@@ -416,14 +489,14 @@ pub struct OperatorVolumeEnvelope {
     pub release_duration: VolumeEnvelopeReleaseDuration,
 }
 
-impl Default for OperatorVolumeEnvelope {
-    fn default() -> Self {
+impl OperatorVolumeEnvelope {
+    fn new(operator_index: usize) -> Self {
         Self {
-            attack_duration: VolumeEnvelopeAttackDuration::default(),
-            attack_end_value: VolumeEnvelopeAttackValue::default(),
-            decay_duration: VolumeEnvelopeDecayDuration::default(),
-            decay_end_value: VolumeEnvelopeDecayValue::default(),
-            release_duration: VolumeEnvelopeReleaseDuration::default(),
+            attack_duration: VolumeEnvelopeAttackDuration::new(operator_index),
+            attack_end_value: VolumeEnvelopeAttackValue::new(operator_index),
+            decay_duration: VolumeEnvelopeDecayDuration::new(operator_index),
+            decay_end_value: VolumeEnvelopeDecayValue::new(operator_index),
+            release_duration: VolumeEnvelopeReleaseDuration::new(operator_index),
         }
     }
 }
@@ -447,17 +520,17 @@ pub struct Operator {
 impl Operator {
     pub fn new(operator_index: usize) -> Self {
         Self {
-            volume: OperatorVolume::default(),
-            panning: OperatorPanning::default(),
-            wave_type: OperatorWaveType::default(),
+            volume: OperatorVolume::new(operator_index),
+            panning: OperatorPanning::new(operator_index),
+            wave_type: OperatorWaveType::new(operator_index),
             additive_factor: OperatorAdditiveFactor::opt_new(operator_index),
             output_operator: OperatorOutputOperator::opt_new(operator_index),
-            frequency_ratio: OperatorFrequencyRatio::default(),
-            frequency_free: OperatorFrequencyFree::default(),
-            frequency_fine: OperatorFrequencyFine::default(),
-            feedback: OperatorFeedback::default(),
-            modulation_index: OperatorModulationIndex::default(),
-            volume_envelope: OperatorVolumeEnvelope::default(),
+            frequency_ratio: OperatorFrequencyRatio::new(operator_index),
+            frequency_free: OperatorFrequencyFree::new(operator_index),
+            frequency_fine: OperatorFrequencyFine::new(operator_index),
+            feedback: OperatorFeedback::new(operator_index),
+            modulation_index: OperatorModulationIndex::new(operator_index),
+            volume_envelope: OperatorVolumeEnvelope::new(operator_index),
         }
     }
 }

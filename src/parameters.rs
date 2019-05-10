@@ -1,377 +1,97 @@
-use crate::AutomatableState;
-use crate::operators::*;
+use crate::common::*;
+use crate::constants::*;
+use crate::operators::Operator;
 
 
 pub trait Parameter {
-    fn get_name(&self, state: &AutomatableState) -> String;
-    fn get_unit_of_measurement(&self, _: &AutomatableState) -> String {
+    fn get_parameter_name(&self) -> String;
+    fn get_parameter_unit_of_measurement(&self) -> String {
         "".to_string()
     }
 
-    fn get_value_float(&self, state: &AutomatableState) -> f64;
-    fn get_value_text(&self, state: &AutomatableState) -> String {
-        format!("{:.2}", self.get_value_float(state))
-    }
+    fn get_parameter_value_float(&self) -> f64;
+    fn set_parameter_value_float(&mut self, value: f64);
 
-    fn set_value_float(&self, state: &mut AutomatableState, value: f64);
-    fn set_value_text(&self, _: &mut AutomatableState, _: String) -> bool {
+    fn get_parameter_value_text(&self) -> String;
+    fn set_parameter_value_text(&mut self, _value: String) -> bool {
         false
     }
 }
 
 
-/// Create parameter for optional parameter field
-#[macro_export]
-macro_rules! create_operator_opt_field_parameter {
-    ($parameter_struct:ident, $field:ident, $field_name:expr) => {
-        pub struct $parameter_struct {
-            operator_index: usize,
-        }
+pub type Operators = [Operator; NUM_OPERATORS];
 
-        impl $parameter_struct {
-            pub fn new(operator_index: usize) -> Self {
-                Self {
-                    operator_index: operator_index,
-                }
-            }
-        }
-
-        impl Parameter for $parameter_struct {
-            fn get_name(&self, _: &AutomatableState) -> String {
-                format!("Op. {} {}", self.operator_index + 1, $field_name)
-            }
-
-            fn get_value_float(&self, state: &AutomatableState) -> f64 {
-                if let Some(ref o) = state.operators[self.operator_index].$field {
-                    o.get_host_value_float()
-                }
-                else {
-                    error!(
-                        "tried to access field {} on operator with index {}",
-                        $field_name,
-                        self.operator_index
-                    );
-
-                    0.0
-                }
-            }
-            fn get_value_text(&self, state: &AutomatableState) -> String {
-                if let Some(ref o ) = state.operators[self.operator_index].$field {
-                    o.get_host_value_text().to_owned()
-                }
-                else {
-                    error!(
-                        "tried to access field {} on operator with index {}",
-                        $field_name,
-                        self.operator_index
-                    );
-
-                    "error".to_string()
-                }
-            }
-
-            fn set_value_float(&self, state: &mut AutomatableState, value: f64) {
-                if let Some(o) = &mut state.operators[self.operator_index].$field {
-                    o.set_host_value_float(value);
-                }
-            }
-        }
-
-    };  
-}
-
-/// Create parameter for operator field
-#[macro_export]
-macro_rules! create_operator_field_parameter {
-    ($parameter_struct:ident, $field:ident, $field_name:expr) => {
-        pub struct $parameter_struct {
-            operator_index: usize,
-        }
-
-        impl $parameter_struct {
-            pub fn new(operator_index: usize) -> Self {
-                Self {
-                    operator_index: operator_index,
-                }
-            }
-        }
-
-        impl Parameter for $parameter_struct {
-            fn get_name(&self, _: &AutomatableState) -> String {
-                format!("Op. {} {}", self.operator_index + 1, $field_name)
-            }
-
-            fn get_value_float(&self, state: &AutomatableState) -> f64 {
-                state.operators[self.operator_index].$field.get_host_value_float()
-            }
-            fn get_value_text(&self, state: &AutomatableState) -> String {
-                state.operators[self.operator_index].$field.get_host_value_text()
-            }
-
-            fn set_value_float(&self, state: &mut AutomatableState, value: f64) {
-                state.operators[self.operator_index].$field.set_host_value_float(value);
-            }
-        }
-    };  
-}
-
-
-/// Specific macro for volume envelope parameters
-/// 
-/// I would have preferred to use the normal field macro, but that was
-/// difficult with the envelope being inside of its own variable. It might
-/// prove useful with envelope-specific features anyway.
-#[macro_export]
-macro_rules! create_operator_envelope_field_parameter {
-    ($parameter_struct:ident, $envelope_field:ident, $field:ident, $field_name:expr) => {
-        pub struct $parameter_struct {
-            operator_index: usize,
-        }
-
-        impl $parameter_struct {
-            pub fn new(operator_index: usize) -> Self {
-                Self {
-                    operator_index: operator_index,
-                }
-            }
-        }
-
-        impl Parameter for $parameter_struct {
-            fn get_name(&self, _: &AutomatableState) -> String {
-                format!("Op. {} {}", self.operator_index + 1, $field_name)
-            }
-
-            fn get_value_float(&self, state: &AutomatableState) -> f64 {
-                state.operators[self.operator_index].$envelope_field.$field.get_host_value_float()
-            }
-            fn get_value_text(&self, state: &AutomatableState) -> String {
-                state.operators[self.operator_index].$envelope_field.$field.get_host_value_text()
-            }
-
-            fn set_value_float(&self, state: &mut AutomatableState, value: f64) {
-                state.operators[self.operator_index].$envelope_field.$field.set_host_value_float(value);
-            }
-        }
-    };  
-}
-
-
-create_operator_field_parameter!(
-    OperatorVolumeParameter,
-    volume,
-    "volume"
-);
-
-create_operator_field_parameter!(
-    OperatorWaveTypeParameter,
-    wave_type,
-    "wave type"
-);
-
-create_operator_opt_field_parameter!(
-    OperatorAdditiveFactorParameter,
-    additive_factor,
-    "additive"
-);
-
-create_operator_opt_field_parameter!(
-    OperatorOutputOperatorParameter,
-    output_operator,
-    "mod out"
-);
-
-create_operator_field_parameter!(
-    OperatorPanningParameter,
-    panning,
-    "pan"
-);
-
-create_operator_field_parameter!(
-    OperatorFrequencyRatioParameter,
-    frequency_ratio,
-    "freq ratio"
-);
-
-create_operator_field_parameter!(
-    OperatorFrequencyFreeParameter,
-    frequency_free,
-    "freq free"
-);
-
-create_operator_field_parameter!(
-    OperatorFrequencyFineParameter,
-    frequency_fine,
-    "freq fine"
-);
-
-create_operator_field_parameter!(
-    OperatorFeedbackParameter,
-    feedback,
-    "feedback"
-);
-
-create_operator_field_parameter!(
-    OperatorModulationIndexParameter,
-    modulation_index,
-    "mod index"
-);
-
-
-create_operator_envelope_field_parameter!(
-    OperatorVolumeEnvelopeAttackDurationParameter,
-    volume_envelope,
-    attack_duration,
-    "attack time"
-);
-
-create_operator_envelope_field_parameter!(
-    OperatorVolumeEnvelopeAttackValueParameter,
-    volume_envelope,
-    attack_end_value,
-    "attack vol"
-);
-
-create_operator_envelope_field_parameter!(
-    OperatorVolumeEnvelopeDecayDurationParameter,
-    volume_envelope,
-    decay_duration,
-    "decay time"
-);
-
-create_operator_envelope_field_parameter!(
-    OperatorVolumeEnvelopeDecayValueParameter,
-    volume_envelope,
-    decay_end_value,
-    "decay vol"
-);
-
-create_operator_envelope_field_parameter!(
-    OperatorVolumeEnvelopeReleaseDurationParameter,
-    volume_envelope,
-    release_duration,
-    "release time"
-);
-
-
-pub struct OperatorParameters {
-    volume: OperatorVolumeParameter,
-    panning: OperatorPanningParameter,
-    wave_type: OperatorWaveTypeParameter,
-    additive_factor: OperatorAdditiveFactorParameter,
-    output_operator: OperatorOutputOperatorParameter,
-    modulation_index: OperatorModulationIndexParameter,
-    feedback: OperatorFeedbackParameter,
-    frequency_ratio: OperatorFrequencyRatioParameter,
-    frequency_free: OperatorFrequencyFreeParameter,
-    frequency_fine: OperatorFrequencyFineParameter,
-    volume_envelope_attack_duration: OperatorVolumeEnvelopeAttackDurationParameter,
-    volume_envelope_attack_value: OperatorVolumeEnvelopeAttackValueParameter,
-    volume_envelope_decay_duration: OperatorVolumeEnvelopeDecayDurationParameter,
-    volume_envelope_decay_value: OperatorVolumeEnvelopeDecayValueParameter,
-    volume_envelope_release_duration: OperatorVolumeEnvelopeReleaseDurationParameter,
-}
-
-impl OperatorParameters {
-    fn new(operator_index: usize) -> Self {
-        Self {
-            volume: OperatorVolumeParameter::new(operator_index),
-            wave_type: OperatorWaveTypeParameter::new(operator_index),
-            additive_factor: OperatorAdditiveFactorParameter::new(operator_index),
-            output_operator: OperatorOutputOperatorParameter::new(operator_index),
-            panning: OperatorPanningParameter::new(operator_index),
-            modulation_index: OperatorModulationIndexParameter::new(operator_index),
-            feedback: OperatorFeedbackParameter::new(operator_index),
-            frequency_ratio: OperatorFrequencyRatioParameter::new(operator_index),
-            frequency_free: OperatorFrequencyFreeParameter::new(operator_index),
-            frequency_fine: OperatorFrequencyFineParameter::new(operator_index),
-            volume_envelope_attack_duration: OperatorVolumeEnvelopeAttackDurationParameter::new(operator_index),
-            volume_envelope_attack_value: OperatorVolumeEnvelopeAttackValueParameter::new(operator_index),
-            volume_envelope_decay_duration: OperatorVolumeEnvelopeDecayDurationParameter::new(operator_index),
-            volume_envelope_decay_value: OperatorVolumeEnvelopeDecayValueParameter::new(operator_index),
-            volume_envelope_release_duration: OperatorVolumeEnvelopeReleaseDurationParameter::new(operator_index),
-        }
-    }
-}
-
-
+/// State that can be changed with parameters. Only accessed through mutex
 pub struct Parameters {
-    operator_1: OperatorParameters,
-    operator_2: OperatorParameters,
-    operator_3: OperatorParameters,
-    operator_4: OperatorParameters,
+    pub master_frequency: MasterFrequency,
+    pub operators: Operators,
 }
-
 
 impl Parameters {
-    pub fn new() -> Self {
-        Self {
-            operator_1: OperatorParameters::new(0),
-            operator_2: OperatorParameters::new(1),
-            operator_3: OperatorParameters::new(2),
-            operator_4: OperatorParameters::new(3),
-        }
-    }
-
-    pub fn get(&self, index: usize) -> Option<&Parameter> {
-        // This should maybe be generated by a macro
+    pub fn get_index(&mut self, index: usize) -> Option<&mut Parameter> {
         match index {
-            0  => Some(&self.operator_1.volume),
-            1  => Some(&self.operator_1.panning),
-            2  => Some(&self.operator_1.wave_type),
-            3  => Some(&self.operator_1.modulation_index),
-            4  => Some(&self.operator_1.feedback),
-            5  => Some(&self.operator_1.frequency_ratio),
-            6  => Some(&self.operator_1.frequency_free),
-            7  => Some(&self.operator_1.frequency_fine),
-            8  => Some(&self.operator_1.volume_envelope_attack_duration),
-            9  => Some(&self.operator_1.volume_envelope_attack_value),
-            10 => Some(&self.operator_1.volume_envelope_decay_duration),
-            11 => Some(&self.operator_1.volume_envelope_decay_value),
-            12 => Some(&self.operator_1.volume_envelope_release_duration),
-            13 => Some(&self.operator_2.volume),
-            14 => Some(&self.operator_2.panning),
-            15 => Some(&self.operator_2.wave_type),
-            16 => Some(&self.operator_2.additive_factor),
-            17 => Some(&self.operator_2.modulation_index),
-            18 => Some(&self.operator_2.feedback),
-            19 => Some(&self.operator_2.frequency_ratio),
-            20 => Some(&self.operator_2.frequency_free),
-            21 => Some(&self.operator_2.frequency_fine),
-            22 => Some(&self.operator_2.volume_envelope_attack_duration),
-            23 => Some(&self.operator_2.volume_envelope_attack_value),
-            24 => Some(&self.operator_2.volume_envelope_decay_duration),
-            25 => Some(&self.operator_2.volume_envelope_decay_value),
-            26 => Some(&self.operator_2.volume_envelope_release_duration),
-            27 => Some(&self.operator_3.volume),
-            28 => Some(&self.operator_3.panning),
-            29 => Some(&self.operator_3.wave_type),
-            30 => Some(&self.operator_3.additive_factor),
-            31 => Some(&self.operator_3.output_operator),
-            32 => Some(&self.operator_3.modulation_index),
-            33 => Some(&self.operator_3.feedback),
-            34 => Some(&self.operator_3.frequency_ratio),
-            35 => Some(&self.operator_3.frequency_free),
-            36 => Some(&self.operator_3.frequency_fine),
-            37 => Some(&self.operator_3.volume_envelope_attack_duration),
-            38 => Some(&self.operator_3.volume_envelope_attack_value),
-            39 => Some(&self.operator_3.volume_envelope_decay_duration),
-            40 => Some(&self.operator_3.volume_envelope_decay_value),
-            41 => Some(&self.operator_3.volume_envelope_release_duration),
-            42 => Some(&self.operator_4.volume),
-            43 => Some(&self.operator_4.panning),
-            44 => Some(&self.operator_4.wave_type),
-            45 => Some(&self.operator_4.additive_factor),
-            46 => Some(&self.operator_4.output_operator),
-            47 => Some(&self.operator_4.modulation_index),
-            48 => Some(&self.operator_4.feedback),
-            49 => Some(&self.operator_4.frequency_ratio),
-            50 => Some(&self.operator_4.frequency_free),
-            51 => Some(&self.operator_4.frequency_fine),
-            52 => Some(&self.operator_4.volume_envelope_attack_duration),
-            53 => Some(&self.operator_4.volume_envelope_attack_value),
-            54 => Some(&self.operator_4.volume_envelope_decay_duration),
-            55 => Some(&self.operator_4.volume_envelope_decay_value),
-            56 => Some(&self.operator_4.volume_envelope_release_duration),
+            0  => Some(&mut self.operators[0].volume),
+            1  => Some(&mut self.operators[0].panning),
+            2  => Some(&mut self.operators[0].wave_type),
+            3  => Some(&mut self.operators[0].modulation_index),
+            4  => Some(&mut self.operators[0].feedback),
+            5  => Some(&mut self.operators[0].frequency_ratio),
+            6  => Some(&mut self.operators[0].frequency_free),
+            7  => Some(&mut self.operators[0].frequency_fine),
+            8  => Some(&mut self.operators[0].volume_envelope.attack_duration),
+            9  => Some(&mut self.operators[0].volume_envelope.attack_end_value),
+            10 => Some(&mut self.operators[0].volume_envelope.decay_duration),
+            11 => Some(&mut self.operators[0].volume_envelope.decay_end_value),
+            12 => Some(&mut self.operators[0].volume_envelope.release_duration),
+            13 => Some(&mut self.operators[1].volume),
+            14 => Some(&mut self.operators[1].panning),
+            15 => Some(&mut self.operators[1].wave_type),
+            16 => self.operators[1].additive_factor.as_mut()
+                .map(|p| p as &mut Parameter),
+            17 => Some(&mut self.operators[1].modulation_index),
+            18 => Some(&mut self.operators[1].feedback),
+            19 => Some(&mut self.operators[1].frequency_ratio),
+            20 => Some(&mut self.operators[1].frequency_free),
+            21 => Some(&mut self.operators[1].frequency_fine),
+            22 => Some(&mut self.operators[1].volume_envelope.attack_duration),
+            23 => Some(&mut self.operators[1].volume_envelope.attack_end_value),
+            24 => Some(&mut self.operators[1].volume_envelope.decay_duration),
+            25 => Some(&mut self.operators[1].volume_envelope.decay_end_value),
+            26 => Some(&mut self.operators[1].volume_envelope.release_duration),
+            27 => Some(&mut self.operators[2].volume),
+            28 => Some(&mut self.operators[2].panning),
+            29 => Some(&mut self.operators[2].wave_type),
+            30 => self.operators[2].additive_factor.as_mut()
+                .map(|p| p as &mut Parameter),
+            31 => self.operators[2].output_operator.as_mut()
+                .map(|p| p as &mut Parameter),
+            32 => Some(&mut self.operators[2].modulation_index),
+            33 => Some(&mut self.operators[2].feedback),
+            34 => Some(&mut self.operators[2].frequency_ratio),
+            35 => Some(&mut self.operators[2].frequency_free),
+            36 => Some(&mut self.operators[2].frequency_fine),
+            37 => Some(&mut self.operators[2].volume_envelope.attack_duration),
+            38 => Some(&mut self.operators[2].volume_envelope.attack_end_value),
+            39 => Some(&mut self.operators[2].volume_envelope.decay_duration),
+            40 => Some(&mut self.operators[2].volume_envelope.decay_end_value),
+            41 => Some(&mut self.operators[2].volume_envelope.release_duration),
+            42 => Some(&mut self.operators[3].volume),
+            43 => Some(&mut self.operators[3].panning),
+            44 => Some(&mut self.operators[3].wave_type),
+            45 => self.operators[3].additive_factor.as_mut()
+                .map(|p| p as &mut Parameter),
+            46 => self.operators[3].output_operator.as_mut()
+                .map(|p| p as &mut Parameter),
+            47 => Some(&mut self.operators[3].modulation_index),
+            48 => Some(&mut self.operators[3].feedback),
+            49 => Some(&mut self.operators[3].frequency_ratio),
+            50 => Some(&mut self.operators[3].frequency_free),
+            51 => Some(&mut self.operators[3].frequency_fine),
+            52 => Some(&mut self.operators[3].volume_envelope.attack_duration),
+            53 => Some(&mut self.operators[3].volume_envelope.attack_end_value),
+            54 => Some(&mut self.operators[3].volume_envelope.decay_duration),
+            55 => Some(&mut self.operators[3].volume_envelope.decay_end_value),
+            56 => Some(&mut self.operators[3].volume_envelope.release_duration),
 
             _  => None
         }

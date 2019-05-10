@@ -65,13 +65,13 @@ impl NoteOperatorVolumeEnvelope {
 
                     self.last_volume
                 }
-                else if effective_duration < operator_envelope.attack_duration.0 {
-                    (effective_duration / operator_envelope.attack_duration.0) * operator_envelope.attack_end_value.0
+                else if effective_duration < operator_envelope.attack_duration.value {
+                    (effective_duration / operator_envelope.attack_duration.value) * operator_envelope.attack_end_value.value
                 }
                 else {
                     self.change_stage(EnvelopeStage::Decay, note_duration);
 
-                    operator_envelope.attack_end_value.0
+                    operator_envelope.attack_end_value.value
                 }
             },
             EnvelopeStage::Decay => {
@@ -80,14 +80,14 @@ impl NoteOperatorVolumeEnvelope {
 
                     self.last_volume
                 }
-                else if effective_duration < operator_envelope.decay_duration.0 {
-                    self.pre_state_change_volume + ((effective_duration / operator_envelope.decay_duration.0) *
-                        (operator_envelope.decay_end_value.0 - self.pre_state_change_volume))
+                else if effective_duration < operator_envelope.decay_duration.value {
+                    self.pre_state_change_volume + ((effective_duration / operator_envelope.decay_duration.value) *
+                        (operator_envelope.decay_end_value.value - self.pre_state_change_volume))
                 }
                 else {
                     self.change_stage(EnvelopeStage::Sustain, note_duration);
 
-                    operator_envelope.decay_end_value.0
+                    operator_envelope.decay_end_value.value
                 }
             },
             EnvelopeStage::Sustain => {
@@ -95,11 +95,11 @@ impl NoteOperatorVolumeEnvelope {
                     self.change_stage(EnvelopeStage::Release, note_duration);
                 }
 
-                operator_envelope.decay_end_value.0
+                operator_envelope.decay_end_value.value
             },
             EnvelopeStage::Release => {
-                if effective_duration < operator_envelope.release_duration.0 {
-                    ((1.0 - (effective_duration / operator_envelope.release_duration.0)) * self.pre_state_change_volume)
+                if effective_duration < operator_envelope.release_duration.value {
+                    ((1.0 - (effective_duration / operator_envelope.release_duration.value)) * self.pre_state_change_volume)
                 }
                 else {
                     self.change_stage(EnvelopeStage::Ended, NoteDuration(0.0));

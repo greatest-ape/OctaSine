@@ -1,7 +1,6 @@
 
 
-
-pub fn map_host_param_value_to_step<T: Copy>(steps: &[T], value: f64) -> T {
+pub fn map_parameter_value_to_step<T: Copy>(steps: &[T], value: f64) -> T {
     let increment = 1.0 / steps.len() as f64;
     let mut s = 0.0;
 
@@ -17,7 +16,7 @@ pub fn map_host_param_value_to_step<T: Copy>(steps: &[T], value: f64) -> T {
 }
 
 
-pub fn map_step_to_host_param_value<T: Copy + PartialEq>(
+pub fn map_step_to_parameter_value<T: Copy + PartialEq>(
     steps: &[T],
     step_value: T,
 ) -> f64 {
@@ -36,7 +35,7 @@ pub fn map_step_to_host_param_value<T: Copy + PartialEq>(
 }
 
 
-pub fn map_host_param_value_to_value_with_steps(
+pub fn map_parameter_value_to_value_with_steps(
     steps: &[f64],
     host_value: f64
 ) -> f64 {
@@ -62,7 +61,7 @@ pub fn map_host_param_value_to_value_with_steps(
 }
 
 
-pub fn map_value_to_host_param_value_with_steps(
+pub fn map_value_to_parameter_value_with_steps(
     steps: &[f64],
     internal_value: f64,
 ) -> f64 {
