@@ -114,13 +114,10 @@ impl FmSynth {
                 let new_phase = note.operators[operator_index].last_phase.0 + phase_increment;
 
                 // Only do feedback calculation if feedback is on
-                let new_feedback = {
-                    if operator_feedback > ZERO_VALUE_LIMIT {
-                        operator_feedback * new_phase.sin()
-                    }
-                    else {
-                        0.0
-                    }
+                let new_feedback = if operator_feedback > ZERO_VALUE_LIMIT {
+                    operator_feedback * new_phase.sin()
+                } else {
+                    0.0
                 };
 
                 let signal = (
