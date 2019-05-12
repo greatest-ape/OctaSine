@@ -98,6 +98,15 @@ macro_rules! create_interpolatable_automatable {
             fn set_parameter_value_float(&mut self, value: f64){
                 self.set_value(self.from_parameter_value(value));
             }
+            fn set_parameter_value_text(&mut self, value: String) -> bool {
+                if let Some(value) = self.parse_string_value(value){
+                    self.set_value(value);
+
+                    true
+                } else {
+                    false
+                }
+            }
             fn get_parameter_value_float(&self) -> f64 {
                 self.to_parameter_value(self.target_value)
             }
@@ -136,6 +145,15 @@ macro_rules! create_automatable {
             fn set_parameter_value_float(&mut self, value: f64){
                 self.value = self.from_parameter_value(value);
             }
+            fn set_parameter_value_text(&mut self, value: String) -> bool {
+                if let Some(value) = self.parse_string_value(value){
+                    self.value = value;
+
+                    true
+                } else {
+                    false
+                }
+            }
             fn get_parameter_value_float(&self) -> f64 {
                 self.to_parameter_value(self.value)
             }
@@ -159,6 +177,14 @@ impl OperatorVolume {
     }
     pub fn to_parameter_value(&self, value: f64) -> f64 {
         value / 2.0
+    }
+    pub fn parse_string_value(&self, value: String) -> Option<f64> {
+        value.parse::<f64>().ok().map(|value| {
+            let max = self.from_parameter_value(1.0);
+            let min = self.from_parameter_value(0.0);
+
+            value.max(min).min(max)
+        })
     }
 }
 
@@ -203,6 +229,19 @@ impl OperatorOutputOperator {
 
         value as f64 * step + 0.0001
     }
+    pub fn parse_string_value(&self, value: String) -> Option<usize> {
+        if let Ok(value) = value.parse::<usize>(){
+            if value != 0 {
+                let target = value - 1;
+
+                if self.targets.contains(&target){
+                    return Some(target);
+                }
+            }
+        }
+
+        None
+    }
 }
 
 impl Parameter for OperatorOutputOperator {
@@ -212,6 +251,15 @@ impl Parameter for OperatorOutputOperator {
 
     fn set_parameter_value_float(&mut self, value: f64){
         self.target = self.from_parameter_value(value);
+    }
+    fn set_parameter_value_text(&mut self, value: String) -> bool {
+        if let Some(value) = self.parse_string_value(value){
+            self.target = value;
+
+            true
+        } else {
+            false
+        }
     }
     fn get_parameter_value_float(&self) -> f64 {
         self.to_parameter_value(self.target)
@@ -243,6 +291,9 @@ impl OperatorAdditiveFactor {
     pub fn to_parameter_value(&self, value: f64) -> f64 {
         value
     }
+    pub fn parse_string_value(&self, value: String) -> Option<f64> {
+        value.parse::<f64>().ok().map(|value| value.max(0.0).min(1.0))
+    }
 }
 
 
@@ -258,6 +309,9 @@ impl OperatorPanning {
     }
     pub fn to_parameter_value(&self, value: f64) -> f64 {
         value
+    }
+    pub fn parse_string_value(&self, value: String) -> Option<f64> {
+        value.parse::<f64>().ok().map(|value| value.max(0.0).min(1.0))
     }
 
     pub fn get_left_and_right(panning: f64) -> (f64, f64) {
@@ -281,6 +335,11 @@ impl OperatorFrequencyRatio {
     pub fn to_parameter_value(&self, value: f64) -> f64 {
         map_step_to_parameter_value(&OPERATOR_RATIO_STEPS[..], value)
     }
+    pub fn parse_string_value(&self, value: String) -> Option<f64> {
+        value.parse::<f64>().ok().map(|value|
+            round_to_step(&OPERATOR_RATIO_STEPS[..], value)
+        )
+    }
 }
 
 
@@ -296,6 +355,14 @@ impl OperatorFrequencyFree {
     }
     pub fn to_parameter_value(&self, value: f64) -> f64 {
         value.powf(1.0/3.0) - 0.5
+    }
+    pub fn parse_string_value(&self, value: String) -> Option<f64> {
+        value.parse::<f64>().ok().map(|value| {
+            let max = self.from_parameter_value(1.0);
+            let min = self.from_parameter_value(0.0);
+
+            value.max(min).min(max)
+        })
     }
 }
 
@@ -313,6 +380,14 @@ impl OperatorFrequencyFine {
     pub fn to_parameter_value(&self, value: f64) -> f64 {
         value.powf(3.0) - 0.5
     }
+    pub fn parse_string_value(&self, value: String) -> Option<f64> {
+        value.parse::<f64>().ok().map(|value| {
+            let max = self.from_parameter_value(1.0);
+            let min = self.from_parameter_value(0.0);
+
+            value.max(min).min(max)
+        })
+    }
 }
 
 
@@ -329,6 +404,14 @@ impl OperatorFeedback {
     pub fn to_parameter_value(&self, value: f64) -> f64 {
         value
     }
+    pub fn parse_string_value(&self, value: String) -> Option<f64> {
+        value.parse::<f64>().ok().map(|value| {
+            let max = self.from_parameter_value(1.0);
+            let min = self.from_parameter_value(0.0);
+
+            value.max(min).min(max)
+        })
+    }
 }
 
 
@@ -344,6 +427,14 @@ impl OperatorModulationIndex {
     }
     pub fn to_parameter_value(&self, value: f64) -> f64 {
         map_value_to_parameter_value_with_steps(&OPERATOR_BETA_STEPS[..], value)
+    }
+    pub fn parse_string_value(&self, value: String) -> Option<f64> {
+        value.parse::<f64>().ok().map(|value| {
+            let max = self.from_parameter_value(1.0);
+            let min = self.from_parameter_value(0.0);
+
+            value.max(min).min(max)
+        })
     }
 }
 
@@ -375,6 +466,21 @@ impl OperatorWaveType {
             WaveType::WhiteNoise => 1.0,
         }
     }
+    pub fn parse_string_value(&self, value: String) -> Option<WaveType> {
+        let value = value.to_lowercase();
+
+        if value == "sine" {
+            return Some(WaveType::Sine);
+        } else if value == "noise" || value == "white noise" {
+            return Some(WaveType::WhiteNoise);
+        }
+
+        if let Ok(value) = value.parse::<f64>() {
+            return Some(self.from_parameter_value(value));
+        }
+
+        None
+    }
 }
 
 impl Parameter for OperatorWaveType {
@@ -384,6 +490,16 @@ impl Parameter for OperatorWaveType {
 
     fn set_parameter_value_float(&mut self, value: f64){
         self.value = self.from_parameter_value(value);
+    }
+    fn set_parameter_value_text(&mut self, value: String) -> bool {
+        if let Some(value) = self.parse_string_value(value){
+            self.value = value;
+
+            true
+        }
+        else {
+            false
+        }
     }
     fn get_parameter_value_float(&self) -> f64 {
         self.to_parameter_value(self.value)
@@ -411,6 +527,11 @@ impl VolumeEnvelopeAttackDuration {
     pub fn to_parameter_value(&self, value: f64) -> f64 {
         value / OPERATOR_ENVELOPE_MAX_DURATION
     }
+    pub fn parse_string_value(&self, value: String) -> Option<f64> {
+        value.parse::<f64>().ok().map(|value|
+            value.max(0.004).min(OPERATOR_ENVELOPE_MAX_DURATION)
+        )
+    }
 }
 
 
@@ -426,6 +547,9 @@ impl VolumeEnvelopeAttackValue {
     }
     pub fn to_parameter_value(&self, value: f64) -> f64 {
         value
+    }
+    pub fn parse_string_value(&self, value: String) -> Option<f64> {
+        value.parse::<f64>().ok().map(|value| value.max(0.0).min(1.0))
     }
 }
 
@@ -444,6 +568,11 @@ impl VolumeEnvelopeDecayDuration {
     pub fn to_parameter_value(&self, value: f64) -> f64 {
         value / OPERATOR_ENVELOPE_MAX_DURATION
     }
+    pub fn parse_string_value(&self, value: String) -> Option<f64> {
+        value.parse::<f64>().ok().map(|value|
+            value.max(0.004).min(OPERATOR_ENVELOPE_MAX_DURATION)
+        )
+    }
 }
 
 
@@ -459,6 +588,9 @@ impl VolumeEnvelopeDecayValue {
     }
     pub fn to_parameter_value(&self, value: f64) -> f64 {
         value
+    }
+    pub fn parse_string_value(&self, value: String) -> Option<f64> {
+        value.parse::<f64>().ok().map(|value| value.max(0.0).min(1.0))
     }
 }
 
@@ -476,6 +608,11 @@ impl VolumeEnvelopeReleaseDuration {
     }
     pub fn to_parameter_value(&self, value: f64) -> f64 {
         value / OPERATOR_ENVELOPE_MAX_DURATION
+    }
+    pub fn parse_string_value(&self, value: String) -> Option<f64> {
+        value.parse::<f64>().ok().map(|value|
+            value.max(0.004).min(OPERATOR_ENVELOPE_MAX_DURATION)
+        )
     }
 }
 
@@ -532,5 +669,103 @@ impl Operator {
             modulation_index: OperatorModulationIndex::new(operator_index),
             volume_envelope: OperatorVolumeEnvelope::new(operator_index),
         }
+    }
+}
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_set_volume_text(){
+        let mut operator = Operator::new(3);
+
+        assert!(operator.volume.set_parameter_value_text("-1.0".to_string()));
+        assert_eq!(operator.volume.target_value, 0.0);
+
+        assert!(operator.volume.set_parameter_value_text("0".to_string()));
+        assert_eq!(operator.volume.target_value, 0.0);
+
+        assert!(operator.volume.set_parameter_value_text("0.0".to_string()));
+        assert_eq!(operator.volume.target_value, 0.0);
+
+        assert!(operator.volume.set_parameter_value_text("1.0".to_string()));
+        assert_eq!(operator.volume.target_value, 1.0);
+
+        assert!(operator.volume.set_parameter_value_text("1.2".to_string()));
+        assert_eq!(operator.volume.target_value, 1.2);
+
+        assert!(operator.volume.set_parameter_value_text("2.0".to_string()));
+        assert_eq!(operator.volume.target_value, 2.0);
+
+        assert!(operator.volume.set_parameter_value_text("3.0".to_string()));
+        assert_eq!(operator.volume.target_value, 2.0);
+    }
+
+    #[test]
+    fn test_set_output_operator_text(){
+        let operator = Operator::new(3);
+        let mut o = operator.output_operator.unwrap();
+
+        assert!(!o.set_parameter_value_text("abc".to_string()));
+        assert!(!o.set_parameter_value_text("0".to_string()));
+        assert!(!o.set_parameter_value_text("0.5".to_string()));
+        assert!(!o.set_parameter_value_text("4".to_string()));
+
+        assert!(o.set_parameter_value_text("1".to_string()));
+        assert_eq!(o.target, 0);
+
+        assert!(o.set_parameter_value_text("2".to_string()));
+        assert_eq!(o.target, 1);
+
+        assert!(o.set_parameter_value_text("3".to_string()));
+        assert_eq!(o.target, 2);
+    }
+
+    #[test]
+    fn test_set_frequency_ratio_text(){
+        let mut operator = Operator::new(3);
+
+        assert!(operator.frequency_ratio.set_parameter_value_text("1.0".to_string()));
+        assert_eq!(operator.frequency_ratio.value, 1.0);
+
+        assert!(operator.frequency_ratio.set_parameter_value_text("0.99".to_string()));
+        assert_eq!(operator.frequency_ratio.value, 1.0);
+
+        assert!(operator.frequency_ratio.set_parameter_value_text("0.5".to_string()));
+        assert_eq!(operator.frequency_ratio.value, 0.5);
+
+        assert!(operator.frequency_ratio.set_parameter_value_text("0.51".to_string()));
+        assert_eq!(operator.frequency_ratio.value, 0.5);
+    }
+
+    #[test]
+    fn test_set_wave_type_text(){
+        let mut operator = Operator::new(3);
+
+        assert!(operator.wave_type.set_parameter_value_text("sine".to_string()));
+        assert_eq!(operator.wave_type.value, WaveType::Sine);
+
+        assert!(operator.wave_type.set_parameter_value_text("noise".to_string()));
+        assert_eq!(operator.wave_type.value, WaveType::WhiteNoise);
+    }
+
+    #[test]
+    fn test_set_attack_duration_text(){
+        let mut operator = Operator::new(3);
+
+        assert!(operator.volume_envelope.attack_duration
+            .set_parameter_value_text("0.0".to_string()));
+        assert_eq!(operator.volume_envelope.attack_duration.value, 0.004);
+
+        assert!(operator.volume_envelope.attack_duration
+            .set_parameter_value_text("1.0".to_string()));
+        assert_eq!(operator.volume_envelope.attack_duration.value, 1.0);
+
+        assert!(operator.volume_envelope.attack_duration
+            .set_parameter_value_text("10".to_string()));
+        assert_eq!(operator.volume_envelope.attack_duration.value,
+            OPERATOR_ENVELOPE_MAX_DURATION);
     }
 }

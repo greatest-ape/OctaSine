@@ -13,9 +13,7 @@ pub trait Parameter {
     fn set_parameter_value_float(&mut self, value: f64);
 
     fn get_parameter_value_text(&self) -> String;
-    fn set_parameter_value_text(&mut self, _value: String) -> bool {
-        false
-    }
+    fn set_parameter_value_text(&mut self, _value: String) -> bool;
 }
 
 

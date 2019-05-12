@@ -83,3 +83,46 @@ pub fn map_value_to_parameter_value_with_steps(
 
     1.0
 }
+
+
+pub fn round_to_step(steps: &[f64], value: f64) -> f64 {
+    let mut prev_step = *steps.first().expect("steps are empty");
+
+    for step in &steps[1..] {
+        if value <= *step {
+            let prev_diff = (value - prev_step).abs();
+            let current_diff = (value - step).abs();
+
+            if prev_diff < current_diff {
+                return prev_step;
+            }
+            else {
+                return *step;
+            }
+        }
+
+        prev_step = *step;
+    }
+
+    *steps.last().expect("steps are empty")
+}
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_round_to_step(){
+        let steps = [1.0, 2.0, 4.0];
+
+        assert_eq!(round_to_step(&steps, -10.0), 1.0);
+        assert_eq!(round_to_step(&steps, 0.0), 1.0);
+        assert_eq!(round_to_step(&steps, 1.0), 1.0);
+        assert_eq!(round_to_step(&steps, 1.1), 1.0);
+        assert_eq!(round_to_step(&steps, 1.49), 1.0);
+        assert_eq!(round_to_step(&steps, 1.5), 2.0);
+        assert_eq!(round_to_step(&steps, 4.0), 4.0);
+        assert_eq!(round_to_step(&steps, 100.0), 4.0);
+    }
+}
