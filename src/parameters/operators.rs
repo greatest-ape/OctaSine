@@ -1,5 +1,6 @@
 use smallvec::SmallVec;
 
+use crate::{interpolatable_parameter, simple_parameter};
 use crate::common::*;
 use crate::constants::*;
 
@@ -7,116 +8,34 @@ use super::common::*;
 use super::utils::*;
 
 
-
-#[derive(Debug, Copy, Clone)]
-pub struct OperatorStepData {
-    pub step_size: f64,
-    pub steps_remaining: usize,
-    pub last_time: TimeCounter,
-    pub num_steps: usize
-}
-
-impl Default for OperatorStepData {
-    fn default() -> Self {
-        Self {
-            step_size: 0.0,
-            steps_remaining: 0,
-            last_time: TimeCounter(0.0),
-            num_steps: 32,
-        }
-    }
-}
-
-
-#[macro_export]
-macro_rules! create_interpolatable_automatable {
+macro_rules! create_interpolatable_operator_parameter {
     ($struct_name:ident, $default_value:ident, $parameter_name:expr) => {
 
         #[derive(Debug, Copy, Clone)]
         pub struct $struct_name {
-            current_value: f64,
-            pub target_value: f64,
-            step_data: OperatorStepData,
+            value: TimeInterpolatableValue,
             operator_index: usize,
         }
 
         impl $struct_name {
             fn new(operator_index: usize) -> Self {
                 Self {
-                    current_value: $default_value,
-                    target_value: $default_value,
-                    step_data: OperatorStepData::default(),
+                    value: TimeInterpolatableValue::new($default_value),
                     operator_index: operator_index,
                 }
             }
-        }
 
-        impl InterpolatableValue for $struct_name {
-            fn get_value(&mut self, time: TimeCounter) -> f64 {
-                if self.step_data.num_steps == 0 {
-                    return self.current_value;
-                }
-
-                if time != self.step_data.last_time && self.step_data.steps_remaining > 0 {
-                    self.current_value += self.step_data.step_size;
-                    self.step_data.steps_remaining -= 1;
-                    self.step_data.last_time = time;
-                }
-
-                self.current_value
-            }
-
-            fn set_value(&mut self, value: f64){
-                self.target_value = value;
-
-                if self.step_data.num_steps == 0 {
-                    self.current_value = value;
-
-                    return;
-                }
-
-                if value == self.current_value {
-                    self.step_data.steps_remaining = 0;
-                }
-                else {
-                    // Restart stepping process
-                    let diff = value - self.current_value;
-                    self.step_data.step_size = diff / self.step_data.num_steps as f64;
-                    self.step_data.steps_remaining = self.step_data.num_steps;
-                }
-            }
-        }
-
-        impl Parameter for $struct_name {
-            fn get_parameter_name(&self) -> String {
+            fn get_full_parameter_name(&self) -> String {
                 format!("Op. {} {}", self.operator_index + 1, $parameter_name)
             }
-
-            fn set_parameter_value_float(&mut self, value: f64){
-                self.set_value(self.from_parameter_value(value));
-            }
-            fn set_parameter_value_text(&mut self, value: String) -> bool {
-                if let Some(value) = self.parse_string_value(value){
-                    self.set_value(value);
-
-                    true
-                } else {
-                    false
-                }
-            }
-            fn get_parameter_value_float(&self) -> f64 {
-                self.to_parameter_value(self.target_value)
-            }
-            fn get_parameter_value_text(&self) -> String {
-                format!("{:.2}", self.target_value)
-            }
         }
+
+        interpolatable_parameter!($struct_name);
     };  
 }
 
 
-#[macro_export]
-macro_rules! create_automatable {
+macro_rules! create_simple_operator_parameter {
     ($struct_name:ident, $default_value:ident, $parameter_name:expr) => {
 
         #[derive(Debug, Copy, Clone)]
@@ -132,37 +51,18 @@ macro_rules! create_automatable {
                     operator_index: operator_index,
                 }
             }
-        }
 
-        impl Parameter for $struct_name {
-            fn get_parameter_name(&self) -> String {
+            fn get_full_parameter_name(&self) -> String {
                 format!("Op. {} {}", self.operator_index + 1, $parameter_name)
             }
-
-            fn set_parameter_value_float(&mut self, value: f64){
-                self.value = self.from_parameter_value(value);
-            }
-            fn set_parameter_value_text(&mut self, value: String) -> bool {
-                if let Some(value) = self.parse_string_value(value){
-                    self.value = value;
-
-                    true
-                } else {
-                    false
-                }
-            }
-            fn get_parameter_value_float(&self) -> f64 {
-                self.to_parameter_value(self.value)
-            }
-            fn get_parameter_value_text(&self) -> String {
-                format!("{:.2}", self.value)
-            }
         }
+
+        simple_parameter!($struct_name);
     };  
 }
 
 
-create_interpolatable_automatable!(
+create_interpolatable_operator_parameter!(
     OperatorVolume,
     OPERATOR_DEFAULT_VOLUME,
     "volume"
@@ -267,7 +167,7 @@ impl Parameter for OperatorOutputOperator {
 }
 
 
-create_interpolatable_automatable!(
+create_interpolatable_operator_parameter!(
     OperatorAdditiveFactor,
     OPERATOR_DEFAULT_ADDITIVE_FACTOR,
     "additive"
@@ -294,7 +194,7 @@ impl OperatorAdditiveFactor {
 }
 
 
-create_interpolatable_automatable!(
+create_interpolatable_operator_parameter!(
     OperatorPanning,
     OPERATOR_DEFAULT_PANNING,
     "pan"
@@ -319,7 +219,7 @@ impl OperatorPanning {
 }
 
 
-create_automatable!(
+create_simple_operator_parameter!(
     OperatorFrequencyRatio,
     OPERATOR_DEFAULT_FREQUENCY_RATIO,
     "freq ratio"
@@ -340,7 +240,7 @@ impl OperatorFrequencyRatio {
 }
 
 
-create_automatable!(
+create_simple_operator_parameter!(
     OperatorFrequencyFree,
     OPERATOR_DEFAULT_FREQUENCY_FREE,
     "freq free"
@@ -364,7 +264,7 @@ impl OperatorFrequencyFree {
 }
 
 
-create_automatable!(
+create_simple_operator_parameter!(
     OperatorFrequencyFine,
     OPERATOR_DEFAULT_FREQUENCY_FINE,
     "freq fine"
@@ -388,7 +288,7 @@ impl OperatorFrequencyFine {
 }
 
 
-create_interpolatable_automatable!(
+create_interpolatable_operator_parameter!(
     OperatorFeedback,
     OPERATOR_DEFAULT_FEEDBACK,
     "feedback"
@@ -412,7 +312,7 @@ impl OperatorFeedback {
 }
 
 
-create_interpolatable_automatable!(
+create_interpolatable_operator_parameter!(
     OperatorModulationIndex,
     OPERATOR_DEFAULT_MODULATION_INDEX,
     "mod index"
@@ -510,7 +410,7 @@ impl Parameter for OperatorWaveType {
 }
 
 
-create_automatable!(
+create_simple_operator_parameter!(
     VolumeEnvelopeAttackDuration,
     OPERATOR_DEFAULT_VOLUME_ENVELOPE_ATTACK_DURATION,
     "attack time"
@@ -534,7 +434,7 @@ impl VolumeEnvelopeAttackDuration {
 }
 
 
-create_automatable!(
+create_simple_operator_parameter!(
     VolumeEnvelopeAttackValue,
     OPERATOR_DEFAULT_VOLUME_ENVELOPE_ATTACK_VALUE,
     "attack vol"
@@ -553,7 +453,7 @@ impl VolumeEnvelopeAttackValue {
 }
 
 
-create_automatable!(
+create_simple_operator_parameter!(
     VolumeEnvelopeDecayDuration,
     OPERATOR_DEFAULT_VOLUME_ENVELOPE_DECAY_DURATION,
     "decay time"
@@ -577,7 +477,7 @@ impl VolumeEnvelopeDecayDuration {
 }
 
 
-create_automatable!(
+create_simple_operator_parameter!(
     VolumeEnvelopeDecayValue,
     OPERATOR_DEFAULT_VOLUME_ENVELOPE_DECAY_VALUE,
     "decay vol"
@@ -596,7 +496,7 @@ impl VolumeEnvelopeDecayValue {
 }
 
 
-create_automatable!(
+create_simple_operator_parameter!(
     VolumeEnvelopeReleaseDuration,
     OPERATOR_DEFAULT_VOLUME_ENVELOPE_RELEASE_DURATION,
     "release time"
@@ -685,25 +585,25 @@ mod tests {
         let mut operator = Operator::new(3);
 
         assert!(operator.volume.set_parameter_value_text("-1.0".to_string()));
-        assert_eq!(operator.volume.target_value, 0.0);
+        assert_eq!(operator.volume.value.target_value, 0.0);
 
         assert!(operator.volume.set_parameter_value_text("0".to_string()));
-        assert_eq!(operator.volume.target_value, 0.0);
+        assert_eq!(operator.volume.value.target_value, 0.0);
 
         assert!(operator.volume.set_parameter_value_text("0.0".to_string()));
-        assert_eq!(operator.volume.target_value, 0.0);
+        assert_eq!(operator.volume.value.target_value, 0.0);
 
         assert!(operator.volume.set_parameter_value_text("1.0".to_string()));
-        assert_eq!(operator.volume.target_value, 1.0);
+        assert_eq!(operator.volume.value.target_value, 1.0);
 
         assert!(operator.volume.set_parameter_value_text("1.2".to_string()));
-        assert_eq!(operator.volume.target_value, 1.2);
+        assert_eq!(operator.volume.value.target_value, 1.2);
 
         assert!(operator.volume.set_parameter_value_text("2.0".to_string()));
-        assert_eq!(operator.volume.target_value, 2.0);
+        assert_eq!(operator.volume.value.target_value, 2.0);
 
         assert!(operator.volume.set_parameter_value_text("3.0".to_string()));
-        assert_eq!(operator.volume.target_value, 2.0);
+        assert_eq!(operator.volume.value.target_value, 2.0);
     }
 
     #[test]
