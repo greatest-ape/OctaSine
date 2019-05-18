@@ -1,6 +1,7 @@
 use crate::common::*;
 use crate::constants::*;
 use crate::operators::*;
+use crate::parameters::MasterFrequency;
 
 
 #[derive(Debug, Copy, Clone)]

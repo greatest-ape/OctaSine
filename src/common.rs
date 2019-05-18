@@ -8,9 +8,6 @@ pub struct TimeCounter(pub f64);
 pub struct Phase(pub f64);
 
 #[derive(Debug, Copy, Clone)]
-pub struct MasterFrequency(pub f64);
-
-#[derive(Debug, Copy, Clone)]
 pub struct SampleRate(pub f64);
 
 #[derive(Debug, Copy, Clone)]
