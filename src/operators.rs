@@ -733,6 +733,12 @@ mod tests {
     fn test_set_frequency_ratio_text(){
         let mut operator = Operator::new(3);
 
+        assert!(operator.frequency_ratio.set_parameter_value_text("0.0".to_string()));
+        assert_eq!(operator.frequency_ratio.value, OPERATOR_RATIO_STEPS[0]);
+
+        assert!(operator.frequency_ratio.set_parameter_value_text("10000000.0".to_string()));
+        assert_eq!(operator.frequency_ratio.value, *OPERATOR_RATIO_STEPS.last().unwrap());
+
         assert!(operator.frequency_ratio.set_parameter_value_text("1.0".to_string()));
         assert_eq!(operator.frequency_ratio.value, 1.0);
 
