@@ -522,14 +522,16 @@ create_automatable!(
 impl VolumeEnvelopeAttackDuration {
     pub fn from_parameter_value(&self, value: f64) -> f64 {
         // Force some attack to avoid clicks
-        (value * OPERATOR_ENVELOPE_MAX_DURATION).max(0.004)
+        (value * OPERATOR_ENVELOPE_MAX_DURATION)
+            .max(OPERATOR_ENVELOPE_MIN_DURATION)
     }
     pub fn to_parameter_value(&self, value: f64) -> f64 {
         value / OPERATOR_ENVELOPE_MAX_DURATION
     }
     pub fn parse_string_value(&self, value: String) -> Option<f64> {
         value.parse::<f64>().ok().map(|value|
-            value.max(0.004).min(OPERATOR_ENVELOPE_MAX_DURATION)
+            value.max(OPERATOR_ENVELOPE_MIN_DURATION)
+                .min(OPERATOR_ENVELOPE_MAX_DURATION)
         )
     }
 }
@@ -563,14 +565,16 @@ create_automatable!(
 impl VolumeEnvelopeDecayDuration {
     pub fn from_parameter_value(&self, value: f64) -> f64 {
         // Force some decay to avoid clicks
-        (value * OPERATOR_ENVELOPE_MAX_DURATION).max(0.004)
+        (value * OPERATOR_ENVELOPE_MAX_DURATION)
+            .max(OPERATOR_ENVELOPE_MIN_DURATION)
     }
     pub fn to_parameter_value(&self, value: f64) -> f64 {
         value / OPERATOR_ENVELOPE_MAX_DURATION
     }
     pub fn parse_string_value(&self, value: String) -> Option<f64> {
         value.parse::<f64>().ok().map(|value|
-            value.max(0.004).min(OPERATOR_ENVELOPE_MAX_DURATION)
+            value.max(OPERATOR_ENVELOPE_MIN_DURATION)
+                .min(OPERATOR_ENVELOPE_MAX_DURATION)
         )
     }
 }
@@ -604,14 +608,16 @@ create_automatable!(
 impl VolumeEnvelopeReleaseDuration {
     pub fn from_parameter_value(&self, value: f64) -> f64 {
         // Force some release to avoid clicks
-        (value * OPERATOR_ENVELOPE_MAX_DURATION).max(0.004)
+        (value * OPERATOR_ENVELOPE_MAX_DURATION)
+            .max(OPERATOR_ENVELOPE_MIN_DURATION)
     }
     pub fn to_parameter_value(&self, value: f64) -> f64 {
         value / OPERATOR_ENVELOPE_MAX_DURATION
     }
     pub fn parse_string_value(&self, value: String) -> Option<f64> {
         value.parse::<f64>().ok().map(|value|
-            value.max(0.004).min(OPERATOR_ENVELOPE_MAX_DURATION)
+            value.max(OPERATOR_ENVELOPE_MIN_DURATION)
+                .min(OPERATOR_ENVELOPE_MAX_DURATION)
         )
     }
 }
@@ -757,7 +763,7 @@ mod tests {
 
         assert!(operator.volume_envelope.attack_duration
             .set_parameter_value_text("0.0".to_string()));
-        assert_eq!(operator.volume_envelope.attack_duration.value, 0.004);
+        assert_eq!(operator.volume_envelope.attack_duration.value, OPERATOR_ENVELOPE_MIN_DURATION);
 
         assert!(operator.volume_envelope.attack_duration
             .set_parameter_value_text("1.0".to_string()));
