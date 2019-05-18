@@ -2,8 +2,9 @@ use smallvec::SmallVec;
 
 use crate::common::*;
 use crate::constants::*;
-use crate::parameters::Parameter;
-use crate::utils::*;
+
+use super::Parameter;
+use super::utils::*;
 
 
 #[derive(Debug, Copy, Clone)]

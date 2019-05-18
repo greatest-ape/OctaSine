@@ -1,6 +1,14 @@
+use array_init::array_init;
+
 use crate::constants::*;
 use crate::operators::Operator;
-use crate::utils::*;
+
+
+pub mod operators;
+pub mod utils;
+
+pub use operators::*;
+pub use utils::*;
 
 
 pub trait Parameter {
@@ -72,6 +80,15 @@ pub type Operators = [Operator; NUM_OPERATORS];
 pub struct Parameters {
     pub master_frequency: MasterFrequency,
     pub operators: Operators,
+}
+
+impl Parameters {
+    pub fn new() -> Self {
+        Self {
+            master_frequency: MasterFrequency(440.0),
+            operators: array_init(|i| Operator::new(i)),
+        }
+    }
 }
 
 impl Parameters {

@@ -20,14 +20,11 @@ pub mod common;
 pub mod constants;
 pub mod notes;
 pub mod parameters;
-pub mod utils;
-pub mod operators;
 
 use crate::common::*;
 use crate::constants::*;
 use crate::notes::*;
 use crate::parameters::*;
-use crate::operators::*;
 
 
 type Notes = [Note; 128];
@@ -348,10 +345,7 @@ impl Plugin for FmSynth {
     }
 
     fn new(host: HostCallback) -> Self {
-        let parameters = Arc::new(Mutex::new(Parameters {
-            master_frequency: MasterFrequency(440.0),
-            operators: array_init(|i| Operator::new(i)),
-        }));
+        let parameters = Arc::new(Mutex::new(Parameters::new()));
 
         let sync_only = Arc::new(SyncOnlyState {
             host: host,
