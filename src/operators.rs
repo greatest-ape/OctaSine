@@ -351,10 +351,10 @@ create_automatable!(
 
 impl OperatorFrequencyFree {
     pub fn from_parameter_value(&self, value: f64) -> f64 {
-        (value + 0.5).powf(3.0)
+        map_parameter_value_to_value_with_steps(&OPERATOR_FREE_STEPS, value)
     }
     pub fn to_parameter_value(&self, value: f64) -> f64 {
-        value.powf(1.0/3.0) - 0.5
+        map_value_to_parameter_value_with_steps(&OPERATOR_FREE_STEPS, value)
     }
     pub fn parse_string_value(&self, value: String) -> Option<f64> {
         value.parse::<f64>().ok().map(|value| {
@@ -744,6 +744,23 @@ mod tests {
 
         assert!(operator.frequency_ratio.set_parameter_value_text("0.51".to_string()));
         assert_eq!(operator.frequency_ratio.value, 0.5);
+    }
+
+    #[test]
+    fn test_set_frequency_free_text(){
+        let mut operator = Operator::new(3);
+
+        assert!(operator.frequency_free.set_parameter_value_text("1.0".to_string()));
+        assert_eq!(operator.frequency_free.value, 1.0);
+
+        assert!(operator.frequency_free.set_parameter_value_text("1".to_string()));
+        assert_eq!(operator.frequency_free.value, 1.0);
+
+        assert!(operator.frequency_free.set_parameter_value_text("0.0".to_string()));
+        assert!((operator.frequency_free.value - OPERATOR_FREE_STEPS[0]).abs() < 0.00001);
+
+        assert!(operator.frequency_free.set_parameter_value_text("256.0".to_string()));
+        assert!((operator.frequency_free.value - OPERATOR_FREE_STEPS.last().unwrap()).abs() < 0.00001);
     }
 
     #[test]
