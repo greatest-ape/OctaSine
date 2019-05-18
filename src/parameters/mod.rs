@@ -1,83 +1,23 @@
 use array_init::array_init;
 
 use crate::constants::*;
-use crate::operators::Operator;
 
-
+pub mod common;
 pub mod operators;
+pub mod other;
 pub mod utils;
 
+pub use common::*;
 pub use operators::*;
+pub use other::*;
 pub use utils::*;
-
-
-pub trait Parameter {
-    fn get_parameter_name(&self) -> String;
-    fn get_parameter_unit_of_measurement(&self) -> String {
-        "".to_string()
-    }
-
-    fn get_parameter_value_float(&self) -> f64;
-    fn set_parameter_value_float(&mut self, value: f64);
-
-    fn get_parameter_value_text(&self) -> String;
-    fn set_parameter_value_text(&mut self, _value: String) -> bool;
-}
-
-
-#[derive(Debug, Copy, Clone)]
-pub struct MasterFrequency(pub f64);
-
-impl MasterFrequency {
-    pub fn from_parameter_value(&self, value: f64) -> f64 {
-        map_parameter_value_to_value_with_steps(&MASTER_FREQUENCY_STEPS, value)
-    }
-    pub fn to_parameter_value(&self, value: f64) -> f64 {
-        map_value_to_parameter_value_with_steps(&MASTER_FREQUENCY_STEPS, value)
-    }
-    pub fn parse_string_value(&self, value: String) -> Option<f64> {
-        value.parse::<f64>().ok().map(|value| {
-            let max = self.from_parameter_value(1.0);
-            let min = self.from_parameter_value(0.0);
-
-            value.max(min).min(max)
-        })
-    }
-}
-
-impl Parameter for MasterFrequency {
-    fn get_parameter_name(&self) -> String {
-        "Master freq".to_string()
-    }
-    fn get_parameter_unit_of_measurement(&self) -> String {
-        "Hz".to_string()
-    }
-
-    fn set_parameter_value_float(&mut self, value: f64){
-        self.0 = self.from_parameter_value(value);
-    }
-    fn set_parameter_value_text(&mut self, value: String) -> bool {
-        if let Some(value) = self.parse_string_value(value){
-            self.0 = value;
-
-            true
-        } else {
-            false
-        }
-    }
-    fn get_parameter_value_float(&self) -> f64 {
-        self.to_parameter_value(self.0)
-    }
-    fn get_parameter_value_text(&self) -> String {
-        format!("{:.2}", self.0)
-    }
-}
 
 
 pub type Operators = [Operator; NUM_OPERATORS];
 
 /// State that can be changed with parameters. Only accessed through mutex
 pub struct Parameters {
+    pub master_volume: MasterVolume,
     pub master_frequency: MasterFrequency,
     pub operators: Operators,
 }
@@ -85,7 +25,10 @@ pub struct Parameters {
 impl Parameters {
     pub fn new() -> Self {
         Self {
-            master_frequency: MasterFrequency(440.0),
+            master_volume: MasterVolume::new(),
+            master_frequency: MasterFrequency {
+                value: 440.0
+            },
             operators: array_init(|i| Operator::new(i)),
         }
     }
@@ -156,13 +99,14 @@ impl Parameters {
             54 => Some(&mut self.operators[3].volume_envelope.decay_duration),
             55 => Some(&mut self.operators[3].volume_envelope.decay_end_value),
             56 => Some(&mut self.operators[3].volume_envelope.release_duration),
-            57 => Some(&mut self.master_frequency),
+            57 => Some(&mut self.master_volume),
+            58 => Some(&mut self.master_frequency),
 
             _  => None
         }
     }
 
     pub fn len(&self) -> usize {
-        58
+        59
     }
 }

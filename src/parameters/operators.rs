@@ -3,8 +3,9 @@ use smallvec::SmallVec;
 use crate::common::*;
 use crate::constants::*;
 
-use super::Parameter;
+use super::common::*;
 use super::utils::*;
+
 
 
 #[derive(Debug, Copy, Clone)]
@@ -24,11 +25,6 @@ impl Default for OperatorStepData {
             num_steps: 32,
         }
     }
-}
-
-pub trait InterpolatableValue {
-    fn get_value(&mut self, time: TimeCounter) -> f64;
-    fn set_value(&mut self, value: f64);
 }
 
 

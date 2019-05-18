@@ -35,7 +35,7 @@ impl MidiPitch {
     pub fn get_frequency(&self, master_frequency: MasterFrequency) -> f64 {
         let note_diff = (self.0 as i8 - 69) as f64;
 
-        (note_diff / 12.0).exp2() * master_frequency.0
+        (note_diff / 12.0).exp2() * master_frequency.value
     }
 }
 

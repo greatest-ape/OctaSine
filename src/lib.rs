@@ -27,6 +27,76 @@ use crate::notes::*;
 use crate::parameters::*;
 
 
+#[macro_export]
+macro_rules! interpolatable_parameter {
+    ($struct_name:ident) => {
+        impl Parameter for $struct_name {
+            fn get_parameter_name(&self) -> String {
+                self.get_full_parameter_name()
+            }
+
+            fn set_parameter_value_float(&mut self, value: f64){
+                self.value.set_value(self.from_parameter_value(value));
+            }
+            fn set_parameter_value_text(&mut self, value: String) -> bool {
+                if let Some(value) = self.parse_string_value(value){
+                    self.value.set_value(value);
+
+                    true
+                } else {
+                    false
+                }
+            }
+            fn get_parameter_value_float(&self) -> f64 {
+                self.to_parameter_value(self.value.target_value)
+            }
+            fn get_parameter_value_text(&self) -> String {
+                format!("{:.2}", self.value.target_value)
+            }
+        }
+
+        impl $struct_name {
+            pub fn get_value(&mut self, time: TimeCounter) -> f64 {
+                self.value.get_value(time)
+            }
+        }
+    };
+}
+
+#[macro_export]
+macro_rules! simple_parameter {
+    ($struct_name:ident) => {
+        impl Parameter for $struct_name {
+            fn get_parameter_name(&self) -> String {
+                self.get_full_parameter_name()
+            }
+            fn get_parameter_unit_of_measurement(&self) -> String {
+                "Hz".to_string()
+            }
+
+            fn set_parameter_value_float(&mut self, value: f64){
+                self.value = self.from_parameter_value(value);
+            }
+            fn set_parameter_value_text(&mut self, value: String) -> bool {
+                if let Some(value) = self.parse_string_value(value){
+                    self.value = value;
+
+                    true
+                } else {
+                    false
+                }
+            }
+            fn get_parameter_value_float(&self) -> f64 {
+                self.to_parameter_value(self.value)
+            }
+            fn get_parameter_value_text(&self) -> String {
+                format!("{:.2}", self.value)
+            }
+        }
+    };
+}
+
+
 type Notes = [Note; 128];
 type FadeoutNotes = SmallVec<[Note; 1024]>;
 
@@ -141,11 +211,14 @@ impl FmSynth {
         rng: &mut impl Rng,
         time: TimeCounter,
         time_per_sample: TimePerSample,
-        master_frequency: MasterFrequency,
-        operators: &mut Operators,
+        parameters: &mut Parameters,
         note: &mut Note,
     ) -> (f64, f64) {
-        let base_frequency = note.midi_pitch.get_frequency(master_frequency);
+        let operators = &mut parameters.operators;
+
+        let base_frequency = note.midi_pitch.get_frequency(
+            parameters.master_frequency
+        );
 
         let mut output_channels = [
             OutputChannel::default(),
@@ -261,7 +334,7 @@ impl FmSynth {
         let signal_left = output_channels[0].additive;
         let signal_right = output_channels[1].additive;
 
-        let volume_factor = 0.1 * note.velocity.0;
+        let volume_factor = 0.1 * note.velocity.0 * parameters.master_volume.get_value(time);
 
         (signal_left * volume_factor, signal_right * volume_factor)
     }
@@ -324,8 +397,7 @@ impl Plugin for FmSynth {
                         &mut self.processing.rng,
                         self.processing.global_time,
                         time_per_sample,
-                        parameters.master_frequency,
-                        &mut parameters.operators,
+                        &mut parameters,
                         note,
                     );
 
