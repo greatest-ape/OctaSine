@@ -28,6 +28,15 @@ macro_rules! create_interpolatable_operator_parameter {
             fn get_full_parameter_name(&self) -> String {
                 format!("Op. {} {}", self.operator_index + 1, $parameter_name)
             }
+
+            pub fn parse_string_value(&self, value: String) -> Option<f64> {
+                value.parse::<f64>().ok().map(|value| {
+                    let max = self.from_parameter_value(1.0);
+                    let min = self.from_parameter_value(0.0);
+
+                    value.max(min).min(max)
+                })
+            }
         }
 
         interpolatable_parameter!($struct_name);
@@ -74,14 +83,6 @@ impl OperatorVolume {
     }
     pub fn to_parameter_value(&self, value: f64) -> f64 {
         value / 2.0
-    }
-    pub fn parse_string_value(&self, value: String) -> Option<f64> {
-        value.parse::<f64>().ok().map(|value| {
-            let max = self.from_parameter_value(1.0);
-            let min = self.from_parameter_value(0.0);
-
-            value.max(min).min(max)
-        })
     }
 }
 
@@ -188,9 +189,6 @@ impl OperatorAdditiveFactor {
     pub fn to_parameter_value(&self, value: f64) -> f64 {
         value
     }
-    pub fn parse_string_value(&self, value: String) -> Option<f64> {
-        value.parse::<f64>().ok().map(|value| value.max(0.0).min(1.0))
-    }
 }
 
 
@@ -206,9 +204,6 @@ impl OperatorPanning {
     }
     pub fn to_parameter_value(&self, value: f64) -> f64 {
         value
-    }
-    pub fn parse_string_value(&self, value: String) -> Option<f64> {
-        value.parse::<f64>().ok().map(|value| value.max(0.0).min(1.0))
     }
 
     pub fn get_left_and_right(panning: f64) -> (f64, f64) {
@@ -301,14 +296,6 @@ impl OperatorFeedback {
     pub fn to_parameter_value(&self, value: f64) -> f64 {
         value
     }
-    pub fn parse_string_value(&self, value: String) -> Option<f64> {
-        value.parse::<f64>().ok().map(|value| {
-            let max = self.from_parameter_value(1.0);
-            let min = self.from_parameter_value(0.0);
-
-            value.max(min).min(max)
-        })
-    }
 }
 
 
@@ -324,14 +311,6 @@ impl OperatorModulationIndex {
     }
     pub fn to_parameter_value(&self, value: f64) -> f64 {
         map_value_to_parameter_value_with_steps(&OPERATOR_BETA_STEPS[..], value)
-    }
-    pub fn parse_string_value(&self, value: String) -> Option<f64> {
-        value.parse::<f64>().ok().map(|value| {
-            let max = self.from_parameter_value(1.0);
-            let min = self.from_parameter_value(0.0);
-
-            value.max(min).min(max)
-        })
     }
 }
 
