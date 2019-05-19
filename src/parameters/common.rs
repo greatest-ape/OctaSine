@@ -15,10 +15,16 @@ pub trait Parameter {
 }
 
 
-pub trait InterpolatableValue {
-    fn get_value(&mut self, time: TimeCounter) -> f64;
-    fn set_value(&mut self, value: f64);
+pub trait ParameterValueConversion<T> {
+    fn from_parameter_value(&self, value: f64) -> T;
+    fn to_parameter_value(&self, value: T) -> f64;
 }
+
+
+pub trait ParameterStringParsing<T> {
+    fn parse_string_value(&self, value: String) -> Option<T>;
+}
+
 
 
 #[derive(Debug, Copy, Clone)]

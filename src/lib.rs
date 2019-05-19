@@ -28,7 +28,7 @@ use crate::parameters::*;
 
 
 #[macro_export]
-macro_rules! interpolatable_parameter {
+macro_rules! impl_interpolatable_parameter {
     ($struct_name:ident) => {
         impl Parameter for $struct_name {
             fn get_parameter_name(&self) -> String {
@@ -64,16 +64,12 @@ macro_rules! interpolatable_parameter {
 }
 
 #[macro_export]
-macro_rules! simple_parameter {
+macro_rules! impl_simple_parameter {
     ($struct_name:ident) => {
         impl Parameter for $struct_name {
             fn get_parameter_name(&self) -> String {
                 self.get_full_parameter_name()
             }
-            fn get_parameter_unit_of_measurement(&self) -> String {
-                "Hz".to_string()
-            }
-
             fn set_parameter_value_float(&mut self, value: f64){
                 self.value = self.from_parameter_value(value);
             }
@@ -91,6 +87,23 @@ macro_rules! simple_parameter {
             }
             fn get_parameter_value_text(&self) -> String {
                 format!("{:.2}", self.value)
+            }
+        }
+    };
+}
+
+
+#[macro_export]
+macro_rules! impl_default_parameter_string_parsing {
+    ($struct_name:ident) => {
+        impl ParameterStringParsing<f64> for $struct_name {
+            fn parse_string_value(&self, value: String) -> Option<f64> {
+                value.parse::<f64>().ok().map(|value| {
+                    let max = self.from_parameter_value(1.0);
+                    let min = self.from_parameter_value(0.0);
+
+                    value.max(min).min(max)
+                })
             }
         }
     };

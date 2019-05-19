@@ -1,6 +1,6 @@
 use smallvec::SmallVec;
 
-use crate::{interpolatable_parameter, simple_parameter};
+use crate::{impl_interpolatable_parameter, impl_simple_parameter, impl_default_parameter_string_parsing};
 use crate::common::*;
 use crate::constants::*;
 
@@ -28,18 +28,9 @@ macro_rules! create_interpolatable_operator_parameter {
             fn get_full_parameter_name(&self) -> String {
                 format!("Op. {} {}", self.operator_index + 1, $parameter_name)
             }
-
-            pub fn parse_string_value(&self, value: String) -> Option<f64> {
-                value.parse::<f64>().ok().map(|value| {
-                    let max = self.from_parameter_value(1.0);
-                    let min = self.from_parameter_value(0.0);
-
-                    value.max(min).min(max)
-                })
-            }
         }
 
-        interpolatable_parameter!($struct_name);
+        impl_interpolatable_parameter!($struct_name);
     };  
 }
 
@@ -66,10 +57,54 @@ macro_rules! create_simple_operator_parameter {
             }
         }
 
-        simple_parameter!($struct_name);
+        impl_simple_parameter!($struct_name);
     };  
 }
 
+
+/// Macro for implementing ParameterValueConversion and ParameterStringParsing
+/// in a way suitable for envelope durations
+macro_rules! impl_envelope_duration_parameter_helpers {
+    ($struct_name:ident) => {
+        impl ParameterValueConversion<f64> for $struct_name {
+            fn from_parameter_value(&self, value: f64) -> f64 {
+                // Force some decay to avoid clicks
+                (value * OPERATOR_ENVELOPE_MAX_DURATION)
+                    .max(OPERATOR_ENVELOPE_MIN_DURATION)
+            }
+            fn to_parameter_value(&self, value: f64) -> f64 {
+                value / OPERATOR_ENVELOPE_MAX_DURATION
+            }
+        }
+
+        impl ParameterStringParsing<f64> for $struct_name {
+            fn parse_string_value(&self, value: String) -> Option<f64> {
+                value.parse::<f64>().ok().map(|value|
+                    value.max(OPERATOR_ENVELOPE_MIN_DURATION)
+                        .min(OPERATOR_ENVELOPE_MAX_DURATION)
+                )
+            }
+        }
+    };
+}
+
+
+/// Implement ParameterValueConversion<f64> with 1-to-1 conversion
+macro_rules! impl_trivial_parameter_value_conversion {
+    ($struct_name:ident) => {
+        impl ParameterValueConversion<f64> for $struct_name {
+            fn from_parameter_value(&self, value: f64) -> f64 {
+                value
+            }
+            fn to_parameter_value(&self, value: f64) -> f64 {
+                value
+            }
+        }
+    };
+}
+
+
+// Operator volume
 
 create_interpolatable_operator_parameter!(
     OperatorVolume,
@@ -77,15 +112,19 @@ create_interpolatable_operator_parameter!(
     "volume"
 );
 
-impl OperatorVolume {
-    pub fn from_parameter_value(&self, value: f64) -> f64 {
+impl ParameterValueConversion<f64> for OperatorVolume {
+    fn from_parameter_value(&self, value: f64) -> f64 {
         value * 2.0
     }
-    pub fn to_parameter_value(&self, value: f64) -> f64 {
+    fn to_parameter_value(&self, value: f64) -> f64 {
         value / 2.0
     }
 }
 
+impl_default_parameter_string_parsing!(OperatorVolume);
+
+
+// Operator output operator
 
 #[derive(Debug, Clone)]
 pub struct OperatorOutputOperator {
@@ -108,7 +147,10 @@ impl OperatorOutputOperator {
         }
     }
 
-    pub fn from_parameter_value(&self, value: f64) -> usize {
+}
+
+impl ParameterValueConversion<usize> for OperatorOutputOperator {
+    fn from_parameter_value(&self, value: f64) -> usize {
         let step = 1.0 / self.targets.len() as f64;
         let mut sum = 0.0;
 
@@ -122,12 +164,15 @@ impl OperatorOutputOperator {
 
         *self.targets.last().expect("No targets")
     }
-    pub fn to_parameter_value(&self, value: usize) -> f64 {
+    fn to_parameter_value(&self, value: usize) -> f64 {
         let step = 1.0 / self.targets.len() as f64;
 
         value as f64 * step + 0.0001
     }
-    pub fn parse_string_value(&self, value: String) -> Option<usize> {
+}
+
+impl ParameterStringParsing<usize> for OperatorOutputOperator {
+    fn parse_string_value(&self, value: String) -> Option<usize> {
         if let Ok(value) = value.parse::<usize>(){
             if value != 0 {
                 let target = value - 1;
@@ -168,6 +213,8 @@ impl Parameter for OperatorOutputOperator {
 }
 
 
+// Operator additive factor
+
 create_interpolatable_operator_parameter!(
     OperatorAdditiveFactor,
     OPERATOR_DEFAULT_ADDITIVE_FACTOR,
@@ -182,15 +229,13 @@ impl OperatorAdditiveFactor {
             Some(Self::new(operator_index))
         }
     }
-
-    pub fn from_parameter_value(&self, value: f64) -> f64 {
-        value
-    }
-    pub fn to_parameter_value(&self, value: f64) -> f64 {
-        value
-    }
 }
 
+impl_trivial_parameter_value_conversion!(OperatorAdditiveFactor);
+impl_default_parameter_string_parsing!(OperatorAdditiveFactor);
+
+
+// Operator panning
 
 create_interpolatable_operator_parameter!(
     OperatorPanning,
@@ -199,13 +244,6 @@ create_interpolatable_operator_parameter!(
 );
 
 impl OperatorPanning {
-    pub fn from_parameter_value(&self, value: f64) -> f64 {
-        value
-    }
-    pub fn to_parameter_value(&self, value: f64) -> f64 {
-        value
-    }
-
     pub fn get_left_and_right(panning: f64) -> (f64, f64) {
         let pan_phase = panning * HALF_PI;
 
@@ -213,6 +251,11 @@ impl OperatorPanning {
     }
 }
 
+impl_trivial_parameter_value_conversion!(OperatorPanning);
+impl_default_parameter_string_parsing!(OperatorPanning);
+
+
+// Operator frequency ratio
 
 create_simple_operator_parameter!(
     OperatorFrequencyRatio,
@@ -220,14 +263,17 @@ create_simple_operator_parameter!(
     "freq ratio"
 );
 
-impl OperatorFrequencyRatio {
-    pub fn from_parameter_value(&self, value: f64) -> f64 {
+impl ParameterValueConversion<f64> for OperatorFrequencyRatio {
+    fn from_parameter_value(&self, value: f64) -> f64 {
         map_parameter_value_to_step(&OPERATOR_RATIO_STEPS[..], value)
     }
-    pub fn to_parameter_value(&self, value: f64) -> f64 {
+    fn to_parameter_value(&self, value: f64) -> f64 {
         map_step_to_parameter_value(&OPERATOR_RATIO_STEPS[..], value)
     }
-    pub fn parse_string_value(&self, value: String) -> Option<f64> {
+}
+
+impl ParameterStringParsing<f64> for OperatorFrequencyRatio {
+    fn parse_string_value(&self, value: String) -> Option<f64> {
         value.parse::<f64>().ok().map(|value|
             round_to_step(&OPERATOR_RATIO_STEPS[..], value)
         )
@@ -235,29 +281,27 @@ impl OperatorFrequencyRatio {
 }
 
 
+// Operator free frequency
+
 create_simple_operator_parameter!(
     OperatorFrequencyFree,
     OPERATOR_DEFAULT_FREQUENCY_FREE,
     "freq free"
 );
 
-impl OperatorFrequencyFree {
-    pub fn from_parameter_value(&self, value: f64) -> f64 {
+impl ParameterValueConversion<f64> for OperatorFrequencyFree {
+    fn from_parameter_value(&self, value: f64) -> f64 {
         map_parameter_value_to_value_with_steps(&OPERATOR_FREE_STEPS, value)
     }
-    pub fn to_parameter_value(&self, value: f64) -> f64 {
+    fn to_parameter_value(&self, value: f64) -> f64 {
         map_value_to_parameter_value_with_steps(&OPERATOR_FREE_STEPS, value)
-    }
-    pub fn parse_string_value(&self, value: String) -> Option<f64> {
-        value.parse::<f64>().ok().map(|value| {
-            let max = self.from_parameter_value(1.0);
-            let min = self.from_parameter_value(0.0);
-
-            value.max(min).min(max)
-        })
     }
 }
 
+impl_default_parameter_string_parsing!(OperatorFrequencyFree);
+
+
+// Operator fine frequency
 
 create_simple_operator_parameter!(
     OperatorFrequencyFine,
@@ -265,23 +309,19 @@ create_simple_operator_parameter!(
     "freq fine"
 );
 
-impl OperatorFrequencyFine {
-    pub fn from_parameter_value(&self, value: f64) -> f64 {
+impl ParameterValueConversion<f64> for OperatorFrequencyFine {
+    fn from_parameter_value(&self, value: f64) -> f64 {
         (value + 0.5).powf(1.0/3.0)
     }
-    pub fn to_parameter_value(&self, value: f64) -> f64 {
+    fn to_parameter_value(&self, value: f64) -> f64 {
         value.powf(3.0) - 0.5
-    }
-    pub fn parse_string_value(&self, value: String) -> Option<f64> {
-        value.parse::<f64>().ok().map(|value| {
-            let max = self.from_parameter_value(1.0);
-            let min = self.from_parameter_value(0.0);
-
-            value.max(min).min(max)
-        })
     }
 }
 
+impl_default_parameter_string_parsing!(OperatorFrequencyFine);
+
+
+// Operator feedback
 
 create_interpolatable_operator_parameter!(
     OperatorFeedback,
@@ -289,15 +329,11 @@ create_interpolatable_operator_parameter!(
     "feedback"
 );
 
-impl OperatorFeedback {
-    pub fn from_parameter_value(&self, value: f64) -> f64 {
-        value
-    }
-    pub fn to_parameter_value(&self, value: f64) -> f64 {
-        value
-    }
-}
+impl_trivial_parameter_value_conversion!(OperatorFeedback);
+impl_default_parameter_string_parsing!(OperatorFeedback);
 
+
+// Operator modulation index
 
 create_interpolatable_operator_parameter!(
     OperatorModulationIndex,
@@ -305,15 +341,19 @@ create_interpolatable_operator_parameter!(
     "mod index"
 );
 
-impl OperatorModulationIndex {
-    pub fn from_parameter_value(&self, value: f64) -> f64 {
+impl ParameterValueConversion<f64> for OperatorModulationIndex {
+    fn from_parameter_value(&self, value: f64) -> f64 {
         map_parameter_value_to_value_with_steps(&OPERATOR_BETA_STEPS[..], value)
     }
-    pub fn to_parameter_value(&self, value: f64) -> f64 {
+    fn to_parameter_value(&self, value: f64) -> f64 {
         map_value_to_parameter_value_with_steps(&OPERATOR_BETA_STEPS[..], value)
     }
 }
 
+impl_default_parameter_string_parsing!(OperatorModulationIndex);
+
+
+// Operator wave type
 
 #[derive(Debug, Copy, Clone)]
 pub struct OperatorWaveType {
@@ -328,7 +368,10 @@ impl OperatorWaveType {
             operator_index
         }
     }
-    pub fn from_parameter_value(&self, value: f64) -> WaveType {
+}
+
+impl ParameterValueConversion<WaveType> for OperatorWaveType {
+    fn from_parameter_value(&self, value: f64) -> WaveType {
         if value <= 0.5 {
             WaveType::Sine
         }
@@ -336,13 +379,16 @@ impl OperatorWaveType {
             WaveType::WhiteNoise
         }
     }
-    pub fn to_parameter_value(&self, value: WaveType) -> f64 {
+    fn to_parameter_value(&self, value: WaveType) -> f64 {
         match value {
             WaveType::Sine => 0.0,
             WaveType::WhiteNoise => 1.0,
         }
     }
-    pub fn parse_string_value(&self, value: String) -> Option<WaveType> {
+}
+
+impl ParameterStringParsing<WaveType> for OperatorWaveType {
+    fn parse_string_value(&self, value: String) -> Option<WaveType> {
         let value = value.to_lowercase();
 
         if value == "sine" {
@@ -389,29 +435,18 @@ impl Parameter for OperatorWaveType {
 }
 
 
+// Volume envelope attack duration
+
 create_simple_operator_parameter!(
     VolumeEnvelopeAttackDuration,
     OPERATOR_DEFAULT_VOLUME_ENVELOPE_ATTACK_DURATION,
     "attack time"
 );
 
-impl VolumeEnvelopeAttackDuration {
-    pub fn from_parameter_value(&self, value: f64) -> f64 {
-        // Force some attack to avoid clicks
-        (value * OPERATOR_ENVELOPE_MAX_DURATION)
-            .max(OPERATOR_ENVELOPE_MIN_DURATION)
-    }
-    pub fn to_parameter_value(&self, value: f64) -> f64 {
-        value / OPERATOR_ENVELOPE_MAX_DURATION
-    }
-    pub fn parse_string_value(&self, value: String) -> Option<f64> {
-        value.parse::<f64>().ok().map(|value|
-            value.max(OPERATOR_ENVELOPE_MIN_DURATION)
-                .min(OPERATOR_ENVELOPE_MAX_DURATION)
-        )
-    }
-}
+impl_envelope_duration_parameter_helpers!(VolumeEnvelopeAttackDuration);
 
+
+// Volume envelope attack value
 
 create_simple_operator_parameter!(
     VolumeEnvelopeAttackValue,
@@ -419,18 +454,11 @@ create_simple_operator_parameter!(
     "attack vol"
 );
 
-impl VolumeEnvelopeAttackValue {
-    pub fn from_parameter_value(&self, value: f64) -> f64 {
-        value
-    }
-    pub fn to_parameter_value(&self, value: f64) -> f64 {
-        value
-    }
-    pub fn parse_string_value(&self, value: String) -> Option<f64> {
-        value.parse::<f64>().ok().map(|value| value.max(0.0).min(1.0))
-    }
-}
+impl_trivial_parameter_value_conversion!(VolumeEnvelopeAttackValue);
+impl_default_parameter_string_parsing!(VolumeEnvelopeAttackValue);
 
+
+// Volume envelope decay duration
 
 create_simple_operator_parameter!(
     VolumeEnvelopeDecayDuration,
@@ -438,23 +466,10 @@ create_simple_operator_parameter!(
     "decay time"
 );
 
-impl VolumeEnvelopeDecayDuration {
-    pub fn from_parameter_value(&self, value: f64) -> f64 {
-        // Force some decay to avoid clicks
-        (value * OPERATOR_ENVELOPE_MAX_DURATION)
-            .max(OPERATOR_ENVELOPE_MIN_DURATION)
-    }
-    pub fn to_parameter_value(&self, value: f64) -> f64 {
-        value / OPERATOR_ENVELOPE_MAX_DURATION
-    }
-    pub fn parse_string_value(&self, value: String) -> Option<f64> {
-        value.parse::<f64>().ok().map(|value|
-            value.max(OPERATOR_ENVELOPE_MIN_DURATION)
-                .min(OPERATOR_ENVELOPE_MAX_DURATION)
-        )
-    }
-}
+impl_envelope_duration_parameter_helpers!(VolumeEnvelopeDecayDuration);
 
+
+// Volume envelope decay value
 
 create_simple_operator_parameter!(
     VolumeEnvelopeDecayValue,
@@ -462,18 +477,11 @@ create_simple_operator_parameter!(
     "decay vol"
 );
 
-impl VolumeEnvelopeDecayValue {
-    pub fn from_parameter_value(&self, value: f64) -> f64 {
-        value
-    }
-    pub fn to_parameter_value(&self, value: f64) -> f64 {
-        value
-    }
-    pub fn parse_string_value(&self, value: String) -> Option<f64> {
-        value.parse::<f64>().ok().map(|value| value.max(0.0).min(1.0))
-    }
-}
+impl_trivial_parameter_value_conversion!(VolumeEnvelopeDecayValue);
+impl_default_parameter_string_parsing!(VolumeEnvelopeDecayValue);
 
+
+// Volume envelope release duration
 
 create_simple_operator_parameter!(
     VolumeEnvelopeReleaseDuration,
@@ -481,22 +489,8 @@ create_simple_operator_parameter!(
     "release time"
 );
 
-impl VolumeEnvelopeReleaseDuration {
-    pub fn from_parameter_value(&self, value: f64) -> f64 {
-        // Force some release to avoid clicks
-        (value * OPERATOR_ENVELOPE_MAX_DURATION)
-            .max(OPERATOR_ENVELOPE_MIN_DURATION)
-    }
-    pub fn to_parameter_value(&self, value: f64) -> f64 {
-        value / OPERATOR_ENVELOPE_MAX_DURATION
-    }
-    pub fn parse_string_value(&self, value: String) -> Option<f64> {
-        value.parse::<f64>().ok().map(|value|
-            value.max(OPERATOR_ENVELOPE_MIN_DURATION)
-                .min(OPERATOR_ENVELOPE_MAX_DURATION)
-        )
-    }
-}
+impl_envelope_duration_parameter_helpers!(VolumeEnvelopeReleaseDuration);
+
 
 
 #[derive(Debug, Copy, Clone)]
