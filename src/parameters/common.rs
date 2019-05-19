@@ -92,19 +92,19 @@ impl<T> Parameter for T
 
 #[derive(Debug, Copy, Clone)]
 pub struct TimeInterpolatableValue {
-    pub current_value: f64,
     pub target_value: f64,
-    pub step_size: f64,
-    pub steps_remaining: usize,
-    pub last_time: TimeCounter,
-    pub total_num_steps: usize
+    current_value: f64,
+    step_size: f64,
+    steps_remaining: usize,
+    last_time: TimeCounter,
+    total_num_steps: usize
 }
 
 impl TimeInterpolatableValue {
     pub fn new(value: f64) -> Self {
         Self {
-            current_value: value,
             target_value: value,
+            current_value: value,
             step_size: 0.0,
             steps_remaining: 0,
             last_time: TimeCounter(0.0),
@@ -112,6 +112,7 @@ impl TimeInterpolatableValue {
         }
     }
 
+    /// Possibly advance interpolation, then return value
     pub fn get_value(&mut self, time: TimeCounter) -> f64 {
         if self.total_num_steps == 0 {
             return self.current_value;
@@ -126,6 +127,7 @@ impl TimeInterpolatableValue {
         self.current_value
     }
 
+    // Set target value, then possibly restart interpolation
     pub fn set_value(&mut self, value: f64){
         self.target_value = value;
 
