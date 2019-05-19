@@ -15,6 +15,30 @@ pub trait Parameter {
 }
 
 
+pub trait ParameterGetName {
+    fn get_parameter_name(&self) -> String;
+}
+
+
+pub trait ParameterGetUnit {
+    fn get_parameter_unit_of_measurement(&self) -> String {
+        "".to_string()
+    }
+}
+
+
+/// Set or get the internal representation of the parameter value.
+/// Values often need to go through a conversion first.
+/// 
+/// Useful for abstracting over interpolatable and simply stored values.
+pub trait ParameterInternalValueAccess<T> {
+    fn set_converted_parameter_value(&mut self, value: T);
+    fn get_unconverted_parameter_value(&self) -> T;
+}
+
+
+/// Convert plugin host float values in the range 0.0 - 1.0 to and from
+/// the internal representation
 pub trait ParameterValueConversion<T> {
     fn from_parameter_value(&self, value: f64) -> T;
     fn to_parameter_value(&self, value: T) -> f64;
@@ -22,9 +46,48 @@ pub trait ParameterValueConversion<T> {
 
 
 pub trait ParameterStringParsing<T> {
+    /// Parse a string value coming from the host to the internal
+    /// representation
     fn parse_string_value(&self, value: String) -> Option<T>;
 }
 
+
+/// Simple general implementation of Parameter for structs implementing
+/// the other Parameter traits and using f64s as values
+impl<T> Parameter for T
+    where T:
+        ParameterGetName +
+        ParameterGetUnit +
+        ParameterInternalValueAccess<f64> +
+        ParameterValueConversion<f64> + 
+        ParameterStringParsing<f64>
+{
+    fn get_parameter_name(&self) -> String {
+        ParameterGetName::get_parameter_name(self)
+    }
+    fn get_parameter_unit_of_measurement(&self) -> String {
+        ParameterGetUnit::get_parameter_unit_of_measurement(self)
+    }
+
+    fn set_parameter_value_float(&mut self, value: f64){
+        self.set_converted_parameter_value(self.from_parameter_value(value));
+    }
+    fn set_parameter_value_text(&mut self, value: String) -> bool {
+        if let Some(value) = self.parse_string_value(value){
+            self.set_converted_parameter_value(value);
+
+            true
+        } else {
+            false
+        }
+    }
+    fn get_parameter_value_float(&self) -> f64 {
+        self.to_parameter_value(self.get_unconverted_parameter_value())
+    }
+    fn get_parameter_value_text(&self) -> String {
+        format!("{:.2}", self.get_unconverted_parameter_value())
+    }
+}
 
 
 #[derive(Debug, Copy, Clone)]

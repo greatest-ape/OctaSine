@@ -28,30 +28,14 @@ use crate::parameters::*;
 
 
 #[macro_export]
-macro_rules! impl_interpolatable_parameter {
+macro_rules! impl_interpolatable_parameter_value_access {
     ($struct_name:ident) => {
-        impl Parameter for $struct_name {
-            fn get_parameter_name(&self) -> String {
-                self.get_full_parameter_name()
+        impl ParameterInternalValueAccess<f64> for $struct_name {
+            fn set_converted_parameter_value(&mut self, value: f64){
+                self.value.set_value(value);
             }
-
-            fn set_parameter_value_float(&mut self, value: f64){
-                self.value.set_value(self.from_parameter_value(value));
-            }
-            fn set_parameter_value_text(&mut self, value: String) -> bool {
-                if let Some(value) = self.parse_string_value(value){
-                    self.value.set_value(value);
-
-                    true
-                } else {
-                    false
-                }
-            }
-            fn get_parameter_value_float(&self) -> f64 {
-                self.to_parameter_value(self.value.target_value)
-            }
-            fn get_parameter_value_text(&self) -> String {
-                format!("{:.2}", self.value.target_value)
+            fn get_unconverted_parameter_value(&self) -> f64 {
+                self.value.target_value
             }
         }
 
@@ -64,29 +48,14 @@ macro_rules! impl_interpolatable_parameter {
 }
 
 #[macro_export]
-macro_rules! impl_simple_parameter {
+macro_rules! impl_simple_parameter_value_access {
     ($struct_name:ident) => {
-        impl Parameter for $struct_name {
-            fn get_parameter_name(&self) -> String {
-                self.get_full_parameter_name()
+        impl ParameterInternalValueAccess<f64> for $struct_name {
+            fn set_converted_parameter_value(&mut self, value: f64){
+                self.value = value;
             }
-            fn set_parameter_value_float(&mut self, value: f64){
-                self.value = self.from_parameter_value(value);
-            }
-            fn set_parameter_value_text(&mut self, value: String) -> bool {
-                if let Some(value) = self.parse_string_value(value){
-                    self.value = value;
-
-                    true
-                } else {
-                    false
-                }
-            }
-            fn get_parameter_value_float(&self) -> f64 {
-                self.to_parameter_value(self.value)
-            }
-            fn get_parameter_value_text(&self) -> String {
-                format!("{:.2}", self.value)
+            fn get_unconverted_parameter_value(&self) -> f64 {
+                self.value
             }
         }
     };
@@ -94,7 +63,7 @@ macro_rules! impl_simple_parameter {
 
 
 #[macro_export]
-macro_rules! impl_default_parameter_string_parsing {
+macro_rules! impl_simple_parameter_string_parsing {
     ($struct_name:ident) => {
         impl ParameterStringParsing<f64> for $struct_name {
             fn parse_string_value(&self, value: String) -> Option<f64> {
@@ -256,7 +225,7 @@ impl FmSynth {
             };
 
             let operator_mod_output = if let Some(ref o) = operator.output_operator {
-                o.target
+                o.value
             } else {
                 0
             };

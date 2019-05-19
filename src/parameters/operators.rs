@@ -1,6 +1,6 @@
 use smallvec::SmallVec;
 
-use crate::{impl_interpolatable_parameter, impl_simple_parameter, impl_default_parameter_string_parsing};
+use crate::{impl_interpolatable_parameter_value_access, impl_simple_parameter_value_access, impl_simple_parameter_string_parsing};
 use crate::common::*;
 use crate::constants::*;
 
@@ -24,13 +24,17 @@ macro_rules! create_interpolatable_operator_parameter {
                     operator_index: operator_index,
                 }
             }
+        }
 
-            fn get_full_parameter_name(&self) -> String {
+        impl ParameterGetName for $struct_name {
+            fn get_parameter_name(&self) -> String {
                 format!("Op. {} {}", self.operator_index + 1, $parameter_name)
             }
         }
 
-        impl_interpolatable_parameter!($struct_name);
+        impl ParameterGetUnit for $struct_name {}
+
+        impl_interpolatable_parameter_value_access!($struct_name);
     };  
 }
 
@@ -51,13 +55,17 @@ macro_rules! create_simple_operator_parameter {
                     operator_index: operator_index,
                 }
             }
+        }
 
-            fn get_full_parameter_name(&self) -> String {
+        impl ParameterGetName for $struct_name {
+            fn get_parameter_name(&self) -> String {
                 format!("Op. {} {}", self.operator_index + 1, $parameter_name)
             }
         }
 
-        impl_simple_parameter!($struct_name);
+        impl ParameterGetUnit for $struct_name {}
+
+        impl_simple_parameter_value_access!($struct_name);
     };  
 }
 
@@ -90,7 +98,7 @@ macro_rules! impl_envelope_duration_parameter_helpers {
 
 
 /// Implement ParameterValueConversion<f64> with 1-to-1 conversion
-macro_rules! impl_trivial_parameter_value_conversion {
+macro_rules! impl_identity_parameter_value_conversion {
     ($struct_name:ident) => {
         impl ParameterValueConversion<f64> for $struct_name {
             fn from_parameter_value(&self, value: f64) -> f64 {
@@ -121,7 +129,7 @@ impl ParameterValueConversion<f64> for OperatorVolume {
     }
 }
 
-impl_default_parameter_string_parsing!(OperatorVolume);
+impl_simple_parameter_string_parsing!(OperatorVolume);
 
 
 // Operator output operator
@@ -129,7 +137,7 @@ impl_default_parameter_string_parsing!(OperatorVolume);
 #[derive(Debug, Clone)]
 pub struct OperatorOutputOperator {
     targets: SmallVec<[usize; NUM_OPERATORS]>,
-    pub target: usize,
+    pub value: usize,
     pub operator_index: usize,
 }
 
@@ -141,7 +149,7 @@ impl OperatorOutputOperator {
         else {
             Some(Self {
                 targets: (0..operator_index).into_iter().collect(),
-                target: operator_index - 1,
+                value: operator_index - 1,
                 operator_index: operator_index,
             })
         }
@@ -193,11 +201,11 @@ impl Parameter for OperatorOutputOperator {
     }
 
     fn set_parameter_value_float(&mut self, value: f64){
-        self.target = self.from_parameter_value(value);
+        self.value = self.from_parameter_value(value);
     }
     fn set_parameter_value_text(&mut self, value: String) -> bool {
         if let Some(value) = self.parse_string_value(value){
-            self.target = value;
+            self.value = value;
 
             true
         } else {
@@ -205,10 +213,10 @@ impl Parameter for OperatorOutputOperator {
         }
     }
     fn get_parameter_value_float(&self) -> f64 {
-        self.to_parameter_value(self.target)
+        self.to_parameter_value(self.value)
     }
     fn get_parameter_value_text(&self) -> String {
-        format!("Operator {}", self.target + 1)
+        format!("Operator {}", self.value + 1)
     }
 }
 
@@ -231,8 +239,8 @@ impl OperatorAdditiveFactor {
     }
 }
 
-impl_trivial_parameter_value_conversion!(OperatorAdditiveFactor);
-impl_default_parameter_string_parsing!(OperatorAdditiveFactor);
+impl_identity_parameter_value_conversion!(OperatorAdditiveFactor);
+impl_simple_parameter_string_parsing!(OperatorAdditiveFactor);
 
 
 // Operator panning
@@ -251,8 +259,8 @@ impl OperatorPanning {
     }
 }
 
-impl_trivial_parameter_value_conversion!(OperatorPanning);
-impl_default_parameter_string_parsing!(OperatorPanning);
+impl_identity_parameter_value_conversion!(OperatorPanning);
+impl_simple_parameter_string_parsing!(OperatorPanning);
 
 
 // Operator frequency ratio
@@ -298,7 +306,7 @@ impl ParameterValueConversion<f64> for OperatorFrequencyFree {
     }
 }
 
-impl_default_parameter_string_parsing!(OperatorFrequencyFree);
+impl_simple_parameter_string_parsing!(OperatorFrequencyFree);
 
 
 // Operator fine frequency
@@ -318,7 +326,7 @@ impl ParameterValueConversion<f64> for OperatorFrequencyFine {
     }
 }
 
-impl_default_parameter_string_parsing!(OperatorFrequencyFine);
+impl_simple_parameter_string_parsing!(OperatorFrequencyFine);
 
 
 // Operator feedback
@@ -329,8 +337,8 @@ create_interpolatable_operator_parameter!(
     "feedback"
 );
 
-impl_trivial_parameter_value_conversion!(OperatorFeedback);
-impl_default_parameter_string_parsing!(OperatorFeedback);
+impl_identity_parameter_value_conversion!(OperatorFeedback);
+impl_simple_parameter_string_parsing!(OperatorFeedback);
 
 
 // Operator modulation index
@@ -350,7 +358,7 @@ impl ParameterValueConversion<f64> for OperatorModulationIndex {
     }
 }
 
-impl_default_parameter_string_parsing!(OperatorModulationIndex);
+impl_simple_parameter_string_parsing!(OperatorModulationIndex);
 
 
 // Operator wave type
@@ -454,8 +462,8 @@ create_simple_operator_parameter!(
     "attack vol"
 );
 
-impl_trivial_parameter_value_conversion!(VolumeEnvelopeAttackValue);
-impl_default_parameter_string_parsing!(VolumeEnvelopeAttackValue);
+impl_identity_parameter_value_conversion!(VolumeEnvelopeAttackValue);
+impl_simple_parameter_string_parsing!(VolumeEnvelopeAttackValue);
 
 
 // Volume envelope decay duration
@@ -477,8 +485,8 @@ create_simple_operator_parameter!(
     "decay vol"
 );
 
-impl_trivial_parameter_value_conversion!(VolumeEnvelopeDecayValue);
-impl_default_parameter_string_parsing!(VolumeEnvelopeDecayValue);
+impl_identity_parameter_value_conversion!(VolumeEnvelopeDecayValue);
+impl_simple_parameter_string_parsing!(VolumeEnvelopeDecayValue);
 
 
 // Volume envelope release duration
@@ -590,13 +598,13 @@ mod tests {
         assert!(!o.set_parameter_value_text("4".to_string()));
 
         assert!(o.set_parameter_value_text("1".to_string()));
-        assert_eq!(o.target, 0);
+        assert_eq!(o.value, 0);
 
         assert!(o.set_parameter_value_text("2".to_string()));
-        assert_eq!(o.target, 1);
+        assert_eq!(o.value, 1);
 
         assert!(o.set_parameter_value_text("3".to_string()));
-        assert_eq!(o.target, 2);
+        assert_eq!(o.value, 2);
     }
 
     #[test]

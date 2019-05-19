@@ -1,7 +1,7 @@
 use crate::common::*;
 use crate::constants::*;
 
-use crate::{impl_interpolatable_parameter, impl_simple_parameter, impl_default_parameter_string_parsing};
+use crate::{impl_interpolatable_parameter_value_access, impl_simple_parameter_value_access, impl_simple_parameter_string_parsing};
 use super::common::*;
 use super::utils::*;
 
@@ -13,16 +13,14 @@ pub struct MasterVolume {
     value: TimeInterpolatableValue,
 }
 
-impl_interpolatable_parameter!(MasterVolume);
+impl_interpolatable_parameter_value_access!(MasterVolume);
+impl_simple_parameter_string_parsing!(MasterVolume);
 
 impl MasterVolume {
     pub fn new() -> Self {
         Self {
             value: TimeInterpolatableValue::new(1.0),
         }
-    }
-    pub fn get_full_parameter_name(&self) -> String {
-        "Master volume".to_string()
     }
 }
 
@@ -35,7 +33,13 @@ impl ParameterValueConversion<f64> for MasterVolume {
     }
 }
 
-impl_default_parameter_string_parsing!(MasterVolume);
+impl ParameterGetName for MasterVolume {
+    fn get_parameter_name(&self) -> String {
+        "Master volume".to_string()
+    }
+}
+
+impl ParameterGetUnit for MasterVolume {}
 
 
 // Master frequency
@@ -45,13 +49,8 @@ pub struct MasterFrequency {
     pub value: f64
 }
 
-impl_simple_parameter!(MasterFrequency);
-
-impl MasterFrequency {
-    pub fn get_full_parameter_name(&self) -> String {
-        "Master frequency".to_string()
-    }
-}
+impl_simple_parameter_value_access!(MasterFrequency);
+impl_simple_parameter_string_parsing!(MasterFrequency);
 
 impl ParameterValueConversion<f64> for MasterFrequency {
     fn from_parameter_value(&self, value: f64) -> f64 {
@@ -62,4 +61,14 @@ impl ParameterValueConversion<f64> for MasterFrequency {
     }
 }
 
-impl_default_parameter_string_parsing!(MasterFrequency);
+impl ParameterGetName for MasterFrequency {
+    fn get_parameter_name(&self) -> String {
+        "Master frequency".to_string()
+    }
+}
+
+impl ParameterGetUnit for MasterFrequency {
+    fn get_parameter_unit_of_measurement(&self) -> String {
+        "Hz".to_string()
+    }
+}
