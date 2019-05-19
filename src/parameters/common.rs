@@ -97,7 +97,7 @@ pub struct TimeInterpolatableValue {
     step_size: f64,
     steps_remaining: usize,
     last_time: TimeCounter,
-    total_num_steps: usize
+    total_num_steps: usize,
 }
 
 impl TimeInterpolatableValue {
@@ -112,8 +112,12 @@ impl TimeInterpolatableValue {
         }
     }
 
-    /// Possibly advance interpolation, then return value
-    pub fn get_value(&mut self, time: TimeCounter) -> f64 {
+    /// Possibly advance interpolation and call callback, then return value
+    pub fn get_value<F: FnMut(f64)>(
+        &mut self,
+        time: TimeCounter,
+        callback_on_advance: &mut F
+    ) -> f64 {
         if self.total_num_steps == 0 {
             return self.current_value;
         }
@@ -122,6 +126,8 @@ impl TimeInterpolatableValue {
             self.current_value += self.step_size;
             self.steps_remaining -= 1;
             self.last_time = time;
+
+            callback_on_advance(self.current_value);
         }
 
         self.current_value

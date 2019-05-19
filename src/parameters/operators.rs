@@ -1,6 +1,12 @@
 use smallvec::SmallVec;
 
-use crate::{impl_interpolatable_parameter_value_access, impl_simple_parameter_value_access, impl_simple_parameter_string_parsing};
+use crate::{
+    impl_interpolatable_parameter_value_access,
+    impl_default_interpolatable_get_value,
+    impl_simple_parameter_value_access,
+    impl_simple_parameter_string_parsing
+};
+
 use crate::common::*;
 use crate::constants::*;
 
@@ -35,6 +41,7 @@ macro_rules! create_interpolatable_operator_parameter {
         impl ParameterGetUnit for $struct_name {}
 
         impl_interpolatable_parameter_value_access!($struct_name);
+        impl_default_interpolatable_get_value!($struct_name);
     };  
 }
 
@@ -245,20 +252,50 @@ impl_simple_parameter_string_parsing!(OperatorAdditiveFactor);
 
 // Operator panning
 
-create_interpolatable_operator_parameter!(
-    OperatorPanning,
-    OPERATOR_DEFAULT_PANNING,
-    "pan"
-);
+#[derive(Debug, Clone)]
+pub struct OperatorPanning {
+    value: TimeInterpolatableValue,
+    operator_index: usize,
+    pub left_and_right: (f64, f64),
+}
 
 impl OperatorPanning {
-    pub fn get_left_and_right(panning: f64) -> (f64, f64) {
+    fn new(operator_index: usize) -> Self {
+        Self {
+            value: TimeInterpolatableValue::new(OPERATOR_DEFAULT_PANNING),
+            operator_index: operator_index,
+            left_and_right: Self::calculate_left_and_right(
+                OPERATOR_DEFAULT_PANNING
+            ),
+        }
+    }
+    pub fn get_value(&mut self, time: TimeCounter) -> f64 {
+        let mut left_and_right = self.left_and_right;
+
+        let value = self.value.get_value(time, &mut |panning| {
+            left_and_right = Self::calculate_left_and_right(panning);
+        });
+
+        self.left_and_right = left_and_right;
+
+        value
+    }
+    pub fn calculate_left_and_right(panning: f64) -> (f64, f64) {
         let pan_phase = panning * HALF_PI;
 
         (pan_phase.cos(), pan_phase.sin())
     }
 }
 
+impl ParameterGetName for OperatorPanning {
+    fn get_parameter_name(&self) -> String {
+        format!("Op. {} pan", self.operator_index + 1)
+    }
+}
+
+impl ParameterGetUnit for OperatorPanning {}
+
+impl_interpolatable_parameter_value_access!(OperatorPanning);
 impl_identity_parameter_value_conversion!(OperatorPanning);
 impl_simple_parameter_string_parsing!(OperatorPanning);
 

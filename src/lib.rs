@@ -38,14 +38,21 @@ macro_rules! impl_interpolatable_parameter_value_access {
                 self.value.target_value
             }
         }
+    };
+}
 
+
+#[macro_export]
+macro_rules! impl_default_interpolatable_get_value {
+    ($struct_name:ident) => {
         impl $struct_name {
             pub fn get_value(&mut self, time: TimeCounter) -> f64 {
-                self.value.get_value(time)
+                self.value.get_value(time, &mut |_| ())
             }
         }
     };
 }
+
 
 #[macro_export]
 macro_rules! impl_simple_parameter_value_access {
@@ -251,15 +258,6 @@ impl FmSynth {
             let volume_on = operator_volume > ZERO_VALUE_LIMIT &&
                 envelope_volume > ZERO_VALUE_LIMIT;
 
-            // Only calculate panning if volume is on (is irrelevant otherwise)
-            let (pan_left, pan_right) = {
-                if volume_on {
-                    OperatorPanning::get_left_and_right(operator_panning)
-                } else {
-                    (0.0, 0.0)
-                }
-            };
-
             // Mix modulator into current operator depending on panning of
             // current operator. If panned to the middle, just pass through
             // the stereo signals: if panned to any side, mix out the
@@ -300,9 +298,9 @@ impl FmSynth {
                 };
 
                 let pan_volume = if stereo_channel_index == 0 {
-                    pan_left
+                    operator.panning.left_and_right.0
                 } else {
-                    pan_right
+                    operator.panning.left_and_right.1
                 };
 
                 output_channels[stereo_channel_index].additive +=

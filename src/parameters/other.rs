@@ -1,7 +1,13 @@
 use crate::common::*;
 use crate::constants::*;
 
-use crate::{impl_interpolatable_parameter_value_access, impl_simple_parameter_value_access, impl_simple_parameter_string_parsing};
+use crate::{
+    impl_interpolatable_parameter_value_access,
+    impl_default_interpolatable_get_value,
+    impl_simple_parameter_value_access,
+    impl_simple_parameter_string_parsing
+};
+
 use super::common::*;
 use super::utils::*;
 
@@ -14,6 +20,7 @@ pub struct MasterVolume {
 }
 
 impl_interpolatable_parameter_value_access!(MasterVolume);
+impl_default_interpolatable_get_value!(MasterVolume);
 impl_simple_parameter_string_parsing!(MasterVolume);
 
 impl MasterVolume {
