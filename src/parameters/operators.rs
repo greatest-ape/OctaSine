@@ -1,10 +1,11 @@
 use smallvec::SmallVec;
 
 use crate::{
-    impl_interpolatable_parameter_value_access,
-    impl_default_interpolatable_get_value,
-    impl_simple_parameter_value_access,
-    impl_simple_parameter_string_parsing
+    impl_parameter_value_access_interpolatable,
+    impl_parameter_value_access_simple,
+    impl_parameter_string_parsing_simple,
+    impl_parameter_value_conversion_identity,
+    impl_get_value_for_interpolatable_parameter,
 };
 
 use crate::common::*;
@@ -40,8 +41,8 @@ macro_rules! create_interpolatable_operator_parameter {
 
         impl ParameterGetUnit for $struct_name {}
 
-        impl_interpolatable_parameter_value_access!($struct_name);
-        impl_default_interpolatable_get_value!($struct_name);
+        impl_parameter_value_access_interpolatable!($struct_name);
+        impl_get_value_for_interpolatable_parameter!($struct_name);
     };  
 }
 
@@ -72,7 +73,7 @@ macro_rules! create_simple_operator_parameter {
 
         impl ParameterGetUnit for $struct_name {}
 
-        impl_simple_parameter_value_access!($struct_name);
+        impl_parameter_value_access_simple!($struct_name);
     };  
 }
 
@@ -104,20 +105,6 @@ macro_rules! impl_envelope_duration_parameter_helpers {
 }
 
 
-/// Implement ParameterValueConversion<f64> with 1-to-1 conversion
-macro_rules! impl_identity_parameter_value_conversion {
-    ($struct_name:ident) => {
-        impl ParameterValueConversion<f64> for $struct_name {
-            fn from_parameter_value(&self, value: f64) -> f64 {
-                value
-            }
-            fn to_parameter_value(&self, value: f64) -> f64 {
-                value
-            }
-        }
-    };
-}
-
 
 // Operator volume
 
@@ -136,7 +123,7 @@ impl ParameterValueConversion<f64> for OperatorVolume {
     }
 }
 
-impl_simple_parameter_string_parsing!(OperatorVolume);
+impl_parameter_string_parsing_simple!(OperatorVolume);
 
 
 // Operator output operator
@@ -246,8 +233,8 @@ impl OperatorAdditiveFactor {
     }
 }
 
-impl_identity_parameter_value_conversion!(OperatorAdditiveFactor);
-impl_simple_parameter_string_parsing!(OperatorAdditiveFactor);
+impl_parameter_value_conversion_identity!(OperatorAdditiveFactor);
+impl_parameter_string_parsing_simple!(OperatorAdditiveFactor);
 
 
 // Operator panning
@@ -295,9 +282,9 @@ impl ParameterGetName for OperatorPanning {
 
 impl ParameterGetUnit for OperatorPanning {}
 
-impl_interpolatable_parameter_value_access!(OperatorPanning);
-impl_identity_parameter_value_conversion!(OperatorPanning);
-impl_simple_parameter_string_parsing!(OperatorPanning);
+impl_parameter_value_access_interpolatable!(OperatorPanning);
+impl_parameter_value_conversion_identity!(OperatorPanning);
+impl_parameter_string_parsing_simple!(OperatorPanning);
 
 
 // Operator frequency ratio
@@ -343,7 +330,7 @@ impl ParameterValueConversion<f64> for OperatorFrequencyFree {
     }
 }
 
-impl_simple_parameter_string_parsing!(OperatorFrequencyFree);
+impl_parameter_string_parsing_simple!(OperatorFrequencyFree);
 
 
 // Operator fine frequency
@@ -363,7 +350,7 @@ impl ParameterValueConversion<f64> for OperatorFrequencyFine {
     }
 }
 
-impl_simple_parameter_string_parsing!(OperatorFrequencyFine);
+impl_parameter_string_parsing_simple!(OperatorFrequencyFine);
 
 
 // Operator feedback
@@ -374,8 +361,8 @@ create_interpolatable_operator_parameter!(
     "feedback"
 );
 
-impl_identity_parameter_value_conversion!(OperatorFeedback);
-impl_simple_parameter_string_parsing!(OperatorFeedback);
+impl_parameter_value_conversion_identity!(OperatorFeedback);
+impl_parameter_string_parsing_simple!(OperatorFeedback);
 
 
 // Operator modulation index
@@ -395,7 +382,7 @@ impl ParameterValueConversion<f64> for OperatorModulationIndex {
     }
 }
 
-impl_simple_parameter_string_parsing!(OperatorModulationIndex);
+impl_parameter_string_parsing_simple!(OperatorModulationIndex);
 
 
 // Operator wave type
@@ -499,8 +486,8 @@ create_simple_operator_parameter!(
     "attack vol"
 );
 
-impl_identity_parameter_value_conversion!(VolumeEnvelopeAttackValue);
-impl_simple_parameter_string_parsing!(VolumeEnvelopeAttackValue);
+impl_parameter_value_conversion_identity!(VolumeEnvelopeAttackValue);
+impl_parameter_string_parsing_simple!(VolumeEnvelopeAttackValue);
 
 
 // Volume envelope decay duration
@@ -522,8 +509,8 @@ create_simple_operator_parameter!(
     "decay vol"
 );
 
-impl_identity_parameter_value_conversion!(VolumeEnvelopeDecayValue);
-impl_simple_parameter_string_parsing!(VolumeEnvelopeDecayValue);
+impl_parameter_value_conversion_identity!(VolumeEnvelopeDecayValue);
+impl_parameter_string_parsing_simple!(VolumeEnvelopeDecayValue);
 
 
 // Volume envelope release duration

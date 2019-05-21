@@ -28,7 +28,7 @@ use crate::parameters::*;
 
 
 #[macro_export]
-macro_rules! impl_interpolatable_parameter_value_access {
+macro_rules! impl_parameter_value_access_interpolatable {
     ($struct_name:ident) => {
         impl ParameterInternalValueAccess<f64> for $struct_name {
             fn set_converted_parameter_value(&mut self, value: f64){
@@ -43,19 +43,7 @@ macro_rules! impl_interpolatable_parameter_value_access {
 
 
 #[macro_export]
-macro_rules! impl_default_interpolatable_get_value {
-    ($struct_name:ident) => {
-        impl $struct_name {
-            pub fn get_value(&mut self, time: TimeCounter) -> f64 {
-                self.value.get_value(time, &mut |_| ())
-            }
-        }
-    };
-}
-
-
-#[macro_export]
-macro_rules! impl_simple_parameter_value_access {
+macro_rules! impl_parameter_value_access_simple {
     ($struct_name:ident) => {
         impl ParameterInternalValueAccess<f64> for $struct_name {
             fn set_converted_parameter_value(&mut self, value: f64){
@@ -70,7 +58,7 @@ macro_rules! impl_simple_parameter_value_access {
 
 
 #[macro_export]
-macro_rules! impl_simple_parameter_string_parsing {
+macro_rules! impl_parameter_string_parsing_simple {
     ($struct_name:ident) => {
         impl ParameterStringParsing<f64> for $struct_name {
             fn parse_string_value(&self, value: String) -> Option<f64> {
@@ -80,6 +68,34 @@ macro_rules! impl_simple_parameter_string_parsing {
 
                     value.max(min).min(max)
                 })
+            }
+        }
+    };
+}
+
+
+#[macro_export]
+/// Implement ParameterValueConversion<f64> with 1-to-1 conversion
+macro_rules! impl_parameter_value_conversion_identity {
+    ($struct_name:ident) => {
+        impl ParameterValueConversion<f64> for $struct_name {
+            fn from_parameter_value(&self, value: f64) -> f64 {
+                value
+            }
+            fn to_parameter_value(&self, value: f64) -> f64 {
+                value
+            }
+        }
+    };
+}
+
+
+#[macro_export]
+macro_rules! impl_get_value_for_interpolatable_parameter {
+    ($struct_name:ident) => {
+        impl $struct_name {
+            pub fn get_value(&mut self, time: TimeCounter) -> f64 {
+                self.value.get_value(time, &mut |_| ())
             }
         }
     };

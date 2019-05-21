@@ -2,10 +2,10 @@ use crate::common::*;
 use crate::constants::*;
 
 use crate::{
-    impl_interpolatable_parameter_value_access,
-    impl_default_interpolatable_get_value,
-    impl_simple_parameter_value_access,
-    impl_simple_parameter_string_parsing
+    impl_parameter_value_access_interpolatable,
+    impl_parameter_value_access_simple,
+    impl_parameter_string_parsing_simple,
+    impl_get_value_for_interpolatable_parameter,
 };
 
 use super::common::*;
@@ -19,9 +19,9 @@ pub struct MasterVolume {
     value: TimeInterpolatableValue,
 }
 
-impl_interpolatable_parameter_value_access!(MasterVolume);
-impl_default_interpolatable_get_value!(MasterVolume);
-impl_simple_parameter_string_parsing!(MasterVolume);
+impl_parameter_value_access_interpolatable!(MasterVolume);
+impl_parameter_string_parsing_simple!(MasterVolume);
+impl_get_value_for_interpolatable_parameter!(MasterVolume);
 
 impl MasterVolume {
     pub fn new() -> Self {
@@ -56,8 +56,8 @@ pub struct MasterFrequency {
     pub value: f64
 }
 
-impl_simple_parameter_value_access!(MasterFrequency);
-impl_simple_parameter_string_parsing!(MasterFrequency);
+impl_parameter_value_access_simple!(MasterFrequency);
+impl_parameter_string_parsing_simple!(MasterFrequency);
 
 impl ParameterValueConversion<f64> for MasterFrequency {
     fn from_parameter_value(&self, value: f64) -> f64 {
