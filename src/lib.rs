@@ -168,46 +168,6 @@ impl FmSynth {
         value.min(1.0).max(-1.0)
     }
 
-    fn synthesize_single_channel_sample(
-        rng: &mut impl Rng,
-        time_per_sample: TimePerSample,
-        operator_index: usize,
-        operator_wave_type: OperatorWaveType,
-        operator_frequency: f64,
-        operator_feedback: f64,
-        operator_modulation_index: f64,
-        note: &mut Note,
-        input: f64,
-    ) -> f64 {
-
-        match operator_wave_type.value {
-            WaveType::Sine => {
-                let phase_increment = (operator_frequency * time_per_sample.0) * TAU;
-                let new_phase = note.operators[operator_index].last_phase.0 + phase_increment;
-
-                // Only do feedback calculation if feedback is on
-                let new_feedback = if operator_feedback > ZERO_VALUE_LIMIT {
-                    operator_feedback * new_phase.sin()
-                } else {
-                    0.0
-                };
-
-                let signal = (
-                    new_phase +
-                    operator_modulation_index *
-                    (input + new_feedback)
-                ).sin();
-
-                note.operators[operator_index].last_phase.0 = new_phase;
-
-                signal
-            },
-            WaveType::WhiteNoise => {
-                (rng.gen::<f64>() - 0.5) * 2.0
-            }
-        }
-    }
-
     /// Generate stereo samples for a note
     /// 
     /// Doesn't take self parameter due to conflicting borrowing of Notes
@@ -242,8 +202,7 @@ impl FmSynth {
             // 1.0 additive for operator 1
             let operator_additive = if let Some(o) = &mut operator.additive_factor {
                 o.get_value(time)
-            }
-            else {
+            } else {
                 1.0
             };
 
@@ -274,56 +233,82 @@ impl FmSynth {
             let volume_on = operator_volume > ZERO_VALUE_LIMIT &&
                 envelope_volume > ZERO_VALUE_LIMIT;
 
-            // Mix modulator into current operator depending on panning of
-            // current operator. If panned to the middle, just pass through
-            // the stereo signals: if panned to any side, mix out the
-            // original stereo signals and mix in mono.
-            if volume_on && operator_panning != 0.5 {
-                let left_chain = output_channels[0].operator_inputs[operator_index];
-                let right_chain = output_channels[1].operator_inputs[operator_index];
+            if volume_on {
+                let mut operator_inputs = [
+                    output_channels[0].operator_inputs[operator_index],
+                    output_channels[1].operator_inputs[operator_index],
+                ];
 
-                let pan_transformed = 2.0 * (operator_panning - 0.5);
+                // Mix modulator into current operator depending on panning of
+                // current operator. If panned to the middle, just pass through
+                // the stereo signals: if panned to any side, mix out the
+                // original stereo signals and mix in mono.
+                if operator_panning != 0.5 {
+                    let pan_transformed = 2.0 * (operator_panning - 0.5);
 
-                let right_tendency = pan_transformed.max(0.0);
-                let left_tendency = (-pan_transformed).max(0.0);
+                    let right_tendency = pan_transformed.max(0.0);
+                    let left_tendency = (-pan_transformed).max(0.0);
 
-                let mono = left_chain + right_chain;
+                    let mono = operator_inputs[0] + operator_inputs[1];
 
-                output_channels[0].operator_inputs[operator_index] =
-                    left_chain * (1.0 - left_tendency) + left_tendency * mono;
-                output_channels[1].operator_inputs[operator_index] =
-                    right_chain * (1.0 - right_tendency) + right_tendency * mono;
-            }
-
-            for stereo_channel_index in 0..2 {
-                let new_signal = if volume_on {
-                    envelope_volume * Self::synthesize_single_channel_sample(
-                        rng,
-                        time_per_sample,
-                        operator_index,
-                        operator.wave_type,
-                        operator_frequency,
-                        operator_feedback,
-                        operator_modulation_index,
-                        note,
-                        output_channels[stereo_channel_index].operator_inputs[operator_index]
-                    )
+                    operator_inputs[0] = (1.0 - left_tendency) * operator_inputs[0] +
+                        left_tendency * mono;
+                    operator_inputs[1] = (1.0 - right_tendency) * operator_inputs[1] +
+                        right_tendency * mono;
                 }
-                else {
-                    0.0
-                };
 
-                let pan_volume = if stereo_channel_index == 0 {
-                    operator.panning.left_and_right.0
-                } else {
-                    operator.panning.left_and_right.1
-                };
+                let inputs_identical = operator_inputs[0] == operator_inputs[1];
 
-                output_channels[stereo_channel_index].additive +=
-                    operator_additive * operator_volume * pan_volume * new_signal;
+                let mut new_signals = [0.0, 0.0];
 
-                output_channels[stereo_channel_index].operator_inputs[operator_mod_output] +=
-                    operator_volume * pan_volume * new_signal * (1.0 - operator_additive);
+                let phase_increment = (operator_frequency * time_per_sample.0) * TAU;
+                let new_phase = note.operators[operator_index].last_phase.0 + phase_increment;
+
+                // Generate FM sine / noise signals for each channel, write
+                // them to output_channels
+                for channel in 0..2 {
+                    // Skip generating right channel signal if inputs
+                    // are identical - just use the left channel signal
+                    if inputs_identical && channel == 1 {
+                        new_signals[1] = new_signals[0];
+                    } else {
+                        let signal = match operator.wave_type.value {
+                            WaveType::Sine => {
+                                // Only do feedback calculation if feedback is on
+                                let new_feedback = if operator_feedback > ZERO_VALUE_LIMIT {
+                                    operator_feedback * new_phase.sin()
+                                } else {
+                                    0.0
+                                };
+
+                                let modulation = operator_modulation_index *
+                                    (operator_inputs[channel] + new_feedback);
+
+                                (new_phase + modulation).sin()
+                            },
+                            WaveType::WhiteNoise =>
+                                (rng.gen::<f64>() - 0.5) * 2.0
+                        };
+
+                        new_signals[channel] = envelope_volume * signal;
+                    };
+
+                    // Pan signals and write to output_channels
+
+                    let pan_volume = if channel == 0 {
+                        operator.panning.left_and_right.0
+                    } else {
+                        operator.panning.left_and_right.1
+                    };
+
+                    output_channels[channel].additive += operator_additive *
+                        operator_volume * pan_volume * new_signals[channel];
+
+                    output_channels[channel].operator_inputs[operator_mod_output] +=
+                        operator_volume * pan_volume * new_signals[channel] * (1.0 - operator_additive);
+                }
+
+                note.operators[operator_index].last_phase.0 = new_phase;
             }
         }
 
