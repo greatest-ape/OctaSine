@@ -29,13 +29,25 @@ impl Default for NoteVelocity {
 
 
 #[derive(Debug, Copy, Clone)]
-pub struct MidiPitch(pub u8);
+pub struct MidiPitch {
+    frequency_factor: f64,
+}
 
 impl MidiPitch {
-    pub fn get_frequency(&self, master_frequency: MasterFrequency) -> f64 {
-        let note_diff = (self.0 as i8 - 69) as f64;
+    pub fn new(midi_pitch: u8) -> Self {
+        Self {
+            frequency_factor: Self::calculate_frequency_factor(midi_pitch),
+        }
+    }
 
-        (note_diff / 12.0).exp2() * master_frequency.value
+    fn calculate_frequency_factor(midi_pitch: u8) -> f64 {
+        let note_diff = (midi_pitch as i8 - 69) as f64;
+
+        (note_diff / 12.0).exp2()
+    }
+
+    pub fn get_frequency(&self, master_frequency: MasterFrequency) -> f64 {
+        self.frequency_factor * master_frequency.value
     }
 }
 

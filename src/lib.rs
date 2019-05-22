@@ -413,7 +413,7 @@ impl Plugin for FmSynth {
             time_per_sample: Self::time_per_sample(sample_rate),
             bpm: BeatsPerMinute(120.0),
             rng: SmallRng::from_entropy(),
-            notes: array_init(|i| Note::new(MidiPitch(i as u8))),
+            notes: array_init(|i| Note::new(MidiPitch::new(i as u8))),
             fadeout_notes: SmallVec::new(),
             parameters: parameters.clone(),
         };
