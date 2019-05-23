@@ -343,10 +343,10 @@ create_simple_operator_parameter!(
 
 impl ParameterValueConversion<f64> for OperatorFrequencyFine {
     fn from_parameter_value(&self, value: f64) -> f64 {
-        (value + 0.5).powf(1.0/3.0)
+        map_parameter_value_to_value_with_steps(&OPERATOR_FINE_STEPS, value)
     }
     fn to_parameter_value(&self, value: f64) -> f64 {
-        value.powf(3.0) - 0.5
+        map_value_to_parameter_value_with_steps(&OPERATOR_FINE_STEPS, value)
     }
 }
 
