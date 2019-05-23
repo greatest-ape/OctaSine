@@ -306,11 +306,7 @@ impl FmSynth {
 
             // Pan signals and write to output_channels
             for channel in 0..2 {
-                let pan_volume = if channel == 0 {
-                    operator.panning.left_and_right.0
-                } else {
-                    operator.panning.left_and_right.1
-                };
+                let pan_volume = operator.panning.left_and_right[channel];
 
                 let out = pan_volume * operator_volume * new_signals[channel];
 

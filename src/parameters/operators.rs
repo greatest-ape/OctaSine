@@ -243,7 +243,7 @@ impl_parameter_string_parsing_simple!(OperatorAdditiveFactor);
 pub struct OperatorPanning {
     value: TimeInterpolatableValue,
     operator_index: usize,
-    pub left_and_right: (f64, f64),
+    pub left_and_right: [f64; 2],
 }
 
 impl OperatorPanning {
@@ -267,10 +267,10 @@ impl OperatorPanning {
 
         value
     }
-    pub fn calculate_left_and_right(panning: f64) -> (f64, f64) {
+    pub fn calculate_left_and_right(panning: f64) -> [f64; 2] {
         let pan_phase = panning * HALF_PI;
 
-        (pan_phase.cos(), pan_phase.sin())
+        [pan_phase.cos(), pan_phase.sin()]
     }
 }
 
