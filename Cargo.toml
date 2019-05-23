@@ -21,3 +21,5 @@ vst = { git = "https://github.com/rust-dsp/rust-vst.git" }
 
 [profile.release]
 debug = true
+opt-level = 3
+lto = true
