@@ -1,4 +1,5 @@
 use crate::common::*;
+use crate::constants::*;
 
 
 pub trait Parameter {
@@ -95,9 +96,9 @@ pub struct TimeInterpolatableValue {
     pub target_value: f64,
     current_value: f64,
     step_size: f64,
-    steps_remaining: usize,
+    steps_remaining: u8,
+    samples_remaining: u8,
     last_time: TimeCounter,
-    total_num_steps: usize,
 }
 
 impl TimeInterpolatableValue {
@@ -108,36 +109,43 @@ impl TimeInterpolatableValue {
             step_size: 0.0,
             steps_remaining: 0,
             last_time: TimeCounter(0.0),
-            total_num_steps: 32,
+            samples_remaining: INTERPOLATION_SAMPLES_PER_STEP,
         }
     }
 
-    /// Possibly advance interpolation and call callback, then return value
+    /// Possibly advance interpolation and call callback, return value
     pub fn get_value<F: FnMut(f64)>(
         &mut self,
         time: TimeCounter,
         callback_on_advance: &mut F
     ) -> f64 {
-        if self.total_num_steps == 0 {
+        if self.steps_remaining == 0 || INTERPOLATION_STEPS == 0 {
             return self.current_value;
         }
 
-        if time != self.last_time && self.steps_remaining > 0 {
-            self.current_value += self.step_size;
-            self.steps_remaining -= 1;
-            self.last_time = time;
+        if time != self.last_time {
+            self.samples_remaining -= 1;
 
-            callback_on_advance(self.current_value);
+            if self.samples_remaining == 0 {
+                self.current_value += self.step_size;
+
+                callback_on_advance(self.current_value);
+
+                self.steps_remaining -= 1;
+                self.samples_remaining = INTERPOLATION_SAMPLES_PER_STEP;
+            }
+
+            self.last_time = time;
         }
 
         self.current_value
     }
 
-    // Set target value, then possibly restart interpolation
+    // Set target value, possibly restart interpolation
     pub fn set_value(&mut self, value: f64){
         self.target_value = value;
 
-        if self.total_num_steps == 0 {
+        if INTERPOLATION_STEPS == 0 {
             self.current_value = value;
 
             return;
@@ -149,8 +157,10 @@ impl TimeInterpolatableValue {
         else {
             // Restart stepping process
             let diff = value - self.current_value;
-            self.step_size = diff / self.total_num_steps as f64;
-            self.steps_remaining = self.total_num_steps;
+            self.step_size = diff / INTERPOLATION_STEPS_FLOAT;
+
+            self.steps_remaining = INTERPOLATION_STEPS;
+            self.samples_remaining = INTERPOLATION_SAMPLES_PER_STEP;
         }
     }
 }

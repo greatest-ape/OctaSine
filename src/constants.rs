@@ -37,3 +37,7 @@ pub const OPERATOR_RATIO_STEPS: [f64; 28] = [0.0625, 0.125, 0.2, 0.25, 0.33, 0.5
 pub const OPERATOR_FREE_STEPS: [f64; 14] = [0.001, 0.0625, 0.125, 0.25, 0.5, 0.75, 1.0, 1.5, 2.0, 3.0, 4.0, 16.0, 64.0, 256.0];
 pub const OPERATOR_FINE_STEPS: [f64; 17] = [0.8, 0.85, 0.9, 0.95, 0.97, 0.98, 0.99, 0.995, 1.0, 1.005, 1.01, 1.02, 1.03, 1.05, 1.1, 1.15, 1.2];
 pub const OPERATOR_BETA_STEPS: [f64; 16] = [0.0, 0.01, 0.1, 0.2, 0.5, 1.0, 2.0, 3.0, 5.0, 10.0, 20.0, 35.0, 50.0, 75.0, 100.0, 1000.0];
+
+pub const INTERPOLATION_SAMPLES_PER_STEP: u8 = 4;
+pub const INTERPOLATION_STEPS: u8 = 8;
+pub const INTERPOLATION_STEPS_FLOAT: f64 = INTERPOLATION_STEPS as f64;
