@@ -28,6 +28,9 @@ pub const OPERATOR_DEFAULT_VOLUME_ENVELOPE_DECAY_DURATION: f64 = 0.0;
 pub const OPERATOR_DEFAULT_VOLUME_ENVELOPE_DECAY_VALUE: f64 = 1.0;
 pub const OPERATOR_DEFAULT_VOLUME_ENVELOPE_RELEASE_DURATION: f64 = 0.25;
 
+/// Multiply the volume of each voice with this factor
+pub const VOICE_VOLUME_FACTOR: f64 = 0.1;
+
 pub const MASTER_FREQUENCY_STEPS: [f64; 12] = [20.0, 110.0, 220.0, 400.0, 435.0, 438.0, 440.0, 442.0, 445.0, 480.0, 880.0, 20_000.0];
 
 pub const OPERATOR_RATIO_STEPS: [f64; 23] = [0.125, 0.2, 0.25, 0.33, 0.5, 0.55, 0.66, 0.6896, 0.8, 0.8333, 1.0, 1.2, 1.25, 1.33, 1.45, 1.5, 1.8, 1.875, 2.0, 2.5, 3.0, 3.5, 4.0];

@@ -322,7 +322,7 @@ impl FmSynth {
         let signal_left = output_channels[0].additive;
         let signal_right = output_channels[1].additive;
 
-        let volume_factor = 0.1 * note.velocity.0 *
+        let volume_factor = VOICE_VOLUME_FACTOR * note.velocity.0 *
             parameters.master_volume.get_value(time);
 
         (signal_left * volume_factor, signal_right * volume_factor)
