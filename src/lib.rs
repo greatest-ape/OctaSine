@@ -199,13 +199,16 @@ impl FmSynth {
             let operator_modulation_index = operator.modulation_index.get_value(time);
             let operator_panning = operator.panning.get_value(time);
 
-            // 1.0 additive for operator 1
+            // Get additive factor; use 1.0 for operator 1
             let operator_additive = if let Some(o) = &mut operator.additive_factor {
                 o.get_value(time)
             } else {
                 1.0
             };
 
+            // Get modulation target; use operator 1 for operator 1 and 2.
+            // (Since additive factor is 1.0 for operator 1, its target is
+            // irrelevant.)
             let operator_mod_output = if let Some(ref o) = operator.output_operator {
                 o.value
             } else {
@@ -257,6 +260,7 @@ impl FmSynth {
                     right_tendency * mono;
             }
 
+            // Calculate, save and return new phase
             let new_phase = {
                 let phase_increment = TAU *
                     (operator_frequency * time_per_sample.0);
