@@ -312,11 +312,14 @@ impl FmSynth {
                     operator.panning.left_and_right.1
                 };
 
-                output_channels[channel].additive += operator_additive *
-                    operator_volume * pan_volume * new_signals[channel];
+                let out = pan_volume * operator_volume * new_signals[channel];
 
-                output_channels[channel].operator_inputs[operator_mod_output] +=
-                    operator_volume * pan_volume * new_signals[channel] * (1.0 - operator_additive);
+                let additive_out = operator_additive * out;
+                let mod_out = out - additive_out;
+
+                output_channels[channel].additive += additive_out;
+                output_channels[channel]
+                    .operator_inputs[operator_mod_output] += mod_out;
             }
         }
 
