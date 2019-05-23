@@ -229,8 +229,8 @@ impl FmSynth {
             };
 
             // If volume is off, skip sound generation and panning
-            if !(operator_volume > ZERO_VALUE_LIMIT &&
-                envelope_volume > ZERO_VALUE_LIMIT){
+            if operator_volume < ZERO_VALUE_LIMIT ||
+                envelope_volume < ZERO_VALUE_LIMIT {
                 continue;
             }
 
