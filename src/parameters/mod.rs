@@ -16,6 +16,7 @@ pub use utils::*;
 pub type Operators = [Operator; NUM_OPERATORS];
 
 /// State that can be changed with parameters. Only accessed through mutex
+#[derive(Clone)]
 pub struct Parameters {
     pub master_volume: MasterVolume,
     pub master_frequency: MasterFrequency,

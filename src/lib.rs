@@ -20,11 +20,13 @@ pub mod common;
 pub mod constants;
 pub mod notes;
 pub mod parameters;
+pub mod presets;
 
 use crate::common::*;
 use crate::constants::*;
 use crate::notes::*;
 use crate::parameters::*;
+use crate::presets::*;
 
 
 #[macro_export]
@@ -127,6 +129,7 @@ pub struct ProcessingState {
 pub struct SyncOnlyState {
     pub host: HostCallback,
     pub parameters: Arc<Mutex<Parameters>>,
+    pub presets: Arc<Mutex<Presets>>,
 }
 
 
@@ -411,10 +414,12 @@ impl Plugin for FmSynth {
 
     fn new(host: HostCallback) -> Self {
         let parameters = Arc::new(Mutex::new(Parameters::new()));
+        let presets = Arc::new(Mutex::new(Presets::new()));
 
         let sync_only = Arc::new(SyncOnlyState {
             host: host,
             parameters: parameters.clone(),
+            presets: presets.clone(),
         });
 
         let sample_rate = SampleRate(44100.0);
@@ -444,8 +449,10 @@ impl Plugin for FmSynth {
             category: Category::Synth,
             inputs: 0,
             outputs: 2,
+            presets: self.sync_only.presets.lock().len() as i32,
             parameters: self.sync_only.parameters.lock().len() as i32,
             initial_delay: 0,
+            preset_chunks: true,
             ..Info::default()
         }
     }
@@ -551,6 +558,88 @@ impl PluginParameters for SyncOnlyState {
     /// Return whether parameter at `index` can be automated.
     fn can_be_automated(&self, index: i32) -> bool {
         self.parameters.lock().get_index(index as usize).is_some()
+    }
+
+    /// Set the current preset to the index specified by `preset`.
+    ///
+    /// This method can be called on the processing thread for automation.
+    fn change_preset(&self, preset: i32) {
+        let new_parameters = {
+            let mut presets = self.presets.lock();
+
+            presets.change_preset(preset as usize);
+
+            presets.get_current_preset_as_parameters()
+        };
+
+        *self.parameters.lock() = new_parameters;
+    }
+
+    /// Get the current preset index.
+    fn get_preset_num(&self) -> i32 {
+        self.presets.lock().get_current_index() as i32
+    }
+
+    /// Set the current preset name.
+    fn set_preset_name(&self, name: String) {
+        self.presets.lock().set_name_of_current(name);
+    }
+
+    /// Get the name of the preset at the index specified by `preset`.
+    fn get_preset_name(&self, preset: i32) -> String {
+        self.presets.lock().get_name_by_index(preset as usize)
+    }
+
+    /// If `preset_chunks` is set to true in plugin info, this should return the raw chunk data for
+    /// the current preset.
+    fn get_preset_data(&self) -> Vec<u8> {
+        let parameters = (*self.parameters.lock()).clone();
+
+        let mut presets = self.presets.lock();
+
+        presets.set_current_preset_from_parameters(parameters);
+
+        presets.get_current_preset_as_bytes()
+    }
+
+    /// If `preset_chunks` is set to true in plugin info, this should return the raw chunk data for
+    /// the current plugin bank.
+    fn get_bank_data(&self) -> Vec<u8> {
+        let parameters = (*self.parameters.lock()).clone();
+
+        let mut presets = self.presets.lock();
+
+        presets.set_current_preset_from_parameters(parameters);
+
+        presets.get_preset_bank_as_bytes()
+    }
+
+    /// If `preset_chunks` is set to true in plugin info, this should load a preset from the given
+    /// chunk data.
+    fn load_preset_data(&self, data: &[u8]) {
+        let new_parameters = {
+            let mut presets = self.presets.lock();
+            
+            presets.set_current_preset_from_bytes(data);
+
+            presets.get_current_preset_as_parameters()
+        };
+
+        *self.parameters.lock() = new_parameters;
+    }
+
+    /// If `preset_chunks` is set to true in plugin info, this should load a preset bank from the
+    /// given chunk data.
+    fn load_bank_data(&self, data: &[u8]) {
+        let new_parameters = {
+            let mut presets = self.presets.lock();
+            
+            presets.set_preset_bank_from_bytes(data);
+
+            presets.get_current_preset_as_parameters()
+        };
+
+        *self.parameters.lock() = new_parameters;
     }
 }
 
