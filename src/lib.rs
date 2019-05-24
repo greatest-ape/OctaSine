@@ -132,6 +132,36 @@ pub struct SyncOnlyState {
     pub presets: Arc<Mutex<Presets>>,
 }
 
+impl SyncOnlyState {
+    fn modify_presets_and_save_current_to_parameters<F: Fn(&mut Presets)>(
+        &self,
+        f: &F
+    ){
+        let new_parameters = {
+            let mut presets = self.presets.lock();
+
+            f(&mut presets);
+
+            presets.get_current_preset_as_parameters()
+        };
+
+        *self.parameters.lock() = new_parameters;
+    }
+
+    fn load_preset_from_parameters_and_get_data<F>(
+        &self,
+        f: &F
+    ) -> Vec<u8> where F: Fn(&mut Presets) -> Vec<u8> {
+        let parameters = (*self.parameters.lock()).clone();
+
+        let mut presets = self.presets.lock();
+
+        presets.set_current_preset_from_parameters(parameters);
+
+        f(&mut presets)
+    }
+}
+
 
 /// One for left channel, one for right
 pub struct OutputChannel {
@@ -564,15 +594,9 @@ impl PluginParameters for SyncOnlyState {
     ///
     /// This method can be called on the processing thread for automation.
     fn change_preset(&self, preset: i32) {
-        let new_parameters = {
-            let mut presets = self.presets.lock();
-
-            presets.change_preset(preset as usize);
-
-            presets.get_current_preset_as_parameters()
-        };
-
-        *self.parameters.lock() = new_parameters;
+        self.modify_presets_and_save_current_to_parameters(&|presets|
+            presets.change_preset(preset as usize)
+        );
     }
 
     /// Get the current preset index.
@@ -593,53 +617,33 @@ impl PluginParameters for SyncOnlyState {
     /// If `preset_chunks` is set to true in plugin info, this should return the raw chunk data for
     /// the current preset.
     fn get_preset_data(&self) -> Vec<u8> {
-        let parameters = (*self.parameters.lock()).clone();
-
-        let mut presets = self.presets.lock();
-
-        presets.set_current_preset_from_parameters(parameters);
-
-        presets.get_current_preset_as_bytes()
+        self.load_preset_from_parameters_and_get_data(&|presets|
+            presets.get_current_preset_as_bytes()
+        )
     }
 
     /// If `preset_chunks` is set to true in plugin info, this should return the raw chunk data for
     /// the current plugin bank.
     fn get_bank_data(&self) -> Vec<u8> {
-        let parameters = (*self.parameters.lock()).clone();
-
-        let mut presets = self.presets.lock();
-
-        presets.set_current_preset_from_parameters(parameters);
-
-        presets.get_preset_bank_as_bytes()
+        self.load_preset_from_parameters_and_get_data(&|presets|
+            presets.get_preset_bank_as_bytes()
+        )
     }
 
     /// If `preset_chunks` is set to true in plugin info, this should load a preset from the given
     /// chunk data.
     fn load_preset_data(&self, data: &[u8]) {
-        let new_parameters = {
-            let mut presets = self.presets.lock();
-            
-            presets.set_current_preset_from_bytes(data);
-
-            presets.get_current_preset_as_parameters()
-        };
-
-        *self.parameters.lock() = new_parameters;
+        self.modify_presets_and_save_current_to_parameters(&|presets|
+            presets.set_current_preset_from_bytes(data)
+        );
     }
 
     /// If `preset_chunks` is set to true in plugin info, this should load a preset bank from the
     /// given chunk data.
     fn load_bank_data(&self, data: &[u8]) {
-        let new_parameters = {
-            let mut presets = self.presets.lock();
-            
-            presets.set_preset_bank_from_bytes(data);
-
-            presets.get_current_preset_as_parameters()
-        };
-
-        *self.parameters.lock() = new_parameters;
+        self.modify_presets_and_save_current_to_parameters(&|presets|
+            presets.set_preset_bank_from_bytes(data)
+        );
     }
 }
 
