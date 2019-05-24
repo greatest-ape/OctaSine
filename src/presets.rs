@@ -1,5 +1,7 @@
 use serde::{Serialize, Deserialize};
 
+use crate::crate_version;
+use crate::constants::PLUGIN_NAME;
 use crate::parameters::Parameters;
 
 
@@ -38,8 +40,8 @@ pub struct PresetPluginInfo {
 impl PresetPluginInfo {
     fn new() -> Self {
         Self {
-            name: "FM".to_string(),
-            version: "0.0.1".to_string(),
+            name: PLUGIN_NAME.to_string(),
+            version: crate_version!(),
         }
     }
 }

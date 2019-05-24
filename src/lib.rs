@@ -30,6 +30,20 @@ use crate::presets::*;
 
 
 #[macro_export]
+macro_rules! crate_version {
+    () => {
+        env!("CARGO_PKG_VERSION").to_string()
+    };
+}
+
+fn crate_version_to_vst_format(crate_version: String) -> i32 {
+    format!("{:0<4}", crate_version.replace(".", ""))
+        .parse()
+        .expect("convert crate version to i32")
+}
+
+
+#[macro_export]
 macro_rules! impl_parameter_value_access_interpolatable {
     ($struct_name:ident) => {
         impl ParameterInternalValueAccess<f64> for $struct_name {
@@ -473,8 +487,9 @@ impl Plugin for FmSynth {
 
     fn get_info(&self) -> Info {
         Info {
-            name: "FM".to_string(),
+            name: PLUGIN_NAME.to_string(),
             vendor: "Joakim Frostegård".to_string(),
+            version: crate_version_to_vst_format(crate_version!()),
             unique_id: 43789,
             category: Category::Synth,
             inputs: 0,
@@ -648,3 +663,18 @@ impl PluginParameters for SyncOnlyState {
 }
 
 plugin_main!(FmSynth);
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_crate_version_to_vst_format(){
+        assert_eq!(crate_version_to_vst_format("1".to_string()), 1000);
+        assert_eq!(crate_version_to_vst_format("0.1".to_string()), 0100);
+        assert_eq!(crate_version_to_vst_format("0.0.2".to_string()), 0020);
+        assert_eq!(crate_version_to_vst_format("0.5.2".to_string()), 0520);
+        assert_eq!(crate_version_to_vst_format("1.0.1".to_string()), 1010);
+    }
+}
