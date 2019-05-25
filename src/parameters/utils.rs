@@ -155,7 +155,7 @@ mod tests {
     }
 
     #[test]
-    fn test_map_step_to_parameter_value(){
+    fn test_map_step_to_parameter_value_valid_number(){
         fn prop(index: usize) -> TestResult {
             let steps = get_all_steps();
 
@@ -172,7 +172,7 @@ mod tests {
     }
 
     #[test]
-    fn test_map_value_to_parameter_value_with_steps(){
+    fn test_map_value_to_parameter_value_with_steps_valid_number(){
         fn prop(value: f64) -> TestResult {
             let value = map_value_to_parameter_value_with_steps(
                 &get_all_steps()[..],
@@ -180,6 +180,69 @@ mod tests {
             );
 
             TestResult::from_bool(valid_parameter_value(value))
+        }
+
+        quickcheck(prop as fn(f64) -> TestResult);
+    }
+
+    #[test]
+    fn test_smooth_step_mapping(){
+        fn prop(value: f64) -> TestResult {
+            if value < 0.0 || value > 1.0 {
+                return TestResult::discard();
+            }
+
+            let steps = get_all_steps();
+
+            let inner = map_parameter_value_to_value_with_steps(
+                &steps[..],
+                value
+            );
+            let new_value = map_value_to_parameter_value_with_steps(
+                &steps[..],
+                inner
+            );
+
+            let success = (value - new_value).abs() < 0.001;
+
+            if !success {
+                println!("steps: {:?}", steps);
+                println!("parameter value: {}", value);
+                println!("inner value: {}", inner);
+                println!("new parameter value: {}", new_value);
+            }
+
+            TestResult::from_bool(success)
+        }
+
+        quickcheck(prop as fn(f64) -> TestResult);
+    }
+
+    #[test]
+    fn test_step_mapping(){
+        fn prop(value: f64) -> TestResult {
+            if value < 0.0 || value > 1.0 {
+                return TestResult::discard();
+            }
+
+            let steps = get_all_steps();
+
+            let inner = map_parameter_value_to_step(
+                &steps[..],
+                value
+            );
+            let new_value = map_step_to_parameter_value(
+                &steps[..],
+                inner
+            );
+            // Simulate the VST sending back the recieved parameter value.
+            // Result must be identical to last result.
+            let new_inner = map_parameter_value_to_step(
+                &steps[..],
+                new_value
+            );
+
+            TestResult::from_bool(inner == new_inner)
         }
 
         quickcheck(prop as fn(f64) -> TestResult);
