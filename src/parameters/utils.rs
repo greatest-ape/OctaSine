@@ -135,6 +135,21 @@ mod tests {
         assert_eq!(round_to_step(&steps, 100.0), 4.0);
     }
 
+    fn get_all_steps() -> Vec<f64> {
+        let mut steps = Vec::new();
+
+        steps.append(&mut OPERATOR_RATIO_STEPS.to_vec());
+        steps.append(&mut OPERATOR_FREE_STEPS.to_vec());
+        steps.append(&mut OPERATOR_FINE_STEPS.to_vec());
+        steps.append(&mut OPERATOR_BETA_STEPS.to_vec());
+        steps.append(&mut MASTER_FREQUENCY_STEPS.to_vec());
+
+        steps.dedup();
+        steps.sort_by(|a, b| a.partial_cmp(b).unwrap());
+
+        steps
+    }
+
     fn valid_parameter_value(value: f64) -> bool {
         !(value.is_nan() || value > 1.0 || value < 0.0)
     }
@@ -142,7 +157,7 @@ mod tests {
     #[test]
     fn test_map_step_to_parameter_value(){
         fn prop(index: usize) -> TestResult {
-            let steps = OPERATOR_RATIO_STEPS;
+            let steps = get_all_steps();
 
             if index >= steps.len() {
                 return TestResult::discard();
@@ -159,9 +174,10 @@ mod tests {
     #[test]
     fn test_map_value_to_parameter_value_with_steps(){
         fn prop(value: f64) -> TestResult {
-            let steps = OPERATOR_RATIO_STEPS;
-
-            let value = map_value_to_parameter_value_with_steps(&steps[..], value);
+            let value = map_value_to_parameter_value_with_steps(
+                &get_all_steps()[..],
+                value
+            );
 
             TestResult::from_bool(valid_parameter_value(value))
         }
