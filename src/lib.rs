@@ -147,22 +147,20 @@ pub struct SyncOnlyState {
 }
 
 impl SyncOnlyState {
-    fn modify_presets_and_save_current_to_parameters<F: Fn(&mut Presets)>(
+    fn modify_presets_and_set_parameters_from_current<F: Fn(&mut Presets)>(
         &self,
         f: &F
     ){
-        let new_parameters = {
-            let mut presets = self.presets.lock();
+        let mut presets = self.presets.lock();
 
-            f(&mut presets);
+        f(&mut presets);
 
-            presets.get_current_preset_as_parameters()
-        };
-
-        *self.parameters.lock() = new_parameters;
+        presets.set_parameters_from_current_preset(
+            &mut self.parameters.lock()
+        );
     }
 
-    fn load_preset_from_parameters_and_get_data<F>(
+    fn set_preset_from_parameters_and_get_data<F>(
         &self,
         f: &F
     ) -> Vec<u8> where F: Fn(&mut Presets) -> Vec<u8> {
@@ -609,7 +607,7 @@ impl PluginParameters for SyncOnlyState {
     ///
     /// This method can be called on the processing thread for automation.
     fn change_preset(&self, preset: i32) {
-        self.modify_presets_and_save_current_to_parameters(&|presets|
+        self.modify_presets_and_set_parameters_from_current(&|presets|
             presets.change_preset(preset as usize)
         );
     }
@@ -632,7 +630,7 @@ impl PluginParameters for SyncOnlyState {
     /// If `preset_chunks` is set to true in plugin info, this should return the raw chunk data for
     /// the current preset.
     fn get_preset_data(&self) -> Vec<u8> {
-        self.load_preset_from_parameters_and_get_data(&|presets|
+        self.set_preset_from_parameters_and_get_data(&|presets|
             presets.get_current_preset_as_bytes()
         )
     }
@@ -640,7 +638,7 @@ impl PluginParameters for SyncOnlyState {
     /// If `preset_chunks` is set to true in plugin info, this should return the raw chunk data for
     /// the current plugin bank.
     fn get_bank_data(&self) -> Vec<u8> {
-        self.load_preset_from_parameters_and_get_data(&|presets|
+        self.set_preset_from_parameters_and_get_data(&|presets|
             presets.get_preset_bank_as_bytes()
         )
     }
@@ -648,7 +646,7 @@ impl PluginParameters for SyncOnlyState {
     /// If `preset_chunks` is set to true in plugin info, this should load a preset from the given
     /// chunk data.
     fn load_preset_data(&self, data: &[u8]) {
-        self.modify_presets_and_save_current_to_parameters(&|presets|
+        self.modify_presets_and_set_parameters_from_current(&|presets|
             presets.set_current_preset_from_bytes(data)
         );
     }
@@ -656,7 +654,7 @@ impl PluginParameters for SyncOnlyState {
     /// If `preset_chunks` is set to true in plugin info, this should load a preset bank from the
     /// given chunk data.
     fn load_bank_data(&self, data: &[u8]) {
-        self.modify_presets_and_save_current_to_parameters(&|presets|
+        self.modify_presets_and_set_parameters_from_current(&|presets|
             presets.set_preset_bank_from_bytes(data)
         );
     }

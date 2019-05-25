@@ -10,6 +10,7 @@ crate-type = ["cdylib"]
 
 [dependencies]
 array-init = "0.0.4"
+assert_approx_eq = "1"
 dirs = "1"
 log = "0.3"
 log-panics = "2"

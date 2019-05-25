@@ -78,8 +78,11 @@ impl Presets {
         self.presets.len()
     }
 
-    pub fn get_current_preset_as_parameters(&self) -> Parameters {
-        self.presets[self.current_index].to_parameters()
+    pub fn set_parameters_from_current_preset(
+        &self,
+        parameters: &mut Parameters
+    ){
+        self.presets[self.current_index].set_parameters(parameters);
     }
 
     pub fn set_current_preset_from_parameters(
@@ -113,7 +116,7 @@ impl Presets {
         self.presets[self.current_index].name = name
     }
 
-    // Byte format export/import
+    // VST methods: byte export/import
 
     pub fn get_current_preset_as_bytes(&self) -> Vec<u8> {
         to_bytes(&self.presets[self.current_index])
@@ -182,9 +185,7 @@ impl Preset {
         Self::from_parameters(Parameters::new(), "-".to_string())
     }
 
-    pub fn to_parameters(&self) -> Parameters {
-        let mut parameters = Parameters::new();
-
+    pub fn set_parameters(&self, parameters: &mut Parameters) {
         for (i, preset_parameter) in self.parameters.iter().enumerate() {
             if let Some(parameter) = parameters.get_index(i) {
                 parameter.set_parameter_value_float(
@@ -192,8 +193,6 @@ impl Preset {
                 );
             }
         }
-
-        parameters
     }
 }
 
@@ -203,4 +202,81 @@ pub struct PresetParameter {
     name: String,
     value_float: f64,
     value_text: String,
+}
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn gen_random_presets() -> (Presets, Vec<f64>) {
+        use rand::{FromEntropy, Rng};
+        use rand::rngs::SmallRng;
+
+        let mut rng = SmallRng::from_entropy();
+
+        let mut parameters = Parameters::new();
+        let mut correct_values = Vec::new();
+
+        for i in 0..parameters.len(){
+            let parameter = parameters.get_index(i)
+                .expect("no parameter for index");
+            
+            parameter.set_parameter_value_float(rng.gen());
+
+            correct_values.push(
+                parameter.get_parameter_value_float()
+            );
+        }
+
+        let mut presets = Presets::new();
+
+        presets.set_current_preset_from_parameters(parameters);
+
+        (presets, correct_values)
+    }
+
+    fn verify_preset_parameters(
+        presets: Presets,
+        correct_values: Vec<f64>
+    ){
+        use assert_approx_eq::assert_approx_eq;
+
+        let mut parameters = Parameters::new();
+
+        presets.set_parameters_from_current_preset(&mut parameters);
+
+        for i in 0..parameters.len(){
+            let parameter = parameters.get_index(i)
+                .expect("no parameter for index");
+
+            let parameter_value = parameter.get_parameter_value_float();
+            
+            let correct_value = correct_values[i];
+
+            println!("Parameter name: {}", parameter.get_parameter_name());
+
+            assert_approx_eq!(parameter_value, correct_value);
+        }
+    }
+
+    #[test]
+    fn test_parameter_set_and_get(){
+        let (presets, correct_values) = gen_random_presets();
+
+        verify_preset_parameters(presets, correct_values);
+    }
+
+    #[test]
+    fn test_preset_byte_conversion(){
+        let (presets, correct_values) = gen_random_presets();
+
+        let bytes = presets.get_current_preset_as_bytes();
+
+        let mut new_presets = Presets::new();
+
+        new_presets.set_current_preset_from_bytes(&bytes);
+
+        verify_preset_parameters(new_presets, correct_values);
+    }
 }
