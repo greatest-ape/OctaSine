@@ -21,6 +21,7 @@ fn from_bytes<'a, T: Deserialize<'a>>(
 }
 
 
+#[allow(unused_macros)]
 macro_rules! add_preset_from_file {
     ($preset_vec:ident, $path:expr) => {
         if let Ok(preset) = from_bytes(include_bytes!($path)){
