@@ -111,3 +111,40 @@ impl Parameters {
         59
     }
 }
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_parameter_value_nan_and_bounds() {
+        use rand::{FromEntropy, Rng};
+        use rand::rngs::SmallRng;
+
+        let mut rng = SmallRng::from_entropy();
+        let mut parameters = Parameters::new();
+
+        for i in 0..parameters.len(){
+            let parameter = parameters.get_index(i)
+                .expect("no parameter for index");
+
+            let random_value = rng.gen();
+            
+            parameter.set_parameter_value_float(random_value);
+
+            let value = parameter.get_parameter_value_float();
+
+            println!(
+                "parameter name: {}, value: {}, input value: {}",
+                parameter.get_parameter_name(),
+                value,
+                random_value,
+            );
+
+            assert!(!value.is_nan());
+            assert!(value <= 1.0);
+            assert!(value >= 0.0);
+        }
+    }
+}
