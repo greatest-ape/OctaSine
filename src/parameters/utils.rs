@@ -71,6 +71,11 @@ pub fn map_value_to_parameter_value_with_steps(
 
     for step in steps {
         if internal_value <= *step {
+            // TODO: fix algorithm instead of this check
+            if step == prev_step {
+                return 0.0;
+            }
+
             let ratio = (internal_value - prev_step) / (step - prev_step);
 
             return sum + ratio * increment;
@@ -110,6 +115,10 @@ pub fn round_to_step(steps: &[f64], value: f64) -> f64 {
 
 #[cfg(test)]
 mod tests {
+    use quickcheck::{TestResult, quickcheck};
+
+    use crate::constants::*;
+
     use super::*;
 
     #[test]
@@ -124,5 +133,39 @@ mod tests {
         assert_eq!(round_to_step(&steps, 1.5), 2.0);
         assert_eq!(round_to_step(&steps, 4.0), 4.0);
         assert_eq!(round_to_step(&steps, 100.0), 4.0);
+    }
+
+    fn valid_parameter_value(value: f64) -> bool {
+        !(value.is_nan() || value > 1.0 || value < 0.0)
+    }
+
+    #[test]
+    fn test_map_step_to_parameter_value(){
+        fn prop(index: usize) -> TestResult {
+            let steps = OPERATOR_RATIO_STEPS;
+
+            if index >= steps.len() {
+                return TestResult::discard();
+            }
+
+            let value = map_step_to_parameter_value(&steps[..], steps[index]);
+
+            TestResult::from_bool(valid_parameter_value(value))
+        }
+
+        quickcheck(prop as fn(usize) -> TestResult);
+    }
+
+    #[test]
+    fn test_map_value_to_parameter_value_with_steps(){
+        fn prop(value: f64) -> TestResult {
+            let steps = OPERATOR_RATIO_STEPS;
+
+            let value = map_value_to_parameter_value_with_steps(&steps[..], value);
+
+            TestResult::from_bool(valid_parameter_value(value))
+        }
+
+        quickcheck(prop as fn(f64) -> TestResult);
     }
 }
