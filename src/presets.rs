@@ -31,7 +31,7 @@ macro_rules! add_preset_from_file {
 }
 
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct PresetPluginInfo {
     name: String,
     version: String,
@@ -64,6 +64,19 @@ impl Presets {
         presets.push(Preset::empty());
 
         // add_preset_from_file!(presets, "../presets/test.fxp");
+
+        Self {
+            presets,
+            current_index: Self::default_index(),
+        }
+    }
+
+    pub fn new_with_many_presets(num_presets: usize) -> Self {
+        let mut presets = Vec::new();
+
+        for _ in 0..num_presets {
+            presets.push(Preset::empty());
+        }
 
         Self {
             presets,
@@ -147,7 +160,7 @@ impl Presets {
 }
 
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Preset {
     pub plugin_info: PresetPluginInfo,
     pub name: String,
@@ -198,7 +211,7 @@ impl Preset {
 }
 
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct PresetParameter {
     name: String,
     value_float: f64,
@@ -208,14 +221,12 @@ pub struct PresetParameter {
 
 #[cfg(test)]
 mod tests {
+    use rand::{FromEntropy, Rng};
+    use rand::rngs::SmallRng;
+
     use super::*;
 
-    fn gen_random_presets() -> (Presets, Vec<f64>) {
-        use rand::{FromEntropy, Rng};
-        use rand::rngs::SmallRng;
-
-        let mut rng = SmallRng::from_entropy();
-
+    fn gen_random_parameters(rng: &mut impl Rng) -> (Parameters, Vec<f64>) {
         let mut parameters = Parameters::new();
         let mut correct_values = Vec::new();
 
@@ -230,34 +241,62 @@ mod tests {
             );
         }
 
-        let mut presets = Presets::new();
+        (parameters, correct_values)
+    }
 
-        presets.set_current_preset_from_parameters(parameters);
+    fn gen_random_presets() -> (Presets, Vec<Vec<f64>>) {
+        let mut rng = SmallRng::from_entropy();
 
-        (presets, correct_values)
+        let mut presets = Presets::new_with_many_presets(127);
+        let mut all_correct_values = Vec::new();
+
+        for i in 0..presets.len(){
+            presets.change_preset(i);
+
+            let (parameters, correct_values) = gen_random_parameters(&mut rng);
+
+            presets.set_current_preset_from_parameters(parameters);
+            all_correct_values.push(correct_values);
+        }
+
+        presets.change_preset(0);
+
+        (presets, all_correct_values)
     }
 
     fn verify_preset_parameters(
         presets: Presets,
-        correct_values: Vec<f64>
+        all_correct_values: Vec<Vec<f64>>,
+        verify_only_current: bool,
     ){
         use assert_approx_eq::assert_approx_eq;
 
-        let mut parameters = Parameters::new();
+        let mut presets = presets;
 
-        presets.set_parameters_from_current_preset(&mut parameters);
+        let current_index = presets.get_current_index();
 
-        for i in 0..parameters.len(){
-            let parameter = parameters.get_index(i)
-                .expect("no parameter for index");
+        for (i, correct_values) in all_correct_values.iter().enumerate(){
+            if verify_only_current && i != current_index {
+                continue;
+            }
 
-            let parameter_value = parameter.get_parameter_value_float();
-            
-            let correct_value = correct_values[i];
+            let mut parameters = Parameters::new();
 
-            println!("Parameter name: {}", parameter.get_parameter_name());
+            presets.change_preset(i);
+            presets.set_parameters_from_current_preset(&mut parameters);
 
-            assert_approx_eq!(parameter_value, correct_value);
+            for j in 0..parameters.len(){
+                let parameter = parameters.get_index(j)
+                    .expect("no parameter for index");
+
+                let parameter_value = parameter.get_parameter_value_float();
+                
+                let correct_value = correct_values[j];
+
+                println!("Parameter name: {}", parameter.get_parameter_name());
+
+                assert_approx_eq!(parameter_value, correct_value);
+            }
         }
     }
 
@@ -265,7 +304,7 @@ mod tests {
     fn test_parameter_set_and_get(){
         let (presets, correct_values) = gen_random_presets();
 
-        verify_preset_parameters(presets, correct_values);
+        verify_preset_parameters(presets, correct_values, false);
     }
 
     #[test]
@@ -274,10 +313,23 @@ mod tests {
 
         let bytes = presets.get_current_preset_as_bytes();
 
-        let mut new_presets = Presets::new();
+        let mut new_presets = Presets::new_with_many_presets(127);
 
         new_presets.set_current_preset_from_bytes(&bytes);
 
-        verify_preset_parameters(new_presets, correct_values);
+        verify_preset_parameters(new_presets, correct_values, true);
+    }
+
+    #[test]
+    fn test_preset_bank_byte_conversion(){
+        let (presets, correct_values) = gen_random_presets();
+
+        let bytes = presets.get_preset_bank_as_bytes();
+
+        let mut new_presets = Presets::new();
+
+        new_presets.set_preset_bank_from_bytes(&bytes);
+
+        verify_preset_parameters(new_presets, correct_values, false);
     }
 }
