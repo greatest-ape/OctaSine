@@ -1,6 +1,7 @@
 /target
 **/*.rs.bk
 
+.idea
 .DS_Store
 /scripts/upload.sh
 /scripts/upload-code.sh
