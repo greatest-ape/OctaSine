@@ -116,6 +116,7 @@ pub fn round_to_step(steps: &[f64], value: f64) -> f64 {
 #[cfg(test)]
 mod tests {
     use quickcheck::{TestResult, quickcheck};
+    use assert_approx_eq::assert_approx_eq;
 
     use crate::constants::*;
 
@@ -183,6 +184,42 @@ mod tests {
         }
 
         quickcheck(prop as fn(f64) -> TestResult);
+    }
+
+    #[test]
+    fn test_map_parameter_value_to_value_with_steps(){
+        let steps = [1.0, 2.0, 3.0];
+
+        assert_approx_eq!(
+            map_parameter_value_to_value_with_steps(&steps[..], 0.0),
+            1.0
+        );
+        assert_approx_eq!(
+            map_parameter_value_to_value_with_steps(&steps[..], 0.5),
+            2.0
+        );
+        assert_approx_eq!(
+            map_parameter_value_to_value_with_steps(&steps[..], 1.0),
+            3.0
+        );
+    }
+
+    #[test]
+    fn test_map_value_to_parameter_value_with_steps(){
+        let steps = [1.0, 2.0, 3.0];
+
+        assert_approx_eq!(
+            map_value_to_parameter_value_with_steps(&steps[..], 1.0),
+            0.0
+        );
+        assert_approx_eq!(
+            map_value_to_parameter_value_with_steps(&steps[..], 2.0),
+            0.5
+        );
+        assert_approx_eq!(
+            map_value_to_parameter_value_with_steps(&steps[..], 3.0),
+            1.0
+        );
     }
 
     #[test]
