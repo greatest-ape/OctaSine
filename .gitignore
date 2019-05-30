@@ -1,7 +1,9 @@
-/target
-**/*.rs.bk
-
 .idea
 .DS_Store
+
+/target
+**/*.rs.bk
+Cargo.lock
+
 /scripts/upload.sh
 /scripts/upload-code.sh
