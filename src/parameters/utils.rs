@@ -145,8 +145,8 @@ mod tests {
         steps.append(&mut OPERATOR_BETA_STEPS.to_vec());
         steps.append(&mut MASTER_FREQUENCY_STEPS.to_vec());
 
-        steps.dedup();
         steps.sort_by(|a, b| a.partial_cmp(b).unwrap());
+        steps.dedup();
 
         steps
     }
@@ -175,6 +175,10 @@ mod tests {
     #[test]
     fn test_map_value_to_parameter_value_with_steps_valid_number(){
         fn prop(value: f64) -> TestResult {
+            if value < 0.0 {
+                return TestResult::discard();
+            }
+
             let value = map_value_to_parameter_value_with_steps(
                 &get_all_steps()[..],
                 value
@@ -199,6 +203,10 @@ mod tests {
             2.0
         );
         assert_approx_eq!(
+            map_parameter_value_to_value_with_steps(&steps[..], 0.75),
+            2.5
+        );
+        assert_approx_eq!(
             map_parameter_value_to_value_with_steps(&steps[..], 1.0),
             3.0
         );
@@ -217,6 +225,10 @@ mod tests {
             0.5
         );
         assert_approx_eq!(
+            map_value_to_parameter_value_with_steps(&steps[..], 2.5),
+            0.75
+        );
+        assert_approx_eq!(
             map_value_to_parameter_value_with_steps(&steps[..], 3.0),
             1.0
         );
@@ -224,29 +236,29 @@ mod tests {
 
     #[test]
     fn test_smooth_step_mapping(){
-        fn prop(value: f64) -> TestResult {
-            if value < 0.0 || value > 1.0 {
+        fn prop(parameter_value: f64) -> TestResult {
+            if parameter_value < 0.0 || parameter_value > 1.0 {
                 return TestResult::discard();
             }
 
             let steps = get_all_steps();
 
-            let inner = map_parameter_value_to_value_with_steps(
+            let internal_value = map_parameter_value_to_value_with_steps(
                 &steps[..],
-                value
+                parameter_value
             );
-            let new_value = map_value_to_parameter_value_with_steps(
+            let new_parameter_value = map_value_to_parameter_value_with_steps(
                 &steps[..],
-                inner
+                internal_value
             );
 
-            let success = (value - new_value).abs() < 0.001;
+            let success = (parameter_value - new_parameter_value).abs() < 0.001;
 
             if !success {
                 println!("steps: {:?}", steps);
-                println!("parameter value: {}", value);
-                println!("inner value: {}", inner);
-                println!("new parameter value: {}", new_value);
+                println!("parameter value: {}", parameter_value);
+                println!("internal value: {}", internal_value);
+                println!("new parameter value: {}", new_parameter_value);
             }
 
             TestResult::from_bool(success)
