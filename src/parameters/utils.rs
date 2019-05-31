@@ -250,7 +250,8 @@ mod tests {
                 internal_value
             );
 
-            let success = (parameter_value - new_parameter_value).abs() < 0.001;
+            let diff = (parameter_value - new_parameter_value).abs();
+            let success = diff < 0.0001;
 
             if !success {
                 println!("steps: {:?}", steps);
