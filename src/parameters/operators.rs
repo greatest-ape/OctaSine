@@ -570,6 +570,8 @@ impl Operator {
 
 #[cfg(test)]
 mod tests {
+    use assert_approx_eq::assert_approx_eq;
+
     use super::*;
 
     #[test]
@@ -652,10 +654,10 @@ mod tests {
         assert_eq!(operator.frequency_free.value, 1.0);
 
         assert!(operator.frequency_free.set_parameter_value_text("0.0".to_string()));
-        assert!((operator.frequency_free.value - OPERATOR_FREE_STEPS[0]).abs() < 0.00001);
+        assert_approx_eq!(operator.frequency_free.value, OPERATOR_FREE_STEPS[0]);
 
         assert!(operator.frequency_free.set_parameter_value_text("256.0".to_string()));
-        assert!((operator.frequency_free.value - OPERATOR_FREE_STEPS.last().unwrap()).abs() < 0.00001);
+        assert_approx_eq!(operator.frequency_free.value, OPERATOR_FREE_STEPS.last().unwrap());
     }
 
     #[test]
