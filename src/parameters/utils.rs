@@ -20,15 +20,12 @@ pub fn map_step_to_parameter_value<T: Copy + PartialEq>(
     steps: &[T],
     step_value: T,
 ) -> f64 {
-    let increment = 1.0 / steps.len() as f64;
-    let mut sum = 0.0;
-
-    for step in steps.iter() {
+    for (i, step) in steps.iter().enumerate(){
         if *step == step_value {
-            return sum + increment / 2.0;
-        }
+            let increment = 1.0 / (steps.len() - 1).max(1) as f64;
 
-        sum += increment;
+            return i as f64 * increment;
+        }
     }
 
     0.5 // Default if step_value is not in steps
@@ -186,6 +183,28 @@ mod tests {
         }
 
         quickcheck(prop as fn(f64) -> TestResult);
+    }
+
+    #[test]
+    fn test_map_parameter_value_to_step() {
+        let steps = [1, 2, 3];
+
+        assert_eq!(map_parameter_value_to_step(&steps[..], 0.0), 1);
+        assert_eq!(map_parameter_value_to_step(&steps[..], 0.5), 2);
+        assert_eq!(map_parameter_value_to_step(&steps[..], 0.66), 2);
+        assert_eq!(map_parameter_value_to_step(&steps[..], 0.67), 3);
+        assert_eq!(map_parameter_value_to_step(&steps[..], 1.0), 3);
+    }
+
+    #[test]
+    fn test_map_step_to_parameter_value() {
+        let steps = [1, 2, 3, 4, 5];
+
+        assert_approx_eq!(map_step_to_parameter_value(&steps[..], 1), 0.0);
+        assert_approx_eq!(map_step_to_parameter_value(&steps[..], 2), 0.25);
+        assert_approx_eq!(map_step_to_parameter_value(&steps[..], 3), 0.5);
+        assert_approx_eq!(map_step_to_parameter_value(&steps[..], 4), 0.75);
+        assert_approx_eq!(map_step_to_parameter_value(&steps[..], 5), 1.0);
     }
 
     #[test]
