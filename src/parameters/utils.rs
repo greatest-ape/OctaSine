@@ -37,19 +37,21 @@ pub fn map_step_to_parameter_value<T: Copy + PartialEq>(
 
 pub fn map_parameter_value_to_value_with_steps(
     steps: &[f64],
-    host_value: f64
+    parameter_value: f64
 ) -> f64 {
-    let increment = 1.0 / steps.len() as f64;
+    let increment = 1.0 / (steps.len() - 1).max(1) as f64;
+
     let mut sum = 0.0;
     let mut prev_step = steps.first().expect("steps are empty");
     let mut prev_sum = sum;
 
-    for step in steps.iter() {
+    for step in steps[1..].iter() {
         sum += increment;
 
-        if host_value <= sum {
+        if parameter_value <= sum {
             // Interpolate
-            let interpolation_ratio = (host_value - prev_sum) / increment;
+            let interpolation_ratio = (parameter_value - prev_sum) / increment;
+
             return prev_step + (interpolation_ratio * (step - prev_step));
         }
 
@@ -65,17 +67,13 @@ pub fn map_value_to_parameter_value_with_steps(
     steps: &[f64],
     internal_value: f64,
 ) -> f64 {
-    let increment = 1.0 / steps.len() as f64;
+    let increment = 1.0 / (steps.len() - 1).max(1) as f64;
+
     let mut sum = 0.0;
     let mut prev_step = steps.first().expect("steps are empty");
 
-    for step in steps {
+    for step in steps[1..].iter() {
         if internal_value <= *step {
-            // TODO: fix algorithm instead of this check
-            if step == prev_step {
-                return 0.0;
-            }
-
             let ratio = (internal_value - prev_step) / (step - prev_step);
 
             return sum + ratio * increment;
