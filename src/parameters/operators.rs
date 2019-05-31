@@ -153,23 +153,10 @@ impl OperatorOutputOperator {
 
 impl ParameterValueConversion<usize> for OperatorOutputOperator {
     fn from_parameter_value(&self, value: f64) -> usize {
-        let step = 1.0 / self.targets.len() as f64;
-        let mut sum = 0.0;
-
-        for t in self.targets.iter() {
-            sum += step;
-
-            if value <= sum {
-                return *t
-            }
-        }
-
-        *self.targets.last().expect("No targets")
+        map_parameter_value_to_step(&self.targets[..], value)
     }
     fn to_parameter_value(&self, value: usize) -> f64 {
-        let step = 1.0 / self.targets.len() as f64;
-
-        value as f64 * step + 0.0001
+        map_step_to_parameter_value(&self.targets[..], value)
     }
 }
 
