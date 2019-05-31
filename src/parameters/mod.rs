@@ -117,8 +117,13 @@ impl Parameters {
 mod tests {
     use super::*;
 
+    /// Test conversions between parameter values and internal values.
+    ///
+    /// Currently uses random values which means that the tests do not cover
+    /// all possible error states. Ideally, this should be done with
+    /// quickcheck.
     #[test]
-    fn test_parameter_value_nan_and_bounds() {
+    fn test_parameter_value_conversion() {
         use rand::{FromEntropy, Rng};
         use rand::rngs::SmallRng;
 
@@ -129,22 +134,40 @@ mod tests {
             let parameter = parameters.get_index(i)
                 .expect("no parameter for index");
 
-            let random_value = rng.gen();
-            
-            parameter.set_parameter_value_float(random_value);
+            let input_parameter_value = rng.gen();
 
-            let value = parameter.get_parameter_value_float();
+            parameter.set_parameter_value_float(input_parameter_value);
 
-            println!(
-                "parameter name: {}, value: {}, input value: {}",
-                parameter.get_parameter_name(),
-                value,
-                random_value,
+            let result_parameter_value = parameter.get_parameter_value_float();
+
+            // Test for valid values
+
+            println!("parameter name: {}", parameter.get_parameter_name());
+            println!("result parameter value: {}", result_parameter_value);
+            println!("input parameter value: {}", input_parameter_value);
+
+            assert!(!result_parameter_value.is_nan());
+            assert!(result_parameter_value <= 1.0);
+            assert!(result_parameter_value >= 0.0);
+
+            // Test that setting the same value again produces the same
+            // internal value (with non-exact rounding since only text output
+            // is checked.)
+
+            let result_internal_value_1 = parameter.get_parameter_value_text();
+
+            parameter.set_parameter_value_float(input_parameter_value);
+
+            let result_internal_value_2 = parameter.get_parameter_value_text();
+
+            println!("internal value 1: {}", result_internal_value_1);
+            println!("internal value 2: {}", result_internal_value_2);
+
+            assert_eq!(
+                result_internal_value_1,
+                result_internal_value_2,
             );
 
-            assert!(!value.is_nan());
-            assert!(value <= 1.0);
-            assert!(value >= 0.0);
         }
     }
 }
