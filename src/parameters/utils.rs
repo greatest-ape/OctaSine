@@ -117,20 +117,6 @@ mod tests {
 
     use super::*;
 
-    #[test]
-    fn test_round_to_step(){
-        let steps = [1.0, 2.0, 4.0];
-
-        assert_eq!(round_to_step(&steps, -10.0), 1.0);
-        assert_eq!(round_to_step(&steps, 0.0), 1.0);
-        assert_eq!(round_to_step(&steps, 1.0), 1.0);
-        assert_eq!(round_to_step(&steps, 1.1), 1.0);
-        assert_eq!(round_to_step(&steps, 1.49), 1.0);
-        assert_eq!(round_to_step(&steps, 1.5), 2.0);
-        assert_eq!(round_to_step(&steps, 4.0), 4.0);
-        assert_eq!(round_to_step(&steps, 100.0), 4.0);
-    }
-
     fn get_all_steps() -> Vec<f64> {
         let mut steps = Vec::new();
 
@@ -168,24 +154,6 @@ mod tests {
     }
 
     #[test]
-    fn test_map_value_to_parameter_value_with_steps_valid_number(){
-        fn prop(value: f64) -> TestResult {
-            if value < 0.0 {
-                return TestResult::discard();
-            }
-
-            let value = map_value_to_parameter_value_with_steps(
-                &get_all_steps()[..],
-                value
-            );
-
-            TestResult::from_bool(valid_parameter_value(value))
-        }
-
-        quickcheck(prop as fn(f64) -> TestResult);
-    }
-
-    #[test]
     fn test_map_parameter_value_to_step() {
         let steps = [1, 2, 3];
 
@@ -205,6 +173,54 @@ mod tests {
         assert_approx_eq!(map_step_to_parameter_value(&steps[..], 3), 0.5);
         assert_approx_eq!(map_step_to_parameter_value(&steps[..], 4), 0.75);
         assert_approx_eq!(map_step_to_parameter_value(&steps[..], 5), 1.0);
+    }
+
+    #[test]
+    fn test_step_mapping(){
+        fn prop(value: f64) -> TestResult {
+            if value < 0.0 || value > 1.0 {
+                return TestResult::discard();
+            }
+
+            let steps = get_all_steps();
+
+            let inner = map_parameter_value_to_step(
+                &steps[..],
+                value
+            );
+            let new_value = map_step_to_parameter_value(
+                &steps[..],
+                inner
+            );
+            // Simulate the VST sending back the recieved parameter value.
+            // Result must be identical to last result.
+            let new_inner = map_parameter_value_to_step(
+                &steps[..],
+                new_value
+            );
+
+            TestResult::from_bool(inner == new_inner)
+        }
+
+        quickcheck(prop as fn(f64) -> TestResult);
+    }
+
+    #[test]
+    fn test_map_value_to_parameter_value_with_steps_valid_number(){
+        fn prop(value: f64) -> TestResult {
+            if value < 0.0 {
+                return TestResult::discard();
+            }
+
+            let value = map_value_to_parameter_value_with_steps(
+                &get_all_steps()[..],
+                value
+            );
+
+            TestResult::from_bool(valid_parameter_value(value))
+        }
+
+        quickcheck(prop as fn(f64) -> TestResult);
     }
 
     #[test]
@@ -286,32 +302,16 @@ mod tests {
     }
 
     #[test]
-    fn test_step_mapping(){
-        fn prop(value: f64) -> TestResult {
-            if value < 0.0 || value > 1.0 {
-                return TestResult::discard();
-            }
+    fn test_round_to_step(){
+        let steps = [1.0, 2.0, 4.0];
 
-            let steps = get_all_steps();
-
-            let inner = map_parameter_value_to_step(
-                &steps[..],
-                value
-            );
-            let new_value = map_step_to_parameter_value(
-                &steps[..],
-                inner
-            );
-            // Simulate the VST sending back the recieved parameter value.
-            // Result must be identical to last result.
-            let new_inner = map_parameter_value_to_step(
-                &steps[..],
-                new_value
-            );
-
-            TestResult::from_bool(inner == new_inner)
-        }
-
-        quickcheck(prop as fn(f64) -> TestResult);
+        assert_eq!(round_to_step(&steps, -10.0), 1.0);
+        assert_eq!(round_to_step(&steps, 0.0), 1.0);
+        assert_eq!(round_to_step(&steps, 1.0), 1.0);
+        assert_eq!(round_to_step(&steps, 1.1), 1.0);
+        assert_eq!(round_to_step(&steps, 1.49), 1.0);
+        assert_eq!(round_to_step(&steps, 1.5), 2.0);
+        assert_eq!(round_to_step(&steps, 4.0), 4.0);
+        assert_eq!(round_to_step(&steps, 100.0), 4.0);
     }
 }
