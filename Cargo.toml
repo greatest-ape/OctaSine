@@ -28,6 +28,7 @@ rev = "af9c8c"
 [dev-dependencies]
 quickcheck = "0.8"
 quickcheck_macros = "0.8"
+plotlib = "0.4"
 
 [profile.release]
 debug = true

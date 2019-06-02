@@ -1,7 +1,19 @@
+use std::f64::consts::E;
+
 use crate::common::*;
 use crate::constants::*;
 use crate::operators::*;
 use crate::parameters::MasterFrequency;
+
+
+pub enum CurveType {
+    Exp,
+    Ln,
+    Log2,
+    Log10,
+    Sqrt3,
+    Sqrt,
+}
 
 
 #[derive(Debug, Copy, Clone)]
@@ -69,7 +81,7 @@ impl NoteOperatorVolumeEnvelope {
         note_pressed: bool,
         note_duration: NoteDuration,
     ) -> f64 {
-        let effective_duration = note_duration.0 - self.duration_at_state_change;
+        let duration_since_state_change = note_duration.0 - self.duration_at_state_change;
 
         let volume = match self.stage {
             EnvelopeStage::Attack => {
@@ -78,8 +90,13 @@ impl NoteOperatorVolumeEnvelope {
 
                     self.last_volume
                 }
-                else if effective_duration < operator_envelope.attack_duration.value {
-                    (effective_duration / operator_envelope.attack_duration.value) * operator_envelope.attack_end_value.value
+                else if duration_since_state_change < operator_envelope.attack_duration.value {
+                    calculate_envelope_volume(
+                        0.0,
+                        operator_envelope.attack_end_value.value,
+                        duration_since_state_change,
+                        operator_envelope.attack_duration.value,
+                    )
                 }
                 else {
                     self.change_stage(EnvelopeStage::Decay, note_duration);
@@ -93,9 +110,13 @@ impl NoteOperatorVolumeEnvelope {
 
                     self.last_volume
                 }
-                else if effective_duration < operator_envelope.decay_duration.value {
-                    self.pre_state_change_volume + ((effective_duration / operator_envelope.decay_duration.value) *
-                        (operator_envelope.decay_end_value.value - self.pre_state_change_volume))
+                else if duration_since_state_change < operator_envelope.decay_duration.value {
+                    calculate_envelope_volume(
+                        self.pre_state_change_volume,
+                        operator_envelope.decay_end_value.value,
+                        duration_since_state_change,
+                        operator_envelope.decay_duration.value,
+                    )
                 }
                 else {
                     self.change_stage(EnvelopeStage::Sustain, note_duration);
@@ -111,8 +132,13 @@ impl NoteOperatorVolumeEnvelope {
                 operator_envelope.decay_end_value.value
             },
             EnvelopeStage::Release => {
-                if effective_duration < operator_envelope.release_duration.value {
-                    ((1.0 - (effective_duration / operator_envelope.release_duration.value)) * self.pre_state_change_volume)
+                if duration_since_state_change < operator_envelope.release_duration.value {
+                    calculate_envelope_volume(
+                        self.pre_state_change_volume,
+                        0.0,
+                        duration_since_state_change,
+                        operator_envelope.release_duration.value,
+                    )
                 }
                 else {
                     self.change_stage(EnvelopeStage::Ended, NoteDuration(0.0));
@@ -227,5 +253,77 @@ impl Note {
         if left_behind || envelope_finished {
             self.active = false;
         }
+    }
+}
+
+
+fn calculate_envelope_volume(
+    start_volume: f64,
+    end_volume: f64,
+    time_so_far_this_stage: f64,
+    stage_length: f64,
+) -> f64 {
+    let time_progress = time_so_far_this_stage / stage_length;
+
+    start_volume + (end_volume - start_volume) *
+        calculate_curve(CurveType::Sqrt3, time_progress)
+}
+
+
+fn calculate_curve(curve: CurveType, v: f64) -> f64 {
+    match curve {
+        CurveType::Exp => (v.exp() - 1.0) / (E - 1.0),
+        CurveType::Ln => (1.0 + v * (E - 1.0)).ln(),
+        CurveType::Log2 => (1.0 + v * (2.0 - 1.0)).log2(),
+        CurveType::Log10 => (1.0 + v * (10.0 - 1.0)).log10(),
+        CurveType::Sqrt3 => v.powf(1.0/3.0),
+        CurveType::Sqrt => v.sqrt(),
+    }
+}
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Generate plots to check how envelopes look.
+    /// 
+    /// It is obviously not ideal to do this when running tests, but otherwise
+    /// the structure of this crate would become a lot more complicated.
+    /// 
+    /// (Add #[test] before function to run when testing)
+    #[allow(dead_code)]
+    fn test_gen_plots(){
+        fn plot_envelope_stage(
+            start_volume: f64,
+            end_volume: f64,
+            filename: &str
+        ){
+            use plotlib::function::*;
+            use plotlib::view::ContinuousView;
+            use plotlib::page::Page;
+
+            let length = 1.0;
+
+            let f = Function::new(|x| {
+                calculate_envelope_volume(
+                    start_volume,
+                    end_volume,
+                    x,
+                    length,
+                )
+            }, 0., length);
+
+            let v = ContinuousView::new()
+                .add(&f)
+                .x_range(0.0, length * 4.0)
+                .y_range(0.0, 1.0);
+            
+            Page::single(&v).save(&filename).unwrap();
+        }
+
+        plot_envelope_stage(0.0, 1.0, "attack.svg");
+        plot_envelope_stage(0.5, 1.0, "decay.svg");
+        plot_envelope_stage(1.0, 0.0, "release.svg");
     }
 }
