@@ -13,6 +13,7 @@ pub enum CurveType {
     Log10,
     Sqrt3,
     Sqrt,
+    Linear
 }
 
 
@@ -67,99 +68,125 @@ impl MidiPitch {
 #[derive(Debug, Copy, Clone)]
 pub struct NoteOperatorVolumeEnvelope {
     stage: EnvelopeStage,
-    duration_at_state_change: f64,
-    pre_state_change_volume: f64,
+    duration_at_stage_change: NoteDuration,
+    volume_at_stage_change: f64,
     last_volume: f64,
 }
 
 impl NoteOperatorVolumeEnvelope {
+    fn advance_if_note_not_pressed(
+        &mut self,
+        note_pressed: bool,
+        note_duration: NoteDuration
+    ){
+        use EnvelopeStage::*;
+
+        if !note_pressed {
+            match self.stage {
+                Attack | Decay | Sustain => {
+                    self.stage = Release;
+                    self.duration_at_stage_change = note_duration;
+                    self.volume_at_stage_change = self.last_volume;
+                },
+                _ => ()
+            }
+        }
+    }
+
+    fn advance_if_stage_time_up(
+        &mut self,
+        operator_envelope: &OperatorVolumeEnvelope,
+        note_duration: NoteDuration,
+    ) {
+        use EnvelopeStage::*;
+
+        let opt_stage_duration = match self.stage {
+            Attack => Some(operator_envelope.attack_duration.value),
+            Decay => Some(operator_envelope.decay_duration.value),
+            Release => Some(operator_envelope.release_duration.value),
+            _ => None
+        };
+
+        if let Some(stage_duration) = opt_stage_duration {
+            let duration_since_stage_change = note_duration.0 -
+                self.duration_at_stage_change.0;
+
+            if duration_since_stage_change >= stage_duration {
+                if self.stage == Attack {
+                    self.stage = Decay;
+                    self.duration_at_stage_change = note_duration;
+                    self.volume_at_stage_change = self.last_volume;
+                } else if self.stage == Decay {
+                    self.stage = Sustain;
+                    self.duration_at_stage_change = note_duration;
+                    self.volume_at_stage_change = self.last_volume;
+                } else if self.stage == Release {
+                    self.stage = Ended;
+                    self.duration_at_stage_change = NoteDuration(0.0);
+                    self.volume_at_stage_change = 0.0;
+                }
+            }
+        }
+    }
+
+    fn calculate_stage_volume(
+        &self,
+        operator_envelope: &OperatorVolumeEnvelope,
+        note_duration: NoteDuration,
+    ) -> f64 {
+        use EnvelopeStage::*;
+
+        let duration_since_stage_change = note_duration.0 -
+            self.duration_at_stage_change.0;
+
+        match self.stage {
+            Attack => {
+                calculate_envelope_volume(
+                    0.0,
+                    operator_envelope.attack_end_value.value,
+                    duration_since_stage_change,
+                    operator_envelope.attack_duration.value,
+                )
+            },
+            Decay => {
+                calculate_envelope_volume(
+                    self.volume_at_stage_change,
+                    operator_envelope.decay_end_value.value,
+                    duration_since_stage_change,
+                    operator_envelope.decay_duration.value,
+                )
+            },
+            Sustain => {
+                operator_envelope.decay_end_value.value
+            },
+            Release => {
+                calculate_envelope_volume(
+                    self.volume_at_stage_change,
+                    0.0,
+                    duration_since_stage_change,
+                    operator_envelope.release_duration.value,
+                )
+            },
+            Ended => {
+                0.0
+            }
+        }
+    }
 
     /// Calculate volume and possibly advance envelope stage
-    pub fn calculate_volume(
+    pub fn get_volume(
         &mut self,
         operator_envelope: &OperatorVolumeEnvelope,
         note_pressed: bool,
         note_duration: NoteDuration,
     ) -> f64 {
-        let duration_since_state_change = note_duration.0 - self.duration_at_state_change;
+        self.advance_if_note_not_pressed(note_pressed, note_duration);
+        self.advance_if_stage_time_up(operator_envelope, note_duration);
 
-        let volume = match self.stage {
-            EnvelopeStage::Attack => {
-                if !note_pressed {
-                    self.change_stage(EnvelopeStage::Release, note_duration);
-
-                    self.last_volume
-                }
-                else if duration_since_state_change < operator_envelope.attack_duration.value {
-                    calculate_envelope_volume(
-                        0.0,
-                        operator_envelope.attack_end_value.value,
-                        duration_since_state_change,
-                        operator_envelope.attack_duration.value,
-                    )
-                }
-                else {
-                    self.change_stage(EnvelopeStage::Decay, note_duration);
-
-                    operator_envelope.attack_end_value.value
-                }
-            },
-            EnvelopeStage::Decay => {
-                if !note_pressed {
-                    self.change_stage(EnvelopeStage::Release, note_duration);
-
-                    self.last_volume
-                }
-                else if duration_since_state_change < operator_envelope.decay_duration.value {
-                    calculate_envelope_volume(
-                        self.pre_state_change_volume,
-                        operator_envelope.decay_end_value.value,
-                        duration_since_state_change,
-                        operator_envelope.decay_duration.value,
-                    )
-                }
-                else {
-                    self.change_stage(EnvelopeStage::Sustain, note_duration);
-
-                    operator_envelope.decay_end_value.value
-                }
-            },
-            EnvelopeStage::Sustain => {
-                if !note_pressed {
-                    self.change_stage(EnvelopeStage::Release, note_duration);
-                }
-
-                operator_envelope.decay_end_value.value
-            },
-            EnvelopeStage::Release => {
-                if duration_since_state_change < operator_envelope.release_duration.value {
-                    calculate_envelope_volume(
-                        self.pre_state_change_volume,
-                        0.0,
-                        duration_since_state_change,
-                        operator_envelope.release_duration.value,
-                    )
-                }
-                else {
-                    self.change_stage(EnvelopeStage::Ended, NoteDuration(0.0));
-
-                    0.0
-                }
-            },
-            EnvelopeStage::Ended => {
-                0.0
-            }
-        };
-
-        self.last_volume = volume;
-
-        volume
-    }
-
-    pub fn change_stage(&mut self, new_stage: EnvelopeStage, note_duration: NoteDuration){
-        self.stage = new_stage;
-        self.duration_at_state_change = note_duration.0;
-        self.pre_state_change_volume = self.last_volume;
+        self.last_volume = self.calculate_stage_volume(
+            operator_envelope, note_duration);
+        
+        self.last_volume
     }
 }
 
@@ -167,8 +194,8 @@ impl Default for NoteOperatorVolumeEnvelope {
     fn default() -> Self {
         Self {
             stage: EnvelopeStage::Attack,
-            duration_at_state_change: 0.0,
-            pre_state_change_volume: 0.0,
+            duration_at_stage_change: NoteDuration(0.0),
+            volume_at_stage_change: 0.0,
             last_volume: 0.0
         }
     }
@@ -177,15 +204,15 @@ impl Default for NoteOperatorVolumeEnvelope {
 
 #[derive(Debug, Copy, Clone)]
 pub struct NoteOperator {
-    pub volume_envelope: NoteOperatorVolumeEnvelope,
     pub last_phase: Phase,
+    pub volume_envelope: NoteOperatorVolumeEnvelope,
 }
 
 impl Default for NoteOperator {
     fn default() -> Self {
         Self {
-            volume_envelope: NoteOperatorVolumeEnvelope::default(),
             last_phase: Phase(0.0),
+            volume_envelope: NoteOperatorVolumeEnvelope::default(),
         }
     }
 }
@@ -235,23 +262,25 @@ impl Note {
     }
 
     pub fn deactivate_if_finished(&mut self) {
-        // When CPU load gets very high, envelopes seem not to be completed,
-        // correctly, causing lots of fadeout noted to be left in the list
-        // still set to active although they should be silent. I try to check
-        // for that here.
-        let left_behind = if let Some(d) = self.duration_at_key_release {
-            self.duration.0 > d.0 + OPERATOR_ENVELOPE_MAX_DURATION + 1.0
-        }
-        else {
-            false
-        };
-
-        let envelope_finished = self.operators.iter().all(|note_operator|
+        let all_envelopes_ended = self.operators.iter().all(|note_operator|
             note_operator.volume_envelope.stage == EnvelopeStage::Ended
         );
 
-        if left_behind || envelope_finished {
+        if all_envelopes_ended {
             self.active = false;
+
+            return;
+        }
+
+        // When CPU load gets very high, envelopes seem not to be completed,
+        // correctly, causing lots of fadeout noted to be left in the list
+        // still set to active although they should be silent. I try to check
+        // for that here, even though this is most likely a bug in the
+        // envelope implementation
+        if let Some(d) = self.duration_at_key_release {
+            if self.duration.0 > d.0 + OPERATOR_ENVELOPE_MAX_DURATION + 1.0 {
+                self.active = false;
+            }
         }
     }
 }
@@ -266,7 +295,7 @@ fn calculate_envelope_volume(
     let time_progress = time_so_far_this_stage / stage_length;
 
     start_volume + (end_volume - start_volume) *
-        calculate_curve(CurveType::Sqrt3, time_progress)
+        calculate_curve(CurveType::Linear, time_progress)
 }
 
 
@@ -278,6 +307,7 @@ fn calculate_curve(curve: CurveType, v: f64) -> f64 {
         CurveType::Log10 => (1.0 + v * (10.0 - 1.0)).log10(),
         CurveType::Sqrt3 => v.powf(1.0/3.0),
         CurveType::Sqrt => v.sqrt(),
+        CurveType::Linear => v,
     }
 }
 

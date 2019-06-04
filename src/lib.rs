@@ -267,9 +267,7 @@ impl FmSynth {
 
             // Always calculate envelope to make sure it advances
             let envelope_volume = {
-                let note_envelope = &mut note.operators[operator_index].volume_envelope;
-
-                note_envelope.calculate_volume(
+                note.operators[operator_index].volume_envelope.get_volume(
                     &operator.volume_envelope,
                     note.pressed,
                     note.duration
