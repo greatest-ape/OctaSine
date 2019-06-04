@@ -10,7 +10,6 @@ crate-type = ["cdylib"]
 
 [dependencies]
 array-init = "0.0.4"
-assert_approx_eq = "1"
 dirs = "1"
 log = "0.3"
 log-panics = "2"
@@ -26,9 +25,10 @@ git = "https://github.com/rust-dsp/rust-vst.git"
 rev = "af9c8c"
 
 [dev-dependencies]
+assert_approx_eq = "1"
+plotlib = "0.4"
 quickcheck = "0.8"
 quickcheck_macros = "0.8"
-plotlib = "0.4"
 
 [profile.release]
 debug = true
