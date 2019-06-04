@@ -284,7 +284,77 @@ fn calculate_curve(curve: CurveType, v: f64) -> f64 {
 
 #[cfg(test)]
 mod tests {
+    use quickcheck::{TestResult, quickcheck};
+
     use super::*;
+
+    fn valid_volume(volume: f64) -> bool {
+        volume >= 0.0 && volume <= 1.0
+    }
+
+    #[test]
+    fn test_calculate_envelope_volume_output_in_range(){
+        fn prop(values: (f64, f64, f64, f64)) -> TestResult {
+            let start_volume = values.0;
+            let end_volume = values.1;
+            let time_so_far_this_stage = values.2;
+            let stage_length = values.3;
+
+            if !valid_volume(start_volume) || !valid_volume(end_volume) {
+                return TestResult::discard();
+            }
+
+            if stage_length < 0.0 || time_so_far_this_stage < 0.0 {
+                return TestResult::discard();
+            }
+
+            if stage_length > OPERATOR_ENVELOPE_MAX_DURATION {
+                return TestResult::discard();
+            }
+
+            if time_so_far_this_stage > stage_length {
+                return TestResult::discard();
+            }
+
+            let volume = calculate_envelope_volume(
+                start_volume,
+                end_volume,
+                time_so_far_this_stage,
+                stage_length
+            );
+
+            let success = valid_volume(volume);
+
+            TestResult::from_bool(success)
+        }
+
+        quickcheck(prop as fn((f64, f64, f64, f64)) -> TestResult);
+    }
+
+    #[test]
+    fn test_calculate_envelope_volume_start_end(){
+        assert_eq!(calculate_envelope_volume(0.0, 1.0, 0.0, 4.0), 0.0);
+        assert_eq!(calculate_envelope_volume(0.0, 1.0, 4.0, 4.0), 1.0);
+    }
+
+    #[test]
+    fn test_calculate_envelope_volume_stage_change_continuity(){
+        fn prop(stage_change_volume: f64) -> TestResult {
+            if !valid_volume(stage_change_volume) {
+                return TestResult::discard();
+            }
+
+            let stage_1_end = calculate_envelope_volume(
+                0.0, stage_change_volume, 4.0, 4.0);
+
+            let stage_2_start = calculate_envelope_volume(
+                stage_change_volume, 1.0, 0.0, 4.0);
+
+            TestResult::from_bool(stage_1_end == stage_2_start)
+        }
+
+        quickcheck(prop as fn(f64) -> TestResult);
+    }
 
     /// Generate plots to check how envelopes look.
     /// 
