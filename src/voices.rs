@@ -287,22 +287,6 @@ impl Voice {
             self.active = false;
         }
     }
-
-    // When CPU load gets very high, envelopes seem not to be completed,
-    // correctly, causing lots of fadeout noted to be left in the list
-    // still set to active although they should be silent. I try to check
-    // for that here, even though this is most likely a bug in the
-    // envelope implementation
-    pub fn deactivate_extra_check(&mut self){
-        if !self.active {
-            return;
-        }
-        if let Some(d) = self.duration_at_key_release {
-            if self.duration.0 > d.0 + OPERATOR_ENVELOPE_MAX_DURATION + 1.0 {
-                self.active = false;
-            }
-        }
-    }
 }
 
 

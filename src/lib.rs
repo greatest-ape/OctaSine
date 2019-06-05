@@ -428,10 +428,6 @@ impl Plugin for FmSynth {
 
             self.processing.global_time.0 += time_per_sample.0;
         }
-
-        for voice in self.processing.voices.iter_mut(){
-            voice.deactivate_extra_check();
-        }
     }
 
     fn new(host: HostCallback) -> Self {
