@@ -205,7 +205,7 @@ impl FmSynth {
 
     /// Generate stereo samples for a voice
     /// 
-    /// Doesn't take self parameter due to conflicting borrowing of Notes
+    /// Doesn't take self parameter due to conflicting borrowing of Voices
     /// in calling function `process`
     fn generate_voice_samples(
         rng: &mut impl Rng,
@@ -369,17 +369,17 @@ impl FmSynth {
 
     pub fn process_midi_event(&mut self, data: [u8; 3]) {
         match data[0] {
-            128 => self.note_off(data[1]),
-            144 => self.note_on(data[1], data[2]),
+            128 => self.key_off(data[1]),
+            144 => self.key_on(data[1], data[2]),
             _   => ()
         }
     }
 
-    fn note_on(&mut self, pitch: u8, velocity: u8) {
+    fn key_on(&mut self, pitch: u8, velocity: u8) {
         self.processing.voices[pitch as usize].press_key(velocity);
     }
 
-    fn note_off(&mut self, pitch: u8) {
+    fn key_off(&mut self, pitch: u8) {
         self.processing.voices[pitch as usize].release_key();
     }
 
