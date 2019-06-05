@@ -17,13 +17,13 @@ use vst::plugin_main;
 
 pub mod common;
 pub mod constants;
-pub mod notes;
+pub mod voices;
 pub mod parameters;
 pub mod presets;
 
 use crate::common::*;
 use crate::constants::*;
-use crate::notes::*;
+use crate::voices::*;
 use crate::parameters::*;
 use crate::presets::*;
 
@@ -117,9 +117,6 @@ macro_rules! impl_get_value_for_interpolatable_parameter {
 }
 
 
-type Notes = [Note; 128];
-
-
 /// State used for processing
 pub struct ProcessingState {
     pub global_time: TimeCounter,
@@ -127,7 +124,7 @@ pub struct ProcessingState {
     pub time_per_sample: TimePerSample,
     pub bpm: BeatsPerMinute,
     pub rng: SmallRng,
-    pub notes: Notes,
+    pub voices: [Voice; 128],
     pub parameters: Arc<Mutex<Parameters>>,
 }
 
@@ -206,20 +203,20 @@ impl FmSynth {
         value.min(1.0).max(-1.0)
     }
 
-    /// Generate stereo samples for a note
+    /// Generate stereo samples for a voice
     /// 
     /// Doesn't take self parameter due to conflicting borrowing of Notes
     /// in calling function `process`
-    fn generate_note_samples(
+    fn generate_voice_samples(
         rng: &mut impl Rng,
         time: TimeCounter,
         time_per_sample: TimePerSample,
         parameters: &mut Parameters,
-        note: &mut Note,
+        voice: &mut Voice,
     ) -> (f64, f64) {
         let operators = &mut parameters.operators;
 
-        let base_frequency = note.midi_pitch.get_frequency(
+        let base_frequency = voice.midi_pitch.get_frequency(
             parameters.master_frequency
         );
 
@@ -260,10 +257,10 @@ impl FmSynth {
 
             // Always calculate envelope to make sure it advances
             let envelope_volume = {
-                note.operators[operator_index].volume_envelope.get_volume(
+                voice.operators[operator_index].volume_envelope.get_volume(
                     &operator.volume_envelope,
-                    note.pressed,
-                    note.duration
+                    voice.key_pressed,
+                    voice.duration
                 )
             };
 
@@ -301,9 +298,9 @@ impl FmSynth {
                 let phase_increment = TAU *
                     (operator_frequency * time_per_sample.0);
 
-                note.operators[operator_index].last_phase.0 += phase_increment;
+                voice.operators[operator_index].last_phase.0 += phase_increment;
 
-                note.operators[operator_index].last_phase.0
+                voice.operators[operator_index].last_phase.0
             };
 
             let mut new_signals = [0.0, 0.0];
@@ -362,7 +359,7 @@ impl FmSynth {
         let signal_left = output_channels[0].additive;
         let signal_right = output_channels[1].additive;
 
-        let volume_factor = VOICE_VOLUME_FACTOR * note.velocity.0 *
+        let volume_factor = VOICE_VOLUME_FACTOR * voice.key_velocity.0 *
             parameters.master_volume.get_value(time);
 
         (signal_left * volume_factor, signal_right * volume_factor)
@@ -379,11 +376,11 @@ impl FmSynth {
     }
 
     fn note_on(&mut self, pitch: u8, velocity: u8) {
-        self.processing.notes[pitch as usize].press(velocity);
+        self.processing.voices[pitch as usize].press_key(velocity);
     }
 
     fn note_off(&mut self, pitch: u8) {
-        self.processing.notes[pitch as usize].release();
+        self.processing.voices[pitch as usize].release_key();
     }
 
     fn fetch_bpm(&mut self){
@@ -410,30 +407,30 @@ impl Plugin for FmSynth {
 
             let mut parameters = self.processing.parameters.lock();
 
-            for note in self.processing.notes.iter_mut(){
-                if note.active {
-                    let (out_left, out_right) = Self::generate_note_samples(
+            for voice in self.processing.voices.iter_mut(){
+                if voice.active {
+                    let (out_left, out_right) = Self::generate_voice_samples(
                         &mut self.processing.rng,
                         self.processing.global_time,
                         time_per_sample,
                         &mut parameters,
-                        note,
+                        voice,
                     );
 
                     *output_sample_left += Self::hard_limit(out_left) as f32;
                     *output_sample_right += Self::hard_limit(out_right) as f32;
 
-                    note.duration.0 += time_per_sample.0;
+                    voice.duration.0 += time_per_sample.0;
 
-                    note.deactivate_if_envelopes_ended();
+                    voice.deactivate_if_envelopes_ended();
                 }
             }
 
             self.processing.global_time.0 += time_per_sample.0;
         }
 
-        for note in self.processing.notes.iter_mut(){
-            note.deactivate_extra_check();
+        for voice in self.processing.voices.iter_mut(){
+            voice.deactivate_extra_check();
         }
     }
 
@@ -455,7 +452,7 @@ impl Plugin for FmSynth {
             time_per_sample: Self::time_per_sample(sample_rate),
             bpm: BeatsPerMinute(120.0),
             rng: SmallRng::from_entropy(),
-            notes: array_init(|i| Note::new(MidiPitch::new(i as u8))),
+            voices: array_init(|i| Voice::new(MidiPitch::new(i as u8))),
             parameters: parameters.clone(),
         };
 

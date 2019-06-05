@@ -18,12 +18,12 @@ pub enum CurveType {
 
 
 #[derive(Debug, Copy, Clone)]
-pub struct NoteDuration(pub f64);
+pub struct VoiceDuration(pub f64);
 
 #[derive(Debug, Copy, Clone)]
-pub struct NoteVelocity(pub f64);
+pub struct KeyVelocity(pub f64);
 
-impl NoteVelocity {
+impl KeyVelocity {
     pub fn from_midi_velocity(midi_velocity: u8) -> Self {
         if midi_velocity == 0 {
             Self::default()
@@ -34,7 +34,7 @@ impl NoteVelocity {
     }
 }
 
-impl Default for NoteVelocity {
+impl Default for KeyVelocity {
     fn default() -> Self {
         Self(100.0 / 127.0)
     }
@@ -66,26 +66,26 @@ impl MidiPitch {
 
 
 #[derive(Debug, Copy, Clone)]
-pub struct NoteOperatorVolumeEnvelope {
+pub struct VoiceOperatorVolumeEnvelope {
     stage: EnvelopeStage,
-    duration_at_stage_change: NoteDuration,
+    duration_at_stage_change: VoiceDuration,
     volume_at_stage_change: f64,
     last_volume: f64,
 }
 
-impl NoteOperatorVolumeEnvelope {
-    fn advance_if_note_not_pressed(
+impl VoiceOperatorVolumeEnvelope {
+    fn advance_if_key_not_pressed(
         &mut self,
-        note_pressed: bool,
-        note_duration: NoteDuration
+        key_pressed: bool,
+        voice_duration: VoiceDuration
     ){
         use EnvelopeStage::*;
 
-        if !note_pressed {
+        if !key_pressed {
             match self.stage {
                 Attack | Decay | Sustain => {
                     self.stage = Release;
-                    self.duration_at_stage_change = note_duration;
+                    self.duration_at_stage_change = voice_duration;
                     self.volume_at_stage_change = self.last_volume;
                 },
                 _ => ()
@@ -96,7 +96,7 @@ impl NoteOperatorVolumeEnvelope {
     fn advance_if_stage_time_up(
         &mut self,
         operator_envelope: &OperatorVolumeEnvelope,
-        note_duration: NoteDuration,
+        voice_duration: VoiceDuration,
     ) {
         use EnvelopeStage::*;
 
@@ -108,21 +108,21 @@ impl NoteOperatorVolumeEnvelope {
         };
 
         if let Some(stage_duration) = opt_stage_duration {
-            let duration_since_stage_change = note_duration.0 -
+            let duration_since_stage_change = voice_duration.0 -
                 self.duration_at_stage_change.0;
 
             if duration_since_stage_change >= stage_duration {
                 if self.stage == Attack {
                     self.stage = Decay;
-                    self.duration_at_stage_change = note_duration;
+                    self.duration_at_stage_change = voice_duration;
                     self.volume_at_stage_change = self.last_volume;
                 } else if self.stage == Decay {
                     self.stage = Sustain;
-                    self.duration_at_stage_change = note_duration;
+                    self.duration_at_stage_change = voice_duration;
                     self.volume_at_stage_change = self.last_volume;
                 } else if self.stage == Release {
                     self.stage = Ended;
-                    self.duration_at_stage_change = NoteDuration(0.0);
+                    self.duration_at_stage_change = VoiceDuration(0.0);
                     self.volume_at_stage_change = 0.0;
                 }
             }
@@ -132,11 +132,11 @@ impl NoteOperatorVolumeEnvelope {
     fn calculate_stage_volume(
         &self,
         operator_envelope: &OperatorVolumeEnvelope,
-        note_duration: NoteDuration,
+        voice_duration: VoiceDuration,
     ) -> f64 {
         use EnvelopeStage::*;
 
-        let duration_since_stage_change = note_duration.0 -
+        let duration_since_stage_change = voice_duration.0 -
             self.duration_at_stage_change.0;
 
         match self.stage {
@@ -177,17 +177,17 @@ impl NoteOperatorVolumeEnvelope {
     pub fn get_volume(
         &mut self,
         operator_envelope: &OperatorVolumeEnvelope,
-        note_pressed: bool,
-        note_duration: NoteDuration,
+        key_pressed: bool,
+        voice_duration: VoiceDuration,
     ) -> f64 {
         if self.stage == EnvelopeStage::Ended {
             return 0.0
         } else {
-            self.advance_if_note_not_pressed(note_pressed, note_duration);
-            self.advance_if_stage_time_up(operator_envelope, note_duration);
+            self.advance_if_key_not_pressed(key_pressed, voice_duration);
+            self.advance_if_stage_time_up(operator_envelope, voice_duration);
 
             self.last_volume = self.calculate_stage_volume(
-                operator_envelope, note_duration);
+                operator_envelope, voice_duration);
             
             self.last_volume
         }
@@ -196,15 +196,15 @@ impl NoteOperatorVolumeEnvelope {
     pub fn restart(&mut self){
         self.stage = EnvelopeStage::Attack;
         self.volume_at_stage_change = self.last_volume;
-        self.duration_at_stage_change = NoteDuration(0.0);
+        self.duration_at_stage_change = VoiceDuration(0.0);
     }
 }
 
-impl Default for NoteOperatorVolumeEnvelope {
+impl Default for VoiceOperatorVolumeEnvelope {
     fn default() -> Self {
         Self {
             stage: EnvelopeStage::Attack,
-            duration_at_stage_change: NoteDuration(0.0),
+            duration_at_stage_change: VoiceDuration(0.0),
             volume_at_stage_change: 0.0,
             last_volume: 0.0
         }
@@ -213,51 +213,51 @@ impl Default for NoteOperatorVolumeEnvelope {
 
 
 #[derive(Debug, Copy, Clone)]
-pub struct NoteOperator {
+pub struct VoiceOperator {
     pub last_phase: Phase,
-    pub volume_envelope: NoteOperatorVolumeEnvelope,
+    pub volume_envelope: VoiceOperatorVolumeEnvelope,
 }
 
-impl Default for NoteOperator {
+impl Default for VoiceOperator {
     fn default() -> Self {
         Self {
             last_phase: Phase(0.0),
-            volume_envelope: NoteOperatorVolumeEnvelope::default(),
+            volume_envelope: VoiceOperatorVolumeEnvelope::default(),
         }
     }
 }
 
 
 #[derive(Debug, Clone)]
-pub struct Note {
-    pub pressed: bool,
+pub struct Voice {
     pub active: bool,
-    pub duration: NoteDuration,
-    pub duration_at_key_release: Option<NoteDuration>,
-    pub velocity: NoteVelocity,
     pub midi_pitch: MidiPitch,
-    pub operators: [NoteOperator; NUM_OPERATORS],
+    pub duration: VoiceDuration,
+    pub key_pressed: bool,
+    pub key_velocity: KeyVelocity,
+    pub duration_at_key_release: Option<VoiceDuration>,
+    pub operators: [VoiceOperator; NUM_OPERATORS],
 }
 
-impl Note {
+impl Voice {
     pub fn new(midi_pitch: MidiPitch) -> Self {
-        let operators = [NoteOperator::default(); NUM_OPERATORS];
+        let operators = [VoiceOperator::default(); NUM_OPERATORS];
 
         Self {
-            pressed: false,
             active: false,
-            velocity: NoteVelocity::default(),
             midi_pitch: midi_pitch,
-            duration: NoteDuration(0.0),
+            duration: VoiceDuration(0.0),
+            key_pressed: false,
+            key_velocity: KeyVelocity::default(),
             duration_at_key_release: None,
             operators: operators,
         }
     }
 
-    pub fn press(&mut self, velocity: u8){
-        self.velocity = NoteVelocity::from_midi_velocity(velocity);
-        self.pressed = true;
-        self.duration = NoteDuration(0.0);
+    pub fn press_key(&mut self, velocity: u8){
+        self.key_velocity = KeyVelocity::from_midi_velocity(velocity);
+        self.key_pressed = true;
+        self.duration = VoiceDuration(0.0);
         self.duration_at_key_release = None;
 
         if self.active {
@@ -266,21 +266,21 @@ impl Note {
             }
         } else {
             for operator in self.operators.iter_mut(){
-                *operator = NoteOperator::default();
+                *operator = VoiceOperator::default();
             }
 
             self.active = true;
         }
     }
 
-    pub fn release(&mut self){
-        self.pressed = false;
+    pub fn release_key(&mut self){
+        self.key_pressed = false;
         self.duration_at_key_release = Some(self.duration);
     }
 
     pub fn deactivate_if_envelopes_ended(&mut self) {
-        let all_envelopes_ended = self.operators.iter().all(|note_operator|
-            note_operator.volume_envelope.stage == EnvelopeStage::Ended
+        let all_envelopes_ended = self.operators.iter().all(|voice_operator|
+            voice_operator.volume_envelope.stage == EnvelopeStage::Ended
         );
 
         if all_envelopes_ended {
