@@ -7,7 +7,6 @@ use array_init::array_init;
 use parking_lot::Mutex;
 use rand::{FromEntropy, Rng};
 use rand::rngs::SmallRng;
-use smallvec::SmallVec;
 
 use vst::api::{Supported, Events};
 use vst::buffer::AudioBuffer;
@@ -119,7 +118,6 @@ macro_rules! impl_get_value_for_interpolatable_parameter {
 
 
 type Notes = [Note; 128];
-type FadeoutNotes = SmallVec<[Note; 1024]>;
 
 
 /// State used for processing
@@ -130,11 +128,6 @@ pub struct ProcessingState {
     pub bpm: BeatsPerMinute,
     pub rng: SmallRng,
     pub notes: Notes,
-
-    /// When notes are pressed again while they're still active, they get
-    /// copied here so they can fade out in peace
-    pub fadeout_notes: FadeoutNotes,
-
     pub parameters: Arc<Mutex<Parameters>>,
 }
 
@@ -386,14 +379,6 @@ impl FmSynth {
     }
 
     fn note_on(&mut self, pitch: u8, velocity: u8) {
-        let mut note_clone = self.processing.notes[pitch as usize].clone();
-
-        if note_clone.active {
-            note_clone.release();
-
-            self.processing.fadeout_notes.push(note_clone);
-        }
-
         self.processing.notes[pitch as usize].press(velocity);
     }
 
@@ -425,9 +410,7 @@ impl Plugin for FmSynth {
 
             let mut parameters = self.processing.parameters.lock();
 
-            for note in self.processing.notes.iter_mut()
-                .chain(self.processing.fadeout_notes.iter_mut()){
-
+            for note in self.processing.notes.iter_mut(){
                 if note.active {
                     let (out_left, out_right) = Self::generate_note_samples(
                         &mut self.processing.rng,
@@ -440,16 +423,18 @@ impl Plugin for FmSynth {
                     *output_sample_left += Self::hard_limit(out_left) as f32;
                     *output_sample_right += Self::hard_limit(out_right) as f32;
 
-                    note.deactivate_if_finished();
-
                     note.duration.0 += time_per_sample.0;
+
+                    note.deactivate_if_envelopes_ended();
                 }
             }
 
             self.processing.global_time.0 += time_per_sample.0;
         }
 
-        self.processing.fadeout_notes.retain(|note| note.active);
+        for note in self.processing.notes.iter_mut(){
+            note.deactivate_extra_check();
+        }
     }
 
     fn new(host: HostCallback) -> Self {
@@ -471,7 +456,6 @@ impl Plugin for FmSynth {
             bpm: BeatsPerMinute(120.0),
             rng: SmallRng::from_entropy(),
             notes: array_init(|i| Note::new(MidiPitch::new(i as u8))),
-            fadeout_notes: SmallVec::new(),
             parameters: parameters.clone(),
         };
 

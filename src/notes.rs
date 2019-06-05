@@ -142,7 +142,7 @@ impl NoteOperatorVolumeEnvelope {
         match self.stage {
             Attack => {
                 calculate_envelope_volume(
-                    0.0,
+                    self.volume_at_stage_change,
                     operator_envelope.attack_end_value.value,
                     duration_since_stage_change,
                     operator_envelope.attack_duration.value,
@@ -187,6 +187,12 @@ impl NoteOperatorVolumeEnvelope {
             operator_envelope, note_duration);
         
         self.last_volume
+    }
+
+    pub fn restart(&mut self){
+        self.stage = EnvelopeStage::Attack;
+        self.volume_at_stage_change = self.last_volume;
+        self.duration_at_stage_change = NoteDuration(0.0);
     }
 }
 
@@ -247,12 +253,19 @@ impl Note {
     pub fn press(&mut self, velocity: u8){
         self.velocity = NoteVelocity::from_midi_velocity(velocity);
         self.pressed = true;
-        self.active = true;
         self.duration = NoteDuration(0.0);
         self.duration_at_key_release = None;
 
-        for operator in self.operators.iter_mut(){
-            *operator = NoteOperator::default();
+        if self.active {
+            for operator in self.operators.iter_mut(){
+                operator.volume_envelope.restart();
+            }
+        } else {
+            for operator in self.operators.iter_mut(){
+                *operator = NoteOperator::default();
+            }
+
+            self.active = true;
         }
     }
 
@@ -261,22 +274,25 @@ impl Note {
         self.duration_at_key_release = Some(self.duration);
     }
 
-    pub fn deactivate_if_finished(&mut self) {
+    pub fn deactivate_if_envelopes_ended(&mut self) {
         let all_envelopes_ended = self.operators.iter().all(|note_operator|
             note_operator.volume_envelope.stage == EnvelopeStage::Ended
         );
 
         if all_envelopes_ended {
             self.active = false;
+        }
+    }
 
+    // When CPU load gets very high, envelopes seem not to be completed,
+    // correctly, causing lots of fadeout noted to be left in the list
+    // still set to active although they should be silent. I try to check
+    // for that here, even though this is most likely a bug in the
+    // envelope implementation
+    pub fn deactivate_extra_check(&mut self){
+        if !self.active {
             return;
         }
-
-        // When CPU load gets very high, envelopes seem not to be completed,
-        // correctly, causing lots of fadeout noted to be left in the list
-        // still set to active although they should be silent. I try to check
-        // for that here, even though this is most likely a bug in the
-        // envelope implementation
         if let Some(d) = self.duration_at_key_release {
             if self.duration.0 > d.0 + OPERATOR_ENVELOPE_MAX_DURATION + 1.0 {
                 self.active = false;
