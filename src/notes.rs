@@ -180,13 +180,17 @@ impl NoteOperatorVolumeEnvelope {
         note_pressed: bool,
         note_duration: NoteDuration,
     ) -> f64 {
-        self.advance_if_note_not_pressed(note_pressed, note_duration);
-        self.advance_if_stage_time_up(operator_envelope, note_duration);
+        if self.stage == EnvelopeStage::Ended {
+            return 0.0
+        } else {
+            self.advance_if_note_not_pressed(note_pressed, note_duration);
+            self.advance_if_stage_time_up(operator_envelope, note_duration);
 
-        self.last_volume = self.calculate_stage_volume(
-            operator_envelope, note_duration);
-        
-        self.last_volume
+            self.last_volume = self.calculate_stage_volume(
+                operator_envelope, note_duration);
+            
+            self.last_volume
+        }
     }
 
     pub fn restart(&mut self){
