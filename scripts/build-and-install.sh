@@ -5,7 +5,7 @@ set -e
 NAME="FM Rust"
 MOVE_TO="/Library/Audio/Plug-Ins/VST/FM_Rust/"
 
-cargo build --release
+RUSTFLAGS="-C target-cpu=native" cargo build --release
 ./scripts/osx_vst_bundler.sh "$NAME" target/release/libfm.dylib
 
 if [ -d "$MOVE_TO" ]; then
