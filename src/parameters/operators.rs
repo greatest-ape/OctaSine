@@ -244,13 +244,16 @@ impl OperatorPanning {
         }
     }
     pub fn get_value(&mut self, time: TimeCounter) -> f64 {
-        let mut left_and_right = self.left_and_right;
+        let mut opt_new_left_and_right = None;
 
-        let value = self.value.get_value(time, &mut |panning| {
-            left_and_right = Self::calculate_left_and_right(panning);
+        let value = self.value.get_value(time, &mut |new_panning| {
+            opt_new_left_and_right =
+                Some(Self::calculate_left_and_right(new_panning));
         });
 
-        self.left_and_right = left_and_right;
+        if let Some(new_left_and_right) = opt_new_left_and_right {
+            self.left_and_right = new_left_and_right;
+        }
 
         value
     }
@@ -687,5 +690,37 @@ mod tests {
             .set_parameter_value_text("10".to_string()));
         assert_eq!(operator.volume_envelope.attack_duration.value,
             OPERATOR_ENVELOPE_MAX_DURATION);
+    }
+
+    #[test]
+    fn test_operator_panning_left_and_right(){
+        let mut operator = OperatorPanning::new(0);
+
+        let mut time = TimeCounter(0.0);
+        let mut value = operator.get_value(time);
+
+        operator.set_parameter_value_float(1.0);
+
+        let n = INTERPOLATION_SAMPLES_PER_STEP * INTERPOLATION_STEPS + 1;
+        let mut left_and_right = [0.0, 0.0];
+
+        for i in 0..n {
+            let new_value = operator.get_value(time);
+            let new_left_and_right = operator.left_and_right;
+
+            if i >= INTERPOLATION_SAMPLES_PER_STEP &&
+                i % INTERPOLATION_SAMPLES_PER_STEP == 0 {
+                assert_ne!(value, new_value);
+                assert_ne!(left_and_right, new_left_and_right);
+            }
+
+            value = new_value;
+            left_and_right = new_left_and_right;
+
+            time.0 += 1.0 / 44100.0;
+        }
+
+        assert_approx_eq!(left_and_right[0], 0.0);
+        assert_approx_eq!(left_and_right[1], 1.0);
     }
 }
