@@ -29,6 +29,7 @@ assert_approx_eq = "1"
 plotlib = "0.4"
 quickcheck = "0.8"
 quickcheck_macros = "0.8"
+statistical = "1"
 
 [profile.release]
 debug = true

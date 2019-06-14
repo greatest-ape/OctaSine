@@ -1,9 +1,8 @@
-use std::f64::consts::E;
+use std::f32::consts::E;
 
 use crate::common::*;
 use crate::constants::*;
-use crate::operators::*;
-use crate::parameters::MasterFrequency;
+use crate::parameters::processing::*;
 
 
 pub enum CurveType {
@@ -18,10 +17,10 @@ pub enum CurveType {
 
 
 #[derive(Debug, Copy, Clone)]
-pub struct VoiceDuration(pub f64);
+pub struct VoiceDuration(pub f32);
 
 #[derive(Debug, Copy, Clone)]
-pub struct KeyVelocity(pub f64);
+pub struct KeyVelocity(pub f32);
 
 impl KeyVelocity {
     pub fn from_midi_velocity(midi_velocity: u8) -> Self {
@@ -29,7 +28,7 @@ impl KeyVelocity {
             Self::default()
         }
         else {
-            Self(midi_velocity as f64 / 127.0)
+            Self(midi_velocity as f32 / 127.0)
         }
     }
 }
@@ -43,7 +42,7 @@ impl Default for KeyVelocity {
 
 #[derive(Debug, Copy, Clone)]
 pub struct MidiPitch {
-    frequency_factor: f64,
+    frequency_factor: f32,
 }
 
 impl MidiPitch {
@@ -53,14 +52,14 @@ impl MidiPitch {
         }
     }
 
-    fn calculate_frequency_factor(midi_pitch: u8) -> f64 {
-        let note_diff = (midi_pitch as i8 - 69) as f64;
+    fn calculate_frequency_factor(midi_pitch: u8) -> f32 {
+        let note_diff = (midi_pitch as i8 - 69) as f32;
 
         (note_diff / 12.0).exp2()
     }
 
-    pub fn get_frequency(&self, master_frequency: MasterFrequency) -> f64 {
-        self.frequency_factor * master_frequency.value
+    pub fn get_frequency(&self, master_frequency: f32) -> f32 {
+        self.frequency_factor * master_frequency
     }
 }
 
@@ -69,8 +68,8 @@ impl MidiPitch {
 pub struct VoiceOperatorVolumeEnvelope {
     stage: EnvelopeStage,
     duration_at_stage_change: VoiceDuration,
-    volume_at_stage_change: f64,
-    last_volume: f64,
+    volume_at_stage_change: f32,
+    last_volume: f32,
 }
 
 impl VoiceOperatorVolumeEnvelope {
@@ -95,7 +94,7 @@ impl VoiceOperatorVolumeEnvelope {
 
     fn advance_if_stage_time_up(
         &mut self,
-        operator_envelope: &OperatorVolumeEnvelope,
+        operator_envelope: &ProcessingOperatorEnvelope,
         voice_duration: VoiceDuration,
     ) {
         use EnvelopeStage::*;
@@ -131,9 +130,9 @@ impl VoiceOperatorVolumeEnvelope {
 
     fn calculate_stage_volume(
         &self,
-        operator_envelope: &OperatorVolumeEnvelope,
+        operator_envelope: &ProcessingOperatorEnvelope,
         voice_duration: VoiceDuration,
-    ) -> f64 {
+    ) -> f32 {
         use EnvelopeStage::*;
 
         let duration_since_stage_change = voice_duration.0 -
@@ -176,10 +175,10 @@ impl VoiceOperatorVolumeEnvelope {
     /// Calculate volume and possibly advance envelope stage
     pub fn get_volume(
         &mut self,
-        operator_envelope: &OperatorVolumeEnvelope,
+        operator_envelope: &ProcessingOperatorEnvelope,
         key_pressed: bool,
         voice_duration: VoiceDuration,
-    ) -> f64 {
+    ) -> f32 {
         if self.stage == EnvelopeStage::Ended {
             return 0.0
         } else {
@@ -214,6 +213,7 @@ impl Default for VoiceOperatorVolumeEnvelope {
 
 #[derive(Debug, Copy, Clone)]
 pub struct VoiceOperator {
+    /// Float between 0.0 and 1.0
     pub last_phase: Phase,
     pub volume_envelope: VoiceOperatorVolumeEnvelope,
 }
@@ -291,19 +291,21 @@ impl Voice {
 
 
 fn calculate_envelope_volume(
-    start_volume: f64,
-    end_volume: f64,
-    time_so_far_this_stage: f64,
-    stage_length: f64,
-) -> f64 {
+    start_volume: f32,
+    end_volume: f32,
+    time_so_far_this_stage: f32,
+    stage_length: f32,
+) -> f32 {
     let time_progress = time_so_far_this_stage / stage_length;
 
-    start_volume + (end_volume - start_volume) *
-        calculate_curve(CurveType::Linear, time_progress)
+    (end_volume - start_volume).mul_add(
+        calculate_curve(CurveType::Linear, time_progress),
+        start_volume 
+    )
 }
 
 
-fn calculate_curve(curve: CurveType, v: f64) -> f64 {
+fn calculate_curve(curve: CurveType, v: f32) -> f32 {
     match curve {
         CurveType::Exp => (v.exp() - 1.0) / (E - 1.0),
         CurveType::Ln => (1.0 + v * (E - 1.0)).ln(),
@@ -322,13 +324,13 @@ mod tests {
 
     use super::*;
 
-    fn valid_volume(volume: f64) -> bool {
+    fn valid_volume(volume: f32) -> bool {
         volume >= 0.0 && volume <= 1.0
     }
 
     #[test]
     fn test_calculate_envelope_volume_output_in_range(){
-        fn prop(values: (f64, f64, f64, f64)) -> TestResult {
+        fn prop(values: (f32, f32, f32, f32)) -> TestResult {
             let start_volume = values.0;
             let end_volume = values.1;
             let time_so_far_this_stage = values.2;
@@ -342,7 +344,7 @@ mod tests {
                 return TestResult::discard();
             }
 
-            if stage_length > OPERATOR_ENVELOPE_MAX_DURATION {
+            if stage_length > ENVELOPE_MAX_DURATION {
                 return TestResult::discard();
             }
 
@@ -362,7 +364,7 @@ mod tests {
             TestResult::from_bool(success)
         }
 
-        quickcheck(prop as fn((f64, f64, f64, f64)) -> TestResult);
+        quickcheck(prop as fn((f32, f32, f32, f32)) -> TestResult);
     }
 
     #[test]
@@ -373,7 +375,7 @@ mod tests {
 
     #[test]
     fn test_calculate_envelope_volume_stage_change_continuity(){
-        fn prop(stage_change_volume: f64) -> TestResult {
+        fn prop(stage_change_volume: f32) -> TestResult {
             if !valid_volume(stage_change_volume) {
                 return TestResult::discard();
             }
@@ -387,7 +389,7 @@ mod tests {
             TestResult::from_bool(stage_1_end == stage_2_start)
         }
 
-        quickcheck(prop as fn(f64) -> TestResult);
+        quickcheck(prop as fn(f32) -> TestResult);
     }
 
     /// Generate plots to check how envelopes look.
@@ -399,8 +401,8 @@ mod tests {
     #[allow(dead_code)]
     fn test_gen_plots(){
         fn plot_envelope_stage(
-            start_volume: f64,
-            end_volume: f64,
+            start_volume: f32,
+            end_volume: f32,
             filename: &str
         ){
             use plotlib::function::*;
@@ -413,9 +415,9 @@ mod tests {
                 calculate_envelope_volume(
                     start_volume,
                     end_volume,
-                    x,
-                    length,
-                )
+                    x as f32,
+                    length as f32,
+                ).into()
             }, 0., length);
 
             let v = ContinuousView::new()

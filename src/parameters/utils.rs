@@ -1,30 +1,22 @@
 
 
-pub fn map_parameter_value_to_step<T: Copy>(steps: &[T], value: f64) -> T {
-    let increment = 1.0 / steps.len() as f64;
-    let mut s = 0.0;
+pub fn map_parameter_value_to_step<T: Copy>(steps: &[T], value: f32) -> T {
+    let value = value.max(0.0).min(1.0);
+    let len = steps.len();
 
-    for step in steps.iter() {
-        s += increment;
-
-        if value <= s {
-            return *step;
-        }
-    }
-
-    *steps.last().expect("steps are empty")
+    steps[((value * len as f32) as usize).min(len - 1)]
 }
 
 
 pub fn map_step_to_parameter_value<T: Copy + PartialEq>(
     steps: &[T],
     step_value: T,
-) -> f64 {
-    for (i, step) in steps.iter().enumerate(){
+) -> f32 {
+    for (index, step) in steps.iter().enumerate(){
         if *step == step_value {
-            let increment = 1.0 / (steps.len() - 1).max(1) as f64;
+            let fraction = 1.0 / (steps.len() - 1) as f32;
 
-            return i as f64 * increment;
+            return fraction * index as f32;
         }
     }
 
@@ -33,59 +25,54 @@ pub fn map_step_to_parameter_value<T: Copy + PartialEq>(
 
 
 pub fn map_parameter_value_to_value_with_steps(
-    steps: &[f64],
-    parameter_value: f64
-) -> f64 {
-    let increment = 1.0 / (steps.len() - 1).max(1) as f64;
+    steps: &[f32],
+    parameter_value: f32
+) -> f32 {
+    let max_index = steps.len() - 1;
 
-    let mut sum = 0.0;
-    let mut prev_step = steps.first().expect("steps are empty");
-    let mut prev_sum = sum;
+    let index_float = parameter_value.max(0.0).min(1.0) * max_index as f32;
+    let index_fract = index_float.fract();
 
-    for step in steps[1..].iter() {
-        sum += increment;
+    let index_low = index_float as usize;
 
-        if parameter_value <= sum {
-            // Interpolate
-            let interpolation_ratio = (parameter_value - prev_sum) / increment;
+    if index_low == max_index {
+        steps[index_low]
+    } else {
+        let step_low = steps[index_low];
+        let step_high = steps[index_low + 1];
 
-            return prev_step + (interpolation_ratio * (step - prev_step));
-        }
-
-        prev_step = step;
-        prev_sum = sum;
+        index_fract.mul_add(step_high - step_low, step_low)
     }
-
-    *steps.last().expect("steps are empty")
 }
 
 
 pub fn map_value_to_parameter_value_with_steps(
-    steps: &[f64],
-    internal_value: f64,
-) -> f64 {
-    let increment = 1.0 / (steps.len() - 1).max(1) as f64;
+    steps: &[f32],
+    internal_value: f32,
+) -> f32 {
+    let mut prev_step = *steps.first().expect("steps are empty");
 
-    let mut sum = 0.0;
-    let mut prev_step = steps.first().expect("steps are empty");
+    for (index, step) in steps[1..].iter().enumerate() {
+        let step = *step;
 
-    for step in steps[1..].iter() {
-        if internal_value <= *step {
+        if internal_value <= step {
             let ratio = (internal_value - prev_step) / (step - prev_step);
+            let fraction = ((steps.len() - 1) as f32).recip();
 
-            return sum + ratio * increment;
+            return ratio.mul_add(
+                fraction,
+                fraction * index as f32,
+            );
         }
 
         prev_step = step;
-
-        sum += increment;
     }
 
     1.0
 }
 
 
-pub fn round_to_step(steps: &[f64], value: f64) -> f64 {
+pub fn round_to_step(steps: &[f32], value: f32) -> f32 {
     let mut prev_step = *steps.first().expect("steps are empty");
 
     for step in &steps[1..] {
@@ -117,7 +104,7 @@ mod tests {
 
     use super::*;
 
-    fn get_all_steps() -> Vec<f64> {
+    fn get_all_steps() -> Vec<f32> {
         let mut steps = Vec::new();
 
         steps.append(&mut OPERATOR_RATIO_STEPS.to_vec());
@@ -132,7 +119,7 @@ mod tests {
         steps
     }
 
-    fn valid_parameter_value(value: f64) -> bool {
+    fn valid_parameter_value(value: f32) -> bool {
         !(value.is_nan() || value > 1.0 || value < 0.0)
     }
 
@@ -177,7 +164,7 @@ mod tests {
 
     #[test]
     fn test_step_mapping(){
-        fn prop(value: f64) -> TestResult {
+        fn prop(value: f32) -> TestResult {
             if value < 0.0 || value > 1.0 {
                 return TestResult::discard();
             }
@@ -202,12 +189,12 @@ mod tests {
             TestResult::from_bool(inner == new_inner)
         }
 
-        quickcheck(prop as fn(f64) -> TestResult);
+        quickcheck(prop as fn(f32) -> TestResult);
     }
 
     #[test]
     fn test_map_value_to_parameter_value_with_steps_valid_number(){
-        fn prop(value: f64) -> TestResult {
+        fn prop(value: f32) -> TestResult {
             if value < 0.0 {
                 return TestResult::discard();
             }
@@ -220,7 +207,7 @@ mod tests {
             TestResult::from_bool(valid_parameter_value(value))
         }
 
-        quickcheck(prop as fn(f64) -> TestResult);
+        quickcheck(prop as fn(f32) -> TestResult);
     }
 
     #[test]
@@ -269,7 +256,7 @@ mod tests {
 
     #[test]
     fn test_smooth_step_mapping(){
-        fn prop(parameter_value: f64) -> TestResult {
+        fn prop(parameter_value: f32) -> TestResult {
             if parameter_value < 0.0 || parameter_value > 1.0 {
                 return TestResult::discard();
             }
@@ -298,7 +285,7 @@ mod tests {
             TestResult::from_bool(success)
         }
 
-        quickcheck(prop as fn(f64) -> TestResult);
+        quickcheck(prop as fn(f32) -> TestResult);
     }
 
     #[test]
