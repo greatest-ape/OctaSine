@@ -8,7 +8,6 @@ pub const TABLE_SIZE_DIVIDED_BY_PI: f32 = TABLE_SIZE as f32 / PI;
 pub const TABLE_SIZE_TIMES_2_FLOAT: f32 = (TABLE_SIZE * 2) as f32;
 
 
-/// Lookup table for sine function
 pub struct SineLookupTable {
     table: [f32; TABLE_SIZE]
 }
@@ -100,7 +99,113 @@ impl SineLookupTable {
 
         f32::from_bits(approximation)
     }
+
 }
+
+
+#[cfg(feature = "simd")]
+impl SineLookupTable {
+    #[inline]
+    pub fn sin_simd(
+        &self,
+        inputs: ::packed_simd::f32x2
+    ) -> ::packed_simd::f32x2 {
+        use packed_simd::*;
+
+        let is_negative = inputs.lt(f32x2::splat(0.0));
+
+        let mut inputs = inputs;
+
+        inputs = inputs.abs() % TAU;
+        let is_gte_pi = inputs.ge(f32x2::splat(PI));
+
+        inputs = is_gte_pi.select(inputs - PI, inputs);
+
+        let indeces_float = inputs * TABLE_SIZE_DIVIDED_BY_PI;
+        let indeces_floor = i32x2::from_cast(indeces_float);
+        let indeces_fract = indeces_float - f32x2::from_cast(indeces_floor);
+        let indeces_ceil = indeces_floor + 1;
+
+        let low = f32x2::new(
+            self.table[indeces_floor.extract(0) as usize],
+            self.table[indeces_floor.extract(1) as usize]
+        );
+        let high = f32x2::new(
+            self.table[indeces_ceil.extract(0) as usize % TABLE_SIZE],
+            self.table[indeces_ceil.extract(1) as usize % TABLE_SIZE]
+        );
+
+        let mut outputs = (high - low) * indeces_fract + low;
+
+        outputs = is_negative.select(outputs * -1.0, outputs);
+        outputs = is_gte_pi.select(outputs * -1.0, outputs);
+
+        outputs
+    }
+}
+
+
+#[cfg(feature = "simd")]
+macro_rules! impl_sin_tau_simd {
+    ($name:ident, $float_type:ty, $int_type:ty, $lanes:expr) => {
+        impl SineLookupTable {
+            #[inline]
+            #[cfg(feature = "simd")]
+            pub fn $name(
+                &self,
+                inputs: $float_type
+            ) -> $float_type {
+                use packed_simd::*;
+
+                let is_negative = inputs.lt(<$float_type>::splat(0.0));
+
+                let mut inputs = inputs;
+
+                inputs = inputs.abs();
+                // Fract
+                inputs -= <$float_type>::from_cast(<$int_type>::from_cast(inputs));
+
+                let is_gte_half = inputs.ge(<$float_type>::splat(0.5));
+
+                inputs = is_gte_half.select(inputs - 0.5, inputs);
+
+                let indeces_float = inputs * TABLE_SIZE_TIMES_2_FLOAT;
+                let indeces_floor = <$int_type>::from_cast(indeces_float);
+                let indeces_fract = indeces_float - <$float_type>::from_cast(indeces_floor);
+                let indeces_ceil = indeces_floor + 1;
+
+                let low_indeces: [i32; $lanes] = indeces_floor.into();
+                let high_indeces: [i32; $lanes] = indeces_ceil.into();
+
+                let mut low_approximations = [0.0f32; $lanes];
+                let mut high_approximations = [0.0f32; $lanes];
+
+                for i in 0..$lanes {
+                    low_approximations[i] = self.table[low_indeces[i] as usize];
+                    high_approximations[i] = self.table[high_indeces[i] as usize % TABLE_SIZE];
+                }
+
+                let low = <$float_type>::from(low_approximations);
+                let high = <$float_type>::from(high_approximations);
+
+                let mut outputs = (high - low) * indeces_fract + low;
+
+                let flip_sign = is_negative ^ is_gte_half;
+                outputs = flip_sign.select(outputs * -1.0, outputs);
+
+                outputs
+            }
+        }
+    };
+}
+
+
+#[cfg(feature = "simd")]
+impl_sin_tau_simd!(sin_tau_simd_x2, ::packed_simd::f32x2, ::packed_simd::i32x2, 2);
+
+
+#[cfg(feature = "simd")]
+impl_sin_tau_simd!(sin_tau_simd_x4, ::packed_simd::f32x4, ::packed_simd::i32x4, 4);
 
 
 #[cfg(test)]
@@ -221,6 +326,77 @@ mod tests {
         quickcheck(prop as fn(f32) -> TestResult);
     }
 
+    #[cfg(feature = "simd")]
+    #[test]
+    fn test_table_sin_simd_quickcheck(){
+        use packed_simd::*;
+
+        fn prop(value: f32) -> TestResult {
+            let table = SineLookupTable::new();
+
+            let v = f32x2::new(value, 0.0);
+
+            let table_sin = table.sin_simd(v).extract(0);
+            let reference_sin = value.sin();
+            let diff = (table_sin - reference_sin).abs();
+
+            let success = diff < 0.000003; // Not of large importance
+
+            if !success {
+                println!();
+                println!("input value:      {}", value);
+                println!("table sin():      {}", table_sin);
+                println!("reference sin():  {}", reference_sin);
+                println!("difference:       {}", diff);
+            }
+
+            TestResult::from_bool(success)
+        }
+
+        quickcheck(prop as fn(f32) -> TestResult);
+    }
+
+    #[cfg(feature = "simd")]
+    #[test]
+    fn test_table_sin_tau_simd_quickcheck(){
+        use packed_simd::*;
+
+        fn prop(value: f32) -> TestResult {
+            if value.abs() > 400.0 {
+                return TestResult::discard();
+            }
+
+            let x2 = f32x2::splat(value);
+            let x4 = f32x4::splat(value);
+
+            let table = SineLookupTable::new();
+
+            let real_value = value * TAU;
+
+            let x2_sin = table.sin_tau_simd_x2(x2).extract(0);
+            let x4_sin = table.sin_tau_simd_x4(x4).extract(0);
+
+            assert_eq!(x2_sin, x4_sin);
+
+            let reference_sin = real_value.sin();
+            let diff = (x2_sin - reference_sin).abs();
+
+            let success = diff < 0.00005;
+
+            if !success {
+                println!();
+                println!("input value:      {}", value);
+                println!("real value:       {}", real_value);
+                println!("table sine:       {}", x2_sin);
+                println!("reference sine:   {}", reference_sin);
+                println!("difference:       {}", diff);
+            }
+
+            TestResult::from_bool(success)
+        }
+
+        quickcheck(prop as fn(f32) -> TestResult);
+    }
 
     /// Test accuracy of SineLookupTable
     /// 

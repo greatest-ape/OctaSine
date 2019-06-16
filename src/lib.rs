@@ -1,3 +1,5 @@
+#![feature(link_llvm_intrinsics)]
+
 #[macro_use]
 extern crate log;
 
@@ -22,6 +24,7 @@ pub mod voices;
 pub mod parameters;
 pub mod presets;
 
+use crate::approximations::*;
 use crate::common::*;
 use crate::constants::*;
 use crate::voices::*;
@@ -51,6 +54,7 @@ pub struct ProcessingState {
     pub time_per_sample: TimePerSample,
     pub bpm: BeatsPerMinute,
     pub rng: SmallRng,
+    pub sine_table: SineLookupTable,
     pub voices: [Voice; 128],
     pub parameters: ProcessingParameters,
 }
@@ -100,6 +104,232 @@ impl FmSynth {
 
     fn hard_limit(value: f32) -> f32 {
         value.min(1.0).max(-1.0)
+    }
+
+    #[cfg(feature = "simd")]
+    pub fn generate_voice_samples_simd(
+        _rng: &mut impl Rng,
+        sine_table: &SineLookupTable,
+        time: TimeCounter,
+        time_per_sample: TimePerSample,
+        parameters: &mut ProcessingParameters,
+        voice: &mut Voice,
+    ) -> (f32, f32) {
+        use packed_simd::*;
+
+        let operators = &mut parameters.operators;
+
+        // Extract data
+
+        let mut envelope_volume: [f32; 4] = [0.0; 4];
+        let mut operator_volume: [f32; 4] = [0.0; 4];
+        let mut operator_modulation_index = [0.0f32; 4];
+        let mut operator_feedback: [f32; 4] = [0.0; 4];
+        let mut operator_panning: [f32; 4] = [0.0; 4];
+        let mut operator_additive: [f32; 4] = [0.0; 4];
+        let mut operator_frequency_ratio: [f32; 4] = [0.0; 4];
+        let mut operator_frequency_free: [f32; 4] = [0.0; 4];
+        let mut operator_frequency_fine: [f32; 4] = [0.0; 4];
+        let mut operator_modulation_targets = [0usize; 4];
+
+        let mut operator_last_phase: [f32; 4] = [0.0; 4];
+
+        for (index, operator) in operators.iter_mut().enumerate(){
+            envelope_volume[index] = {
+                voice.operators[index].volume_envelope.get_volume(
+                    &operator.volume_envelope,
+                    voice.key_pressed,
+                    voice.duration
+                )
+            };
+
+            operator_volume[index] = operator.volume.get_value(time);
+            operator_modulation_index[index] = operator.modulation_index.get_value(time);
+            operator_feedback[index] = operator.feedback.get_value(time);
+            operator_panning[index] = operator.panning.get_value(time);
+
+            // Get additive factor; use 1.0 for operator 1
+            operator_additive[index] = if index == 0 {
+                1.0
+            } else {
+                operator.additive_factor.get_value(time)
+            };
+
+            operator_frequency_ratio[index] = operator.frequency_ratio.value;
+            operator_frequency_free[index] = operator.frequency_free.value;
+            operator_frequency_fine[index] = operator.frequency_fine.value;
+
+            if let Some(p) = &mut operator.output_operator {
+                use ProcessingOperatorModulationTarget::*;
+
+                let opt_value = match p {
+                    OperatorIndex2(p) => Some(p.get_value(time)),
+                    OperatorIndex3(p) => Some(p.get_value(time)),
+                };
+
+                if let Some(value) = opt_value {
+                    operator_modulation_targets[index] = value;
+                }
+            }
+
+            operator_last_phase[index] = voice.operators[index].last_phase.0;
+        }
+
+        // Put data into SIMD variables
+
+        let envelope_volume_simd = f32x4::from(envelope_volume);
+        let operator_volume_simd = f32x4::from(operator_volume);
+        let operator_feedback_simd = f32x4::from(operator_feedback);
+        let operator_modulation_index_simd = f32x4::from(operator_modulation_index);
+        let operator_panning_simd = f32x4::from(operator_panning);
+        let operator_additive_simd = f32x4::from(operator_additive);
+        let operator_frequency_ratio_simd = f32x4::from(operator_frequency_ratio);
+        let operator_frequency_free_simd = f32x4::from(operator_frequency_free);
+        let operator_frequency_fine_simd = f32x4::from(operator_frequency_fine);
+        let operator_last_phase_simd = f32x4::from(operator_last_phase);
+
+        // Do calculations
+
+        let zero_value_limit_simd = f32x4::splat(ZERO_VALUE_LIMIT);
+        
+        let operator_volume_product_simd = operator_volume_simd *
+            envelope_volume_simd;
+
+        let operator_volume_off_simd: m32x4 = operator_volume_product_simd.lt(
+            zero_value_limit_simd
+        );
+
+        // Calculate, save and return new phase * TAU
+        let operator_new_phase_simd: f32x4 = {
+            let base_frequency = voice.midi_pitch.get_frequency(
+                parameters.master_frequency.value
+            );
+
+            let operator_frequency_simd: f32x4 = base_frequency *
+                operator_frequency_ratio_simd *
+                operator_frequency_free_simd *
+                operator_frequency_fine_simd;
+
+            let mut operator_new_phase_simd = operator_last_phase_simd +
+                operator_frequency_simd * time_per_sample.0;
+
+            // Get fractional part of floats
+            operator_new_phase_simd -= f32x4::from_cast(
+                i32x4::from_cast(operator_new_phase_simd)
+            );
+
+            // Save new phase
+            for index in 0..4 {
+                voice.operators[index].last_phase.0 =
+                    operator_new_phase_simd.extract(index);
+            }
+
+            // operator_new_phase_simd
+            operator_new_phase_simd * TAU
+        };
+
+        // Calculate feedback if it is on on any operator
+        let feedback_simd: f32x4 = {
+            let all_feedback_off = operator_feedback_simd.lt(
+                zero_value_limit_simd
+            ).all();
+
+            if all_feedback_off {
+                f32x4::splat(0.0)
+            } else {
+                // operator_feedback_simd * sine_table.sin_tau_simd_x4(operator_new_phase_simd)
+                operator_feedback_simd * SleefSin35::sin(operator_new_phase_simd)
+            }
+        };
+
+        fn create_pairs(source: f32x4) -> [f32x2; 4] {
+            let array: [f32; 4] = source.into();
+            
+            [
+                f32x2::splat(array[0]),
+                f32x2::splat(array[1]),
+                f32x2::splat(array[2]),
+                f32x2::splat(array[3]),
+            ]
+        }
+
+        fn create_pairs_from_two(a: f32x4, b: f32x4) -> [f32x2; 4] {
+            let array_a: [f32; 4] = a.into();
+            let array_b: [f32; 4] = b.into();
+
+            [
+                f32x2::new(array_a[0], array_b[0]),
+                f32x2::new(array_a[1], array_b[1]),
+                f32x2::new(array_a[2], array_b[2]),
+                f32x2::new(array_a[3], array_b[3]),
+            ]
+        }
+
+        // Calculate panning tendency for weird modulation input panning
+        let tendency_pairs = {
+            let pan_transformed_simd = 2.0 * (operator_panning_simd - 0.5);
+            
+            let zero_splat_simd = f32x4::splat(0.0);
+            
+            let right_tendency_simd = pan_transformed_simd.max(zero_splat_simd);
+            let left_tendency_simd = (pan_transformed_simd * -1.0)
+                .max(zero_splat_simd);
+            
+            create_pairs_from_two(left_tendency_simd, right_tendency_simd)
+        };
+
+        let constant_power_panning_pairs = [
+            f32x2::from(operators[0].panning.left_and_right),
+            f32x2::from(operators[1].panning.left_and_right),
+            f32x2::from(operators[2].panning.left_and_right),
+            f32x2::from(operators[3].panning.left_and_right),
+        ];
+
+        // Extract data into pairs
+
+        let phase_pairs = create_pairs(operator_new_phase_simd);
+        let modulation_index_pairs = create_pairs(operator_modulation_index_simd);
+        let feedback_pairs = create_pairs(feedback_simd);
+        let operator_volume_product_pairs = create_pairs(operator_volume_product_simd);
+        let additive_pairs = create_pairs(operator_additive_simd);
+
+        let mut modulation_in_pairs = [f32x2::splat(0.0); 4];
+        let mut additive_out_simd = f32x2::splat(0.0);
+
+        for (index, target) in operator_modulation_targets.iter().enumerate().rev(){
+            let target = *target;
+
+            if operator_volume_off_simd.extract(index) {
+                continue;
+            }
+
+            let mono = modulation_in_pairs[index].sum();
+
+            modulation_in_pairs[index] = tendency_pairs[index] * mono +
+                (1.0 - tendency_pairs[index]) * modulation_in_pairs[index];
+
+            let sin_input_simd: f32x2 = modulation_index_pairs[index] *
+                (feedback_pairs[index] + modulation_in_pairs[index]) +
+                phase_pairs[index];
+
+            // let mut out_simd = sine_table.sin_tau_simd_x2(sin_input_simd);
+            let mut out_simd = SleefSin35::sin(sin_input_simd);
+
+            out_simd *= operator_volume_product_pairs[index] *
+                constant_power_panning_pairs[index];
+            
+            let additive_out_increase_simd = additive_pairs[index] * out_simd;
+
+            additive_out_simd += additive_out_increase_simd;
+            modulation_in_pairs[target] += out_simd - additive_out_increase_simd;
+        }
+
+        let volume_factor = VOICE_VOLUME_FACTOR * voice.key_velocity.0 *
+            parameters.master_volume.get_value(time);
+        
+        additive_out_simd *= volume_factor;
+
+        (additive_out_simd.extract(0), additive_out_simd.extract(1))
     }
 
     /// Generate stereo samples for a voice
@@ -333,8 +563,18 @@ impl Plugin for FmSynth {
 
             for voice in self.processing.voices.iter_mut(){
                 if voice.active {
+                    #[cfg(not(feature = "simd"))]
                     let (out_left, out_right) = Self::generate_voice_samples(
                         &mut self.processing.rng,
+                        self.processing.global_time,
+                        time_per_sample,
+                        &mut self.processing.parameters,
+                        voice,
+                    );
+                    #[cfg(feature = "simd")]
+                    let (out_left, out_right) = Self::generate_voice_samples_simd(
+                        &mut self.processing.rng,
+                        &self.processing.sine_table,
                         self.processing.global_time,
                         time_per_sample,
                         &mut self.processing.parameters,
@@ -378,6 +618,7 @@ impl Plugin for FmSynth {
             time_per_sample: Self::time_per_sample(sample_rate),
             bpm: BeatsPerMinute(120.0),
             rng: SmallRng::from_entropy(),
+            sine_table: SineLookupTable::new(),
             voices: array_init(|i| Voice::new(MidiPitch::new(i as u8))),
             parameters: processing_parameters,
         };

@@ -188,7 +188,7 @@ impl ParameterValueConversion for ProcessingMasterFrequency {
 
 // Operator volume
 
-create_interpolatable_processing_parameter!(ProcessingOperatorVolume, OPERATOR_DEFAULT_VOLUME);
+create_interpolatable_processing_parameter!(ProcessingOperatorVolume, DEFAULT_OPERATOR_VOLUME);
 
 impl ParameterValueConversion for ProcessingOperatorVolume {
     type ProcessingValue = f32;
@@ -211,13 +211,13 @@ impl ParameterValueConversion for ProcessingOperatorVolume {
 
 // Additive factor
 
-create_interpolatable_processing_parameter!(ProcessingOperatorAdditiveFactor, OPERATOR_DEFAULT_ADDITIVE_FACTOR);
+create_interpolatable_processing_parameter!(ProcessingOperatorAdditiveFactor, DEFAULT_OPERATOR_ADDITIVE_FACTOR);
 impl_parameter_value_conversion_identity!(ProcessingOperatorAdditiveFactor);
 
 
 // Frequency - ratio
 
-create_simple_processing_parameter!(ProcessingOperatorFrequencyRatio, f32, OPERATOR_DEFAULT_FREQUENCY_RATIO);
+create_simple_processing_parameter!(ProcessingOperatorFrequencyRatio, f32, DEFAULT_OPERATOR_FREQUENCY_RATIO);
 
 impl ParameterValueConversion for ProcessingOperatorFrequencyRatio {
     type ProcessingValue = f32;
@@ -243,7 +243,7 @@ impl ParameterValueConversion for ProcessingOperatorFrequencyRatio {
 
 // Frequency - free
 
-create_simple_processing_parameter!(ProcessingOperatorFrequencyFree, f32, OPERATOR_DEFAULT_FREQUENCY_FREE);
+create_simple_processing_parameter!(ProcessingOperatorFrequencyFree, f32, DEFAULT_OPERATOR_FREQUENCY_FREE);
 
 impl ParameterValueConversion for ProcessingOperatorFrequencyFree {
     type ProcessingValue = f32;
@@ -266,7 +266,7 @@ impl ParameterValueConversion for ProcessingOperatorFrequencyFree {
 
 // Frequency - fine
 
-create_simple_processing_parameter!(ProcessingOperatorFrequencyFine, f32, OPERATOR_DEFAULT_FREQUENCY_FINE);
+create_simple_processing_parameter!(ProcessingOperatorFrequencyFine, f32, DEFAULT_OPERATOR_FREQUENCY_FINE);
 
 impl ParameterValueConversion for ProcessingOperatorFrequencyFine {
     type ProcessingValue = f32;
@@ -289,14 +289,14 @@ impl ParameterValueConversion for ProcessingOperatorFrequencyFine {
 
 // Feedback
 
-create_interpolatable_processing_parameter!(ProcessingOperatorFeedback, OPERATOR_DEFAULT_FEEDBACK);
+create_interpolatable_processing_parameter!(ProcessingOperatorFeedback, DEFAULT_OPERATOR_FEEDBACK);
 
 impl_parameter_value_conversion_identity!(ProcessingOperatorFeedback);
 
 
 // Modulation index
 
-create_interpolatable_processing_parameter!(ProcessingOperatorModulationIndex, OPERATOR_DEFAULT_MODULATION_INDEX);
+create_interpolatable_processing_parameter!(ProcessingOperatorModulationIndex, DEFAULT_OPERATOR_MODULATION_INDEX);
 
 impl ParameterValueConversion for ProcessingOperatorModulationIndex {
     type ProcessingValue = f32;
@@ -318,7 +318,7 @@ impl ParameterValueConversion for ProcessingOperatorModulationIndex {
 
 // Wave type
 
-create_simple_processing_parameter!(ProcessingOperatorWaveType, WaveType, OPERATOR_DEFAULT_WAVE_TYPE);
+create_simple_processing_parameter!(ProcessingOperatorWaveType, WaveType, DEFAULT_OPERATOR_WAVE_TYPE);
 
 impl ParameterValueConversion for ProcessingOperatorWaveType {
     type ProcessingValue = WaveType;
@@ -394,7 +394,7 @@ impl_envelope_duration_value_conversion!(ProcessingOperatorReleaseDuration);
 
 // Modulation target
 
-create_simple_processing_parameter!(ProcessingOperatorModulationTarget2, usize, OPERATOR_3_DEFAULT_MOD_TARGET);
+create_simple_processing_parameter!(ProcessingOperatorModulationTarget2, usize, DEFAULT_OPERATOR_3_MOD_TARGET);
 
 impl ParameterValueConversion for ProcessingOperatorModulationTarget2 {
     type ProcessingValue = usize;
@@ -422,7 +422,7 @@ impl ParameterValueConversion for ProcessingOperatorModulationTarget2 {
 }
 
 
-create_simple_processing_parameter!(ProcessingOperatorModulationTarget3, usize, OPERATOR_4_DEFAULT_MOD_TARGET);
+create_simple_processing_parameter!(ProcessingOperatorModulationTarget3, usize, DEFAULT_OPERATOR_4_MOD_TARGET);
 
 impl ParameterValueConversion for ProcessingOperatorModulationTarget3 {
     type ProcessingValue = usize;
@@ -515,7 +515,7 @@ impl ProcessingParameter for ProcessingOperatorPanning {
 
 impl Default for ProcessingOperatorPanning {
     fn default() -> Self {
-        let default = OPERATOR_DEFAULT_PANNING;
+        let default = DEFAULT_OPERATOR_PANNING;
 
         Self {
             value: TimeInterpolatableValue::new(default),

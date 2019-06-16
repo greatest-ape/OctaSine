@@ -298,10 +298,8 @@ fn calculate_envelope_volume(
 ) -> f32 {
     let time_progress = time_so_far_this_stage / stage_length;
 
-    (end_volume - start_volume).mul_add(
-        calculate_curve(CurveType::Linear, time_progress),
-        start_volume 
-    )
+    start_volume + (end_volume - start_volume) *
+        calculate_curve(CurveType::Linear, time_progress)
 }
 
 

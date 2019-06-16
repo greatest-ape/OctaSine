@@ -4,6 +4,10 @@ version = "0.1.0"
 authors = ["Joakim Frostegård <joakim.frostegard@gmail.com>"]
 edition = "2018"
 
+[features]
+default = []
+simd = ["packed_simd", "sleef-sys"]
+
 [lib]
 name = "fm"
 crate-type = ["cdylib"]
@@ -23,6 +27,15 @@ smallvec = "0.6"
 [dependencies.vst]
 git = "https://github.com/rust-dsp/rust-vst.git"
 rev = "af9c8c"
+
+[dependencies.packed_simd]
+version = "0.3.3"
+optional = true
+features = ["sleef-sys"]
+
+[target.'cfg(target_arch = "x86_64")'.dependencies.sleef-sys]
+version = "^0.1.2"
+optional = true
 
 [dev-dependencies]
 assert_approx_eq = "1"
