@@ -1,9 +1,11 @@
 .idea
+.vscode
 .DS_Store
 
 /target
 **/*.rs.bk
 Cargo.lock
+tmp
 
-/scripts/upload.sh
-/scripts/upload-code.sh
+/**/scripts/upload.sh
+/**/scripts/upload-code.sh

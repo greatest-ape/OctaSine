@@ -7,11 +7,13 @@ if [[ -z $1 || -z $2 ]]; then
     echo -e "\t$0 Plugin target/release/plugin.dylib"
     echo -e "\tCreates a Plugin.vst bundle"
 else
+    TMP_DIR="tmp"
+
     # Make the bundle folder
-    mkdir -p "$1.vst/Contents/MacOS"
+    mkdir -p "$TMP_DIR/$1.vst/Contents/MacOS"
 
     # Create the PkgInfo
-    echo "BNDL????" > "$1.vst/Contents/PkgInfo"
+    echo "BNDL????" > "$TMP_DIR/$1.vst/Contents/PkgInfo"
 
     #build the Info.Plist
     echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
@@ -52,10 +54,10 @@ else
     <string></string>
 
 </dict>
-</plist>" > "$1.vst/Contents/Info.plist"
+</plist>" > "$TMP_DIR/$1.vst/Contents/Info.plist"
 
     # move the provided library to the correct location
-    cp "$2" "$1.vst/Contents/MacOS/$1"
+    cp "$2" "$TMP_DIR/$1.vst/Contents/MacOS/$1"
 
-    echo "Created bundle $1.vst"
+    echo "Created bundle $TMP_DIR/$1.vst"
 fi

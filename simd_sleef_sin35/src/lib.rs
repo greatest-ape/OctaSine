@@ -1,8 +1,14 @@
 //! Less precise sines using sleef. Code is largely from packed_simd crate.
 
+#![cfg(feature = "simd")]
+#![feature(link_llvm_intrinsics)]
 #![allow(dead_code)]
+#![allow(unused_imports)]
 
 use std::mem::{transmute, uninitialized};
+
+#[link(name = "sleef", kind = "static")]
+extern crate sleef_sys;
 
 use packed_simd::*;
 use sleef_sys::*;
@@ -79,7 +85,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_sleef_sin_40(){
+    fn test_sin(){
         fn prop(value: f32) -> TestResult {
             let x2 = f32x2::splat(value);
             let x4 = f32x4::splat(value);

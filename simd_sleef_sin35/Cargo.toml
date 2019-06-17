@@ -1,0 +1,21 @@
+[package]
+name = "simd_sleef_sin35"
+version = "0.1.0"
+authors = ["Joakim Frostegård <joakim.frostegard@gmail.com>"]
+edition = "2018"
+
+[lib]
+name = "simd_sleef_sin35"
+
+[features]
+# Dummy feature to allow compiling whole project on stable. Enable it to use
+# this package. When not enabled, this package does not contain anything.
+simd = ["packed_simd", "sleef-sys"]
+
+[dependencies]
+packed_simd = { version = "0.3.3", optional = true }
+sleef-sys = { version = "^0.1.2", optional = true} 
+
+[dev-dependencies]
+quickcheck = "0.8"
+quickcheck_macros = "0.8"

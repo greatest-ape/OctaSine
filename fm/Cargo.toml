@@ -1,0 +1,46 @@
+[package]
+name = "fm"
+version = "0.1.0"
+authors = ["Joakim Frostegård <joakim.frostegard@gmail.com>"]
+edition = "2018"
+
+[features]
+default = []
+simd = ["packed_simd", "simd_sleef_sin35"]
+
+[lib]
+name = "fm"
+crate-type = ["cdylib"]
+
+[dependencies]
+array-init = "0.0.4"
+dirs = "1"
+log = "0.3"
+log-panics = "2"
+parking_lot = "0.7"
+rand = "0.6"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+simplelog = "0.4"
+smallvec = "0.6"
+
+[dependencies.vst]
+git = "https://github.com/rust-dsp/rust-vst.git"
+rev = "af9c8c"
+
+[dependencies.packed_simd]
+version = "0.3.3"
+optional = true
+features = ["sleef-sys"]
+
+[dependencies.simd_sleef_sin35]
+path = "../simd_sleef_sin35"
+optional = true
+features = ["simd"]
+
+[dev-dependencies]
+assert_approx_eq = "1"
+plotlib = "0.4"
+quickcheck = "0.8"
+quickcheck_macros = "0.8"
+statistical = "1"

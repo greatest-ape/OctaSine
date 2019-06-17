@@ -1,5 +1,3 @@
-#![feature(link_llvm_intrinsics)]
-
 #[macro_use]
 extern crate log;
 
@@ -116,6 +114,7 @@ impl FmSynth {
         voice: &mut Voice,
     ) -> (f32, f32) {
         use packed_simd::*;
+        use simd_sleef_sin35::*;
 
         let operators = &mut parameters.operators;
 
