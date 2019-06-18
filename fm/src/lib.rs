@@ -331,6 +331,7 @@ impl FmSynth {
         (additive_out_simd.extract(0), additive_out_simd.extract(1))
     }
 
+    #[cfg(not(feature = "simd"))]
     /// Generate stereo samples for a voice
     /// 
     /// Doesn't take self parameter due to conflicting borrowing of Voices
