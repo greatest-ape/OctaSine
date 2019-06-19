@@ -10,8 +10,9 @@ pub enum CurveType {
     Ln,
     Log2,
     Log10,
-    Sqrt3,
     Sqrt,
+    Cbrt,
+    Sqrt4,
     Linear
 }
 
@@ -298,8 +299,13 @@ fn calculate_envelope_volume(
 ) -> f32 {
     let time_progress = time_so_far_this_stage / stage_length;
 
-    start_volume + (end_volume - start_volume) *
-        calculate_curve(CurveType::Linear, time_progress)
+    let curve_factor = (stage_length * ENVELOPE_CURVE_TAKEOVER_RECIP).min(1.0);
+    let linear_factor = 1.0 - curve_factor;
+
+    let curve = curve_factor * calculate_curve(CurveType::Log10, time_progress);
+    let linear = linear_factor * time_progress;
+
+    start_volume + (end_volume - start_volume) * (curve + linear)
 }
 
 
@@ -309,8 +315,9 @@ fn calculate_curve(curve: CurveType, v: f32) -> f32 {
         CurveType::Ln => (1.0 + v * (E - 1.0)).ln(),
         CurveType::Log2 => (1.0 + v * (2.0 - 1.0)).log2(),
         CurveType::Log10 => (1.0 + v * (10.0 - 1.0)).log10(),
-        CurveType::Sqrt3 => v.powf(1.0/3.0),
         CurveType::Sqrt => v.sqrt(),
+        CurveType::Cbrt => v.cbrt(),
+        CurveType::Sqrt4 => v.sqrt().sqrt(),
         CurveType::Linear => v,
     }
 }
@@ -318,6 +325,7 @@ fn calculate_curve(curve: CurveType, v: f32) -> f32 {
 
 #[cfg(test)]
 mod tests {
+    use assert_approx_eq::assert_approx_eq;
     use quickcheck::{TestResult, quickcheck};
 
     use super::*;
@@ -367,8 +375,8 @@ mod tests {
 
     #[test]
     fn test_calculate_envelope_volume_start_end(){
-        assert_eq!(calculate_envelope_volume(0.0, 1.0, 0.0, 4.0), 0.0);
-        assert_eq!(calculate_envelope_volume(0.0, 1.0, 4.0, 4.0), 1.0);
+        assert_approx_eq!(calculate_envelope_volume(0.0, 1.0, 0.0, 4.0), 0.0);
+        assert_approx_eq!(calculate_envelope_volume(0.0, 1.0, 4.0, 4.0), 1.0);
     }
 
     #[test]
@@ -383,8 +391,16 @@ mod tests {
 
             let stage_2_start = calculate_envelope_volume(
                 stage_change_volume, 1.0, 0.0, 4.0);
+            
+            let diff = (stage_1_end - stage_2_start).abs();
 
-            TestResult::from_bool(stage_1_end == stage_2_start)
+            let success = diff < 0.000001;
+
+            if !success {
+                println!("diff: {}", diff);
+            }
+
+            TestResult::from_bool(success)
         }
 
         quickcheck(prop as fn(f32) -> TestResult);
@@ -397,6 +413,7 @@ mod tests {
     /// 
     /// (Add #[test] before function to run when testing)
     #[allow(dead_code)]
+    #[test]
     fn test_gen_plots(){
         fn plot_envelope_stage(
             start_volume: f32,
@@ -420,7 +437,7 @@ mod tests {
 
             let v = ContinuousView::new()
                 .add(&f)
-                .x_range(0.0, length * 4.0)
+                .x_range(0.0, length)
                 .y_range(0.0, 1.0);
             
             Page::single(&v).save(&filename).unwrap();
