@@ -52,6 +52,7 @@ pub struct ProcessingState {
     pub bpm: BeatsPerMinute,
     pub rng: SmallRng,
     pub sine_table: SineLookupTable,
+    pub envelope_curve_table: EnvelopeCurveTable,
     pub voices: [Voice; 128],
     pub parameters: ProcessingParameters,
 }
@@ -104,6 +105,7 @@ impl FmSynth {
 
     #[cfg(feature = "simd")]
     pub fn generate_voice_samples_simd(
+        envelope_curve_table: &EnvelopeCurveTable,
         _rng: &mut impl Rng,
         sine_table: &SineLookupTable,
         time: TimeCounter,
@@ -134,6 +136,7 @@ impl FmSynth {
         for (index, operator) in operators.iter_mut().enumerate(){
             envelope_volume[index] = {
                 voice.operators[index].volume_envelope.get_volume(
+                    envelope_curve_table,
                     &operator.volume_envelope,
                     voice.key_pressed,
                     voice.duration
@@ -335,6 +338,7 @@ impl FmSynth {
     /// Doesn't take self parameter due to conflicting borrowing of Voices
     /// in calling function `process`
     fn generate_voice_samples(
+        envelope_curve_table: &EnvelopeCurveTable,
         rng: &mut impl Rng,
         time: TimeCounter,
         time_per_sample: TimePerSample,
@@ -388,6 +392,7 @@ impl FmSynth {
             // Always calculate envelope to make sure it advances
             let envelope_volume = {
                 voice.operators[operator_index].volume_envelope.get_volume(
+                    envelope_curve_table,
                     &operator.volume_envelope,
                     voice.key_pressed,
                     voice.duration
@@ -557,6 +562,7 @@ impl Plugin for FmSynth {
                 if voice.active {
                     #[cfg(not(feature = "simd"))]
                     let (out_left, out_right) = Self::generate_voice_samples(
+                        &self.processing.envelope_curve_table,
                         &mut self.processing.rng,
                         self.processing.global_time,
                         time_per_sample,
@@ -565,6 +571,7 @@ impl Plugin for FmSynth {
                     );
                     #[cfg(feature = "simd")]
                     let (out_left, out_right) = Self::generate_voice_samples_simd(
+                        &self.processing.envelope_curve_table,
                         &mut self.processing.rng,
                         &self.processing.sine_table,
                         self.processing.global_time,
@@ -596,6 +603,7 @@ impl Plugin for FmSynth {
             bpm: BeatsPerMinute(120.0),
             rng: SmallRng::from_entropy(),
             sine_table: SineLookupTable::new(),
+            envelope_curve_table: EnvelopeCurveTable::new(),
             voices: array_init(|i| Voice::new(MidiPitch::new(i as u8))),
             parameters: ProcessingParameters::new(),
         };

@@ -1,5 +1,6 @@
 use std::f32::consts::E;
 
+use crate::approximations::EnvelopeCurveTable;
 use crate::common::*;
 use crate::constants::*;
 use crate::processing_parameters::*;
@@ -131,6 +132,7 @@ impl VoiceOperatorVolumeEnvelope {
 
     fn calculate_stage_volume(
         &self,
+        envelope_curve_table: &EnvelopeCurveTable,
         operator_envelope: &ProcessingParameterOperatorEnvelope,
         voice_duration: VoiceDuration,
     ) -> f32 {
@@ -142,6 +144,7 @@ impl VoiceOperatorVolumeEnvelope {
         match self.stage {
             Attack => {
                 calculate_envelope_volume(
+                    envelope_curve_table,
                     self.volume_at_stage_change,
                     operator_envelope.attack_end_value.value,
                     duration_since_stage_change,
@@ -150,6 +153,7 @@ impl VoiceOperatorVolumeEnvelope {
             },
             Decay => {
                 calculate_envelope_volume(
+                    envelope_curve_table,
                     self.volume_at_stage_change,
                     operator_envelope.decay_end_value.value,
                     duration_since_stage_change,
@@ -161,6 +165,7 @@ impl VoiceOperatorVolumeEnvelope {
             },
             Release => {
                 calculate_envelope_volume(
+                    envelope_curve_table,
                     self.volume_at_stage_change,
                     0.0,
                     duration_since_stage_change,
@@ -176,6 +181,7 @@ impl VoiceOperatorVolumeEnvelope {
     /// Calculate volume and possibly advance envelope stage
     pub fn get_volume(
         &mut self,
+        envelope_curve_table: &EnvelopeCurveTable,
         operator_envelope: &ProcessingParameterOperatorEnvelope,
         key_pressed: bool,
         voice_duration: VoiceDuration,
@@ -187,7 +193,7 @@ impl VoiceOperatorVolumeEnvelope {
             self.advance_if_stage_time_up(operator_envelope, voice_duration);
 
             self.last_volume = self.calculate_stage_volume(
-                operator_envelope, voice_duration);
+                envelope_curve_table, operator_envelope, voice_duration);
             
             self.last_volume
         }
@@ -292,6 +298,7 @@ impl Voice {
 
 
 fn calculate_envelope_volume(
+    envelope_curve_table: &EnvelopeCurveTable,
     start_volume: f32,
     end_volume: f32,
     time_so_far_this_stage: f32,
@@ -302,7 +309,7 @@ fn calculate_envelope_volume(
     let curve_factor = (stage_length * ENVELOPE_CURVE_TAKEOVER_RECIP).min(1.0);
     let linear_factor = 1.0 - curve_factor;
 
-    let curve = curve_factor * calculate_curve(CurveType::Log10, time_progress);
+    let curve = curve_factor * envelope_curve_table.calculate(time_progress);
     let linear = linear_factor * time_progress;
 
     start_volume + (end_volume - start_volume) * (curve + linear)
@@ -359,6 +366,7 @@ mod tests {
             }
 
             let volume = calculate_envelope_volume(
+                &EnvelopeCurveTable::new(),
                 start_volume,
                 end_volume,
                 time_so_far_this_stage,
@@ -375,8 +383,10 @@ mod tests {
 
     #[test]
     fn test_calculate_envelope_volume_start_end(){
-        assert_approx_eq!(calculate_envelope_volume(0.0, 1.0, 0.0, 4.0), 0.0);
-        assert_approx_eq!(calculate_envelope_volume(0.0, 1.0, 4.0, 4.0), 1.0);
+        let table = EnvelopeCurveTable::new();
+
+        assert_approx_eq!(calculate_envelope_volume(&table, 0.0, 1.0, 0.0, 4.0), 0.0);
+        assert_approx_eq!(calculate_envelope_volume(&table, 0.0, 1.0, 4.0, 4.0), 1.0);
     }
 
     #[test]
@@ -387,9 +397,11 @@ mod tests {
             }
 
             let stage_1_end = calculate_envelope_volume(
+                &EnvelopeCurveTable::new(),
                 0.0, stage_change_volume, 4.0, 4.0);
 
             let stage_2_start = calculate_envelope_volume(
+                &EnvelopeCurveTable::new(),
                 stage_change_volume, 1.0, 0.0, 4.0);
             
             let diff = (stage_1_end - stage_2_start).abs();
@@ -428,6 +440,7 @@ mod tests {
 
             let f = Function::new(|x| {
                 calculate_envelope_volume(
+                    &EnvelopeCurveTable::new(),
                     start_volume,
                     end_volume,
                     x as f32,
