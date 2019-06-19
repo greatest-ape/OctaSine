@@ -1,7 +1,7 @@
 use std::sync::atomic::{AtomicU64, Ordering};
 
 
-const SET_NOT_CHANGED_MASK: u64 = (!0) ^ (1 << 63);
+const SET_NOT_CHANGED_MASK: u64 = !(1 << 63);
 
 
 /// Atomic float that uses a bit to store if it has been changed or not.

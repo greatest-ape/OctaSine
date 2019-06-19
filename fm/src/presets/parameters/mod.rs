@@ -1,32 +1,33 @@
 use array_init::array_init;
 
-use crate::atomics::changed_parameters::ChangedParametersInfo;
 use crate::constants::*;
 
+pub mod atomic_float;
 pub mod common;
 pub mod parameters;
 
+pub use atomic_float::AtomicFloat;
 pub use common::*;
 pub use parameters::*;
 
 
 #[derive(Debug)]
-pub struct SyncOperatorEnvelope {
-    pub attack_duration: SyncOperatorAttackDuration,
-    pub attack_end_value: SyncOperatorAttackVolume,
-    pub decay_duration: SyncOperatorDecayDuration,
-    pub decay_end_value: SyncOperatorDecayVolume,
-    pub release_duration: SyncOperatorReleaseDuration,
+pub struct PresetParameterOperatorEnvelope {
+    pub attack_duration: PresetParameterOperatorAttackDuration,
+    pub attack_end_value: PresetParameterOperatorAttackVolume,
+    pub decay_duration: PresetParameterOperatorDecayDuration,
+    pub decay_end_value: PresetParameterOperatorDecayVolume,
+    pub release_duration: PresetParameterOperatorReleaseDuration,
 }
 
-impl SyncOperatorEnvelope {
+impl PresetParameterOperatorEnvelope {
     pub fn new(operator_index: usize) -> Self {
         Self {
-            attack_duration: SyncOperatorAttackDuration::new(operator_index),
-            attack_end_value: SyncOperatorAttackVolume::new(operator_index),
-            decay_duration: SyncOperatorDecayDuration::new(operator_index),
-            decay_end_value: SyncOperatorDecayVolume::new(operator_index),
-            release_duration: SyncOperatorReleaseDuration::new(operator_index),
+            attack_duration: PresetParameterOperatorAttackDuration::new(operator_index),
+            attack_end_value: PresetParameterOperatorAttackVolume::new(operator_index),
+            decay_duration: PresetParameterOperatorDecayDuration::new(operator_index),
+            decay_end_value: PresetParameterOperatorDecayVolume::new(operator_index),
+            release_duration: PresetParameterOperatorReleaseDuration::new(operator_index),
         }
     }
 }
@@ -34,61 +35,59 @@ impl SyncOperatorEnvelope {
 
 
 #[derive(Debug)]
-pub struct SyncOperator {
-    pub volume: SyncOperatorVolume,
-    pub wave_type: SyncOperatorWaveType,
-    pub panning: SyncOperatorPanning,
-    pub additive_factor: SyncOperatorAdditiveFactor,
-    pub output_operator: Option<SyncOperatorModulationTarget>,
-    pub frequency_ratio: SyncOperatorFrequencyRatio,
-    pub frequency_free: SyncOperatorFrequencyFree,
-    pub frequency_fine: SyncOperatorFrequencyFine,
-    pub feedback: SyncOperatorFeedback,
-    pub modulation_index: SyncOperatorModulationIndex,
-    pub volume_envelope: SyncOperatorEnvelope,
+pub struct PresetParameterOperator {
+    pub volume: PresetParameterOperatorVolume,
+    pub wave_type: PresetParameterOperatorWaveType,
+    pub panning: PresetParameterOperatorPanning,
+    pub additive_factor: PresetParameterOperatorAdditiveFactor,
+    pub output_operator: Option<PresetParameterOperatorModulationTarget>,
+    pub frequency_ratio: PresetParameterOperatorFrequencyRatio,
+    pub frequency_free: PresetParameterOperatorFrequencyFree,
+    pub frequency_fine: PresetParameterOperatorFrequencyFine,
+    pub feedback: PresetParameterOperatorFeedback,
+    pub modulation_index: PresetParameterOperatorModulationIndex,
+    pub volume_envelope: PresetParameterOperatorEnvelope,
 }
 
-impl SyncOperator {
+impl PresetParameterOperator {
     pub fn new(operator_index: usize) -> Self {
         Self {
-            volume: SyncOperatorVolume::new(operator_index),
-            wave_type: SyncOperatorWaveType::new(operator_index),
-            panning: SyncOperatorPanning::new(operator_index),
-            additive_factor: SyncOperatorAdditiveFactor::new(operator_index),
-            output_operator: SyncOperatorModulationTarget::opt_new(operator_index),
-            frequency_ratio: SyncOperatorFrequencyRatio::new(operator_index),
-            frequency_free: SyncOperatorFrequencyFree::new(operator_index),
-            frequency_fine: SyncOperatorFrequencyFine::new(operator_index),
-            feedback: SyncOperatorFeedback::new(operator_index),
-            modulation_index: SyncOperatorModulationIndex::new(operator_index),
-            volume_envelope: SyncOperatorEnvelope::new(operator_index),
+            volume: PresetParameterOperatorVolume::new(operator_index),
+            wave_type: PresetParameterOperatorWaveType::new(operator_index),
+            panning: PresetParameterOperatorPanning::new(operator_index),
+            additive_factor: PresetParameterOperatorAdditiveFactor::new(operator_index),
+            output_operator: PresetParameterOperatorModulationTarget::opt_new(operator_index),
+            frequency_ratio: PresetParameterOperatorFrequencyRatio::new(operator_index),
+            frequency_free: PresetParameterOperatorFrequencyFree::new(operator_index),
+            frequency_fine: PresetParameterOperatorFrequencyFine::new(operator_index),
+            feedback: PresetParameterOperatorFeedback::new(operator_index),
+            modulation_index: PresetParameterOperatorModulationIndex::new(operator_index),
+            volume_envelope: PresetParameterOperatorEnvelope::new(operator_index),
         }
     }
 }
 
 
 
-pub struct SyncParameters {
-    pub master_volume: SyncMasterVolume,
-    pub master_frequency: SyncMasterFrequency,
-    pub operators: [SyncOperator; NUM_OPERATORS],
-    pub changed_info: ChangedParametersInfo,
+pub struct PresetParameters {
+    pub master_volume: PresetParameterMasterVolume,
+    pub master_frequency: PresetParameterMasterFrequency,
+    pub operators: [PresetParameterOperator; NUM_OPERATORS],
 }
 
-impl SyncParameters {
+impl PresetParameters {
     pub fn new() -> Self {
         Self {
-            master_volume: SyncMasterVolume::default(),
-            master_frequency: SyncMasterFrequency::default(),
-            operators: array_init(|i| SyncOperator::new(i)),
-            changed_info: ChangedParametersInfo::new(),
+            master_volume: PresetParameterMasterVolume::default(),
+            master_frequency: PresetParameterMasterFrequency::default(),
+            operators: array_init(|i| PresetParameterOperator::new(i)),
         }
     }
 }
 
 
-impl SyncParameters {
-    pub fn get(&self, index: usize) -> Option<&SyncParameter> {
+impl PresetParameters {
+    pub fn get(&self, index: usize) -> Option<&PresetParameter> {
         match index {
             0  => Some(&self.master_volume),
             1  => Some(&self.master_frequency),
@@ -124,12 +123,12 @@ impl SyncParameters {
             31 => Some(&self.operators[2].wave_type),
             32 => Some(&self.operators[2].additive_factor),
             33 => {
-                use SyncOperatorModulationTarget::*;
+                use PresetParameterOperatorModulationTarget::*;
 
                 let opt_p = self.operators[2].output_operator.as_ref();
 
                 if let Some(OperatorIndex2(p)) = opt_p {
-                    Some(p as &SyncParameter)
+                    Some(p as &PresetParameter)
                 } else {
                     None
                 }
@@ -149,12 +148,12 @@ impl SyncParameters {
             46 => Some(&self.operators[3].wave_type),
             47 => Some(&self.operators[3].additive_factor),
             48 => {
-                use SyncOperatorModulationTarget::*;
+                use PresetParameterOperatorModulationTarget::*;
 
                 let opt_p = self.operators[3].output_operator.as_ref();
 
                 if let Some(OperatorIndex3(p)) = opt_p {
-                    Some(p as &SyncParameter)
+                    Some(p as &PresetParameter)
                 } else {
                     None
                 }
@@ -185,8 +184,8 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_sync_parameters_len(){
+    fn test_preset_parameters_len(){
         // Required for ChangedParametersInfo
-        assert!(SyncParameters::new().len() <= 64);
+        assert!(PresetParameters::new().len() <= 64);
     }
 }

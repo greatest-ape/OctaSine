@@ -1,92 +1,96 @@
-use array_init::array_init;
+//! Processing parameters
 
-use crate::constants::*;
+use array_init::array_init;
 
 pub mod common;
 pub mod parameters;
+pub mod utils;
 
 pub use common::*;
 pub use parameters::*;
+pub use utils::*;
+
+use crate::constants::*;
 
 
 #[derive(Debug, Clone)]
-pub struct ProcessingOperatorEnvelope {
-    pub attack_duration: ProcessingOperatorAttackDuration,
-    pub attack_end_value: ProcessingOperatorAttackVolume,
-    pub decay_duration: ProcessingOperatorDecayDuration,
-    pub decay_end_value: ProcessingOperatorDecayVolume,
-    pub release_duration: ProcessingOperatorReleaseDuration,
+pub struct ProcessingParameterOperatorEnvelope {
+    pub attack_duration: ProcessingParameterOperatorAttackDuration,
+    pub attack_end_value: ProcessingParameterOperatorAttackVolume,
+    pub decay_duration: ProcessingParameterOperatorDecayDuration,
+    pub decay_end_value: ProcessingParameterOperatorDecayVolume,
+    pub release_duration: ProcessingParameterOperatorReleaseDuration,
 }
 
-impl ProcessingOperatorEnvelope {
+impl ProcessingParameterOperatorEnvelope {
     fn new() -> Self {
         Self {
-            attack_duration: ProcessingOperatorAttackDuration::default(),
-            attack_end_value: ProcessingOperatorAttackVolume::default(),
-            decay_duration: ProcessingOperatorDecayDuration::default(),
-            decay_end_value: ProcessingOperatorDecayVolume::default(),
-            release_duration: ProcessingOperatorReleaseDuration::default(),
+            attack_duration: ProcessingParameterOperatorAttackDuration::default(),
+            attack_end_value: ProcessingParameterOperatorAttackVolume::default(),
+            decay_duration: ProcessingParameterOperatorDecayDuration::default(),
+            decay_end_value: ProcessingParameterOperatorDecayVolume::default(),
+            release_duration: ProcessingParameterOperatorReleaseDuration::default(),
         }
     }
 }
 
 
 #[derive(Debug)]
-pub struct ProcessingOperator {
-    pub volume: ProcessingOperatorVolume,
-    pub wave_type: ProcessingOperatorWaveType,
-    pub panning: ProcessingOperatorPanning,
-    pub additive_factor: ProcessingOperatorAdditiveFactor,
-    pub output_operator: Option<ProcessingOperatorModulationTarget>,
-    pub frequency_ratio: ProcessingOperatorFrequencyRatio,
-    pub frequency_free: ProcessingOperatorFrequencyFree,
-    pub frequency_fine: ProcessingOperatorFrequencyFine,
-    pub feedback: ProcessingOperatorFeedback,
-    pub modulation_index: ProcessingOperatorModulationIndex,
-    pub volume_envelope: ProcessingOperatorEnvelope,
+pub struct ProcessingParameterOperator {
+    pub volume: ProcessingParameterOperatorVolume,
+    pub wave_type: ProcessingParameterOperatorWaveType,
+    pub panning: ProcessingParameterOperatorPanning,
+    pub additive_factor: ProcessingParameterOperatorAdditiveFactor,
+    pub output_operator: Option<ProcessingParameterOperatorModulationTarget>,
+    pub frequency_ratio: ProcessingParameterOperatorFrequencyRatio,
+    pub frequency_free: ProcessingParameterOperatorFrequencyFree,
+    pub frequency_fine: ProcessingParameterOperatorFrequencyFine,
+    pub feedback: ProcessingParameterOperatorFeedback,
+    pub modulation_index: ProcessingParameterOperatorModulationIndex,
+    pub volume_envelope: ProcessingParameterOperatorEnvelope,
 }
 
 
-impl ProcessingOperator {
+impl ProcessingParameterOperator {
     pub fn new(operator_index: usize) -> Self {
         Self {
-            volume: ProcessingOperatorVolume::default(),
-            wave_type: ProcessingOperatorWaveType::default(),
-            panning: ProcessingOperatorPanning::default(),
-            additive_factor: ProcessingOperatorAdditiveFactor::default(),
-            output_operator: ProcessingOperatorModulationTarget::opt_new(operator_index),
-            frequency_ratio: ProcessingOperatorFrequencyRatio::default(),
-            frequency_free: ProcessingOperatorFrequencyFree::default(),
-            frequency_fine: ProcessingOperatorFrequencyFine::default(),
-            feedback: ProcessingOperatorFeedback::default(),
-            modulation_index: ProcessingOperatorModulationIndex::default(),
-            volume_envelope: ProcessingOperatorEnvelope::new(),
+            volume: ProcessingParameterOperatorVolume::default(),
+            wave_type: ProcessingParameterOperatorWaveType::default(),
+            panning: ProcessingParameterOperatorPanning::default(),
+            additive_factor: ProcessingParameterOperatorAdditiveFactor::default(),
+            output_operator: ProcessingParameterOperatorModulationTarget::opt_new(operator_index),
+            frequency_ratio: ProcessingParameterOperatorFrequencyRatio::default(),
+            frequency_free: ProcessingParameterOperatorFrequencyFree::default(),
+            frequency_fine: ProcessingParameterOperatorFrequencyFine::default(),
+            feedback: ProcessingParameterOperatorFeedback::default(),
+            modulation_index: ProcessingParameterOperatorModulationIndex::default(),
+            volume_envelope: ProcessingParameterOperatorEnvelope::new(),
         }
     }
 }
 
 
-pub type ProcessingOperators = [ProcessingOperator; NUM_OPERATORS];
+pub type ProcessingParameterOperators = [ProcessingParameterOperator; NUM_OPERATORS];
 
 pub struct ProcessingParameters {
-    pub master_volume: ProcessingMasterVolume,
-    pub master_frequency: ProcessingMasterFrequency,
-    pub operators: ProcessingOperators,
+    pub master_volume: ProcessingParameterMasterVolume,
+    pub master_frequency: ProcessingParameterMasterFrequency,
+    pub operators: ProcessingParameterOperators,
 }
 
 impl ProcessingParameters {
     pub fn new() -> Self {
         Self {
-            master_volume: ProcessingMasterVolume::default(),
-            master_frequency: ProcessingMasterFrequency::default(),
-            operators: array_init(|i| ProcessingOperator::new(i)),
+            master_volume: ProcessingParameterMasterVolume::default(),
+            master_frequency: ProcessingParameterMasterFrequency::default(),
+            operators: array_init(|i| ProcessingParameterOperator::new(i)),
         }
     }
 }
 
 
 impl ProcessingParameters {
-    pub fn get(&mut self, index: usize) -> Option<&mut ProcessingParameterSyncValueAccess> {
+    pub fn get(&mut self, index: usize) -> Option<&mut ProcessingParameterPresetValueAccess> {
         match index {
             0  => Some(&mut self.master_volume),
             1  => Some(&mut self.master_frequency),
@@ -122,12 +126,12 @@ impl ProcessingParameters {
             31 => Some(&mut self.operators[2].wave_type),
             32 => Some(&mut self.operators[2].additive_factor),
             33 => {
-                use ProcessingOperatorModulationTarget::*;
+                use ProcessingParameterOperatorModulationTarget::*;
 
                 let opt_p = self.operators[2].output_operator.as_mut();
 
                 if let Some(OperatorIndex2(p)) = opt_p {
-                    Some(p as &mut ProcessingParameterSyncValueAccess)
+                    Some(p as &mut ProcessingParameterPresetValueAccess)
                 } else {
                     None
                 }
@@ -147,12 +151,12 @@ impl ProcessingParameters {
             46 => Some(&mut self.operators[3].wave_type),
             47 => Some(&mut self.operators[3].additive_factor),
             48 => {
-                use ProcessingOperatorModulationTarget::*;
+                use ProcessingParameterOperatorModulationTarget::*;
 
                 let opt_p = self.operators[3].output_operator.as_mut();
 
                 if let Some(OperatorIndex3(p)) = opt_p {
-                    Some(p as &mut ProcessingParameterSyncValueAccess)
+                    Some(p as &mut ProcessingParameterPresetValueAccess)
                 } else {
                     None
                 }
@@ -188,12 +192,12 @@ mod tests {
     fn test_operator_panning_left_and_right(){
         use super::*;
 
-        let mut operator = ProcessingOperatorPanning::default();
+        let mut operator = ProcessingParameterOperatorPanning::default();
 
         let mut time = TimeCounter(0.0);
         let mut value = operator.get_value(time);
 
-        operator.set_from_sync_value(1.0);
+        operator.set_from_preset_value(1.0);
 
         let n = INTERPOLATION_SAMPLES_PER_STEP * INTERPOLATION_STEPS + 1;
         let mut left_and_right = [0.0, 0.0];

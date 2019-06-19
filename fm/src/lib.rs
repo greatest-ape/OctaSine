@@ -15,18 +15,17 @@ use vst::plugin::{Category, Plugin, Info, CanDo, HostCallback, PluginParameters}
 use vst::plugin_main;
 
 pub mod approximations;
-pub mod atomics;
 pub mod common;
 pub mod constants;
 pub mod voices;
-pub mod parameters;
+pub mod processing_parameters;
 pub mod presets;
 
 use crate::approximations::*;
 use crate::common::*;
 use crate::constants::*;
 use crate::voices::*;
-use crate::parameters::*;
+use crate::processing_parameters::*;
 use crate::presets::*;
 
 
@@ -61,7 +60,6 @@ pub struct ProcessingState {
 /// Thread-safe state used for parameter and preset calls
 pub struct SyncOnlyState {
     pub host: HostCallback,
-    pub parameters: SyncParameters,
     pub presets: PresetBank,
 }
 
@@ -159,7 +157,7 @@ impl FmSynth {
             operator_frequency_fine[index] = operator.frequency_fine.value;
 
             if let Some(p) = &mut operator.output_operator {
-                use ProcessingOperatorModulationTarget::*;
+                use ProcessingParameterOperatorModulationTarget::*;
 
                 let opt_value = match p {
                     OperatorIndex2(p) => Some(p.get_value(time)),
@@ -375,8 +373,8 @@ impl FmSynth {
             // irrelevant.)
             let operator_mod_output = if let Some(ref p) = operator.output_operator {
                 match p {
-                    ProcessingOperatorModulationTarget::OperatorIndex2(p) => p.value,
-                    ProcessingOperatorModulationTarget::OperatorIndex3(p) => p.value,
+                    ProcessingParameterOperatorModulationTarget::OperatorIndex2(p) => p.value,
+                    ProcessingParameterOperatorModulationTarget::OperatorIndex3(p) => p.value,
                 }
             } else {
                 0
@@ -539,24 +537,18 @@ impl Plugin for FmSynth {
         let rights = outputs.get_mut(1).iter_mut();
 
         for (output_sample_left, output_sample_right) in lefts.zip(rights) {
-            let changed_parameter_indeces = self.sync_only.parameters.changed_info
-                .get_changed_parameters(&self.sync_only.parameters);
+            let changed_parameter_indeces = self.sync_only.presets
+                .get_changed_parameters();
 
             if let Some(indeces) = changed_parameter_indeces {
                 for (index, opt_new_value) in indeces.iter().enumerate(){
                     if let Some(new_value) = opt_new_value {
                         if let Some(p) = self.processing.parameters.get(index){
-                            p.set_from_sync_value(*new_value);
+                            p.set_from_preset_value(*new_value);
                         }
                     }
                 }
             }
-
-            // Load preset data if preset index was changed or preset/preset
-            // bank was imported
-            self.sync_only.presets.set_processing_if_changed(
-                &mut self.processing.parameters
-            );
 
             *output_sample_left = 0.0;
             *output_sample_right = 0.0;
@@ -595,21 +587,6 @@ impl Plugin for FmSynth {
     }
 
     fn new(host: HostCallback) -> Self {
-        let mut processing_parameters = ProcessingParameters::new();
-        let sync_parameters = SyncParameters::new();
-        let preset_bank = PresetBank::new();
-
-        preset_bank.set_processing_and_sync_from_current(
-            &mut processing_parameters,
-            &sync_parameters
-        );
-
-        let sync_only = Arc::new(SyncOnlyState {
-            host: host,
-            parameters: sync_parameters,
-            presets: preset_bank,
-        });
-
         let sample_rate = SampleRate(44100.0);
 
         let processing = ProcessingState {
@@ -620,8 +597,13 @@ impl Plugin for FmSynth {
             rng: SmallRng::from_entropy(),
             sine_table: SineLookupTable::new(),
             voices: array_init(|i| Voice::new(MidiPitch::new(i as u8))),
-            parameters: processing_parameters,
+            parameters: ProcessingParameters::new(),
         };
+
+        let sync_only = Arc::new(SyncOnlyState {
+            host: host,
+            presets: PresetBank::new(),
+        });
 
         Self {
             processing,
@@ -639,7 +621,7 @@ impl Plugin for FmSynth {
             inputs: 0,
             outputs: 2,
             presets: self.sync_only.presets.len() as i32,
-            parameters: self.sync_only.parameters.len() as i32,
+            parameters: self.sync_only.presets.get_num_parameters() as i32,
             initial_delay: 0,
             preset_chunks: true,
             ..Info::default()
@@ -703,74 +685,51 @@ impl PluginParameters for SyncOnlyState {
 
     /// Get parameter label for parameter at `index` (e.g. "db", "sec", "ms", "%").
     fn get_parameter_label(&self, index: i32) -> String {
-        self.parameters.get(index as usize)
-            .map_or("".to_string(), |p| p.get_parameter_unit_of_measurement())
+        self.presets.get_parameter_unit(index as usize)
     }
 
     /// Get the parameter value for parameter at `index` (e.g. "1.0", "150", "Plate", "Off").
     fn get_parameter_text(&self, index: i32) -> String {
-        self.parameters.get(index as usize)
-            .map_or("".to_string(), |p| p.get_parameter_value_text())
+        self.presets.get_parameter_value_text(index as usize)
     }
 
     /// Get the name of parameter at `index`.
     fn get_parameter_name(&self, index: i32) -> String {
-        self.parameters.get(index as usize)
-            .map_or("".to_string(), |p| p.get_parameter_name())
+        self.presets.get_parameter_name(index as usize)
     }
 
     /// Get the value of paramater at `index`. Should be value between 0.0 and 1.0.
     fn get_parameter(&self, index: i32) -> f32 {
-        self.parameters.get(index as usize)
-            .map_or(0.0, |p| p.get_parameter_value_float()) as f32
+        self.presets.get_parameter_value_float(index as usize)
     }
 
     /// Set the value of parameter at `index`. `value` is between 0.0 and 1.0.
     fn set_parameter(&self, index: i32, value: f32) {
-        let index = index as usize;
-
-        if let Some(p) = self.parameters.get(index) {
-            p.set_parameter_value_float(value.min(1.0).max(0.0));
-
-            self.parameters.changed_info.mark_as_changed(index);
-        }
+        self.presets.set_parameter_value_float(index as usize, value);
     }
 
     /// Use String as input for parameter value. Used by host to provide an editable field to
     /// adjust a parameter value. E.g. "100" may be interpreted as 100hz for parameter. Returns if
     /// the input string was used.
     fn string_to_parameter(&self, index: i32, text: String) -> bool {
-        let index = index as usize;
-
-        if let Some(p) = self.parameters.get(index){
-            if p.set_parameter_value_text(text) {
-                self.parameters.changed_info.mark_as_changed(index);
-
-                return true;
-            }
-        }
-
-        false
+        self.presets.set_parameter_value_text(index as usize, text)
     }
 
     /// Return whether parameter at `index` can be automated.
     fn can_be_automated(&self, index: i32) -> bool {
-        self.parameters.get(index as usize).is_some()
+        self.presets.can_parameter_be_automated(index as usize)
     }
 
     /// Set the current preset to the index specified by `preset`.
     ///
     /// This method can be called on the processing thread for automation.
     fn change_preset(&self, index: i32) {
-        self.presets.set_index_and_set_sync_parameters(
-            index as usize,
-            &self.parameters
-        );
+        self.presets.set_preset_index(index as usize);
     }
 
     /// Get the current preset index.
     fn get_preset_num(&self) -> i32 {
-        self.presets.get_index() as i32
+        self.presets.get_preset_index() as i32
     }
 
     /// Set the current preset name.
@@ -786,25 +745,25 @@ impl PluginParameters for SyncOnlyState {
     /// If `preset_chunks` is set to true in plugin info, this should return the raw chunk data for
     /// the current preset.
     fn get_preset_data(&self) -> Vec<u8> {
-        self.presets.export_current_preset_bytes(&self.parameters)
+        self.presets.export_current_preset_bytes()
     }
 
     /// If `preset_chunks` is set to true in plugin info, this should return the raw chunk data for
     /// the current plugin bank.
     fn get_bank_data(&self) -> Vec<u8> {
-        self.presets.export_bank_as_bytes(&self.parameters)
+        self.presets.export_bank_as_bytes()
     }
 
     /// If `preset_chunks` is set to true in plugin info, this should load a preset from the given
     /// chunk data.
     fn load_preset_data(&self, data: &[u8]) {
-        self.presets.import_bytes_into_current_preset(&self.parameters, data);
+        self.presets.import_bytes_into_current_preset(data);
     }
 
     /// If `preset_chunks` is set to true in plugin info, this should load a preset bank from the
     /// given chunk data.
     fn load_bank_data(&self, data: &[u8]) {
-        self.presets.import_bank_from_bytes(&self.parameters, data);
+        self.presets.import_bank_from_bytes(data);
     }
 }
 

@@ -1,7 +1,6 @@
-use crate::atomics::atomic_float::AtomicFloat;
+use super::atomic_float::AtomicFloat;
 
-use super::super::processing::*;
-use super::super::common::*;
+use crate::processing_parameters::*;
 
 use super::common::*;
 
@@ -11,7 +10,7 @@ use super::common::*;
 
 macro_rules! impl_parameter_value_access {
     ($name:ident) => {
-        impl SyncParameterValueAccess for $name {
+        impl PresetParameterValueAccess for $name {
             fn set_value(&self, value: f32) {
                 self.value.set(value);
             }
@@ -29,21 +28,21 @@ macro_rules! impl_parameter_value_access {
 macro_rules! impl_value_conversion_from_processing {
     ($name:ident, $other:ident) => {
         impl ParameterValueConversion for $name {
-            type ProcessingValue = <$other as ProcessingParameter>::Value;
+            type ProcessingParameterValue = <$other as ProcessingParameter>::Value;
 
-            fn to_processing(value: f32) -> Self::ProcessingValue {
+            fn to_processing(value: f32) -> Self::ProcessingParameterValue {
                 $other::to_processing(value)
             }
-            fn to_sync(value: Self::ProcessingValue) -> f32 {
-                $other::to_sync(value)
+            fn to_preset(value: Self::ProcessingParameterValue) -> f32 {
+                $other::to_preset(value)
             }
 
             /// Parse a string value coming from the host
-            fn parse_string_value(value: String) -> Option<Self::ProcessingValue> {
+            fn parse_string_value(value: String) -> Option<Self::ProcessingParameterValue> {
                 $other::parse_string_value(value)
             }
 
-            fn format_processing(internal_value: Self::ProcessingValue) -> String {
+            fn format_processing(internal_value: Self::ProcessingParameterValue) -> String {
                 $other::format_processing(internal_value)
             }
         }
@@ -63,7 +62,7 @@ macro_rules! create_operator_parameter {
         impl $name {
             pub fn new(operator_index: usize) -> Self {
                 let value = $processing_parameter::default()
-                    .get_sync_target_value();
+                    .get_preset_target_value();
 
                 Self {
                     value: AtomicFloat::new(value),
@@ -72,13 +71,13 @@ macro_rules! create_operator_parameter {
             }
         }
 
-        impl SyncParameterGetName for $name {
+        impl PresetParameterGetName for $name {
             fn get_parameter_name(&self) -> String {
                 format!("Op. {} {}", self.operator_index + 1, $parameter_name)
             }
         }
 
-        impl SyncParameterGetUnit for $name {}
+        impl PresetParameterGetUnit for $name {}
 
         impl_parameter_value_access!($name);
 
@@ -90,13 +89,13 @@ macro_rules! create_operator_parameter {
 // Master volume
 
 #[derive(Debug)]
-pub struct SyncMasterVolume {
+pub struct PresetParameterMasterVolume {
     value: AtomicFloat,
 }
 
-impl Default for SyncMasterVolume {
+impl Default for PresetParameterMasterVolume {
     fn default() -> Self {
-        let value = ProcessingMasterVolume::default().get_sync_target_value();
+        let value = ProcessingParameterMasterVolume::default().get_preset_target_value();
 
         Self {
             value: AtomicFloat::new(value),
@@ -105,28 +104,28 @@ impl Default for SyncMasterVolume {
 }
 
 
-impl SyncParameterGetName for SyncMasterVolume {
+impl PresetParameterGetName for PresetParameterMasterVolume {
     fn get_parameter_name(&self) -> String {
         "Master volume".to_string()
     }
 }
 
-impl SyncParameterGetUnit for SyncMasterVolume {}
+impl PresetParameterGetUnit for PresetParameterMasterVolume {}
 
-impl_parameter_value_access!(SyncMasterVolume);
-impl_value_conversion_from_processing!(SyncMasterVolume, ProcessingMasterVolume);
+impl_parameter_value_access!(PresetParameterMasterVolume);
+impl_value_conversion_from_processing!(PresetParameterMasterVolume, ProcessingParameterMasterVolume);
 
 
 // Master frequency
 
 #[derive(Debug)]
-pub struct SyncMasterFrequency {
+pub struct PresetParameterMasterFrequency {
     pub value: AtomicFloat,
 }
 
-impl Default for SyncMasterFrequency {
+impl Default for PresetParameterMasterFrequency {
     fn default() -> Self {
-        let value = ProcessingMasterFrequency::default().get_sync_target_value();
+        let value = ProcessingParameterMasterFrequency::default().get_preset_target_value();
 
 
         Self {
@@ -136,49 +135,49 @@ impl Default for SyncMasterFrequency {
 }
 
 
-impl SyncParameterGetName for SyncMasterFrequency {
+impl PresetParameterGetName for PresetParameterMasterFrequency {
     fn get_parameter_name(&self) -> String {
         "Master frequency".to_string()
     }
 }
 
-impl SyncParameterGetUnit for SyncMasterFrequency {
+impl PresetParameterGetUnit for PresetParameterMasterFrequency {
     fn get_parameter_unit_of_measurement(&self) -> String {
         "Hz".to_string()
     }
 }
 
-impl_parameter_value_access!(SyncMasterFrequency);
+impl_parameter_value_access!(PresetParameterMasterFrequency);
 
-impl_value_conversion_from_processing!(SyncMasterFrequency, ProcessingMasterFrequency);
+impl_value_conversion_from_processing!(PresetParameterMasterFrequency, ProcessingParameterMasterFrequency);
 
 
 // Operator volume
 
 create_operator_parameter!(
-    SyncOperatorVolume,
+    PresetParameterOperatorVolume,
     "volume",
-    ProcessingOperatorVolume
+    ProcessingParameterOperatorVolume
 );
 
 
 // Operator modulation target
 
 #[derive(Debug)]
-pub enum SyncOperatorModulationTarget {
-    OperatorIndex2(SyncOperatorModulationTarget2),
-    OperatorIndex3(SyncOperatorModulationTarget3),
+pub enum PresetParameterOperatorModulationTarget {
+    OperatorIndex2(PresetParameterOperatorModulationTarget2),
+    OperatorIndex3(PresetParameterOperatorModulationTarget3),
 }
 
 
-impl SyncOperatorModulationTarget {
+impl PresetParameterOperatorModulationTarget {
     pub fn opt_new(operator_index: usize) -> Option<Self> {
         match operator_index {
-            2 => Some(SyncOperatorModulationTarget::OperatorIndex2(
-                SyncOperatorModulationTarget2::new(operator_index)
+            2 => Some(PresetParameterOperatorModulationTarget::OperatorIndex2(
+                PresetParameterOperatorModulationTarget2::new(operator_index)
             )),
-            3 => Some(SyncOperatorModulationTarget::OperatorIndex3(
-                SyncOperatorModulationTarget3::new(operator_index)
+            3 => Some(PresetParameterOperatorModulationTarget::OperatorIndex3(
+                PresetParameterOperatorModulationTarget3::new(operator_index)
             )),
             _ => None
         }
@@ -187,53 +186,53 @@ impl SyncOperatorModulationTarget {
 
 
 create_operator_parameter!(
-    SyncOperatorModulationTarget2,
+    PresetParameterOperatorModulationTarget2,
     "mod out",
-    ProcessingOperatorModulationTarget2
+    ProcessingParameterOperatorModulationTarget2
 );
 
 
 
 create_operator_parameter!(
-    SyncOperatorModulationTarget3,
+    PresetParameterOperatorModulationTarget3,
     "mod out",
-    ProcessingOperatorModulationTarget3
+    ProcessingParameterOperatorModulationTarget3
 );
 
 
 // Operator additive factor
 
 create_operator_parameter!(
-    SyncOperatorAdditiveFactor,
+    PresetParameterOperatorAdditiveFactor,
     "additive",
-    ProcessingOperatorAdditiveFactor
+    ProcessingParameterOperatorAdditiveFactor
 );
 
 
 // Operator panning
 
 create_operator_parameter!(
-    SyncOperatorPanning,
+    PresetParameterOperatorPanning,
     "pan",
-    ProcessingOperatorPanning
+    ProcessingParameterOperatorPanning
 );
 
 
 // Operator frequency ratio
 
 create_operator_parameter!(
-    SyncOperatorFrequencyRatio,
+    PresetParameterOperatorFrequencyRatio,
     "freq ratio",
-    ProcessingOperatorFrequencyRatio
+    ProcessingParameterOperatorFrequencyRatio
 );
 
 
 // Operator free frequency
 
 create_operator_parameter!(
-    SyncOperatorFrequencyFree,
+    PresetParameterOperatorFrequencyFree,
     "freq free",
-    ProcessingOperatorFrequencyFree
+    ProcessingParameterOperatorFrequencyFree
 );
 
 
@@ -241,36 +240,36 @@ create_operator_parameter!(
 // Operator fine frequency
 
 create_operator_parameter!(
-    SyncOperatorFrequencyFine,
+    PresetParameterOperatorFrequencyFine,
     "freq fine",
-    ProcessingOperatorFrequencyFine
+    ProcessingParameterOperatorFrequencyFine
 );
 
 
 // Operator feedback
 
 create_operator_parameter!(
-    SyncOperatorFeedback,
+    PresetParameterOperatorFeedback,
     "feedback",
-    ProcessingOperatorFeedback
+    ProcessingParameterOperatorFeedback
 );
 
 
 // Operator modulation index
 
 create_operator_parameter!(
-    SyncOperatorModulationIndex,
+    PresetParameterOperatorModulationIndex,
     "mod index",
-    ProcessingOperatorModulationIndex
+    ProcessingParameterOperatorModulationIndex
 );
 
 
 // Operator wave type
 
 create_operator_parameter!(
-    SyncOperatorWaveType,
+    PresetParameterOperatorWaveType,
     "wave type",
-    ProcessingOperatorWaveType
+    ProcessingParameterOperatorWaveType
 );
 
 
@@ -278,18 +277,18 @@ create_operator_parameter!(
 // Volume envelope attack duration
 
 create_operator_parameter!(
-    SyncOperatorAttackDuration,
+    PresetParameterOperatorAttackDuration,
     "attack time",
-    ProcessingOperatorAttackDuration
+    ProcessingParameterOperatorAttackDuration
 );
 
 
 // Volume envelope attack value
 
 create_operator_parameter!(
-    SyncOperatorAttackVolume,
+    PresetParameterOperatorAttackVolume,
     "attack vol",
-    ProcessingOperatorAttackVolume
+    ProcessingParameterOperatorAttackVolume
 );
 
 
@@ -297,27 +296,27 @@ create_operator_parameter!(
 // Volume envelope decay duration
 
 create_operator_parameter!(
-    SyncOperatorDecayDuration,
+    PresetParameterOperatorDecayDuration,
     "decay time",
-    ProcessingOperatorDecayDuration
+    ProcessingParameterOperatorDecayDuration
 );
 
 
 // Volume envelope decay value
 
 create_operator_parameter!(
-    SyncOperatorDecayVolume,
+    PresetParameterOperatorDecayVolume,
     "decay vol",
-    ProcessingOperatorDecayVolume
+    ProcessingParameterOperatorDecayVolume
 );
 
 
 // Volume envelope release duration
 
 create_operator_parameter!(
-    SyncOperatorReleaseDuration,
+    PresetParameterOperatorReleaseDuration,
     "release time",
-    ProcessingOperatorReleaseDuration
+    ProcessingParameterOperatorReleaseDuration
 );
 
 
@@ -333,33 +332,33 @@ mod tests {
 
     #[test]
     fn test_set_volume_text(){
-        let p = SyncOperatorVolume::new(3);
+        let p = PresetParameterOperatorVolume::new(3);
 
         assert!(p.set_parameter_value_text("-1.0".to_string()));
-        assert_eq!(SyncOperatorVolume::to_processing(p.get_value()), 0.0);
+        assert_eq!(PresetParameterOperatorVolume::to_processing(p.get_value()), 0.0);
 
         assert!(p.set_parameter_value_text("0".to_string()));
-        assert_eq!(SyncOperatorVolume::to_processing(p.get_value()), 0.0);
+        assert_eq!(PresetParameterOperatorVolume::to_processing(p.get_value()), 0.0);
 
         assert!(p.set_parameter_value_text("0.0".to_string()));
-        assert_eq!(SyncOperatorVolume::to_processing(p.get_value()), 0.0);
+        assert_eq!(PresetParameterOperatorVolume::to_processing(p.get_value()), 0.0);
 
         assert!(p.set_parameter_value_text("1.0".to_string()));
-        assert_eq!(SyncOperatorVolume::to_processing(p.get_value()), 1.0);
+        assert_eq!(PresetParameterOperatorVolume::to_processing(p.get_value()), 1.0);
 
         assert!(p.set_parameter_value_text("1.2".to_string()));
-        assert_eq!(SyncOperatorVolume::to_processing(p.get_value()), 1.2);
+        assert_eq!(PresetParameterOperatorVolume::to_processing(p.get_value()), 1.2);
 
         assert!(p.set_parameter_value_text("2.0".to_string()));
-        assert_eq!(SyncOperatorVolume::to_processing(p.get_value()), 2.0);
+        assert_eq!(PresetParameterOperatorVolume::to_processing(p.get_value()), 2.0);
 
         assert!(p.set_parameter_value_text("3.0".to_string()));
-        assert_eq!(SyncOperatorVolume::to_processing(p.get_value()), 2.0);
+        assert_eq!(PresetParameterOperatorVolume::to_processing(p.get_value()), 2.0);
     }
 
     #[test]
     fn test_set_output_operator_text(){
-        let p = SyncOperatorModulationTarget3::new(3);
+        let p = PresetParameterOperatorModulationTarget3::new(3);
 
         assert!(!p.set_parameter_value_text("abc".to_string()));
         assert!(!p.set_parameter_value_text("0".to_string()));
@@ -367,36 +366,36 @@ mod tests {
         assert!(!p.set_parameter_value_text("4".to_string()));
 
         assert!(p.set_parameter_value_text("1".to_string()));
-        assert_eq!(SyncOperatorModulationTarget3::to_processing(p.get_value()), 0);
+        assert_eq!(PresetParameterOperatorModulationTarget3::to_processing(p.get_value()), 0);
 
         assert!(p.set_parameter_value_text("2".to_string()));
-        assert_eq!(SyncOperatorModulationTarget3::to_processing(p.get_value()), 1);
+        assert_eq!(PresetParameterOperatorModulationTarget3::to_processing(p.get_value()), 1);
 
         assert!(p.set_parameter_value_text("3".to_string()));
-        assert_eq!(SyncOperatorModulationTarget3::to_processing(p.get_value()), 2);
+        assert_eq!(PresetParameterOperatorModulationTarget3::to_processing(p.get_value()), 2);
     }
 
     #[test]
     fn test_set_frequency_ratio_text(){
-        let p = SyncOperatorFrequencyRatio::new(3);
+        let p = PresetParameterOperatorFrequencyRatio::new(3);
 
         assert!(p.set_parameter_value_text("0.0".to_string()));
-        assert_eq!(SyncOperatorFrequencyRatio::to_processing(p.get_value()), OPERATOR_RATIO_STEPS[0]);
+        assert_eq!(PresetParameterOperatorFrequencyRatio::to_processing(p.get_value()), OPERATOR_RATIO_STEPS[0]);
 
         assert!(p.set_parameter_value_text("10000000.0".to_string()));
-        assert_eq!(SyncOperatorFrequencyRatio::to_processing(p.get_value()), *OPERATOR_RATIO_STEPS.last().unwrap());
+        assert_eq!(PresetParameterOperatorFrequencyRatio::to_processing(p.get_value()), *OPERATOR_RATIO_STEPS.last().unwrap());
 
         assert!(p.set_parameter_value_text("1.0".to_string()));
-        assert_eq!(SyncOperatorFrequencyRatio::to_processing(p.get_value()), 1.0);
+        assert_eq!(PresetParameterOperatorFrequencyRatio::to_processing(p.get_value()), 1.0);
 
         assert!(p.set_parameter_value_text("0.99".to_string()));
-        assert_eq!(SyncOperatorFrequencyRatio::to_processing(p.get_value()), 1.0);
+        assert_eq!(PresetParameterOperatorFrequencyRatio::to_processing(p.get_value()), 1.0);
 
         assert!(p.set_parameter_value_text("0.5".to_string()));
-        assert_eq!(SyncOperatorFrequencyRatio::to_processing(p.get_value()), 0.5);
+        assert_eq!(PresetParameterOperatorFrequencyRatio::to_processing(p.get_value()), 0.5);
 
         assert!(p.set_parameter_value_text("0.51".to_string()));
-        assert_eq!(SyncOperatorFrequencyRatio::to_processing(p.get_value()), 0.5);
+        assert_eq!(PresetParameterOperatorFrequencyRatio::to_processing(p.get_value()), 0.5);
 
         for step in OPERATOR_RATIO_STEPS.iter() {
             let s = format!("{:.02}", step);
@@ -407,22 +406,22 @@ mod tests {
 
     #[test]
     fn test_set_frequency_free_text(){
-        let p = SyncOperatorFrequencyFree::new(3);
+        let p = PresetParameterOperatorFrequencyFree::new(3);
 
         assert!(p.set_parameter_value_text("1.0".to_string()));
-        assert_eq!(SyncOperatorFrequencyFree::to_processing(p.get_value()), 1.0);
+        assert_eq!(PresetParameterOperatorFrequencyFree::to_processing(p.get_value()), 1.0);
 
         assert!(p.set_parameter_value_text("1".to_string()));
-        assert_eq!(SyncOperatorFrequencyFree::to_processing(p.get_value()), 1.0);
+        assert_eq!(PresetParameterOperatorFrequencyFree::to_processing(p.get_value()), 1.0);
 
         assert!(p.set_parameter_value_text("0.0".to_string()));
-        assert_approx_eq!(SyncOperatorFrequencyFree::to_processing(p.get_value()), OPERATOR_FREE_STEPS[0]);
+        assert_approx_eq!(PresetParameterOperatorFrequencyFree::to_processing(p.get_value()), OPERATOR_FREE_STEPS[0]);
 
         assert!(p.set_parameter_value_text("4.0".to_string()));
-        assert_approx_eq!(SyncOperatorFrequencyFree::to_processing(p.get_value()), 4.0);
+        assert_approx_eq!(PresetParameterOperatorFrequencyFree::to_processing(p.get_value()), 4.0);
 
         assert!(p.set_parameter_value_text("256.0".to_string()));
-        assert_approx_eq!(SyncOperatorFrequencyFree::to_processing(p.get_value()), OPERATOR_FREE_STEPS.last().unwrap());
+        assert_approx_eq!(PresetParameterOperatorFrequencyFree::to_processing(p.get_value()), OPERATOR_FREE_STEPS.last().unwrap());
 
         for step in OPERATOR_FREE_STEPS.iter() {
             let s = format!("{:.02}", step);
@@ -433,27 +432,27 @@ mod tests {
 
     #[test]
     fn test_set_wave_type_text(){
-        let p = SyncOperatorWaveType::new(3);
+        let p = PresetParameterOperatorWaveType::new(3);
 
         assert!(p.set_parameter_value_text("sine".to_string()));
-        assert_eq!(SyncOperatorWaveType::to_processing(p.get_value()), WaveType::Sine);
+        assert_eq!(PresetParameterOperatorWaveType::to_processing(p.get_value()), WaveType::Sine);
 
         assert!(p.set_parameter_value_text("noise".to_string()));
-        assert_eq!(SyncOperatorWaveType::to_processing(p.get_value()), WaveType::WhiteNoise);
+        assert_eq!(PresetParameterOperatorWaveType::to_processing(p.get_value()), WaveType::WhiteNoise);
     }
 
     #[test]
     fn test_set_attack_duration_text(){
-        let p = SyncOperatorAttackDuration::new(3);
+        let p = PresetParameterOperatorAttackDuration::new(3);
 
         assert!(p.set_parameter_value_text("0.0".to_string()));
-        assert_eq!(SyncOperatorAttackDuration::to_processing(p.get_value()), ENVELOPE_MIN_DURATION);
+        assert_eq!(PresetParameterOperatorAttackDuration::to_processing(p.get_value()), ENVELOPE_MIN_DURATION);
 
         assert!(p.set_parameter_value_text("1.0".to_string()));
-        assert_eq!(SyncOperatorAttackDuration::to_processing(p.get_value()), 1.0);
+        assert_eq!(PresetParameterOperatorAttackDuration::to_processing(p.get_value()), 1.0);
 
         assert!(p.set_parameter_value_text("10".to_string()));
-        assert_eq!(SyncOperatorAttackDuration::to_processing(p.get_value()),
+        assert_eq!(PresetParameterOperatorAttackDuration::to_processing(p.get_value()),
             ENVELOPE_MAX_DURATION);
     }
 }

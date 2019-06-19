@@ -2,7 +2,7 @@ use std::f32::consts::E;
 
 use crate::common::*;
 use crate::constants::*;
-use crate::parameters::processing::*;
+use crate::processing_parameters::*;
 
 
 pub enum CurveType {
@@ -94,7 +94,7 @@ impl VoiceOperatorVolumeEnvelope {
 
     fn advance_if_stage_time_up(
         &mut self,
-        operator_envelope: &ProcessingOperatorEnvelope,
+        operator_envelope: &ProcessingParameterOperatorEnvelope,
         voice_duration: VoiceDuration,
     ) {
         use EnvelopeStage::*;
@@ -130,7 +130,7 @@ impl VoiceOperatorVolumeEnvelope {
 
     fn calculate_stage_volume(
         &self,
-        operator_envelope: &ProcessingOperatorEnvelope,
+        operator_envelope: &ProcessingParameterOperatorEnvelope,
         voice_duration: VoiceDuration,
     ) -> f32 {
         use EnvelopeStage::*;
@@ -175,7 +175,7 @@ impl VoiceOperatorVolumeEnvelope {
     /// Calculate volume and possibly advance envelope stage
     pub fn get_volume(
         &mut self,
-        operator_envelope: &ProcessingOperatorEnvelope,
+        operator_envelope: &ProcessingParameterOperatorEnvelope,
         key_pressed: bool,
         voice_duration: VoiceDuration,
     ) -> f32 {

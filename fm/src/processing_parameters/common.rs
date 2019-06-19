@@ -1,7 +1,25 @@
+
 use crate::constants::*;
 use crate::common::TimeCounter;
 
-use crate::parameters::common::ParameterValueConversion;
+
+/// Convert plugin host float values in the range 0.0 - 1.0 to and from
+/// the internal representation
+pub trait ParameterValueConversion {
+    type ProcessingParameterValue;
+
+    fn to_processing(value: f32) -> Self::ProcessingParameterValue;
+    fn to_preset(value: Self::ProcessingParameterValue) -> f32;
+
+    /// Parse a string value coming from the host
+    fn parse_string_value(value: String) -> Option<Self::ProcessingParameterValue>;
+
+    fn format_processing(internal_value: Self::ProcessingParameterValue) -> String;
+
+    fn format_value(value: f32) -> String {
+        Self::format_processing(Self::to_processing(value))
+    }
+}
 
 
 pub trait ProcessingParameter {
@@ -12,27 +30,27 @@ pub trait ProcessingParameter {
     fn set_value(&mut self, value: Self::Value);
 }
 
-pub trait ProcessingParameterSyncValueAccess {
-    fn set_from_sync_value(&mut self, value: f32);
-    fn get_sync_target_value(&self) -> f32;
+pub trait ProcessingParameterPresetValueAccess {
+    fn set_from_preset_value(&mut self, value: f32);
+    fn get_preset_target_value(&self) -> f32;
 }
 
-impl<P, T> ProcessingParameterSyncValueAccess for P
+impl<P, T> ProcessingParameterPresetValueAccess for P
     where P:
         ProcessingParameter<Value = T> +
-        ParameterValueConversion<ProcessingValue = T>
+        ParameterValueConversion<ProcessingParameterValue = T>
 {
-    fn set_from_sync_value(&mut self, value: f32){
+    fn set_from_preset_value(&mut self, value: f32){
         self.set_value(Self::to_processing(value));
     }
-    fn get_sync_target_value(&self) -> f32 {
-        Self::to_sync(self.get_target_value())
+    fn get_preset_target_value(&self) -> f32 {
+        Self::to_preset(self.get_target_value())
     }
 }
 
 
 #[derive(Debug, Copy, Clone)]
-pub struct TimeInterpolatableValue {
+pub struct InterpolatableProcessingValue {
     pub target_value: f32,
     current_value: f32,
     step_size: f32,
@@ -41,7 +59,7 @@ pub struct TimeInterpolatableValue {
     last_time: TimeCounter,
 }
 
-impl TimeInterpolatableValue {
+impl InterpolatableProcessingValue {
     pub fn new(value: f32) -> Self {
         Self {
             target_value: value,
@@ -104,4 +122,3 @@ impl TimeInterpolatableValue {
         }
     }
 }
-
