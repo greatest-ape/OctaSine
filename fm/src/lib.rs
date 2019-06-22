@@ -103,10 +103,11 @@ impl FmSynth {
         value.min(1.0).max(-1.0)
     }
 
+    /// Generate stereo samples for a voice using SIMD
     #[cfg(feature = "simd")]
     pub fn generate_voice_samples_simd(
         envelope_curve_table: &EnvelopeCurveTable,
-        _rng: &mut impl Rng,
+        rng: &mut impl Rng,
         _sine_table: &SineLookupTable,
         time: TimeCounter,
         time_per_sample: TimePerSample,
@@ -130,6 +131,7 @@ impl FmSynth {
         let mut operator_frequency_free: [f32; 4] = [0.0; 4];
         let mut operator_frequency_fine: [f32; 4] = [0.0; 4];
         let mut operator_modulation_targets = [0usize; 4];
+        let mut operator_wave_type = [WaveType::Sine; 4];
 
         let mut operator_last_phase: [f32; 4] = [0.0; 4];
 
@@ -147,6 +149,7 @@ impl FmSynth {
             operator_modulation_index[index] = operator.modulation_index.get_value(time);
             operator_feedback[index] = operator.feedback.get_value(time);
             operator_panning[index] = operator.panning.get_value(time);
+            operator_wave_type[index] = operator.wave_type.value;
 
             // Get additive factor; use 1.0 for operator 1
             operator_additive[index] = if index == 0 {
@@ -224,7 +227,6 @@ impl FmSynth {
                     operator_new_phase_simd.extract(index);
             }
 
-            // operator_new_phase_simd
             operator_new_phase_simd * TAU
         };
 
@@ -237,7 +239,6 @@ impl FmSynth {
             if all_feedback_off {
                 f32x4::splat(0.0)
             } else {
-                // operator_feedback_simd * sine_table.sin_tau_simd_x4(operator_new_phase_simd)
                 operator_feedback_simd * SleefSin35::sin(operator_new_phase_simd)
             }
         };
@@ -293,6 +294,8 @@ impl FmSynth {
         let operator_volume_product_pairs = create_pairs(operator_volume_product_simd);
         let additive_pairs = create_pairs(operator_additive_simd);
 
+        // Generate samples
+
         let mut modulation_in_pairs = [f32x2::splat(0.0); 4];
         let mut additive_out_simd = f32x2::splat(0.0);
 
@@ -303,17 +306,20 @@ impl FmSynth {
                 continue;
             }
 
-            let mono = modulation_in_pairs[index].sum();
+            let mut out_simd = if operator_wave_type[index] == WaveType::Sine {
+                let mono = modulation_in_pairs[index].sum();
 
-            modulation_in_pairs[index] = tendency_pairs[index] * mono +
-                (1.0 - tendency_pairs[index]) * modulation_in_pairs[index];
+                modulation_in_pairs[index] = tendency_pairs[index] * mono +
+                    (1.0 - tendency_pairs[index]) * modulation_in_pairs[index];
 
-            let sin_input_simd: f32x2 = modulation_index_pairs[index] *
-                (feedback_pairs[index] + modulation_in_pairs[index]) +
-                phase_pairs[index];
+                let sin_input_simd: f32x2 = modulation_index_pairs[index] *
+                    (feedback_pairs[index] + modulation_in_pairs[index]) +
+                    phase_pairs[index];
 
-            // let mut out_simd = sine_table.sin_tau_simd_x2(sin_input_simd);
-            let mut out_simd = SleefSin35::sin(sin_input_simd);
+                SleefSin35::sin(sin_input_simd)
+            } else {
+                f32x2::splat((rng.gen::<f32>() - 0.5) * 2.0)
+            };
 
             out_simd *= operator_volume_product_pairs[index] *
                 constant_power_panning_pairs[index];
@@ -332,11 +338,11 @@ impl FmSynth {
         (additive_out_simd.extract(0), additive_out_simd.extract(1))
     }
 
-    #[cfg(not(feature = "simd"))]
     /// Generate stereo samples for a voice
     /// 
     /// Doesn't take self parameter due to conflicting borrowing of Voices
     /// in calling function `process`
+    #[cfg(not(feature = "simd"))]
     fn generate_voice_samples(
         envelope_curve_table: &EnvelopeCurveTable,
         rng: &mut impl Rng,
