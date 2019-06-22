@@ -29,7 +29,8 @@ git = "https://github.com/rust-dsp/rust-vst.git"
 rev = "af9c8c"
 
 [dependencies.packed_simd]
-version = "0.3.3"
+git = "https://github.com/rust-lang-nursery/packed_simd.git"
+rev = "01c90d"
 optional = true
 features = ["sleef-sys"]
 

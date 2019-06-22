@@ -13,8 +13,12 @@ name = "simd_sleef_sin35"
 simd = ["packed_simd", "sleef-sys"]
 
 [dependencies]
-packed_simd = { version = "0.3.3", optional = true }
 sleef-sys = { version = "^0.1.2", optional = true} 
+
+[dependencies.packed_simd]
+git = "https://github.com/rust-lang-nursery/packed_simd.git"
+rev = "01c90d"
+optional = true
 
 [dev-dependencies]
 quickcheck = "0.8"
