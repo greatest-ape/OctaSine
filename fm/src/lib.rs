@@ -107,7 +107,7 @@ impl FmSynth {
     pub fn generate_voice_samples_simd(
         envelope_curve_table: &EnvelopeCurveTable,
         _rng: &mut impl Rng,
-        sine_table: &SineLookupTable,
+        _sine_table: &SineLookupTable,
         time: TimeCounter,
         time_per_sample: TimePerSample,
         parameters: &mut ProcessingParameters,

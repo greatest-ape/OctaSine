@@ -75,6 +75,7 @@ pub struct VoiceOperatorVolumeEnvelope {
 }
 
 impl VoiceOperatorVolumeEnvelope {
+    #[inline]
     fn advance_if_key_not_pressed(
         &mut self,
         key_pressed: bool,
@@ -94,6 +95,7 @@ impl VoiceOperatorVolumeEnvelope {
         }
     }
 
+    #[inline]
     fn advance_if_stage_time_up(
         &mut self,
         operator_envelope: &ProcessingParameterOperatorEnvelope,
@@ -130,7 +132,8 @@ impl VoiceOperatorVolumeEnvelope {
         }
     }
 
-    fn calculate_stage_volume(
+    #[inline]
+    fn calculate_volume(
         &self,
         envelope_curve_table: &EnvelopeCurveTable,
         operator_envelope: &ProcessingParameterOperatorEnvelope,
@@ -143,7 +146,7 @@ impl VoiceOperatorVolumeEnvelope {
 
         match self.stage {
             Attack => {
-                calculate_envelope_volume(
+                Self::calculate_curve(
                     envelope_curve_table,
                     self.volume_at_stage_change,
                     operator_envelope.attack_end_value.value,
@@ -152,7 +155,7 @@ impl VoiceOperatorVolumeEnvelope {
                 )
             },
             Decay => {
-                calculate_envelope_volume(
+                Self::calculate_curve(
                     envelope_curve_table,
                     self.volume_at_stage_change,
                     operator_envelope.decay_end_value.value,
@@ -164,7 +167,7 @@ impl VoiceOperatorVolumeEnvelope {
                 operator_envelope.decay_end_value.value
             },
             Release => {
-                calculate_envelope_volume(
+                Self::calculate_curve(
                     envelope_curve_table,
                     self.volume_at_stage_change,
                     0.0,
@@ -178,6 +181,26 @@ impl VoiceOperatorVolumeEnvelope {
         }
     }
 
+    #[inline]
+    pub fn calculate_curve(
+        envelope_curve_table: &EnvelopeCurveTable,
+        start_volume: f32,
+        end_volume: f32,
+        time_so_far_this_stage: f32,
+        stage_length: f32,
+    ) -> f32 {
+        let time_progress = time_so_far_this_stage / stage_length;
+
+        let curve_factor = (stage_length * ENVELOPE_CURVE_TAKEOVER_RECIP).min(1.0);
+        let linear_factor = 1.0 - curve_factor;
+
+        let curve = curve_factor * envelope_curve_table.calculate(time_progress);
+        let linear = linear_factor * time_progress;
+
+        start_volume + (end_volume - start_volume) * (curve + linear)
+    }
+
+    #[inline]
     /// Calculate volume and possibly advance envelope stage
     pub fn get_volume(
         &mut self,
@@ -192,13 +215,14 @@ impl VoiceOperatorVolumeEnvelope {
             self.advance_if_key_not_pressed(key_pressed, voice_duration);
             self.advance_if_stage_time_up(operator_envelope, voice_duration);
 
-            self.last_volume = self.calculate_stage_volume(
+            self.last_volume = self.calculate_volume(
                 envelope_curve_table, operator_envelope, voice_duration);
             
             self.last_volume
         }
     }
 
+    #[inline]
     pub fn restart(&mut self){
         self.stage = EnvelopeStage::Attack;
         self.volume_at_stage_change = self.last_volume;
@@ -220,7 +244,6 @@ impl Default for VoiceOperatorVolumeEnvelope {
 
 #[derive(Debug, Copy, Clone)]
 pub struct VoiceOperator {
-    /// Float between 0.0 and 1.0
     pub last_phase: Phase,
     pub volume_envelope: VoiceOperatorVolumeEnvelope,
 }
@@ -242,7 +265,6 @@ pub struct Voice {
     pub duration: VoiceDuration,
     pub key_pressed: bool,
     pub key_velocity: KeyVelocity,
-    pub duration_at_key_release: Option<VoiceDuration>,
     pub operators: [VoiceOperator; NUM_OPERATORS],
 }
 
@@ -256,35 +278,29 @@ impl Voice {
             duration: VoiceDuration(0.0),
             key_pressed: false,
             key_velocity: KeyVelocity::default(),
-            duration_at_key_release: None,
             operators: operators,
         }
     }
 
+    #[inline]
     pub fn press_key(&mut self, velocity: u8){
         self.key_velocity = KeyVelocity::from_midi_velocity(velocity);
         self.key_pressed = true;
         self.duration = VoiceDuration(0.0);
-        self.duration_at_key_release = None;
 
-        if self.active {
-            for operator in self.operators.iter_mut(){
-                operator.volume_envelope.restart();
-            }
-        } else {
-            for operator in self.operators.iter_mut(){
-                *operator = VoiceOperator::default();
-            }
-
-            self.active = true;
+        for operator in self.operators.iter_mut(){
+            operator.volume_envelope.restart();
         }
+
+        self.active = true;
     }
 
+    #[inline]
     pub fn release_key(&mut self){
         self.key_pressed = false;
-        self.duration_at_key_release = Some(self.duration);
     }
 
+    #[inline]
     pub fn deactivate_if_envelopes_ended(&mut self) {
         let all_envelopes_ended = self.operators.iter().all(|voice_operator|
             voice_operator.volume_envelope.stage == EnvelopeStage::Ended
@@ -297,25 +313,9 @@ impl Voice {
 }
 
 
-fn calculate_envelope_volume(
-    envelope_curve_table: &EnvelopeCurveTable,
-    start_volume: f32,
-    end_volume: f32,
-    time_so_far_this_stage: f32,
-    stage_length: f32,
-) -> f32 {
-    let time_progress = time_so_far_this_stage / stage_length;
 
-    let curve_factor = (stage_length * ENVELOPE_CURVE_TAKEOVER_RECIP).min(1.0);
-    let linear_factor = 1.0 - curve_factor;
-
-    let curve = curve_factor * envelope_curve_table.calculate(time_progress);
-    let linear = linear_factor * time_progress;
-
-    start_volume + (end_volume - start_volume) * (curve + linear)
-}
-
-
+/// Kept here for reference
+#[allow(dead_code)]
 fn calculate_curve(curve: CurveType, v: f32) -> f32 {
     match curve {
         CurveType::Exp => (v.exp() - 1.0) / (E - 1.0),
@@ -342,7 +342,7 @@ mod tests {
     }
 
     #[test]
-    fn test_calculate_envelope_volume_output_in_range(){
+    fn calculate_curveolume_output_in_range(){
         fn prop(values: (f32, f32, f32, f32)) -> TestResult {
             let start_volume = values.0;
             let end_volume = values.1;
@@ -365,7 +365,7 @@ mod tests {
                 return TestResult::discard();
             }
 
-            let volume = calculate_envelope_volume(
+            let volume = VoiceOperatorVolumeEnvelope::calculate_curve(
                 &EnvelopeCurveTable::new(),
                 start_volume,
                 end_volume,
@@ -382,25 +382,33 @@ mod tests {
     }
 
     #[test]
-    fn test_calculate_envelope_volume_start_end(){
+    fn calculate_curveolume_start_end(){
         let table = EnvelopeCurveTable::new();
 
-        assert_approx_eq!(calculate_envelope_volume(&table, 0.0, 1.0, 0.0, 4.0), 0.0);
-        assert_approx_eq!(calculate_envelope_volume(&table, 0.0, 1.0, 4.0, 4.0), 1.0);
+        assert_approx_eq!(
+            VoiceOperatorVolumeEnvelope::calculate_curve(
+                &table, 0.0, 1.0, 0.0, 4.0),
+            0.0
+        );
+        assert_approx_eq!(
+            VoiceOperatorVolumeEnvelope::calculate_curve(
+                &table, 0.0, 1.0, 4.0, 4.0),
+            1.0
+        );
     }
 
     #[test]
-    fn test_calculate_envelope_volume_stage_change_continuity(){
+    fn calculate_curveolume_stage_change_continuity(){
         fn prop(stage_change_volume: f32) -> TestResult {
             if !valid_volume(stage_change_volume) {
                 return TestResult::discard();
             }
 
-            let stage_1_end = calculate_envelope_volume(
+            let stage_1_end = VoiceOperatorVolumeEnvelope::calculate_curve(
                 &EnvelopeCurveTable::new(),
                 0.0, stage_change_volume, 4.0, 4.0);
 
-            let stage_2_start = calculate_envelope_volume(
+            let stage_2_start = VoiceOperatorVolumeEnvelope::calculate_curve(
                 &EnvelopeCurveTable::new(),
                 stage_change_volume, 1.0, 0.0, 4.0);
             
@@ -425,7 +433,6 @@ mod tests {
     /// 
     /// (Add #[test] before function to run when testing)
     #[allow(dead_code)]
-    #[test]
     fn test_gen_plots(){
         fn plot_envelope_stage(
             start_volume: f32,
@@ -439,7 +446,7 @@ mod tests {
             let length = 1.0;
 
             let f = Function::new(|x| {
-                calculate_envelope_volume(
+                VoiceOperatorVolumeEnvelope::calculate_curve(
                     &EnvelopeCurveTable::new(),
                     start_volume,
                     end_volume,

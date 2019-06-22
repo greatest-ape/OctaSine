@@ -25,11 +25,11 @@ pub const INTERPOLATION_STEPS: u8 = 8;
 pub const INTERPOLATION_STEPS_FLOAT: f32 = INTERPOLATION_STEPS as f32;
 
 pub const ENVELOPE_MAX_DURATION: f32 = 4.0;
-pub const ENVELOPE_MIN_DURATION: f32 = 0.01;
+pub const ENVELOPE_MIN_DURATION: f32 = 0.004;
 
 /// After this duration, the envelope slope does not get mixed with linear
 /// slope at all
-pub const ENVELOPE_CURVE_TAKEOVER: f32 = 0.1;
+pub const ENVELOPE_CURVE_TAKEOVER: f32 = 0.01;
 pub const ENVELOPE_CURVE_TAKEOVER_RECIP: f32 = 1.0 / ENVELOPE_CURVE_TAKEOVER;
 
 // Default values

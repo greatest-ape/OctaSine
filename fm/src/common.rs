@@ -4,6 +4,7 @@
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct TimeCounter(pub f32);
 
+/// Phase. value >= 0.0 && value < 1.0
 #[derive(Debug, Copy, Clone)]
 pub struct Phase(pub f32);
 
