@@ -1,6 +1,7 @@
 use std::sync::atomic::{AtomicU64, Ordering};
 
 
+/// Binary `AND` with this to set changed bit to false.
 const SET_NOT_CHANGED_MASK: u64 = !(1 << 63);
 
 
