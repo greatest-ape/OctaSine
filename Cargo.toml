@@ -9,3 +9,7 @@ members = [
 debug = true
 lto = true
 opt-level = 3
+
+[profile.test]
+# lto = true
+opt-level = 3
