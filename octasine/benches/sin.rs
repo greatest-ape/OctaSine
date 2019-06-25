@@ -3,7 +3,7 @@ fn main(){
     println!("Activate SIMD feature to run");
 }
 
-/// Compare sleef and table sine functions
+/// Compare sleef, table and libm sine functions
 #[cfg(feature = "simd")]
 fn main(){
     type V = f32x2;
@@ -23,11 +23,15 @@ fn main(){
 
     let mut inputs = Vec::new();
     let mut inputs_tau = Vec::new();
+    let mut inputs_simple = Vec::new();
 
     let iterations = 10_000_000;
 
     for i in 0..iterations {
         let v = rng.gen::<f32>() * (((i % 256) + 1) as f32);
+
+        inputs_simple.push(v);
+
         let v = V::new(v, v * 0.4);
 
         inputs.push(v);
@@ -50,22 +54,42 @@ fn main(){
 
     let elapsed_table = start_table.elapsed();
 
+    let start_simple = Instant::now();
+
+    let outputs_simple: Vec<f32> = inputs_simple.into_iter()
+        .map(|v| v.sin())
+        .collect();
+
+    let elapsed_simple = start_simple.elapsed();
+
     println!();
-    println!("--- Sleef vs table sin() ---");
+    println!("--- Sleef vs table vs libm sin() ---");
     println!("Number of iterations:   {}", iterations);
-    println!("Test ran for:           {}ms", elapsed_sleef.as_millis() + elapsed_table.as_millis());
-    println!("Sleef average duration: {} nanoseconds", elapsed_sleef.as_nanos() as f32 / iterations as f32);
-    println!("Table average duration: {} nanoseconds", elapsed_table.as_nanos() as f32 / iterations as f32);
+    println!("Test ran for:           {}ms",
+        elapsed_sleef.as_millis() + elapsed_table.as_millis() +
+        elapsed_simple.as_millis());
+    println!("Sleef average duration: {} nanoseconds (for {} values)",
+        elapsed_sleef.as_nanos() as f32 / iterations as f32, V::lanes());
+    println!("Table average duration: {} nanoseconds (for {} values)",
+        elapsed_table.as_nanos() as f32 / iterations as f32, V::lanes());
+    println!("Libm average duration:  {} nanoseconds (for 1 value)",
+        elapsed_simple.as_nanos() as f32 / iterations as f32);
 
     // Not very amazing way of trying to prevent compiler from optimizing
     // away stuff
+
     let mut dummy_counter = 0usize;
 
-    for (a, b) in outputs_sleef.iter().zip(outputs_table.iter()){
-        if a == b {
+    let iterator = outputs_sleef.into_iter()
+        .zip(outputs_table.into_iter()).zip(outputs_simple.into_iter());
+
+    for ((a, b), c) in iterator {
+        if a == b && a.extract(0) == c {
             dummy_counter += 1;
         }
     }
 
-    println!("Dummy information: {}", dummy_counter);
+    if dummy_counter > iterations {
+        println!("Dummy information: {}", dummy_counter);
+    }
 }
