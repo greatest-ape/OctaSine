@@ -1,5 +1,5 @@
 [package]
-name = "fm"
+name = "octasine"
 version = "0.1.0"
 authors = ["Joakim Frostegård <joakim.frostegard@gmail.com>"]
 edition = "2018"
@@ -9,7 +9,7 @@ default = []
 simd = ["packed_simd", "simd_sleef_sin35"]
 
 [lib]
-name = "fm"
+name = "octasine"
 crate-type = ["cdylib"]
 
 [dependencies]

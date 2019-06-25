@@ -4,7 +4,7 @@ set -e
 
 # Settings
 
-NAME="FM Rust"
+NAME="OctaSine"
 
 # Script
 
@@ -16,9 +16,9 @@ TMP_DIR="tmp"
 RUSTFLAGS="-C target-cpu=native" cargo +nightly build --release --features "simd"
 
 # TODO: static linking
-install_name_tool -add_rpath "$SLEEF_DIR" ../target/release/libfm.dylib
+install_name_tool -add_rpath "$SLEEF_DIR" ../target/release/liboctasine.dylib
 
-./scripts/osx_vst_bundler.sh "$NAME" ../target/release/libfm.dylib
+./scripts/osx_vst_bundler.sh "$NAME" ../target/release/liboctasine.dylib
 
 if [ -d "$MOVE_TO" ]; then
     rm -r "$MOVE_TO"

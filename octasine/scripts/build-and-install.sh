@@ -4,7 +4,7 @@ set -e
 
 # Settings
 
-NAME="FM Rust"
+NAME="OctaSine"
 
 # Script
 
@@ -13,7 +13,7 @@ MOVE_TO="/Library/Audio/Plug-Ins/VST/$VST_NAME"
 TMP_DIR="tmp"
 
 RUSTFLAGS="-C target-cpu=native" cargo +stable build --release
-./scripts/osx_vst_bundler.sh "$NAME" ../target/release/libfm.dylib
+./scripts/osx_vst_bundler.sh "$NAME" ../target/release/liboctasine.dylib
 
 if [ -d "$MOVE_TO" ]; then
     rm -r "$MOVE_TO"

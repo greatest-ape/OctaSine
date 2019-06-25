@@ -1,7 +1,7 @@
 [workspace]
 
 members = [ 
-    "fm",
+    "octasine",
     "simd_sleef_sin35",
 ]
 

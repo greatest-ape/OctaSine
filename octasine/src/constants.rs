@@ -6,7 +6,7 @@ pub const TAU: f32 = 6.283185307179586476925286766559005768394338798750211641;
 /// Lower values can be considered to be zero for optimization purposes
 pub const ZERO_VALUE_LIMIT: f32 = 0.001;
 
-pub const PLUGIN_NAME: &'static str = "FM";
+pub const PLUGIN_NAME: &'static str = "Octasine";
 
 pub const NUM_OPERATORS: usize = 4;
 
