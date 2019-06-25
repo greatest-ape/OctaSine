@@ -4,7 +4,7 @@ set -e
 
 # Settings
 
-NAME="octasine"
+NAME="OctaSine"
 
 # Script
 
