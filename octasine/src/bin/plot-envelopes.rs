@@ -1,0 +1,40 @@
+use plotlib::function::*;
+use plotlib::view::ContinuousView;
+use plotlib::page::Page;
+
+use octasine::*;
+
+
+/// Generate plots to check how envelopes look.
+/// 
+/// Currently, editing the file to give the line a color is necessary.
+fn main(){
+    fn plot_envelope_stage(
+        start_volume: f32,
+        end_volume: f32,
+        filename: &str
+    ){
+        let length = 1.0;
+
+        let f = Function::new(|x| {
+            VoiceOperatorVolumeEnvelope::calculate_curve(
+                &EnvelopeCurveTable::new(),
+                start_volume,
+                end_volume,
+                x as f32,
+                length as f32,
+            ).into()
+        }, 0., length);
+
+        let v = ContinuousView::new()
+            .add(&f)
+            .x_range(0.0, length)
+            .y_range(0.0, 1.0);
+        
+        Page::single(&v).save(&filename).unwrap();
+    }
+
+    plot_envelope_stage(0.0, 1.0, "attack.svg");
+    plot_envelope_stage(0.5, 1.0, "decay.svg");
+    plot_envelope_stage(1.0, 0.0, "release.svg");
+}

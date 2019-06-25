@@ -2,6 +2,7 @@
 
 members = [ 
     "octasine",
+    "octasine_vst",
     "simd_sleef_sin35",
 ]
 
@@ -12,4 +13,8 @@ opt-level = 3
 
 [profile.test]
 # lto = true
+opt-level = 3
+
+[profile.bench]
+lto = true
 opt-level = 3

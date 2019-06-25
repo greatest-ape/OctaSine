@@ -1,0 +1,19 @@
+[package]
+name = "octasine_vst"
+version = "0.1.0"
+authors = ["Joakim Frostegård <joakim.frostegard@gmail.com>"]
+edition = "2018"
+
+[lib]
+name = "octasine"
+crate-type = ["cdylib"]
+
+[dependencies.vst]
+git = "https://github.com/rust-dsp/rust-vst.git"
+rev = "af9c8c"
+
+[dependencies.octasine]
+path = "../octasine"
+
+[features]
+simd = ["octasine/simd"]
