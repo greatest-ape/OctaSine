@@ -15,7 +15,11 @@ name = "octasine"
 name = "plot-envelopes"
 
 [[bench]]
-name = "bench-simd"
+name = "sample-gen"
+harness = false
+
+[[bench]]
+name = "sin"
 harness = false
 
 [dependencies]
