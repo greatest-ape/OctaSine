@@ -19,6 +19,10 @@ name = "sample-gen"
 harness = false
 
 [[bench]]
+name = "process"
+harness = false
+
+[[bench]]
 name = "sin"
 harness = false
 

@@ -83,7 +83,7 @@ impl Default for OutputChannel {
 /// Main structure
 pub struct FmSynth {
     processing: ProcessingState,
-    sync_only: Arc<SyncOnlyState>,
+    pub sync_only: Arc<SyncOnlyState>,
 }
 
 impl Default for FmSynth {
