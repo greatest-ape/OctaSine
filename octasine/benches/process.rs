@@ -54,15 +54,15 @@ fn main(){
     for i in 0..iterations {
         if i % 1024 == 0 {
             fm.process_midi_event([144, 100, 100]);
-            fm.process_midi_event([144, 101, 100]);
-            fm.process_midi_event([144, 102, 100]);
-            fm.process_midi_event([144, 103, 100]);
+            // fm.process_midi_event([144, 101, 100]);
+            // fm.process_midi_event([144, 102, 100]);
+            // fm.process_midi_event([144, 103, 100]);
         }
         else if i % 1024 == 768 {
             fm.process_midi_event([128, 100, 0]);
-            fm.process_midi_event([128, 101, 0]);
-            fm.process_midi_event([128, 102, 0]);
-            fm.process_midi_event([128, 103, 0]);
+            // fm.process_midi_event([128, 101, 0]);
+            // fm.process_midi_event([128, 102, 0]);
+            // fm.process_midi_event([128, 103, 0]);
         }
 
         for j in 0..60 {
