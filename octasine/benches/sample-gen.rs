@@ -54,6 +54,8 @@ fn main(){
     println!("SIMD speedup               {}% (ratio {})",
         (1.0 - speed_ratio) * 100.0, speed_ratio);
     println!("SIMD estimated CPU use:    {}%", elapsed_2.as_nanos() as f32 / (n * 4 * 4 * 10_000_000) as f32);
+    println!("Info: At the moment, non-SIMD benchmark doesn't seem to");
+    println!("reflect real-world performance");
 
     // Not very amazing way of trying to prevent compiler from optimizing
     // away stuff
