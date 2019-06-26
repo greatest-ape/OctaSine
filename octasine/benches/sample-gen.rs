@@ -22,13 +22,12 @@ fn main(){
 /// SIMD average duration:     181ms
 /// SIMD speedup               20.191347% (ratio 0.7980865)
 /// 
-/// Speedup increased greatly since I moved this benchmark to its own file.
-/// I don't know why now, but it needs to be investigated.
+/// Non-SIMD benchmark speed decreased a lot as I moved this to its own file.
 #[cfg(feature = "simd")]
 fn main(){
     use std::time::Instant;
 
-    let n = 100;
+    let n = 2;
 
     let now = Instant::now();
     let samples_1 = gen_voice_samples(n, FmSynth::generate_voice_samples);
@@ -41,15 +40,20 @@ fn main(){
 
     let speed_ratio = elapsed_2.as_micros() as f32 /
         elapsed_1.as_micros() as f32;
+    
+    let num_samples = n * 44100 * 4 * 4;
 
     println!("--- SIMD vs non-SIMD sample generation ---");
     println!("Number of tests:           {}", n);
     println!("Non-SIMD total duration:   {}ms", elapsed_1.as_millis());
-    println!("SIMD total duration:       {}ms", elapsed_2.as_millis());
     println!("Non-SIMD average duration: {}ms", elapsed_1.as_millis() as usize / n);
+    println!("Non-SIMD per sample:       {} nanoseconds", elapsed_1.as_nanos() as f32 / num_samples as f32);
+    println!("SIMD total duration:       {}ms", elapsed_2.as_millis());
     println!("SIMD average duration:     {}ms", elapsed_2.as_millis() as usize / n);
+    println!("SIMD per sample:           {} nanoseconds", elapsed_2.as_nanos() as f32 / num_samples as f32);
     println!("SIMD speedup               {}% (ratio {})",
         (1.0 - speed_ratio) * 100.0, speed_ratio);
+    println!("SIMD estimated CPU use:    {}%", elapsed_2.as_nanos() as f32 / (n * 4 * 4 * 10_000_000) as f32);
 
     // Not very amazing way of trying to prevent compiler from optimizing
     // away stuff
@@ -61,7 +65,9 @@ fn main(){
         }
     }
 
-    println!("Dummy information: {}", dummy_counter);
+    if dummy_counter > 44100 {
+        println!("Dummy information: {}", dummy_counter);
+    }
 }
 
 
