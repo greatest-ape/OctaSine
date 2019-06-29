@@ -1,3 +1,4 @@
+#[cfg(feature = "logging")]
 #[macro_use]
 extern crate log;
 
@@ -527,6 +528,8 @@ impl FmSynth {
         self.processing.voices[pitch as usize].release_key();
     }
 
+    /// Fetch BPM. Currently not used
+    #[allow(dead_code)]
     fn fetch_bpm(&mut self){
         // Use TEMPO_VALID constant content as mask directly because
         // of problems with using TimeInfoFlags
@@ -639,13 +642,14 @@ impl Plugin for FmSynth {
         }
     }
 
+    #[cfg(feature = "logging")]
 	fn init(&mut self) {
         let log_folder = dirs::home_dir().unwrap().join("tmp");
 
         let _ = ::std::fs::create_dir(log_folder.clone());
 
 		let log_file = ::std::fs::File::create(
-            log_folder.join("rust-vst.log")
+            log_folder.join(format!("{}.log", PLUGIN_NAME))
         ).unwrap();
 
 		let _ = simplelog::CombinedLogger::init(vec![
@@ -659,8 +663,6 @@ impl Plugin for FmSynth {
         log_panics::init();
 
 		info!("init");
-
-        self.fetch_bpm();
 	}
 
     fn process_events(&mut self, events: &Events) {

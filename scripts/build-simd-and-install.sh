@@ -15,7 +15,7 @@ TMP_DIR="tmp"
 
 cd octasine_vst
 
-RUSTFLAGS="-C target-cpu=native" cargo +nightly build --release --features "simd"
+RUSTFLAGS="-C target-cpu=native" cargo +nightly build --release --features "simd logging"
 
 # TODO: static linking
 install_name_tool -add_rpath "$SLEEF_DIR" ../target/release/liboctasine.dylib
