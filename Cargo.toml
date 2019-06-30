@@ -6,6 +6,11 @@ members = [
     "simd_sleef_sin35",
 ]
 
+# Use sleef-sys fork supporting static linking
+[patch.crates-io.sleef-sys]
+git = 'https://github.com/greatest-ape/sleef-sys.git'
+branch = "static-linking"
+
 [profile.release]
 debug = true
 lto = true

@@ -12,8 +12,13 @@ name = "simd_sleef_sin35"
 # this package. When not enabled, this package does not contain anything.
 simd = ["packed_simd", "sleef-sys"]
 
-[dependencies]
-sleef-sys = { version = "^0.1.2", optional = true} 
+[dependencies.sleef-sys]
+version = "^0.1.2"
+optional = true
+# Static linking feature flag is currently only present in sleef-sys fork
+# https://github.com/greatest-ape/sleef-sys.git, so a patch section is used
+# in the workspace Cargo.toml
+features = ["static"] 
 
 [dependencies.packed_simd]
 git = "https://github.com/rust-lang-nursery/packed_simd.git"
