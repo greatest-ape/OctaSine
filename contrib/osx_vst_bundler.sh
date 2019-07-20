@@ -1,4 +1,13 @@
 #!/bin/bash
+#
+# This script was copied from https://github.com/RustAudio/vst-rs/blob/master/osx_vst_bundler.sh
+#
+# License of vst-rs repository: MIT
+#
+# Contributors listed:
+#   * https://github.com/robsaunders
+#   * https://github.com/piedoom
+#   * https://github.com/zyvitski
 
 # Make sure we have the arguments we need
 if [[ -z $1 || -z $2 ]]; then

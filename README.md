@@ -30,5 +30,9 @@ Binary (pre-built) releases might be uploaded eventually.
 
 ## License
 
-OctaSine is licensed under the GNU GPL 3.0. The support crate simd_sleef_sin35 is
-licensed under the Apache 2.0 license.
+OctaSine is licensed under the GNU GPL 3.0. This goes for all code in this
+repository not listed below:
+
+  * The crate simd_sleef_sin35 is licensed under the Apache 2.0 license.
+  * contrib/osx_vst_bundler.sh is licensed under the MIT license. See the file
+    for specifics

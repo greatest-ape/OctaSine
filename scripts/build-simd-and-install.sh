@@ -16,7 +16,7 @@ cd octasine_vst
 
 RUSTFLAGS="-C target-cpu=native" cargo +nightly build --release --features "simd logging"
 
-../scripts/osx_vst_bundler.sh "$NAME" ../target/release/liboctasine.dylib
+../contrib/osx_vst_bundler.sh "$NAME" ../target/release/liboctasine.dylib
 
 if [ -d "$MOVE_TO" ]; then
     rm -r "$MOVE_TO"
