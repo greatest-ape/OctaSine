@@ -17,13 +17,13 @@ Frequency modulation based VST2 plugin written in Rust
 After cloning the repository and installing the rust compiler (including a nightly toolchain), build and install by running:
 
 ```sh
-./scripts/build-simd-and-install.sh
+./scripts/macos/build-simd-and-install.sh
 ```
 
 If you don't want SIMD support and/or prefer the stable toolchain, instead run:
 
 ```sh
-./scripts/build-and-install.sh
+./scripts/macos/build-and-install.sh
 ```
 
 Binary (pre-built) releases might be uploaded eventually.
