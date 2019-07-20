@@ -1,6 +1,6 @@
 # OctaSine
 
-Frequency modulation based VST2 plugin
+Frequency modulation based VST2 plugin written in Rust
 
 ## About
 
@@ -11,6 +11,8 @@ Frequency modulation based VST2 plugin
 * The name OctaSine comes from the four stereo sine-wave operators
 
 ## Installation
+
+Only tested on macOS but should work on other platforms.
 
 After cloning the repository and installing the rust compiler (including a nightly toolchain), build and install by running:
 
