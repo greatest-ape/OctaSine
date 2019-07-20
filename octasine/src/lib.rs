@@ -67,19 +67,19 @@ pub struct SyncOnlyState {
 
 
 /// Main structure
-pub struct FmSynth {
+pub struct OctaSine {
     processing: ProcessingState,
     pub sync_only: Arc<SyncOnlyState>,
 }
 
-impl Default for FmSynth {
+impl Default for OctaSine {
     fn default() -> Self {
         Self::new(HostCallback::default())
     }
 }
 
 
-impl FmSynth {
+impl OctaSine {
     fn time_per_sample(sample_rate: SampleRate) -> TimePerSample {
         TimePerSample(1.0 / sample_rate.0)
     }
@@ -118,7 +118,7 @@ impl FmSynth {
 }
 
 
-impl Plugin for FmSynth {
+impl Plugin for OctaSine {
     fn process(&mut self, audio_buffer: &mut AudioBuffer<f32>){
         let time_per_sample = self.processing.time_per_sample;
 

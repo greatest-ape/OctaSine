@@ -1,6 +1,6 @@
 use vst::plugin_main;
 
-use octasine::FmSynth;
+use octasine::OctaSine;
 
 
-plugin_main!(FmSynth);
+plugin_main!(OctaSine);

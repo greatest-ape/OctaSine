@@ -48,4 +48,6 @@
 
 # Notes
 
+Old command for ASM output generation:
+
     RUSTFLAGS="-C target-cpu=native" cargo +nightly asm "<fm::FmSynth as vst::plugin::Plugin>::process" --rust --features "simd"
