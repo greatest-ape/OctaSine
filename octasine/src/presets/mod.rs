@@ -7,7 +7,7 @@ use serde::{Serialize, Deserialize};
 pub mod parameters;
 pub mod change_info;
 
-pub use parameters::PresetParameters;
+pub use parameters::{PresetParameters, PresetParameter};
 pub use change_info::ParameterChangeInfo;
 
 
@@ -185,7 +185,7 @@ impl PresetBank {
 
     pub fn get_preset_name_by_index(&self, index: usize) -> String {
         self.presets.get(index)
-            .map_or("".to_string(), |preset| preset.get_name())
+            .map_or("".to_string(), Preset::get_name)
     }
 
     pub fn set_current_preset_name(&self, name: String){
@@ -203,14 +203,14 @@ impl PresetBank {
     pub fn get_parameter_name(&self, index: usize) -> String {
         self.get_current_preset().parameters.get(index as usize).map_or(
             "".to_string(),
-            |parameter| parameter.get_parameter_name()
+            PresetParameter::get_parameter_name
         )
     }
 
     pub fn get_parameter_unit(&self, index: usize) -> String {
         self.get_current_preset().parameters.get(index as usize).map_or(
             "".to_string(),
-            |parameter| parameter.get_parameter_unit_of_measurement()
+            PresetParameter::get_parameter_unit_of_measurement
         )
     }
 
@@ -221,13 +221,13 @@ impl PresetBank {
     pub fn get_parameter_value_text(&self, index: usize) -> String {
         self.get_current_preset().parameters.get(index as usize).map_or(
             "".to_string(),
-            |parameter| parameter.get_parameter_value_text()
+            PresetParameter::get_parameter_value_text
         )
     }
 
     pub fn get_parameter_value_float(&self, index: usize) -> f32 {
         self.get_current_preset().parameters.get(index as usize)
-            .map_or(0.0, |p| p.get_parameter_value_float())
+            .map_or(0.0, PresetParameter::get_parameter_value_float)
     }
 
     pub fn set_parameter_value_float(&self, index: usize, value: f32){
@@ -344,7 +344,7 @@ impl SerdePresetBank {
     fn new(preset_bank: &PresetBank) -> Self {
         Self {
             presets: preset_bank.presets.iter()
-                .map(|p| p.export_serde_preset())
+                .map(Preset::export_serde_preset)
                 .collect()
         }
     }
