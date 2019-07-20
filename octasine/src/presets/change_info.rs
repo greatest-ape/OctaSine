@@ -13,13 +13,6 @@ pub struct ParameterChangeInfo {
 
 
 impl ParameterChangeInfo {
-    pub fn new() -> Self {
-        Self {
-            changed: AtomicU64::new(0),
-            index_masks: array_init(|i| 2u64.pow(i as u32))
-        }
-    }
-
     pub fn mark_as_changed(&self, index: usize){
         if index > 63 {
             return;
@@ -52,11 +45,11 @@ impl ParameterChangeInfo {
 
         let mut changes = [None; 64];
 
-        for index in 0..64 {
+        for (index, c) in changes.iter_mut().enumerate(){
             if (changed >> index) & 1 == 1 {
                 if let Some(p) = preset_parameters.get(index){
-                    if let Some(value) = p.get_parameter_value_float_if_changed() {
-                        changes[index] = Some(value);
+                    if let Some(value) = p.get_parameter_value_float_if_changed(){
+                        *c = Some(value);
                     } else {
                         self.mark_as_changed(index);
                     }
@@ -65,6 +58,16 @@ impl ParameterChangeInfo {
         }
 
         Some(changes)
+    }
+}
+
+
+impl Default for ParameterChangeInfo{
+    fn default() -> Self {
+        Self {
+            changed: AtomicU64::new(0),
+            index_masks: array_init(|i| 2u64.pow(i as u32))
+        }
     }
 }
 

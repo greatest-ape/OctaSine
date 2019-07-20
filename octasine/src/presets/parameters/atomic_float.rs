@@ -16,7 +16,7 @@ pub struct AtomicFloat {
 impl AtomicFloat {
     pub fn new(value: f32) -> Self {
         Self {
-            value: AtomicU64::new(value.to_bits() as u64),
+            value: AtomicU64::new(u64::from(value.to_bits()))
         }
     }
 
@@ -39,7 +39,7 @@ impl AtomicFloat {
     }
 
     pub fn set(&self, value: f32){
-        let value = (value.to_bits() as u64) | (1 << 63);
+        let value = u64::from(value.to_bits()) | (1 << 63);
 
         self.value.store(value, Ordering::Relaxed);
     }

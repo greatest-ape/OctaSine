@@ -78,8 +78,8 @@ pub struct ProcessingParameters {
     pub operators: ProcessingParameterOperators,
 }
 
-impl ProcessingParameters {
-    pub fn new() -> Self {
+impl Default for ProcessingParameters {
+    fn default() -> Self {
         Self {
             master_volume: ProcessingParameterMasterVolume::default(),
             master_frequency: ProcessingParameterMasterFrequency::default(),

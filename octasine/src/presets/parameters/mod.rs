@@ -76,12 +76,12 @@ pub struct PresetParameters {
     pub operators: [PresetParameterOperator; NUM_OPERATORS],
 }
 
-impl PresetParameters {
-    pub fn new() -> Self {
+impl Default for PresetParameters {
+    fn default() -> Self {
         Self {
             master_volume: PresetParameterMasterVolume::default(),
             master_frequency: PresetParameterMasterFrequency::default(),
-            operators: array_init(|i| PresetParameterOperator::new(i)),
+            operators: array_init(PresetParameterOperator::new),
         }
     }
 }

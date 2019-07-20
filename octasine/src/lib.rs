@@ -1,3 +1,5 @@
+#![allow(clippy::len_without_is_empty)]
+
 #[cfg(feature = "logging")]
 #[macro_use]
 extern crate log;
@@ -184,12 +186,12 @@ impl Plugin for OctaSine {
             rng: SmallRng::from_entropy(),
             envelope_curve_table: EnvelopeCurveTable::default(),
             voices: array_init(|i| Voice::new(MidiPitch::new(i as u8))),
-            parameters: ProcessingParameters::new(),
+            parameters: ProcessingParameters::default(),
         };
 
         let sync_only = Arc::new(SyncOnlyState {
             host,
-            presets: PresetBank::new(),
+            presets: PresetBank::default(),
         });
 
         Self {
@@ -247,7 +249,7 @@ impl Plugin for OctaSine {
     }
 
     fn set_sample_rate(&mut self, rate: f32) {
-        let sample_rate = SampleRate(f32::from(rate));
+        let sample_rate = SampleRate(rate);
 
         self.processing.sample_rate = sample_rate;
         self.processing.time_per_sample = Self::time_per_sample(sample_rate);

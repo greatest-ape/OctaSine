@@ -117,7 +117,7 @@ impl Default for Preset {
     fn default() -> Self {
         Self {
             name: RwLock::new("-".to_string()),
-            parameters: PresetParameters::new(),
+            parameters: PresetParameters::default(),
         }
     }
 }
@@ -130,8 +130,8 @@ pub struct PresetBank {
 }
 
 
-impl PresetBank {
-    pub fn new() -> Self {
+impl Default for PresetBank {
+    fn default() -> Self {
         let mut presets: [Preset; 128] = array_init(|_| Preset::default());
         let built_in_presets = built_in_presets();
 
@@ -144,10 +144,12 @@ impl PresetBank {
         Self {
             presets,
             preset_index: AtomicUsize::new(0),
-            parameter_change_info: ParameterChangeInfo::new(),
+            parameter_change_info: ParameterChangeInfo::default(),
         }
     }
-    
+}
+
+impl PresetBank {
     pub fn len(&self) -> usize {
         self.presets.len()
     }
