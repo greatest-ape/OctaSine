@@ -2,7 +2,6 @@
 
 ## Prioritized
 
-* Fix compiler warnings
 * clippy, rustfmt
 * Envelopes: evaluate new curve. Consider if linear mixing is really
   necessary, and if the minimum envelope time could/should be adjusted

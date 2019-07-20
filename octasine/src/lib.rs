@@ -5,7 +5,7 @@ extern crate log;
 use std::sync::Arc;
 
 use array_init::array_init;
-use rand::{FromEntropy, Rng};
+use rand::FromEntropy;
 use rand::rngs::SmallRng;
 
 use vst::api::{Supported, Events};
@@ -23,12 +23,8 @@ pub mod processing_parameters;
 pub mod presets;
 
 use crate::approximations::*;
-use crate::common::*;
 use crate::constants::*;
 use crate::gen::*;
-use crate::voices::*;
-use crate::processing_parameters::*;
-use crate::presets::*;
 
 
 #[macro_export]
@@ -265,8 +261,8 @@ impl Plugin for OctaSine {
         }
     }
 
-    fn get_parameter_object(&mut self) -> Arc<PluginParameters> {
-        Arc::clone(&self.sync_only) as Arc<PluginParameters>
+    fn get_parameter_object(&mut self) -> Arc<dyn PluginParameters> {
+        Arc::clone(&self.sync_only) as Arc<dyn PluginParameters>
     }
 }
 

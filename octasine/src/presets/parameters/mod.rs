@@ -87,7 +87,7 @@ impl PresetParameters {
 
 
 impl PresetParameters {
-    pub fn get(&self, index: usize) -> Option<&PresetParameter> {
+    pub fn get(&self, index: usize) -> Option<&dyn PresetParameter> {
         match index {
             0  => Some(&self.master_volume),
             1  => Some(&self.master_frequency),
@@ -128,7 +128,7 @@ impl PresetParameters {
                 let opt_p = self.operators[2].output_operator.as_ref();
 
                 if let Some(OperatorIndex2(p)) = opt_p {
-                    Some(p as &PresetParameter)
+                    Some(p as &dyn PresetParameter)
                 } else {
                     None
                 }
@@ -153,7 +153,7 @@ impl PresetParameters {
                 let opt_p = self.operators[3].output_operator.as_ref();
 
                 if let Some(OperatorIndex3(p)) = opt_p {
-                    Some(p as &PresetParameter)
+                    Some(p as &dyn PresetParameter)
                 } else {
                     None
                 }

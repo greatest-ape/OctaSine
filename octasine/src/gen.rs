@@ -1,4 +1,4 @@
-use rand::{FromEntropy, Rng};
+use rand::Rng;
 
 pub use crate::approximations::*;
 pub use crate::common::*;

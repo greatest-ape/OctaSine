@@ -90,7 +90,7 @@ impl ProcessingParameters {
 
 
 impl ProcessingParameters {
-    pub fn get(&mut self, index: usize) -> Option<&mut ProcessingParameterPresetValueAccess> {
+    pub fn get(&mut self, index: usize) -> Option<&mut dyn ProcessingParameterPresetValueAccess> {
         match index {
             0  => Some(&mut self.master_volume),
             1  => Some(&mut self.master_frequency),
@@ -131,7 +131,7 @@ impl ProcessingParameters {
                 let opt_p = self.operators[2].output_operator.as_mut();
 
                 if let Some(OperatorIndex2(p)) = opt_p {
-                    Some(p as &mut ProcessingParameterPresetValueAccess)
+                    Some(p as &mut dyn ProcessingParameterPresetValueAccess)
                 } else {
                     None
                 }
@@ -156,7 +156,7 @@ impl ProcessingParameters {
                 let opt_p = self.operators[3].output_operator.as_mut();
 
                 if let Some(OperatorIndex3(p)) = opt_p {
-                    Some(p as &mut ProcessingParameterPresetValueAccess)
+                    Some(p as &mut dyn ProcessingParameterPresetValueAccess)
                 } else {
                     None
                 }
