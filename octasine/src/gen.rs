@@ -259,9 +259,6 @@ pub fn generate_voice_samples_simd(
 }
 
 /// Generate stereo samples for a voice
-/// 
-/// Doesn't take self parameter due to conflicting borrowing of Voices
-/// in calling function `process`
 #[allow(dead_code)]
 pub fn generate_voice_samples(
     envelope_curve_table: &EnvelopeCurveTable,
