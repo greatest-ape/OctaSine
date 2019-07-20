@@ -366,7 +366,7 @@ mod tests {
             }
 
             let volume = VoiceOperatorVolumeEnvelope::calculate_curve(
-                &EnvelopeCurveTable::new(),
+                &EnvelopeCurveTable::default(),
                 start_volume,
                 end_volume,
                 time_so_far_this_stage,
@@ -383,7 +383,7 @@ mod tests {
 
     #[test]
     fn calculate_curveolume_start_end(){
-        let table = EnvelopeCurveTable::new();
+        let table = EnvelopeCurveTable::default();
 
         assert_approx_eq!(
             VoiceOperatorVolumeEnvelope::calculate_curve(
@@ -405,11 +405,11 @@ mod tests {
             }
 
             let stage_1_end = VoiceOperatorVolumeEnvelope::calculate_curve(
-                &EnvelopeCurveTable::new(),
+                &EnvelopeCurveTable::default(),
                 0.0, stage_change_volume, 4.0, 4.0);
 
             let stage_2_start = VoiceOperatorVolumeEnvelope::calculate_curve(
-                &EnvelopeCurveTable::new(),
+                &EnvelopeCurveTable::default(),
                 stage_change_volume, 1.0, 0.0, 4.0);
             
             let diff = (stage_1_end - stage_2_start).abs();

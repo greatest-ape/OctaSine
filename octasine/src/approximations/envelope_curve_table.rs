@@ -62,7 +62,7 @@ mod tests {
                 return TestResult::discard();
             }
 
-            let table = EnvelopeCurveTable::new();
+            let table = EnvelopeCurveTable::default();
 
             let table_result = table.calculate(value);
             let reference_result = EnvelopeCurveTable::reference(value);

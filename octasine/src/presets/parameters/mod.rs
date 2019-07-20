@@ -187,6 +187,6 @@ mod tests {
     #[test]
     fn test_preset_parameters_len(){
         // Required for ChangedParametersInfo
-        assert!(PresetParameters::new().len() <= 64);
+        assert!(PresetParameters::default().len() <= 64);
     }
 }

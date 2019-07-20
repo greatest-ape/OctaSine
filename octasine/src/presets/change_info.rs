@@ -82,10 +82,10 @@ mod tests {
 
     #[test]
     fn test_changed_parameters(){
-        let c = ParameterChangeInfo::new();
+        let c = ParameterChangeInfo::default();
 
         // Not checked
-        let preset_parameters = PresetParameters::new();
+        let preset_parameters = PresetParameters::default();
 
         assert!(c.get_changed_parameters(&preset_parameters).is_none());
 
@@ -130,7 +130,7 @@ mod tests {
     #[test]
     fn test_changed_parameters_quickcheck(){
         fn prop(data: Vec<(usize, f32)>) -> TestResult {
-            let preset_parameters = PresetParameters::new();
+            let preset_parameters = PresetParameters::default();
 
             if data.iter().any(|(i, _)| *i > 63) {
                 return TestResult::discard();
@@ -180,7 +180,7 @@ mod tests {
                 }
             }
 
-            let c = ParameterChangeInfo::new();
+            let c = ParameterChangeInfo::default();
 
             for _ in 0..2 {
                 if !f(&c, &preset_parameters, &data) {

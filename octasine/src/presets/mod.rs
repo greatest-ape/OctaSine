@@ -370,7 +370,7 @@ mod tests {
         let mut rng = SmallRng::from_entropy();
 
         for _ in 0..20 {
-            let bank_1 = PresetBank::new();
+            let bank_1 = PresetBank::default();
 
             for preset_index in 0..bank_1.len(){
                 bank_1.set_preset_index(preset_index);
@@ -392,7 +392,7 @@ mod tests {
                 }
             }
 
-            let bank_2 = PresetBank::new();
+            let bank_2 = PresetBank::default();
 
             bank_2.import_bank_from_bytes(&bank_1.export_bank_as_bytes());
 
@@ -427,7 +427,7 @@ mod tests {
     #[test]
     fn test_import_garbage(){
         fn prop(garbage: Vec<u8>) -> TestResult {
-            let bank = PresetBank::new();
+            let bank = PresetBank::default();
 
             bank.import_bank_from_bytes(&garbage);
 

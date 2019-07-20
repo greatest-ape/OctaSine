@@ -2,7 +2,8 @@ use plotlib::function::*;
 use plotlib::view::ContinuousView;
 use plotlib::page::Page;
 
-use octasine::*;
+use octasine::approximations::EnvelopeCurveTable;
+use octasine::voices::VoiceOperatorVolumeEnvelope;
 
 
 /// Generate plots to check how envelopes look.
@@ -18,7 +19,7 @@ fn main(){
 
         let f = Function::new(|x| {
             VoiceOperatorVolumeEnvelope::calculate_curve(
-                &EnvelopeCurveTable::new(),
+                &EnvelopeCurveTable::default(),
                 start_volume,
                 end_volume,
                 x as f32,
