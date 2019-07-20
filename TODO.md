@@ -3,8 +3,10 @@
 ## Prioritized
 
 * Fix compiler warnings
+* clippy, rustfmt
 * Envelopes: evaluate new curve. Consider if linear mixing is really
   necessary, and if the minimum envelope time could/should be adjusted
+* Fix name of calculate_curveolume_output_in_range
 
 
 ## TODO
@@ -42,9 +44,6 @@
 * proper beta scaling - double with doubling modulator frequency
 * suspend mode and so on, maybe just reset time, note time, envelopes etc on resume
 * Remove BPM fetch support
-* Remove sine lookup table completely
-
-    00:59:13 [ERROR] thread 'unnamed' panicked at 'index out of bounds: the len is 1024 but the index is 18446744073709551405': src/approximations/sine_lookup_table.rs:125
 
 
 # Notes
