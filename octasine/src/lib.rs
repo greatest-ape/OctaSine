@@ -178,17 +178,17 @@ impl Plugin for OctaSine {
 
         let processing = ProcessingState {
             global_time: TimeCounter(0.0),
-            sample_rate: sample_rate,
+            sample_rate,
             time_per_sample: Self::time_per_sample(sample_rate),
             bpm: BeatsPerMinute(120.0),
             rng: SmallRng::from_entropy(),
-            envelope_curve_table: EnvelopeCurveTable::new(),
+            envelope_curve_table: EnvelopeCurveTable::default(),
             voices: array_init(|i| Voice::new(MidiPitch::new(i as u8))),
             parameters: ProcessingParameters::new(),
         };
 
         let sync_only = Arc::new(SyncOnlyState {
-            host: host,
+            host,
             presets: PresetBank::new(),
         });
 

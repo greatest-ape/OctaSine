@@ -4,6 +4,7 @@ use crate::constants::*;
 
 pub mod atomic_float;
 pub mod common;
+#[allow(clippy::module_inception)]
 pub mod parameters;
 
 pub use atomic_float::AtomicFloat;

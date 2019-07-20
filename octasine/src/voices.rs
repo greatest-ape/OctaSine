@@ -30,7 +30,7 @@ impl KeyVelocity {
             Self::default()
         }
         else {
-            Self(midi_velocity as f32 / 127.0)
+            Self(f32::from(midi_velocity) / 127.0)
         }
     }
 }
@@ -55,12 +55,12 @@ impl MidiPitch {
     }
 
     fn calculate_frequency_factor(midi_pitch: u8) -> f32 {
-        let note_diff = (midi_pitch as i8 - 69) as f32;
+        let note_diff = f32::from(midi_pitch as i8 - 69);
 
         (note_diff / 12.0).exp2()
     }
 
-    pub fn get_frequency(&self, master_frequency: f32) -> f32 {
+    pub fn get_frequency(self, master_frequency: f32) -> f32 {
         self.frequency_factor * master_frequency
     }
 }
@@ -210,7 +210,7 @@ impl VoiceOperatorVolumeEnvelope {
         voice_duration: VoiceDuration,
     ) -> f32 {
         if self.stage == EnvelopeStage::Ended {
-            return 0.0
+            0.0
         } else {
             self.advance_if_key_not_pressed(key_pressed, voice_duration);
             self.advance_if_stage_time_up(operator_envelope, voice_duration);
@@ -274,11 +274,11 @@ impl Voice {
 
         Self {
             active: false,
-            midi_pitch: midi_pitch,
+            midi_pitch,
             duration: VoiceDuration(0.0),
             key_pressed: false,
             key_velocity: KeyVelocity::default(),
-            operators: operators,
+            operators,
         }
     }
 

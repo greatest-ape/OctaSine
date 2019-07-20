@@ -11,20 +11,6 @@ pub struct EnvelopeCurveTable {
 
 
 impl EnvelopeCurveTable {
-    pub fn new() -> Self {
-        let mut table = [0.0; TABLE_SIZE];
-
-        let increment = 1.0 / TABLE_SIZE_MINUS_ONE_FLOAT;
-
-        for (i, v) in table.iter_mut().enumerate(){
-            *v = Self::reference(i as f32 * increment);
-        }
-
-        Self {
-            table
-        }
-    }
-
     #[inline]
     pub fn reference(value: f32) -> f32 {
         (1.0 + value * 9.0).log10()
@@ -44,6 +30,22 @@ impl EnvelopeCurveTable {
 
         approximation_low + index_fract *
             (approximation_high - approximation_low)
+    }
+}
+
+impl Default for EnvelopeCurveTable {
+    fn default() -> Self {
+        let mut table = [0.0; TABLE_SIZE];
+
+        let increment = 1.0 / TABLE_SIZE_MINUS_ONE_FLOAT;
+
+        for (i, v) in table.iter_mut().enumerate(){
+            *v = Self::reference(i as f32 * increment);
+        }
+
+        Self {
+            table
+        }
     }
 }
 

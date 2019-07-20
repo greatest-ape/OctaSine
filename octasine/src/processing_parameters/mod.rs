@@ -83,7 +83,7 @@ impl ProcessingParameters {
         Self {
             master_volume: ProcessingParameterMasterVolume::default(),
             master_frequency: ProcessingParameterMasterFrequency::default(),
-            operators: array_init(|i| ProcessingParameterOperator::new(i)),
+            operators: array_init(ProcessingParameterOperator::new),
         }
     }
 }

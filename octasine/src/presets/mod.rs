@@ -21,8 +21,9 @@ macro_rules! preset_from_file {
 }
 
 
+#[allow(clippy::let_and_return)]
+#[allow(unused_mut)]
 fn built_in_presets() -> Vec<Preset> {
-    #[allow(unused_mut)]
     let mut presets = Vec::new();
 
     // presets.push(preset_from_file!("../presets/test.fxp"));
