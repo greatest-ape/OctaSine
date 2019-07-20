@@ -9,8 +9,8 @@ name = "octasine"
 crate-type = ["cdylib"]
 
 [dependencies.vst]
-git = "https://github.com/rust-dsp/rust-vst.git"
-rev = "af9c8c"
+git = "https://github.com/RustAudio/vst-rs.git"
+rev = "269adb"
 
 [dependencies.octasine]
 path = "../octasine"

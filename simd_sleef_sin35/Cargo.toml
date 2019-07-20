@@ -22,7 +22,7 @@ features = ["static"]
 
 [dependencies.packed_simd]
 git = "https://github.com/rust-lang-nursery/packed_simd.git"
-rev = "01c90d"
+rev = "173f55"
 optional = true
 
 [dev-dependencies]
