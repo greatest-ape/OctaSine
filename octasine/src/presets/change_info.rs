@@ -132,8 +132,10 @@ mod tests {
         fn prop(data: Vec<(usize, f64)>) -> TestResult {
             let preset_parameters = PresetParameters::default();
 
-            if data.iter().any(|(i, _)| *i > 63) {
-                return TestResult::discard();
+            for (i, v) in data.iter(){
+                if *i > 63 || *v < 0.0 {
+                    return TestResult::discard();
+                }
             }
 
             fn f(
@@ -146,7 +148,7 @@ mod tests {
                 for (index, value) in data.iter(){
                     if let Some(p) = preset_parameters.get(*index){
                         p.set_parameter_value_float(*value + 1.43432);
-                        p.set_parameter_value_float(*value - 1.55);
+                        p.set_parameter_value_float(*value + 5.55);
                         p.set_parameter_value_float(*value);
                         
                         set_parameters.insert(*index, *value);
