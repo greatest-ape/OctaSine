@@ -124,7 +124,7 @@ impl Plugin for OctaSine {
         let lefts = outputs.get_mut(0).iter_mut();
         let rights = outputs.get_mut(1).iter_mut();
 
-        for (output_sample_left, output_sample_right) in lefts.zip(rights) {
+        for (buffer_sample_left, buffer_sample_right) in lefts.zip(rights) {
             let changed_parameter_indeces = self.sync_only.presets
                 .get_changed_parameters();
 
@@ -138,20 +138,11 @@ impl Plugin for OctaSine {
                 }
             }
 
-            *output_sample_left = 0.0;
-            *output_sample_right = 0.0;
+            let mut voice_sum_left: f64 = 0.0;
+            let mut voice_sum_right: f64 = 0.0;
 
             for voice in self.processing.voices.iter_mut(){
                 if voice.active {
-                    #[cfg(not(feature = "simd"))]
-                    let (out_left, out_right) = generate_voice_samples(
-                        &self.processing.envelope_curve_table,
-                        &mut self.processing.rng,
-                        self.processing.global_time,
-                        time_per_sample,
-                        &mut self.processing.parameters,
-                        voice,
-                    );
                     #[cfg(feature = "simd")]
                     let (out_left, out_right) = generate_voice_samples_simd(
                         &self.processing.envelope_curve_table,
@@ -161,15 +152,27 @@ impl Plugin for OctaSine {
                         &mut self.processing.parameters,
                         voice,
                     );
+                    #[cfg(not(feature = "simd"))]
+                    let (out_left, out_right) = generate_voice_samples(
+                        &self.processing.envelope_curve_table,
+                        &mut self.processing.rng,
+                        self.processing.global_time,
+                        time_per_sample,
+                        &mut self.processing.parameters,
+                        voice,
+                    );
 
-                    *output_sample_left += Self::hard_limit(out_left) as f32;
-                    *output_sample_right += Self::hard_limit(out_right) as f32;
+                    voice_sum_left += Self::hard_limit(out_left);
+                    voice_sum_right += Self::hard_limit(out_right);
 
                     voice.duration.0 += time_per_sample.0;
 
                     voice.deactivate_if_envelopes_ended();
                 }
             }
+
+            *buffer_sample_left = voice_sum_left as f32;
+            *buffer_sample_right = voice_sum_right as f32;
 
             self.processing.global_time.0 += time_per_sample.0;
         }
