@@ -6,6 +6,8 @@
 * Envelopes: evaluate new curve. Consider if linear mixing is really
   necessary, and if the minimum envelope time could/should be adjusted
 * Fix name of calculate_curveolume_output_in_range
+* Use FMA again for precision, possibly enabling removing .fract() call
+  in sound gen? Was bad for performance on my computer before, strangely
 
 
 ## TODO
@@ -30,6 +32,7 @@
 * Why is live taking to long to load vsts? Check with time profiler?
 * manual text input in parameters: DAW integration working anywhere?
 * sample rate change: what needs to be done? (time reset?)
+* Portable shell support in scripts (not only bash). Might be very easy
 
 # Non-important improvements
 
