@@ -31,7 +31,7 @@ fn main(){
 fn main(){
     use std::time::Instant;
 
-    let n = 2;
+    let n = 10;
 
     let now = Instant::now();
     let samples_1 = gen_voice_samples(n, gen::generate_voice_samples);
