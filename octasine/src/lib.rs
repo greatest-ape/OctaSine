@@ -113,70 +113,87 @@ impl OctaSine {
             self.processing.bpm = BeatsPerMinute(time_info.tempo as f64);
         }
     }
+    
+    #[inline]
+    fn gen_samples_for_voices(&mut self) -> (f64, f64) {
+        let changed_preset_parameters = self.sync_only.presets
+            .get_changed_parameters();
+
+        if let Some(indeces) = changed_preset_parameters {
+            for (index, opt_new_value) in indeces.iter().enumerate(){
+                if let Some(new_value) = opt_new_value {
+                    if let Some(p) = self.processing.parameters.get(index){
+                        p.set_from_preset_value(*new_value);
+                    }
+                }
+            }
+        }
+
+        let mut voice_sum_left: f64 = 0.0;
+        let mut voice_sum_right: f64 = 0.0;
+
+        let time_per_sample = self.processing.time_per_sample;
+
+        for voice in self.processing.voices.iter_mut(){
+            if voice.active {
+                #[cfg(feature = "simd")]
+                let (out_left, out_right) = generate_voice_samples_simd(
+                    &self.processing.envelope_curve_table,
+                    &mut self.processing.rng,
+                    self.processing.global_time,
+                    time_per_sample,
+                    &mut self.processing.parameters,
+                    voice,
+                );
+                #[cfg(not(feature = "simd"))]
+                let (out_left, out_right) = generate_voice_samples(
+                    &self.processing.envelope_curve_table,
+                    &mut self.processing.rng,
+                    self.processing.global_time,
+                    time_per_sample,
+                    &mut self.processing.parameters,
+                    voice,
+                );
+
+                voice_sum_left += Self::hard_limit(out_left);
+                voice_sum_right += Self::hard_limit(out_right);
+
+                voice.duration.0 += time_per_sample.0;
+
+                voice.deactivate_if_envelopes_ended();
+            }
+        }
+
+        self.processing.global_time.0 += time_per_sample.0;
+
+        (voice_sum_left, voice_sum_right)
+    }
+}
+
+
+/// OctaSine process functions (for f32 and f64)
+macro_rules! create_process_fn {
+    ($fn_name:ident, $type:ty) => {
+        #[inline]
+        fn $fn_name(&mut self, audio_buffer: &mut AudioBuffer<$type>){
+            let outputs = audio_buffer.split().1;
+            let lefts = outputs.get_mut(0).iter_mut();
+            let rights = outputs.get_mut(1).iter_mut();
+
+            for (buffer_sample_left, buffer_sample_right) in lefts.zip(rights){
+                let (left, right) = self.gen_samples_for_voices();
+
+                *buffer_sample_left = left as $type;
+                *buffer_sample_right = right as $type;
+            }
+        }
+    };
 }
 
 
 impl Plugin for OctaSine {
-    fn process(&mut self, audio_buffer: &mut AudioBuffer<f32>){
-        let time_per_sample = self.processing.time_per_sample;
-
-        let outputs = audio_buffer.split().1;
-        let lefts = outputs.get_mut(0).iter_mut();
-        let rights = outputs.get_mut(1).iter_mut();
-
-        for (buffer_sample_left, buffer_sample_right) in lefts.zip(rights) {
-            let changed_preset_parameters = self.sync_only.presets
-                .get_changed_parameters();
-
-            if let Some(indeces) = changed_preset_parameters {
-                for (index, opt_new_value) in indeces.iter().enumerate(){
-                    if let Some(new_value) = opt_new_value {
-                        if let Some(p) = self.processing.parameters.get(index){
-                            p.set_from_preset_value(*new_value);
-                        }
-                    }
-                }
-            }
-
-            let mut voice_sum_left: f64 = 0.0;
-            let mut voice_sum_right: f64 = 0.0;
-
-            for voice in self.processing.voices.iter_mut(){
-                if voice.active {
-                    #[cfg(feature = "simd")]
-                    let (out_left, out_right) = generate_voice_samples_simd(
-                        &self.processing.envelope_curve_table,
-                        &mut self.processing.rng,
-                        self.processing.global_time,
-                        time_per_sample,
-                        &mut self.processing.parameters,
-                        voice,
-                    );
-                    #[cfg(not(feature = "simd"))]
-                    let (out_left, out_right) = generate_voice_samples(
-                        &self.processing.envelope_curve_table,
-                        &mut self.processing.rng,
-                        self.processing.global_time,
-                        time_per_sample,
-                        &mut self.processing.parameters,
-                        voice,
-                    );
-
-                    voice_sum_left += Self::hard_limit(out_left);
-                    voice_sum_right += Self::hard_limit(out_right);
-
-                    voice.duration.0 += time_per_sample.0;
-
-                    voice.deactivate_if_envelopes_ended();
-                }
-            }
-
-            *buffer_sample_left = voice_sum_left as f32;
-            *buffer_sample_right = voice_sum_right as f32;
-
-            self.processing.global_time.0 += time_per_sample.0;
-        }
-    }
+    create_process_fn!(process, f32);
+    create_process_fn!(process_f64, f64);
 
     fn new(host: HostCallback) -> Self {
         let sample_rate = SampleRate(44100.0);
@@ -216,6 +233,7 @@ impl Plugin for OctaSine {
             parameters: self.sync_only.presets.get_num_parameters() as i32,
             initial_delay: 0,
             preset_chunks: true,
+            f64_precision: true,
             ..Info::default()
         }
     }
