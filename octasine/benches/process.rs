@@ -6,11 +6,16 @@ use vst::plugin::HostCallback;
 use vst::plugin::PluginParameters;
 
 use octasine::*;
+use octasine::approximations::*;
+use octasine::presets::*;
+use octasine::processing_parameters::*;
+use octasine::common::*;
+use octasine::constants::*;
 
 
 /// Benchmark `process` method
 fn main(){
-    let mut fm = FmSynth::new(HostCallback::default());
+    let mut fm = OctaSine::new(HostCallback::default());
 
     let envelope_duration_parameters =
         [10i32, 12, 14, 24, 26, 28, 39, 41, 43, 54, 56, 58];

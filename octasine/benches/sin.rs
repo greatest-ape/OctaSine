@@ -6,7 +6,7 @@ fn main(){
 /// Compare sleef, table and libm sine functions
 #[cfg(feature = "simd")]
 fn main(){
-    type V = f32x2;
+    type V = f64x2;
 
     use std::time::Instant;
 
@@ -16,8 +16,12 @@ fn main(){
     use simd_sleef_sin35::SleefSin35;
     use packed_simd::*;
     use octasine::*;
-
-    let table = SineLookupTable::new();
+    use octasine::approximations::*;
+    use octasine::presets::*;
+    use octasine::processing_parameters::*;
+    use octasine::common::*;
+    use octasine::constants::*;
+    use octasine::voices::*;
 
     let mut rng = SmallRng::from_entropy();
 
@@ -28,7 +32,7 @@ fn main(){
     let iterations = 10_000_000;
 
     for i in 0..iterations {
-        let v = rng.gen::<f32>() * (((i % 256) + 1) as f32);
+        let v = rng.gen::<f64>() * (((i % 256) + 1) as f64);
 
         inputs_simple.push(v);
 
@@ -46,45 +50,33 @@ fn main(){
 
     let elapsed_sleef = start_sleef.elapsed();
 
-    let start_table = Instant::now();
-
-    let outputs_table: Vec<V> = inputs.into_iter()
-        .map(|v| table.sin_tau_simd_x2(v))
-        .collect();
-
-    let elapsed_table = start_table.elapsed();
-
     let start_simple = Instant::now();
 
-    let outputs_simple: Vec<f32> = inputs_simple.into_iter()
+    let outputs_simple: Vec<f64> = inputs_simple.into_iter()
         .map(|v| v.sin())
         .collect();
 
     let elapsed_simple = start_simple.elapsed();
 
     println!();
-    println!("--- Sleef vs table vs libm sin() ---");
+    println!("--- Sleef vs sin() ---");
     println!("Number of iterations:   {}", iterations);
     println!("Test ran for:           {}ms",
-        elapsed_sleef.as_millis() + elapsed_table.as_millis() +
-        elapsed_simple.as_millis());
+        elapsed_sleef.as_millis() + elapsed_simple.as_millis());
     println!("Sleef average duration: {} nanoseconds (for {} values)",
-        elapsed_sleef.as_nanos() as f32 / iterations as f32, V::lanes());
-    println!("Table average duration: {} nanoseconds (for {} values)",
-        elapsed_table.as_nanos() as f32 / iterations as f32, V::lanes());
+        elapsed_sleef.as_nanos() as f64 / iterations as f64, V::lanes());
     println!("Libm average duration:  {} nanoseconds (for 1 value)",
-        elapsed_simple.as_nanos() as f32 / iterations as f32);
+        elapsed_simple.as_nanos() as f64 / iterations as f64);
 
     // Not very amazing way of trying to prevent compiler from optimizing
     // away stuff
 
     let mut dummy_counter = 0usize;
 
-    let iterator = outputs_sleef.into_iter()
-        .zip(outputs_table.into_iter()).zip(outputs_simple.into_iter());
+    let iterator = outputs_sleef.into_iter().zip(outputs_simple.into_iter());
 
-    for ((a, b), c) in iterator {
-        if a == b && a.extract(0) == c {
+    for (a, b) in iterator {
+        if a.extract(0) == b {
             dummy_counter += 1;
         }
     }

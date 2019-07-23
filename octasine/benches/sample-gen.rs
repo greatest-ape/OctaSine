@@ -2,6 +2,10 @@ use rand::FromEntropy;
 use rand::rngs::SmallRng;
 
 use octasine::*;
+use octasine::approximations::*;
+use octasine::processing_parameters::*;
+use octasine::common::*;
+use octasine::voices::*;
 
 
 #[cfg(not(feature = "simd"))]
@@ -30,16 +34,16 @@ fn main(){
     let n = 2;
 
     let now = Instant::now();
-    let samples_1 = gen_voice_samples(n, FmSynth::generate_voice_samples);
+    let samples_1 = gen_voice_samples(n, gen::generate_voice_samples);
     let elapsed_1 = now.elapsed();
 
     let now = Instant::now();
     let samples_2 = gen_voice_samples(n,
-        FmSynth::generate_voice_samples_simd);
+        gen::generate_voice_samples_simd);
     let elapsed_2 = now.elapsed();
 
-    let speed_ratio = elapsed_2.as_micros() as f32 /
-        elapsed_1.as_micros() as f32;
+    let speed_ratio = elapsed_2.as_micros() as f64 /
+        elapsed_1.as_micros() as f64;
     
     let num_samples = n * 44100 * 4 * 4;
 
@@ -47,13 +51,13 @@ fn main(){
     println!("Number of tests:           {}", n);
     println!("Non-SIMD total duration:   {}ms", elapsed_1.as_millis());
     println!("Non-SIMD average duration: {}ms", elapsed_1.as_millis() as usize / n);
-    println!("Non-SIMD per sample:       {} nanoseconds", elapsed_1.as_nanos() as f32 / num_samples as f32);
+    println!("Non-SIMD per sample:       {} nanoseconds", elapsed_1.as_nanos() as f64 / num_samples as f64);
     println!("SIMD total duration:       {}ms", elapsed_2.as_millis());
     println!("SIMD average duration:     {}ms", elapsed_2.as_millis() as usize / n);
-    println!("SIMD per sample:           {} nanoseconds", elapsed_2.as_nanos() as f32 / num_samples as f32);
+    println!("SIMD per sample:           {} nanoseconds", elapsed_2.as_nanos() as f64 / num_samples as f64);
     println!("SIMD speedup               {}% (ratio {})",
         (1.0 - speed_ratio) * 100.0, speed_ratio);
-    println!("SIMD estimated CPU use:    {}%", elapsed_2.as_nanos() as f32 / (n * 4 * 4 * 10_000_000) as f32);
+    println!("SIMD estimated CPU use:    {}%", elapsed_2.as_nanos() as f64 / (n * 4 * 4 * 10_000_000) as f64);
     println!("Info: At the moment, non-SIMD benchmark doesn't seem to");
     println!("reflect real-world performance");
 
@@ -78,23 +82,23 @@ fn main(){
 fn gen_voice_samples(
     num_tests: usize,
     f: fn(&EnvelopeCurveTable, &mut SmallRng, TimeCounter, TimePerSample,
-        &mut ProcessingParameters, &mut Voice) -> (f32, f32)
-) -> Vec<(f32, f32)> {
+        &mut ProcessingParameters, &mut Voice) -> (f64, f64)
+) -> Vec<(f64, f64)> {
     const SAMPLE_RATE: usize = 44100;
 
     const ITERATIONS: usize = SAMPLE_RATE * 4 * 4;
-    const ITERATIONS_RECIP: f32 = 1.0 / ITERATIONS as f32;
+    const ITERATIONS_RECIP: f64 = 1.0 / ITERATIONS as f64;
 
     let envelope_duration_parameters =
         [10usize, 12, 14, 24, 26, 28, 39, 41, 43, 54, 56, 58];
     
     let wave_type_parameters = [4, 17, 31, 46];
 
-    let envelope_curve_table = EnvelopeCurveTable::new();
+    let envelope_curve_table = EnvelopeCurveTable::default();
     let midi_pitch = MidiPitch::new(60);
     let mut rng = SmallRng::from_entropy();
 
-    let mut parameters = ProcessingParameters::new();
+    let mut parameters = ProcessingParameters::default();
 
     for i in envelope_duration_parameters.iter() {
         parameters.get(*i).unwrap().set_from_preset_value(1.0);
@@ -103,9 +107,9 @@ fn gen_voice_samples(
     let mut voice = Voice::new(midi_pitch);
 
     let mut time = TimeCounter(0.0);
-    let time_per_sample = TimePerSample(1.0 / SAMPLE_RATE as f32);
+    let time_per_sample = TimePerSample(1.0 / SAMPLE_RATE as f64);
 
-    let mut results: Vec<(f32, f32)> = Vec::new();
+    let mut results: Vec<(f64, f64)> = Vec::new();
 
     for test_i in 0..num_tests {
         for i in 0..ITERATIONS {
@@ -141,7 +145,7 @@ fn gen_voice_samples(
 
                     let parameter = parameters.get(parameter_index).unwrap();
 
-                    let mut new_value = i as f32 * ITERATIONS_RECIP;
+                    let mut new_value = i as f64 * ITERATIONS_RECIP;
 
                     if parameter_index % 2 == 0 {
                         new_value = 1.0 - new_value;
