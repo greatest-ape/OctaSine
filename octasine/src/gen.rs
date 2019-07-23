@@ -159,7 +159,7 @@ pub fn generate_voice_samples_simd(
         if all_feedback_off {
             f64x4::splat(0.0)
         } else {
-            operator_feedback_simd * operator_new_phase_simd.sin()
+            operator_feedback_simd * SleefSin35::sin(operator_new_phase_simd)
         }
     };
 
@@ -236,7 +236,7 @@ pub fn generate_voice_samples_simd(
                 (feedback_pairs[index] + modulation_in_pairs[index]) +
                 phase_pairs[index];
 
-            sin_input_simd.sin()
+            SleefSin35::sin(sin_input_simd)
         } else {
             f64x2::splat((rng.gen::<f64>() - 0.5) * 2.0)
         };
