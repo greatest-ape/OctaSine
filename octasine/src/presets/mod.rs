@@ -353,6 +353,7 @@ impl SerdePresetBank {
 
 #[cfg(test)]
 mod tests {
+    use assert_approx_eq::assert_approx_eq;
     use quickcheck::{TestResult, quickcheck};
     use rand::{FromEntropy, Rng};
     use rand::rngs::SmallRng;
@@ -412,9 +413,12 @@ mod tests {
                         .get(parameter_index).
                         unwrap();
 
-                    assert_eq!(
+                    assert_approx_eq!(
                         parameter_1.get_parameter_value_float(),
                         parameter_2.get_parameter_value_float(),
+                        // Accept precision loss (probably due to
+                        // JSON/javascript shenanigans)
+                        0.0000000000000002
                     );
                 }
             }
