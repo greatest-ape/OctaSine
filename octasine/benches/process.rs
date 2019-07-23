@@ -6,11 +6,6 @@ use vst::plugin::HostCallback;
 use vst::plugin::PluginParameters;
 
 use octasine::*;
-use octasine::approximations::*;
-use octasine::presets::*;
-use octasine::processing_parameters::*;
-use octasine::common::*;
-use octasine::constants::*;
 
 
 /// Benchmark `process` method

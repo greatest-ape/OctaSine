@@ -6,7 +6,7 @@ fn main(){
 /// Compare sleef, table and libm sine functions
 #[cfg(feature = "simd")]
 fn main(){
-    type V = f64x2;
+    type V = f64x4;
 
     use std::time::Instant;
 
@@ -15,13 +15,8 @@ fn main(){
 
     use simd_sleef_sin35::SleefSin35;
     use packed_simd::*;
-    use octasine::*;
-    use octasine::approximations::*;
-    use octasine::presets::*;
-    use octasine::processing_parameters::*;
-    use octasine::common::*;
-    use octasine::constants::*;
-    use octasine::voices::*;
+
+    use octasine::constants::TAU;
 
     let mut rng = SmallRng::from_entropy();
 
@@ -29,14 +24,14 @@ fn main(){
     let mut inputs_tau = Vec::new();
     let mut inputs_simple = Vec::new();
 
-    let iterations = 10_000_000;
+    let iterations = 50_000_000;
 
     for i in 0..iterations {
         let v = rng.gen::<f64>() * (((i % 256) + 1) as f64);
 
         inputs_simple.push(v);
 
-        let v = V::new(v, v * 0.4);
+        let v = V::new(v, v * 0.4, v, v * 0.1);
 
         inputs.push(v);
         inputs_tau.push(v * TAU);
@@ -59,13 +54,13 @@ fn main(){
     let elapsed_simple = start_simple.elapsed();
 
     println!();
-    println!("--- Sleef vs sin() ---");
+    println!("--- Sleef sin35 vs libm sin ---");
     println!("Number of iterations:   {}", iterations);
     println!("Test ran for:           {}ms",
         elapsed_sleef.as_millis() + elapsed_simple.as_millis());
     println!("Sleef average duration: {} nanoseconds (for {} values)",
         elapsed_sleef.as_nanos() as f64 / iterations as f64, V::lanes());
-    println!("Libm average duration:  {} nanoseconds (for 1 value)",
+    println!("libm average duration:  {} nanoseconds (for 1 value)",
         elapsed_simple.as_nanos() as f64 / iterations as f64);
 
     // Not very amazing way of trying to prevent compiler from optimizing
