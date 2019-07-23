@@ -10,5 +10,5 @@ tmp
 /**/scripts/upload.sh
 /**/scripts/upload-code.sh
 
-/**/presets/*
-!/**/presets/.gitkeep
+/octasine/presets/*
+!/octasine/presets/.gitkeep
