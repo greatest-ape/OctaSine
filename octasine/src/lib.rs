@@ -125,10 +125,10 @@ impl Plugin for OctaSine {
         let rights = outputs.get_mut(1).iter_mut();
 
         for (buffer_sample_left, buffer_sample_right) in lefts.zip(rights) {
-            let changed_parameter_indeces = self.sync_only.presets
+            let changed_preset_parameters = self.sync_only.presets
                 .get_changed_parameters();
 
-            if let Some(indeces) = changed_parameter_indeces {
+            if let Some(indeces) = changed_preset_parameters {
                 for (index, opt_new_value) in indeces.iter().enumerate(){
                     if let Some(new_value) = opt_new_value {
                         if let Some(p) = self.processing.parameters.get(index){
