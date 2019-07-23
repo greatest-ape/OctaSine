@@ -25,6 +25,9 @@ git = "https://github.com/rust-lang-nursery/packed_simd.git"
 rev = "173f55"
 optional = true
 
+[dependencies.cfg-if]
+version = "^0.1.6"
+
 [dev-dependencies]
 quickcheck = "0.8"
 quickcheck_macros = "0.8"
