@@ -36,7 +36,7 @@ impl ParameterChangeInfo {
     pub fn get_changed_parameters(
         &self,
         preset_parameters: &PresetParameters
-    ) -> Option<[Option<f32>; 64]> {
+    ) -> Option<[Option<f64>; 64]> {
         let changed = self.changed.fetch_and(0, Ordering::SeqCst);
 
         if changed == 0 {
@@ -129,7 +129,7 @@ mod tests {
 
     #[test]
     fn test_changed_parameters_quickcheck(){
-        fn prop(data: Vec<(usize, f32)>) -> TestResult {
+        fn prop(data: Vec<(usize, f64)>) -> TestResult {
             let preset_parameters = PresetParameters::default();
 
             if data.iter().any(|(i, _)| *i > 63) {
@@ -139,7 +139,7 @@ mod tests {
             fn f(
                 c: &ParameterChangeInfo,
                 preset_parameters: &PresetParameters,
-                data: &Vec<(usize, f32)>
+                data: &Vec<(usize, f64)>
             ) -> bool {
                 let mut set_parameters = HashMap::new();
 
@@ -156,7 +156,7 @@ mod tests {
                 }
 
                 if let Some(changed_parameters) = c.get_changed_parameters(&preset_parameters){
-                    let results: HashMap<usize, f32> = changed_parameters
+                    let results: HashMap<usize, f64> = changed_parameters
                         .iter()
                         .enumerate()
                         .filter_map(|(index, opt_value)| {
@@ -197,6 +197,6 @@ mod tests {
             TestResult::from_bool(!changes_exist)
         }
 
-        quickcheck(prop as fn(Vec<(usize, f32)>) -> TestResult);
+        quickcheck(prop as fn(Vec<(usize, f64)>) -> TestResult);
     }
 }

@@ -1,4 +1,4 @@
-use std::f32::consts::FRAC_PI_2;
+use std::f64::consts::FRAC_PI_2;
 
 use crate::common::*;
 use crate::constants::*;
@@ -25,12 +25,12 @@ macro_rules! simple_parameter_string_parsing {
 macro_rules! impl_parameter_value_conversion_identity {
     ($struct_name:ident) => {
         impl ParameterValueConversion for $struct_name {
-            type ProcessingParameterValue = f32;
+            type ProcessingParameterValue = f64;
 
-            fn to_processing(value: f32) -> Self::ProcessingParameterValue {
+            fn to_processing(value: f64) -> Self::ProcessingParameterValue {
                 value
             }
-            fn to_preset(value: Self::ProcessingParameterValue) -> f32 {
+            fn to_preset(value: Self::ProcessingParameterValue) -> f64 {
                 value
             }
             fn parse_string_value(value: String) -> Option<Self::ProcessingParameterValue> {
@@ -61,7 +61,7 @@ macro_rules! create_interpolatable_processing_parameter {
         }
 
         impl ProcessingParameter for $name {
-            type Value = f32;
+            type Value = f64;
 
             fn get_value(&mut self, time: TimeCounter) -> Self::Value {
                 self.value.get_value(time, &mut |_| ())
@@ -113,19 +113,19 @@ macro_rules! create_simple_processing_parameter {
 macro_rules! impl_envelope_duration_value_conversion {
     ($struct_name:ident) => {
         impl ParameterValueConversion for $struct_name {
-            type ProcessingParameterValue = f32;
+            type ProcessingParameterValue = f64;
 
-            fn to_processing(value: f32) -> Self::ProcessingParameterValue {
+            fn to_processing(value: f64) -> Self::ProcessingParameterValue {
                 // Force some decay to avoid clicks
                 (value * ENVELOPE_MAX_DURATION)
                     .max(ENVELOPE_MIN_DURATION)
             }
-            fn to_preset(value: Self::ProcessingParameterValue) -> f32 {
+            fn to_preset(value: Self::ProcessingParameterValue) -> f64 {
                 value / ENVELOPE_MAX_DURATION
             }
 
             fn parse_string_value(value: String) -> Option<Self::ProcessingParameterValue> {
-                value.parse::<f32>().ok().map(|value|
+                value.parse::<f64>().ok().map(|value|
                     value.max(ENVELOPE_MIN_DURATION)
                         .min(ENVELOPE_MAX_DURATION)
                 )
@@ -144,12 +144,12 @@ macro_rules! impl_envelope_duration_value_conversion {
 create_interpolatable_processing_parameter!(ProcessingParameterMasterVolume, DEFAULT_MASTER_VOLUME);
 
 impl ParameterValueConversion for ProcessingParameterMasterVolume {
-    type ProcessingParameterValue = f32;
+    type ProcessingParameterValue = f64;
 
-    fn to_processing(value: f32) -> Self::ProcessingParameterValue {
+    fn to_processing(value: f64) -> Self::ProcessingParameterValue {
         value * 2.0
     }
-    fn to_preset(value: Self::ProcessingParameterValue) -> f32 {
+    fn to_preset(value: Self::ProcessingParameterValue) -> f64 {
         value / 2.0
     }
     fn parse_string_value(value: String) -> Option<Self::ProcessingParameterValue> {
@@ -163,15 +163,15 @@ impl ParameterValueConversion for ProcessingParameterMasterVolume {
 
 // Master frequency
 
-create_simple_processing_parameter!(ProcessingParameterMasterFrequency, f32, DEFAULT_MASTER_FREQUENCY);
+create_simple_processing_parameter!(ProcessingParameterMasterFrequency, f64, DEFAULT_MASTER_FREQUENCY);
 
 impl ParameterValueConversion for ProcessingParameterMasterFrequency {
-    type ProcessingParameterValue = f32;
+    type ProcessingParameterValue = f64;
 
-    fn to_processing(value: f32) -> Self::ProcessingParameterValue {
+    fn to_processing(value: f64) -> Self::ProcessingParameterValue {
         map_parameter_value_to_value_with_steps(&MASTER_FREQUENCY_STEPS, value)
     }
-    fn to_preset(value: Self::ProcessingParameterValue) -> f32 {
+    fn to_preset(value: Self::ProcessingParameterValue) -> f64 {
         map_value_to_parameter_value_with_steps(&MASTER_FREQUENCY_STEPS, value)
     }
     fn parse_string_value(value: String) -> Option<Self::ProcessingParameterValue> {
@@ -188,12 +188,12 @@ impl ParameterValueConversion for ProcessingParameterMasterFrequency {
 create_interpolatable_processing_parameter!(ProcessingParameterOperatorVolume, DEFAULT_OPERATOR_VOLUME);
 
 impl ParameterValueConversion for ProcessingParameterOperatorVolume {
-    type ProcessingParameterValue = f32;
+    type ProcessingParameterValue = f64;
 
-    fn to_processing(value: f32) -> f32 {
+    fn to_processing(value: f64) -> f64 {
         value * 2.0
     }
-    fn to_preset(value: f32) -> f32 {
+    fn to_preset(value: f64) -> f64 {
         value / 2.0
     }
     fn parse_string_value(value: String) -> Option<Self::ProcessingParameterValue> {
@@ -214,20 +214,20 @@ impl_parameter_value_conversion_identity!(ProcessingParameterOperatorAdditiveFac
 
 // Frequency - ratio
 
-create_simple_processing_parameter!(ProcessingParameterOperatorFrequencyRatio, f32, DEFAULT_OPERATOR_FREQUENCY_RATIO);
+create_simple_processing_parameter!(ProcessingParameterOperatorFrequencyRatio, f64, DEFAULT_OPERATOR_FREQUENCY_RATIO);
 
 impl ParameterValueConversion for ProcessingParameterOperatorFrequencyRatio {
-    type ProcessingParameterValue = f32;
+    type ProcessingParameterValue = f64;
 
-    fn to_processing(value: f32) -> Self::ProcessingParameterValue {
+    fn to_processing(value: f64) -> Self::ProcessingParameterValue {
         map_parameter_value_to_step(&OPERATOR_RATIO_STEPS[..], value)
     }
-    fn to_preset(value: Self::ProcessingParameterValue) -> f32 {
+    fn to_preset(value: Self::ProcessingParameterValue) -> f64 {
         map_step_to_parameter_value(&OPERATOR_RATIO_STEPS[..], value)
     }
 
-    fn parse_string_value(value: String) -> Option<f32> {
-        value.parse::<f32>().ok().map(|value|
+    fn parse_string_value(value: String) -> Option<f64> {
+        value.parse::<f64>().ok().map(|value|
             round_to_step(&OPERATOR_RATIO_STEPS[..], value)
         )
     }
@@ -240,15 +240,15 @@ impl ParameterValueConversion for ProcessingParameterOperatorFrequencyRatio {
 
 // Frequency - free
 
-create_simple_processing_parameter!(ProcessingParameterOperatorFrequencyFree, f32, DEFAULT_OPERATOR_FREQUENCY_FREE);
+create_simple_processing_parameter!(ProcessingParameterOperatorFrequencyFree, f64, DEFAULT_OPERATOR_FREQUENCY_FREE);
 
 impl ParameterValueConversion for ProcessingParameterOperatorFrequencyFree {
-    type ProcessingParameterValue = f32;
+    type ProcessingParameterValue = f64;
 
-    fn to_processing(value: f32) -> Self::ProcessingParameterValue {
+    fn to_processing(value: f64) -> Self::ProcessingParameterValue {
         map_parameter_value_to_value_with_steps(&OPERATOR_FREE_STEPS, value)
     }
-    fn to_preset(value: Self::ProcessingParameterValue) -> f32 {
+    fn to_preset(value: Self::ProcessingParameterValue) -> f64 {
         map_value_to_parameter_value_with_steps(&OPERATOR_FREE_STEPS, value)
     }
     fn parse_string_value(value: String) -> Option<Self::ProcessingParameterValue> {
@@ -263,15 +263,15 @@ impl ParameterValueConversion for ProcessingParameterOperatorFrequencyFree {
 
 // Frequency - fine
 
-create_simple_processing_parameter!(ProcessingParameterOperatorFrequencyFine, f32, DEFAULT_OPERATOR_FREQUENCY_FINE);
+create_simple_processing_parameter!(ProcessingParameterOperatorFrequencyFine, f64, DEFAULT_OPERATOR_FREQUENCY_FINE);
 
 impl ParameterValueConversion for ProcessingParameterOperatorFrequencyFine {
-    type ProcessingParameterValue = f32;
+    type ProcessingParameterValue = f64;
 
-    fn to_processing(value: f32) -> Self::ProcessingParameterValue {
+    fn to_processing(value: f64) -> Self::ProcessingParameterValue {
         map_parameter_value_to_value_with_steps(&OPERATOR_FINE_STEPS, value)
     }
-    fn to_preset(value: Self::ProcessingParameterValue) -> f32 {
+    fn to_preset(value: Self::ProcessingParameterValue) -> f64 {
         map_value_to_parameter_value_with_steps(&OPERATOR_FINE_STEPS, value)
     }
     fn parse_string_value(value: String) -> Option<Self::ProcessingParameterValue> {
@@ -296,12 +296,12 @@ impl_parameter_value_conversion_identity!(ProcessingParameterOperatorFeedback);
 create_interpolatable_processing_parameter!(ProcessingParameterOperatorModulationIndex, DEFAULT_OPERATOR_MODULATION_INDEX);
 
 impl ParameterValueConversion for ProcessingParameterOperatorModulationIndex {
-    type ProcessingParameterValue = f32;
+    type ProcessingParameterValue = f64;
 
-    fn to_processing(value: f32) -> Self::ProcessingParameterValue {
+    fn to_processing(value: f64) -> Self::ProcessingParameterValue {
         map_parameter_value_to_value_with_steps(&OPERATOR_BETA_STEPS[..], value)
     }
-    fn to_preset(value: Self::ProcessingParameterValue) -> f32 {
+    fn to_preset(value: Self::ProcessingParameterValue) -> f64 {
         map_value_to_parameter_value_with_steps(&OPERATOR_BETA_STEPS[..], value)
     }
     fn parse_string_value(value: String) -> Option<Self::ProcessingParameterValue> {
@@ -320,7 +320,7 @@ create_simple_processing_parameter!(ProcessingParameterOperatorWaveType, WaveTyp
 impl ParameterValueConversion for ProcessingParameterOperatorWaveType {
     type ProcessingParameterValue = WaveType;
 
-    fn to_processing(value: f32) -> WaveType {
+    fn to_processing(value: f64) -> WaveType {
         if value <= 0.5 {
             WaveType::Sine
         }
@@ -328,7 +328,7 @@ impl ParameterValueConversion for ProcessingParameterOperatorWaveType {
             WaveType::WhiteNoise
         }
     }
-    fn to_preset(value: WaveType) -> f32 {
+    fn to_preset(value: WaveType) -> f64 {
         match value {
             WaveType::Sine => 0.0,
             WaveType::WhiteNoise => 1.0,
@@ -344,7 +344,7 @@ impl ParameterValueConversion for ProcessingParameterOperatorWaveType {
             return Some(WaveType::WhiteNoise);
         }
 
-        if let Ok(value) = value.parse::<f32>() {
+        if let Ok(value) = value.parse::<f64>() {
             return Some(Self::to_processing(value));
         }
 
@@ -361,31 +361,31 @@ impl ParameterValueConversion for ProcessingParameterOperatorWaveType {
 
 // Attack duration
 
-create_simple_processing_parameter!(ProcessingParameterOperatorAttackDuration, f32, DEFAULT_ENVELOPE_ATTACK_DURATION);
+create_simple_processing_parameter!(ProcessingParameterOperatorAttackDuration, f64, DEFAULT_ENVELOPE_ATTACK_DURATION);
 impl_envelope_duration_value_conversion!(ProcessingParameterOperatorAttackDuration);
 
 
 // Attack volume
 
-create_simple_processing_parameter!(ProcessingParameterOperatorAttackVolume, f32, DEFAULT_ENVELOPE_ATTACK_VOLUME);
+create_simple_processing_parameter!(ProcessingParameterOperatorAttackVolume, f64, DEFAULT_ENVELOPE_ATTACK_VOLUME);
 impl_parameter_value_conversion_identity!(ProcessingParameterOperatorAttackVolume);
 
 
 // Decay duration
 
-create_simple_processing_parameter!(ProcessingParameterOperatorDecayDuration, f32, DEFAULT_ENVELOPE_DECAY_DURATION);
+create_simple_processing_parameter!(ProcessingParameterOperatorDecayDuration, f64, DEFAULT_ENVELOPE_DECAY_DURATION);
 impl_envelope_duration_value_conversion!(ProcessingParameterOperatorDecayDuration);
 
 
 // Decay volume
 
-create_simple_processing_parameter!(ProcessingParameterOperatorDecayVolume, f32, DEFAULT_ENVELOPE_DECAY_VOLUME);
+create_simple_processing_parameter!(ProcessingParameterOperatorDecayVolume, f64, DEFAULT_ENVELOPE_DECAY_VOLUME);
 impl_parameter_value_conversion_identity!(ProcessingParameterOperatorDecayVolume);
 
 
 // Release duration
 
-create_simple_processing_parameter!(ProcessingParameterOperatorReleaseDuration, f32, DEFAULT_ENVELOPE_RELEASE_DURATION);
+create_simple_processing_parameter!(ProcessingParameterOperatorReleaseDuration, f64, DEFAULT_ENVELOPE_RELEASE_DURATION);
 impl_envelope_duration_value_conversion!(ProcessingParameterOperatorReleaseDuration);
 
 
@@ -396,10 +396,10 @@ create_simple_processing_parameter!(ProcessingParameterOperatorModulationTarget2
 impl ParameterValueConversion for ProcessingParameterOperatorModulationTarget2 {
     type ProcessingParameterValue = usize;
 
-    fn to_processing(value: f32) -> Self::ProcessingParameterValue {
+    fn to_processing(value: f64) -> Self::ProcessingParameterValue {
         map_parameter_value_to_step(&[0, 1], value)
     }
-    fn to_preset(value: Self::ProcessingParameterValue) -> f32 {
+    fn to_preset(value: Self::ProcessingParameterValue) -> f64 {
         map_step_to_parameter_value(&[0, 1], value)
     }
 
@@ -424,10 +424,10 @@ create_simple_processing_parameter!(ProcessingParameterOperatorModulationTarget3
 impl ParameterValueConversion for ProcessingParameterOperatorModulationTarget3 {
     type ProcessingParameterValue = usize;
 
-    fn to_processing(value: f32) -> Self::ProcessingParameterValue {
+    fn to_processing(value: f64) -> Self::ProcessingParameterValue {
         map_parameter_value_to_step(&[0, 1, 2], value)
     }
-    fn to_preset(value: Self::ProcessingParameterValue) -> f32 {
+    fn to_preset(value: Self::ProcessingParameterValue) -> f64 {
         map_step_to_parameter_value(&[0, 1, 2], value)
     }
 
@@ -474,11 +474,11 @@ impl ProcessingParameterOperatorModulationTarget {
 #[derive(Debug, Clone)]
 pub struct ProcessingParameterOperatorPanning {
     value: InterpolatableProcessingValue,
-    pub left_and_right: [f32; 2],
+    pub left_and_right: [f64; 2],
 }
 
 impl ProcessingParameterOperatorPanning {
-    pub fn calculate_left_and_right(panning: f32) -> [f32; 2] {
+    pub fn calculate_left_and_right(panning: f64) -> [f64; 2] {
         let pan_phase = panning * FRAC_PI_2;
 
         [pan_phase.cos(), pan_phase.sin()]
@@ -486,7 +486,7 @@ impl ProcessingParameterOperatorPanning {
 }
 
 impl ProcessingParameter for ProcessingParameterOperatorPanning {
-    type Value = f32;
+    type Value = f64;
 
     fn get_value(&mut self, time: TimeCounter) -> Self::Value {
         let mut opt_new_left_and_right = None;

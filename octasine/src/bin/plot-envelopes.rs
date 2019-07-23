@@ -11,8 +11,8 @@ use octasine::voices::VoiceOperatorVolumeEnvelope;
 /// Currently, editing the file to give the line a color is necessary.
 fn main(){
     fn plot_envelope_stage(
-        start_volume: f32,
-        end_volume: f32,
+        start_volume: f64,
+        end_volume: f64,
         filename: &str
     ){
         let length = 1.0;
@@ -22,8 +22,8 @@ fn main(){
                 &EnvelopeCurveTable::default(),
                 start_volume,
                 end_volume,
-                x as f32,
-                length as f32,
+                x as f64,
+                length as f64,
             ).into()
         }, 0., length);
 

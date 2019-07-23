@@ -2,12 +2,12 @@ use array_init::array_init;
 
 use crate::constants::*;
 
-pub mod atomic_float;
+pub mod atomic_double;
 pub mod common;
 #[allow(clippy::module_inception)]
 pub mod parameters;
 
-pub use atomic_float::AtomicFloat;
+pub use atomic_double::AtomicPositiveDouble;
 pub use common::*;
 pub use parameters::*;
 

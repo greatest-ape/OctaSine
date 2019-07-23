@@ -1,4 +1,4 @@
-use std::f32::consts::E;
+use std::f64::consts::E;
 
 use crate::approximations::EnvelopeCurveTable;
 use crate::common::*;
@@ -19,10 +19,10 @@ pub enum CurveType {
 
 
 #[derive(Debug, Copy, Clone)]
-pub struct VoiceDuration(pub f32);
+pub struct VoiceDuration(pub f64);
 
 #[derive(Debug, Copy, Clone)]
-pub struct KeyVelocity(pub f32);
+pub struct KeyVelocity(pub f64);
 
 impl KeyVelocity {
     pub fn from_midi_velocity(midi_velocity: u8) -> Self {
@@ -30,7 +30,7 @@ impl KeyVelocity {
             Self::default()
         }
         else {
-            Self(f32::from(midi_velocity) / 127.0)
+            Self(f64::from(midi_velocity) / 127.0)
         }
     }
 }
@@ -44,7 +44,7 @@ impl Default for KeyVelocity {
 
 #[derive(Debug, Copy, Clone)]
 pub struct MidiPitch {
-    frequency_factor: f32,
+    frequency_factor: f64,
 }
 
 impl MidiPitch {
@@ -54,13 +54,13 @@ impl MidiPitch {
         }
     }
 
-    fn calculate_frequency_factor(midi_pitch: u8) -> f32 {
-        let note_diff = f32::from(midi_pitch as i8 - 69);
+    fn calculate_frequency_factor(midi_pitch: u8) -> f64 {
+        let note_diff = f64::from(midi_pitch as i8 - 69);
 
         (note_diff / 12.0).exp2()
     }
 
-    pub fn get_frequency(self, master_frequency: f32) -> f32 {
+    pub fn get_frequency(self, master_frequency: f64) -> f64 {
         self.frequency_factor * master_frequency
     }
 }
@@ -70,8 +70,8 @@ impl MidiPitch {
 pub struct VoiceOperatorVolumeEnvelope {
     stage: EnvelopeStage,
     duration_at_stage_change: VoiceDuration,
-    volume_at_stage_change: f32,
-    last_volume: f32,
+    volume_at_stage_change: f64,
+    last_volume: f64,
 }
 
 impl VoiceOperatorVolumeEnvelope {
@@ -138,7 +138,7 @@ impl VoiceOperatorVolumeEnvelope {
         envelope_curve_table: &EnvelopeCurveTable,
         operator_envelope: &ProcessingParameterOperatorEnvelope,
         voice_duration: VoiceDuration,
-    ) -> f32 {
+    ) -> f64 {
         use EnvelopeStage::*;
 
         let duration_since_stage_change = voice_duration.0 -
@@ -184,11 +184,11 @@ impl VoiceOperatorVolumeEnvelope {
     #[inline]
     pub fn calculate_curve(
         envelope_curve_table: &EnvelopeCurveTable,
-        start_volume: f32,
-        end_volume: f32,
-        time_so_far_this_stage: f32,
-        stage_length: f32,
-    ) -> f32 {
+        start_volume: f64,
+        end_volume: f64,
+        time_so_far_this_stage: f64,
+        stage_length: f64,
+    ) -> f64 {
         let time_progress = time_so_far_this_stage / stage_length;
 
         let curve_factor = (stage_length * ENVELOPE_CURVE_TAKEOVER_RECIP).min(1.0);
@@ -208,7 +208,7 @@ impl VoiceOperatorVolumeEnvelope {
         operator_envelope: &ProcessingParameterOperatorEnvelope,
         key_pressed: bool,
         voice_duration: VoiceDuration,
-    ) -> f32 {
+    ) -> f64 {
         if self.stage == EnvelopeStage::Ended {
             0.0
         } else {
@@ -316,7 +316,7 @@ impl Voice {
 
 /// Kept here for reference
 #[allow(dead_code)]
-fn calculate_curve(curve: CurveType, v: f32) -> f32 {
+fn calculate_curve(curve: CurveType, v: f64) -> f64 {
     match curve {
         CurveType::Exp => (v.exp() - 1.0) / (E - 1.0),
         CurveType::Ln => (1.0 + v * (E - 1.0)).ln(),
@@ -337,13 +337,13 @@ mod tests {
 
     use super::*;
 
-    fn valid_volume(volume: f32) -> bool {
+    fn valid_volume(volume: f64) -> bool {
         volume >= 0.0 && volume <= 1.0
     }
 
     #[test]
     fn calculate_curveolume_output_in_range(){
-        fn prop(values: (f32, f32, f32, f32)) -> TestResult {
+        fn prop(values: (f64, f64, f64, f64)) -> TestResult {
             let start_volume = values.0;
             let end_volume = values.1;
             let time_so_far_this_stage = values.2;
@@ -378,7 +378,7 @@ mod tests {
             TestResult::from_bool(success)
         }
 
-        quickcheck(prop as fn((f32, f32, f32, f32)) -> TestResult);
+        quickcheck(prop as fn((f64, f64, f64, f64)) -> TestResult);
     }
 
     #[test]
@@ -399,7 +399,7 @@ mod tests {
 
     #[test]
     fn calculate_curveolume_stage_change_continuity(){
-        fn prop(stage_change_volume: f32) -> TestResult {
+        fn prop(stage_change_volume: f64) -> TestResult {
             if !valid_volume(stage_change_volume) {
                 return TestResult::discard();
             }
@@ -423,6 +423,6 @@ mod tests {
             TestResult::from_bool(success)
         }
 
-        quickcheck(prop as fn(f32) -> TestResult);
+        quickcheck(prop as fn(f64) -> TestResult);
     }
 }

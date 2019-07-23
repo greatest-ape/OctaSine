@@ -7,21 +7,21 @@ pub trait PresetParameter {
         "".to_string()
     }
 
-    fn get_parameter_value_float(&self) -> f32;
-    fn set_parameter_value_float(&self, value: f32);
+    fn get_parameter_value_float(&self) -> f64;
+    fn set_parameter_value_float(&self, value: f64);
 
     fn get_parameter_value_text(&self) -> String;
     fn set_parameter_value_text(&self, _value: String) -> bool;
 
 
-    fn get_parameter_value_float_if_changed(&self) -> Option<f32>;
+    fn get_parameter_value_float_if_changed(&self) -> Option<f64>;
 }
 
 
 pub trait PresetParameterValueAccess {
-    fn set_value(&self, value: f32);
-    fn get_value(&self) -> f32;
-    fn get_value_if_changed(&self) -> Option<f32>;
+    fn set_value(&self, value: f64);
+    fn get_value(&self) -> f64;
+    fn get_value_if_changed(&self) -> Option<f64>;
 }
 
 
@@ -52,7 +52,7 @@ impl<T> PresetParameter for T
         PresetParameterGetUnit::get_parameter_unit_of_measurement(self)
     }
 
-    fn set_parameter_value_float(&self, value: f32){
+    fn set_parameter_value_float(&self, value: f64){
         PresetParameterValueAccess::set_value(self, value);
     }
     fn set_parameter_value_text(&self, value: String) -> bool {
@@ -65,7 +65,7 @@ impl<T> PresetParameter for T
             false
         }
     }
-    fn get_parameter_value_float(&self) -> f32 {
+    fn get_parameter_value_float(&self) -> f64 {
         PresetParameterValueAccess::get_value(self)
     }
     fn get_parameter_value_text(&self) -> String {
@@ -73,7 +73,7 @@ impl<T> PresetParameter for T
 
         Self::format_value(value)
     }
-    fn get_parameter_value_float_if_changed(&self) -> Option<f32> {
+    fn get_parameter_value_float_if_changed(&self) -> Option<f64> {
         PresetParameterValueAccess::get_value_if_changed(self)
     }
 }

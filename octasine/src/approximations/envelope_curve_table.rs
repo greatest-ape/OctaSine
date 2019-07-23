@@ -1,24 +1,24 @@
 const TABLE_SIZE: usize = 1 << 5;
-const TABLE_SIZE_MINUS_ONE_FLOAT: f32 = (TABLE_SIZE - 1) as f32;
+const TABLE_SIZE_MINUS_ONE_FLOAT: f64 = (TABLE_SIZE - 1) as f64;
 
 
 /// Log10 based lookup table for envelope curve, with linear interpolation
 /// 
 /// Maps inputs 0.0-1.0 to output 0.0-1.0
 pub struct EnvelopeCurveTable {
-    table: [f32; TABLE_SIZE],
+    table: [f64; TABLE_SIZE],
 }
 
 
 impl EnvelopeCurveTable {
     #[inline]
-    pub fn reference(value: f32) -> f32 {
+    pub fn reference(value: f64) -> f64 {
         (1.0 + value * 9.0).log10()
     }
 
     /// Get volume. Only defined where value >= 0.0 && value <= 1.0
     #[inline]
-    pub fn calculate(&self, value: f32) -> f32 {
+    pub fn calculate(&self, value: f64) -> f64 {
         let index_float = value * TABLE_SIZE_MINUS_ONE_FLOAT;
         let index_fract = index_float.fract();
 
@@ -40,7 +40,7 @@ impl Default for EnvelopeCurveTable {
         let increment = 1.0 / TABLE_SIZE_MINUS_ONE_FLOAT;
 
         for (i, v) in table.iter_mut().enumerate(){
-            *v = Self::reference(i as f32 * increment);
+            *v = Self::reference(i as f64 * increment);
         }
 
         Self {
@@ -57,7 +57,7 @@ mod tests {
 
     #[test]
     fn test_table_calculate(){
-        fn prop(value: f32) -> TestResult {
+        fn prop(value: f64) -> TestResult {
             if value > 1.0 || value < 0.0 {
                 return TestResult::discard();
             }
@@ -81,6 +81,6 @@ mod tests {
             TestResult::from_bool(success)
         }
 
-        quickcheck(prop as fn(f32) -> TestResult);
+        quickcheck(prop as fn(f64) -> TestResult);
     }
 }

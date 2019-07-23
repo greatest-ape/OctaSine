@@ -154,7 +154,7 @@ impl PresetBank {
         self.presets.len()
     }
 
-    pub fn get_changed_parameters(&self) -> Option<[Option<f32>; 64]> {
+    pub fn get_changed_parameters(&self) -> Option<[Option<f64>; 64]> {
         self.parameter_change_info.get_changed_parameters(
             &self.get_current_preset().parameters
         )
@@ -225,12 +225,12 @@ impl PresetBank {
         )
     }
 
-    pub fn get_parameter_value_float(&self, index: usize) -> f32 {
+    pub fn get_parameter_value_float(&self, index: usize) -> f64 {
         self.get_current_preset().parameters.get(index as usize)
             .map_or(0.0, PresetParameter::get_parameter_value_float)
     }
 
-    pub fn set_parameter_value_float(&self, index: usize, value: f32){
+    pub fn set_parameter_value_float(&self, index: usize, value: f64){
         let index = index as usize;
         let opt_parameter = self.get_current_preset().parameters.get(index);
 
@@ -300,7 +300,7 @@ impl PresetBank {
 #[derive(Serialize, Deserialize, Debug)]
 struct SerdePresetParameter {
     name: String,
-    value_float: f32,
+    value_float: f64,
     value_text: String,
 }
 
@@ -384,7 +384,7 @@ mod tests {
                         .get(parameter_index)
                         .unwrap();
                     
-                    let value: f32 = rng.gen();
+                    let value: f64 = rng.gen();
 
                     parameter.set_parameter_value_float(value);
 

@@ -82,7 +82,7 @@ impl OctaSine {
         TimePerSample(1.0 / sample_rate.0)
     }
 
-    fn hard_limit(value: f32) -> f32 {
+    fn hard_limit(value: f64) -> f64 {
         value.min(1.0).max(-1.0)
     }
 
@@ -110,7 +110,7 @@ impl OctaSine {
         // Use TEMPO_VALID constant content as mask directly because
         // of problems with using TimeInfoFlags
         if let Some(time_info) = self.sync_only.host.get_time_info(1 << 10) {
-            self.processing.bpm = BeatsPerMinute(time_info.tempo as f32);
+            self.processing.bpm = BeatsPerMinute(time_info.tempo as f64);
         }
     }
 }
@@ -162,8 +162,8 @@ impl Plugin for OctaSine {
                         voice,
                     );
 
-                    *output_sample_left += Self::hard_limit(out_left);
-                    *output_sample_right += Self::hard_limit(out_right);
+                    *output_sample_left += Self::hard_limit(out_left) as f32;
+                    *output_sample_right += Self::hard_limit(out_right) as f32;
 
                     voice.duration.0 += time_per_sample.0;
 
@@ -249,7 +249,7 @@ impl Plugin for OctaSine {
     }
 
     fn set_sample_rate(&mut self, rate: f32) {
-        let sample_rate = SampleRate(rate);
+        let sample_rate = SampleRate(f64::from(rate));
 
         self.processing.sample_rate = sample_rate;
         self.processing.time_per_sample = Self::time_per_sample(sample_rate);
@@ -288,12 +288,12 @@ impl PluginParameters for SyncOnlyState {
 
     /// Get the value of paramater at `index`. Should be value between 0.0 and 1.0.
     fn get_parameter(&self, index: i32) -> f32 {
-        self.presets.get_parameter_value_float(index as usize)
+        self.presets.get_parameter_value_float(index as usize) as f32
     }
 
     /// Set the value of parameter at `index`. `value` is between 0.0 and 1.0.
     fn set_parameter(&self, index: i32, value: f32) {
-        self.presets.set_parameter_value_float(index as usize, value);
+        self.presets.set_parameter_value_float(index as usize, f64::from(value));
     }
 
     /// Use String as input for parameter value. Used by host to provide an editable field to

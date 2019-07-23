@@ -1,4 +1,4 @@
-use super::atomic_float::AtomicFloat;
+use super::atomic_double::AtomicPositiveDouble;
 
 use crate::processing_parameters::*;
 
@@ -11,13 +11,13 @@ use super::common::*;
 macro_rules! impl_parameter_value_access {
     ($name:ident) => {
         impl PresetParameterValueAccess for $name {
-            fn set_value(&self, value: f32) {
+            fn set_value(&self, value: f64) {
                 self.value.set(value);
             }
-            fn get_value(&self) -> f32 {
+            fn get_value(&self) -> f64 {
                 self.value.get()
             }
-            fn get_value_if_changed(&self) -> Option<f32> {
+            fn get_value_if_changed(&self) -> Option<f64> {
                 self.value.get_if_changed()
             }
         }
@@ -30,10 +30,10 @@ macro_rules! impl_value_conversion_from_processing {
         impl ParameterValueConversion for $name {
             type ProcessingParameterValue = <$other as ProcessingParameter>::Value;
 
-            fn to_processing(value: f32) -> Self::ProcessingParameterValue {
+            fn to_processing(value: f64) -> Self::ProcessingParameterValue {
                 $other::to_processing(value)
             }
-            fn to_preset(value: Self::ProcessingParameterValue) -> f32 {
+            fn to_preset(value: Self::ProcessingParameterValue) -> f64 {
                 $other::to_preset(value)
             }
 
@@ -55,7 +55,7 @@ macro_rules! create_operator_parameter {
 
         #[derive(Debug)]
         pub struct $name {
-            value: AtomicFloat,
+            value: AtomicPositiveDouble,
             operator_index: usize,
         }
 
@@ -65,7 +65,7 @@ macro_rules! create_operator_parameter {
                     .get_preset_target_value();
 
                 Self {
-                    value: AtomicFloat::new(value),
+                    value: AtomicPositiveDouble::new(value),
                     operator_index: operator_index,
                 }
             }
@@ -90,7 +90,7 @@ macro_rules! create_operator_parameter {
 
 #[derive(Debug)]
 pub struct PresetParameterMasterVolume {
-    value: AtomicFloat,
+    value: AtomicPositiveDouble,
 }
 
 impl Default for PresetParameterMasterVolume {
@@ -98,7 +98,7 @@ impl Default for PresetParameterMasterVolume {
         let value = ProcessingParameterMasterVolume::default().get_preset_target_value();
 
         Self {
-            value: AtomicFloat::new(value),
+            value: AtomicPositiveDouble::new(value),
         }
     }
 }
@@ -120,7 +120,7 @@ impl_value_conversion_from_processing!(PresetParameterMasterVolume, ProcessingPa
 
 #[derive(Debug)]
 pub struct PresetParameterMasterFrequency {
-    pub value: AtomicFloat,
+    pub value: AtomicPositiveDouble,
 }
 
 impl Default for PresetParameterMasterFrequency {
@@ -129,7 +129,7 @@ impl Default for PresetParameterMasterFrequency {
 
 
         Self {
-            value: AtomicFloat::new(value),
+            value: AtomicPositiveDouble::new(value),
         }
     }
 }
