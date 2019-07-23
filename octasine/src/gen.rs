@@ -139,9 +139,8 @@ pub fn generate_voice_samples_simd(
         );
 
         // Save new phase
-        for index in 0..4 {
-            voice.operators[index].last_phase.0 =
-                operator_new_phase_simd.extract(index);
+        for (i, voice_operator) in voice.operators.iter_mut().enumerate(){
+            voice_operator.last_phase.0 = operator_new_phase_simd.extract(i);
         }
 
         operator_new_phase_simd * TAU
