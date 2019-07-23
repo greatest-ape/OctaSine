@@ -133,12 +133,9 @@ pub fn generate_voice_samples_simd(
             operator_frequency_free_simd *
             operator_frequency_fine_simd;
 
-        let mut operator_new_phase_simd = operator_last_phase_simd +
-            operator_frequency_simd * time_per_sample.0;
-
-        // Get fractional part of floats
-        operator_new_phase_simd -= f64x4::from_cast(
-            i64x4::from_cast(operator_new_phase_simd)
+        let operator_new_phase_simd = operator_frequency_simd.mul_adde(
+            f64x4::splat(time_per_sample.0),
+            operator_last_phase_simd
         );
 
         // Save new phase
@@ -229,12 +226,15 @@ pub fn generate_voice_samples_simd(
         let mut out_simd = if operator_wave_type[index] == WaveType::Sine {
             let mono = modulation_in_pairs[index].sum();
 
-            modulation_in_pairs[index] = tendency_pairs[index] * mono +
-                (1.0 - tendency_pairs[index]) * modulation_in_pairs[index];
+            modulation_in_pairs[index] = tendency_pairs[index].mul_adde(
+                f64x2::splat(mono),
+                (1.0 - tendency_pairs[index]) * modulation_in_pairs[index]
+            );
 
-            let sin_input_simd: f64x2 = modulation_index_pairs[index] *
-                (feedback_pairs[index] + modulation_in_pairs[index]) +
-                phase_pairs[index];
+            let sin_input_simd: f64x2 = modulation_index_pairs[index].mul_adde(
+                feedback_pairs[index] + modulation_in_pairs[index],
+                phase_pairs[index]
+            );
 
             SleefSin35::sin(sin_input_simd)
         } else {
