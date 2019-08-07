@@ -27,14 +27,39 @@ versions.
 
 ### macOS
 
-After cloning the repository and installing the rust compiler (including a
-nightly toolchain), build and install by running:
+If you have already any of the software mentioned below, that step can be skipped.
+
+[Install the rust compiler](https://rustup.rs/). Requires the XCode build tools from Apple, you will probably be prompted to install those.
+
+Install nightly Rust toolchain:
+
+```sh
+rustup toolchain install nightly
+```
+
+[Install homebrew](https://brew.sh).
+
+Install git and cmake with homebrew:
+
+```sh
+brew install git cmake
+```
+
+Clone this repository to a folder on your computer:
+
+```sh
+mkdir -p "$HOME/Downloads"
+cd "$HOME/Downloads"
+git clone https://github.com/greatest-ape/OctaSine.git
+```
+
+Build and install:
 
 ```sh
 ./scripts/macos/build-simd-and-install.sh
 ```
 
-If you don't want SIMD support and/or prefer the stable toolchain, instead run:
+__Advanced:__ If you don't want SIMD support and/or prefer the stable toolchain, instead run:
 
 ```sh
 ./scripts/macos/build-and-install.sh
