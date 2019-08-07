@@ -10,7 +10,8 @@ Frequency modulation based VST2 plugin written in Rust
   independently switched to white noise mode
 * Flexible routing allowing setting the output operator (with some
   limitations) as well as the percentage of signal that is simply added to the
-  final output, enabling additive synthesis
+  final output, enabling additive synthesis. By default, operator 4 is routed
+  to operator 3, operator 3 to operator 2 and operator 2 to operator 1.
 * 128 voices (using them all simultaneously might consume quite a bit
   of CPU time though)
 * Fully automatable (nice way of saying there is currently no built-in
