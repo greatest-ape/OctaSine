@@ -2,13 +2,10 @@
 
 use array_init::array_init;
 
-pub mod common;
-pub mod parameters;
-pub mod utils;
+use vst2_helpers::processing_parameters::*;
 
-pub use common::*;
+pub mod parameters;
 pub use parameters::*;
-pub use utils::*;
 
 use crate::constants::*;
 
@@ -186,10 +183,9 @@ impl ProcessingParameters {
 mod tests {
     use assert_approx_eq::assert_approx_eq;
 
-    use crate::common::*;
-
     #[test]
     fn test_operator_panning_left_and_right(){
+        use vst2_helpers::processing_parameters::interpolatable_value::*;
         use super::*;
 
         let mut operator = ProcessingParameterOperatorPanning::default();

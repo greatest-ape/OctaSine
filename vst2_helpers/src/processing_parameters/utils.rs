@@ -100,20 +100,15 @@ mod tests {
     use quickcheck::{TestResult, quickcheck};
     use assert_approx_eq::assert_approx_eq;
 
-    use crate::constants::*;
-
     use super::*;
 
     fn get_all_steps() -> Vec<f64> {
-        let mut steps = Vec::new();
+        let mut steps = vec![0.0];
 
-        steps.append(&mut OPERATOR_RATIO_STEPS.to_vec());
-        steps.append(&mut OPERATOR_FREE_STEPS.to_vec());
-        steps.append(&mut OPERATOR_FINE_STEPS.to_vec());
-        steps.append(&mut OPERATOR_BETA_STEPS.to_vec());
-        steps.append(&mut MASTER_FREQUENCY_STEPS.to_vec());
+        for i in 0..300 {
+            steps.push(0.001 * i as f64 + (i >> 3) as f64 * 0.1);
+        }
 
-        steps.sort_by(|a, b| a.partial_cmp(b).unwrap());
         steps.dedup();
 
         steps

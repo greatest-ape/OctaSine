@@ -1,6 +1,6 @@
 use std::f64::consts::E;
 
-use crate::approximations::EnvelopeCurveTable;
+use vst2_helpers::approximations::EnvelopeCurveTable;
 use crate::common::*;
 use crate::constants::*;
 use crate::processing_parameters::*;

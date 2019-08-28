@@ -1,53 +1,13 @@
-use super::atomic_double::AtomicPositiveDouble;
-
 use crate::processing_parameters::*;
 
-use super::common::*;
+use vst2_helpers::utils::atomic_double::AtomicPositiveDouble;
+use vst2_helpers::presets::parameters::*;
+use vst2_helpers::processing_parameters::*;
+
+use vst2_helpers::*;
 
 
 // Macros
-
-
-macro_rules! impl_parameter_value_access {
-    ($name:ident) => {
-        impl PresetParameterValueAccess for $name {
-            fn set_value(&self, value: f64) {
-                self.value.set(value);
-            }
-            fn get_value(&self) -> f64 {
-                self.value.get()
-            }
-            fn get_value_if_changed(&self) -> Option<f64> {
-                self.value.get_if_changed()
-            }
-        }
-    };
-}
-
-
-macro_rules! impl_value_conversion_from_processing {
-    ($name:ident, $other:ident) => {
-        impl ParameterValueConversion for $name {
-            type ProcessingParameterValue = <$other as ProcessingParameter>::Value;
-
-            fn to_processing(value: f64) -> Self::ProcessingParameterValue {
-                $other::to_processing(value)
-            }
-            fn to_preset(value: Self::ProcessingParameterValue) -> f64 {
-                $other::to_preset(value)
-            }
-
-            /// Parse a string value coming from the host
-            fn parse_string_value(value: String) -> Option<Self::ProcessingParameterValue> {
-                $other::parse_string_value(value)
-            }
-
-            fn format_processing(internal_value: Self::ProcessingParameterValue) -> String {
-                $other::format_processing(internal_value)
-            }
-        }
-    };
-}
 
 
 macro_rules! create_operator_parameter {
@@ -79,7 +39,7 @@ macro_rules! create_operator_parameter {
 
         impl PresetParameterGetUnit for $name {}
 
-        impl_parameter_value_access!($name);
+        impl_preset_parameter_value_access!($name);
 
         impl_value_conversion_from_processing!($name, $processing_parameter);
     };  
@@ -112,7 +72,7 @@ impl PresetParameterGetName for PresetParameterMasterVolume {
 
 impl PresetParameterGetUnit for PresetParameterMasterVolume {}
 
-impl_parameter_value_access!(PresetParameterMasterVolume);
+impl_preset_parameter_value_access!(PresetParameterMasterVolume);
 impl_value_conversion_from_processing!(PresetParameterMasterVolume, ProcessingParameterMasterVolume);
 
 
@@ -147,7 +107,7 @@ impl PresetParameterGetUnit for PresetParameterMasterFrequency {
     }
 }
 
-impl_parameter_value_access!(PresetParameterMasterFrequency);
+impl_preset_parameter_value_access!(PresetParameterMasterFrequency);
 
 impl_value_conversion_from_processing!(PresetParameterMasterFrequency, ProcessingParameterMasterFrequency);
 

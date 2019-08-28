@@ -1,112 +1,13 @@
 use std::f64::consts::FRAC_PI_2;
 
+use vst2_helpers::processing_parameters::*;
+use vst2_helpers::processing_parameters::utils::*;
+use vst2_helpers::processing_parameters::interpolatable_value::*;
+
+use vst2_helpers::*;
+
 use crate::common::*;
 use crate::constants::*;
-
-use super::common::*;
-use super::utils::*;
-
-
-// Macros
-
-macro_rules! simple_parameter_string_parsing {
-    ($struct_name:ident, $value:ident, $internal_type:ty) => {
-        $value.parse::<$internal_type>().ok().map(|value| {
-            let max = $struct_name::to_processing(1.0);
-            let min = $struct_name::to_processing(0.0);
-
-            value.max(min).min(max)
-        })
-    };
-}
-
-
-/// Implement ParameterValueConversion with 1-to-1 conversion
-macro_rules! impl_parameter_value_conversion_identity {
-    ($struct_name:ident) => {
-        impl ParameterValueConversion for $struct_name {
-            type ProcessingParameterValue = f64;
-
-            fn to_processing(value: f64) -> Self::ProcessingParameterValue {
-                value
-            }
-            fn to_preset(value: Self::ProcessingParameterValue) -> f64 {
-                value
-            }
-            fn parse_string_value(value: String) -> Option<Self::ProcessingParameterValue> {
-                simple_parameter_string_parsing!(Self, value, Self::ProcessingParameterValue)
-            }
-
-            fn format_processing(internal_value: Self::ProcessingParameterValue) -> String {
-                format!("{:.02}", internal_value)
-            }
-        }
-    };
-}
-
-
-macro_rules! create_interpolatable_processing_parameter {
-    ($name:ident, $default:ident) => {
-        #[derive(Debug, Clone)]
-        pub struct $name {
-            value: InterpolatableProcessingValue,
-        }
-
-        impl Default for $name {
-            fn default() -> Self {
-                Self {
-                    value: InterpolatableProcessingValue::new($default)
-                }
-            }
-        }
-
-        impl ProcessingParameter for $name {
-            type Value = f64;
-
-            fn get_value(&mut self, time: TimeCounter) -> Self::Value {
-                self.value.get_value(time, &mut |_| ())
-            }
-            fn get_target_value(&self) -> Self::Value {
-                self.value.target_value
-            }
-            fn set_value(&mut self, value: Self::Value) {
-                self.value.set_value(value)
-            }
-        }
-    }
-}
-
-
-macro_rules! create_simple_processing_parameter {
-    ($name:ident, $type:ty, $default:ident) => {
-        #[derive(Debug, Clone)]
-        pub struct $name {
-            pub value: $type
-        }
-
-        impl Default for $name {
-            fn default() -> Self {
-                Self {
-                    value: $default
-                }
-            }
-        }
-
-        impl ProcessingParameter for $name {
-            type Value = $type;
-
-            fn get_value(&mut self, _: TimeCounter) -> Self::Value {
-                self.value
-            }
-            fn get_target_value(&self) -> Self::Value {
-                self.value
-            }
-            fn set_value(&mut self, value: Self::Value){
-                self.value = value;
-            }
-        }
-    };
-}
 
 
 /// Implement ParameterValueConversion for envelope durations

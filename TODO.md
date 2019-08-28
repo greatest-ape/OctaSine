@@ -1,5 +1,12 @@
 # TODO
 
+## split
+
+* TimeCounter should just be any type
+* s/EnvelopeCurveTable/Log10Table/g
+* f64 / f32?
+* Envelope?
+
 ## Prioritized
 
 * clippy, rustfmt
@@ -46,10 +53,3 @@
 * proper beta scaling - double with doubling modulator frequency
 * suspend mode and so on, maybe just reset time, note time, envelopes etc on resume
 * Remove BPM fetch support
-
-
-# Notes
-
-Old command for ASM output generation:
-
-    RUSTFLAGS="-C target-cpu=native" cargo +nightly asm "<fm::FmSynth as vst::plugin::Plugin>::process" --rust --features "simd"

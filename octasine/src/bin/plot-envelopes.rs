@@ -2,7 +2,7 @@ use plotlib::function::*;
 use plotlib::view::ContinuousView;
 use plotlib::page::Page;
 
-use octasine::approximations::EnvelopeCurveTable;
+use vst2_helpers::approximations::EnvelopeCurveTable;
 use octasine::voices::VoiceOperatorVolumeEnvelope;
 
 

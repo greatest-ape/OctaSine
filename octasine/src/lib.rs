@@ -1,12 +1,18 @@
-#![allow(clippy::len_without_is_empty)]
-
 #[cfg(feature = "logging")]
 #[macro_use]
 extern crate log;
 
+pub mod common;
+pub mod constants;
+pub mod gen;
+pub mod voices;
+pub mod processing_parameters;
+pub mod preset_parameters;
+
 use std::sync::Arc;
 
 use array_init::array_init;
+
 use rand::FromEntropy;
 use rand::rngs::SmallRng;
 
@@ -16,31 +22,22 @@ use vst::event::Event;
 use vst::host::Host;
 use vst::plugin::{Category, Plugin, Info, CanDo, HostCallback, PluginParameters};
 
-pub mod approximations;
-pub mod common;
-pub mod constants;
-pub mod gen;
-pub mod voices;
-pub mod processing_parameters;
-pub mod presets;
+use vst2_helpers::approximations::*;
+use vst2_helpers::presets::*;
+use vst2_helpers::processing_parameters::*;
+use vst2_helpers::{crate_version_to_vst_format, crate_version, impl_plugin_parameters};
 
-use crate::approximations::*;
-use crate::constants::*;
 use crate::gen::*;
 
 
-#[macro_export]
-macro_rules! crate_version {
-    () => {
-        env!("CARGO_PKG_VERSION").to_string()
-    };
-}
+#[allow(clippy::let_and_return)]
+#[allow(unused_mut)]
+pub fn built_in_presets<P>() -> Vec<Preset<P>> where P: PresetParameters {
+    let mut presets = Vec::new();
 
+    // presets.push(preset_from_file!("../presets/test.fxp"));
 
-fn crate_version_to_vst_format(crate_version: String) -> i32 {
-    format!("{:0<4}", crate_version.replace(".", ""))
-        .parse()
-        .expect("convert crate version to i32")
+    presets
 }
 
 
@@ -60,7 +57,7 @@ pub struct ProcessingState {
 /// Thread-safe state used for parameter and preset calls
 pub struct SyncOnlyState {
     pub host: HostCallback,
-    pub presets: PresetBank,
+    pub presets: PresetBank<OctaSinePresetParameters>,
 }
 
 
@@ -211,7 +208,7 @@ impl Plugin for OctaSine {
 
         let sync_only = Arc::new(SyncOnlyState {
             host,
-            presets: PresetBank::default(),
+            presets: PresetBank::new_from_presets(built_in_presets()),
         });
 
         Self {
@@ -290,103 +287,4 @@ impl Plugin for OctaSine {
 }
 
 
-impl PluginParameters for SyncOnlyState {
-
-    /// Get parameter label for parameter at `index` (e.g. "db", "sec", "ms", "%").
-    fn get_parameter_label(&self, index: i32) -> String {
-        self.presets.get_parameter_unit(index as usize)
-    }
-
-    /// Get the parameter value for parameter at `index` (e.g. "1.0", "150", "Plate", "Off").
-    fn get_parameter_text(&self, index: i32) -> String {
-        self.presets.get_parameter_value_text(index as usize)
-    }
-
-    /// Get the name of parameter at `index`.
-    fn get_parameter_name(&self, index: i32) -> String {
-        self.presets.get_parameter_name(index as usize)
-    }
-
-    /// Get the value of paramater at `index`. Should be value between 0.0 and 1.0.
-    fn get_parameter(&self, index: i32) -> f32 {
-        self.presets.get_parameter_value_float(index as usize) as f32
-    }
-
-    /// Set the value of parameter at `index`. `value` is between 0.0 and 1.0.
-    fn set_parameter(&self, index: i32, value: f32) {
-        self.presets.set_parameter_value_float(index as usize, f64::from(value));
-    }
-
-    /// Use String as input for parameter value. Used by host to provide an editable field to
-    /// adjust a parameter value. E.g. "100" may be interpreted as 100hz for parameter. Returns if
-    /// the input string was used.
-    fn string_to_parameter(&self, index: i32, text: String) -> bool {
-        self.presets.set_parameter_value_text(index as usize, text)
-    }
-
-    /// Return whether parameter at `index` can be automated.
-    fn can_be_automated(&self, index: i32) -> bool {
-        self.presets.can_parameter_be_automated(index as usize)
-    }
-
-    /// Set the current preset to the index specified by `preset`.
-    ///
-    /// This method can be called on the processing thread for automation.
-    fn change_preset(&self, index: i32) {
-        self.presets.set_preset_index(index as usize);
-    }
-
-    /// Get the current preset index.
-    fn get_preset_num(&self) -> i32 {
-        self.presets.get_preset_index() as i32
-    }
-
-    /// Set the current preset name.
-    fn set_preset_name(&self, name: String) {
-        self.presets.set_current_preset_name(name)
-    }
-
-    /// Get the name of the preset at the index specified by `preset`.
-    fn get_preset_name(&self, index: i32) -> String {
-        self.presets.get_preset_name_by_index(index as usize)
-    }
-
-    /// If `preset_chunks` is set to true in plugin info, this should return the raw chunk data for
-    /// the current preset.
-    fn get_preset_data(&self) -> Vec<u8> {
-        self.presets.export_current_preset_bytes()
-    }
-
-    /// If `preset_chunks` is set to true in plugin info, this should return the raw chunk data for
-    /// the current plugin bank.
-    fn get_bank_data(&self) -> Vec<u8> {
-        self.presets.export_bank_as_bytes()
-    }
-
-    /// If `preset_chunks` is set to true in plugin info, this should load a preset from the given
-    /// chunk data.
-    fn load_preset_data(&self, data: &[u8]) {
-        self.presets.import_bytes_into_current_preset(data);
-    }
-
-    /// If `preset_chunks` is set to true in plugin info, this should load a preset bank from the
-    /// given chunk data.
-    fn load_bank_data(&self, data: &[u8]) {
-        self.presets.import_bank_from_bytes(data);
-    }
-}
-
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_crate_version_to_vst_format(){
-        assert_eq!(crate_version_to_vst_format("1".to_string()), 1000);
-        assert_eq!(crate_version_to_vst_format("0.1".to_string()), 0100);
-        assert_eq!(crate_version_to_vst_format("0.0.2".to_string()), 0020);
-        assert_eq!(crate_version_to_vst_format("0.5.2".to_string()), 0520);
-        assert_eq!(crate_version_to_vst_format("1.0.1".to_string()), 1010);
-    }
-}
+impl_plugin_parameters!(SyncOnlyState, presets);

@@ -1,11 +1,13 @@
 use rand::Rng;
 
-pub use crate::approximations::*;
+use vst2_helpers::approximations::*;
+use vst2_helpers::processing_parameters::ProcessingParameter;
+
 pub use crate::common::*;
 pub use crate::constants::*;
 pub use crate::voices::*;
 pub use crate::processing_parameters::*;
-pub use crate::presets::*;
+pub use crate::preset_parameters::*;
 
 
 /// One for left channel, one for right

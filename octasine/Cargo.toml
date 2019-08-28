@@ -46,6 +46,9 @@ simplelog = { version = "0.4", optional = true }
 git = "https://github.com/RustAudio/vst-rs.git"
 rev = "269adb"
 
+[dependencies.vst2_helpers]
+path = "../vst2_helpers"
+
 [dependencies.packed_simd]
 git = "https://github.com/rust-lang-nursery/packed_simd.git"
 rev = "173f55"

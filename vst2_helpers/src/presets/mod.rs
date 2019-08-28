@@ -11,27 +11,6 @@ pub use parameters::{PresetParameters, PresetParameter};
 pub use change_info::ParameterChangeInfo;
 
 
-#[allow(unused_macros)]
-macro_rules! preset_from_file {
-    ($path:expr) => {
-        Preset::new_from_bytes(
-            include_bytes!($path)
-        ).expect(&format!("Couldn't load preset file: {}", $path))
-    };
-}
-
-
-#[allow(clippy::let_and_return)]
-#[allow(unused_mut)]
-fn built_in_presets() -> Vec<Preset> {
-    let mut presets = Vec::new();
-
-    // presets.push(preset_from_file!("../presets/test.fxp"));
-
-    presets
-}
-
-
 fn to_bytes<T: Serialize>(t: &T) -> Vec<u8> {
     let mut out = "\n\n".to_string().as_bytes().to_vec();
 
@@ -49,15 +28,15 @@ fn from_bytes<'a, T: Deserialize<'a>>(
 }
 
 
-pub struct Preset {
+pub struct Preset<P> where P: PresetParameters {
     /// Preset name wrapped in a RwLock. Hopefully, the audio processing
     /// thread won't access it
     name: RwLock<String>,
-    parameters: PresetParameters,
+    parameters: P,
 }
 
 
-impl Preset {
+impl<P> Preset<P> where P: PresetParameters {
     #[allow(dead_code)]
     fn new_from_bytes(bytes: &[u8]) -> Result<Self, impl ::std::error::Error> {
         let res_serde_preset: Result<SerdePreset, _> = from_bytes(bytes);
@@ -113,43 +92,46 @@ impl Preset {
 }
 
 
-impl Default for Preset {
+impl<P> Default for Preset<P> where P: PresetParameters {
     fn default() -> Self {
         Self {
             name: RwLock::new("-".to_string()),
-            parameters: PresetParameters::default(),
+            parameters: P::default(),
         }
     }
 }
 
 
-pub struct PresetBank {
-    presets: [Preset; 128],
+pub struct PresetBank<P> where P: PresetParameters {
+    presets: [Preset<P>; 128],
     preset_index: AtomicUsize,
     pub parameter_change_info: ParameterChangeInfo,
 }
 
 
-impl Default for PresetBank {
+impl<P> Default for PresetBank<P> where P: PresetParameters {
     fn default() -> Self {
-        let mut presets: [Preset; 128] = array_init(|_| Preset::default());
-        let built_in_presets = built_in_presets();
-
-        for (preset, built_in_preset) in presets.iter_mut()
-            .zip(built_in_presets.into_iter())
-        {
-            *preset = built_in_preset;
-        }
-
         Self {
-            presets,
+            presets: array_init(|_| Preset::default()),
             preset_index: AtomicUsize::new(0),
             parameter_change_info: ParameterChangeInfo::default(),
         }
     }
 }
 
-impl PresetBank {
+impl<P> PresetBank<P> where P: PresetParameters {
+    pub fn new_from_presets(presets: Vec<Preset<P>>) -> Self {
+        let mut bank = Self::default();
+
+        for (bank_preset, preset) in bank.presets.iter_mut()
+            .zip(presets.into_iter())
+        {
+            *bank_preset = preset;
+        }
+
+        bank
+    }
+
     pub fn len(&self) -> usize {
         self.presets.len()
     }
@@ -164,13 +146,13 @@ impl PresetBank {
         self.parameter_change_info.mark_all_as_changed();
     }
 
-    fn get_current_preset(&self) -> &Preset {
+    fn get_current_preset(&self) -> &Preset<P> {
         &self.presets[self.get_preset_index()]
     }
 }
 
 /// PresetBank preset call handling
-impl PresetBank {
+impl<P> PresetBank<P> where P: PresetParameters {
     pub fn set_preset_index(&self, index: usize){
         if index >= self.len(){
             return;
@@ -195,7 +177,7 @@ impl PresetBank {
 
 
 /// PresetBank parameter call handling
-impl PresetBank {
+impl<P> PresetBank<P> where P: PresetParameters {
     pub fn get_num_parameters(&self) -> usize {
         self.get_current_preset().parameters.len()
     }
@@ -259,14 +241,15 @@ impl PresetBank {
 
 
 /// PresetBank import/export handling
-impl PresetBank {
+impl<P> PresetBank<P> where P: PresetParameters {
     /// Import bytes into current bank, set sync parameters
     pub fn import_bank_from_bytes(&self, bytes: &[u8]){
         let res_serde_preset_bank: Result<SerdePresetBank, _> =
             from_bytes(bytes);
 
         if let Ok(serde_preset_bank) = res_serde_preset_bank {
-            let empty_serde_preset = Preset::default().export_serde_preset();
+            let preset: Preset<P> = Preset::default();
+            let empty_serde_preset = preset.export_serde_preset();
 
             for (index, preset) in self.presets.iter().enumerate(){
                 if let Some(serde_preset) = serde_preset_bank.presets.get(index){
@@ -313,7 +296,7 @@ struct SerdePreset {
 
 
 impl SerdePreset {
-    fn new(preset: &Preset) -> Self {
+    fn new(preset: &Preset<impl PresetParameters>) -> Self {
         let mut parameters = Vec::new();
 
         for i in 0..preset.parameters.len(){
@@ -341,7 +324,7 @@ struct SerdePresetBank {
 
 
 impl SerdePresetBank {
-    fn new(preset_bank: &PresetBank) -> Self {
+    fn new(preset_bank: &PresetBank<impl PresetParameters>) -> Self {
         Self {
             presets: preset_bank.presets.iter()
                 .map(Preset::export_serde_preset)
@@ -351,27 +334,141 @@ impl SerdePresetBank {
 }
 
 
-#[cfg(test)]
-mod tests {
+/// Code to be included in tests, including from other crates
+pub mod test_helpers {
     use assert_approx_eq::assert_approx_eq;
-    use quickcheck::{TestResult, quickcheck};
     use rand::{FromEntropy, Rng};
     use rand::rngs::SmallRng;
 
+    use crate::presets::parameters::*;
+    use crate::processing_parameters::*;
+    use crate::utils::atomic_double::AtomicPositiveDouble;
+
     use super::*;
 
-    #[test]
-    fn test_load_built_in_presets(){
-        built_in_presets();
+    pub(crate) struct TestProcessingParameter {
+        value: f64
+    }
+
+    impl ProcessingParameter for TestProcessingParameter {
+        type Value = f64;
+
+        fn get_value(&mut self, _time: TimeCounter) -> Self::Value {
+            self.value
+        }
+        fn get_target_value(&self) -> Self::Value {
+            self.value
+        }
+        fn set_value(&mut self, value: Self::Value){
+            self.value = value;
+        }
+    }
+
+    impl ParameterValueConversion for TestProcessingParameter {
+        type ProcessingParameterValue = f64;
+
+        fn to_processing(value: f64) -> Self::ProcessingParameterValue {
+            value
+        }
+        fn to_preset(value: Self::ProcessingParameterValue) -> f64 {
+            value
+        }
+
+        fn parse_string_value(value: String) -> Option<Self::ProcessingParameterValue> {
+            value.parse().ok()
+        }
+
+        fn format_processing(internal_value: Self::ProcessingParameterValue) -> String {
+            format!("{}", internal_value)
+        }
+    }
+
+    pub(crate) struct TestPresetParameter {
+        name: String,
+        value: AtomicPositiveDouble,
+    }
+
+    impl Default for TestPresetParameter {
+        fn default() -> Self {
+            Self {
+                name: "test".to_string(),
+                value: AtomicPositiveDouble::new(SmallRng::from_entropy().gen()),
+            }
+        }
+    }
+
+    impl PresetParameterValueAccess for TestPresetParameter {
+        fn set_value(&self, value: f64) {
+            self.value.set(value);
+        }
+        fn get_value(&self) -> f64 {
+            self.value.get()
+        }
+        fn get_value_if_changed(&self) -> Option<f64> {
+            self.value.get_if_changed()
+        }
+    }
+
+
+    impl PresetParameterGetName for TestPresetParameter {
+        fn get_parameter_name(&self) -> String {
+            self.name.clone()
+        }
+    }
+
+
+    impl PresetParameterGetUnit for TestPresetParameter {
+        fn get_parameter_unit_of_measurement(&self) -> String {
+            "kHz".to_string()
+        }
+    }
+
+    impl ParameterValueConversion for TestPresetParameter {
+        type ProcessingParameterValue = f64;
+
+        fn to_processing(value: f64) -> Self::ProcessingParameterValue {
+            value
+        }
+        fn to_preset(value: Self::ProcessingParameterValue) -> f64 {
+            value
+        }
+
+        fn parse_string_value(value: String) -> Option<Self::ProcessingParameterValue> {
+            value.parse().ok()
+        }
+
+        fn format_processing(internal_value: Self::ProcessingParameterValue) -> String {
+            format!("{}", internal_value)
+        }
+    }
+
+    pub(crate) struct TestPresetParameters([TestPresetParameter; 60]);
+
+    impl Default for TestPresetParameters {
+        fn default() -> Self {
+            Self(
+                array_init(|_| TestPresetParameter::default()),
+            )
+        }
+    }
+
+    impl PresetParameters for TestPresetParameters {
+        fn get(&self, index: usize) -> Option<&dyn PresetParameter> {
+            self.0.get(index).map(|d| d as &dyn PresetParameter)
+        }
+        fn len(&self) -> usize {
+            self.0.len()
+        }
     }
 
     /// Test importing and exporting, as well as some related functionality
-    #[test]
-    fn test_export_import(){
+    /// 
+    /// Use this in other crates with your own preset parameter type!
+    pub fn export_import<P>() where P: PresetParameters {
         let mut rng = SmallRng::from_entropy();
 
         for _ in 0..20 {
-            let bank_1 = PresetBank::default();
+            let bank_1: PresetBank<P> = PresetBank::default();
 
             for preset_index in 0..bank_1.len(){
                 bank_1.set_preset_index(preset_index);
@@ -393,7 +490,7 @@ mod tests {
                 }
             }
 
-            let bank_2 = PresetBank::default();
+            let bank_2: PresetBank<P> = PresetBank::default();
 
             bank_2.import_bank_from_bytes(&bank_1.export_bank_as_bytes());
 
@@ -424,20 +521,15 @@ mod tests {
             }
         }
     }
+}
 
-    /// Don't crash when importing garbage
-    /// 
-    /// Not really a necessary test, Serde should manage fine.
+
+#[cfg(test)]
+pub mod tests {
     #[test]
-    fn test_import_garbage(){
-        fn prop(garbage: Vec<u8>) -> TestResult {
-            let bank = PresetBank::default();
+    fn test_export_import(){
+        use super::test_helpers::*;
 
-            bank.import_bank_from_bytes(&garbage);
-
-            TestResult::from_bool(true)
-        }
-
-        quickcheck(prop as fn(Vec<u8>) -> TestResult);
+        export_import::<TestPresetParameters>();
     }
 }

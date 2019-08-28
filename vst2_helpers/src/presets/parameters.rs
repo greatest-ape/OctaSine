@@ -1,4 +1,10 @@
-use crate::processing_parameters::common::ParameterValueConversion;
+use crate::processing_parameters::ParameterValueConversion;
+
+
+pub trait PresetParameters: Default {
+    fn get(&self, index: usize) -> Option<&dyn PresetParameter>;
+    fn len(&self) -> usize;
+}
 
 
 pub trait PresetParameter {

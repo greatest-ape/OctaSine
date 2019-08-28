@@ -1,15 +1,14 @@
-use array_init::array_init;
-
-use crate::constants::*;
-
-pub mod atomic_double;
-pub mod common;
 #[allow(clippy::module_inception)]
 pub mod parameters;
 
-pub use atomic_double::AtomicPositiveDouble;
-pub use common::*;
-pub use parameters::*;
+use array_init::array_init;
+
+use vst2_helpers::presets::parameters::*;
+
+use crate::constants::*;
+
+use parameters::*;
+
 
 
 #[derive(Debug)]
@@ -70,13 +69,13 @@ impl PresetParameterOperator {
 
 
 
-pub struct PresetParameters {
+pub struct OctaSinePresetParameters {
     pub master_volume: PresetParameterMasterVolume,
     pub master_frequency: PresetParameterMasterFrequency,
     pub operators: [PresetParameterOperator; NUM_OPERATORS],
 }
 
-impl Default for PresetParameters {
+impl Default for OctaSinePresetParameters {
     fn default() -> Self {
         Self {
             master_volume: PresetParameterMasterVolume::default(),
@@ -87,8 +86,8 @@ impl Default for PresetParameters {
 }
 
 
-impl PresetParameters {
-    pub fn get(&self, index: usize) -> Option<&dyn PresetParameter> {
+impl PresetParameters for OctaSinePresetParameters {
+    fn get(&self, index: usize) -> Option<&dyn PresetParameter> {
         match index {
             0  => Some(&self.master_volume),
             1  => Some(&self.master_frequency),
@@ -174,7 +173,7 @@ impl PresetParameters {
         }
     }
 
-    pub fn len(&self) -> usize {
+    fn len(&self) -> usize {
         59
     }
 }
@@ -187,6 +186,21 @@ mod tests {
     #[test]
     fn test_preset_parameters_len(){
         // Required for ChangedParametersInfo
-        assert!(PresetParameters::default().len() <= 64);
+        assert!(OctaSinePresetParameters::default().len() <= 64);
+    }
+ 
+    #[test]
+    fn test_load_built_in_presets(){
+        use vst2_helpers::presets::Preset;
+        use crate::built_in_presets;
+
+        let _: Vec<Preset<OctaSinePresetParameters>> = built_in_presets();
+    }
+
+    #[test]
+    fn test_export_import(){
+        use vst2_helpers::presets::test_helpers::export_import;
+
+        export_import::<OctaSinePresetParameters>();
     }
 }

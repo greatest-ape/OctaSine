@@ -35,7 +35,7 @@ impl ParameterChangeInfo {
     /// PresetParameters, mark them as changed in Self.changed
     pub fn get_changed_parameters(
         &self,
-        preset_parameters: &PresetParameters
+        preset_parameters: &impl PresetParameters
     ) -> Option<[Option<f64>; 64]> {
         let changed = self.changed.fetch_and(0, Ordering::SeqCst);
 
@@ -80,12 +80,14 @@ mod tests {
 
     use super::*;
 
+    use crate::presets::test_helpers::TestPresetParameters;
+
     #[test]
     fn test_changed_parameters(){
         let c = ParameterChangeInfo::default();
 
         // Not checked
-        let preset_parameters = PresetParameters::default();
+        let preset_parameters = TestPresetParameters::default();
 
         assert!(c.get_changed_parameters(&preset_parameters).is_none());
 
@@ -130,7 +132,7 @@ mod tests {
     #[test]
     fn test_changed_parameters_quickcheck(){
         fn prop(data: Vec<(usize, f64)>) -> TestResult {
-            let preset_parameters = PresetParameters::default();
+            let preset_parameters = TestPresetParameters::default();
 
             for (i, v) in data.iter(){
                 if *i > 63 || *v < 0.0 {
@@ -140,7 +142,7 @@ mod tests {
 
             fn f(
                 c: &ParameterChangeInfo,
-                preset_parameters: &PresetParameters,
+                preset_parameters: &TestPresetParameters,
                 data: &Vec<(usize, f64)>
             ) -> bool {
                 let mut set_parameters = HashMap::new();
@@ -157,7 +159,7 @@ mod tests {
                     c.mark_as_changed(*index);
                 }
 
-                if let Some(changed_parameters) = c.get_changed_parameters(&preset_parameters){
+                if let Some(changed_parameters) = c.get_changed_parameters(preset_parameters){
                     let results: HashMap<usize, f64> = changed_parameters
                         .iter()
                         .enumerate()
