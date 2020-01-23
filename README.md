@@ -77,9 +77,9 @@ should work fine.
 
 Different parts of this project are licensed under different terms:
 
-  * The crates `octasine` and `octasine_vst` are licensed under the
+  * The `octasine` and `octasine_vst` crates are licensed under the
     __GNU General Public License, Version 3__.
-  * The crates `simd_sleef_sin35` and `vst2_helpers` as well as the contents
+  * The `simd_sleef_sin35` and `vst2_helpers` crates as well as the contents
     of the `scripts` directory are licensed under either of __MIT license__ or
     __Apache License, Version 2.0__, at your option.
   * The file located at `contrib/osx_vst_bundler.sh` is licensed under the
