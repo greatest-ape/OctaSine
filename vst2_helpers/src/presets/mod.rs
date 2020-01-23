@@ -341,6 +341,78 @@ pub mod test_helpers {
     use rand::rngs::SmallRng;
 
     use crate::presets::parameters::*;
+
+    use super::*;
+
+    /// Test importing and exporting, as well as some related functionality
+    /// 
+    /// Use this in other crates with your own preset parameter type!
+    pub fn export_import<P>() where P: PresetParameters {
+        let mut rng = SmallRng::from_entropy();
+
+        for _ in 0..20 {
+            let bank_1: PresetBank<P> = PresetBank::default();
+
+            for preset_index in 0..bank_1.len(){
+                bank_1.set_preset_index(preset_index);
+
+                assert_eq!(bank_1.get_preset_index(), preset_index);
+
+                let current_preset = bank_1.get_current_preset();
+
+                for parameter_index in 0..current_preset.parameters.len(){
+                    let parameter = current_preset.parameters
+                        .get(parameter_index)
+                        .unwrap();
+                    
+                    let value: f64 = rng.gen();
+
+                    parameter.set_parameter_value_float(value);
+
+                    assert_eq!(parameter.get_parameter_value_float(), value);
+                }
+            }
+
+            let bank_2: PresetBank<P> = PresetBank::default();
+
+            bank_2.import_bank_from_bytes(&bank_1.export_bank_as_bytes());
+
+            for preset_index in 0..bank_1.len(){
+                bank_1.set_preset_index(preset_index);
+                bank_2.set_preset_index(preset_index);
+
+                let current_preset_1 = bank_1.get_current_preset();
+                let current_preset_2 = bank_2.get_current_preset();
+
+                for parameter_index in 0..current_preset_1.parameters.len(){
+                    let parameter_1 = current_preset_1.parameters
+                        .get(parameter_index)
+                        .unwrap();
+
+                    let parameter_2 = current_preset_2.parameters
+                        .get(parameter_index).
+                        unwrap();
+
+                    assert_approx_eq!(
+                        parameter_1.get_parameter_value_float(),
+                        parameter_2.get_parameter_value_float(),
+                        // Accept precision loss (probably due to
+                        // JSON/javascript shenanigans)
+                        0.0000000000000002
+                    );
+                }
+            }
+        }
+    }
+}
+
+
+#[cfg(test)]
+pub mod tests {
+    use rand::{FromEntropy, Rng};
+    use rand::rngs::SmallRng;
+
+    use crate::presets::parameters::*;
     use crate::processing_parameters::*;
     use crate::utils::atomic_double::AtomicPositiveDouble;
 
@@ -461,71 +533,6 @@ pub mod test_helpers {
         }
     }
 
-    /// Test importing and exporting, as well as some related functionality
-    /// 
-    /// Use this in other crates with your own preset parameter type!
-    pub fn export_import<P>() where P: PresetParameters {
-        let mut rng = SmallRng::from_entropy();
-
-        for _ in 0..20 {
-            let bank_1: PresetBank<P> = PresetBank::default();
-
-            for preset_index in 0..bank_1.len(){
-                bank_1.set_preset_index(preset_index);
-
-                assert_eq!(bank_1.get_preset_index(), preset_index);
-
-                let current_preset = bank_1.get_current_preset();
-
-                for parameter_index in 0..current_preset.parameters.len(){
-                    let parameter = current_preset.parameters
-                        .get(parameter_index)
-                        .unwrap();
-                    
-                    let value: f64 = rng.gen();
-
-                    parameter.set_parameter_value_float(value);
-
-                    assert_eq!(parameter.get_parameter_value_float(), value);
-                }
-            }
-
-            let bank_2: PresetBank<P> = PresetBank::default();
-
-            bank_2.import_bank_from_bytes(&bank_1.export_bank_as_bytes());
-
-            for preset_index in 0..bank_1.len(){
-                bank_1.set_preset_index(preset_index);
-                bank_2.set_preset_index(preset_index);
-
-                let current_preset_1 = bank_1.get_current_preset();
-                let current_preset_2 = bank_2.get_current_preset();
-
-                for parameter_index in 0..current_preset_1.parameters.len(){
-                    let parameter_1 = current_preset_1.parameters
-                        .get(parameter_index)
-                        .unwrap();
-
-                    let parameter_2 = current_preset_2.parameters
-                        .get(parameter_index).
-                        unwrap();
-
-                    assert_approx_eq!(
-                        parameter_1.get_parameter_value_float(),
-                        parameter_2.get_parameter_value_float(),
-                        // Accept precision loss (probably due to
-                        // JSON/javascript shenanigans)
-                        0.0000000000000002
-                    );
-                }
-            }
-        }
-    }
-}
-
-
-#[cfg(test)]
-pub mod tests {
     #[test]
     fn test_export_import(){
         use super::test_helpers::*;

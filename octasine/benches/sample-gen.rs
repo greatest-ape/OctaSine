@@ -30,16 +30,17 @@ fn main(){
 #[cfg(feature = "simd")]
 fn main(){
     use std::time::Instant;
+    use octasine::gen::{generate_voice_samples, generate_voice_samples_simd};
 
     let n = 10;
 
     let now = Instant::now();
-    let samples_1 = gen_voice_samples(n, gen::generate_voice_samples);
+    let samples_1 = gen_voice_samples(n, generate_voice_samples);
     let elapsed_1 = now.elapsed();
 
     let now = Instant::now();
     let samples_2 = gen_voice_samples(n,
-        gen::generate_voice_samples_simd);
+        generate_voice_samples_simd);
     let elapsed_2 = now.elapsed();
 
     let speed_ratio = elapsed_2.as_micros() as f64 /

@@ -80,7 +80,7 @@ mod tests {
 
     use super::*;
 
-    use crate::presets::test_helpers::TestPresetParameters;
+    use crate::presets::tests::TestPresetParameters;
 
     #[test]
     fn test_changed_parameters(){
