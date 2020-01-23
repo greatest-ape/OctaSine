@@ -10,7 +10,7 @@ fn main(){
 
     use std::time::Instant;
 
-    use rand::{Rng, FromEntropy};
+    use rand::{Rng, SeedableRng};
     use rand::rngs::SmallRng;
 
     use simd_sleef_sin35::SleefSin35;
