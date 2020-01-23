@@ -4,8 +4,7 @@
 
 * Update dependencies, including vst crate. Don't forget to keep crates
   in sync!
-* TimeCounter should just be any type
-* Move envelopes to vst2_helpers? Probably not because of complexity involved
+* TimeCounter should just be generic type
 * clippy, rustfmt
 
 ## Normal priority
