@@ -6,10 +6,8 @@
 
 ## Normal priority
 
-* Target features instead of target-cpu
-
-    `rustc --print cfg -C target-cpu=native -C opt-level=3`
-
+* For binary releases: target features instead of target-cpu:
+  `rustc --print cfg -C target-cpu=native -C opt-level=3`
 * Nice online documentation
 * More intelligent analysis of whether volume is off, with dependency analysis.
   Could start with getting operator and envelope volume of all operators. Then
