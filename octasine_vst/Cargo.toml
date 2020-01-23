@@ -9,9 +9,8 @@ license = "GPL-3.0"
 name = "octasine"
 crate-type = ["cdylib"]
 
-[dependencies.vst]
-git = "https://github.com/RustAudio/vst-rs.git"
-rev = "269adb"
+[dependencies]
+vst = "0.2"
 
 [dependencies.octasine]
 path = "../octasine"

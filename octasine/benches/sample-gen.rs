@@ -1,4 +1,4 @@
-use rand::FromEntropy;
+use rand::SeedableRng;
 use rand::rngs::SmallRng;
 
 use octasine::processing_parameters::*;

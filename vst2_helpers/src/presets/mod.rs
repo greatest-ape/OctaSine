@@ -337,8 +337,7 @@ impl SerdePresetBank {
 /// Code to be included in tests, including from other crates
 pub mod test_helpers {
     use assert_approx_eq::assert_approx_eq;
-    use rand::{FromEntropy, Rng};
-    use rand::rngs::SmallRng;
+    use rand::prelude::*;
 
     use crate::presets::parameters::*;
 
@@ -409,8 +408,7 @@ pub mod test_helpers {
 
 #[cfg(test)]
 pub mod tests {
-    use rand::{FromEntropy, Rng};
-    use rand::rngs::SmallRng;
+    use rand::prelude::*;
 
     use crate::presets::parameters::*;
     use crate::processing_parameters::*;

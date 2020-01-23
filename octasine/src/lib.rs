@@ -13,8 +13,7 @@ use std::sync::Arc;
 
 use array_init::array_init;
 
-use rand::FromEntropy;
-use rand::rngs::SmallRng;
+use rand::prelude::*;
 
 use vst::api::{Supported, Events};
 use vst::buffer::AudioBuffer;
@@ -173,7 +172,7 @@ macro_rules! create_process_fn {
     ($fn_name:ident, $type:ty) => {
         #[inline]
         fn $fn_name(&mut self, audio_buffer: &mut AudioBuffer<$type>){
-            let outputs = audio_buffer.split().1;
+            let mut outputs = audio_buffer.split().1;
             let lefts = outputs.get_mut(0).iter_mut();
             let rights = outputs.get_mut(1).iter_mut();
 
@@ -245,13 +244,11 @@ impl Plugin for OctaSine {
             log_folder.join(format!("{}.log", PLUGIN_NAME))
         ).unwrap();
 
-		let _ = simplelog::CombinedLogger::init(vec![
-            simplelog::WriteLogger::new(
-                simplelog::LogLevelFilter::Info,
-                simplelog::Config::default(),
-                log_file
-            )
-        ]);
+		let _ = simplelog::WriteLogger::new(
+            simplelog::LevelFilter::Info,
+            simplelog::Config::default(),
+            log_file
+        );
 
         log_panics::init();
 

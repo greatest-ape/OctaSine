@@ -2,8 +2,6 @@
 
 ## High priority
 
-* Update dependencies, including vst crate. Don't forget to keep crates
-  in sync!
 * TimeCounter should just be generic type
 * clippy, rustfmt
 
