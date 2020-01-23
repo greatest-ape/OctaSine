@@ -1,6 +1,6 @@
 use std::f64::consts::E;
 
-use vst2_helpers::approximations::EnvelopeCurveTable;
+use vst2_helpers::approximations::Log10Table;
 use crate::common::*;
 use crate::constants::*;
 use crate::processing_parameters::*;
@@ -135,7 +135,7 @@ impl VoiceOperatorVolumeEnvelope {
     #[inline]
     fn calculate_volume(
         &self,
-        envelope_curve_table: &EnvelopeCurveTable,
+        log10_table: &Log10Table,
         operator_envelope: &ProcessingParameterOperatorEnvelope,
         voice_duration: VoiceDuration,
     ) -> f64 {
@@ -147,7 +147,7 @@ impl VoiceOperatorVolumeEnvelope {
         match self.stage {
             Attack => {
                 Self::calculate_curve(
-                    envelope_curve_table,
+                    log10_table,
                     self.volume_at_stage_change,
                     operator_envelope.attack_end_value.value,
                     duration_since_stage_change,
@@ -156,7 +156,7 @@ impl VoiceOperatorVolumeEnvelope {
             },
             Decay => {
                 Self::calculate_curve(
-                    envelope_curve_table,
+                    log10_table,
                     self.volume_at_stage_change,
                     operator_envelope.decay_end_value.value,
                     duration_since_stage_change,
@@ -168,7 +168,7 @@ impl VoiceOperatorVolumeEnvelope {
             },
             Release => {
                 Self::calculate_curve(
-                    envelope_curve_table,
+                    log10_table,
                     self.volume_at_stage_change,
                     0.0,
                     duration_since_stage_change,
@@ -183,7 +183,7 @@ impl VoiceOperatorVolumeEnvelope {
 
     #[inline]
     pub fn calculate_curve(
-        envelope_curve_table: &EnvelopeCurveTable,
+        log10_table: &Log10Table,
         start_volume: f64,
         end_volume: f64,
         time_so_far_this_stage: f64,
@@ -194,7 +194,7 @@ impl VoiceOperatorVolumeEnvelope {
         let curve_factor = (stage_length * ENVELOPE_CURVE_TAKEOVER_RECIP).min(1.0);
         let linear_factor = 1.0 - curve_factor;
 
-        let curve = curve_factor * envelope_curve_table.calculate(time_progress);
+        let curve = curve_factor * log10_table.calculate(time_progress);
         let linear = linear_factor * time_progress;
 
         start_volume + (end_volume - start_volume) * (curve + linear)
@@ -204,7 +204,7 @@ impl VoiceOperatorVolumeEnvelope {
     /// Calculate volume and possibly advance envelope stage
     pub fn get_volume(
         &mut self,
-        envelope_curve_table: &EnvelopeCurveTable,
+        log10_table: &Log10Table,
         operator_envelope: &ProcessingParameterOperatorEnvelope,
         key_pressed: bool,
         voice_duration: VoiceDuration,
@@ -216,7 +216,7 @@ impl VoiceOperatorVolumeEnvelope {
             self.advance_if_stage_time_up(operator_envelope, voice_duration);
 
             self.last_volume = self.calculate_volume(
-                envelope_curve_table, operator_envelope, voice_duration);
+                log10_table, operator_envelope, voice_duration);
             
             self.last_volume
         }
@@ -366,7 +366,7 @@ mod tests {
             }
 
             let volume = VoiceOperatorVolumeEnvelope::calculate_curve(
-                &EnvelopeCurveTable::default(),
+                &Log10Table::default(),
                 start_volume,
                 end_volume,
                 time_so_far_this_stage,
@@ -383,7 +383,7 @@ mod tests {
 
     #[test]
     fn calculate_curveolume_start_end(){
-        let table = EnvelopeCurveTable::default();
+        let table = Log10Table::default();
 
         assert_approx_eq!(
             VoiceOperatorVolumeEnvelope::calculate_curve(
@@ -405,11 +405,11 @@ mod tests {
             }
 
             let stage_1_end = VoiceOperatorVolumeEnvelope::calculate_curve(
-                &EnvelopeCurveTable::default(),
+                &Log10Table::default(),
                 0.0, stage_change_volume, 4.0, 4.0);
 
             let stage_2_start = VoiceOperatorVolumeEnvelope::calculate_curve(
-                &EnvelopeCurveTable::default(),
+                &Log10Table::default(),
                 stage_change_volume, 1.0, 0.0, 4.0);
             
             let diff = (stage_1_end - stage_2_start).abs();

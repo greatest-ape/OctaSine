@@ -5,12 +5,12 @@ const TABLE_SIZE_MINUS_ONE_FLOAT: f64 = (TABLE_SIZE - 1) as f64;
 /// Log10 based lookup table for envelope curve, with linear interpolation
 /// 
 /// Maps inputs 0.0-1.0 to output 0.0-1.0
-pub struct EnvelopeCurveTable {
+pub struct Log10Table {
     table: [f64; TABLE_SIZE],
 }
 
 
-impl EnvelopeCurveTable {
+impl Log10Table {
     #[inline]
     pub fn reference(value: f64) -> f64 {
         (1.0 + value * 9.0).log10()
@@ -33,7 +33,7 @@ impl EnvelopeCurveTable {
     }
 }
 
-impl Default for EnvelopeCurveTable {
+impl Default for Log10Table {
     fn default() -> Self {
         let mut table = [0.0; TABLE_SIZE];
 
@@ -62,10 +62,10 @@ mod tests {
                 return TestResult::discard();
             }
 
-            let table = EnvelopeCurveTable::default();
+            let table = Log10Table::default();
 
             let table_result = table.calculate(value);
-            let reference_result = EnvelopeCurveTable::reference(value);
+            let reference_result = Log10Table::reference(value);
             let diff = (table_result - reference_result).abs();
 
             let success = diff < 0.005;

@@ -1,11 +1,11 @@
 use rand::FromEntropy;
 use rand::rngs::SmallRng;
 
-use octasine::*;
-use octasine::approximations::*;
 use octasine::processing_parameters::*;
 use octasine::common::*;
 use octasine::voices::*;
+
+use vst2_helpers::approximations::*;
 
 
 #[cfg(not(feature = "simd"))]
@@ -81,7 +81,7 @@ fn main(){
 #[allow(dead_code)]
 fn gen_voice_samples(
     num_tests: usize,
-    f: fn(&EnvelopeCurveTable, &mut SmallRng, TimeCounter, TimePerSample,
+    f: fn(&Log10Table, &mut SmallRng, TimeCounter, TimePerSample,
         &mut ProcessingParameters, &mut Voice) -> (f64, f64)
 ) -> Vec<(f64, f64)> {
     const SAMPLE_RATE: usize = 44100;
@@ -94,7 +94,7 @@ fn gen_voice_samples(
     
     let wave_type_parameters = [4, 17, 31, 46];
 
-    let envelope_curve_table = EnvelopeCurveTable::default();
+    let log10_table = Log10Table::default();
     let midi_pitch = MidiPitch::new(60);
     let mut rng = SmallRng::from_entropy();
 
@@ -120,7 +120,7 @@ fn gen_voice_samples(
             }
 
             let (l, r) = f(
-                &envelope_curve_table,
+                &log10_table,
                 &mut rng,
                 time,
                 time_per_sample,

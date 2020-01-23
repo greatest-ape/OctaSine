@@ -1,3 +1,3 @@
-pub mod envelope_curve_table;
+pub mod log10_table;
 
-pub use envelope_curve_table::*;
+pub use log10_table::*;

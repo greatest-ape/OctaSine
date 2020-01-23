@@ -2,7 +2,7 @@ use plotlib::function::*;
 use plotlib::view::ContinuousView;
 use plotlib::page::Page;
 
-use vst2_helpers::approximations::EnvelopeCurveTable;
+use vst2_helpers::approximations::Log10Table;
 use octasine::voices::VoiceOperatorVolumeEnvelope;
 
 
@@ -19,7 +19,7 @@ fn main(){
 
         let f = Function::new(|x| {
             VoiceOperatorVolumeEnvelope::calculate_curve(
-                &EnvelopeCurveTable::default(),
+                &Log10Table::default(),
                 start_volume,
                 end_volume,
                 x as f64,

@@ -3,7 +3,6 @@
 ## split
 
 * TimeCounter should just be any type
-* s/EnvelopeCurveTable/Log10Table/g
 * f64 / f32?
 * Envelope?
 

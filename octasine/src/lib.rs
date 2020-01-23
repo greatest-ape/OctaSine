@@ -48,7 +48,7 @@ pub struct ProcessingState {
     pub time_per_sample: TimePerSample,
     pub bpm: BeatsPerMinute,
     pub rng: SmallRng,
-    pub envelope_curve_table: EnvelopeCurveTable,
+    pub log10_table: Log10Table,
     pub voices: [Voice; 128],
     pub parameters: ProcessingParameters,
 }
@@ -135,7 +135,7 @@ impl OctaSine {
             if voice.active {
                 #[cfg(feature = "simd")]
                 let (out_left, out_right) = generate_voice_samples_simd(
-                    &self.processing.envelope_curve_table,
+                    &self.processing.log10_table,
                     &mut self.processing.rng,
                     self.processing.global_time,
                     time_per_sample,
@@ -144,7 +144,7 @@ impl OctaSine {
                 );
                 #[cfg(not(feature = "simd"))]
                 let (out_left, out_right) = generate_voice_samples(
-                    &self.processing.envelope_curve_table,
+                    &self.processing.log10_table,
                     &mut self.processing.rng,
                     self.processing.global_time,
                     time_per_sample,
@@ -201,7 +201,7 @@ impl Plugin for OctaSine {
             time_per_sample: Self::time_per_sample(sample_rate),
             bpm: BeatsPerMinute(120.0),
             rng: SmallRng::from_entropy(),
-            envelope_curve_table: EnvelopeCurveTable::default(),
+            log10_table: Log10Table::default(),
             voices: array_init(|i| Voice::new(MidiPitch::new(i as u8))),
             parameters: ProcessingParameters::default(),
         };

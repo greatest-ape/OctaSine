@@ -29,7 +29,7 @@ impl Default for OutputChannel {
 /// Generate stereo samples for a voice using SIMD
 #[cfg(feature = "simd")]
 pub fn generate_voice_samples_simd(
-    envelope_curve_table: &EnvelopeCurveTable,
+    log10_table: &Log10Table,
     rng: &mut impl Rng,
     time: TimeCounter,
     time_per_sample: TimePerSample,
@@ -60,7 +60,7 @@ pub fn generate_voice_samples_simd(
     for (index, operator) in operators.iter_mut().enumerate(){
         envelope_volume[index] = {
             voice.operators[index].volume_envelope.get_volume(
-                envelope_curve_table,
+                log10_table,
                 &operator.volume_envelope,
                 voice.key_pressed,
                 voice.duration
@@ -262,7 +262,7 @@ pub fn generate_voice_samples_simd(
 /// Generate stereo samples for a voice
 #[allow(dead_code)]
 pub fn generate_voice_samples(
-    envelope_curve_table: &EnvelopeCurveTable,
+    log10_table: &Log10Table,
     rng: &mut impl Rng,
     time: TimeCounter,
     time_per_sample: TimePerSample,
@@ -316,7 +316,7 @@ pub fn generate_voice_samples(
         // Always calculate envelope to make sure it advances
         let envelope_volume = {
             voice.operators[operator_index].volume_envelope.get_volume(
-                envelope_curve_table,
+                log10_table,
                 &operator.volume_envelope,
                 voice.key_pressed,
                 voice.duration
