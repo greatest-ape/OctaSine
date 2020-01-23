@@ -1,4 +1,6 @@
-//! Less precise sines using sleef. Code is largely from packed_simd crate.
+//! Less precise SIMD sines using sleef
+//! 
+//! Code is heavily inspired by packed_simd crate.
 
 #![cfg(feature = "simd")]
 #![feature(link_llvm_intrinsics)]

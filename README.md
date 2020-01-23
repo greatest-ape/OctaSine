@@ -75,12 +75,15 @@ should work fine.
 
 ## License
 
-OctaSine is licensed under the GNU GPL 3.0. This goes for all code in this
-repository not in the following list:
+Different parts of this project are licensed under different terms:
 
-  * The crate simd_sleef_sin35 is licensed under the Apache 2.0 license.
-  * contrib/osx_vst_bundler.sh is licensed under the MIT license. See the file
-    for specifics
+  * The crates `octasine` and `octasine_vst` are licensed under the
+    __GNU General Public License, Version 3__.
+  * The crates `simd_sleef_sin35` and `vst2_helpers` as well as the contents
+    of the `scripts` directory are licensed under either of __MIT license__ or
+    __Apache License, Version 2.0__, at your option.
+  * The file located at `contrib/osx_vst_bundler.sh` is licensed under the
+    __MIT license__. See the file for specifics.
 
 ## Trivia
 
