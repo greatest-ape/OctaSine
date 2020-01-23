@@ -342,7 +342,7 @@ mod tests {
     }
 
     #[test]
-    fn calculate_curveolume_output_in_range(){
+    fn calculate_curve_volume_output_in_range(){
         fn prop(values: (f64, f64, f64, f64)) -> TestResult {
             let start_volume = values.0;
             let end_volume = values.1;
@@ -398,7 +398,7 @@ mod tests {
     }
 
     #[test]
-    fn calculate_curveolume_stage_change_continuity(){
+    fn calculate_curve_volume_stage_change_continuity(){
         fn prop(stage_change_volume: f64) -> TestResult {
             if !valid_volume(stage_change_volume) {
                 return TestResult::discard();
