@@ -88,8 +88,8 @@ pub fn generate_voice_samples_simd(
             use ProcessingParameterOperatorModulationTarget::*;
 
             let opt_value = match p {
-                OperatorIndex2(p) => Some(p.get_value(time)),
-                OperatorIndex3(p) => Some(p.get_value(time)),
+                OperatorIndex2(p) => Some(p.get_value(())),
+                OperatorIndex3(p) => Some(p.get_value(())),
             };
 
             if let Some(value) = opt_value {

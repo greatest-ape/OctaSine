@@ -4,11 +4,6 @@ pub mod interpolatable_value;
 pub mod utils;
 
 
-/// Number that gets incremented with 1.0 every second
-#[derive(Debug, Copy, Clone, PartialEq)]
-pub struct TimeCounter(pub f64);
-
-
 /// Convert plugin host float values in the range 0.0 - 1.0 to and from
 /// the internal representation
 pub trait ParameterValueConversion {
@@ -30,8 +25,9 @@ pub trait ParameterValueConversion {
 
 pub trait ProcessingParameter {
     type Value;
+    type ExtraData;
 
-    fn get_value(&mut self, time: TimeCounter) -> Self::Value;
+    fn get_value(&mut self, extra_data: Self::ExtraData) -> Self::Value;
     fn get_target_value(&self) -> Self::Value;
     fn set_value(&mut self, value: Self::Value);
 }
@@ -41,9 +37,9 @@ pub trait ProcessingParameterPresetValueAccess {
     fn get_preset_target_value(&self) -> f64;
 }
 
-impl<P, T> ProcessingParameterPresetValueAccess for P
+impl<P, T, D> ProcessingParameterPresetValueAccess for P
     where P:
-        ProcessingParameter<Value = T> +
+        ProcessingParameter<Value = T, ExtraData = D> +
         ParameterValueConversion<ProcessingParameterValue = T>
 {
     fn set_from_preset_value(&mut self, value: f64){

@@ -222,7 +222,7 @@ macro_rules! impl_parameter_value_conversion_identity {
 
 #[macro_export]
 macro_rules! create_interpolatable_processing_parameter {
-    ($name:ident, $default:ident) => {
+    ($name:ident, $default:ident, $extra_data:ident) => {
         #[derive(Debug, Clone)]
         pub struct $name {
             value: InterpolatableProcessingValue,
@@ -238,9 +238,10 @@ macro_rules! create_interpolatable_processing_parameter {
 
         impl ProcessingParameter for $name {
             type Value = f64;
+            type ExtraData = $extra_data;
 
-            fn get_value(&mut self, time: TimeCounter) -> Self::Value {
-                self.value.get_value(time, &mut |_| ())
+            fn get_value(&mut self, extra_data: Self::ExtraData) -> Self::Value {
+                self.value.get_value(extra_data, &mut |_| ())
             }
             fn get_target_value(&self) -> Self::Value {
                 self.value.target_value
@@ -271,8 +272,9 @@ macro_rules! create_simple_processing_parameter {
 
         impl ProcessingParameter for $name {
             type Value = $type;
+            type ExtraData = ();
 
-            fn get_value(&mut self, _: TimeCounter) -> Self::Value {
+            fn get_value(&mut self, _: Self::ExtraData) -> Self::Value {
                 self.value
             }
             fn get_target_value(&self) -> Self::Value {

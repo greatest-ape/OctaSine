@@ -1,8 +1,11 @@
-use super::TimeCounter;
-
 pub const INTERPOLATION_SAMPLES_PER_STEP: u8 = 4;
 pub const INTERPOLATION_STEPS: u8 = 8;
 pub const INTERPOLATION_STEPS_FLOAT: f64 = INTERPOLATION_STEPS as f64;
+
+
+/// Number that gets incremented with 1.0 every second
+#[derive(Debug, Copy, Clone, PartialEq)]
+pub struct TimeCounter(pub f64);
 
 
 #[derive(Debug, Copy, Clone)]

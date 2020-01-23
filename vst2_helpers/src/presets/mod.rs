@@ -422,8 +422,9 @@ pub mod tests {
 
     impl ProcessingParameter for TestProcessingParameter {
         type Value = f64;
+        type ExtraData = ();
 
-        fn get_value(&mut self, _time: TimeCounter) -> Self::Value {
+        fn get_value(&mut self, _extra_data: Self::ExtraData) -> Self::Value {
             self.value
         }
         fn get_target_value(&self) -> Self::Value {

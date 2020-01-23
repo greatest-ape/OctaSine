@@ -2,7 +2,6 @@
 
 ## High priority
 
-* TimeCounter should just be generic type
 * Fuzz Log10Table (cargo-fuzz?)
 
 ## Normal priority

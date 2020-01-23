@@ -42,7 +42,7 @@ macro_rules! impl_envelope_duration_value_conversion {
 
 // Master volume
 
-create_interpolatable_processing_parameter!(ProcessingParameterMasterVolume, DEFAULT_MASTER_VOLUME);
+create_interpolatable_processing_parameter!(ProcessingParameterMasterVolume, DEFAULT_MASTER_VOLUME, TimeCounter);
 
 impl ParameterValueConversion for ProcessingParameterMasterVolume {
     type ProcessingParameterValue = f64;
@@ -86,7 +86,7 @@ impl ParameterValueConversion for ProcessingParameterMasterFrequency {
 
 // Operator volume
 
-create_interpolatable_processing_parameter!(ProcessingParameterOperatorVolume, DEFAULT_OPERATOR_VOLUME);
+create_interpolatable_processing_parameter!(ProcessingParameterOperatorVolume, DEFAULT_OPERATOR_VOLUME, TimeCounter);
 
 impl ParameterValueConversion for ProcessingParameterOperatorVolume {
     type ProcessingParameterValue = f64;
@@ -109,7 +109,7 @@ impl ParameterValueConversion for ProcessingParameterOperatorVolume {
 
 // Additive factor
 
-create_interpolatable_processing_parameter!(ProcessingParameterOperatorAdditiveFactor, DEFAULT_OPERATOR_ADDITIVE_FACTOR);
+create_interpolatable_processing_parameter!(ProcessingParameterOperatorAdditiveFactor, DEFAULT_OPERATOR_ADDITIVE_FACTOR, TimeCounter);
 impl_parameter_value_conversion_identity!(ProcessingParameterOperatorAdditiveFactor);
 
 
@@ -187,14 +187,14 @@ impl ParameterValueConversion for ProcessingParameterOperatorFrequencyFine {
 
 // Feedback
 
-create_interpolatable_processing_parameter!(ProcessingParameterOperatorFeedback, DEFAULT_OPERATOR_FEEDBACK);
+create_interpolatable_processing_parameter!(ProcessingParameterOperatorFeedback, DEFAULT_OPERATOR_FEEDBACK, TimeCounter);
 
 impl_parameter_value_conversion_identity!(ProcessingParameterOperatorFeedback);
 
 
 // Modulation index
 
-create_interpolatable_processing_parameter!(ProcessingParameterOperatorModulationIndex, DEFAULT_OPERATOR_MODULATION_INDEX);
+create_interpolatable_processing_parameter!(ProcessingParameterOperatorModulationIndex, DEFAULT_OPERATOR_MODULATION_INDEX, TimeCounter);
 
 impl ParameterValueConversion for ProcessingParameterOperatorModulationIndex {
     type ProcessingParameterValue = f64;
@@ -388,8 +388,9 @@ impl ProcessingParameterOperatorPanning {
 
 impl ProcessingParameter for ProcessingParameterOperatorPanning {
     type Value = f64;
+    type ExtraData = TimeCounter;
 
-    fn get_value(&mut self, time: TimeCounter) -> Self::Value {
+    fn get_value(&mut self, time: Self::ExtraData) -> Self::Value {
         let mut opt_new_left_and_right = None;
 
         let value = self.value.get_value(time, &mut |new_panning| {

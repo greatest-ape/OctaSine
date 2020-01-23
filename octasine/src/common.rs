@@ -1,4 +1,4 @@
-pub use vst2_helpers::processing_parameters::TimeCounter;
+pub use vst2_helpers::processing_parameters::interpolatable_value::TimeCounter;
 
 
 /// Phase. value >= 0.0 && value < 1.0
