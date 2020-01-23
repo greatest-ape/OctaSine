@@ -191,10 +191,15 @@ mod tests {
  
     #[test]
     fn test_load_built_in_presets(){
-        use vst2_helpers::presets::Preset;
+        use vst2_helpers::presets::{Preset, PresetBank};
         use crate::built_in_presets;
 
-        let _: Vec<Preset<OctaSinePresetParameters>> = built_in_presets();
+        let presets: Vec<Preset<OctaSinePresetParameters>> = built_in_presets();
+        let preset_bank = PresetBank::new_from_presets(presets);
+
+        // Hopefully prevent compiler from optimizing away code above (if it
+        // actually ever did.)
+        println!("Dummy info: {}", preset_bank.get_parameter_value_float(0));
     }
 
     #[test]
