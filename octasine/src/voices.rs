@@ -382,7 +382,7 @@ mod tests {
     }
 
     #[test]
-    fn calculate_curveolume_start_end(){
+    fn calculate_curve_volume_start_end(){
         let table = Log10Table::default();
 
         assert_approx_eq!(
