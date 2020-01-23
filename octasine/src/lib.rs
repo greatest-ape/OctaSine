@@ -23,7 +23,6 @@ use vst::plugin::{Category, Plugin, Info, CanDo, HostCallback, PluginParameters}
 
 use vst2_helpers::approximations::*;
 use vst2_helpers::presets::*;
-use vst2_helpers::processing_parameters::*;
 use vst2_helpers::{crate_version_to_vst_format, crate_version, impl_plugin_parameters};
 
 use crate::gen::*;
