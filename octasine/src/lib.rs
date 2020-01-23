@@ -18,7 +18,6 @@ use rand::prelude::*;
 use vst::api::{Supported, Events};
 use vst::buffer::AudioBuffer;
 use vst::event::Event;
-use vst::host::Host;
 use vst::plugin::{Category, Plugin, Info, CanDo, HostCallback, PluginParameters};
 
 use vst2_helpers::approximations::*;
@@ -44,7 +43,6 @@ pub struct ProcessingState {
     pub global_time: TimeCounter,
     pub sample_rate: SampleRate,
     pub time_per_sample: TimePerSample,
-    pub bpm: BeatsPerMinute,
     pub rng: SmallRng,
     pub log10_table: Log10Table,
     pub voices: [Voice; 128],
@@ -97,16 +95,6 @@ impl OctaSine {
 
     fn key_off(&mut self, pitch: u8) {
         self.processing.voices[pitch as usize].release_key();
-    }
-
-    /// Fetch BPM. Currently not used
-    #[allow(dead_code)]
-    fn fetch_bpm(&mut self){
-        // Use TEMPO_VALID constant content as mask directly because
-        // of problems with using TimeInfoFlags
-        if let Some(time_info) = self.sync_only.host.get_time_info(1 << 10) {
-            self.processing.bpm = BeatsPerMinute(time_info.tempo as f64);
-        }
     }
     
     #[inline]
@@ -197,7 +185,6 @@ impl Plugin for OctaSine {
             global_time: TimeCounter(0.0),
             sample_rate,
             time_per_sample: Self::time_per_sample(sample_rate),
-            bpm: BeatsPerMinute(120.0),
             rng: SmallRng::from_entropy(),
             log10_table: Log10Table::default(),
             voices: array_init(|i| Voice::new(MidiPitch::new(i as u8))),
