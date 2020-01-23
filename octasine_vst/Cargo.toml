@@ -3,6 +3,7 @@ name = "octasine_vst"
 version = "0.1.0"
 authors = ["Joakim Frostegård <joakim.frostegard@gmail.com>"]
 edition = "2018"
+license = "GPL-3.0"
 
 [lib]
 name = "octasine"
