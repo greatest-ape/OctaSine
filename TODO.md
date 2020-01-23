@@ -3,7 +3,7 @@
 ## High priority
 
 * TimeCounter should just be generic type
-* clippy, rustfmt
+* Fuzz Log10Table (cargo-fuzz?)
 
 ## Normal priority
 
@@ -11,7 +11,6 @@
 
     `rustc --print cfg -C target-cpu=native -C opt-level=3`
 
-* Fuzz Log10Table (cargo-fuzz?)
 * Nice online documentation
 * More intelligent analysis of whether volume is off, with dependency analysis.
   Could start with getting operator and envelope volume of all operators. Then
@@ -25,6 +24,8 @@
 * manual text input in parameters: DAW integration working anywhere?
 * sample rate change: what needs to be done? (time reset?)
 * Portable shell support in scripts (not only bash). Might be very easy
+* Fix clippy errors
+* rustfmt
 
 ## Maybe do
 
