@@ -9,6 +9,7 @@ pub const TAU: f64 = PI * 2.0;
 pub const ZERO_VALUE_LIMIT: f64 = 0.001;
 
 pub const PLUGIN_NAME: &str = "OctaSine";
+pub const PLUGIN_UNIQUE_ID: i32 = 43789;
 
 pub const NUM_OPERATORS: usize = 4;
 

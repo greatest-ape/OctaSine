@@ -222,7 +222,7 @@ impl Plugin for OctaSine {
             name: PLUGIN_NAME.to_string(),
             vendor: "Joakim Frostegård".to_string(),
             version: crate_version_to_vst_format(crate_version!()),
-            unique_id: 43789,
+            unique_id: PLUGIN_UNIQUE_ID,
             category: Category::Synth,
             inputs: 0,
             outputs: 2,
