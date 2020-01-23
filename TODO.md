@@ -2,9 +2,10 @@
 
 ## split
 
+* Actually add info about different licenses. We want MIT OR Apache 2.0, also
+  for sleef simd crate
 * TimeCounter should just be any type
-* f64 / f32?
-* Envelope?
+* Envelope? probably won't be added to vst2_helpers because of complexity
 
 ## Prioritized
 
