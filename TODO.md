@@ -6,22 +6,36 @@
 
 ## Normal priority
 
-* For binary releases: target features instead of target-cpu:
-  `rustc --print cfg -C target-cpu=native -C opt-level=3`
-* Nice online documentation
+### Performance
+
 * More intelligent analysis of whether volume is off, with dependency analysis.
   Could start with getting operator and envelope volume of all operators. Then
   go through from operator 1 upwards. Check modulation targets and if additive
   is 0. Something like that.
-* Default preset bank instead of default presets
-* NUM_PARAMETERS constant?
+
+### Presets
+
 * Add prefix to exported json like ---patch-data-below--- so exports from
   programs can be automatically imported as default patch bank. regex::bytes
   could probably be used.
-* manual text input in parameters: DAW integration working anywhere?
-* sample rate change: what needs to be done? (time reset?)
+* Default preset bank instead of default presets
+
+### Binary releases
+
+* For binary releases: target features instead of target-cpu:
+  `rustc --print cfg -C target-cpu=native -C opt-level=3`
+
+### Code quality / safety
+
+* NUM_PARAMETERS constant?
 * Fix clippy errors
 * rustfmt
+
+### Other
+
+* manual text input in parameters: DAW integration working anywhere?
+* sample rate change: what needs to be done? (time reset?)
+* Nice online documentation
 
 ## Maybe do
 
