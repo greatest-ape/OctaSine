@@ -22,7 +22,6 @@
   could probably be used.
 * manual text input in parameters: DAW integration working anywhere?
 * sample rate change: what needs to be done? (time reset?)
-* Portable shell support in scripts (not only bash). Might be very easy
 * Fix clippy errors
 * rustfmt
 
