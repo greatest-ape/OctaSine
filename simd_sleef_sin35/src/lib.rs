@@ -5,9 +5,8 @@
 #![cfg(feature = "simd")]
 #![feature(link_llvm_intrinsics)]
 #![allow(dead_code)]
-#![allow(unused_imports)]
 
-use std::mem::{transmute, uninitialized};
+use std::mem::transmute;
 
 #[link(name = "sleef", kind = "static")]
 extern crate sleef_sys;
