@@ -14,7 +14,8 @@ TMP_DIR="tmp"
 
 cd octasine_vst
 
-RUSTFLAGS="-C target-cpu=native" cargo +nightly build --release --features "simd logging"
+# RUSTFLAGS="-C target-cpu=native" 
+cargo +nightly build --release --features "simd2 logging"
 
 ../contrib/osx_vst_bundler.sh "$NAME" ../target/release/liboctasine.dylib
 

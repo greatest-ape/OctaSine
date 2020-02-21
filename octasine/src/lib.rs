@@ -153,7 +153,6 @@ impl OctaSine {
     }
 }
 
-
 /// OctaSine process functions (for f32 and f64)
 macro_rules! create_process_fn {
     ($fn_name:ident, $type:ty) => {
@@ -175,8 +174,16 @@ macro_rules! create_process_fn {
 
 
 impl Plugin for OctaSine {
-    create_process_fn!(process, f32);
-    create_process_fn!(process_f64, f64);
+    #[cfg(feature = "simd2")]
+    fn process(&mut self, buffer: &mut AudioBuffer<f32>){
+        gen::simdeez::process_runtime_select(self, buffer);
+    }
+
+    // #[cfg(not(features = "simd2"))]
+    // create_process_fn!(process, f32);
+
+    // #[cfg(not(features = "simd2"))]
+    // create_process_fn!(process_f64, f64);
 
     fn new(host: HostCallback) -> Self {
         let sample_rate = SampleRate(44100.0);
@@ -215,7 +222,7 @@ impl Plugin for OctaSine {
             parameters: self.sync_only.presets.get_num_parameters() as i32,
             initial_delay: 0,
             preset_chunks: true,
-            f64_precision: true,
+            f64_precision: false,
             ..Info::default()
         }
     }

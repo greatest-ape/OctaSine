@@ -7,7 +7,8 @@ edition = "2018"
 
 [features]
 default = []
-simd = ["packed_simd", "simd_sleef_sin35"]
+# simd = ["packed_simd", "simd_sleef_sin35"]
+simd2 = ["simdeez", "arrayvec"]
 logging = ["dirs", "log", "log-panics", "simplelog"]
 
 [lib]
@@ -29,12 +30,16 @@ name = "sin"
 harness = false
 
 [dependencies]
+arrayvec = { version = "0.5", features = ["array-sizes-33-128"], optional = true }
 array-init = "0.1"
 parking_lot = "0.10"
 plotlib = "0.4"
 rand = { version = "0.7", features = ["small_rng"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
+# simdeez = { version = "1", features = ["sleef"] }
+# simdeez = { version = "1" }
+# simdeez = { path = "../../simdeez" }
 smallvec = "1"
 vst = "0.2"
 
@@ -47,15 +52,21 @@ simplelog = { version = "0.7", optional = true }
 [dependencies.vst2_helpers]
 path = "../vst2_helpers"
 
-[dependencies.packed_simd]
-git = "https://github.com/rust-lang-nursery/packed_simd.git"
-optional = true
-features = ["sleef-sys"]
+# [dependencies.packed_simd]
+# git = "https://github.com/rust-lang-nursery/packed_simd.git"
+# optional = true
+# features = ["sleef-sys"]
 
-[dependencies.simd_sleef_sin35]
-path = "../simd_sleef_sin35"
+# [dependencies.simd_sleef_sin35]
+# path = "../simd_sleef_sin35"
+# optional = true
+# features = ["simd"]
+
+[dependencies.simdeez]
+git = 'https://github.com/greatest-ape/simdeez.git'
+branch = "octasine"
 optional = true
-features = ["simd"]
+features = ["sleef"]
 
 [dev-dependencies]
 assert_approx_eq = "1"

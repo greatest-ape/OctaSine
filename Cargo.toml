@@ -3,13 +3,14 @@
 members = [ 
     "octasine",
     "octasine_vst",
-    "simd_sleef_sin35",
+    # "simd_sleef_sin35",
 ]
 
-# Use sleef-sys fork supporting static linking
-[patch.crates-io.sleef-sys]
-git = 'https://github.com/greatest-ape/sleef-sys.git'
-branch = "static-linking"
+# Use sleef-sys fork
+# [patch.crates-io.sleef-sys]
+# git = 'https://github.com/greatest-ape/sleef-sys.git'
+# branch = "octasine"
+# features = ["static"]
 
 [profile.release]
 debug = true
