@@ -12,7 +12,6 @@ pub mod preset_parameters;
 use std::sync::Arc;
 
 use array_init::array_init;
-
 use rand::prelude::*;
 
 use vst::api::{Supported, Events};
@@ -24,7 +23,11 @@ use vst2_helpers::approximations::*;
 use vst2_helpers::presets::*;
 use vst2_helpers::{crate_version_to_vst_format, crate_version, impl_plugin_parameters};
 
-use crate::gen::*;
+use crate::common::*;
+use crate::constants::*;
+use crate::voices::*;
+use crate::processing_parameters::*;
+use crate::preset_parameters::*;
 
 
 #[allow(clippy::let_and_return)]
@@ -96,94 +99,19 @@ impl OctaSine {
     fn key_off(&mut self, pitch: u8) {
         self.processing.voices[pitch as usize].release_key();
     }
-    
-    #[inline]
-    fn gen_samples_for_voices(&mut self) -> (f64, f64) {
-        let changed_preset_parameters = self.sync_only.presets
-            .get_changed_parameters();
-
-        if let Some(indeces) = changed_preset_parameters {
-            for (index, opt_new_value) in indeces.iter().enumerate(){
-                if let Some(new_value) = opt_new_value {
-                    if let Some(p) = self.processing.parameters.get(index){
-                        p.set_from_preset_value(*new_value);
-                    }
-                }
-            }
-        }
-
-        let mut voice_sum_left: f64 = 0.0;
-        let mut voice_sum_right: f64 = 0.0;
-
-        let time_per_sample = self.processing.time_per_sample;
-
-        for voice in self.processing.voices.iter_mut(){
-            if voice.active {
-                #[cfg(feature = "simd")]
-                let (out_left, out_right) = generate_voice_samples_simd(
-                    &self.processing.log10_table,
-                    &mut self.processing.rng,
-                    self.processing.global_time,
-                    time_per_sample,
-                    &mut self.processing.parameters,
-                    voice,
-                );
-                #[cfg(not(feature = "simd"))]
-                let (out_left, out_right) = generate_voice_samples(
-                    &self.processing.log10_table,
-                    &mut self.processing.rng,
-                    self.processing.global_time,
-                    time_per_sample,
-                    &mut self.processing.parameters,
-                    voice,
-                );
-
-                voice_sum_left += Self::hard_limit(out_left);
-                voice_sum_right += Self::hard_limit(out_right);
-
-                voice.duration.0 += time_per_sample.0;
-
-                voice.deactivate_if_envelopes_ended();
-            }
-        }
-
-        self.processing.global_time.0 += time_per_sample.0;
-
-        (voice_sum_left, voice_sum_right)
-    }
-}
-
-/// OctaSine process functions (for f32 and f64)
-macro_rules! create_process_fn {
-    ($fn_name:ident, $type:ty) => {
-        #[inline]
-        fn $fn_name(&mut self, audio_buffer: &mut AudioBuffer<$type>){
-            let mut outputs = audio_buffer.split().1;
-            let lefts = outputs.get_mut(0).iter_mut();
-            let rights = outputs.get_mut(1).iter_mut();
-
-            for (buffer_sample_left, buffer_sample_right) in lefts.zip(rights){
-                let (left, right) = self.gen_samples_for_voices();
-
-                *buffer_sample_left = left as $type;
-                *buffer_sample_right = right as $type;
-            }
-        }
-    };
 }
 
 
 impl Plugin for OctaSine {
     #[cfg(feature = "simd2")]
     fn process(&mut self, buffer: &mut AudioBuffer<f32>){
-        gen::simdeez::process_runtime_select(self, buffer);
+        gen::simdeez::process_f32_runtime_select(self, buffer);
     }
 
-    // #[cfg(not(features = "simd2"))]
-    // create_process_fn!(process, f32);
-
-    // #[cfg(not(features = "simd2"))]
-    // create_process_fn!(process_f64, f64);
+    #[cfg(not(feature = "simd2"))]
+    fn process(&mut self, buffer: &mut AudioBuffer<f32>){
+        gen::fallback::process_f32(self, buffer);
+    }
 
     fn new(host: HostCallback) -> Self {
         let sample_rate = SampleRate(44100.0);
