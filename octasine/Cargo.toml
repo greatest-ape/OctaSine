@@ -30,16 +30,13 @@ name = "sin"
 harness = false
 
 [dependencies]
-arrayvec = { version = "0.5", features = ["array-sizes-33-128"], optional = true }
+arrayvec = { version = "0.5", optional = true }
 array-init = "0.1"
 parking_lot = "0.10"
 plotlib = "0.4"
 rand = { version = "0.7", features = ["small_rng"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-# simdeez = { version = "1", features = ["sleef"] }
-# simdeez = { version = "1" }
-# simdeez = { path = "../../simdeez" }
 smallvec = "1"
 vst = "0.2"
 
@@ -65,8 +62,8 @@ path = "../vst2_helpers"
 [dependencies.simdeez]
 git = 'https://github.com/greatest-ape/simdeez.git'
 branch = "octasine"
-optional = true
 features = ["sleef"]
+optional = true
 
 [dev-dependencies]
 assert_approx_eq = "1"
