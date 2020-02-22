@@ -78,10 +78,6 @@ impl OctaSine {
         TimePerSample(1.0 / sample_rate.0)
     }
 
-    fn hard_limit(value: f64) -> f64 {
-        value.min(1.0).max(-1.0)
-    }
-
     /// MIDI keyboard support
 
     pub fn process_midi_event(&mut self, data: [u8; 3]) {

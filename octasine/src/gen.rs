@@ -28,6 +28,11 @@ pub mod fallback {
     }
 
     #[inline]
+    fn hard_limit(value: f64) -> f64 {
+        value.min(1.0).max(-1.0)
+    }
+
+    #[inline]
     pub fn process_f32(octasine: &mut OctaSine, audio_buffer: &mut AudioBuffer<f32>){
         let mut outputs = audio_buffer.split().1;
         let lefts = outputs.get_mut(0).iter_mut();
@@ -72,8 +77,8 @@ pub mod fallback {
                     voice,
                 );
 
-                voice_sum_left += OctaSine::hard_limit(out_left);
-                voice_sum_right += OctaSine::hard_limit(out_right);
+                voice_sum_left += hard_limit(out_left);
+                voice_sum_right += hard_limit(out_right);
 
                 voice.duration.0 += time_per_sample.0;
 
