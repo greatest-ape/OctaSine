@@ -292,7 +292,8 @@ pub mod simdeez {
     use crate::constants::*;
     use crate::processing_parameters::*;
 
-    /// Each SAMPLE_PASS_SIZE samples, load parameter changes
+    /// Each SAMPLE_PASS_SIZE samples, load parameter changes and processing
+    /// parameter values (interpolated values where applicable)
     const SAMPLE_PASS_SIZE: usize = 16;
 
     simd_runtime_generate!(
@@ -324,7 +325,7 @@ pub mod simdeez {
                     }
                 }
 
-                // --- Set some variables
+                // --- Set some generally useful variables
 
                 let operators = &mut octasine.processing.parameters.operators;
 
@@ -506,7 +507,6 @@ pub mod simdeez {
                 // Voice index here is not the same as in processing storage
                 for voice_index in 0..num_active_voices {
                     // Voice modulation input storage, indexed by operator
-                    // Sample pass size * 2 because of two channels
                     let mut voice_modulation_inputs = [[0.0f64; SAMPLE_PASS_SIZE * 2]; 4];
 
                     let key_velocity_splat = S::set1_pd(key_velocities[voice_index]);
@@ -515,6 +515,7 @@ pub mod simdeez {
                     for operator_index in 0..4 { // FIXME: better iterator with 3, 2, 1, 0 possible?
                         let operator_index = 3 - operator_index;
 
+                        // Possibly skip generation based on previous dependency analysis
                         if !operator_generate_audio[operator_index]{
                             continue;
                         }
