@@ -1,37 +1,19 @@
 # TODO
 
-## High priority
-
-* Fuzz Log10Table (cargo-fuzz?)
-
-## Normal priority
-
-### Performance
-
-* More intelligent analysis of whether volume is off, with dependency analysis.
-  Could start with getting operator and envelope volume of all operators. Then
-  go through from operator 1 upwards. Check modulation targets and if additive
-  is 0. Something like that.
-
-### Presets
+## Presets
 
 * Add prefix to exported json like ---patch-data-below--- so exports from
   programs can be automatically imported as default patch bank. regex::bytes
   could probably be used.
 * Default preset bank instead of default presets
 
-### Binary releases
-
-* For binary releases: target features instead of target-cpu:
-  `rustc --print cfg -C target-cpu=native -C opt-level=3`
-
-### Code quality / safety
+## Code quality / safety
 
 * NUM_PARAMETERS constant?
 * Fix clippy errors
 * rustfmt
 
-### Other
+## Other
 
 * manual text input in parameters: DAW integration working anywhere?
 * sample rate change: what needs to be done? (time reset?)
@@ -45,4 +27,5 @@
 * proper beta scaling - double with doubling modulator frequency
 * suspend mode and so on, maybe just reset time, note time, envelopes etc on resume
 * Use FMA again for precision, possibly enabling removing .fract() call
-  in sound gen? Was bad for performance on my computer before, strangely
+  in fallback sound gen?
+* Fuzz Log10Table (cargo-fuzz?)
