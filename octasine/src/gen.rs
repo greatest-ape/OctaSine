@@ -1,5 +1,4 @@
 /// Fallback audio generation not requiring simd
-#[cfg(not(feature = "simd2"))]
 pub mod fallback {
     use rand::Rng;
     use vst::buffer::AudioBuffer;

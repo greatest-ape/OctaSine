@@ -22,5 +22,6 @@ opt-level = 3
 opt-level = 3
 
 [profile.bench]
+debug = true
 lto = true
 opt-level = 3
