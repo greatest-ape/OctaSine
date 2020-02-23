@@ -283,7 +283,7 @@ pub mod simdeez {
     use simdeez::avx::*;
 
     use arrayvec::ArrayVec;
-    use rand::Rng;
+    use rand::distributions::{Distribution, Uniform};
     use vst::buffer::AudioBuffer;
 
     use vst2_helpers::processing_parameters::ProcessingParameter;
@@ -473,41 +473,70 @@ pub mod simdeez {
 
                         if operator_volume[operator_index] < ZERO_VALUE_LIMIT {
                             continue;
-                        } else if operator_wave_type[operator_index] == WaveType::WhiteNoise {
-                            let left_and_right = operators[operator_index].panning.left_and_right;
-                            let operator_modulation_target = operator_modulation_targets[operator_index];
-                            let operator_additive = operator_additive[operator_index];
+                        }
+                        
+                        // --- White noise audio generation
 
-                            for i in 0..SAMPLE_PASS_SIZE {
-                                let envelope_volume = voice_envelope_volumes[voice_index][operator_index][i];
-                                let volume_product = operator_volume[operator_index] * envelope_volume;
+                        if operator_wave_type[operator_index] == WaveType::WhiteNoise {
+                            let random_numbers = {
+                                let white_noise_distribution = Uniform::new_inclusive(-1.0, 1.0);
 
-                                let random = (octasine.processing.rng.gen::<f64>() - 0.5) * 2.0;
+                                let mut random_numbers = [0.0f64; SAMPLE_PASS_SIZE * 2];
 
-                                let sample_adjusted = random * volume_product;
+                                for i in 0..SAMPLE_PASS_SIZE {
+                                    let random = white_noise_distribution.sample(
+                                        &mut octasine.processing.rng
+                                    );
 
-                                let sample_adjusted_left = sample_adjusted * left_and_right[0];
-                                let sample_adjusted_right = sample_adjusted * left_and_right[1];
+                                    let j = i * 2;
 
-                                let additive_out_left = sample_adjusted_left * operator_additive;
-                                let additive_out_right = sample_adjusted_right * operator_additive;
+                                    random_numbers[j] = random;
+                                    random_numbers[j + 1] = random;
+                                }
 
-                                let modulation_out_left = sample_adjusted_left - additive_out_left;
-                                let modulation_out_right = sample_adjusted_right - additive_out_right;
+                                random_numbers
+                            };
 
-                                let j = i * 2;
+                            let modulation_target = operator_modulation_targets[operator_index];
 
-                                voice_modulation_inputs[operator_modulation_target][j] += modulation_out_left;
-                                voice_modulation_inputs[operator_modulation_target][j + 1] += modulation_out_right;
+                            let constant_power_panning = {
+                                let mut data = [0.0f64; 8];
 
-                                summed_additive_outputs[j] += additive_out_left * key_velocity;
-                                summed_additive_outputs[j + 1] += additive_out_right * key_velocity;
+                                let left_and_right = operators[operator_index].panning.left_and_right;
+                                
+                                for (i, v) in data.iter_mut().enumerate() {
+                                    *v = left_and_right[i % 2];
+                                }
+
+                                S::loadu_pd(&data[0])
+                            };
+
+                            let operator_volume_splat = S::set1_pd(operator_volume[operator_index]);
+                            let operator_additive_splat = S::set1_pd(operator_additive[operator_index]);
+
+                            for i in (0..SAMPLE_PASS_SIZE * 2).step_by(S::VF64_WIDTH){
+                                let envelope_volume = S::loadu_pd(&voice_envelope_volumes[voice_index][operator_index][i]);
+                                let volume_product = operator_volume_splat * envelope_volume;
+
+                                let sample = S::loadu_pd(&random_numbers[i]);
+
+                                let sample_adjusted = sample * volume_product * constant_power_panning;
+                                let additive_out = sample_adjusted * operator_additive_splat;
+                                let modulation_out = sample_adjusted - additive_out;
+
+                                // Add modulation output to target operator's modulation inputs
+                                let modulation_sum = S::loadu_pd(&voice_modulation_inputs[modulation_target][i]) + modulation_out;
+                                S::storeu_pd(&mut voice_modulation_inputs[modulation_target][i], modulation_sum);
+
+                                // Add additive output to summed_additive_outputs
+                                let summed_plus_new = S::loadu_pd(&summed_additive_outputs[i]) + (additive_out * key_velocity_splat);
+                                S::storeu_pd(&mut summed_additive_outputs[i], summed_plus_new);
                             }
 
                             continue;
                         }
 
-                        // --- Volume is on and wave type is sine: setup operator SIMD vars
+                        // --- Sine frequency modulation audio generation: setup operator SIMD vars
 
                         let operator_volume_splat = S::set1_pd(operator_volume[operator_index]);
                         let operator_feedback_splat = S::set1_pd(operator_feedback[operator_index]);
