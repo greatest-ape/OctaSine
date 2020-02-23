@@ -272,9 +272,6 @@ pub mod fallback {
 ///   - Interpolation for processing parameters every sample? Build long arrays here too?
 ///   - Maybe skip audio gen on very low operator volume * envelope volume,
 ///     but it would introduce branching
-///   - Intelligent volume dependency analysis could make sense
-///       - Volume is zero -> don't generate
-///       - Additive is zero and (modulation target is noise generator or has modulation index zero or has zero volume) -> don't generate
 #[cfg(feature = "simd2")]
 pub mod simdeez {
     use simdeez::*;
@@ -381,6 +378,52 @@ pub mod simdeez {
                     }
                 }
 
+                // Operator dependency analysis to allow skipping audio generation when possible
+                let operator_generate_audio: [bool; 4] = {
+                    let mut operator_generate_audio = [true; 4];
+                    let mut operator_additive_zero = [false; 4];
+                    let mut operator_modulation_index_zero = [false; 4];
+                    
+                    for operator_index in 0..4 {
+                        // If volume is off, just set to skippable, don't even bother with lt calculations
+                        if operator_volume[operator_index].lt(&ZERO_VALUE_LIMIT){
+                            operator_generate_audio[operator_index] = false;
+                        } else {
+                            operator_additive_zero[operator_index] =
+                                operator_additive[operator_index].lt(&ZERO_VALUE_LIMIT);
+
+                            operator_modulation_index_zero[operator_index] =
+                                operator_modulation_index[operator_index].lt(&ZERO_VALUE_LIMIT);
+                        }
+                    }
+
+                    for _ in 0..3 {
+                        for operator_index in 1..4 {
+                            let modulation_target = operator_modulation_targets[operator_index];
+
+                            // Skip generation if operator was previously determined to be skippable OR
+                            let skip_condition = !operator_generate_audio[operator_index] || (
+                                // Additive factor for this operator is off AND
+                                operator_additive_zero[operator_index] && (
+                                    // Modulation target was previously determined to be skippable OR
+                                    !operator_generate_audio[modulation_target] ||
+                                    // Modulation target is white noise OR
+                                    operator_wave_type[modulation_target] == WaveType::WhiteNoise ||
+                                    // Modulation target doesn't do anything with its input modulation
+                                    operator_modulation_index_zero[modulation_target]
+                                )
+                            );
+
+                            if skip_condition {
+                                operator_generate_audio[operator_index] = false;
+                            }
+                        }
+                    }
+
+                    operator_generate_audio
+                };
+
+                // Necessary for interpolation
                 octasine.processing.global_time.0 += time_per_sample.0 * (SAMPLE_PASS_SIZE as f64);
 
                 // --- Collect voice data (envelope volume, phases) necessary for sound generation
@@ -466,14 +509,13 @@ pub mod simdeez {
                     // Sample pass size * 2 because of two channels
                     let mut voice_modulation_inputs = [[0.0f64; SAMPLE_PASS_SIZE * 2]; 4];
 
-                    let key_velocity = key_velocities[voice_index];
-                    let key_velocity_splat = S::set1_pd(key_velocity);
+                    let key_velocity_splat = S::set1_pd(key_velocities[voice_index]);
 
                     // Go through operators downwards, starting with operator 4
                     for operator_index in 0..4 { // FIXME: better iterator with 3, 2, 1, 0 possible?
                         let operator_index = 3 - operator_index;
 
-                        if operator_volume[operator_index] < ZERO_VALUE_LIMIT {
+                        if !operator_generate_audio[operator_index]{
                             continue;
                         }
                         
