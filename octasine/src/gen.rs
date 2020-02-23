@@ -274,7 +274,6 @@ pub mod fallback {
 ///   - White noise
 ///   - Maybe skip audio gen on very low operator volume * envelope volume,
 ///     but it would introduce branching
-///   - Fallback to crate::gen::fallback if there is no sse2?
 #[cfg(feature = "simd2")]
 pub mod simdeez {
     use simdeez::*;

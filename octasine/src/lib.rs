@@ -15,7 +15,6 @@ use array_init::array_init;
 use rand::prelude::*;
 
 use vst::api::{Supported, Events};
-use vst::buffer::AudioBuffer;
 use vst::event::Event;
 use vst::plugin::{Category, Plugin, Info, CanDo, HostCallback, PluginParameters};
 
@@ -99,14 +98,17 @@ impl OctaSine {
 
 
 impl Plugin for OctaSine {
-    #[cfg(feature = "simd2")]
-    fn process(&mut self, buffer: &mut AudioBuffer<f32>){
-        gen::simdeez::process_f32_runtime_select(self, buffer);
-    }
-
-    #[cfg(not(feature = "simd2"))]
-    fn process(&mut self, buffer: &mut AudioBuffer<f32>){
-        gen::fallback::process_f32(self, buffer);
+    cfg_if::cfg_if! {
+        // Simdeez version requires at the very least SSE2
+        if #[cfg(all(target_feature = "sse2", feature = "simd2"))] {
+            fn process(&mut self, buffer: &mut vst::buffer::AudioBuffer<f32>){
+                gen::simdeez::process_f32_runtime_select(self, buffer);
+            }
+        } else {
+            fn process(&mut self, buffer: &mut vst::buffer::AudioBuffer<f32>){
+                gen::fallback::process_f32(self, buffer);
+            }
+        }
     }
 
     fn new(host: HostCallback) -> Self {
