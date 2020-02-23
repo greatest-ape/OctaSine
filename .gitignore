@@ -6,8 +6,5 @@
 **/*.rs.bk
 tmp
 
-/**/scripts/upload.sh
-/**/scripts/upload-code.sh
-
 /octasine/presets/*
 !/octasine/presets/.gitkeep
