@@ -270,8 +270,6 @@ pub mod fallback {
 /// 
 /// TODO:
 ///   - Interpolation for processing parameters every sample? Build long arrays here too?
-///   - Maybe skip audio gen on very low operator volume * envelope volume,
-///     but it would introduce branching
 #[cfg(feature = "simd2")]
 pub mod simdeez {
     use simdeez::*;
@@ -504,6 +502,8 @@ pub mod simdeez {
                 // Sample pass size * 2 because of two channels. Even index = left channel
                 let mut summed_additive_outputs = [0.0f64; SAMPLE_PASS_SIZE * 2];
 
+                let zero_value_limit_splat = S::set1_pd(ZERO_VALUE_LIMIT);
+
                 // Voice index here is not the same as in processing storage
                 for voice_index in 0..num_active_voices {
                     // Voice modulation input storage, indexed by operator
@@ -626,9 +626,19 @@ pub mod simdeez {
                             let envelope_volume = S::loadu_pd(&voice_envelope_volumes[voice_index][operator_index][i]);
                             let volume_product = operator_volume_splat * envelope_volume;
 
-                            // FIXME: skip generation when envelope volume or operator volume is zero for all loaded samples?
-                            // Probably not really necessary since voice won't be set as active for long on zero envelope volume.
-                            //let volume_off = S::cmplt_pd(volume_product, zero_value_limit_splat);
+                            // Skip generation when envelope volume or operator volume is zero.
+                            // Helps performance when operator envelope lengths vary a lot.
+                            // Otherwise, the branching probably negatively impacts performance.
+                            {
+                                let volume_on = S::cmpgt_pd(volume_product, zero_value_limit_splat);
+
+                                // Higher indeces don't really matter: if previous sample has zero
+                                // envelope volume, next one probably does too. Worst case scenario
+                                // is that attacks are a tiny bit slower.
+                                if volume_on[0].to_bits() == 0 {
+                                    continue;
+                                }
+                            }
 
                             let modulation_in_for_channel = S::loadu_pd(&voice_modulation_inputs[operator_index][i]);
                             let phase = S::loadu_pd(&voice_phases[voice_index][operator_index][i]) * tau_splat;
