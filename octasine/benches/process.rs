@@ -56,19 +56,19 @@ fn main(){
     #[cfg(feature = "simd2")]
     {
         if is_x86_feature_detected!("sse2") {
-            let r = benchmark("sse2", octasine::gen::simdeez::process_f32_sse2);
+            let r = benchmark("sse2", octasine::gen::simd::process_f32_sse2);
             println!("Speed compared to fallback:   {}x", reference / r);
         }
         if is_x86_feature_detected!("sse4.1") {
-            let r = benchmark("sse41", octasine::gen::simdeez::process_f32_sse41);
+            let r = benchmark("sse41", octasine::gen::simd::process_f32_sse41);
             println!("Speed compared to fallback:   {}x", reference / r);
         }
         if is_x86_feature_detected!("avx") {
-            let r = benchmark("avx", octasine::gen::simdeez::process_f32_avx);
+            let r = benchmark("avx", octasine::gen::simd::process_f32_avx);
             println!("Speed compared to fallback:   {}x", reference / r);
         }
         if is_x86_feature_detected!("avx2") {
-            let r = benchmark("avx2", octasine::gen::simdeez::process_f32_avx2);
+            let r = benchmark("avx2", octasine::gen::simd::process_f32_avx2);
             println!("Speed compared to fallback:   {}x", reference / r);
         }
     }
