@@ -271,7 +271,6 @@ pub mod fallback {
 /// TODO:
 ///   - Interpolation for processing parameters every sample? Build long arrays here too?
 ///   - Pan tendency broken? Probably not
-///   - White noise
 ///   - Maybe skip audio gen on very low operator volume * envelope volume,
 ///     but it would introduce branching
 #[cfg(feature = "simd2")]
@@ -284,8 +283,7 @@ pub mod simdeez {
     use simdeez::avx::*;
 
     use arrayvec::ArrayVec;
-
-    // use rand::{Rng, rngs::SmallRng};
+    use rand::Rng;
     use vst::buffer::AudioBuffer;
 
     use vst2_helpers::processing_parameters::ProcessingParameter;
@@ -466,7 +464,8 @@ pub mod simdeez {
                     // Sample pass size * 2 because of two channels
                     let mut voice_modulation_inputs = [[0.0f64; SAMPLE_PASS_SIZE * 2]; 4];
 
-                    let key_velocity_splat = S::set1_pd(key_velocities[voice_index]);
+                    let key_velocity = key_velocities[voice_index];
+                    let key_velocity_splat = S::set1_pd(key_velocity);
 
                     // Go through operators downwards, starting with operator 4
                     for operator_index in 0..4 { // FIXME: better iterator with 3, 2, 1, 0 possible?
@@ -474,9 +473,41 @@ pub mod simdeez {
 
                         if operator_volume[operator_index] < ZERO_VALUE_LIMIT {
                             continue;
+                        } else if operator_wave_type[operator_index] == WaveType::WhiteNoise {
+                            let left_and_right = operators[operator_index].panning.left_and_right;
+                            let operator_modulation_target = operator_modulation_targets[operator_index];
+                            let operator_additive = operator_additive[operator_index];
+
+                            for i in 0..SAMPLE_PASS_SIZE {
+                                let envelope_volume = voice_envelope_volumes[voice_index][operator_index][i];
+                                let volume_product = operator_volume[operator_index] * envelope_volume;
+
+                                let random = (octasine.processing.rng.gen::<f64>() - 0.5) * 2.0;
+
+                                let sample_adjusted = random * volume_product;
+
+                                let sample_adjusted_left = sample_adjusted * left_and_right[0];
+                                let sample_adjusted_right = sample_adjusted * left_and_right[1];
+
+                                let additive_out_left = sample_adjusted_left * operator_additive;
+                                let additive_out_right = sample_adjusted_right * operator_additive;
+
+                                let modulation_out_left = sample_adjusted_left - additive_out_left;
+                                let modulation_out_right = sample_adjusted_right - additive_out_right;
+
+                                let j = i * 2;
+
+                                voice_modulation_inputs[operator_modulation_target][j] += modulation_out_left;
+                                voice_modulation_inputs[operator_modulation_target][j + 1] += modulation_out_right;
+
+                                summed_additive_outputs[j] += additive_out_left * key_velocity;
+                                summed_additive_outputs[j + 1] += additive_out_right * key_velocity;
+                            }
+
+                            continue;
                         }
 
-                        // --- Setup operator SIMD vars
+                        // --- Volume is on and wave type is sine: setup operator SIMD vars
 
                         let operator_volume_splat = S::set1_pd(operator_volume[operator_index]);
                         let operator_feedback_splat = S::set1_pd(operator_feedback[operator_index]);
@@ -574,8 +605,6 @@ pub mod simdeez {
                             // Add additive output to summed_additive_outputs
                             let summed_plus_new = S::loadu_pd(&summed_additive_outputs[i]) + (additive_out * key_velocity_splat);
                             S::storeu_pd(&mut summed_additive_outputs[i], summed_plus_new);
-
-                            // TODO: noise generation
                         } // End of sample pass size *  2 iteration
                     } // End of operator iteration
                 } // End of voice iteration
