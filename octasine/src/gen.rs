@@ -270,9 +270,11 @@ pub mod fallback {
 /// 
 /// TODO:
 ///   - Interpolation for processing parameters every sample? Build long arrays here too?
-///   - Pan tendency broken? Probably not
 ///   - Maybe skip audio gen on very low operator volume * envelope volume,
 ///     but it would introduce branching
+///   - Intelligent volume dependency analysis could make sense
+///       - Volume is zero -> don't generate
+///       - Additive is zero and (modulation target is noise generator or has modulation index zero or has zero volume) -> don't generate
 #[cfg(feature = "simd2")]
 pub mod simdeez {
     use simdeez::*;
