@@ -2,4 +2,4 @@
 
 cd octasine
 
-cargo +nightly bench --features "simd2" --bench process
+cargo +nightly bench --features "simd" --bench process

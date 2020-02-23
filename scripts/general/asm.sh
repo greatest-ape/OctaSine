@@ -2,4 +2,4 @@
 
 cd octasine_vst
 
-RUSTFLAGS="-C target-cpu=native" cargo +nightly asm "octasine::OctaSine::gen_samples_for_voices" --rust --features "simd logging"
+cargo +nightly asm "octasine::gen::simd::process_f32_runtime_select" --rust --features "simd logging"

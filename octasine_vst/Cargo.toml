@@ -16,5 +16,5 @@ vst = "0.2"
 path = "../octasine"
 
 [features]
-simd2 = ["octasine/simd2"]
+simd = ["octasine/simd"]
 logging = ["octasine/logging"]

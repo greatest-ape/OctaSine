@@ -3,7 +3,6 @@
 members = [ 
     "octasine",
     "octasine_vst",
-    # "simd_sleef_sin35",
 ]
 
 # Use sleef-sys fork
@@ -18,7 +17,6 @@ lto = true
 opt-level = 3
 
 [profile.test]
-# lto = true
 opt-level = 3
 
 [profile.bench]

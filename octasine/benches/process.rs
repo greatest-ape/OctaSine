@@ -53,7 +53,7 @@ fn main(){
     #[allow(unused_variables)]
     let reference = benchmark("fallback", fallback);
 
-    #[cfg(feature = "simd2")]
+    #[cfg(feature = "simd")]
     {
         if is_x86_feature_detected!("sse2") {
             let r = benchmark("sse2", octasine::gen::simd::process_f32_sse2);

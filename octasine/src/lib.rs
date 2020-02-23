@@ -100,7 +100,7 @@ impl OctaSine {
 impl Plugin for OctaSine {
     cfg_if::cfg_if! {
         // Simdeez version requires at the very least SSE2
-        if #[cfg(all(target_feature = "sse2", feature = "simd2"))] {
+        if #[cfg(all(target_feature = "sse2", feature = "simd"))] {
             fn process(&mut self, buffer: &mut vst::buffer::AudioBuffer<f32>){
                 gen::simd::process_f32_runtime_select(self, buffer);
             }

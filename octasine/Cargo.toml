@@ -7,8 +7,7 @@ edition = "2018"
 
 [features]
 default = []
-# simd = ["packed_simd", "simd_sleef_sin35"]
-simd2 = ["simdeez", "arrayvec"]
+simd = ["simdeez", "arrayvec"]
 logging = ["dirs", "log", "log-panics", "simplelog"]
 
 [lib]
@@ -18,15 +17,7 @@ name = "octasine"
 name = "plot-envelopes"
 
 [[bench]]
-name = "sample-gen"
-harness = false
-
-[[bench]]
 name = "process"
-harness = false
-
-[[bench]]
-name = "sin"
 harness = false
 
 [dependencies]
@@ -49,16 +40,6 @@ simplelog = { version = "0.7", optional = true }
 
 [dependencies.vst2_helpers]
 path = "../vst2_helpers"
-
-# [dependencies.packed_simd]
-# git = "https://github.com/rust-lang-nursery/packed_simd.git"
-# optional = true
-# features = ["sleef-sys"]
-
-# [dependencies.simd_sleef_sin35]
-# path = "../simd_sleef_sin35"
-# optional = true
-# features = ["simd"]
 
 [dependencies.simdeez]
 git = 'https://github.com/greatest-ape/simdeez.git'

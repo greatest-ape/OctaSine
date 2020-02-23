@@ -1,4 +1,4 @@
 pub mod fallback;
 
-#[cfg(feature = "simd2")]
+#[cfg(feature = "simd")]
 pub mod simd;
