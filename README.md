@@ -52,6 +52,7 @@ Clone this repository to a folder on your computer:
 mkdir -p "$HOME/Downloads"
 cd "$HOME/Downloads"
 git clone https://github.com/greatest-ape/OctaSine.git
+cd OctaSine
 ```
 
 Build and install:
