@@ -86,6 +86,17 @@ Different parts of this project are licensed under different terms:
   * The file located at `contrib/osx_vst_bundler.sh` is licensed under the
     __MIT license__. See the file for specifics.
 
+## Notes
+
+Depends on the following git repositories:
+
+  * https://github.com/greatest-ape/simdeez (__octasine__ branch for avx support and very fast sleef sines)
+  * https://github.com/greatest-ape/sleef-sys (__octasine__ branch for static linking and avx instruction generation)
+
+Nightly toolchains known to work:
+
+  * rustc 1.43.0-nightly (436494b8f 2020-02-22)
+
 ## Trivia
 
 * The name OctaSine comes from the four stereo sine-wave operators
