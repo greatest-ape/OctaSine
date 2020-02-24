@@ -163,7 +163,7 @@ impl Plugin for OctaSine {
             log_folder.join(format!("{}.log", PLUGIN_NAME))
         ).unwrap();
 
-		let _ = simplelog::WriteLogger::new(
+		let _ = simplelog::WriteLogger::init(
             simplelog::LevelFilter::Info,
             simplelog::Config::default(),
             log_file
