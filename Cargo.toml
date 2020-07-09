@@ -3,6 +3,7 @@
 members = [ 
     "octasine",
     "octasine_vst",
+    "plot_envelopes",
 ]
 
 # Use sleef-sys fork
