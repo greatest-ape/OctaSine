@@ -1,7 +1,5 @@
 # TODO
 
-* check why multiple rand versions are compiled
-
 ## Presets
 
 * Add prefix to exported json like ---patch-data-below--- so exports from
@@ -31,3 +29,7 @@
 * Use FMA again for precision, possibly enabling removing .fract() call
   in fallback sound gen?
 * Fuzz Log10Table (cargo-fuzz?)
+
+## Tried, but currently can't be done
+
+* Use nanoserde instead of serde: export-import tests didn't pass with v 0.1.17
