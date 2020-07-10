@@ -41,5 +41,4 @@ optional = true
 
 [dev-dependencies]
 assert_approx_eq = "1"
-quickcheck = "0.9"
-quickcheck_macros = "0.9"
+quickcheck = { version = "0.9", default-features = false }
