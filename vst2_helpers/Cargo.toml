@@ -13,8 +13,8 @@ array-init = "0.1"
 assert_approx_eq = "1"
 parking_lot = "0.10"
 rand = { version = "0.7", features = ["small_rng"] }
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
 smallvec = "1"
 
 [dev-dependencies]
