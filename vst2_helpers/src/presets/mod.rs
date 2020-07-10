@@ -335,7 +335,6 @@ impl SerdePresetBank {
 /// Code to be included in tests, including from other crates
 pub mod test_helpers {
     use assert_approx_eq::assert_approx_eq;
-    use rand::prelude::*;
 
     use crate::presets::parameters::*;
 
@@ -345,8 +344,6 @@ pub mod test_helpers {
     /// 
     /// Use this in other crates with your own preset parameter type!
     pub fn export_import<P>() where P: PresetParameters {
-        let mut rng = SmallRng::from_entropy();
-
         for _ in 0..20 {
             let bank_1: PresetBank<P> = PresetBank::default();
 
@@ -362,7 +359,7 @@ pub mod test_helpers {
                         .get(parameter_index)
                         .unwrap();
                     
-                    let value: f64 = rng.gen();
+                    let value = fastrand::f64();
 
                     parameter.set_parameter_value_float(value);
 
@@ -406,8 +403,6 @@ pub mod test_helpers {
 
 #[cfg(test)]
 pub mod tests {
-    use rand::prelude::*;
-
     use crate::presets::parameters::*;
     use crate::processing_parameters::*;
     use crate::utils::atomic_double::AtomicPositiveDouble;
@@ -461,7 +456,7 @@ pub mod tests {
         fn default() -> Self {
             Self {
                 name: "test".to_string(),
-                value: AtomicPositiveDouble::new(SmallRng::from_entropy().gen()),
+                value: AtomicPositiveDouble::new(fastrand::f64()),
             }
         }
     }

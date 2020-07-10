@@ -12,7 +12,7 @@ name = "vst2_helpers"
 arc-swap = "0.4"
 array-init = "0.1"
 assert_approx_eq = "1"
-rand = { version = "0.7", features = ["small_rng"] }
+fastrand = "1"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 smallvec = "1"
