@@ -25,10 +25,10 @@ fastrand = "1"
 vst = "0.2"
 
 # Logging
-dirs = { version = "2", optional = true}
-log = { version = "0.4", optional = true }
+dirs = { version = "3", optional = true}
+log = { version = "0.4", optional = true, default-features = false }
 log-panics = { version = "2", optional = true }
-simplelog = { version = "0.7", optional = true }
+simplelog = { version = "0.8", optional = true, default-features = false }
 
 [dependencies.vst2_helpers]
 path = "../vst2_helpers"
