@@ -1,6 +1,5 @@
 # TODO
 
-* use https://docs.rs/arc-swap/0.4.7/arc_swap/ instead of RwLock
 * check why multiple rand versions are compiled
 * use smaller rand alternative such as fastrand?
 

@@ -1,7 +1,7 @@
-use std::sync::atomic::{AtomicUsize, Ordering};
+use std::sync::{Arc, atomic::{AtomicUsize, Ordering}};
 
+use arc_swap::ArcSwap;
 use array_init::array_init;
-use parking_lot::RwLock;
 use serde::{Serialize, Deserialize};
 
 pub mod parameters;
@@ -29,9 +29,7 @@ fn from_bytes<'a, T: Deserialize<'a>>(
 
 
 pub struct Preset<P> where P: PresetParameters {
-    /// Preset name wrapped in a RwLock. Hopefully, the audio processing
-    /// thread won't access it
-    name: RwLock<String>,
+    name: ArcSwap<String>,
     parameters: P,
 }
 
@@ -51,11 +49,11 @@ impl<P> Preset<P> where P: PresetParameters {
     }
 
     fn get_name(&self) -> String {
-        self.name.read().clone()
+        (*self.name.load_full()).clone()
     }
 
     fn set_name(&self, name: String) {
-        *self.name.write() = name;
+        self.name.store(Arc::new(name));
     }
 
     fn import_bytes(&self, bytes: &[u8]) -> bool {
@@ -95,7 +93,7 @@ impl<P> Preset<P> where P: PresetParameters {
 impl<P> Default for Preset<P> where P: PresetParameters {
     fn default() -> Self {
         Self {
-            name: RwLock::new("-".to_string()),
+            name: ArcSwap::new(Arc::new("-".to_string())),
             parameters: P::default(),
         }
     }
