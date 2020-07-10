@@ -20,4 +20,3 @@ smallvec = "1"
 [dev-dependencies]
 quickcheck = "0.9"
 quickcheck_macros = "0.9"
-statistical = "1"

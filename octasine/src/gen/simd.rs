@@ -14,7 +14,6 @@ use simdeez::avx2::*;
 use simdeez::avx::*;
 
 use arrayvec::ArrayVec;
-use rand::distributions::{Distribution, Uniform};
 use vst::buffer::AudioBuffer;
 
 use vst2_helpers::processing_parameters::ProcessingParameter;
@@ -259,14 +258,10 @@ simd_runtime_generate!(
 
                     if operator_wave_type[operator_index] == WaveType::WhiteNoise {
                         let random_numbers = {
-                            let white_noise_distribution = Uniform::new_inclusive(-1.0, 1.0);
-
                             let mut random_numbers = [0.0f64; SAMPLE_PASS_SIZE * 2];
 
                             for i in 0..SAMPLE_PASS_SIZE {
-                                let random = white_noise_distribution.sample(
-                                    &mut octasine.processing.rng
-                                );
+                                let random = (octasine.processing.rng.f64() - 0.5) * 2.0;
 
                                 let j = i * 2;
 

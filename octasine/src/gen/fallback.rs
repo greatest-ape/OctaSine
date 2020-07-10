@@ -1,6 +1,6 @@
 //! Fallback audio generation not requiring simd
 
-use rand::Rng;
+use fastrand::Rng;
 use vst::buffer::AudioBuffer;
 
 use vst2_helpers::approximations::*;
@@ -95,7 +95,7 @@ pub fn gen_samples_for_voices(octasine: &mut OctaSine) -> (f64, f64) {
 #[inline]
 pub fn generate_voice_samples(
     log10_table: &Log10Table,
-    rng: &mut impl Rng,
+    rng: &mut Rng,
     time: TimeCounter,
     time_per_sample: TimePerSample,
     parameters: &mut ProcessingParameters,
@@ -230,7 +230,7 @@ pub fn generate_voice_samples(
             },
             WaveType::WhiteNoise => {
                 let signal = envelope_volume *
-                    (rng.gen::<f64>() - 0.5) * 2.0;
+                    (rng.f64() - 0.5) * 2.0;
 
                 new_signals[0] = signal;
                 new_signals[1] = signal;

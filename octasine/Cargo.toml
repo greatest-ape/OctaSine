@@ -21,7 +21,7 @@ harness = false
 arrayvec = { version = "0.5", optional = true }
 array-init = "0.1"
 cfg-if = "0.1"
-rand = { version = "0.7", features = ["small_rng"] }
+fastrand = "1"
 smallvec = "1"
 vst = "0.2"
 
@@ -44,4 +44,3 @@ optional = true
 assert_approx_eq = "1"
 quickcheck = "0.9"
 quickcheck_macros = "0.9"
-statistical = "1"

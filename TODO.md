@@ -1,7 +1,6 @@
 # TODO
 
 * check why multiple rand versions are compiled
-* use smaller rand alternative such as fastrand?
 
 ## Presets
 

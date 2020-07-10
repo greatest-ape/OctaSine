@@ -12,7 +12,7 @@ pub mod preset_parameters;
 use std::sync::Arc;
 
 use array_init::array_init;
-use rand::prelude::*;
+use fastrand::Rng;
 
 use vst::api::{Supported, Events};
 use vst::event::Event;
@@ -45,7 +45,7 @@ pub struct ProcessingState {
     pub global_time: TimeCounter,
     pub sample_rate: SampleRate,
     pub time_per_sample: TimePerSample,
-    pub rng: SmallRng,
+    pub rng: Rng,
     pub log10_table: Log10Table,
     pub voices: [Voice; 128],
     pub parameters: ProcessingParameters,
@@ -118,7 +118,7 @@ impl Plugin for OctaSine {
             global_time: TimeCounter(0.0),
             sample_rate,
             time_per_sample: Self::time_per_sample(sample_rate),
-            rng: SmallRng::from_entropy(),
+            rng: Rng::new(),
             log10_table: Log10Table::default(),
             voices: array_init(|i| Voice::new(MidiPitch::new(i as u8))),
             parameters: ProcessingParameters::default(),
