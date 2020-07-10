@@ -22,7 +22,6 @@ arrayvec = { version = "0.5", optional = true }
 array-init = "0.1"
 cfg-if = "0.1"
 fastrand = "1"
-smallvec = "1"
 vst = "0.2"
 
 # Logging
