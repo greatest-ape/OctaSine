@@ -19,18 +19,26 @@ pub struct Preset<P> where P: PresetParameters {
 }
 
 
+impl<P> Default for Preset<P> where P: PresetParameters {
+    fn default() -> Self {
+        Self {
+            name: ArcSwap::new(Arc::new("-".to_string())),
+            parameters: P::default(),
+        }
+    }
+}
+
+
 impl<P> Preset<P> where P: PresetParameters {
-    #[allow(dead_code)]
-    fn new_from_bytes(bytes: &[u8]) -> Result<Self, impl ::std::error::Error> {
-        let res_serde_preset: Result<SerdePreset, _> = from_bytes(bytes);
+    fn new_with_number_name(number: usize) -> Self {
+        Self {
+            name: ArcSwap::new(Arc::new(Self::format_number(number))),
+            parameters: P::default(),
+        }
+    }
 
-        res_serde_preset.map(|serde_preset| {
-            let preset = Self::default();
-
-            preset.import_serde_preset(&serde_preset);
-
-            preset
-        })
+    fn format_number(number: usize) -> String {
+        format!("{:03}", number)
     }
 
     fn get_name(&self) -> String {
@@ -39,6 +47,10 @@ impl<P> Preset<P> where P: PresetParameters {
 
     fn set_name(&self, name: String) {
         self.name.store(Arc::new(name));
+    }
+
+    fn set_name_from_number(&self, number: usize){
+        self.set_name(Self::format_number(number))
     }
 
     fn import_bytes(&self, bytes: &[u8]) -> bool {
@@ -75,16 +87,6 @@ impl<P> Preset<P> where P: PresetParameters {
 }
 
 
-impl<P> Default for Preset<P> where P: PresetParameters {
-    fn default() -> Self {
-        Self {
-            name: ArcSwap::new(Arc::new("-".to_string())),
-            parameters: P::default(),
-        }
-    }
-}
-
-
 pub struct PresetBank<P> where P: PresetParameters {
     presets: [Preset<P>; 128],
     preset_index: AtomicUsize,
@@ -95,7 +97,7 @@ pub struct PresetBank<P> where P: PresetParameters {
 impl<P> Default for PresetBank<P> where P: PresetParameters {
     fn default() -> Self {
         Self {
-            presets: array_init(|_| Preset::default()),
+            presets: array_init(|i| Preset::new_with_number_name(i + 1)),
             preset_index: AtomicUsize::new(0),
             parameter_change_info: ParameterChangeInfo::default(),
         }
@@ -232,14 +234,15 @@ impl<P> PresetBank<P> where P: PresetParameters {
 
         match res_serde_preset_bank {
             Ok(serde_preset_bank) => {
-                let preset: Preset<P> = Preset::default();
-                let empty_serde_preset = preset.export_serde_preset();
+                let default_preset: Preset<P> = Preset::default();
+                let default_serde_preset = default_preset.export_serde_preset();
 
                 for (index, preset) in self.presets.iter().enumerate(){
                     if let Some(serde_preset) = serde_preset_bank.presets.get(index){
                         preset.import_serde_preset(serde_preset);
                     } else {
-                        preset.import_serde_preset(&empty_serde_preset);
+                        preset.import_serde_preset(&default_serde_preset);
+                        preset.set_name_from_number(index + 1);
                     }
                 }
 
