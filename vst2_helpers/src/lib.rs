@@ -23,17 +23,6 @@ pub fn crate_version_to_vst_format(crate_version: String) -> i32 {
 }
 
 
-/// Load file at compile time, try parsing it as a preset at runtime
-#[macro_export]
-macro_rules! preset_from_file {
-    ($path:expr) => {
-        Preset::new_from_bytes(
-            include_bytes!($path)
-        ).expect(&format!("Couldn't load preset file: {}", $path))
-    };
-}
-
-
 /// Implement VST PluginParameters on a struct by giving the field name to
 /// its PresetBank
 /// 

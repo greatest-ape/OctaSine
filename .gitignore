@@ -5,6 +5,3 @@
 /target
 **/*.rs.bk
 tmp
-
-/octasine/presets/*
-!/octasine/presets/.gitkeep

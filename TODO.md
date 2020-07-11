@@ -5,7 +5,6 @@
 * Add prefix to exported json like ---patch-data-below--- so exports from
   programs can be automatically imported as default patch bank. regex::bytes
   could probably be used.
-* Default preset bank instead of default presets
 
 ## Code quality / safety
 

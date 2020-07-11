@@ -29,14 +29,8 @@ use crate::processing_parameters::*;
 use crate::preset_parameters::*;
 
 
-#[allow(clippy::let_and_return)]
-#[allow(unused_mut)]
-pub fn built_in_presets<P>() -> Vec<Preset<P>> where P: PresetParameters {
-    let mut presets = Vec::new();
-
-    // presets.push(preset_from_file!("../presets/test.fxp"));
-
-    presets
+pub fn built_in_preset_bank<P>() -> PresetBank<P> where P: PresetParameters {
+    PresetBank::new_from_bytes(include_bytes!("../presets/preset-bank.json"))
 }
 
 
@@ -126,7 +120,7 @@ impl Plugin for OctaSine {
 
         let sync_only = Arc::new(SyncOnlyState {
             host,
-            presets: PresetBank::new_from_presets(built_in_presets()),
+            presets: built_in_preset_bank()
         });
 
         Self {

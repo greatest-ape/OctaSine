@@ -191,15 +191,51 @@ mod tests {
  
     #[test]
     fn test_load_built_in_presets(){
-        use vst2_helpers::presets::{Preset, PresetBank};
-        use crate::built_in_presets;
+        use vst2_helpers::presets::PresetBank;
 
-        let presets: Vec<Preset<OctaSinePresetParameters>> = built_in_presets();
-        let preset_bank = PresetBank::new_from_presets(presets);
+        let preset_bank: PresetBank<OctaSinePresetParameters> =
+            crate::built_in_preset_bank();
 
         // Hopefully prevent compiler from optimizing away code above (if it
         // actually ever did.)
         println!("Dummy info: {}", preset_bank.get_parameter_value_float(0));
+    }
+
+    /// Previous format used plain floats for value_float, so we need to check
+    /// that (almost) the same values are deserialized no matter the format
+    #[test]
+    fn test_compare_preset_format_versions(){
+        use assert_approx_eq::assert_approx_eq;
+        use vst2_helpers::presets::PresetBank;
+
+        let bank_1: PresetBank<OctaSinePresetParameters> = PresetBank::new_from_bytes(
+            include_bytes!("../../presets/test-preset-bank-format-1.json")
+        );
+        let bank_2: PresetBank<OctaSinePresetParameters> = PresetBank::new_from_bytes(
+            include_bytes!("../../presets/test-preset-bank-format-2.json")
+        );
+
+        assert_eq!(bank_1.len(), bank_2.len());
+
+        for preset_index in 0..bank_1.len(){
+            bank_1.set_preset_index(preset_index);
+            bank_2.set_preset_index(preset_index);
+
+            assert_eq!(
+                bank_1.get_num_parameters(),
+                bank_2.get_num_parameters()
+            );
+
+            for parameter_index in 0..bank_1.get_num_parameters(){
+                assert_approx_eq!(
+                    bank_1.get_parameter_value_float(parameter_index),
+                    bank_2.get_parameter_value_float(parameter_index),
+                    // Accept precision loss (probably due to
+                    // JSON/javascript shenanigans)
+                    0.0000000000000002
+                );
+            }
+        }
     }
 
     #[test]

@@ -73,7 +73,7 @@ impl<P> Preset<P> where P: PresetParameters {
             if let Some(import_parameter) = serde_preset.parameters.get(index){
                 if let Some(parameter) = self.parameters.get(index){
                     parameter.set_parameter_value_float(
-                        import_parameter.value_float
+                        import_parameter.value_float.as_f64()
                     );
                 }
             }
@@ -275,13 +275,82 @@ impl<P> PresetBank<P> where P: PresetParameters {
     pub fn export_current_preset_bytes(&self) -> Vec<u8> {
         self.get_current_preset().export_bytes()
     }
+    
+    pub fn new_from_bytes(bytes: &[u8]) -> Self {
+        let preset_bank = Self::default();
+
+        preset_bank.import_bank_from_bytes(bytes);
+
+        preset_bank
+    }
+}
+
+
+#[derive(Serialize, Debug)]
+pub struct SerdePresetParameterValue(
+    String
+);
+
+
+impl SerdePresetParameterValue {
+    pub fn from_f64(value: f64) -> Self {
+        Self(format!("{:.}", value))
+    }
+
+    pub fn as_f64(&self) -> f64 {
+        self.0.parse().expect("deserialize SerdePresetParameterValue")
+    }
+
+    fn deserialize<'de, D>(deserializer: D) -> Result<Self, D::Error>
+        where D: ::serde::de::Deserializer<'de>,
+    {
+        struct V;
+
+        impl<'de> ::serde::de::Visitor<'de> for V {
+            type Value = SerdePresetParameterValue;
+
+            fn expecting(
+                &self,
+                formatter: &mut ::std::fmt::Formatter
+            ) -> ::std::fmt::Result {
+                formatter.write_str("f64 or string")
+            }
+
+            fn visit_str<E>(
+                self,
+                value: &str
+            ) -> Result<Self::Value, E> where E: ::serde::de::Error {
+                Ok(SerdePresetParameterValue(value.to_owned()))
+            }
+
+            // Backwards compatibility with f64
+            fn visit_f64<E>(
+                self,
+                value: f64
+            ) -> Result<Self::Value, E> where E: ::serde::de::Error {
+                Ok(SerdePresetParameterValue::from_f64(value))
+            }
+        }
+
+        deserializer.deserialize_any(V)
+    }
+
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+        where S: ::serde::ser::Serializer
+    {
+        serializer.serialize_str(&self.0)
+    }
 }
 
 
 #[derive(Serialize, Deserialize, Debug)]
 struct SerdePresetParameter {
     name: String,
-    value_float: f64,
+    #[serde(
+        deserialize_with = "SerdePresetParameterValue::deserialize",
+        serialize_with = "SerdePresetParameterValue::serialize",
+    )]
+    value_float: SerdePresetParameterValue,
     value_text: String,
 }
 
@@ -299,9 +368,13 @@ impl SerdePreset {
 
         for i in 0..preset.parameters.len(){
             if let Some(parameter) = preset.parameters.get(i){
+                let value_float = SerdePresetParameterValue::from_f64(
+                    parameter.get_parameter_value_float()
+                );
+
                 parameters.push(SerdePresetParameter {
                     name: parameter.get_parameter_name(),
-                    value_float: parameter.get_parameter_value_float(),
+                    value_float,
                     value_text: parameter.get_parameter_value_text(),
                 });
             }
@@ -334,8 +407,6 @@ impl SerdePresetBank {
 
 /// Code to be included in tests, including from other crates
 pub mod test_helpers {
-    use assert_approx_eq::assert_approx_eq;
-
     use crate::presets::parameters::*;
 
     use super::*;
@@ -387,12 +458,9 @@ pub mod test_helpers {
                         .get(parameter_index).
                         unwrap();
 
-                    assert_approx_eq!(
+                    assert_eq!(
                         parameter_1.get_parameter_value_float(),
                         parameter_2.get_parameter_value_float(),
-                        // Accept precision loss (probably due to
-                        // JSON/javascript shenanigans)
-                        0.0000000000000002
                     );
                 }
             }
