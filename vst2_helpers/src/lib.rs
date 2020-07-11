@@ -112,7 +112,11 @@ macro_rules! impl_plugin_parameters {
             /// If `preset_chunks` is set to true in plugin info, this should load a preset bank from the
             /// given chunk data.
             fn load_bank_data(&self, data: &[u8]) {
-                self.$preset_bank_field.import_bank_from_bytes(data);
+                if let Err(err) = self.$preset_bank_field.import_bank_from_bytes(data){
+                    // FIXME: how do I enable this conditionally based on a feature in
+                    // a different crate, in a sensible way..
+                    // ::log::error!("couldn't load preset bank from bytes: {}", err);
+                }
             }
         }
     };

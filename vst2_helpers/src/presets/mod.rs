@@ -226,24 +226,31 @@ impl<P> PresetBank<P> where P: PresetParameters {
 /// PresetBank import/export handling
 impl<P> PresetBank<P> where P: PresetParameters {
     /// Import bytes into current bank, set sync parameters
-    pub fn import_bank_from_bytes(&self, bytes: &[u8]){
+    pub fn import_bank_from_bytes(&self, bytes: &[u8]) -> Result<(), impl ::std::error::Error> {
         let res_serde_preset_bank: Result<SerdePresetBank, _> =
             from_bytes(bytes);
 
-        if let Ok(serde_preset_bank) = res_serde_preset_bank {
-            let preset: Preset<P> = Preset::default();
-            let empty_serde_preset = preset.export_serde_preset();
+        match res_serde_preset_bank {
+            Ok(serde_preset_bank) => {
+                let preset: Preset<P> = Preset::default();
+                let empty_serde_preset = preset.export_serde_preset();
 
-            for (index, preset) in self.presets.iter().enumerate(){
-                if let Some(serde_preset) = serde_preset_bank.presets.get(index){
-                    preset.import_serde_preset(serde_preset);
-                } else {
-                    preset.import_serde_preset(&empty_serde_preset);
+                for (index, preset) in self.presets.iter().enumerate(){
+                    if let Some(serde_preset) = serde_preset_bank.presets.get(index){
+                        preset.import_serde_preset(serde_preset);
+                    } else {
+                        preset.import_serde_preset(&empty_serde_preset);
+                    }
                 }
-            }
 
-            self.set_preset_index(0);
-            self.mark_parameters_as_changed();
+                self.set_preset_index(0);
+                self.mark_parameters_as_changed();
+
+                Ok(())
+            },
+            Err(err) => {
+                Err(err)
+            }
         }
     }
 
@@ -264,7 +271,8 @@ impl<P> PresetBank<P> where P: PresetParameters {
     pub fn new_from_bytes(bytes: &[u8]) -> Self {
         let preset_bank = Self::default();
 
-        preset_bank.import_bank_from_bytes(bytes);
+        preset_bank.import_bank_from_bytes(bytes)
+            .expect("import bank from bytes");
 
         preset_bank
     }
@@ -425,7 +433,7 @@ pub mod test_helpers {
 
             let bank_2: PresetBank<P> = PresetBank::default();
 
-            bank_2.import_bank_from_bytes(&bank_1.export_bank_as_bytes());
+            bank_2.import_bank_from_bytes(&bank_1.export_bank_as_bytes()).unwrap();
 
             for preset_index in 0..bank_1.len(){
                 bank_1.set_preset_index(preset_index);
