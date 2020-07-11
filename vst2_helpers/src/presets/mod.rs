@@ -6,26 +6,11 @@ use serde::{Serialize, Deserialize};
 
 pub mod parameters;
 pub mod change_info;
+pub mod serde_utils;
 
 pub use parameters::{PresetParameters, PresetParameter};
 pub use change_info::ParameterChangeInfo;
-
-
-fn to_bytes<T: Serialize>(t: &T) -> Vec<u8> {
-    let mut out = "\n\n".to_string().as_bytes().to_vec();
-
-    out.append(&mut serde_json::to_vec_pretty(t)
-        .expect("presets module: couldn't serialize"));
-    
-    out
-}
-
-
-fn from_bytes<'a, T: Deserialize<'a>>(
-    bytes: &'a [u8]
-) -> Result<T, impl ::std::error::Error> {
-    serde_json::from_slice(bytes)
-}
+pub use serde_utils::*;
 
 
 pub struct Preset<P> where P: PresetParameters {
