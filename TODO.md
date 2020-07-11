@@ -1,13 +1,8 @@
 # TODO
 
-## Presets
-
-* Add prefix to exported json like ---patch-data-below--- so exports from
-  programs can be automatically imported as default patch bank. regex::bytes
-  could probably be used.
-
 ## Code quality / safety
 
+* target arch x86_64 for simd
 * NUM_PARAMETERS constant?
 * Fix clippy errors
 * rustfmt
@@ -17,6 +12,7 @@
 * manual text input in parameters: DAW integration working anywhere?
 * sample rate change: what needs to be done? (time reset?)
 * Nice online documentation
+* Consider logging when preset can't be loaded (see `load_bank_data`)
 
 ## Maybe do
 
@@ -28,7 +24,3 @@
 * Use FMA again for precision, possibly enabling removing .fract() call
   in fallback sound gen?
 * Fuzz Log10Table (cargo-fuzz?)
-
-## Tried, but currently can't be done
-
-* Use nanoserde instead of serde: export-import tests didn't pass with v 0.1.17
