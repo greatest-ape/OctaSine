@@ -26,7 +26,7 @@ macro_rules! create_operator_parameter {
 
                 Self {
                     value: AtomicPositiveDouble::new(value),
-                    operator_index: operator_index,
+                    operator_index,
                 }
             }
         }

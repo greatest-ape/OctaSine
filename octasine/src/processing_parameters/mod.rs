@@ -86,6 +86,7 @@ impl Default for ProcessingParameters {
 }
 
 
+#[allow(clippy::len_without_is_empty)]
 impl ProcessingParameters {
     pub fn get(&mut self, index: usize) -> Option<&mut dyn ProcessingParameterPresetValueAccess> {
         match index {
