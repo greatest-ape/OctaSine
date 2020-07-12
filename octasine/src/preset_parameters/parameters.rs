@@ -280,7 +280,7 @@ create_operator_parameter!(
 );
 
 
-
+#[allow(clippy::float_cmp)]
 #[cfg(test)]
 mod tests {
     use assert_approx_eq::assert_approx_eq;

@@ -203,6 +203,7 @@ mod tests {
             let new_value = operator.get_value(time);
             let new_left_and_right = operator.left_and_right;
 
+            #[allow(clippy::float_cmp)]
             if i >= INTERPOLATION_SAMPLES_PER_STEP &&
                 i % INTERPOLATION_SAMPLES_PER_STEP == 0 {
                 assert_ne!(value, new_value);
