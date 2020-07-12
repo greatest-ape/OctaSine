@@ -3,7 +3,6 @@
 ## Code quality / safety
 
 * NUM_PARAMETERS constant?
-* Fix clippy errors
 * rustfmt
 
 ## Other
