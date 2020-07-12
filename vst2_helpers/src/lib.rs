@@ -285,6 +285,7 @@ macro_rules! create_simple_processing_parameter {
 mod tests {
     use super::*;
 
+    #[allow(clippy::zero_prefixed_literal)]
     #[test]
     fn test_crate_version_to_vst_format(){
         assert_eq!(crate_version_to_vst_format("1".to_string()), 1000);

@@ -34,7 +34,7 @@ fn split_off_slice_prefix<'a>(mut bytes: &'a [u8], prefix: &[u8]) -> &'a [u8] {
 
 
 fn find_in_slice(haystack: &[u8], needle: &[u8]) -> Option<usize> {
-    if needle.len() == 0 {
+    if needle.is_empty(){
         return None;
     }
 

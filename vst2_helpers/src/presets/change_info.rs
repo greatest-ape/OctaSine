@@ -143,7 +143,7 @@ mod tests {
             fn f(
                 c: &ParameterChangeInfo,
                 preset_parameters: &TestPresetParameters,
-                data: &Vec<(usize, f64)>
+                data: &[(usize, f64)]
             ) -> bool {
                 let mut set_parameters = HashMap::new();
 
@@ -180,7 +180,7 @@ mod tests {
 
                     success
                 } else {
-                    data.len() == 0
+                    data.is_empty()
                 }
             }
 

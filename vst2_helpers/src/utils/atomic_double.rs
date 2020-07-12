@@ -16,7 +16,7 @@ pub struct AtomicPositiveDouble {
 impl AtomicPositiveDouble {
     pub fn new(value: f64) -> Self {
         Self {
-            value: AtomicU64::new(u64::from(value.to_bits()))
+            value: AtomicU64::new(value.to_bits())
         }
     }
 
@@ -43,7 +43,7 @@ impl AtomicPositiveDouble {
 
     #[inline]
     pub fn set(&self, value: f64){
-        let value = u64::from(value.to_bits()) | (1 << 63);
+        let value = value.to_bits() | (1 << 63);
 
         self.value.store(value, Ordering::Relaxed);
     }
@@ -54,6 +54,7 @@ impl AtomicPositiveDouble {
 mod tests {
     use super::*;
 
+    #[allow(clippy::float_cmp)]
     #[test]
     fn test_atomic_double(){
         let a = 13.5;

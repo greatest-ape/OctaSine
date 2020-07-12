@@ -407,6 +407,7 @@ pub mod test_helpers {
 
     use super::*;
 
+    #[allow(clippy::float_cmp)]
     /// Test importing and exporting, as well as some related functionality
     /// 
     /// Use this in other crates with your own preset parameter type!
