@@ -181,6 +181,7 @@ mod tests {
                 new_value
             );
 
+            #[allow(clippy::float_cmp)]
             TestResult::from_bool(inner == new_inner)
         }
 
@@ -283,6 +284,7 @@ mod tests {
         quickcheck(prop as fn(f64) -> TestResult);
     }
 
+    #[allow(clippy::float_cmp)]
     #[test]
     fn test_round_to_step(){
         let steps = [1.0, 2.0, 4.0];
