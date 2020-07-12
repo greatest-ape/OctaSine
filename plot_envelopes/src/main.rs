@@ -24,7 +24,7 @@ fn main(){
                 end_volume,
                 x as f64,
                 length as f64,
-            ).into()
+            )
         }, 0., length);
 
         let v = ContinuousView::new()
