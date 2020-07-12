@@ -169,7 +169,9 @@ pub fn generate_voice_samples(
         // Mix modulator into current operator depending on panning of
         // current operator. If panned to the middle, just pass through
         // the stereo signals: if panned to any side, mix out the
-        // original stereo signals and mix in mono.
+        // original stereo signals and mix in mono. Require exact f64 identity
+        // for this optimization for now.
+        #[allow(clippy::float_cmp)] 
         if operator_panning != 0.5 {
             let pan_transformed = 2.0 * (operator_panning - 0.5);
 
@@ -211,6 +213,8 @@ pub fn generate_voice_samples(
                     0.0
                 };
 
+                // Require exact identity for now, to prevent possible artifacts
+                #[allow(clippy::float_cmp)]
                 let inputs_identical = operator_inputs[0] == operator_inputs[1];
 
                 for channel in 0..2 {
