@@ -139,7 +139,7 @@ fn benchmark(
                 continue;
             }
 
-            octasine.sync_only.set_parameter(j, (i % 64) as f32 / 64 as f32);
+            octasine.sync_only.set_parameter(j, (i % 64) as f32 / 64.0);
         }
 
         unsafe {
@@ -173,6 +173,7 @@ fn benchmark(
     let mut bla = 0;
 
     for (a, b) in results {
+        #[allow(clippy::float_cmp)] 
         if a == b {
             bla += 1;
         }
