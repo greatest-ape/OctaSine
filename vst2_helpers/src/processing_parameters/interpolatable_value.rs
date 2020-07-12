@@ -59,20 +59,16 @@ impl InterpolatableProcessingValue {
         self.current_value
     }
 
+    #[allow(clippy::float_cmp)]
     // Set target value, possibly restart interpolation
     pub fn set_value(&mut self, value: f64){
         self.target_value = value;
 
         if INTERPOLATION_STEPS == 0 {
             self.current_value = value;
-
-            return;
-        }
-
-        if value == self.current_value {
+        } else if value == self.current_value || (value - self.current_value).abs() <= ::std::f64::EPSILON {
             self.steps_remaining = 0;
-        }
-        else {
+        } else {
             // Restart stepping process
             let diff = value - self.current_value;
             self.step_size = diff / INTERPOLATION_STEPS_FLOAT;
