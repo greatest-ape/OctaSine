@@ -2,7 +2,6 @@
 
 ## Code quality / safety
 
-* target arch x86_64 for simd
 * NUM_PARAMETERS constant?
 * Fix clippy errors
 * rustfmt
