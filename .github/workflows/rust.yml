@@ -16,6 +16,12 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+    - name: Install latest nightly
+      uses: actions-rs/toolchain@v1
+      with:
+          toolchain: nightly
+          override: true
+          components: clippy
     - name: Build
       run: cargo +nightly build --release --all-features --verbose
     - name: Run tests
