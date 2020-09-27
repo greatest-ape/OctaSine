@@ -16,7 +16,6 @@
 
 * Volume shown in dB
 * Iterator for presets and preset parameters
-* volume off by default for operator 3 and 4. Would need to change ::default to ::new and this would require a refactor
 * proper beta scaling - double with doubling modulator frequency
 * suspend mode and so on, maybe just reset time, note time, envelopes etc on resume
 * Use FMA again for precision, possibly enabling removing .fract() call

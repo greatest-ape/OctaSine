@@ -51,7 +51,7 @@ pub struct ProcessingParameterOperator {
 impl ProcessingParameterOperator {
     pub fn new(operator_index: usize) -> Self {
         Self {
-            volume: ProcessingParameterOperatorVolume::default(),
+            volume: ProcessingParameterOperatorVolume::new(operator_index),
             wave_type: ProcessingParameterOperatorWaveType::default(),
             panning: ProcessingParameterOperatorPanning::default(),
             additive_factor: ProcessingParameterOperatorAdditiveFactor::default(),

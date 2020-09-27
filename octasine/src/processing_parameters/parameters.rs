@@ -88,6 +88,18 @@ impl ParameterValueConversion for ProcessingParameterMasterFrequency {
 
 create_interpolatable_processing_parameter!(ProcessingParameterOperatorVolume, DEFAULT_OPERATOR_VOLUME, TimeCounter);
 
+impl ProcessingParameterOperatorVolume {
+    pub fn new(operator_index: usize) -> Self {
+        let mut parameter = Self::default();
+
+        if operator_index > 0 {
+            parameter.set_value(0.0);
+        }
+
+        parameter
+    }
+}
+
 impl ParameterValueConversion for ProcessingParameterOperatorVolume {
     type ProcessingParameterValue = f64;
 

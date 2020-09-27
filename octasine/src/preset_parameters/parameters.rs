@@ -113,10 +113,39 @@ impl_value_conversion_from_processing!(PresetParameterMasterFrequency, Processin
 
 
 // Operator volume
+// To allow different default volumes depending on operator index, don't use
+// create_operator_parameter macro
 
-create_operator_parameter!(
+#[derive(Debug)]
+pub struct PresetParameterOperatorVolume {
+    value: AtomicPositiveDouble,
+    operator_index: usize,
+}
+
+impl PresetParameterOperatorVolume {
+    pub fn new(operator_index: usize) -> Self {
+        let value = ProcessingParameterOperatorVolume::new(operator_index)
+            .get_preset_target_value();
+
+        Self {
+            value: AtomicPositiveDouble::new(value),
+            operator_index,
+        }
+    }
+}
+
+impl PresetParameterGetName for PresetParameterOperatorVolume {
+    fn get_parameter_name(&self) -> String {
+        format!("Op. {} {}", self.operator_index + 1, "volume")
+    }
+}
+
+impl PresetParameterGetUnit for PresetParameterOperatorVolume {}
+
+impl_preset_parameter_value_access!(PresetParameterOperatorVolume);
+
+impl_value_conversion_from_processing!(
     PresetParameterOperatorVolume,
-    "volume",
     ProcessingParameterOperatorVolume
 );
 
