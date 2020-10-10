@@ -5,6 +5,7 @@ extern crate log;
 pub mod common;
 pub mod constants;
 pub mod gen;
+pub mod gui;
 pub mod voices;
 pub mod processing_parameters;
 pub mod preset_parameters;
@@ -15,6 +16,7 @@ use array_init::array_init;
 use fastrand::Rng;
 
 use vst::api::{Supported, Events};
+use vst::editor::Editor;
 use vst::event::Event;
 use vst::plugin::{Category, Plugin, Info, CanDo, HostCallback, PluginParameters};
 
@@ -24,6 +26,7 @@ use vst2_helpers::{crate_version_to_vst_format, crate_version, impl_plugin_param
 
 use crate::common::*;
 use crate::constants::*;
+use crate::gui::Gui;
 use crate::voices::*;
 use crate::processing_parameters::*;
 use crate::preset_parameters::*;
@@ -130,7 +133,7 @@ impl Plugin for OctaSine {
 
         Self {
             processing,
-            sync_only
+            sync_only,
         }
     }
 
@@ -198,6 +201,10 @@ impl Plugin for OctaSine {
 
     fn get_parameter_object(&mut self) -> Arc<dyn PluginParameters> {
         Arc::clone(&self.sync_only) as Arc<dyn PluginParameters>
+    }
+
+    fn get_editor(&mut self) -> Option<Box<dyn Editor>> {
+        Some(Box::new(Gui::new(self.sync_only.clone())) as Box<dyn Editor>)
     }
 }
 
