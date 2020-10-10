@@ -23,6 +23,10 @@ array-init = "0.1"
 cfg-if = "0.1"
 fastrand = "1"
 vst = "0.2"
+vst_window = "0.1"
+iced = "0.1"
+iced_native = "0.2"
+iced_wgpu = "0.2"
 
 # Logging
 dirs = { version = "3", optional = true}
