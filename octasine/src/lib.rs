@@ -165,9 +165,13 @@ impl Plugin for OctaSine {
             log_folder.join(format!("{}.log", PLUGIN_NAME))
         ).unwrap();
 
+        let log_config = simplelog::ConfigBuilder::new()
+            .set_time_to_local(true)
+            .build();
+
 		let _ = simplelog::WriteLogger::init(
             simplelog::LevelFilter::Info,
-            simplelog::Config::default(),
+            log_config,
             log_file
         );
 
