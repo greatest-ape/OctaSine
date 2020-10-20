@@ -141,55 +141,29 @@ impl <A: Application + 'static>Handler<A> {
     }
 
     pub fn process_events(&mut self){
-        use vst_window::WindowEvent::*;
+        let mut at_least_one_event = false;
 
         while let Some(event) = self.event_source.poll_event(){
-            let event = match event {
-                CursorMovement(x, y) => {
-                    self.cursor_position.x = x;
-                    self.cursor_position.y = y;
+            let event = convert_event(event);
 
-                    Event::Mouse(iced::mouse::Event::CursorMoved {
-                        x,
-                        y
-                    })
-                },
-                MouseClick(button) => {
-                    let button = match button {
-                        vst_window::MouseButton::Left => iced::mouse::Button::Left,
-                        vst_window::MouseButton::Right => iced::mouse::Button::Right,
-                        vst_window::MouseButton::Middle => iced::mouse::Button::Middle,
-                    };
+            if let Event::Mouse(iced::mouse::Event::CursorMoved { x, y }) = event {
+                let viewport_size = self.viewport.logical_size();
 
-                    Event::Mouse(iced::mouse::Event::ButtonPressed(button))
-                },
-                MouseRelease(button) => {
-                    let button = match button {
-                        vst_window::MouseButton::Left => iced::mouse::Button::Left,
-                        vst_window::MouseButton::Right => iced::mouse::Button::Right,
-                        vst_window::MouseButton::Middle => iced::mouse::Button::Middle,
-                    };
+                self.cursor_position.x = x * viewport_size.width;
+                self.cursor_position.y = y * viewport_size.height;
+            }
 
-                    Event::Mouse(iced::mouse::Event::ButtonReleased(button))
-                }
-            };
+            #[cfg(feature = "logging")]
+            ::log::info!("event: {:?}", event);
 
             self.iced_state.queue_event(event);
             self.redraw_requested = true;
+
+            at_least_one_event = true;
         }
 
-        self.on_frame();
-    }
-
-    fn on_frame(&mut self) {
-        use iced_graphics::window::Compositor as IGCompositor;
-
-        if self.redraw_requested {
-            // Update iced state, draining all of the events stored in its queue.
-            // You can do this whenever, but I decided to do this in baseview's on_frame() event.
-            // Keep in mind that each call to `iced_state.update()` will recreate the widget tree,
-            // so you want to do this as little as possible.
-            let _ = self.iced_state.update(
+        if at_least_one_event {
+            let opt_new_command = self.iced_state.update(
                 self.viewport.logical_size(),
                 self.cursor_position,
                 None, // clipboard
@@ -197,6 +171,18 @@ impl <A: Application + 'static>Handler<A> {
                 &mut self.debug,
             );
 
+            if opt_new_command.is_some(){
+                self.redraw_requested = true;
+            }
+        }
+
+        self.redraw_if_requested();
+    }
+
+    fn redraw_if_requested(&mut self) {
+        use iced_graphics::window::Compositor as IGCompositor;
+
+        if self.redraw_requested {
             // Iced's debug log
             self.debug.render_started();
 
@@ -215,5 +201,38 @@ impl <A: Application + 'static>Handler<A> {
 
             self.redraw_requested = false;
         }
+    }
+}
+
+
+fn convert_event(event: vst_window::WindowEvent) -> iced_native::Event {
+    match event {
+        vst_window::WindowEvent::CursorMovement(x, y) => {
+            Event::Mouse(iced::mouse::Event::CursorMoved {
+                x,
+                y
+            })
+        },
+        vst_window::WindowEvent::MouseClick(button) => {
+            let button = convert_mouse_button(button);
+
+            Event::Mouse(iced::mouse::Event::ButtonPressed(button))
+        },
+        vst_window::WindowEvent::MouseRelease(button) => {
+            let button = convert_mouse_button(button);
+
+            Event::Mouse(iced::mouse::Event::ButtonReleased(button))
+        }
+    }
+}
+
+
+fn convert_mouse_button(
+    button: vst_window::MouseButton
+) -> iced::mouse::Button {
+    match button {
+        vst_window::MouseButton::Left => iced::mouse::Button::Left,
+        vst_window::MouseButton::Right => iced::mouse::Button::Right,
+        vst_window::MouseButton::Middle => iced::mouse::Button::Middle,
     }
 }
