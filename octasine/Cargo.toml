@@ -23,19 +23,24 @@ array-init = "0.1"
 cfg-if = "0.1"
 fastrand = "1"
 vst = "0.2"
-vst_window = "0.1"
-iced = "0.1"
-iced_native = "0.2"
-iced_wgpu = "0.2"
+vst2_helpers = { path = "../vst2_helpers" }
 
 # Logging
+
 dirs = { version = "3", optional = true}
 log = { version = "0.4", optional = true, default-features = false }
 log-panics = { version = "2", optional = true }
 simplelog = { version = "0.8", optional = true, default-features = false }
 
-[dependencies.vst2_helpers]
-path = "../vst2_helpers"
+# GUI
+
+iced = { git = "https://github.com/hecrj/iced.git" }
+iced_native = { git = "https://github.com/hecrj/iced.git" }
+iced_wgpu = { git = "https://github.com/hecrj/iced.git" }
+iced_graphics = { git = "https://github.com/hecrj/iced.git" }
+vst_window = "0.1"
+
+# SIMD
 
 [dependencies.simdeez]
 git = 'https://github.com/greatest-ape/simdeez.git'
