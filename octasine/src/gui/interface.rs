@@ -1,4 +1,4 @@
-use iced_native::{button, Align, Button, Column, Command, Element, Text};
+use iced_native::{button, Align, Button, slider, Slider, Column, Command, Element, Row, Text};
 
 
 type Renderer = super::bridge::Renderer;
@@ -9,6 +9,8 @@ pub struct Application {
     value: i32,
     increment_button: button::State,
     decrement_button: button::State,
+    slider_value: f32,
+    slider: slider::State,
 }
 
 
@@ -16,6 +18,7 @@ pub struct Application {
 pub enum Message {
     IncrementPressed,
     DecrementPressed,
+    SliderChanged(f32),
 }
 
 
@@ -38,13 +41,16 @@ impl super::bridge::Application for Application {
             Message::DecrementPressed => {
                 self.value -= 1;
             }
+            Message::SliderChanged(value) => {
+                self.slider_value = value;
+            }
         }
 
         Command::none()
     }
 
     fn view(&mut self) -> Element<'_, Self::Message, Renderer> {
-        Column::new()
+        let buttons = Column::new()
             .padding(20)
             .align_items(Align::Center)
             .push(
@@ -55,7 +61,17 @@ impl super::bridge::Application for Application {
             .push(
                 Button::new(&mut self.decrement_button, Text::new("Decrement"))
                     .on_press(Message::DecrementPressed),
-            )
+            );
+        
+        let slider = Column::new()
+            .padding(20)
+            .align_items(Align::Center)
+            .push(Slider::new(&mut self.slider, 0.0..=100.0, self.slider_value, |value| Message::SliderChanged(value)))
+            .push(Text::new(self.slider_value.to_string()).size(14));
+        
+        Row::new()
+            .push(buttons)
+            .push(slider)
             .into()
     }
 }

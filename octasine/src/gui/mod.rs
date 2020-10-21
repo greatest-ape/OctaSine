@@ -14,8 +14,8 @@ use bridge::Handler;
 use interface::Application;
 
 
-const GUI_WIDTH: usize = 500;
-const GUI_HEIGHT: usize = 500;
+const GUI_WIDTH: usize = 1000;
+const GUI_HEIGHT: usize = 750;
 
 
 pub struct Gui {
