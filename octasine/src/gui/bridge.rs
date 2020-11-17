@@ -124,7 +124,7 @@ impl <A: Application + 'static>Handler<A> {
             &mut debug,
         );
 
-        let mut handler = Handler {
+        Handler {
             iced_state,
             cursor_position: Point::new(0.0, 0.0),
             debug,
@@ -134,11 +134,7 @@ impl <A: Application + 'static>Handler<A> {
             swap_chain,
             redraw_requested: true,
             background_color,
-        };
-
-        handler.on_frame();
-
-        handler
+        }
     }
 }
 
@@ -169,8 +165,6 @@ impl <A: Application + 'static>WindowHandler for Handler<A>{
             if opt_new_command.is_some(){
                 self.redraw_requested = true;
             }
-
-            self.on_frame(); // FIXME
         }
     }
 
