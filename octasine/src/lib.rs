@@ -60,6 +60,7 @@ pub struct SyncOnlyState {
 pub struct OctaSine {
     processing: ProcessingState,
     pub sync_only: Arc<SyncOnlyState>,
+    editor: Option<Gui>,
 }
 
 impl Default for OctaSine {
@@ -131,9 +132,12 @@ impl Plugin for OctaSine {
             presets: built_in_preset_bank()
         });
 
+        let editor = Gui::new(sync_only.clone());
+
         Self {
             processing,
             sync_only,
+            editor: Some(editor),
         }
     }
 
@@ -208,7 +212,11 @@ impl Plugin for OctaSine {
     }
 
     fn get_editor(&mut self) -> Option<Box<dyn Editor>> {
-        Some(Box::new(Gui::new(self.sync_only.clone())) as Box<dyn Editor>)
+        if let Some(editor) = self.editor.take(){
+            Some(Box::new(editor) as Box<dyn Editor>)
+        } else {
+            None
+        }
     }
 }
 
