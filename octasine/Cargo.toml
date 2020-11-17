@@ -39,6 +39,7 @@ iced = { git = "https://github.com/hecrj/iced.git" }
 iced_native = { git = "https://github.com/hecrj/iced.git" }
 iced_wgpu = { git = "https://github.com/hecrj/iced.git" }
 iced_graphics = { git = "https://github.com/hecrj/iced.git" }
+keyboard-types = "0.5"
 raw-window-handle = "0.3"
 
 # SIMD

@@ -145,10 +145,8 @@ impl <A: Application + 'static>WindowHandler for Handler<A>{
     fn on_event(&mut self, window: &mut Window, event: baseview::Event) {
         if let Some(event) = convert_event(event){
             if let iced_native::Event::Mouse(iced::mouse::Event::CursorMoved { x, y }) = event {
-                let viewport_size = self.viewport.logical_size();
-
-                self.cursor_position.x = x * viewport_size.width;
-                self.cursor_position.y = y * viewport_size.height;
+                self.cursor_position.x = x;
+                self.cursor_position.y = y;
             }
 
             #[cfg(feature = "logging")]
@@ -237,7 +235,39 @@ fn convert_event(event: baseview::Event) -> Option<iced_native::Event> {
             }
         },
         Event::Keyboard(event) => {
-            None
+            let opt_key_code = match event.code {
+                keyboard_types::Code::KeyA => Some(iced::keyboard::KeyCode::A),
+                keyboard_types::Code::KeyB => Some(iced::keyboard::KeyCode::B),
+                _ => None // FIXME
+            };
+
+            opt_key_code.map(|key_code| {
+                use keyboard_types::Modifiers;
+
+                let modifiers = iced::keyboard::ModifiersState {
+                    shift: event.modifiers.contains(Modifiers::SHIFT),
+                    control: event.modifiers.contains(Modifiers::CONTROL),
+                    alt: event.modifiers.contains(Modifiers::ALT),
+                    logo: event.modifiers.contains(Modifiers::META),
+                };
+
+                let event = match event.state {
+                    keyboard_types::KeyState::Down => {
+                        iced::keyboard::Event::KeyPressed {
+                            key_code,
+                            modifiers,
+                        }
+                    }
+                    keyboard_types::KeyState::Up => {
+                        iced::keyboard::Event::KeyReleased {
+                            key_code,
+                            modifiers,
+                        }
+                    }
+                };
+
+                iced_native::Event::Keyboard(event)
+            })
         },
         Event::Window(event) => {
             None
