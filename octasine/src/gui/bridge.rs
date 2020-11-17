@@ -124,9 +124,9 @@ impl <A: Application + 'static>Handler<A> {
             &mut debug,
         );
 
-        Handler {
+        let mut handler = Handler {
             iced_state,
-            cursor_position: Point::new(-1.0, -1.0),
+            cursor_position: Point::new(0.0, 0.0),
             debug,
             viewport,
             compositor,
@@ -134,7 +134,11 @@ impl <A: Application + 'static>Handler<A> {
             swap_chain,
             redraw_requested: true,
             background_color,
-        }
+        };
+
+        handler.on_frame();
+
+        handler
     }
 }
 
@@ -149,11 +153,10 @@ impl <A: Application + 'static>WindowHandler for Handler<A>{
                 self.cursor_position.y = y;
             }
 
-            #[cfg(feature = "logging")]
-            ::log::info!("event: {:?}", event);
+            // #[cfg(feature = "logging")]
+            // ::log::info!("event: {:?}", event);
 
             self.iced_state.queue_event(event);
-            self.redraw_requested = true;
 
             let opt_new_command = self.iced_state.update(
                 self.viewport.logical_size(),
