@@ -2,9 +2,9 @@
 ///
 /// Heavily based on code by https://github.com/BillyDM
 
+use baseview::{Window, WindowHandler};
 use iced_graphics::Viewport;
-use iced_native::{program, Color, Command, Debug, Element, Point, Size, Event};
-use vst_window::{EditorWindow, EventSource};
+use iced_native::{program, Color, Command, Debug, Element, Point, Size};
 
 
 pub type Renderer = iced_wgpu::Renderer;
@@ -56,7 +56,6 @@ impl<A: Application> iced_native::Program for IcedProgram<A> {
 
 
 pub struct Handler<A: Application + 'static> {
-    event_source: vst_window::EventSource,
     iced_state: iced_native::program::State<IcedProgram<A>>,
     cursor_position: iced_native::Point,
     debug: iced_native::Debug,
@@ -74,8 +73,7 @@ pub struct Handler<A: Application + 'static> {
 
 impl <A: Application + 'static>Handler<A> {
     pub fn build(
-        mut window: EditorWindow,
-        event_source: EventSource,
+        window: &mut baseview::Window,
         width: u32,
         height: u32,
     ) -> Self {
@@ -102,7 +100,7 @@ impl <A: Application + 'static>Handler<A> {
 
         // Create the wgpu surface :D
         // The baseview `window` extends `raw_window_handle::HasRawWindowHandle`.
-        let surface = compositor.create_surface(&mut window);
+        let surface = compositor.create_surface(window);
 
         // Create the wgpu swapchain
         let swap_chain = compositor.create_swap_chain(
@@ -127,7 +125,6 @@ impl <A: Application + 'static>Handler<A> {
         );
 
         Handler {
-            event_source,
             iced_state,
             cursor_position: Point::new(-1.0, -1.0),
             debug,
@@ -139,14 +136,15 @@ impl <A: Application + 'static>Handler<A> {
             background_color,
         }
     }
+}
 
-    pub fn process_events(&mut self){
-        let mut at_least_one_event = false;
 
-        while let Some(event) = self.event_source.poll_event(){
-            let event = convert_event(event);
+impl <A: Application + 'static>WindowHandler for Handler<A>{
+    type Message = ();
 
-            if let Event::Mouse(iced::mouse::Event::CursorMoved { x, y }) = event {
+    fn on_event(&mut self, window: &mut Window, event: baseview::Event) {
+        if let Some(event) = convert_event(event){
+            if let iced_native::Event::Mouse(iced::mouse::Event::CursorMoved { x, y }) = event {
                 let viewport_size = self.viewport.logical_size();
 
                 self.cursor_position.x = x * viewport_size.width;
@@ -159,10 +157,6 @@ impl <A: Application + 'static>Handler<A> {
             self.iced_state.queue_event(event);
             self.redraw_requested = true;
 
-            at_least_one_event = true;
-        }
-
-        if at_least_one_event {
             let opt_new_command = self.iced_state.update(
                 self.viewport.logical_size(),
                 self.cursor_position,
@@ -174,12 +168,16 @@ impl <A: Application + 'static>Handler<A> {
             if opt_new_command.is_some(){
                 self.redraw_requested = true;
             }
-        }
 
-        self.redraw_if_requested();
+            self.on_frame(); // FIXME
+        }
     }
 
-    fn redraw_if_requested(&mut self) {
+    fn on_message(&mut self, window: &mut Window, message: Self::Message) {
+        
+    }
+
+    fn on_frame(&mut self) {
         use iced_graphics::window::Compositor as IGCompositor;
 
         if self.redraw_requested {
@@ -205,34 +203,56 @@ impl <A: Application + 'static>Handler<A> {
 }
 
 
-fn convert_event(event: vst_window::WindowEvent) -> iced_native::Event {
+fn convert_event(event: baseview::Event) -> Option<iced_native::Event> {
+    use baseview::{Event, MouseEvent};
+
     match event {
-        vst_window::WindowEvent::CursorMovement(x, y) => {
-            Event::Mouse(iced::mouse::Event::CursorMoved {
-                x,
-                y
-            })
-        },
-        vst_window::WindowEvent::MouseClick(button) => {
-            let button = convert_mouse_button(button);
+        Event::Mouse(event) => {
+            match event {
+                MouseEvent::CursorMoved { position } => {
+                    Some(iced_native::Event::Mouse(iced::mouse::Event::CursorMoved {
+                        x: position.x as f32,
+                        y: position.y as f32,
+                    }))
+                },
+                MouseEvent::ButtonPressed(button) => {
+                    let button = convert_mouse_button(button);
 
-            Event::Mouse(iced::mouse::Event::ButtonPressed(button))
-        },
-        vst_window::WindowEvent::MouseRelease(button) => {
-            let button = convert_mouse_button(button);
+                    button.map(|button| {
+                        iced_native::Event::Mouse(
+                            iced::mouse::Event::ButtonPressed(button)
+                        )
+                    })
+                },
+                MouseEvent::ButtonReleased(button) => {
+                    let button = convert_mouse_button(button);
 
-            Event::Mouse(iced::mouse::Event::ButtonReleased(button))
+                    button.map(|button| {
+                        iced_native::Event::Mouse(
+                            iced::mouse::Event::ButtonReleased(button)
+                        )
+                    })
+                },
+                _ => None,
+            }
+        },
+        Event::Keyboard(event) => {
+            None
+        },
+        Event::Window(event) => {
+            None
         }
     }
 }
 
 
 fn convert_mouse_button(
-    button: vst_window::MouseButton
-) -> iced::mouse::Button {
+    button: baseview::MouseButton
+) -> Option<iced::mouse::Button> {
     match button {
-        vst_window::MouseButton::Left => iced::mouse::Button::Left,
-        vst_window::MouseButton::Right => iced::mouse::Button::Right,
-        vst_window::MouseButton::Middle => iced::mouse::Button::Middle,
+        baseview::MouseButton::Left => Some(iced::mouse::Button::Left),
+        baseview::MouseButton::Right => Some(iced::mouse::Button::Right),
+        baseview::MouseButton::Middle => Some(iced::mouse::Button::Middle),
+        _ => None
     }
 }
