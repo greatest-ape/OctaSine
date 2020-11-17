@@ -34,11 +34,12 @@ simplelog = { version = "0.8", optional = true, default-features = false }
 
 # GUI
 
+baseview = { path = "../../baseview" }
 iced = { git = "https://github.com/hecrj/iced.git" }
 iced_native = { git = "https://github.com/hecrj/iced.git" }
 iced_wgpu = { git = "https://github.com/hecrj/iced.git" }
 iced_graphics = { git = "https://github.com/hecrj/iced.git" }
-vst_window = "0.1"
+raw-window-handle = "0.3"
 
 # SIMD
 
