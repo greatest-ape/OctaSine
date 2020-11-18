@@ -22,12 +22,6 @@ Frequency modulation based VST2 plugin written in Rust
 
 https://soundcloud.com/octasine
 
-## Warning
-
-This is not a final version of the audio rendering engine. The envelopes might
-be adjusted. This means any patches you make might sound different with later
-versions.
-
 ## Installation
 
 ### macOS
