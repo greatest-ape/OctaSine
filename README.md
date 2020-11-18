@@ -18,6 +18,10 @@ Frequency modulation based VST2 plugin written in Rust
   graphical user interface)
 * Master volume and master frequency parameters
 
+## Audio examples
+
+https://soundcloud.com/octasine
+
 ## Warning
 
 This is not a final version of the audio rendering engine. The envelopes might
