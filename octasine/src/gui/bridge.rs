@@ -241,7 +241,7 @@ fn convert_event(event: baseview::Event) -> Option<iced_native::Event> {
             opt_key_code.map(|key_code| {
                 use keyboard_types::Modifiers;
 
-                let modifiers = iced::keyboard::ModifiersState {
+                let modifiers = iced::keyboard::Modifiers {
                     shift: event.modifiers.contains(Modifiers::SHIFT),
                     control: event.modifiers.contains(Modifiers::CONTROL),
                     alt: event.modifiers.contains(Modifiers::ALT),
