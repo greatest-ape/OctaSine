@@ -13,14 +13,44 @@ use crate::SyncOnlyState;
 
 #[derive(Debug, Clone)]
 pub enum Message {
-    Knob(Normal),
+    MasterVolume(Normal),
+}
+
+
+trait Parameter {
+    fn as_string(&self) -> String;
+}
+
+
+#[derive(Debug, Clone)]
+struct MasterVolume {
+    knob_state: knob::State,
+    knob_value: Normal,
+}
+
+
+impl Default for MasterVolume {
+    fn default() -> Self {
+        Self {
+            knob_state: knob::State::new(
+                FloatRange::default().default_normal_param()
+            ),
+            knob_value: Normal::default(),
+        }
+    }
+}
+
+
+impl Parameter for MasterVolume {
+    fn as_string(&self) -> String {
+        format!("{:.4}", self.knob_value.as_f32())
+    }
 }
 
 
 pub(super) struct OctaSineIcedApplication {
     sync_only: Arc<SyncOnlyState>,
-    knob_state: knob::State,
-    knob_value: Normal,
+    master_volume: MasterVolume,
 }
 
 
@@ -32,8 +62,7 @@ impl Application for OctaSineIcedApplication {
     fn new(sync_only: Self::Flags) -> (Self, Command<Self::Message>) {
         let app = Self {
             sync_only,
-            knob_state: knob::State::new(FloatRange::default().default_normal_param()),
-            knob_value: Normal::default(),
+            master_volume: Default::default(),
         };
 
         (app, Command::none())
@@ -45,8 +74,8 @@ impl Application for OctaSineIcedApplication {
 
     fn update(&mut self, message: Self::Message) -> Command<Self::Message> {
         match message {
-            Message::Knob(value) => {
-                self.knob_value = value;
+            Message::MasterVolume(value) => {
+                self.master_volume.knob_value = value;
             }
         }
 
@@ -55,15 +84,17 @@ impl Application for OctaSineIcedApplication {
 
     fn view(&mut self) -> Element<'_, Self::Message> {
         let knob: Element<_> = {
+            let value = Text::new(self.master_volume.as_string()).size(12);
+
             let knob = knob::Knob::new(
-                &mut self.knob_state,
-                Message::Knob
+                &mut self.master_volume.knob_state,
+                Message::MasterVolume
             );
 
             Column::new()
-                .push(Text::new("Volume").size(10))
+                .push(Text::new("Master volume").size(12))
                 .push(knob)
-                .push(Text::new(format!("{:.4}", self.knob_value.as_f32())))
+                .push(value)
                 .into()
         };
         
