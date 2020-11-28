@@ -1843,6 +1843,7 @@ dependencies = [
  "keyboard-types",
  "log",
  "log-panics",
+ "once_cell",
  "quickcheck",
  "raw-window-handle",
  "simdeez",
