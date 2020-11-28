@@ -5,7 +5,7 @@ use iced_baseview::{
     Column, Element, Row, Text,
 };
 use iced_audio::{
-    knob, Normal, FloatRange
+    knob, Normal, NormalParam, FloatRange
 };
 
 use crate::SyncOnlyState;
@@ -18,32 +18,53 @@ pub enum Message {
 
 
 trait Parameter {
-    fn as_string(&self) -> String;
+    fn new(sync_only: &Arc<SyncOnlyState>) -> Self;
+    fn view(&mut self) -> Element<Message>;
+    fn update(&mut self, sync_only: &Arc<SyncOnlyState>, value: Normal);
 }
 
 
 #[derive(Debug, Clone)]
 struct MasterVolume {
     knob_state: knob::State,
-    knob_value: Normal,
-}
-
-
-impl Default for MasterVolume {
-    fn default() -> Self {
-        Self {
-            knob_state: knob::State::new(
-                FloatRange::default().default_normal_param()
-            ),
-            knob_value: Normal::default(),
-        }
-    }
 }
 
 
 impl Parameter for MasterVolume {
-    fn as_string(&self) -> String {
-        format!("{:.4}", self.knob_value.as_f32())
+    fn new(sync_only: &Arc<SyncOnlyState>) -> Self {
+        let value = sync_only.presets.get_parameter_value_float(0);
+
+        let value = Normal::new(value as f32);
+
+        let normal_param = NormalParam {
+            value,
+            default: value, // FIXME
+        };
+        
+        Self {
+            knob_state: knob::State::new(normal_param),
+        }
+    }
+
+    fn view(&mut self) -> Element<Message> {
+        let value = Text::new(
+            format!("{:.4}", self.knob_state.normal_param.value.as_f32())
+        ).size(12);
+
+        let knob = knob::Knob::new(
+            &mut self.knob_state,
+            Message::MasterVolume
+        );
+
+        Column::new()
+            .push(Text::new("Master volume").size(12))
+            .push(knob)
+            .push(value)
+            .into()
+    }
+
+    fn update(&mut self, sync_only: &Arc<SyncOnlyState>, value: Normal){
+        sync_only.presets.set_parameter_value_float(0, value.as_f32() as f64)
     }
 }
 
@@ -60,9 +81,11 @@ impl Application for OctaSineIcedApplication {
     type Flags = Arc<SyncOnlyState>;
 
     fn new(sync_only: Self::Flags) -> (Self, Command<Self::Message>) {
+        let master_volume = MasterVolume::new(&sync_only);
+
         let app = Self {
             sync_only,
-            master_volume: Default::default(),
+            master_volume,
         };
 
         (app, Command::none())
@@ -75,7 +98,7 @@ impl Application for OctaSineIcedApplication {
     fn update(&mut self, message: Self::Message) -> Command<Self::Message> {
         match message {
             Message::MasterVolume(value) => {
-                self.master_volume.knob_value = value;
+                self.master_volume.update(&self.sync_only, value)
             }
         }
 
@@ -83,26 +106,13 @@ impl Application for OctaSineIcedApplication {
     }
 
     fn view(&mut self) -> Element<'_, Self::Message> {
-        let knob: Element<_> = {
-            let value = Text::new(self.master_volume.as_string()).size(12);
-
-            let knob = knob::Knob::new(
-                &mut self.master_volume.knob_state,
-                Message::MasterVolume
-            );
-
-            Column::new()
-                .push(Text::new("Master volume").size(12))
-                .push(knob)
-                .push(value)
-                .into()
-        };
+        let master_volume = self.master_volume.view();
         
         Column::new()
             .push(
                 Row::new()
                     .padding(20)
-                    .push(knob)
+                    .push(master_volume)
             )
             .into()
     }
