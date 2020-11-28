@@ -1,19 +1,14 @@
-// Interesting links:
-// - https://github.com/hecrj/iced/blob/0.1/examples/integration/src/main.rs
-
 use std::sync::Arc;
 
-use baseview::{Parent, Size, WindowScalePolicy, Window, WindowOpenOptions};
+use iced_baseview::{settings, Parent, Runner, Settings};
 use vst::editor::Editor;
 use raw_window_handle::RawWindowHandle;
 
 use super::SyncOnlyState;
 
-mod bridge;
 mod interface;
 
-use bridge::Handler;
-use interface::Application;
+use interface::OctaSineGui;
 
 
 const GUI_WIDTH: usize = 1000;
@@ -47,17 +42,17 @@ impl Editor for Gui {
 
     fn open(&mut self, parent: *mut ::core::ffi::c_void) -> bool {
         if !self.opened{
-            let window_options = WindowOpenOptions {
-                scale: WindowScalePolicy::SystemScaleFactor,
-                size: Size::new(GUI_WIDTH as f64, GUI_HEIGHT as f64),
-                parent: Parent::WithParent(raw_window_handle_from_parent(parent)),
-                title: crate::constants::PLUGIN_NAME.into(),
+            let settings = Settings {
+                window: settings::Window {
+                    size: (GUI_WIDTH as u32, GUI_HEIGHT as u32),
+                },
+                flags: (),
             };
 
-            let _ = Window::open( window_options, |window| {
-                Handler::<Application>::build(window, GUI_WIDTH as u32, GUI_HEIGHT as u32)
-            });
-            
+            Runner::<OctaSineGui>::open(settings, Parent::WithParent(
+                raw_window_handle_from_parent(parent)
+            ));
+
             true
         } else {
             false
