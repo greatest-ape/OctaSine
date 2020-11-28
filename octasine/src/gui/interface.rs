@@ -121,6 +121,7 @@ impl super::bridge::Application for Application {
     }
 
     fn view(&mut self) -> Element<'_, Self::Message, Renderer> {
+        /*
         let buttons = Column::new()
             .padding(20)
             .align_items(Align::Center)
@@ -168,6 +169,7 @@ impl super::bridge::Application for Application {
                 .push(text_input)
                 .push(Text::new(self.text_input_value.clone()))
         };
+        */
 
         let knob: Element<_, Renderer> = {
             let knob = knob::Knob::new(
@@ -176,12 +178,14 @@ impl super::bridge::Application for Application {
             );
 
             Column::new()
+                .push(Text::new("Volume").size(10))
                 .push(knob)
                 .push(Text::new(format!("{:.4}", self.knob_value.as_f32())))
                 .into()
         };
         
         Column::new()
+            /*
             .push(
                 Row::new()
                     .padding(20)
@@ -195,7 +199,9 @@ impl super::bridge::Application for Application {
                 Row::new()
                     .padding(20)
                     .push(text_input)
-            ).push(
+            )
+            */
+            .push(
                 Row::new()
                     .padding(20)
                     .push(knob)
