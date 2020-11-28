@@ -1,94 +1,37 @@
+use std::sync::Arc;
+
 use iced_baseview::{executor, Application, Command};
 use iced_baseview::{
-    button, Align, Button, slider, Slider, Column, Element, Row, Text, pick_list, PickList, text_input, TextInput
+    Column, Element, Row, Text,
 };
-
 use iced_audio::{
     knob, Normal, FloatRange
 };
 
-use once_cell::sync::Lazy;
+use crate::SyncOnlyState;
 
 
 #[derive(Debug, Clone)]
 pub enum Message {
-    IncrementPressed,
-    DecrementPressed,
-    SliderChanged(f32),
-    RatioStep(Step<f64>),
-    TextInputChanged(String),
     Knob(Normal),
 }
 
 
-#[derive(Debug, Clone, Copy)]
-pub struct Step<T> {
-    index: usize,
-    value: T,
-}
-
-
-impl <T>PartialEq for Step<T> {
-    fn eq(&self, other: &Self) -> bool {
-        self.index == other.index
-    }
-}
-
-
-impl <T>Eq for Step<T> {}
-
-
-impl ::std::fmt::Display for Step<f64> {
-    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        self.value.fmt(f)
-    }
-}
-
-
-static OPERATOR_RATIO_STEPS: Lazy<Vec<Step<f64>>> = Lazy::new(|| {
-    crate::constants::OPERATOR_RATIO_STEPS.iter()
-        .enumerate()
-        .map(|(index, value)| {
-            Step {
-                index,
-                value: *value
-            }
-        })
-        .collect()
-});
-
-
-pub(super) struct OctaSineGui {
-    value: i32,
-    increment_button: button::State,
-    decrement_button: button::State,
-    slider_value: f32,
-    slider: slider::State,
-    pick_list: pick_list::State<Step<f64>>,
-    operator_ratio_step: Step<f64>,
-    text_input: text_input::State,
-    text_input_value: String,
+pub(super) struct OctaSineIcedApplication {
+    sync_only: Arc<SyncOnlyState>,
     knob_state: knob::State,
     knob_value: Normal,
 }
 
 
-impl Application for OctaSineGui {
+impl Application for OctaSineIcedApplication {
     type Executor = executor::Default;
     type Message = Message;
-    type Flags = ();
+    type Flags = Arc<SyncOnlyState>;
 
-    fn new(_flags: ()) -> (Self, Command<Self::Message>) {
+    fn new(sync_only: Self::Flags) -> (Self, Command<Self::Message>) {
         let app = Self {
-            value: Default::default(),
-            increment_button: Default::default(),
-            decrement_button: Default::default(),
-            slider_value: Default::default(),
-            slider: Default::default(),
-            pick_list: Default::default(),
-            operator_ratio_step: *OPERATOR_RATIO_STEPS.first().unwrap(),
-            text_input: Default::default(),
-            text_input_value: "Hello".to_string(),
+            sync_only,
             knob_state: knob::State::new(FloatRange::default().default_normal_param()),
             knob_value: Normal::default(),
         };
@@ -102,21 +45,6 @@ impl Application for OctaSineGui {
 
     fn update(&mut self, message: Self::Message) -> Command<Self::Message> {
         match message {
-            Message::IncrementPressed => {
-                self.value += 1;
-            }
-            Message::DecrementPressed => {
-                self.value -= 1;
-            }
-            Message::SliderChanged(value) => {
-                self.slider_value = value;
-            },
-            Message::RatioStep(value) => {
-                self.operator_ratio_step = value;
-            },
-            Message::TextInputChanged(value) => {
-                self.text_input_value = value;
-            },
             Message::Knob(value) => {
                 self.knob_value = value;
             }
@@ -126,56 +54,6 @@ impl Application for OctaSineGui {
     }
 
     fn view(&mut self) -> Element<'_, Self::Message> {
-        /*
-        let buttons = Column::new()
-            .padding(20)
-            .align_items(Align::Center)
-            .push(
-                Button::new(&mut self.increment_button, Text::new("Increment"))
-                    .on_press(Message::IncrementPressed),
-            )
-            .push(Text::new(self.value.to_string()).size(50))
-            .push(
-                Button::new(&mut self.decrement_button, Text::new("Decrement"))
-                    .on_press(Message::DecrementPressed),
-            );
-        
-        let slider = Column::new()
-            .padding(20)
-            .align_items(Align::Center)
-            .push(Slider::new(&mut self.slider, 0.0..=100.0, self.slider_value, |value| Message::SliderChanged(value)))
-            .push(Text::new(self.slider_value.to_string()).size(14));
-        
-        let pick_list = {
-            let pick_list = PickList::new(
-                &mut self.pick_list,
-                OPERATOR_RATIO_STEPS.as_slice(),
-                Some(self.operator_ratio_step),
-                |step| Message::RatioStep(step)
-            );
-
-            Column::new()
-                .padding(20)
-                .align_items(Align::Center)
-                .push(pick_list)
-                .push(Text::new(self.operator_ratio_step.value.to_string()))
-        };
-
-        let text_input = {
-            let text_input = TextInput::new(
-                &mut self.text_input,
-                "This is the placeholder...",
-                &self.text_input_value,
-                Message::TextInputChanged,
-            )
-            .padding(10);
-
-            Column::new()
-                .push(text_input)
-                .push(Text::new(self.text_input_value.clone()))
-        };
-        */
-
         let knob: Element<_> = {
             let knob = knob::Knob::new(
                 &mut self.knob_state,
@@ -190,22 +68,6 @@ impl Application for OctaSineGui {
         };
         
         Column::new()
-            /*
-            .push(
-                Row::new()
-                    .padding(20)
-                    .push(buttons)
-                    .push(slider)
-            ).push(
-                Row::new()
-                    .padding(20)
-                    .push(pick_list)
-            ).push(
-                Row::new()
-                    .padding(20)
-                    .push(text_input)
-            )
-            */
             .push(
                 Row::new()
                     .padding(20)
