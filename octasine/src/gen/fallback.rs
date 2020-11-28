@@ -49,7 +49,7 @@ pub fn process_f32(octasine: &mut OctaSine, audio_buffer: &mut AudioBuffer<f32>)
 #[inline]
 pub fn gen_samples_for_voices(octasine: &mut OctaSine) -> (f64, f64) {
     let changed_preset_parameters = octasine.sync_only.presets
-        .get_changed_parameters();
+        .get_changed_parameters_from_processing();
 
     if let Some(indeces) = changed_preset_parameters {
         for (index, opt_new_value) in indeces.iter().enumerate(){

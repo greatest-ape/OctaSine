@@ -69,4 +69,11 @@ impl ParameterWidget for OctaSineKnob {
             .padding(4)
             .into()
     }
+
+    fn set_value(&mut self, value: f64) {
+        self.knob_state = knob::State::new(NormalParam {
+            value: Normal::new(value as f32),
+            default: self.knob_state.normal_param.default,
+        });
+    }
 }

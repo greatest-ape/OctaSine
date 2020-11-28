@@ -34,8 +34,8 @@ simplelog = { version = "0.8", optional = true, default-features = false }
 
 # GUI
 
-iced_audio = "0.5"
 iced_baseview = { path = "../../iced_baseview" }
+iced_audio = "0.5"
 raw-window-handle = "0.3"
 
 # SIMD

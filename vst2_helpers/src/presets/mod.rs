@@ -90,7 +90,8 @@ impl<P> Preset<P> where P: PresetParameters {
 pub struct PresetBank<P> where P: PresetParameters {
     presets: [Preset<P>; 128],
     preset_index: AtomicUsize,
-    pub parameter_change_info: ParameterChangeInfo,
+    pub parameter_change_info_processing: ParameterChangeInfo,
+    pub parameter_change_info_gui: ParameterChangeInfo,
 }
 
 
@@ -99,7 +100,8 @@ impl<P> Default for PresetBank<P> where P: PresetParameters {
         Self {
             presets: array_init(|i| Preset::new_with_number_name(i + 1)),
             preset_index: AtomicUsize::new(0),
-            parameter_change_info: ParameterChangeInfo::default(),
+            parameter_change_info_processing: ParameterChangeInfo::default(),
+            parameter_change_info_gui: ParameterChangeInfo::default(),
         }
     }
 }
@@ -121,14 +123,21 @@ impl<P> PresetBank<P> where P: PresetParameters {
         self.presets.len()
     }
 
-    pub fn get_changed_parameters(&self) -> Option<[Option<f64>; 64]> {
-        self.parameter_change_info.get_changed_parameters(
+    pub fn get_changed_parameters_from_processing(&self) -> Option<[Option<f64>; 64]> {
+        self.parameter_change_info_processing.get_changed_parameters(
+            &self.get_current_preset().parameters
+        )
+    }
+
+    pub fn get_changed_parameters_from_gui(&self) -> Option<[Option<f64>; 64]> {
+        self.parameter_change_info_gui.get_changed_parameters_transient(
             &self.get_current_preset().parameters
         )
     }
 
     fn mark_parameters_as_changed(&self){
-        self.parameter_change_info.mark_all_as_changed();
+        self.parameter_change_info_processing.mark_all_as_changed();
+        self.parameter_change_info_gui.mark_all_as_changed();
     }
 
     fn get_current_preset(&self) -> &Preset<P> {
@@ -197,24 +206,37 @@ impl<P> PresetBank<P> where P: PresetParameters {
             .map_or(0.0, PresetParameter::get_parameter_value_float)
     }
 
-    pub fn set_parameter_value_float(&self, index: usize, value: f64){
+    pub fn set_parameter_value_float_from_host(&self, index: usize, value: f64){
         let index = index as usize;
         let opt_parameter = self.get_current_preset().parameters.get(index);
 
         if let Some(parameter) = opt_parameter {
             parameter.set_parameter_value_float(value.min(1.0).max(0.0));
 
-            self.parameter_change_info.mark_as_changed(index);
+            self.parameter_change_info_processing.mark_as_changed(index);
+            self.parameter_change_info_gui.mark_as_changed(index);
         }
     }
 
-    pub fn set_parameter_value_text(&self, index: usize, value: String) -> bool {
+    pub fn set_parameter_value_float_from_gui(&self, index: usize, value: f64){
+        let index = index as usize;
+        let opt_parameter = self.get_current_preset().parameters.get(index);
+
+        if let Some(parameter) = opt_parameter {
+            parameter.set_parameter_value_float(value.min(1.0).max(0.0));
+
+            self.parameter_change_info_processing.mark_as_changed(index);
+        }
+    }
+
+    pub fn set_parameter_value_text_from_host(&self, index: usize, value: String) -> bool {
         let index = index as usize;
         let opt_parameter = self.get_current_preset().parameters.get(index);
 
         if let Some(parameter) = opt_parameter {
             if parameter.set_parameter_value_text(value) {
-                self.parameter_change_info.mark_as_changed(index);
+                self.parameter_change_info_processing.mark_as_changed(index);
+                self.parameter_change_info_gui.mark_as_changed(index);
 
                 return true;
             }
