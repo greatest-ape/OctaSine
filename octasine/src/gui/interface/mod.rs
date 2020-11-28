@@ -6,6 +6,8 @@ use iced_baseview::{
 };
 use iced_audio::Normal;
 
+use vst::host::Host;
+
 use crate::SyncOnlyState;
 
 mod widgets;
@@ -67,7 +69,10 @@ impl Application for OctaSineIcedApplication {
                 self.sync_only.presets.set_parameter_value_float(
                     index,
                     value.as_f32() as f64
-                )
+                );
+
+                // FIXME: shouldn't really be called in GUI code like this
+                self.sync_only.host.automate(index as i32, value.as_f32());
             },
         }
 
