@@ -71,10 +71,13 @@ impl ParameterWidget for OctaSineKnob {
             move |value| Message::ParameterChange(parameter_index, value)
         );
 
-        Column::new()
+        let column = Column::new()
             .push(Container::new(title).padding(4))
             .push(Container::new(knob).padding(4))
-            .push(Container::new(value).padding(4))
+            .push(Container::new(value).padding(4));
+        
+        Container::new(column)
+            .padding(4)
             .into()
     }
 }
@@ -137,7 +140,7 @@ impl Application for OctaSineIcedApplication {
         Column::new()
             .push(
                 Row::new()
-                    .padding(24)
+                    .padding(16)
                     .push(master_volume)
                     .push(master_frequency)
             )
