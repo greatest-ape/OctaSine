@@ -17,24 +17,29 @@ pub enum Message {
 }
 
 
-trait Parameter {
-    fn new(sync_only: &Arc<SyncOnlyState>) -> Self;
+trait ParameterWidget {
     fn view(&mut self) -> Element<Message>;
     fn update(&mut self, sync_only: &Arc<SyncOnlyState>, value: Normal);
 }
 
 
 #[derive(Debug, Clone)]
-struct MasterVolume {
+struct OctaSineKnob {
     knob_state: knob::State,
+    title: String,
+    parameter_index: usize,
 }
 
 
-impl Parameter for MasterVolume {
-    fn new(sync_only: &Arc<SyncOnlyState>) -> Self {
-        let value = sync_only.presets.get_parameter_value_float(0);
-
-        let value = Normal::new(value as f32);
+impl OctaSineKnob {
+    fn new(
+        sync_only: &Arc<SyncOnlyState>,
+        title: String,
+        parameter_index: usize
+    ) -> Self {
+        let value = Normal::new(sync_only.presets.get_parameter_value_float(
+            parameter_index
+        ) as f32);
 
         let normal_param = NormalParam {
             value,
@@ -43,16 +48,21 @@ impl Parameter for MasterVolume {
         
         Self {
             knob_state: knob::State::new(normal_param),
+            title,
+            parameter_index
         }
     }
+}
 
+
+impl ParameterWidget for OctaSineKnob {
     fn view(&mut self) -> Element<Message> {
         let value_str = format!(
             "{:.4}",
             self.knob_state.normal_param.value.as_f32()
         );
 
-        let title = Text::new("Master\nvolume").size(12);
+        let title = Text::new(self.title.clone()).size(12);
         let value = Text::new(value_str).size(12);
 
         let knob = knob::Knob::new(
@@ -68,14 +78,17 @@ impl Parameter for MasterVolume {
     }
 
     fn update(&mut self, sync_only: &Arc<SyncOnlyState>, value: Normal){
-        sync_only.presets.set_parameter_value_float(0, value.as_f32() as f64)
+        sync_only.presets.set_parameter_value_float(
+            self.parameter_index,
+            value.as_f32() as f64
+        )
     }
 }
 
 
 pub(super) struct OctaSineIcedApplication {
     sync_only: Arc<SyncOnlyState>,
-    master_volume: MasterVolume,
+    master_volume: OctaSineKnob,
 }
 
 
@@ -85,7 +98,11 @@ impl Application for OctaSineIcedApplication {
     type Flags = Arc<SyncOnlyState>;
 
     fn new(sync_only: Self::Flags) -> (Self, Command<Self::Message>) {
-        let master_volume = MasterVolume::new(&sync_only);
+        let master_volume = OctaSineKnob::new(
+            &sync_only,
+            "Master\nvolume".to_string(),
+            0
+        );
 
         let app = Self {
             sync_only,
