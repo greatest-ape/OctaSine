@@ -8,7 +8,7 @@ use super::SyncOnlyState;
 
 mod interface;
 
-use interface::OctaSineGui;
+use interface::OctaSineIcedApplication;
 
 
 const GUI_WIDTH: usize = 1000;
@@ -41,22 +41,23 @@ impl Editor for Gui {
     }
 
     fn open(&mut self, parent: *mut ::core::ffi::c_void) -> bool {
-        if !self.opened{
-            let settings = Settings {
-                window: settings::Window {
-                    size: (GUI_WIDTH as u32, GUI_HEIGHT as u32),
-                },
-                flags: (),
-            };
-
-            Runner::<OctaSineGui>::open(settings, Parent::WithParent(
-                raw_window_handle_from_parent(parent)
-            ));
-
-            true
-        } else {
-            false
+        if self.opened {
+            return false;
         }
+
+        let settings = Settings {
+            window: settings::Window {
+                size: (GUI_WIDTH as u32, GUI_HEIGHT as u32),
+            },
+            flags: self.sync_only.clone(),
+        };
+
+        Runner::<OctaSineIcedApplication>::open(
+            settings,
+            Parent::WithParent(raw_window_handle_from_parent(parent)
+        ));
+
+        true
     }
 
     fn close(&mut self) {
