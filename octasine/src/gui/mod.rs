@@ -23,7 +23,6 @@ const GUI_HEIGHT: usize = 750;
 pub struct Gui {
     sync_only: Arc<SyncOnlyState>,
     opened: bool,
-    // opened_interface: Option<Handler<Application>>,
 }
 
 
@@ -31,8 +30,7 @@ impl Gui {
     pub fn new(sync_only: Arc<SyncOnlyState>) -> Self {
         Self {
             sync_only,
-            opened: true,
-            // opened_interface: None,
+            opened: false,
         }
     }
 }
@@ -67,7 +65,6 @@ impl Editor for Gui {
     }
 
     fn close(&mut self) {
-        // FIXME
         self.opened = false;
     }
 
