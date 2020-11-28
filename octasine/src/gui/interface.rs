@@ -13,13 +13,12 @@ use crate::SyncOnlyState;
 
 #[derive(Debug, Clone)]
 pub enum Message {
-    MasterVolume(Normal),
+    ParameterChange(usize, Normal),
 }
 
 
 trait ParameterWidget {
     fn view(&mut self) -> Element<Message>;
-    fn update(&mut self, sync_only: &Arc<SyncOnlyState>, value: Normal);
 }
 
 
@@ -65,9 +64,11 @@ impl ParameterWidget for OctaSineKnob {
         let title = Text::new(self.title.clone()).size(12);
         let value = Text::new(value_str).size(12);
 
+        let parameter_index = self.parameter_index;
+
         let knob = knob::Knob::new(
             &mut self.knob_state,
-            Message::MasterVolume
+            move |value| Message::ParameterChange(parameter_index, value)
         );
 
         Column::new()
@@ -76,19 +77,13 @@ impl ParameterWidget for OctaSineKnob {
             .push(Container::new(value).padding(4))
             .into()
     }
-
-    fn update(&mut self, sync_only: &Arc<SyncOnlyState>, value: Normal){
-        sync_only.presets.set_parameter_value_float(
-            self.parameter_index,
-            value.as_f32() as f64
-        )
-    }
 }
 
 
 pub(super) struct OctaSineIcedApplication {
     sync_only: Arc<SyncOnlyState>,
     master_volume: OctaSineKnob,
+    master_frequency: OctaSineKnob,
 }
 
 
@@ -103,10 +98,16 @@ impl Application for OctaSineIcedApplication {
             "Master\nvolume".to_string(),
             0
         );
+        let master_frequency = OctaSineKnob::new(
+            &sync_only,
+            "Master\nfrequency".to_string(),
+            1
+        );
 
         let app = Self {
             sync_only,
             master_volume,
+            master_frequency
         };
 
         (app, Command::none())
@@ -118,9 +119,12 @@ impl Application for OctaSineIcedApplication {
 
     fn update(&mut self, message: Self::Message) -> Command<Self::Message> {
         match message {
-            Message::MasterVolume(value) => {
-                self.master_volume.update(&self.sync_only, value)
-            }
+            Message::ParameterChange(index, value) => {
+                self.sync_only.presets.set_parameter_value_float(
+                    index,
+                    value.as_f32() as f64
+                )
+            },
         }
 
         Command::none()
@@ -128,12 +132,14 @@ impl Application for OctaSineIcedApplication {
 
     fn view(&mut self) -> Element<'_, Self::Message> {
         let master_volume = self.master_volume.view();
+        let master_frequency = self.master_frequency.view();
         
         Column::new()
             .push(
                 Row::new()
-                    .padding(20)
+                    .padding(24)
                     .push(master_volume)
+                    .push(master_frequency)
             )
             .into()
     }
