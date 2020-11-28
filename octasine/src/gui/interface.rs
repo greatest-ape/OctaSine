@@ -2,10 +2,10 @@ use std::sync::Arc;
 
 use iced_baseview::{executor, Application, Command};
 use iced_baseview::{
-    Column, Element, Row, Text,
+    Container, Column, Element, Row, Text,
 };
 use iced_audio::{
-    knob, Normal, NormalParam, FloatRange
+    knob, Normal, NormalParam
 };
 
 use crate::SyncOnlyState;
@@ -47,9 +47,13 @@ impl Parameter for MasterVolume {
     }
 
     fn view(&mut self) -> Element<Message> {
-        let value = Text::new(
-            format!("{:.4}", self.knob_state.normal_param.value.as_f32())
-        ).size(12);
+        let value_str = format!(
+            "{:.4}",
+            self.knob_state.normal_param.value.as_f32()
+        );
+
+        let title = Text::new("Master\nvolume").size(12);
+        let value = Text::new(value_str).size(12);
 
         let knob = knob::Knob::new(
             &mut self.knob_state,
@@ -57,9 +61,9 @@ impl Parameter for MasterVolume {
         );
 
         Column::new()
-            .push(Text::new("Master volume").size(12))
-            .push(knob)
-            .push(value)
+            .push(Container::new(title).padding(4))
+            .push(Container::new(knob).padding(4))
+            .push(Container::new(value).padding(4))
             .into()
     }
 
