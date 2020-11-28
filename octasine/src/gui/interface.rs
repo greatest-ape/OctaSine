@@ -1,3 +1,7 @@
+use iced_audio::{
+    knob, Normal, FloatRange
+};
+
 use iced_native::{button, Align, Button, slider, Slider, Column, Command, Element, Row, Text, pick_list, PickList, text_input, TextInput};
 use once_cell::sync::Lazy;
 
@@ -15,6 +19,8 @@ pub struct Application {
     operator_ratio_step: Step<f64>,
     text_input: text_input::State,
     text_input_value: String,
+    knob_state: knob::State,
+    knob_value: Normal,
 }
 
 
@@ -25,6 +31,7 @@ pub enum Message {
     SliderChanged(f32),
     RatioStep(Step<f64>),
     TextInputChanged(String),
+    Knob(Normal),
 }
 
 
@@ -79,6 +86,8 @@ impl super::bridge::Application for Application {
             operator_ratio_step: *OPERATOR_RATIO_STEPS.first().unwrap(),
             text_input: Default::default(),
             text_input_value: "Hello".to_string(),
+            knob_state: knob::State::new(FloatRange::default().default_normal_param()),
+            knob_value: Normal::default(),
         }
     }
 
@@ -103,6 +112,9 @@ impl super::bridge::Application for Application {
             Message::TextInputChanged(value) => {
                 self.text_input_value = value;
             },
+            Message::Knob(value) => {
+                self.knob_value = value;
+            }
         }
 
         Command::none()
@@ -156,6 +168,18 @@ impl super::bridge::Application for Application {
                 .push(text_input)
                 .push(Text::new(self.text_input_value.clone()))
         };
+
+        let knob: Element<_, Renderer> = {
+            let knob = knob::Knob::new(
+                &mut self.knob_state,
+                Message::Knob
+            );
+
+            Column::new()
+                .push(knob)
+                .push(Text::new(format!("{:.4}", self.knob_value.as_f32())))
+                .into()
+        };
         
         Column::new()
             .push(
@@ -171,6 +195,10 @@ impl super::bridge::Application for Application {
                 Row::new()
                     .padding(20)
                     .push(text_input)
+            ).push(
+                Row::new()
+                    .padding(20)
+                    .push(knob)
             )
             .into()
     }
