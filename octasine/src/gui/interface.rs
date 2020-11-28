@@ -1,4 +1,4 @@
-use iced_native::{button, Align, Button, slider, Slider, Column, Command, Element, Row, Text, pick_list, PickList};
+use iced_native::{button, Align, Button, slider, Slider, Column, Command, Element, Row, Text, pick_list, PickList, text_input, TextInput};
 use once_cell::sync::Lazy;
 
 
@@ -13,15 +13,18 @@ pub struct Application {
     slider: slider::State,
     pick_list: pick_list::State<Step<f64>>,
     operator_ratio_step: Step<f64>,
+    text_input: text_input::State,
+    text_input_value: String,
 }
 
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone)]
 pub enum Message {
     IncrementPressed,
     DecrementPressed,
     SliderChanged(f32),
     RatioStep(Step<f64>),
+    TextInputChanged(String),
 }
 
 
@@ -74,6 +77,8 @@ impl super::bridge::Application for Application {
             slider: Default::default(),
             pick_list: Default::default(),
             operator_ratio_step: *OPERATOR_RATIO_STEPS.first().unwrap(),
+            text_input: Default::default(),
+            text_input_value: "Hello".to_string(),
         }
     }
 
@@ -94,7 +99,10 @@ impl super::bridge::Application for Application {
             },
             Message::RatioStep(value) => {
                 self.operator_ratio_step = value;
-            }
+            },
+            Message::TextInputChanged(value) => {
+                self.text_input_value = value;
+            },
         }
 
         Command::none()
@@ -134,6 +142,20 @@ impl super::bridge::Application for Application {
                 .push(pick_list)
                 .push(Text::new(self.operator_ratio_step.value.to_string()))
         };
+
+        let text_input = {
+            let text_input = TextInput::new(
+                &mut self.text_input,
+                "This is the placeholder...",
+                &self.text_input_value,
+                Message::TextInputChanged,
+            )
+            .padding(10);
+
+            Column::new()
+                .push(text_input)
+                .push(Text::new(self.text_input_value.clone()))
+        };
         
         Column::new()
             .push(
@@ -145,6 +167,10 @@ impl super::bridge::Application for Application {
                 Row::new()
                     .padding(20)
                     .push(pick_list)
+            ).push(
+                Row::new()
+                    .padding(20)
+                    .push(text_input)
             )
             .into()
     }
