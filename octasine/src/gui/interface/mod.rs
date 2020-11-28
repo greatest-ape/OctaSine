@@ -17,12 +17,14 @@ use widgets::OctaSineKnob;
 
 #[derive(Debug, Clone)]
 pub enum Message {
+    Frame,
     ParameterChange(usize, Normal),
 }
 
 
 trait ParameterWidget {
     fn view(&mut self) -> Element<Message>;
+    fn set_value(&mut self, value: f64);
 }
 
 
@@ -30,6 +32,29 @@ pub(super) struct OctaSineIcedApplication {
     sync_only: Arc<SyncOnlyState>,
     master_volume: OctaSineKnob,
     master_frequency: OctaSineKnob,
+}
+
+
+impl OctaSineIcedApplication {
+    fn update_widgets_from_parameters(&mut self){
+        let opt_changes = self.sync_only.presets
+            .get_changed_parameters_from_gui();
+        
+        if let Some(changes) = opt_changes {
+            for (index, opt_new_value) in changes.iter().enumerate(){
+                if let Some(new_value) = opt_new_value {
+                    #[cfg(feature = "logging")]
+                    ::log::info!("param {}: {}", index, new_value);
+
+                    match index {
+                        0 => self.master_volume.set_value(*new_value),
+                        1 => self.master_frequency.set_value(*new_value),
+                        _ => (),
+                    }
+                }
+            }
+        }
+    }
 }
 
 
@@ -65,14 +90,17 @@ impl Application for OctaSineIcedApplication {
 
     fn update(&mut self, message: Self::Message) -> Command<Self::Message> {
         match message {
+            Message::Frame => {
+                self.update_widgets_from_parameters();
+            },
             Message::ParameterChange(index, value) => {
-                self.sync_only.presets.set_parameter_value_float(
+                self.sync_only.presets.set_parameter_value_float_from_gui(
                     index,
                     value.as_f32() as f64
                 );
 
-                // FIXME: shouldn't really be called in GUI code like this
-                self.sync_only.host.automate(index as i32, value.as_f32());
+                // FIXME: maybe shouldn't be called in GUI code like this
+                self.sync_only.host.update_display();
             },
         }
 

@@ -54,14 +54,14 @@ macro_rules! impl_plugin_parameters {
 
             /// Set the value of parameter at `index`. `value` is between 0.0 and 1.0.
             fn set_parameter(&self, index: i32, value: f32) {
-                self.$preset_bank_field.set_parameter_value_float(index as usize, f64::from(value));
+                self.$preset_bank_field.set_parameter_value_float_from_host(index as usize, f64::from(value));
             }
 
             /// Use String as input for parameter value. Used by host to provide an editable field to
             /// adjust a parameter value. E.g. "100" may be interpreted as 100hz for parameter. Returns if
             /// the input string was used.
             fn string_to_parameter(&self, index: i32, text: String) -> bool {
-                self.$preset_bank_field.set_parameter_value_text(index as usize, text)
+                self.$preset_bank_field.set_parameter_value_text_from_host(index as usize, text)
             }
 
             /// Return whether parameter at `index` can be automated.

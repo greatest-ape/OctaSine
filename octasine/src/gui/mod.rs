@@ -54,8 +54,9 @@ impl Editor for Gui {
 
         Runner::<OctaSineIcedApplication>::open(
             settings,
-            Parent::WithParent(raw_window_handle_from_parent(parent)
-        ));
+            Parent::WithParent(raw_window_handle_from_parent(parent)),
+            Some(interface::Message::Frame)
+        );
 
         true
     }

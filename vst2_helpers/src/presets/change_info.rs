@@ -59,6 +59,31 @@ impl ParameterChangeInfo {
 
         Some(changes)
     }
+
+    /// Get all changed parameters, without reading or modifying the changed flag
+    /// in the AtomicPositiveDouble
+    pub fn get_changed_parameters_transient(
+        &self,
+        preset_parameters: &impl PresetParameters
+    ) -> Option<[Option<f64>; 64]> {
+        let changed = self.changed.fetch_and(0, Ordering::SeqCst);
+
+        if changed == 0 {
+            return None;
+        }
+
+        let mut changes = [None; 64];
+
+        for (index, c) in changes.iter_mut().enumerate(){
+            if (changed >> index) & 1 == 1 {
+                if let Some(p) = preset_parameters.get(index){
+                    *c = Some(p.get_parameter_value_float());
+                }
+            }
+        }
+
+        Some(changes)
+    }
 }
 
 
