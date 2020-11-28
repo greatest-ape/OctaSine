@@ -119,7 +119,7 @@ impl <A: Application + 'static>Handler<A> {
         let iced_state = program::State::new(
             iced_program,
             viewport.logical_size(),
-            Point::new(-1.0, -1.0),
+            Point::new(0.0, 0.0),
             &mut renderer,
             &mut debug,
         );
@@ -142,7 +142,7 @@ impl <A: Application + 'static>Handler<A> {
 impl <A: Application + 'static>WindowHandler for Handler<A>{
     type Message = ();
 
-    fn on_event(&mut self, window: &mut Window, event: baseview::Event) {
+    fn on_event(&mut self, _: &mut Window, event: baseview::Event) {
         if let Some(event) = convert_event(event){
             if let iced_native::Event::Mouse(iced::mouse::Event::CursorMoved { x, y }) = event {
                 self.cursor_position.x = x;
@@ -154,7 +154,7 @@ impl <A: Application + 'static>WindowHandler for Handler<A>{
 
             self.iced_state.queue_event(event);
 
-            let opt_new_command = self.iced_state.update(
+            let _ = self.iced_state.update(
                 self.viewport.logical_size(),
                 self.cursor_position,
                 None, // clipboard
@@ -162,13 +162,11 @@ impl <A: Application + 'static>WindowHandler for Handler<A>{
                 &mut self.debug,
             );
 
-            if opt_new_command.is_some(){
-                self.redraw_requested = true;
-            }
+            self.redraw_requested = true;
         }
     }
 
-    fn on_message(&mut self, window: &mut Window, message: Self::Message) {
+    fn on_message(&mut self, _window: &mut Window, _message: Self::Message) {
         
     }
 
