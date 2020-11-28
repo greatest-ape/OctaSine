@@ -1,27 +1,13 @@
+use iced_baseview::{executor, Application, Command};
+use iced_baseview::{
+    button, Align, Button, slider, Slider, Column, Element, Row, Text, pick_list, PickList, text_input, TextInput
+};
+
 use iced_audio::{
     knob, Normal, FloatRange
 };
 
-use iced_native::{button, Align, Button, slider, Slider, Column, Command, Element, Row, Text, pick_list, PickList, text_input, TextInput};
 use once_cell::sync::Lazy;
-
-
-type Renderer = super::bridge::Renderer;
-
-
-pub struct Application {
-    value: i32,
-    increment_button: button::State,
-    decrement_button: button::State,
-    slider_value: f32,
-    slider: slider::State,
-    pick_list: pick_list::State<Step<f64>>,
-    operator_ratio_step: Step<f64>,
-    text_input: text_input::State,
-    text_input_value: String,
-    knob_state: knob::State,
-    knob_value: Normal,
-}
 
 
 #[derive(Debug, Clone)]
@@ -72,11 +58,28 @@ static OPERATOR_RATIO_STEPS: Lazy<Vec<Step<f64>>> = Lazy::new(|| {
 });
 
 
-impl super::bridge::Application for Application {
-    type Message = Message;
+pub(super) struct OctaSineGui {
+    value: i32,
+    increment_button: button::State,
+    decrement_button: button::State,
+    slider_value: f32,
+    slider: slider::State,
+    pick_list: pick_list::State<Step<f64>>,
+    operator_ratio_step: Step<f64>,
+    text_input: text_input::State,
+    text_input_value: String,
+    knob_state: knob::State,
+    knob_value: Normal,
+}
 
-    fn new() -> Self {
-        Self {
+
+impl Application for OctaSineGui {
+    type Executor = executor::Default;
+    type Message = Message;
+    type Flags = ();
+
+    fn new(_flags: ()) -> (Self, Command<Self::Message>) {
+        let app = Self {
             value: Default::default(),
             increment_button: Default::default(),
             decrement_button: Default::default(),
@@ -88,11 +91,13 @@ impl super::bridge::Application for Application {
             text_input_value: "Hello".to_string(),
             knob_state: knob::State::new(FloatRange::default().default_normal_param()),
             knob_value: Normal::default(),
-        }
+        };
+
+        (app, Command::none())
     }
 
     fn title(&self) -> String {
-        "Test".into()
+        crate::PLUGIN_NAME.into()
     }
 
     fn update(&mut self, message: Self::Message) -> Command<Self::Message> {
@@ -120,7 +125,7 @@ impl super::bridge::Application for Application {
         Command::none()
     }
 
-    fn view(&mut self) -> Element<'_, Self::Message, Renderer> {
+    fn view(&mut self) -> Element<'_, Self::Message> {
         /*
         let buttons = Column::new()
             .padding(20)
@@ -171,7 +176,7 @@ impl super::bridge::Application for Application {
         };
         */
 
-        let knob: Element<_, Renderer> = {
+        let knob: Element<_> = {
             let knob = knob::Knob::new(
                 &mut self.knob_state,
                 Message::Knob
