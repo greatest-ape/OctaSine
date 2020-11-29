@@ -19,7 +19,6 @@ pub trait PresetParameter {
     fn get_parameter_value_text(&self) -> String;
     fn set_parameter_value_text(&self, _value: String) -> bool;
 
-
     fn get_parameter_value_float_if_changed(&self) -> Option<f64>;
 }
 

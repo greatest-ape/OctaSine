@@ -2173,6 +2173,7 @@ dependencies = [
  "array-init",
  "assert_approx_eq",
  "fastrand",
+ "log",
  "quickcheck",
  "serde",
  "serde_json",
