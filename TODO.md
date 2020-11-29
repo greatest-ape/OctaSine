@@ -1,5 +1,11 @@
 # TODO
 
+## GUI
+
+* Don't load parameter changes while dragging in `iced_audio` widgets.
+  Also maybe don't load them in processing either during this time.
+  Maybe add callbacks like `started_dragging` and `finished_dragging`
+
 ## Code quality / safety
 
 * NUM_PARAMETERS constant?
