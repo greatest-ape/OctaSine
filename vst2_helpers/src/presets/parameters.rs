@@ -83,6 +83,9 @@ impl<T> PresetParameter for T
         PresetParameterValueAccess::get_value_if_changed(self)
     }
     fn format_value(&self, value: f64) -> String {
-        Self::format_processing(Self::to_processing(value))
+        format!("{} {}",
+            Self::format_processing(Self::to_processing(value)),
+            Self::get_parameter_unit_of_measurement(self)
+        )
     }
 }
