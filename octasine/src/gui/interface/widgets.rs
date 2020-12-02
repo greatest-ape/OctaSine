@@ -6,8 +6,9 @@ use iced_baseview::{
 use iced_audio::{
     knob, Normal, NormalParam, text_marks, tick_marks
 };
+use vst2_helpers::processing_parameters::utils::map_value_to_parameter_value_with_steps;
 
-use crate::SyncOnlyState;
+use crate::{constants::DEFAULT_MASTER_FREQUENCY, SyncOnlyState};
 use crate::constants::{MASTER_FREQUENCY_STEPS};
 
 use super::{ParameterWidget, Message};
@@ -30,6 +31,7 @@ impl OctaSineKnob {
         parameter_index: usize,
         text_marks: Option<text_marks::Group>,
         tick_marks: Option<tick_marks::Group>,
+        default: f64,
     ) -> Self {
         let value = Normal::new(sync_only.presets.get_parameter_value_float(
             parameter_index
@@ -37,7 +39,7 @@ impl OctaSineKnob {
 
         let normal_param = NormalParam {
             value,
-            default: value, // FIXME
+            default: Normal::new(default as f32),
         };
         
         Self {
@@ -53,6 +55,7 @@ impl OctaSineKnob {
         sync_only: &Arc<SyncOnlyState>,
     ) -> Self {
         let parameter_index = 0;
+
         let text_marks = text_marks_from_min_max_center(
             &sync_only,
             parameter_index
@@ -68,6 +71,7 @@ impl OctaSineKnob {
             parameter_index,
             Some(text_marks),
             Some(tick_marks),
+            0.5 // FIXME
         )
     }
 
@@ -75,8 +79,20 @@ impl OctaSineKnob {
         sync_only: &Arc<SyncOnlyState>,
     ) -> Self {
         let parameter_index = 1;
-        let text_marks = text_marks_from_steps(&MASTER_FREQUENCY_STEPS);
-        let tick_marks = tick_marks_from_steps(&MASTER_FREQUENCY_STEPS);
+
+        let default_value_sync = map_value_to_parameter_value_with_steps(
+            &MASTER_FREQUENCY_STEPS,
+            DEFAULT_MASTER_FREQUENCY
+        );
+
+        let text_marks = text_marks_from_min_max_and_value(
+            sync_only,
+            parameter_index,
+            default_value_sync,
+        );
+        let tick_marks = tick_marks_from_min_max_and_value(
+            default_value_sync,
+        );
 
         Self::new(
             &sync_only,
@@ -84,6 +100,7 @@ impl OctaSineKnob {
             parameter_index,
             Some(text_marks),
             Some(tick_marks),
+            default_value_sync
         )
     }
 }
@@ -178,7 +195,6 @@ fn tick_marks_from_steps(steps: &[f64]) -> tick_marks::Group {
 }
 
 
-
 fn text_marks_from_min_max_center(
     sync_only: &Arc<SyncOnlyState>,
     parameter_index: usize,
@@ -188,4 +204,36 @@ fn text_marks_from_min_max_center(
     let center = format_value(sync_only, parameter_index, 0.5);
 
     text_marks::Group::min_max_and_center(&min, &max, &center)
+}
+
+
+fn text_marks_from_min_max_and_value(
+    sync_only: &Arc<SyncOnlyState>,
+    parameter_index: usize,
+    sync_value: f64,
+) -> text_marks::Group {
+    let min_str = format_value(sync_only, parameter_index, 0.0);
+    let max_str = format_value(sync_only, parameter_index, 1.0);
+    let sync_value_str = format_value(sync_only, parameter_index, sync_value);
+
+    let marks = vec![
+        (Normal::new(0.0), min_str),
+        (Normal::new(sync_value as f32), sync_value_str),
+        (Normal::new(1.0), max_str),
+    ];
+
+    text_marks::Group::from(marks)
+}
+
+
+fn tick_marks_from_min_max_and_value(
+    sync_value: f64,
+) -> tick_marks::Group {
+    let marks = vec![
+        (Normal::new(0.0), tick_marks::Tier::One),
+        (Normal::new(sync_value as f32), tick_marks::Tier::One),
+        (Normal::new(1.0), tick_marks::Tier::One),
+    ];
+
+    tick_marks::Group::from(marks)
 }
