@@ -156,6 +156,26 @@ impl OctaSineKnob {
         )
     }
 
+    pub fn operator_feedback<H: SyncHandle>(
+        sync_handle: &Arc<H>,
+        parameter_index: usize,
+    ) -> Self {
+        let default_sync_value = 0.5;
+
+        let tick_marks = tick_marks::Group::min_max(
+            tick_marks::Tier::One,
+        );
+
+        Self::new(
+            &sync_handle,
+            "Feedback".to_string(),
+            parameter_index,
+            None,
+            Some(tick_marks),
+            default_sync_value
+        )
+    }
+
     pub fn operator_frequency_ratio<H: SyncHandle>(
         sync_handle: &Arc<H>,
         parameter_index: usize,
