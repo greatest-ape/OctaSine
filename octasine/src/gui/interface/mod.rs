@@ -118,20 +118,37 @@ impl <H: SyncHandle>Application for OctaSineIcedApplication<H> {
 
         let all = Column::new()
             .spacing(16)
-            .push(Row::new()
-                .push(Space::with_width(Length::Units(32)))
-                .push(master_volume)
-                .push(master_frequency)
+            .push(
+                Row::new()
+                    .push(
+                        Column::new()
+                            .width(Length::Fill)
+                            .align_items(Align::Start)
+                            .push(
+                                Row::new()
+                                    // .push(Text::new("OctaSine"))
+                            )
+                        )
+                    .push(
+                        Column::new()
+                            .width(Length::Fill)
+                            .align_items(Align::End)
+                            .push(
+                                Row::new()
+                                    .push(master_volume)
+                                    .push(master_frequency)
+                            )
+                            // .push(Space::with_width(Length::Units(32)))
+                        )
             )
             .push(Rule::horizontal(0))
-            .push(operator_1)
-            .push(Rule::horizontal(0))
-            .push(operator_2)
+            .push(operator_4)
             .push(Rule::horizontal(0))
             .push(operator_3)
             .push(Rule::horizontal(0))
-            .push(operator_4);
-        
+            .push(operator_2)
+            .push(Rule::horizontal(0))
+            .push(operator_1);
 
         Container::new(all)
             .padding(16)
