@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use iced_baseview::{executor, Application, Command, Align};
 use iced_baseview::{
-    Column, Element, Row, Container, Rule, Text, Length
+    Column, Element, Row, Container, Rule, Text, Length, Space
 };
 use iced_audio::Normal;
 
@@ -35,6 +35,7 @@ pub struct OctaSineIcedApplication<H: SyncHandle> {
     operator_1: OperatorWidgets,
     operator_2: OperatorWidgets,
     operator_3: OperatorWidgets,
+    operator_4: OperatorWidgets,
 }
 
 
@@ -70,6 +71,7 @@ impl <H: SyncHandle>Application for OctaSineIcedApplication<H> {
         let operator_1 = OperatorWidgets::new(&sync_handle, 0);
         let operator_2 = OperatorWidgets::new(&sync_handle, 1);
         let operator_3 = OperatorWidgets::new(&sync_handle, 2);
+        let operator_4 = OperatorWidgets::new(&sync_handle, 3);
 
         let app = Self {
             sync_handle,
@@ -78,6 +80,7 @@ impl <H: SyncHandle>Application for OctaSineIcedApplication<H> {
             operator_1,
             operator_2,
             operator_3,
+            operator_4,
         };
 
         (app, Command::none())
@@ -111,28 +114,23 @@ impl <H: SyncHandle>Application for OctaSineIcedApplication<H> {
         let operator_1 = self.operator_1.view(&self.sync_handle);
         let operator_2 = self.operator_2.view(&self.sync_handle);
         let operator_3 = self.operator_3.view(&self.sync_handle);
+        let operator_4 = self.operator_4.view(&self.sync_handle);
 
         let all = Column::new()
             .spacing(16)
             .push(Row::new()
-                .push(Column::new()
-                    .spacing(16)
-                    .push(Row::new()
-                        .width(Length::Fill)
-                        .push(Text::new("Master").size(16))
-                    )
-                    .push(Row::new()
-                        .push(master_volume)
-                        .push(master_frequency)
-                    )
-                )
+                .push(Space::with_width(Length::Units(32)))
+                .push(master_volume)
+                .push(master_frequency)
             )
             .push(Rule::horizontal(0))
             .push(operator_1)
             .push(Rule::horizontal(0))
             .push(operator_2)
             .push(Rule::horizontal(0))
-            .push(operator_3);
+            .push(operator_3)
+            .push(Rule::horizontal(0))
+            .push(operator_4);
         
 
         Container::new(all)
