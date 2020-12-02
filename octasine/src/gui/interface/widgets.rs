@@ -1,14 +1,14 @@
 use std::sync::Arc;
 
 use iced_baseview::{
-    Container, Column, Element, Text, Length, HorizontalAlignment, Align
+    Container, Column, Element, Text, Length, HorizontalAlignment, Align, Row
 };
 use iced_audio::{
     knob, Normal, NormalParam, text_marks, tick_marks
 };
 use vst2_helpers::processing_parameters::utils::map_value_to_parameter_value_with_steps;
 
-use crate::{constants::DEFAULT_MASTER_FREQUENCY, SyncHandle};
+use crate::{SyncHandle, constants::{DEFAULT_MASTER_FREQUENCY, DEFAULT_OPERATOR_FREQUENCY_RATIO, OPERATOR_RATIO_STEPS}};
 use crate::constants::{MASTER_FREQUENCY_STEPS};
 
 use super::{ParameterWidget, Message};
@@ -105,6 +105,88 @@ impl OctaSineKnob {
             default_value_sync
         )
     }
+
+
+    pub fn operator_volume<H: SyncHandle>(
+        sync_handle: &Arc<H>,
+        parameter_index: usize,
+    ) -> Self {
+        let default_sync_value = 0.5;
+
+        let text_marks = text_mark_from_value(
+            &sync_handle,
+            parameter_index,
+            default_sync_value
+        );
+        let tick_marks = tick_marks::Group::min_max_and_center(
+            tick_marks::Tier::One,
+            tick_marks::Tier::One,
+        );
+
+        Self::new(
+            &sync_handle,
+            "Volume".to_string(),
+            parameter_index,
+            None,
+            Some(tick_marks),
+            default_sync_value
+        )
+    }
+
+    pub fn operator_panning<H: SyncHandle>(
+        sync_handle: &Arc<H>,
+        parameter_index: usize,
+    ) -> Self {
+        let default_sync_value = 0.5;
+
+        let text_marks = text_mark_from_value(
+            &sync_handle,
+            parameter_index,
+            default_sync_value
+        );
+        let tick_marks = tick_marks::Group::min_max_and_center(
+            tick_marks::Tier::One,
+            tick_marks::Tier::One,
+        );
+
+        Self::new(
+            &sync_handle,
+            "Panning".to_string(),
+            parameter_index,
+            None,
+            Some(tick_marks),
+            default_sync_value
+        )
+    }
+
+    pub fn operator_frequency_ratio<H: SyncHandle>(
+        sync_handle: &Arc<H>,
+        parameter_index: usize,
+    ) -> Self {
+        let default_value_sync = map_value_to_parameter_value_with_steps(
+            &OPERATOR_RATIO_STEPS,
+            DEFAULT_OPERATOR_FREQUENCY_RATIO
+        );
+
+        let text_marks = text_mark_from_value(
+            sync_handle,
+            parameter_index,
+            default_value_sync,
+        );
+        let tick_marks = tick_marks_from_min_max_and_value(
+            default_value_sync,
+        );
+
+        Self::new(
+            &sync_handle,
+            "Frequency\n(ratio)".to_string(),
+            parameter_index,
+            None,
+            Some(tick_marks),
+            default_value_sync
+        )
+    }
+
 }
 
 
@@ -142,9 +224,15 @@ impl <H: SyncHandle>ParameterWidget<H> for OctaSineKnob {
         }
 
         Column::new()
+            .width(Length::Units(64))
             .align_items(Align::Center)
             .spacing(16)
-            .push(title)
+            .push(
+                Row::new()
+                    .height(Length::Units(32))
+                    .align_items(Align::Center)
+                    .push(title)
+            )
             .push(knob)
             .push(value)
             .into()
