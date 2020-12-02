@@ -20,6 +20,7 @@ pub trait PresetParameter {
     fn set_parameter_value_text(&self, _value: String) -> bool;
 
     fn get_parameter_value_float_if_changed(&self) -> Option<f64>;
+    fn format_value(&self, value: f64) -> String;
 }
 
 
@@ -80,5 +81,8 @@ impl<T> PresetParameter for T
     }
     fn get_parameter_value_float_if_changed(&self) -> Option<f64> {
         PresetParameterValueAccess::get_value_if_changed(self)
+    }
+    fn format_value(&self, value: f64) -> String {
+        Self::format_processing(Self::to_processing(value))
     }
 }

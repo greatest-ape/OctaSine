@@ -44,16 +44,15 @@ impl OctaSineKnob {
 
 
 impl ParameterWidget for OctaSineKnob {
-    fn view(&mut self) -> Element<Message> {
-        let value_str = format!(
-            "{:.4}",
-            self.knob_state.normal_param.value.as_f32()
-        );
-
-        let title = Text::new(self.title.clone()).size(12);
-        let value = Text::new(value_str).size(12);
-
+    fn view(&mut self, sync_only: &Arc<SyncOnlyState>) -> Element<Message> {
         let parameter_index = self.parameter_index;
+        let title = Text::new(self.title.clone()).size(12);
+
+        let value = sync_only.presets.format_parameter_value(
+            parameter_index,
+            self.knob_state.normal_param.value.as_f32() as f64
+        );
+        let value = Text::new(value).size(12);
 
         let knob = knob::Knob::new(
             &mut self.knob_state,
