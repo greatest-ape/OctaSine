@@ -45,7 +45,7 @@ simd_runtime_generate!(
             // --- Update processing parameters from preset parameters
 
             let changed_preset_parameters = octasine.sync_only.presets
-                .get_changed_parameters();
+                .get_changed_parameters_from_processing();
 
             if let Some(indeces) = changed_preset_parameters {
                 for (index, opt_new_value) in indeces.iter().enumerate(){
