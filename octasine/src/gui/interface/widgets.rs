@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use iced_baseview::{
-    Container, Column, Element, Text, Length, HorizontalAlignment
+    Container, Column, Element, Text, Length, HorizontalAlignment, Align
 };
 use iced_audio::{
     knob, Normal, NormalParam, text_marks, tick_marks
@@ -71,7 +71,7 @@ impl OctaSineKnob {
             &sync_only,
             "Master\nvolume".to_string(),
             parameter_index,
-            Some(text_marks),
+            None,
             Some(tick_marks),
             default_sync_value
         )
@@ -100,7 +100,7 @@ impl OctaSineKnob {
             &sync_only,
             "Master\nfrequency".to_string(),
             parameter_index,
-            Some(text_marks),
+            None,
             Some(tick_marks),
             default_value_sync
         )
@@ -111,7 +111,8 @@ impl OctaSineKnob {
 impl ParameterWidget for OctaSineKnob {
     fn view(&mut self, sync_only: &Arc<SyncOnlyState>) -> Element<Message> {
         let title = Text::new(self.title.clone())
-            .size(12);
+            .size(12)
+            .horizontal_alignment(HorizontalAlignment::Center);
 
         let value = {
             let value = format_value(
@@ -122,6 +123,7 @@ impl ParameterWidget for OctaSineKnob {
 
             Text::new(value)
                 .size(12)
+                .horizontal_alignment(HorizontalAlignment::Center)
         };
 
         let parameter_index = self.parameter_index;
@@ -139,13 +141,12 @@ impl ParameterWidget for OctaSineKnob {
             knob = knob.tick_marks(tick_marks);
         }
 
-        let column = Column::new()
-            .push(Container::new(title).padding(16))
-            .push(Container::new(knob).padding(16))
-            .push(Container::new(value).padding(16));
-        
-        Container::new(column)
-            .padding(16)
+        Column::new()
+            .align_items(Align::Center)
+            .spacing(16)
+            .push(title)
+            .push(knob)
+            .push(value)
             .into()
     }
 

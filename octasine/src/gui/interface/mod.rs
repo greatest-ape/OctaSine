@@ -100,14 +100,12 @@ impl Application for OctaSineIcedApplication {
         let master_volume = self.master_volume.view(&self.sync_only);
         let master_frequency = self.master_frequency.view(&self.sync_only);
         
-        Column::new()
-            .push(
-                Row::new()
-                    .padding(16)
-                    .align_items(Align::Center)
-                    .push(master_volume)
-                    .push(master_frequency)
-            )
+        Row::new()
+            .padding(16)
+            .align_items(Align::Center)
+            .spacing(16)
+            .push(master_volume)
+            .push(master_frequency)
             .into()
     }
 }
