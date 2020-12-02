@@ -2,9 +2,8 @@
 
 ## GUI
 
-* Don't load parameter changes while dragging in `iced_audio` widgets.
-  Also maybe don't load them in processing either during this time.
-  Maybe add callbacks like `started_dragging` and `finished_dragging`
+* Maybe don't load parameter changes in processing while dragging.
+* Program that just opens the GUI for easier development
 
 ## Code quality / safety
 
