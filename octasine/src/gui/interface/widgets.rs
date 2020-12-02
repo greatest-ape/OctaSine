@@ -8,8 +8,8 @@ use iced_audio::{
 };
 use vst2_helpers::processing_parameters::utils::map_value_to_parameter_value_with_steps;
 
-use crate::{SyncHandle, constants::{DEFAULT_MASTER_FREQUENCY, DEFAULT_OPERATOR_FREQUENCY_RATIO, OPERATOR_RATIO_STEPS}};
-use crate::constants::{MASTER_FREQUENCY_STEPS};
+use crate::SyncHandle;
+use crate::constants::*;
 
 use super::{ParameterWidget, Message};
 
@@ -179,7 +179,7 @@ impl OctaSineKnob {
 
         Self::new(
             &sync_handle,
-            "Frequency\n(ratio)".to_string(),
+            "Ratio".to_string(),
             parameter_index,
             None,
             Some(tick_marks),
@@ -187,6 +187,51 @@ impl OctaSineKnob {
         )
     }
 
+    pub fn operator_frequency_free<H: SyncHandle>(
+        sync_handle: &Arc<H>,
+        parameter_index: usize,
+    ) -> Self {
+        let default_value_sync = map_value_to_parameter_value_with_steps(
+            &OPERATOR_FREE_STEPS,
+            DEFAULT_OPERATOR_FREQUENCY_FREE
+        );
+
+        let tick_marks = tick_marks_from_min_max_and_value(
+            default_value_sync,
+        );
+
+        Self::new(
+            &sync_handle,
+            "Free".to_string(),
+            parameter_index,
+            None,
+            Some(tick_marks),
+            default_value_sync
+        )
+    }
+
+    pub fn operator_frequency_fine<H: SyncHandle>(
+        sync_handle: &Arc<H>,
+        parameter_index: usize,
+    ) -> Self {
+        let default_value_sync = map_value_to_parameter_value_with_steps(
+            &OPERATOR_FINE_STEPS,
+            DEFAULT_OPERATOR_FREQUENCY_FINE
+        );
+
+        let tick_marks = tick_marks_from_min_max_and_value(
+            default_value_sync,
+        );
+
+        Self::new(
+            &sync_handle,
+            "Fine".to_string(),
+            parameter_index,
+            None,
+            Some(tick_marks),
+            default_value_sync
+        )
+    }
 }
 
 
@@ -229,7 +274,7 @@ impl <H: SyncHandle>ParameterWidget<H> for OctaSineKnob {
             .spacing(16)
             .push(
                 Row::new()
-                    .height(Length::Units(32))
+                    // .height(Length::Units(32))
                     .align_items(Align::Center)
                     .push(title)
             )
