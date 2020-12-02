@@ -2,14 +2,16 @@ use std::sync::Arc;
 
 use iced_baseview::{executor, Application, Command, Align};
 use iced_baseview::{
-    Column, Element, Row,
+    Column, Element, Row, Container, Rule, Text, Length
 };
 use iced_audio::Normal;
 
 use crate::SyncHandle;
 
 mod widgets;
+mod operator;
 
+use operator::OperatorWidgets;
 use widgets::OctaSineKnob;
 
 
@@ -30,6 +32,9 @@ pub struct OctaSineIcedApplication<H: SyncHandle> {
     sync_handle: Arc<H>,
     master_volume: OctaSineKnob,
     master_frequency: OctaSineKnob,
+    operator_1: OperatorWidgets,
+    operator_2: OperatorWidgets,
+    operator_3: OperatorWidgets,
 }
 
 
@@ -62,10 +67,17 @@ impl <H: SyncHandle>Application for OctaSineIcedApplication<H> {
         let master_volume = OctaSineKnob::master_volume(&sync_handle);
         let master_frequency = OctaSineKnob::master_frequency(&sync_handle);
 
+        let operator_1 = OperatorWidgets::new(&sync_handle, 0);
+        let operator_2 = OperatorWidgets::new(&sync_handle, 1);
+        let operator_3 = OperatorWidgets::new(&sync_handle, 2);
+
         let app = Self {
             sync_handle,
             master_volume,
-            master_frequency
+            master_frequency,
+            operator_1,
+            operator_2,
+            operator_3,
         };
 
         (app, Command::none())
@@ -96,13 +108,35 @@ impl <H: SyncHandle>Application for OctaSineIcedApplication<H> {
     fn view(&mut self) -> Element<'_, Self::Message> {
         let master_volume = self.master_volume.view(&self.sync_handle);
         let master_frequency = self.master_frequency.view(&self.sync_handle);
-        
-        Row::new()
-            .padding(16)
-            .align_items(Align::Center)
+        let operator_1 = self.operator_1.view(&self.sync_handle);
+        let operator_2 = self.operator_2.view(&self.sync_handle);
+        let operator_3 = self.operator_3.view(&self.sync_handle);
+
+        let all = Column::new()
             .spacing(16)
-            .push(master_volume)
-            .push(master_frequency)
+            .push(Row::new()
+                .push(Column::new()
+                    .spacing(16)
+                    .push(Row::new()
+                        .width(Length::Fill)
+                        .push(Text::new("Master").size(16))
+                    )
+                    .push(Row::new()
+                        .push(master_volume)
+                        .push(master_frequency)
+                    )
+                )
+            )
+            .push(Rule::horizontal(0))
+            .push(operator_1)
+            .push(Rule::horizontal(0))
+            .push(operator_2)
+            .push(Rule::horizontal(0))
+            .push(operator_3);
+        
+
+        Container::new(all)
+            .padding(16)
             .into()
     }
 }
