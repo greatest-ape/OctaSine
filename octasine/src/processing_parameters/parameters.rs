@@ -440,4 +440,30 @@ impl Default for ProcessingParameterOperatorPanning {
     }
 }
 
-impl_parameter_value_conversion_identity!(ProcessingParameterOperatorPanning);
+
+impl ParameterValueConversion for ProcessingParameterOperatorPanning {
+    type ProcessingParameterValue = f64;
+
+    fn to_processing(value: f64) -> Self::ProcessingParameterValue {
+        value
+    }
+    fn to_preset(value: Self::ProcessingParameterValue) -> f64 {
+        value
+    }
+
+    fn parse_string_value(_: String) -> Option<f64> {
+        None
+    }
+
+    fn format_processing(internal_value: Self::ProcessingParameterValue) -> String {
+        let tmp = ((internal_value - 0.5) * 100.0) as isize;
+
+        if tmp > 0 {
+            format!("{}R", tmp)
+        } else if tmp < 0 {
+            format!("{}L", tmp)
+        } else {
+            "C".to_string()
+        }
+    }
+}
