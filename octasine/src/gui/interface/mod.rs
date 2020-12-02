@@ -28,7 +28,7 @@ trait ParameterWidget {
 }
 
 
-pub(super) struct OctaSineIcedApplication {
+pub struct OctaSineIcedApplication {
     sync_only: Arc<SyncOnlyState>,
     master_volume: OctaSineKnob,
     master_frequency: OctaSineKnob,
