@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use iced_baseview::{
-    Container, Column, Element, Text, Length, Align
+    Container, Column, Element, Text, Length, HorizontalAlignment
 };
 use iced_audio::{
     knob, Normal, NormalParam, text_marks, tick_marks
@@ -25,7 +25,7 @@ pub struct OctaSineKnob {
 
 
 impl OctaSineKnob {
-    pub fn new(
+    fn new(
         sync_only: &Arc<SyncOnlyState>,
         title: String,
         parameter_index: usize,
@@ -55,13 +55,14 @@ impl OctaSineKnob {
         sync_only: &Arc<SyncOnlyState>,
     ) -> Self {
         let parameter_index = 0;
+        let default_sync_value = 0.5;
 
-        let text_marks = text_marks_from_min_max_center(
+        let text_marks = text_mark_from_value(
             &sync_only,
-            parameter_index
+            parameter_index,
+            default_sync_value
         );
-        let tick_marks = tick_marks::Group::min_max_and_center(
-            tick_marks::Tier::One,
+        let tick_marks = tick_marks::Group::center(
             tick_marks::Tier::One,
         );
 
@@ -71,7 +72,7 @@ impl OctaSineKnob {
             parameter_index,
             Some(text_marks),
             Some(tick_marks),
-            0.5 // FIXME
+            default_sync_value
         )
     }
 
@@ -85,12 +86,12 @@ impl OctaSineKnob {
             DEFAULT_MASTER_FREQUENCY
         );
 
-        let text_marks = text_marks_from_min_max_and_value(
+        let text_marks = text_mark_from_value(
             sync_only,
             parameter_index,
             default_value_sync,
         );
-        let tick_marks = tick_marks_from_min_max_and_value(
+        let tick_marks = tick_mark_from_value(
             default_value_sync,
         );
 
@@ -108,13 +109,19 @@ impl OctaSineKnob {
 
 impl ParameterWidget for OctaSineKnob {
     fn view(&mut self, sync_only: &Arc<SyncOnlyState>) -> Element<Message> {
-        let title = Text::new(self.title.clone()).size(12);
-        let value = format_value(
-            sync_only,
-            self.parameter_index,
-            self.knob_state.normal_param.value.as_f32() as f64
-        );
-        let value = Text::new(value).size(12);
+        let title = Text::new(self.title.clone())
+            .size(12);
+
+        let value = {
+            let value = format_value(
+                sync_only,
+                self.parameter_index,
+                self.knob_state.normal_param.value.as_f32() as f64
+            );
+
+            Text::new(value)
+                .size(12)
+        };
 
         let parameter_index = self.parameter_index;
 
@@ -236,4 +243,26 @@ fn tick_marks_from_min_max_and_value(
     ];
 
     tick_marks::Group::from(marks)
+}
+
+
+fn text_mark_from_value(
+    sync_only: &Arc<SyncOnlyState>,
+    parameter_index: usize,
+    sync_value: f64,
+) -> text_marks::Group {
+    let sync_value_str = format_value(sync_only, parameter_index, sync_value);
+
+    text_marks::Group::from(vec![
+        (Normal::new(sync_value as f32), sync_value_str),
+    ])
+}
+
+
+fn tick_mark_from_value(
+    sync_value: f64,
+) -> tick_marks::Group {
+    tick_marks::Group::from(vec![
+        (Normal::new(sync_value as f32), tick_marks::Tier::One),
+    ])
 }
