@@ -51,17 +51,13 @@ impl OctaSineKnob {
         }
     }
 
-    pub fn master_volume<H: SyncHandle>(
+    pub fn new_min_max_center<H: SyncHandle>(
         sync_handle: &Arc<H>,
+        parameter_index: usize,
+        title: &str
     ) -> Self {
-        let parameter_index = 0;
         let default_sync_value = 0.5;
 
-        let text_marks = text_mark_from_value(
-            &sync_handle,
-            parameter_index,
-            default_sync_value
-        );
         let tick_marks = tick_marks::Group::min_max_and_center(
             tick_marks::Tier::One,
             tick_marks::Tier::One,
@@ -69,7 +65,7 @@ impl OctaSineKnob {
 
         Self::new(
             &sync_handle,
-            "Master\nvolume".to_string(),
+            title.to_string(),
             parameter_index,
             None,
             Some(tick_marks),
@@ -77,28 +73,25 @@ impl OctaSineKnob {
         )
     }
 
-    pub fn master_frequency<H: SyncHandle>(
+    pub fn new_with_steps<H: SyncHandle>(
         sync_handle: &Arc<H>,
+        parameter_index: usize,
+        title: &str,
+        steps: &[f64],
+        default_value: f64,
     ) -> Self {
-        let parameter_index = 1;
-
         let default_value_sync = map_value_to_parameter_value_with_steps(
-            &MASTER_FREQUENCY_STEPS,
-            DEFAULT_MASTER_FREQUENCY
+            steps,
+            default_value
         );
 
-        let text_marks = text_mark_from_value(
-            sync_handle,
-            parameter_index,
-            default_value_sync,
-        );
         let tick_marks = tick_marks_from_min_max_and_value(
             default_value_sync,
         );
 
         Self::new(
             &sync_handle,
-            "Master\nfrequency".to_string(),
+            title.to_string(),
             parameter_index,
             None,
             Some(tick_marks),
@@ -106,30 +99,36 @@ impl OctaSineKnob {
         )
     }
 
+    pub fn master_volume<H: SyncHandle>(
+        sync_handle: &Arc<H>,
+    ) -> Self {
+        Self::new_min_max_center(
+            sync_handle,
+            0,
+            "Master\nvolume"
+        )
+    }
+
+    pub fn master_frequency<H: SyncHandle>(
+        sync_handle: &Arc<H>,
+    ) -> Self {
+        Self::new_with_steps(
+            &sync_handle,
+            1,
+            "Master\nfrequency",
+            &MASTER_FREQUENCY_STEPS,
+            DEFAULT_MASTER_FREQUENCY
+        )
+    }
 
     pub fn operator_volume<H: SyncHandle>(
         sync_handle: &Arc<H>,
         parameter_index: usize,
     ) -> Self {
-        let default_sync_value = 0.5;
-
-        let text_marks = text_mark_from_value(
-            &sync_handle,
+        Self::new_min_max_center(
+            sync_handle,
             parameter_index,
-            default_sync_value
-        );
-        let tick_marks = tick_marks::Group::min_max_and_center(
-            tick_marks::Tier::One,
-            tick_marks::Tier::One,
-        );
-
-        Self::new(
-            &sync_handle,
-            "Volume".to_string(),
-            parameter_index,
-            None,
-            Some(tick_marks),
-            default_sync_value
+            "Volume"
         )
     }
 
@@ -137,25 +136,10 @@ impl OctaSineKnob {
         sync_handle: &Arc<H>,
         parameter_index: usize,
     ) -> Self {
-        let default_sync_value = 0.5;
-
-        let text_marks = text_mark_from_value(
-            &sync_handle,
+        Self::new_min_max_center(
+            sync_handle,
             parameter_index,
-            default_sync_value
-        );
-        let tick_marks = tick_marks::Group::min_max_and_center(
-            tick_marks::Tier::One,
-            tick_marks::Tier::One,
-        );
-
-        Self::new(
-            &sync_handle,
-            "Panning".to_string(),
-            parameter_index,
-            None,
-            Some(tick_marks),
-            default_sync_value
+            "Panning"
         )
     }
 
@@ -163,27 +147,12 @@ impl OctaSineKnob {
         sync_handle: &Arc<H>,
         parameter_index: usize,
     ) -> Self {
-        let default_value_sync = map_value_to_parameter_value_with_steps(
-            &OPERATOR_RATIO_STEPS,
-            DEFAULT_OPERATOR_FREQUENCY_RATIO
-        );
-
-        let text_marks = text_mark_from_value(
+        Self::new_with_steps(
             sync_handle,
             parameter_index,
-            default_value_sync,
-        );
-        let tick_marks = tick_marks_from_min_max_and_value(
-            default_value_sync,
-        );
-
-        Self::new(
-            &sync_handle,
-            "Ratio".to_string(),
-            parameter_index,
-            None,
-            Some(tick_marks),
-            default_value_sync
+            "Ratio",
+            &OPERATOR_RATIO_STEPS,
+            DEFAULT_OPERATOR_FREQUENCY_RATIO
         )
     }
 
@@ -191,22 +160,12 @@ impl OctaSineKnob {
         sync_handle: &Arc<H>,
         parameter_index: usize,
     ) -> Self {
-        let default_value_sync = map_value_to_parameter_value_with_steps(
+        Self::new_with_steps(
+            sync_handle,
+            parameter_index,
+            "Free",
             &OPERATOR_FREE_STEPS,
             DEFAULT_OPERATOR_FREQUENCY_FREE
-        );
-
-        let tick_marks = tick_marks_from_min_max_and_value(
-            default_value_sync,
-        );
-
-        Self::new(
-            &sync_handle,
-            "Free".to_string(),
-            parameter_index,
-            None,
-            Some(tick_marks),
-            default_value_sync
         )
     }
 
@@ -214,22 +173,12 @@ impl OctaSineKnob {
         sync_handle: &Arc<H>,
         parameter_index: usize,
     ) -> Self {
-        let default_value_sync = map_value_to_parameter_value_with_steps(
+        Self::new_with_steps(
+            sync_handle,
+            parameter_index,
+            "Fine",
             &OPERATOR_FINE_STEPS,
             DEFAULT_OPERATOR_FREQUENCY_FINE
-        );
-
-        let tick_marks = tick_marks_from_min_max_and_value(
-            default_value_sync,
-        );
-
-        Self::new(
-            &sync_handle,
-            "Fine".to_string(),
-            parameter_index,
-            None,
-            Some(tick_marks),
-            default_value_sync
         )
     }
 }
