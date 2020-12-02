@@ -23,7 +23,7 @@ pub enum Message {
 
 
 trait ParameterWidget {
-    fn view(&mut self) -> Element<Message>;
+    fn view(&mut self, sync_state: &Arc<SyncOnlyState>) -> Element<Message>;
     fn set_value(&mut self, value: f64);
 }
 
@@ -105,8 +105,8 @@ impl Application for OctaSineIcedApplication {
     }
 
     fn view(&mut self) -> Element<'_, Self::Message> {
-        let master_volume = self.master_volume.view();
-        let master_frequency = self.master_frequency.view();
+        let master_volume = self.master_volume.view(&self.sync_only);
+        let master_frequency = self.master_frequency.view(&self.sync_only);
         
         Column::new()
             .push(

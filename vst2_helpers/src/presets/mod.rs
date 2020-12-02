@@ -248,6 +248,13 @@ impl<P> PresetBank<P> where P: PresetParameters {
 
         false
     }
+
+    pub fn format_parameter_value(&self, index: usize, value: f64) -> String {
+        self.get_current_preset().parameters.get(index as usize).map_or(
+            "".to_string(),
+            |p| p.format_value(value)
+        )
+    }
 }
 
 
