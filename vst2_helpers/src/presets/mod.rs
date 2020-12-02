@@ -207,8 +207,6 @@ impl<P> PresetBank<P> where P: PresetParameters {
     }
 
     pub fn set_parameter_value_float_from_host(&self, index: usize, value: f64){
-        ::log::info!("set_parameter_value_float_from_host: {}: {}", index, value);
-
         let index = index as usize;
         let opt_parameter = self.get_current_preset().parameters.get(index);
 
@@ -221,8 +219,6 @@ impl<P> PresetBank<P> where P: PresetParameters {
     }
 
     pub fn set_parameter_value_float_from_gui(&self, index: usize, value: f64){
-        ::log::info!("set_parameter_value_float_from_gui: {}: {}", index, value);
-
         let index = index as usize;
         let opt_parameter = self.get_current_preset().parameters.get(index);
 
