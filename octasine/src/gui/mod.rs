@@ -52,7 +52,7 @@ impl Editor for Gui {
             flags: self.sync_only.clone(),
         };
 
-        Runner::<OctaSineIcedApplication>::open(
+        Runner::<OctaSineIcedApplication<SyncOnlyState>>::open(
             settings,
             Parent::WithParent(raw_window_handle_from_parent(parent)),
             Some(interface::Message::Frame)

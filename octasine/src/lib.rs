@@ -19,6 +19,7 @@ use vst::api::{Supported, Events};
 use vst::editor::Editor;
 use vst::event::Event;
 use vst::plugin::{Category, Plugin, Info, CanDo, HostCallback, PluginParameters};
+use vst::host::Host;
 
 use vst2_helpers::approximations::*;
 use vst2_helpers::presets::*;
@@ -30,6 +31,9 @@ use crate::gui::Gui;
 use crate::voices::*;
 use crate::processing_parameters::*;
 use crate::preset_parameters::*;
+
+
+pub type OctaSinePresetBank = PresetBank<OctaSinePresetParameters>;
 
 
 pub fn built_in_preset_bank<P>() -> PresetBank<P> where P: PresetParameters {
@@ -49,10 +53,27 @@ pub struct ProcessingState {
 }
 
 
+/// Trait passed to GUI code for encapsulation
+pub trait SyncHandle {
+    fn get_presets(&self) -> &OctaSinePresetBank;
+    fn update_host_display(&self);
+}
+
+
+impl SyncHandle for SyncOnlyState {
+    fn get_presets(&self) -> &OctaSinePresetBank {
+        &self.presets
+    }
+    fn update_host_display(&self){
+        self.host.update_display();
+    }
+}
+
+
 /// Thread-safe state used for parameter and preset calls
 pub struct SyncOnlyState {
     pub host: HostCallback,
-    pub presets: PresetBank<OctaSinePresetParameters>,
+    pub presets: OctaSinePresetBank,
 }
 
 

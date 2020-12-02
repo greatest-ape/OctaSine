@@ -3,7 +3,6 @@
 ## GUI
 
 * Maybe don't load parameter changes in processing while dragging.
-* Program that just opens the GUI for easier development
 
 ## Code quality / safety
 

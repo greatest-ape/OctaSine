@@ -8,7 +8,7 @@ use iced_audio::{
 };
 use vst2_helpers::processing_parameters::utils::map_value_to_parameter_value_with_steps;
 
-use crate::{constants::DEFAULT_MASTER_FREQUENCY, SyncOnlyState};
+use crate::{constants::DEFAULT_MASTER_FREQUENCY, SyncHandle};
 use crate::constants::{MASTER_FREQUENCY_STEPS};
 
 use super::{ParameterWidget, Message};
@@ -25,15 +25,15 @@ pub struct OctaSineKnob {
 
 
 impl OctaSineKnob {
-    fn new(
-        sync_only: &Arc<SyncOnlyState>,
+    fn new<H: SyncHandle>(
+        sync_handle: &Arc<H>,
         title: String,
         parameter_index: usize,
         text_marks: Option<text_marks::Group>,
         tick_marks: Option<tick_marks::Group>,
         default: f64,
     ) -> Self {
-        let value = Normal::new(sync_only.presets.get_parameter_value_float(
+        let value = Normal::new(sync_handle.get_presets().get_parameter_value_float(
             parameter_index
         ) as f32);
 
@@ -51,14 +51,14 @@ impl OctaSineKnob {
         }
     }
 
-    pub fn master_volume(
-        sync_only: &Arc<SyncOnlyState>,
+    pub fn master_volume<H: SyncHandle>(
+        sync_handle: &Arc<H>,
     ) -> Self {
         let parameter_index = 0;
         let default_sync_value = 0.5;
 
         let text_marks = text_mark_from_value(
-            &sync_only,
+            &sync_handle,
             parameter_index,
             default_sync_value
         );
@@ -68,7 +68,7 @@ impl OctaSineKnob {
         );
 
         Self::new(
-            &sync_only,
+            &sync_handle,
             "Master\nvolume".to_string(),
             parameter_index,
             None,
@@ -77,8 +77,8 @@ impl OctaSineKnob {
         )
     }
 
-    pub fn master_frequency(
-        sync_only: &Arc<SyncOnlyState>,
+    pub fn master_frequency<H: SyncHandle>(
+        sync_handle: &Arc<H>,
     ) -> Self {
         let parameter_index = 1;
 
@@ -88,7 +88,7 @@ impl OctaSineKnob {
         );
 
         let text_marks = text_mark_from_value(
-            sync_only,
+            sync_handle,
             parameter_index,
             default_value_sync,
         );
@@ -97,7 +97,7 @@ impl OctaSineKnob {
         );
 
         Self::new(
-            &sync_only,
+            &sync_handle,
             "Master\nfrequency".to_string(),
             parameter_index,
             None,
@@ -108,15 +108,15 @@ impl OctaSineKnob {
 }
 
 
-impl ParameterWidget for OctaSineKnob {
-    fn view(&mut self, sync_only: &Arc<SyncOnlyState>) -> Element<Message> {
+impl <H: SyncHandle>ParameterWidget<H> for OctaSineKnob {
+    fn view(&mut self, sync_handle: &Arc<H>) -> Element<Message> {
         let title = Text::new(self.title.clone())
             .size(12)
             .horizontal_alignment(HorizontalAlignment::Center);
 
         let value = {
             let value = format_value(
-                sync_only,
+                sync_handle,
                 self.parameter_index,
                 self.knob_state.normal_param.value.as_f32() as f64
             );
@@ -158,12 +158,12 @@ impl ParameterWidget for OctaSineKnob {
 }
 
 
-fn format_value(
-    sync_only: &Arc<SyncOnlyState>,
+fn format_value<H: SyncHandle>(
+    sync_handle: &Arc<H>,
     parameter_index: usize,
     value: f64
 ) -> String {
-    sync_only.presets.format_parameter_value(parameter_index, value)
+    sync_handle.get_presets().format_parameter_value(parameter_index, value)
 }
 
 
@@ -204,26 +204,26 @@ fn tick_marks_from_steps(steps: &[f64]) -> tick_marks::Group {
 }
 
 
-fn text_marks_from_min_max_center(
-    sync_only: &Arc<SyncOnlyState>,
+fn text_marks_from_min_max_center<H: SyncHandle>(
+    sync_handle: &Arc<H>,
     parameter_index: usize,
 ) -> text_marks::Group {
-    let min = format_value(sync_only, parameter_index, 0.0);
-    let max = format_value(sync_only, parameter_index, 1.0);
-    let center = format_value(sync_only, parameter_index, 0.5);
+    let min = format_value(sync_handle, parameter_index, 0.0);
+    let max = format_value(sync_handle, parameter_index, 1.0);
+    let center = format_value(sync_handle, parameter_index, 0.5);
 
     text_marks::Group::min_max_and_center(&min, &max, &center)
 }
 
 
-fn text_marks_from_min_max_and_value(
-    sync_only: &Arc<SyncOnlyState>,
+fn text_marks_from_min_max_and_value<H: SyncHandle>(
+    sync_handle: &Arc<H>,
     parameter_index: usize,
     sync_value: f64,
 ) -> text_marks::Group {
-    let min_str = format_value(sync_only, parameter_index, 0.0);
-    let max_str = format_value(sync_only, parameter_index, 1.0);
-    let sync_value_str = format_value(sync_only, parameter_index, sync_value);
+    let min_str = format_value(sync_handle, parameter_index, 0.0);
+    let max_str = format_value(sync_handle, parameter_index, 1.0);
+    let sync_value_str = format_value(sync_handle, parameter_index, sync_value);
 
     let marks = vec![
         (Normal::new(0.0), min_str),
@@ -248,12 +248,12 @@ fn tick_marks_from_min_max_and_value(
 }
 
 
-fn text_mark_from_value(
-    sync_only: &Arc<SyncOnlyState>,
+fn text_mark_from_value<H: SyncHandle>(
+    sync_handle: &Arc<H>,
     parameter_index: usize,
     sync_value: f64,
 ) -> text_marks::Group {
-    let sync_value_str = format_value(sync_only, parameter_index, sync_value);
+    let sync_value_str = format_value(sync_handle, parameter_index, sync_value);
 
     text_marks::Group::from(vec![
         (Normal::new(sync_value as f32), sync_value_str),
