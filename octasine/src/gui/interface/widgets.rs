@@ -57,7 +57,7 @@ impl ParameterWidget for OctaSineKnob {
 
         let knob = knob::Knob::new(
             &mut self.knob_state,
-            move |value| Message::ParameterChange(parameter_index, value)
+            move |value| Message::ParameterChange(parameter_index, value),
         );
 
         let column = Column::new()
@@ -71,9 +71,8 @@ impl ParameterWidget for OctaSineKnob {
     }
 
     fn set_value(&mut self, value: f64) {
-        self.knob_state = knob::State::new(NormalParam {
-            value: Normal::new(value as f32),
-            default: self.knob_state.normal_param.default,
-        });
+        if !self.knob_state.is_dragging() {
+            self.knob_state.normal_param.value = Normal::new(value as f32);
+        }
     }
 }
