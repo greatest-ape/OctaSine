@@ -43,9 +43,6 @@ impl OctaSineIcedApplication {
         if let Some(changes) = opt_changes {
             for (index, opt_new_value) in changes.iter().enumerate(){
                 if let Some(new_value) = opt_new_value {
-                    #[cfg(feature = "logging")]
-                    ::log::info!("param {}: {}", index, new_value);
-
                     match index {
                         0 => self.master_volume.set_value(*new_value),
                         1 => self.master_frequency.set_value(*new_value),
