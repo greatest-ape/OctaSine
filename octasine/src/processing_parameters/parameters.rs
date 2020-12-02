@@ -40,6 +40,11 @@ macro_rules! impl_envelope_duration_value_conversion {
 }
 
 
+fn format_volume_db(amplitude_ratio: f64) -> String {
+    format!("{:.2}", 20.0 * amplitude_ratio.log10())
+}
+
+
 // Master volume
 
 create_interpolatable_processing_parameter!(ProcessingParameterMasterVolume, DEFAULT_MASTER_VOLUME, TimeCounter);
@@ -57,7 +62,7 @@ impl ParameterValueConversion for ProcessingParameterMasterVolume {
         simple_parameter_string_parsing!(Self, value, Self::ProcessingParameterValue)
     }
     fn format_processing(internal_value: Self::ProcessingParameterValue) -> String {
-        format!("{:.02}", internal_value)
+        format_volume_db(internal_value)
     }
 }
 

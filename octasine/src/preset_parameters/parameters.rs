@@ -70,7 +70,11 @@ impl PresetParameterGetName for PresetParameterMasterVolume {
     }
 }
 
-impl PresetParameterGetUnit for PresetParameterMasterVolume {}
+impl PresetParameterGetUnit for PresetParameterMasterVolume {
+    fn get_parameter_unit_of_measurement(&self) -> String {
+        "dB".to_string()
+    }
+}
 
 impl_preset_parameter_value_access!(PresetParameterMasterVolume);
 impl_value_conversion_from_processing!(PresetParameterMasterVolume, ProcessingParameterMasterVolume);
