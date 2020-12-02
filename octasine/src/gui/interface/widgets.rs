@@ -62,7 +62,8 @@ impl OctaSineKnob {
             parameter_index,
             default_sync_value
         );
-        let tick_marks = tick_marks::Group::center(
+        let tick_marks = tick_marks::Group::min_max_and_center(
+            tick_marks::Tier::One,
             tick_marks::Tier::One,
         );
 
@@ -91,7 +92,7 @@ impl OctaSineKnob {
             parameter_index,
             default_value_sync,
         );
-        let tick_marks = tick_mark_from_value(
+        let tick_marks = tick_marks_from_min_max_and_value(
             default_value_sync,
         );
 
