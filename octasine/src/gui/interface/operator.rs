@@ -12,13 +12,13 @@ use super::widgets::OctaSineKnob;
 
 pub struct OperatorWidgets {
     index: usize,
-    volume: OctaSineKnob,
-    panning: OctaSineKnob,
-    mod_index: OctaSineKnob,
-    feedback: OctaSineKnob,
-    frequency_ratio: OctaSineKnob,
-    frequency_free: OctaSineKnob,
-    frequency_fine: OctaSineKnob,
+    pub volume: OctaSineKnob,
+    pub panning: OctaSineKnob,
+    pub mod_index: OctaSineKnob,
+    pub feedback: OctaSineKnob,
+    pub frequency_ratio: OctaSineKnob,
+    pub frequency_free: OctaSineKnob,
+    pub frequency_fine: OctaSineKnob,
 }
 
 
