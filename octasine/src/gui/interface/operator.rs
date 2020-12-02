@@ -28,7 +28,7 @@ impl OperatorWidgets {
         operator_index: usize,
     ) -> Self {
         let (volume, panning, mod_index, feedback, ratio, free, fine) = match operator_index {
-            0 => ( 2,  3,  5,  6, 7,  8, 9),
+            0 => ( 2,  3,  5,  6,  7,  8,  9),
             1 => (15, 16, 19, 20, 21, 22, 23),
             2 => (29, 30, 34, 35, 36, 37, 38),
             3 => (44, 45, 49, 50, 51, 52, 53),
