@@ -6,13 +6,13 @@ use raw_window_handle::RawWindowHandle;
 
 use super::SyncOnlyState;
 
-mod interface;
+pub mod interface;
 
 use interface::OctaSineIcedApplication;
 
 
-const GUI_WIDTH: usize = 1000;
-const GUI_HEIGHT: usize = 750;
+pub const GUI_WIDTH: usize = 1000;
+pub const GUI_HEIGHT: usize = 750;
 
 
 pub struct Gui {
