@@ -143,6 +143,19 @@ impl OctaSineKnob {
         )
     }
 
+    pub fn operator_mod_index<H: SyncHandle>(
+        sync_handle: &Arc<H>,
+        parameter_index: usize,
+    ) -> Self {
+        Self::new_with_steps(
+            sync_handle,
+            parameter_index,
+            "Modulation",
+            &OPERATOR_BETA_STEPS,
+            DEFAULT_OPERATOR_MODULATION_INDEX,
+        )
+    }
+
     pub fn operator_frequency_ratio<H: SyncHandle>(
         sync_handle: &Arc<H>,
         parameter_index: usize,

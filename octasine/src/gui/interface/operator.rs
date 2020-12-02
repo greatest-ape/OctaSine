@@ -14,6 +14,7 @@ pub struct OperatorWidgets {
     index: usize,
     volume: OctaSineKnob,
     panning: OctaSineKnob,
+    mod_index: OctaSineKnob,
     frequency_ratio: OctaSineKnob,
     frequency_free: OctaSineKnob,
     frequency_fine: OctaSineKnob,
@@ -25,11 +26,11 @@ impl OperatorWidgets {
         sync_handle: &Arc<H>,
         operator_index: usize,
     ) -> Self {
-        let (volume, panning, ratio, free, fine) = match operator_index {
-            0 => ( 2,  3,  7,  8, 9),
-            1 => (15, 16, 21, 22, 23),
-            2 => (29, 30, 36, 37, 38),
-            3 => (44, 45, 51, 52, 53),
+        let (volume, panning, mod_index, ratio, free, fine) = match operator_index {
+            0 => ( 2,  3,  5,  7,  8, 9),
+            1 => (15, 16, 19, 21, 22, 23),
+            2 => (29, 30, 34, 36, 37, 38),
+            3 => (44, 45, 49, 51, 52, 53),
             _ => unreachable!(),
         };
 
@@ -37,6 +38,7 @@ impl OperatorWidgets {
             index: operator_index,
             volume: OctaSineKnob::operator_volume(sync_handle, volume),
             panning: OctaSineKnob::operator_panning(sync_handle, panning),
+            mod_index: OctaSineKnob::operator_mod_index(sync_handle, mod_index),
             frequency_ratio: OctaSineKnob::operator_frequency_ratio(sync_handle, ratio),
             frequency_free: OctaSineKnob::operator_frequency_free(sync_handle, free),
             frequency_fine: OctaSineKnob::operator_frequency_fine(sync_handle, fine),
@@ -52,6 +54,12 @@ impl OperatorWidgets {
             .push(Space::with_width(Length::Units(16)))
             .push(self.volume.view(sync_handle))
             .push(self.panning.view(sync_handle))
+            .push(
+                Container::new(
+                    Rule::vertical(16)
+                )
+                    .height(Length::Units(64)))
+            .push(self.mod_index.view(sync_handle))
             .push(
                 Container::new(
                     Rule::vertical(16)
