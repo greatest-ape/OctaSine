@@ -1770,7 +1770,6 @@ version = "0.1.0"
 dependencies = [
  "iced_baseview",
  "octasine",
- "vst",
 ]
 
 [[package]]
