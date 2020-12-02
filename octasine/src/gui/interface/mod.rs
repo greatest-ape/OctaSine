@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use iced_baseview::{executor, Application, Command};
+use iced_baseview::{executor, Application, Command, Align};
 use iced_baseview::{
     Column, Element, Row,
 };
@@ -61,16 +61,8 @@ impl Application for OctaSineIcedApplication {
     type Flags = Arc<SyncOnlyState>;
 
     fn new(sync_only: Self::Flags) -> (Self, Command<Self::Message>) {
-        let master_volume = OctaSineKnob::new(
-            &sync_only,
-            "Master\nvolume".to_string(),
-            0
-        );
-        let master_frequency = OctaSineKnob::new(
-            &sync_only,
-            "Master\nfrequency".to_string(),
-            1
-        );
+        let master_volume = OctaSineKnob::master_volume(&sync_only);
+        let master_frequency = OctaSineKnob::master_frequency(&sync_only);
 
         let app = Self {
             sync_only,
@@ -112,6 +104,7 @@ impl Application for OctaSineIcedApplication {
             .push(
                 Row::new()
                     .padding(16)
+                    .align_items(Align::Center)
                     .push(master_volume)
                     .push(master_frequency)
             )
