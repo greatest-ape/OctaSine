@@ -59,8 +59,8 @@ impl OctaSineKnob {
         let default_sync_value = 0.5;
 
         let tick_marks = tick_marks::Group::min_max_and_center(
-            tick_marks::Tier::One,
-            tick_marks::Tier::One,
+            tick_marks::Tier::Two,
+            tick_marks::Tier::Two,
         );
 
         Self::new(
@@ -163,7 +163,7 @@ impl OctaSineKnob {
         let default_sync_value = 0.5;
 
         let tick_marks = tick_marks::Group::min_max(
-            tick_marks::Tier::One,
+            tick_marks::Tier::Two,
         );
 
         Self::new(
@@ -307,7 +307,7 @@ fn tick_marks_from_steps(steps: &[f64]) -> tick_marks::Group {
         let normal = Normal::new(index as f32 / len);
 
         let tier = if index == 0 || index == steps.len() - 1 {
-            tick_marks::Tier::One
+            tick_marks::Tier::Two
         } else {
             tick_marks::Tier::Two
         };
@@ -354,9 +354,9 @@ fn tick_marks_from_min_max_and_value(
     sync_value: f64,
 ) -> tick_marks::Group {
     let marks = vec![
-        (Normal::new(0.0), tick_marks::Tier::One),
-        (Normal::new(sync_value as f32), tick_marks::Tier::One),
-        (Normal::new(1.0), tick_marks::Tier::One),
+        (Normal::new(0.0), tick_marks::Tier::Two),
+        (Normal::new(sync_value as f32), tick_marks::Tier::Two),
+        (Normal::new(1.0), tick_marks::Tier::Two),
     ];
 
     tick_marks::Group::from(marks)
@@ -380,6 +380,6 @@ fn tick_mark_from_value(
     sync_value: f64,
 ) -> tick_marks::Group {
     tick_marks::Group::from(vec![
-        (Normal::new(sync_value as f32), tick_marks::Tier::One),
+        (Normal::new(sync_value as f32), tick_marks::Tier::Two),
     ])
 }
