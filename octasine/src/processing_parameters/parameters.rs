@@ -206,7 +206,22 @@ impl ParameterValueConversion for ProcessingParameterOperatorFrequencyFine {
 
 create_interpolatable_processing_parameter!(ProcessingParameterOperatorFeedback, DEFAULT_OPERATOR_FEEDBACK, TimeCounter);
 
-impl_parameter_value_conversion_identity!(ProcessingParameterOperatorFeedback);
+impl ParameterValueConversion for ProcessingParameterOperatorFeedback {
+    type ProcessingParameterValue = f64;
+
+    fn to_processing(value: f64) -> Self::ProcessingParameterValue {
+        value
+    }
+    fn to_preset(value: Self::ProcessingParameterValue) -> f64 {
+        value
+    }
+    fn parse_string_value(value: String) -> Option<Self::ProcessingParameterValue> {
+        simple_parameter_string_parsing!(Self, value, Self::ProcessingParameterValue)
+    }
+    fn format_processing(internal_value: Self::ProcessingParameterValue) -> String {
+        format!("{:.02}%", (internal_value * 100.0))
+    }
+}
 
 
 // Modulation index
