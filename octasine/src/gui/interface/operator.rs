@@ -8,7 +8,7 @@ use iced_baseview::{
 use crate::SyncHandle;
 
 use super::{Message, ParameterWidget};
-use super::widgets::OctaSineKnob;
+use super::knob::OctaSineKnob;
 use super::envelope::Envelope;
 
 
