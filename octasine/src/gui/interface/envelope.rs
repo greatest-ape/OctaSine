@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use iced_baseview::canvas::{Canvas, Cursor, Frame, Geometry, Path, Program, Stroke, path};
+use iced_baseview::canvas::{Canvas, Cursor, Frame, Geometry, Path, Program, Stroke, path, Text};
 use iced_baseview::{
     Element, Color, Rectangle, Point, Length
 };
@@ -128,7 +128,7 @@ impl Envelope {
         total_duration: f32,
         sustain_duration: f32,
     ){
-        let attack = Self::calculate_stage_path(
+        let (attack_path, attack_end_point) = Self::calculate_stage_path(
             &self.log10_table,
             bounds,
             total_duration,
@@ -138,7 +138,7 @@ impl Envelope {
             self.attack_end_value as f32,
         );
 
-        let decay = Self::calculate_stage_path(
+        let (decay_path, decay_end_point) = Self::calculate_stage_path(
             &self.log10_table,
             bounds,
             total_duration,
@@ -148,7 +148,7 @@ impl Envelope {
             self.decay_end_value as f32,
         );
 
-        let sustain = Self::calculate_stage_path(
+        let (sustain_path, _) = Self::calculate_stage_path(
             &self.log10_table,
             bounds,
             total_duration,
@@ -158,7 +158,7 @@ impl Envelope {
             self.decay_end_value,
         );
 
-        let release = Self::calculate_stage_path(
+        let (release_path, release_end_point) = Self::calculate_stage_path(
             &self.log10_table,
             bounds,
             total_duration,
@@ -175,10 +175,52 @@ impl Envelope {
             .with_width(1.0)
             .with_color(Color::from_rgb(0.5, 0.5, 0.5));
 
-        frame.stroke(&attack, stroke);
-        frame.stroke(&decay, stroke);
-        frame.stroke(&sustain, sustain_stroke);
-        frame.stroke(&release, stroke);
+        frame.stroke(&attack_path, stroke);
+        frame.stroke(&decay_path, stroke);
+        frame.stroke(&sustain_path, sustain_stroke);
+        frame.stroke(&release_path, stroke);
+
+        Self::draw_circle(frame, attack_end_point, "A");
+        Self::draw_circle(frame, decay_end_point, "D");
+        Self::draw_circle(frame, release_end_point, "R");
+    }
+
+    fn draw_circle(
+        frame: &mut Frame,
+        center: Point,
+        content: &str,
+    ){
+        let radius = 6.0;
+        let text_size = 10.0;
+
+        let mut path_builder = path::Builder::new();
+
+        path_builder.move_to(center);
+        path_builder.circle(center, radius);
+
+        let path = path_builder.build();
+
+        let stroke = Stroke::default()
+            .with_width(1.0)
+            .with_color(Color::from_rgb(0.7, 0.7, 0.7));
+
+        frame.fill(&path, Color::WHITE);
+        frame.stroke(&path, stroke);
+
+        let text_position = Point::new(
+            center.x - text_size * 0.33,
+            center.y - text_size * 0.5,
+        );
+
+        let text = Text {
+            content: content.to_string(),
+            position: text_position,
+            size: text_size,
+            color: Color::BLACK,
+            ..Default::default()
+        };
+
+        frame.fill_text(text)
     }
 
     fn calculate_stage_path(
@@ -189,7 +231,7 @@ impl Envelope {
         start_value: f32,
         stage_duration: f32,
         stage_end_value: f32,
-    ) -> Path {
+    ) -> (Path, Point) {
         let mut path = path::Builder::new();
 
         let start = Self::calculate_stage_progress_point(
@@ -236,7 +278,7 @@ impl Envelope {
         path.move_to(start);
         path.bezier_curve_to(control_a, control_b, to);
 
-        path.build()
+        (path.build(), to)
     }
 
     fn calculate_stage_progress_point(
