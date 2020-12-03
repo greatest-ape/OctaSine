@@ -426,6 +426,10 @@ impl Program<Message> for Envelope {
         bounds: Rectangle,
         _cursor: Cursor,
     ) -> (event::Status, Option<Message>) {
+        if self.bounds.is_none(){
+            self.update_data(Some(bounds))
+        }
+
         match event {
             event::Event::Mouse(iced_baseview::mouse::Event::CursorMoved {x, y}) => {
                 if bounds.contains(Point::new(x, y)){
@@ -449,8 +453,6 @@ impl Program<Message> for Envelope {
                     } else {
                         self.release_dragger.status = EnvelopeDraggerStatus::Normal;
                     }
-
-                    self.update_data(Some(bounds));
                 }
             },
             _ => (),
