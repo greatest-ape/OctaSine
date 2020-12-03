@@ -19,21 +19,24 @@ pub struct Envelope {
 }
 
 
-impl Program<Message> for Envelope {
-    fn draw(&self, bounds: Rectangle, _cursor: Cursor) -> Vec<Geometry>{
-        let mut frame = Frame::new(bounds.size());
+impl Envelope {
+    fn draw_time_markers(&self, frame: &mut Frame, total_duration: f32){
+        let total_width = frame.width();
+        let max_height = frame.height();
 
-        let sustain_duration = 0.1 / 4.0;
+        let mut time_marker_interval = 0.01 / 4.0;
 
-        let total_duration = self.attack_duration + self.decay_duration + sustain_duration + self.release_duration;
-        let total_width = bounds.width;
+        let num_markers = loop {
+            let num_markers = (total_duration / time_marker_interval) as usize;
 
-        let max_height = bounds.height * 1.0;
+            if num_markers <= 100 {
+                break num_markers;
+            } else {
+                time_marker_interval *= 10.0;
+            }
+        };
 
-        let time_marker_interval = 0.01 / 4.0;
-
-        // Draw time markers
-        for i in 0..(total_duration / time_marker_interval) as usize {
+        for i in 0..num_markers {
             let x = ((time_marker_interval * i as f32) / total_duration) * total_width;
 
             let path = Path::line(
@@ -64,6 +67,22 @@ impl Program<Message> for Envelope {
                 frame.stroke(&path, stroke);
             }
         }
+    }
+}
+
+
+impl Program<Message> for Envelope {
+    fn draw(&self, bounds: Rectangle, _cursor: Cursor) -> Vec<Geometry>{
+        let mut frame = Frame::new(bounds.size());
+
+        let sustain_duration = 0.1 / 4.0;
+
+        let total_duration = self.attack_duration + self.decay_duration + sustain_duration + self.release_duration;
+
+        self.draw_time_markers(&mut frame, total_duration);
+
+        let total_width = bounds.width;
+        let max_height = bounds.height * 1.0;
 
         let attack_from = Point::new(0.0, max_height);
         let attack_to = Point::new(
