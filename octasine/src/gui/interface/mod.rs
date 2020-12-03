@@ -9,11 +9,11 @@ use iced_audio::Normal;
 use crate::SyncHandle;
 
 mod envelope;
-mod widgets;
+mod knob;
 mod operator;
 
 use operator::OperatorWidgets;
-use widgets::OctaSineKnob;
+use knob::OctaSineKnob;
 
 
 #[derive(Debug, Clone)]
