@@ -1,15 +1,17 @@
 use std::sync::Arc;
 
 use iced_baseview::canvas::{
-    Canvas, Cursor, Frame, Geometry, Path, Program, Stroke, Text, path, event
+    Cache, Canvas, Cursor, Frame, Geometry, Path, Program, Stroke, Text, path, event
 };
 use iced_baseview::{
     Element, Color, Rectangle, Point, Length
 };
+
 use vst2_helpers::approximations::Log10Table;
 
 use crate::SyncHandle;
 use crate::voices::VoiceOperatorVolumeEnvelope;
+use crate::constants::{ENVELOPE_MIN_DURATION, ENVELOPE_MAX_DURATION};
 
 use super::Message;
 
@@ -106,6 +108,7 @@ impl EnvelopeStagePath {
             stage_duration as f64,
         ) as f32;
 
+        // Watch out for point.y.is_nan() when duration = 0.0 here
         Point::new(
             ((start_duration + duration) / total_duration) * bounds.width,
             bounds.height * (1.0 - value)
@@ -124,7 +127,7 @@ impl Default for EnvelopeStagePath {
 }
 
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 enum EnvelopeDraggerStatus {
     Normal,
     Hover
@@ -145,8 +148,24 @@ impl EnvelopeDragger {
 
         self.hitbox.width = self.radius * 2.0;
         self.hitbox.height = self.radius * 2.0;
-        self.hitbox.x = center.x - self.radius / 2.0;
-        self.hitbox.y = center.y - self.radius / 2.0;
+        self.hitbox.x = (center.x - self.radius / 2.0).max(0.0);
+        self.hitbox.y = (center.y - self.radius / 2.0).max(0.0);
+    }
+
+    fn update(&mut self, cursor_position: Point) -> bool {
+        match (self.hitbox.contains(cursor_position), self.status){
+            (true, EnvelopeDraggerStatus::Normal) => {
+                self.status = EnvelopeDraggerStatus::Hover;
+
+                true
+            },
+            (false, EnvelopeDraggerStatus::Hover) => {
+                self.status = EnvelopeDraggerStatus::Normal;
+
+                true
+            },
+            _ => false,
+        }
     }
 }
 
@@ -165,6 +184,7 @@ impl Default for EnvelopeDragger {
 
 pub struct Envelope {
     log10_table: Log10Table,
+    cache: Cache,
     attack_duration: f32,
     attack_end_value: f32,
     decay_duration: f32,
@@ -196,6 +216,7 @@ impl Envelope {
 
         Self {
             log10_table: Log10Table::default(),
+            cache: Cache::default(),
             attack_duration: sync_handle.get_presets().get_parameter_value_float(attack_dur) as f32,
             attack_end_value: sync_handle.get_presets().get_parameter_value_float(attack_val) as f32,
             decay_duration: sync_handle.get_presets().get_parameter_value_float(decay_dur) as f32,
@@ -212,8 +233,12 @@ impl Envelope {
         }
     }
 
+    fn process_envelope_duration(sync_value: f64) -> f32 {
+        sync_value.max(ENVELOPE_MIN_DURATION / ENVELOPE_MAX_DURATION) as f32
+    }
+
     pub fn set_attack_duration(&mut self, value: f64){
-        self.attack_duration = value as f32;
+        self.attack_duration = Self::process_envelope_duration(value);
 
         self.update_data(None);
     }
@@ -225,7 +250,7 @@ impl Envelope {
     }
 
     pub fn set_decay_duration(&mut self, value: f64){
-        self.decay_duration = value as f32;
+        self.decay_duration = Self::process_envelope_duration(value);
 
         self.update_data(None);
     }
@@ -237,7 +262,7 @@ impl Envelope {
     }
 
     pub fn set_release_duration(&mut self, value: f64){
-        self.release_duration = value as f32;
+        self.release_duration = Self::process_envelope_duration(value);
 
         self.update_data(None);
     }
@@ -256,6 +281,8 @@ impl Envelope {
         self.attack_dragger.set_center(self.attack_stage_path.end_point);
         self.decay_dragger.set_center(self.decay_stage_path.end_point);
         self.release_dragger.set_center(self.release_stage_path.end_point);
+
+        self.cache.clear();
     }
 
     fn update_stage_paths(&mut self){
@@ -408,16 +435,16 @@ impl Envelope {
 
 impl Program<Message> for Envelope {
     fn draw(&self, bounds: Rectangle, _cursor: Cursor) -> Vec<Geometry>{
-        let mut frame = Frame::new(bounds.size());
+        let geometry = self.cache.draw(bounds.size(), |frame| {
+            self.draw_time_markers(frame);
+            self.draw_stage_paths(frame);
 
-        self.draw_time_markers(&mut frame);
-        self.draw_stage_paths(&mut frame);
+            Self::draw_dragger(frame, &self.attack_dragger);
+            Self::draw_dragger(frame, &self.decay_dragger);
+            Self::draw_dragger(frame, &self.release_dragger);
+        });
 
-        Self::draw_dragger(&mut frame, &self.attack_dragger);
-        Self::draw_dragger(&mut frame, &self.decay_dragger);
-        Self::draw_dragger(&mut frame, &self.release_dragger);
-
-        vec![frame.into_geometry()]
+        vec![geometry]
     }
 
     fn update(
@@ -433,25 +460,19 @@ impl Program<Message> for Envelope {
         match event {
             event::Event::Mouse(iced_baseview::mouse::Event::CursorMoved {x, y}) => {
                 if bounds.contains(Point::new(x, y)){
-                    let position = Point::new(
+                    let cursor_position = Point::new(
                         x - bounds.x,
                         y - bounds.y,
                     );
 
-                    if self.attack_dragger.hitbox.contains(position){
-                        self.attack_dragger.status = EnvelopeDraggerStatus::Hover;
-                    } else {
-                        self.attack_dragger.status = EnvelopeDraggerStatus::Normal;
-                    }
-                    if self.decay_dragger.hitbox.contains(position){
-                        self.decay_dragger.status = EnvelopeDraggerStatus::Hover;
-                    } else {
-                        self.decay_dragger.status = EnvelopeDraggerStatus::Normal;
-                    }
-                    if self.release_dragger.hitbox.contains(position){
-                        self.release_dragger.status = EnvelopeDraggerStatus::Hover;
-                    } else {
-                        self.release_dragger.status = EnvelopeDraggerStatus::Normal;
+                    let mut changed = false;
+
+                    changed |= self.attack_dragger.update(cursor_position);
+                    changed |= self.decay_dragger.update(cursor_position);
+                    changed |= self.release_dragger.update(cursor_position);
+
+                    if changed {
+                        self.cache.clear();
                     }
                 }
             },
