@@ -2,12 +2,13 @@
 
 ## GUI
 
-* Maybe don't load parameter changes in processing while dragging.
-* Shift modifer: implement in iced_baseview if necessary
+* Make sure that rendering when window is not in focus actually works!
 * Envelopes
   * Curves that actually match real shape
   * Time markers: adjust frequency after total duration
   * Draw draggable circles at junctions
+* Shift modifer: implement in iced_baseview if necessary
+* Maybe don't load parameter changes in processing while dragging.
 
 ## Code quality / safety
 
