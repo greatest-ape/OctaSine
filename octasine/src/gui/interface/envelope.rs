@@ -1,16 +1,19 @@
 use std::sync::Arc;
 
-use iced_baseview::canvas::{Canvas, Cursor, Frame, Geometry, Path, Program, Stroke};
+use iced_baseview::canvas::{Canvas, Cursor, Frame, Geometry, Path, Program, Stroke, path};
 use iced_baseview::{
     Element, Color, Rectangle, Point, Length
 };
+use vst2_helpers::approximations::Log10Table;
 
 use crate::SyncHandle;
+use crate::voices::VoiceOperatorVolumeEnvelope;
 
 use super::Message;
 
 
 pub struct Envelope {
+    log10_table: Log10Table,
     pub attack_duration: f32,
     pub attack_end_value: f32,
     pub decay_duration: f32,
@@ -68,6 +71,95 @@ impl Envelope {
             }
         }
     }
+
+    fn build_stage_path(
+        log10_table: &Log10Table,
+        total_duration: f32,
+        total_width: f32,
+        max_height: f32,
+        start_x: f32,
+        start_y: f32,
+        stage_duration: f32,
+        stage_end_value: f32,
+    ) -> Path {
+        let mut path = path::Builder::new();
+
+        fn calculate_point(
+            log10_table: &Log10Table,
+            total_duration: f32,
+            total_width: f32,
+            max_height: f32,
+            start_x: f32,
+            start_y: f32,
+            stage_duration: f32,
+            stage_end_value: f32,
+            progress: f32,
+        ) -> Point {
+            let x = stage_duration * progress;
+            let y = VoiceOperatorVolumeEnvelope::calculate_curve(
+                log10_table,
+                start_y as f64,
+                stage_end_value as f64,
+                x as f64,
+                stage_duration as f64,
+            ) as f32;
+
+            Point::new(
+                ((start_x + x) / total_duration) * total_width,
+                max_height * (1.0 - y)
+            )
+        }
+
+        let start = calculate_point(
+            log10_table,
+            total_duration,
+            total_width,
+            max_height,
+            start_x,
+            start_y,
+            stage_duration,
+            stage_end_value,
+            0.0
+        );
+        let control_a = calculate_point(
+            log10_table,
+            total_duration,
+            total_width,
+            max_height,
+            start_x,
+            start_y,
+            stage_duration,
+            stage_end_value,
+            1.0 / 3.0
+        );
+        let control_b = calculate_point(
+            log10_table,
+            total_duration,
+            total_width,
+            max_height,
+            start_x,
+            start_y,
+            stage_duration,
+            stage_end_value,
+            2.0 / 3.0
+        );
+        let to = calculate_point(
+            log10_table,
+            total_duration,
+            total_width,
+            max_height,
+            start_x,
+            start_y,
+            stage_duration,
+            stage_end_value,
+            1.0
+        );
+
+        path.move_to(start);
+        path.bezier_curve_to(control_a, control_b, to);
+
+        path.build()
+    }
 }
 
 
@@ -90,25 +182,49 @@ impl Program<Message> for Envelope {
             max_height * (1.0 - self.attack_end_value)
         );
 
-        let decay_to = Point::new(
-            attack_to.x + (self.decay_duration / total_duration) * total_width,
-            max_height * (1.0 - self.decay_end_value)
+        let attack = Self::build_stage_path(
+            &self.log10_table,
+            total_duration,
+            total_width,
+            max_height,
+            0.0,
+            0.0,
+            self.attack_duration as f32,
+            self.attack_end_value as f32,
         );
 
-        let sustain_to = Point::new(
-            decay_to.x + (sustain_duration / total_duration) * total_width,
-            decay_to.y
+        let decay = Self::build_stage_path(
+            &self.log10_table,
+            total_duration,
+            total_width,
+            max_height,
+            self.attack_duration,
+            self.attack_end_value,
+            self.decay_duration as f32,
+            self.decay_end_value as f32,
         );
 
-        let release_to = Point::new(
-            sustain_to.x + (self.release_duration / total_duration) * total_width,
-            max_height
+        let sustain = Self::build_stage_path(
+            &self.log10_table,
+            total_duration,
+            total_width,
+            max_height,
+            self.attack_duration + self.decay_duration,
+            self.decay_end_value,
+            sustain_duration as f32,
+            self.decay_end_value,
         );
 
-        let attack = Path::line(attack_from, attack_to);
-        let decay = Path::line(attack_to, decay_to);
-        let sustain = Path::line(decay_to, sustain_to);
-        let release = Path::line(sustain_to, release_to);
+        let release = Self::build_stage_path(
+            &self.log10_table,
+            total_duration,
+            total_width,
+            max_height,
+            self.attack_duration + self.decay_duration + sustain_duration,
+            self.decay_end_value,
+            self.release_duration as f32,
+            0.0
+        );
 
         let stroke = Stroke::default()
             .with_width(1.0)
@@ -121,10 +237,6 @@ impl Program<Message> for Envelope {
         frame.stroke(&decay, stroke);
         frame.stroke(&sustain, sustain_stroke);
         frame.stroke(&release, stroke);
-
-        /*
-
-        */
 
         vec![frame.into_geometry()]
     }
@@ -143,6 +255,7 @@ impl Envelope {
         let release_duration = 14;
 
         Self {
+            log10_table: Log10Table::default(),
             attack_duration: sync_handle.get_presets().get_parameter_value_float(attack_duration) as f32,
             attack_end_value: sync_handle.get_presets().get_parameter_value_float(attack_end_value) as f32,
             decay_duration: sync_handle.get_presets().get_parameter_value_float(decay_duration) as f32,
