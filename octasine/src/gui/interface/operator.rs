@@ -1,13 +1,15 @@
 use std::sync::Arc;
 
 use iced_baseview::{
-    Container, Column, Element, Text, Length, HorizontalAlignment, Align, Row, Rule, Space
+    Container, Column, Element, Text, Length, HorizontalAlignment, Align, Row, Rule, Space, Canvas
 };
+
 
 use crate::SyncHandle;
 
 use super::{Message, ParameterWidget};
 use super::widgets::OctaSineKnob;
+use super::envelope::Envelope;
 
 
 pub struct OperatorWidgets {
@@ -19,6 +21,7 @@ pub struct OperatorWidgets {
     pub frequency_ratio: OctaSineKnob,
     pub frequency_free: OctaSineKnob,
     pub frequency_fine: OctaSineKnob,
+    pub envelope: Envelope,
 }
 
 
@@ -44,6 +47,7 @@ impl OperatorWidgets {
             frequency_ratio: OctaSineKnob::operator_frequency_ratio(sync_handle, ratio),
             frequency_free: OctaSineKnob::operator_frequency_free(sync_handle, free),
             frequency_fine: OctaSineKnob::operator_frequency_fine(sync_handle, fine),
+            envelope: Envelope::new(&sync_handle, operator_index),
         }
     }
 
@@ -71,6 +75,19 @@ impl OperatorWidgets {
             .push(self.frequency_ratio.view(sync_handle))
             .push(self.frequency_free.view(sync_handle))
             .push(self.frequency_fine.view(sync_handle))
+            .push(
+                Container::new(
+                    Rule::vertical(16)
+                )
+                    .height(Length::Units(64)))
+            .push(
+                Space::with_width(Length::Units(16))
+            )
+            .push(
+                Container::new(self.envelope.view(sync_handle))
+                    .width(Length::Fill)
+                    // .padding(16)
+            )
             .into()
     }
 }
