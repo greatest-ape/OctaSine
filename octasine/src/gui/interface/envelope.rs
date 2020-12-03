@@ -14,15 +14,64 @@ use super::Message;
 
 pub struct Envelope {
     log10_table: Log10Table,
-    pub attack_duration: f32,
-    pub attack_end_value: f32,
-    pub decay_duration: f32,
-    pub decay_end_value: f32,
-    pub release_duration: f32,
+    attack_duration: f32,
+    attack_end_value: f32,
+    decay_duration: f32,
+    decay_end_value: f32,
+    release_duration: f32,
 }
 
 
 impl Envelope {
+    pub fn new<H: SyncHandle>(
+        sync_handle: &Arc<H>,
+        operator_index: usize,
+    ) -> Self {
+        let (attack_dur, attack_val, decay_dur, decay_val, release_dur) = match operator_index {
+            0 => (10, 11, 12, 13, 14),
+            1 => (24, 25, 26, 27, 28),
+            2 => (39, 40, 41, 42, 43),
+            3 => (54, 55, 56, 57, 58),
+            _ => unreachable!(),
+        };
+
+        Self {
+            log10_table: Log10Table::default(),
+            attack_duration: sync_handle.get_presets().get_parameter_value_float(attack_dur) as f32,
+            attack_end_value: sync_handle.get_presets().get_parameter_value_float(attack_val) as f32,
+            decay_duration: sync_handle.get_presets().get_parameter_value_float(decay_dur) as f32,
+            decay_end_value: sync_handle.get_presets().get_parameter_value_float(decay_val) as f32,
+            release_duration: sync_handle.get_presets().get_parameter_value_float(release_dur) as f32,
+        }
+    }
+
+    pub fn view<H: SyncHandle>(&mut self, sync_handle: &Arc<H>) -> Element<Message> {
+        Canvas::new(self)
+            .width(Length::Units(256))
+            .height(Length::Units(64))
+            .into()
+    }
+
+    pub fn set_attack_duration(&mut self, value: f64){
+        self.attack_duration = value as f32;
+    }
+
+    pub fn set_attack_end_value(&mut self, value: f64){
+        self.attack_end_value = value as f32;
+    }
+
+    pub fn set_decay_duration(&mut self, value: f64){
+        self.decay_duration = value as f32;
+    }
+
+    pub fn set_decay_end_value(&mut self, value: f64){
+        self.decay_end_value = value as f32;
+    }
+
+    pub fn set_release_duration(&mut self, value: f64){
+        self.release_duration = value as f32;
+    }
+
     fn draw_time_markers(&self, frame: &mut Frame, total_duration: f32){
         let total_width = frame.width();
         let max_height = frame.height();
@@ -221,35 +270,5 @@ impl Program<Message> for Envelope {
         frame.stroke(&release, stroke);
 
         vec![frame.into_geometry()]
-    }
-}
-
-
-impl Envelope {
-    pub fn new<H: SyncHandle>(
-        sync_handle: &Arc<H>,
-        operator_index: usize,
-    ) -> Self {
-        let attack_duration = 10;
-        let attack_end_value = 11;
-        let decay_duration = 12;
-        let decay_end_value = 13;
-        let release_duration = 14;
-
-        Self {
-            log10_table: Log10Table::default(),
-            attack_duration: sync_handle.get_presets().get_parameter_value_float(attack_duration) as f32,
-            attack_end_value: sync_handle.get_presets().get_parameter_value_float(attack_end_value) as f32,
-            decay_duration: sync_handle.get_presets().get_parameter_value_float(decay_duration) as f32,
-            decay_end_value: sync_handle.get_presets().get_parameter_value_float(decay_end_value) as f32,
-            release_duration: sync_handle.get_presets().get_parameter_value_float(release_duration) as f32,
-        }
-    }
-
-    pub fn view<H: SyncHandle>(&mut self, sync_handle: &Arc<H>) -> Element<Message> {
-        Canvas::new(self)
-            .width(Length::Units(256))
-            .height(Length::Units(64))
-            .into()
     }
 }
