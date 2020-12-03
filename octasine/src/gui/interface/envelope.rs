@@ -435,7 +435,6 @@ impl Program<Message> for Envelope {
                         x - bounds.x,
                         y - bounds.y,
                     );
-                    println!("mouse moved: {:?}", position);
 
                     if self.attack_dragger.hitbox.contains(position){
                         self.attack_dragger.status = EnvelopeDraggerStatus::Hover;
