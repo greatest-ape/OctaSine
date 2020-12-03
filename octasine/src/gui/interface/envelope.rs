@@ -170,7 +170,7 @@ pub struct Envelope {
     decay_duration: f32,
     decay_end_value: f32,
     release_duration: f32,
-    bounds: Rectangle,
+    bounds: Option<Rectangle>,
     attack_stage_path: EnvelopeStagePath,
     decay_stage_path: EnvelopeStagePath,
     sustain_stage_path: EnvelopeStagePath,
@@ -194,14 +194,14 @@ impl Envelope {
             _ => unreachable!(),
         };
 
-        let mut envelope = Self {
+        Self {
             log10_table: Log10Table::default(),
             attack_duration: sync_handle.get_presets().get_parameter_value_float(attack_dur) as f32,
             attack_end_value: sync_handle.get_presets().get_parameter_value_float(attack_val) as f32,
             decay_duration: sync_handle.get_presets().get_parameter_value_float(decay_dur) as f32,
             decay_end_value: sync_handle.get_presets().get_parameter_value_float(decay_val) as f32,
             release_duration: sync_handle.get_presets().get_parameter_value_float(release_dur) as f32,
-            bounds: Rectangle::default(),
+            bounds: None,
             attack_stage_path: EnvelopeStagePath::default(),
             decay_stage_path: EnvelopeStagePath::default(),
             sustain_stage_path: EnvelopeStagePath::default(),
@@ -209,11 +209,7 @@ impl Envelope {
             attack_dragger: EnvelopeDragger::default(),
             decay_dragger: EnvelopeDragger::default(),
             release_dragger: EnvelopeDragger::default(),
-        };
-
-        envelope.update_data(None);
-
-        envelope
+        }
     }
 
     pub fn set_attack_duration(&mut self, value: f64){
@@ -252,7 +248,7 @@ impl Envelope {
 
     fn update_data(&mut self, bounds: Option<Rectangle>){
         if let Some(bounds) = bounds {
-            self.bounds = bounds;
+            self.bounds = Some(bounds);
         }
 
         self.update_stage_paths();
@@ -263,7 +259,11 @@ impl Envelope {
     }
 
     fn update_stage_paths(&mut self){
-        let bounds = self.bounds;
+        let bounds = match self.bounds {
+            Some(bounds) => bounds,
+            None => return, // FIXME
+        };
+
         let total_duration = self.get_total_duration();
         let sustain_duration = SUSTAIN_DURATION;
 
@@ -426,8 +426,6 @@ impl Program<Message> for Envelope {
         bounds: Rectangle,
         _cursor: Cursor,
     ) -> (event::Status, Option<Message>) {
-        self.update_data(Some(bounds));
-
         match event {
             event::Event::Mouse(iced_baseview::mouse::Event::CursorMoved {x, y}) => {
                 if bounds.contains(Point::new(x, y)){
@@ -451,6 +449,8 @@ impl Program<Message> for Envelope {
                     } else {
                         self.release_dragger.status = EnvelopeDraggerStatus::Normal;
                     }
+
+                    self.update_data(Some(bounds));
                 }
             },
             _ => (),
