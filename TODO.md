@@ -5,7 +5,7 @@
 * Make sure that rendering when window is not in focus actually works!
 * Envelopes
   * Curves that actually match real shape
-  * Time markers: adjust frequency after total duration
+    * Bezier curve with a few data points from real envelope / log10 table?
   * Draw draggable circles at junctions
 * Shift modifer: implement in iced_baseview if necessary
 * Maybe don't load parameter changes in processing while dragging.
