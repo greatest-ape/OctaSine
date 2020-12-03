@@ -2,9 +2,10 @@
 
 ## GUI
 
-* Make sure that rendering when window is not in focus actually works!
 * Envelopes
-  * Draw draggable circles at junctions
+  * Fix that things are rendered outside
+  * Initialize bounds on load somehow
+  * Interaction with draggers
 * Shift modifer: implement in iced_baseview if necessary
 * Maybe don't load parameter changes in processing while dragging.
 
