@@ -27,6 +27,11 @@ fn main(){
         presets: built_in_preset_bank(),
     });
 
+    // Set envelope data for easier testing
+    sync_state.presets.set_parameter_value_float_from_gui(10, 1.0 / 16.0);
+    sync_state.presets.set_parameter_value_float_from_gui(12, 1.0 / 64.0);
+    sync_state.presets.set_parameter_value_float_from_gui(13, 0.7);
+
     let settings = Settings {
         window: settings::Window {
             size: (GUI_WIDTH as u32, GUI_HEIGHT as u32),
