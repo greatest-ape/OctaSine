@@ -3,6 +3,11 @@
 ## GUI
 
 * Maybe don't load parameter changes in processing while dragging.
+* Shift modifer: implement in iced_baseview if necessary
+* Envelopes
+  * Curves that actually match real shape
+  * Time markers: adjust frequency after total duration
+  * Draw draggable circles at junctions
 
 ## Code quality / safety
 
