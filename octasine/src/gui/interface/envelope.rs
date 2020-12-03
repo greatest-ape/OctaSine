@@ -1,10 +1,10 @@
 use std::sync::Arc;
 
 use iced_baseview::canvas::{
-    Canvas, Cursor, Frame, Geometry, Path, Program, Stroke, path, Text, event
+    Canvas, Cursor, Frame, Geometry, Path, Program, Stroke, Text, path, event
 };
 use iced_baseview::{
-    Element, Color, Rectangle, Point, Length, Size
+    Element, Color, Rectangle, Point, Length
 };
 use vst2_helpers::approximations::Log10Table;
 
@@ -14,253 +14,18 @@ use crate::voices::VoiceOperatorVolumeEnvelope;
 use super::Message;
 
 
-#[derive(Clone, Copy, Debug)]
-enum EnvelopePointStatus {
-    Normal,
-    Hover
+const SUSTAIN_DURATION: f32 = 0.1 / 4.0;
+const DRAGGER_RADIUS: f32 = 4.0;
+
+
+struct EnvelopeStagePath {
+    path: Path,
+    end_point: Point,
 }
 
 
-struct EnvelopePoint {
-    center: Point,
-    radius: f32,
-    hitbox: Rectangle,
-    status: EnvelopePointStatus,
-}
-
-
-impl EnvelopePoint {
-    fn set_center(&mut self, center: Point){
-        self.center = center;
-        self.hitbox.x = center.x;
-        self.hitbox.y = center.y;
-    }
-}
-
-
-impl Default for EnvelopePoint {
-    fn default() -> Self {
-        let center = Point::default();
-        let radius = 5.0;
-
-        Self {
-            center,
-            radius,
-            hitbox: Rectangle::new(center, Size::new(radius, radius)),
-            status: EnvelopePointStatus::Normal,
-        }
-    }
-}
-
-
-pub struct Envelope {
-    log10_table: Log10Table,
-    attack_duration: f32,
-    attack_end_value: f32,
-    decay_duration: f32,
-    decay_end_value: f32,
-    release_duration: f32,
-    attack_point: EnvelopePoint,
-    decay_point: EnvelopePoint,
-    release_point: EnvelopePoint,
-}
-
-
-impl Envelope {
-    pub fn new<H: SyncHandle>(
-        sync_handle: &Arc<H>,
-        operator_index: usize,
-    ) -> Self {
-        let (attack_dur, attack_val, decay_dur, decay_val, release_dur) = match operator_index {
-            0 => (10, 11, 12, 13, 14),
-            1 => (24, 25, 26, 27, 28),
-            2 => (39, 40, 41, 42, 43),
-            3 => (54, 55, 56, 57, 58),
-            _ => unreachable!(),
-        };
-
-        Self {
-            log10_table: Log10Table::default(),
-            attack_duration: sync_handle.get_presets().get_parameter_value_float(attack_dur) as f32,
-            attack_end_value: sync_handle.get_presets().get_parameter_value_float(attack_val) as f32,
-            decay_duration: sync_handle.get_presets().get_parameter_value_float(decay_dur) as f32,
-            decay_end_value: sync_handle.get_presets().get_parameter_value_float(decay_val) as f32,
-            release_duration: sync_handle.get_presets().get_parameter_value_float(release_dur) as f32,
-            attack_point: EnvelopePoint::default(),
-            decay_point: EnvelopePoint::default(),
-            release_point: EnvelopePoint::default(),
-        }
-    }
-
-    pub fn view<H: SyncHandle>(&mut self, sync_handle: &Arc<H>) -> Element<Message> {
-        Canvas::new(self)
-            .width(Length::Units(256))
-            .height(Length::Units(64))
-            .into()
-    }
-
-    pub fn set_attack_duration(&mut self, value: f64){
-        self.attack_duration = value as f32;
-    }
-
-    pub fn set_attack_end_value(&mut self, value: f64){
-        self.attack_end_value = value as f32;
-    }
-
-    pub fn set_decay_duration(&mut self, value: f64){
-        self.decay_duration = value as f32;
-    }
-
-    pub fn set_decay_end_value(&mut self, value: f64){
-        self.decay_end_value = value as f32;
-    }
-
-    pub fn set_release_duration(&mut self, value: f64){
-        self.release_duration = value as f32;
-    }
-
-    fn draw_time_markers(&self, frame: &mut Frame, total_duration: f32){
-        let total_width = frame.width();
-        let max_height = frame.height();
-
-        let mut time_marker_interval = 0.01 / 4.0;
-
-        let num_markers = loop {
-            let num_markers = (total_duration / time_marker_interval) as usize;
-
-            if num_markers <= 110 {
-                break num_markers;
-            } else {
-                time_marker_interval *= 10.0;
-            }
-        };
-
-        for i in 0..num_markers {
-            let x = ((time_marker_interval * i as f32) / total_duration) * total_width;
-
-            let path = Path::line(
-                Point::new(x, 0.0),
-                Point::new(x, max_height),
-            );
-
-            if i % 10 == 0 && i != 0 {
-                let text = iced_baseview::canvas::Text {
-                    content: format!("{:.1}s", time_marker_interval * 4.0 * i as f32),
-                    position: Point::new(x - 10.0, max_height),
-                    size: 12.0,
-                    ..Default::default()
-                };
-        
-                frame.fill_text(text);
-
-                let stroke = Stroke::default()
-                    .with_width(1.0)
-                    .with_color(Color::from_rgb(0.7, 0.7, 0.7));
-
-                frame.stroke(&path, stroke);
-            } else {
-                let stroke = Stroke::default()
-                    .with_width(1.0)
-                    .with_color(Color::from_rgb(0.9, 0.9, 0.9));
-
-                frame.stroke(&path, stroke);
-            }
-        }
-    }
-
-    fn draw_stage_paths(
-        &self,
-        frame: &mut Frame,
-        bounds: Rectangle,
-        total_duration: f32,
-        sustain_duration: f32,
-    ){
-        let (attack_path, attack_end_point) = Self::calculate_stage_path(
-            &self.log10_table,
-            bounds,
-            total_duration,
-            0.0,
-            0.0,
-            self.attack_duration as f32,
-            self.attack_end_value as f32,
-        );
-
-        let (decay_path, decay_end_point) = Self::calculate_stage_path(
-            &self.log10_table,
-            bounds,
-            total_duration,
-            self.attack_duration,
-            self.attack_end_value,
-            self.decay_duration as f32,
-            self.decay_end_value as f32,
-        );
-
-        let (sustain_path, _) = Self::calculate_stage_path(
-            &self.log10_table,
-            bounds,
-            total_duration,
-            self.attack_duration + self.decay_duration,
-            self.decay_end_value,
-            sustain_duration as f32,
-            self.decay_end_value,
-        );
-
-        let (release_path, release_end_point) = Self::calculate_stage_path(
-            &self.log10_table,
-            bounds,
-            total_duration,
-            self.attack_duration + self.decay_duration + sustain_duration,
-            self.decay_end_value,
-            self.release_duration as f32,
-            0.0
-        );
-
-        let stroke = Stroke::default()
-            .with_width(1.0)
-            .with_color(Color::BLACK);
-        let sustain_stroke = Stroke::default()
-            .with_width(1.0)
-            .with_color(Color::from_rgb(0.5, 0.5, 0.5));
-
-        frame.stroke(&attack_path, stroke);
-        frame.stroke(&decay_path, stroke);
-        frame.stroke(&sustain_path, sustain_stroke);
-        frame.stroke(&release_path, stroke);
-
-        Self::draw_circle(frame, attack_end_point, self.attack_point.status);
-        Self::draw_circle(frame, decay_end_point, self.decay_point.status);
-        Self::draw_circle(frame, release_end_point, self.release_point.status);
-    }
-
-    fn draw_circle(
-        frame: &mut Frame,
-        center: Point,
-        status: EnvelopePointStatus,
-    ){
-        let circle_path = {
-            let mut builder = path::Builder::new();
-
-            builder.move_to(center);
-            builder.circle(center, 4.0);
-
-            builder.build()
-        };
-
-        let fill_color = match status {
-            EnvelopePointStatus::Normal => Color::from_rgb(1.0, 1.0, 1.0),
-            EnvelopePointStatus::Hover => Color::from_rgb(0.0, 0.0, 0.0),
-        };
-
-        frame.fill(&circle_path, fill_color);
-
-        let stroke = Stroke::default()
-            .with_width(1.0)
-            .with_color(Color::from_rgb(0.5, 0.5, 0.5));
-
-        frame.stroke(&circle_path, stroke);
-    }
-
-    fn calculate_stage_path(
+impl EnvelopeStagePath {
+    fn new(
         log10_table: &Log10Table,
         bounds: Rectangle,
         total_duration: f32,
@@ -268,7 +33,7 @@ impl Envelope {
         start_value: f32,
         stage_duration: f32,
         stage_end_value: f32,
-    ) -> (Path, Point) {
+    ) -> Self {
         let mut path = path::Builder::new();
 
         let start = Self::calculate_stage_progress_point(
@@ -315,7 +80,10 @@ impl Envelope {
         path.move_to(start);
         path.bezier_curve_to(control_a, control_b, to);
 
-        (path.build(), to)
+        Self {
+            path: path.build(),
+            end_point: to,
+        }
     }
 
     fn calculate_stage_progress_point(
@@ -346,23 +114,308 @@ impl Envelope {
 }
 
 
+impl Default for EnvelopeStagePath {
+    fn default() -> Self {
+        Self {
+            path: Path::line(Point::default(), Point::default()),
+            end_point: Point::default(),
+        }
+    }
+}
+
+
+#[derive(Clone, Copy, Debug)]
+enum EnvelopeDraggerStatus {
+    Normal,
+    Hover
+}
+
+
+struct EnvelopeDragger {
+    center: Point,
+    radius: f32,
+    hitbox: Rectangle,
+    status: EnvelopeDraggerStatus,
+}
+
+
+impl EnvelopeDragger {
+    fn set_center(&mut self, center: Point){
+        self.center = center;
+
+        self.hitbox.width = self.radius * 2.0;
+        self.hitbox.height = self.radius * 2.0;
+        self.hitbox.x = center.x - self.radius / 2.0;
+        self.hitbox.y = center.y - self.radius / 2.0;
+    }
+}
+
+
+impl Default for EnvelopeDragger {
+    fn default() -> Self {
+        Self {
+            center: Point::default(),
+            radius: DRAGGER_RADIUS,
+            hitbox: Rectangle::default(),
+            status: EnvelopeDraggerStatus::Normal,
+        }
+    }
+}
+
+
+pub struct Envelope {
+    log10_table: Log10Table,
+    attack_duration: f32,
+    attack_end_value: f32,
+    decay_duration: f32,
+    decay_end_value: f32,
+    release_duration: f32,
+    bounds: Rectangle,
+    attack_stage_path: EnvelopeStagePath,
+    decay_stage_path: EnvelopeStagePath,
+    sustain_stage_path: EnvelopeStagePath,
+    release_stage_path: EnvelopeStagePath,
+    attack_dragger: EnvelopeDragger,
+    decay_dragger: EnvelopeDragger,
+    release_dragger: EnvelopeDragger,
+}
+
+
+impl Envelope {
+    pub fn new<H: SyncHandle>(
+        sync_handle: &Arc<H>,
+        operator_index: usize,
+    ) -> Self {
+        let (attack_dur, attack_val, decay_dur, decay_val, release_dur) = match operator_index {
+            0 => (10, 11, 12, 13, 14),
+            1 => (24, 25, 26, 27, 28),
+            2 => (39, 40, 41, 42, 43),
+            3 => (54, 55, 56, 57, 58),
+            _ => unreachable!(),
+        };
+
+        let mut envelope = Self {
+            log10_table: Log10Table::default(),
+            attack_duration: sync_handle.get_presets().get_parameter_value_float(attack_dur) as f32,
+            attack_end_value: sync_handle.get_presets().get_parameter_value_float(attack_val) as f32,
+            decay_duration: sync_handle.get_presets().get_parameter_value_float(decay_dur) as f32,
+            decay_end_value: sync_handle.get_presets().get_parameter_value_float(decay_val) as f32,
+            release_duration: sync_handle.get_presets().get_parameter_value_float(release_dur) as f32,
+            bounds: Rectangle::default(),
+            attack_stage_path: EnvelopeStagePath::default(),
+            decay_stage_path: EnvelopeStagePath::default(),
+            sustain_stage_path: EnvelopeStagePath::default(),
+            release_stage_path: EnvelopeStagePath::default(),
+            attack_dragger: EnvelopeDragger::default(),
+            decay_dragger: EnvelopeDragger::default(),
+            release_dragger: EnvelopeDragger::default(),
+        };
+
+        envelope.update_data(None);
+
+        envelope
+    }
+
+    pub fn set_attack_duration(&mut self, value: f64){
+        self.attack_duration = value as f32;
+
+        self.update_data(None);
+    }
+
+    pub fn set_attack_end_value(&mut self, value: f64){
+        self.attack_end_value = value as f32;
+
+        self.update_data(None);
+    }
+
+    pub fn set_decay_duration(&mut self, value: f64){
+        self.decay_duration = value as f32;
+
+        self.update_data(None);
+    }
+
+    pub fn set_decay_end_value(&mut self, value: f64){
+        self.decay_end_value = value as f32;
+
+        self.update_data(None);
+    }
+
+    pub fn set_release_duration(&mut self, value: f64){
+        self.release_duration = value as f32;
+
+        self.update_data(None);
+    }
+
+    fn get_total_duration(&self) -> f32 {
+        self.attack_duration + self.decay_duration + SUSTAIN_DURATION + self.release_duration
+    }
+
+    fn update_data(&mut self, bounds: Option<Rectangle>){
+        if let Some(bounds) = bounds {
+            self.bounds = bounds;
+        }
+
+        self.update_stage_paths();
+
+        self.attack_dragger.set_center(self.attack_stage_path.end_point);
+        self.decay_dragger.set_center(self.decay_stage_path.end_point);
+        self.release_dragger.set_center(self.release_stage_path.end_point);
+    }
+
+    fn update_stage_paths(&mut self){
+        let bounds = self.bounds;
+        let total_duration = self.get_total_duration();
+        let sustain_duration = SUSTAIN_DURATION;
+
+        self.attack_stage_path = EnvelopeStagePath::new(
+            &self.log10_table,
+            bounds,
+            total_duration,
+            0.0,
+            0.0,
+            self.attack_duration as f32,
+            self.attack_end_value as f32,
+        );
+
+        self.decay_stage_path = EnvelopeStagePath::new(
+            &self.log10_table,
+            bounds,
+            total_duration,
+            self.attack_duration,
+            self.attack_end_value,
+            self.decay_duration as f32,
+            self.decay_end_value as f32,
+        );
+
+        self.sustain_stage_path = EnvelopeStagePath::new(
+            &self.log10_table,
+            bounds,
+            total_duration,
+            self.attack_duration + self.decay_duration,
+            self.decay_end_value,
+            sustain_duration as f32,
+            self.decay_end_value,
+        );
+
+        self.release_stage_path = EnvelopeStagePath::new(
+            &self.log10_table,
+            bounds,
+            total_duration,
+            self.attack_duration + self.decay_duration + sustain_duration,
+            self.decay_end_value,
+            self.release_duration as f32,
+            0.0
+        );
+    }
+
+    pub fn view<H: SyncHandle>(&mut self, sync_handle: &Arc<H>) -> Element<Message> {
+        Canvas::new(self)
+            .width(Length::Units(256))
+            .height(Length::Units(64))
+            .into()
+    }
+
+    fn draw_time_markers(&self, frame: &mut Frame){
+        let total_duration = self.get_total_duration();
+
+        let total_width = frame.width();
+        let max_height = frame.height();
+
+        let mut time_marker_interval = 0.01 / 4.0;
+
+        let num_markers = loop {
+            let num_markers = (total_duration / time_marker_interval) as usize;
+
+            if num_markers <= 110 {
+                break num_markers;
+            } else {
+                time_marker_interval *= 10.0;
+            }
+        };
+
+        for i in 0..num_markers {
+            let x = ((time_marker_interval * i as f32) / total_duration) * total_width;
+
+            let path = Path::line(
+                Point::new(x, 0.0),
+                Point::new(x, max_height),
+            );
+
+            if i % 10 == 0 && i != 0 {
+                let text = Text {
+                    content: format!("{:.1}s", time_marker_interval * 4.0 * i as f32),
+                    position: Point::new(x - 10.0, max_height),
+                    size: 12.0,
+                    ..Default::default()
+                };
+        
+                frame.fill_text(text);
+
+                let stroke = Stroke::default()
+                    .with_width(1.0)
+                    .with_color(Color::from_rgb(0.7, 0.7, 0.7));
+
+                frame.stroke(&path, stroke);
+            } else {
+                let stroke = Stroke::default()
+                    .with_width(1.0)
+                    .with_color(Color::from_rgb(0.9, 0.9, 0.9));
+
+                frame.stroke(&path, stroke);
+            }
+        }
+    }
+
+    fn draw_stage_paths(&self, frame: &mut Frame){
+        let stroke = Stroke::default()
+            .with_width(1.0)
+            .with_color(Color::BLACK);
+        let sustain_stroke = Stroke::default()
+            .with_width(1.0)
+            .with_color(Color::from_rgb(0.5, 0.5, 0.5));
+
+        frame.stroke(&self.attack_stage_path.path, stroke);
+        frame.stroke(&self.decay_stage_path.path, stroke);
+        frame.stroke(&self.sustain_stage_path.path, sustain_stroke);
+        frame.stroke(&self.release_stage_path.path, stroke);
+    }
+
+    fn draw_dragger(frame: &mut Frame, dragger: &EnvelopeDragger){
+        let circle_path = {
+            let mut builder = path::Builder::new();
+
+            builder.move_to(dragger.center);
+            builder.circle(dragger.center, dragger.radius);
+
+            builder.build()
+        };
+
+        let fill_color = match dragger.status {
+            EnvelopeDraggerStatus::Normal => Color::from_rgb(1.0, 1.0, 1.0),
+            EnvelopeDraggerStatus::Hover => Color::from_rgb(0.0, 0.0, 0.0),
+        };
+
+        frame.fill(&circle_path, fill_color);
+
+        let stroke = Stroke::default()
+            .with_width(1.0)
+            .with_color(Color::from_rgb(0.5, 0.5, 0.5));
+
+        frame.stroke(&circle_path, stroke);
+    }
+}
+
+
 impl Program<Message> for Envelope {
     fn draw(&self, bounds: Rectangle, _cursor: Cursor) -> Vec<Geometry>{
         let mut frame = Frame::new(bounds.size());
 
-        let sustain_duration = 0.1 / 4.0;
+        self.draw_time_markers(&mut frame);
+        self.draw_stage_paths(&mut frame);
 
-        let total_duration = self.attack_duration + self.decay_duration +
-            sustain_duration + self.release_duration;
-
-        self.draw_time_markers(&mut frame, total_duration);
-
-        self.draw_stage_paths(
-            &mut frame,
-            bounds,
-            total_duration,
-            sustain_duration
-        );
+        Self::draw_dragger(&mut frame, &self.attack_dragger);
+        Self::draw_dragger(&mut frame, &self.decay_dragger);
+        Self::draw_dragger(&mut frame, &self.release_dragger);
 
         vec![frame.into_geometry()]
     }
@@ -373,6 +426,8 @@ impl Program<Message> for Envelope {
         bounds: Rectangle,
         _cursor: Cursor,
     ) -> (event::Status, Option<Message>) {
+        self.update_data(Some(bounds));
+
         match event {
             event::Event::Mouse(iced_baseview::mouse::Event::CursorMoved {x, y}) => {
                 if bounds.contains(Point::new(x, y)){
@@ -382,20 +437,20 @@ impl Program<Message> for Envelope {
                     );
                     println!("mouse moved: {:?}", position);
 
-                    if self.attack_point.hitbox.contains(position){
-                        self.attack_point.status = EnvelopePointStatus::Hover;
+                    if self.attack_dragger.hitbox.contains(position){
+                        self.attack_dragger.status = EnvelopeDraggerStatus::Hover;
                     } else {
-                        self.attack_point.status = EnvelopePointStatus::Normal;
+                        self.attack_dragger.status = EnvelopeDraggerStatus::Normal;
                     }
-                    if self.decay_point.hitbox.contains(position){
-                        self.decay_point.status = EnvelopePointStatus::Hover;
+                    if self.decay_dragger.hitbox.contains(position){
+                        self.decay_dragger.status = EnvelopeDraggerStatus::Hover;
                     } else {
-                        self.decay_point.status = EnvelopePointStatus::Normal;
+                        self.decay_dragger.status = EnvelopeDraggerStatus::Normal;
                     }
-                    if self.release_point.hitbox.contains(position){
-                        self.release_point.status = EnvelopePointStatus::Hover;
+                    if self.release_dragger.hitbox.contains(position){
+                        self.release_dragger.status = EnvelopeDraggerStatus::Hover;
                     } else {
-                        self.release_point.status = EnvelopePointStatus::Normal;
+                        self.release_dragger.status = EnvelopeDraggerStatus::Normal;
                     }
                 }
             },
