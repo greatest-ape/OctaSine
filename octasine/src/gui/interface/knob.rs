@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use iced_baseview::{
-    Container, Column, Element, Text, Length, HorizontalAlignment, Align, Row
+    Column, Element, Text, Length, HorizontalAlignment, Align, Row
 };
 use iced_audio::{
     knob, Normal, NormalParam, text_marks, tick_marks
@@ -282,74 +282,6 @@ fn format_value<H: SyncHandle>(
 }
 
 
-fn text_marks_from_steps(steps: &[f64]) -> text_marks::Group {
-    let mut text_marks = Vec::with_capacity(steps.len());
-
-    let len = (steps.len() - 1) as f32;
-
-    for (index, value) in steps.iter().enumerate(){
-        let normal = Normal::new(index as f32 / len);
-        let text = format!("{:}", value);
-
-        text_marks.push((normal, text));
-    }
-
-    text_marks::Group::from(text_marks)
-}
-
-
-fn tick_marks_from_steps(steps: &[f64]) -> tick_marks::Group {
-    let mut tick_marks = Vec::with_capacity(steps.len());
-
-    let len = (steps.len() - 1) as f32;
-
-    for (index, value) in steps.iter().enumerate(){
-        let normal = Normal::new(index as f32 / len);
-
-        let tier = if index == 0 || index == steps.len() - 1 {
-            tick_marks::Tier::Two
-        } else {
-            tick_marks::Tier::Two
-        };
-
-        tick_marks.push((normal, tier));
-    }
-
-    tick_marks::Group::from(tick_marks)
-}
-
-
-fn text_marks_from_min_max_center<H: SyncHandle>(
-    sync_handle: &Arc<H>,
-    parameter_index: usize,
-) -> text_marks::Group {
-    let min = format_value(sync_handle, parameter_index, 0.0);
-    let max = format_value(sync_handle, parameter_index, 1.0);
-    let center = format_value(sync_handle, parameter_index, 0.5);
-
-    text_marks::Group::min_max_and_center(&min, &max, &center)
-}
-
-
-fn text_marks_from_min_max_and_value<H: SyncHandle>(
-    sync_handle: &Arc<H>,
-    parameter_index: usize,
-    sync_value: f64,
-) -> text_marks::Group {
-    let min_str = format_value(sync_handle, parameter_index, 0.0);
-    let max_str = format_value(sync_handle, parameter_index, 1.0);
-    let sync_value_str = format_value(sync_handle, parameter_index, sync_value);
-
-    let marks = vec![
-        (Normal::new(0.0), min_str),
-        (Normal::new(sync_value as f32), sync_value_str),
-        (Normal::new(1.0), max_str),
-    ];
-
-    text_marks::Group::from(marks)
-}
-
-
 fn tick_marks_from_min_max_and_value(
     sync_value: f64,
 ) -> tick_marks::Group {
@@ -360,26 +292,4 @@ fn tick_marks_from_min_max_and_value(
     ];
 
     tick_marks::Group::from(marks)
-}
-
-
-fn text_mark_from_value<H: SyncHandle>(
-    sync_handle: &Arc<H>,
-    parameter_index: usize,
-    sync_value: f64,
-) -> text_marks::Group {
-    let sync_value_str = format_value(sync_handle, parameter_index, sync_value);
-
-    text_marks::Group::from(vec![
-        (Normal::new(sync_value as f32), sync_value_str),
-    ])
-}
-
-
-fn tick_mark_from_value(
-    sync_value: f64,
-) -> tick_marks::Group {
-    tick_marks::Group::from(vec![
-        (Normal::new(sync_value as f32), tick_marks::Tier::Two),
-    ])
 }
