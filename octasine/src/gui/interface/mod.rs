@@ -8,6 +8,7 @@ use iced_audio::Normal;
 
 use crate::SyncHandle;
 
+mod envelope;
 mod widgets;
 mod operator;
 
@@ -58,11 +59,11 @@ impl <H: SyncHandle> OctaSineIcedApplication<H> {
                         7 => ParameterWidget::<H>::set_value(&mut self.operator_1.frequency_ratio, *new_value),
                         8 => ParameterWidget::<H>::set_value(&mut self.operator_1.frequency_free, *new_value),
                         9 => ParameterWidget::<H>::set_value(&mut self.operator_1.frequency_fine, *new_value),
-                        10 => (),
-                        11 => (),
-                        12 => (),
-                        13 => (),
-                        14 => (),
+                        10 => self.operator_1.envelope.attack_duration = *new_value as f32,
+                        11 => self.operator_1.envelope.attack_end_value = *new_value as f32,
+                        12 => self.operator_1.envelope.decay_duration = *new_value as f32,
+                        13 => self.operator_1.envelope.decay_end_value = *new_value as f32,
+                        14 => self.operator_1.envelope.release_duration = *new_value as f32,
                         15 => ParameterWidget::<H>::set_value(&mut self.operator_2.volume, *new_value),
                         16 => ParameterWidget::<H>::set_value(&mut self.operator_2.panning, *new_value),
                         17 => (),

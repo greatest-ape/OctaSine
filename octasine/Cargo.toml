@@ -34,7 +34,7 @@ simplelog = { version = "0.8", optional = true, default-features = false }
 
 # GUI
 
-iced_baseview = { path = "../../iced_baseview" }
+iced_baseview = { path = "../../iced_baseview", features = ["canvas"] }
 iced_audio = { path = "../../iced_audio" }
 raw-window-handle = "0.3"
 
