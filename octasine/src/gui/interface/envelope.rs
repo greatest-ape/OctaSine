@@ -72,84 +72,78 @@ impl Envelope {
         }
     }
 
-    fn build_stage_path(
+    fn calculate_stage_progress_point(
         log10_table: &Log10Table,
+        bounds: Rectangle,
         total_duration: f32,
-        total_width: f32,
-        max_height: f32,
-        start_x: f32,
-        start_y: f32,
+        start_duration: f32,
+        start_value: f32,
+        stage_duration: f32,
+        stage_end_value: f32,
+        progress: f32,
+    ) -> Point {
+        let duration = stage_duration * progress;
+        let value = VoiceOperatorVolumeEnvelope::calculate_curve(
+            log10_table,
+            start_value as f64,
+            stage_end_value as f64,
+            duration as f64,
+            stage_duration as f64,
+        ) as f32;
+
+        Point::new(
+            ((start_duration + duration) / total_duration) * bounds.width,
+            bounds.height * (1.0 - value)
+        )
+    }
+
+    fn calculate_stage_path(
+        log10_table: &Log10Table,
+        bounds: Rectangle,
+        total_duration: f32,
+        start_duration: f32,
+        start_value: f32,
         stage_duration: f32,
         stage_end_value: f32,
     ) -> Path {
         let mut path = path::Builder::new();
 
-        fn calculate_point(
-            log10_table: &Log10Table,
-            total_duration: f32,
-            total_width: f32,
-            max_height: f32,
-            start_x: f32,
-            start_y: f32,
-            stage_duration: f32,
-            stage_end_value: f32,
-            progress: f32,
-        ) -> Point {
-            let x = stage_duration * progress;
-            let y = VoiceOperatorVolumeEnvelope::calculate_curve(
-                log10_table,
-                start_y as f64,
-                stage_end_value as f64,
-                x as f64,
-                stage_duration as f64,
-            ) as f32;
-
-            Point::new(
-                ((start_x + x) / total_duration) * total_width,
-                max_height * (1.0 - y)
-            )
-        }
-
-        let start = calculate_point(
+        let start = Self::calculate_stage_progress_point(
             log10_table,
+            bounds,
             total_duration,
-            total_width,
-            max_height,
-            start_x,
-            start_y,
+            start_duration,
+            start_value,
             stage_duration,
             stage_end_value,
             0.0
         );
-        let control_a = calculate_point(
+        let control_a = Self::calculate_stage_progress_point(
             log10_table,
+            bounds,
             total_duration,
-            total_width,
-            max_height,
-            start_x,
-            start_y,
+            start_duration,
+            start_value,
             stage_duration,
             stage_end_value,
             1.0 / 3.0
         );
-        let control_b = calculate_point(
+        let control_b = Self::calculate_stage_progress_point(
             log10_table,
+            bounds,
             total_duration,
-            total_width,
-            max_height,
-            start_x,
-            start_y,
+            start_duration,
+            start_value,
             stage_duration,
             stage_end_value,
             2.0 / 3.0
         );
-        let to = calculate_point(
+        let to = Self::calculate_stage_progress_point(
             log10_table,
+            bounds,
             total_duration,
-            total_width,
-            max_height,
-            start_x,
-            start_y,
+            start_duration,
+            start_value,
             stage_duration,
             stage_end_value,
             1.0
@@ -169,57 +163,45 @@ impl Program<Message> for Envelope {
 
         let sustain_duration = 0.1 / 4.0;
 
-        let total_duration = self.attack_duration + self.decay_duration + sustain_duration + self.release_duration;
+        let total_duration = self.attack_duration + self.decay_duration +
+            sustain_duration + self.release_duration;
 
         self.draw_time_markers(&mut frame, total_duration);
 
-        let total_width = bounds.width;
-        let max_height = bounds.height * 1.0;
-
-        let attack_from = Point::new(0.0, max_height);
-        let attack_to = Point::new(
-            (self.attack_duration / total_duration) * total_width,
-            max_height * (1.0 - self.attack_end_value)
-        );
-
-        let attack = Self::build_stage_path(
+        let attack = Self::calculate_stage_path(
             &self.log10_table,
+            bounds,
             total_duration,
-            total_width,
-            max_height,
             0.0,
             0.0,
             self.attack_duration as f32,
             self.attack_end_value as f32,
         );
 
-        let decay = Self::build_stage_path(
+        let decay = Self::calculate_stage_path(
             &self.log10_table,
+            bounds,
             total_duration,
-            total_width,
-            max_height,
             self.attack_duration,
             self.attack_end_value,
             self.decay_duration as f32,
             self.decay_end_value as f32,
         );
 
-        let sustain = Self::build_stage_path(
+        let sustain = Self::calculate_stage_path(
             &self.log10_table,
+            bounds,
             total_duration,
-            total_width,
-            max_height,
             self.attack_duration + self.decay_duration,
             self.decay_end_value,
             sustain_duration as f32,
             self.decay_end_value,
         );
 
-        let release = Self::build_stage_path(
+        let release = Self::calculate_stage_path(
             &self.log10_table,
+            bounds,
             total_duration,
-            total_width,
-            max_height,
             self.attack_duration + self.decay_duration + sustain_duration,
             self.decay_end_value,
             self.release_duration as f32,
