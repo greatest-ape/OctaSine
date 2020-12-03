@@ -180,47 +180,31 @@ impl Envelope {
         frame.stroke(&sustain_path, sustain_stroke);
         frame.stroke(&release_path, stroke);
 
-        Self::draw_circle(frame, attack_end_point, "A");
-        Self::draw_circle(frame, decay_end_point, "D");
-        Self::draw_circle(frame, release_end_point, "R");
+        Self::draw_circle(frame, attack_end_point);
+        Self::draw_circle(frame, decay_end_point);
+        Self::draw_circle(frame, release_end_point);
     }
 
     fn draw_circle(
         frame: &mut Frame,
         center: Point,
-        content: &str,
     ){
-        let radius = 6.0;
-        let text_size = 10.0;
+        let circle_path = {
+            let mut builder = path::Builder::new();
 
-        let mut path_builder = path::Builder::new();
+            builder.move_to(center);
+            builder.circle(center, 4.0);
 
-        path_builder.move_to(center);
-        path_builder.circle(center, radius);
+            builder.build()
+        };
 
-        let path = path_builder.build();
+        frame.fill(&circle_path, Color::from_rgb(1.0, 1.0, 1.0));
 
         let stroke = Stroke::default()
             .with_width(1.0)
-            .with_color(Color::from_rgb(0.7, 0.7, 0.7));
+            .with_color(Color::from_rgb(0.5, 0.5, 0.5));
 
-        frame.fill(&path, Color::WHITE);
-        frame.stroke(&path, stroke);
-
-        let text_position = Point::new(
-            center.x - text_size * 0.33,
-            center.y - text_size * 0.5,
-        );
-
-        let text = Text {
-            content: content.to_string(),
-            position: text_position,
-            size: text_size,
-            color: Color::BLACK,
-            ..Default::default()
-        };
-
-        frame.fill_text(text)
+        frame.stroke(&circle_path, stroke);
     }
 
     fn calculate_stage_path(
