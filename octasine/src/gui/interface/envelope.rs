@@ -1,8 +1,10 @@
 use std::sync::Arc;
 
-use iced_baseview::canvas::{Canvas, Cursor, Frame, Geometry, Path, Program, Stroke, path, Text};
+use iced_baseview::canvas::{
+    Canvas, Cursor, Frame, Geometry, Path, Program, Stroke, path, Text, event
+};
 use iced_baseview::{
-    Element, Color, Rectangle, Point, Length
+    Element, Color, Rectangle, Point, Length, Size
 };
 use vst2_helpers::approximations::Log10Table;
 
@@ -12,6 +14,45 @@ use crate::voices::VoiceOperatorVolumeEnvelope;
 use super::Message;
 
 
+#[derive(Clone, Copy, Debug)]
+enum EnvelopePointStatus {
+    Normal,
+    Hover
+}
+
+
+struct EnvelopePoint {
+    center: Point,
+    radius: f32,
+    hitbox: Rectangle,
+    status: EnvelopePointStatus,
+}
+
+
+impl EnvelopePoint {
+    fn set_center(&mut self, center: Point){
+        self.center = center;
+        self.hitbox.x = center.x;
+        self.hitbox.y = center.y;
+    }
+}
+
+
+impl Default for EnvelopePoint {
+    fn default() -> Self {
+        let center = Point::default();
+        let radius = 5.0;
+
+        Self {
+            center,
+            radius,
+            hitbox: Rectangle::new(center, Size::new(radius, radius)),
+            status: EnvelopePointStatus::Normal,
+        }
+    }
+}
+
+
 pub struct Envelope {
     log10_table: Log10Table,
     attack_duration: f32,
@@ -19,6 +60,9 @@ pub struct Envelope {
     decay_duration: f32,
     decay_end_value: f32,
     release_duration: f32,
+    attack_point: EnvelopePoint,
+    decay_point: EnvelopePoint,
+    release_point: EnvelopePoint,
 }
 
 
@@ -42,6 +86,9 @@ impl Envelope {
             decay_duration: sync_handle.get_presets().get_parameter_value_float(decay_dur) as f32,
             decay_end_value: sync_handle.get_presets().get_parameter_value_float(decay_val) as f32,
             release_duration: sync_handle.get_presets().get_parameter_value_float(release_dur) as f32,
+            attack_point: EnvelopePoint::default(),
+            decay_point: EnvelopePoint::default(),
+            release_point: EnvelopePoint::default(),
         }
     }
 
@@ -180,14 +227,15 @@ impl Envelope {
         frame.stroke(&sustain_path, sustain_stroke);
         frame.stroke(&release_path, stroke);
 
-        Self::draw_circle(frame, attack_end_point);
-        Self::draw_circle(frame, decay_end_point);
-        Self::draw_circle(frame, release_end_point);
+        Self::draw_circle(frame, attack_end_point, self.attack_point.status);
+        Self::draw_circle(frame, decay_end_point, self.decay_point.status);
+        Self::draw_circle(frame, release_end_point, self.release_point.status);
     }
 
     fn draw_circle(
         frame: &mut Frame,
         center: Point,
+        status: EnvelopePointStatus,
     ){
         let circle_path = {
             let mut builder = path::Builder::new();
@@ -198,7 +246,12 @@ impl Envelope {
             builder.build()
         };
 
-        frame.fill(&circle_path, Color::from_rgb(1.0, 1.0, 1.0));
+        let fill_color = match status {
+            EnvelopePointStatus::Normal => Color::from_rgb(1.0, 1.0, 1.0),
+            EnvelopePointStatus::Hover => Color::from_rgb(0.0, 0.0, 0.0),
+        };
+
+        frame.fill(&circle_path, fill_color);
 
         let stroke = Stroke::default()
             .with_width(1.0)
@@ -312,5 +365,43 @@ impl Program<Message> for Envelope {
         );
 
         vec![frame.into_geometry()]
+    }
+
+    fn update(
+        &mut self,
+        event: event::Event,
+        bounds: Rectangle,
+        _cursor: Cursor,
+    ) -> (event::Status, Option<Message>) {
+        match event {
+            event::Event::Mouse(iced_baseview::mouse::Event::CursorMoved {x, y}) => {
+                if bounds.contains(Point::new(x, y)){
+                    let position = Point::new(
+                        x - bounds.x,
+                        y - bounds.y,
+                    );
+                    println!("mouse moved: {:?}", position);
+
+                    if self.attack_point.hitbox.contains(position){
+                        self.attack_point.status = EnvelopePointStatus::Hover;
+                    } else {
+                        self.attack_point.status = EnvelopePointStatus::Normal;
+                    }
+                    if self.decay_point.hitbox.contains(position){
+                        self.decay_point.status = EnvelopePointStatus::Hover;
+                    } else {
+                        self.decay_point.status = EnvelopePointStatus::Normal;
+                    }
+                    if self.release_point.hitbox.contains(position){
+                        self.release_point.status = EnvelopePointStatus::Hover;
+                    } else {
+                        self.release_point.status = EnvelopePointStatus::Normal;
+                    }
+                }
+            },
+            _ => (),
+        };
+
+        (event::Status::Ignored, None)
     }
 }
