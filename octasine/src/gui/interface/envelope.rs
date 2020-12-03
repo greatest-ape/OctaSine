@@ -29,7 +29,7 @@ impl Envelope {
         let num_markers = loop {
             let num_markers = (total_duration / time_marker_interval) as usize;
 
-            if num_markers <= 100 {
+            if num_markers <= 110 {
                 break num_markers;
             } else {
                 time_marker_interval *= 10.0;
