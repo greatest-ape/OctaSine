@@ -121,29 +121,64 @@ impl Envelope {
         }
     }
 
-    fn calculate_stage_progress_point(
-        log10_table: &Log10Table,
+    fn draw_stage_paths(
+        &self,
+        frame: &mut Frame,
         bounds: Rectangle,
         total_duration: f32,
-        start_duration: f32,
-        start_value: f32,
-        stage_duration: f32,
-        stage_end_value: f32,
-        progress: f32,
-    ) -> Point {
-        let duration = stage_duration * progress;
-        let value = VoiceOperatorVolumeEnvelope::calculate_curve(
-            log10_table,
-            start_value as f64,
-            stage_end_value as f64,
-            duration as f64,
-            stage_duration as f64,
-        ) as f32;
+        sustain_duration: f32,
+    ){
+        let attack = Self::calculate_stage_path(
+            &self.log10_table,
+            bounds,
+            total_duration,
+            0.0,
+            0.0,
+            self.attack_duration as f32,
+            self.attack_end_value as f32,
+        );
 
-        Point::new(
-            ((start_duration + duration) / total_duration) * bounds.width,
-            bounds.height * (1.0 - value)
-        )
+        let decay = Self::calculate_stage_path(
+            &self.log10_table,
+            bounds,
+            total_duration,
+            self.attack_duration,
+            self.attack_end_value,
+            self.decay_duration as f32,
+            self.decay_end_value as f32,
+        );
+
+        let sustain = Self::calculate_stage_path(
+            &self.log10_table,
+            bounds,
+            total_duration,
+            self.attack_duration + self.decay_duration,
+            self.decay_end_value,
+            sustain_duration as f32,
+            self.decay_end_value,
+        );
+
+        let release = Self::calculate_stage_path(
+            &self.log10_table,
+            bounds,
+            total_duration,
+            self.attack_duration + self.decay_duration + sustain_duration,
+            self.decay_end_value,
+            self.release_duration as f32,
+            0.0
+        );
+
+        let stroke = Stroke::default()
+            .with_width(1.0)
+            .with_color(Color::BLACK);
+        let sustain_stroke = Stroke::default()
+            .with_width(1.0)
+            .with_color(Color::from_rgb(0.5, 0.5, 0.5));
+
+        frame.stroke(&attack, stroke);
+        frame.stroke(&decay, stroke);
+        frame.stroke(&sustain, sustain_stroke);
+        frame.stroke(&release, stroke);
     }
 
     fn calculate_stage_path(
@@ -203,6 +238,32 @@ impl Envelope {
 
         path.build()
     }
+
+    fn calculate_stage_progress_point(
+        log10_table: &Log10Table,
+        bounds: Rectangle,
+        total_duration: f32,
+        start_duration: f32,
+        start_value: f32,
+        stage_duration: f32,
+        stage_end_value: f32,
+        progress: f32,
+    ) -> Point {
+        let duration = stage_duration * progress;
+
+        let value = VoiceOperatorVolumeEnvelope::calculate_curve(
+            log10_table,
+            start_value as f64,
+            stage_end_value as f64,
+            duration as f64,
+            stage_duration as f64,
+        ) as f32;
+
+        Point::new(
+            ((start_duration + duration) / total_duration) * bounds.width,
+            bounds.height * (1.0 - value)
+        )
+    }
 }
 
 
@@ -217,57 +278,12 @@ impl Program<Message> for Envelope {
 
         self.draw_time_markers(&mut frame, total_duration);
 
-        let attack = Self::calculate_stage_path(
-            &self.log10_table,
+        self.draw_stage_paths(
+            &mut frame,
             bounds,
             total_duration,
-            0.0,
-            0.0,
-            self.attack_duration as f32,
-            self.attack_end_value as f32,
+            sustain_duration
         );
-
-        let decay = Self::calculate_stage_path(
-            &self.log10_table,
-            bounds,
-            total_duration,
-            self.attack_duration,
-            self.attack_end_value,
-            self.decay_duration as f32,
-            self.decay_end_value as f32,
-        );
-
-        let sustain = Self::calculate_stage_path(
-            &self.log10_table,
-            bounds,
-            total_duration,
-            self.attack_duration + self.decay_duration,
-            self.decay_end_value,
-            sustain_duration as f32,
-            self.decay_end_value,
-        );
-
-        let release = Self::calculate_stage_path(
-            &self.log10_table,
-            bounds,
-            total_duration,
-            self.attack_duration + self.decay_duration + sustain_duration,
-            self.decay_end_value,
-            self.release_duration as f32,
-            0.0
-        );
-
-        let stroke = Stroke::default()
-            .with_width(1.0)
-            .with_color(Color::BLACK);
-        let sustain_stroke = Stroke::default()
-            .with_width(1.0)
-            .with_color(Color::from_rgb(0.5, 0.5, 0.5));
-
-        frame.stroke(&attack, stroke);
-        frame.stroke(&decay, stroke);
-        frame.stroke(&sustain, sustain_stroke);
-        frame.stroke(&release, stroke);
 
         vec![frame.into_geometry()]
     }
