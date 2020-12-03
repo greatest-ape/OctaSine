@@ -23,16 +23,18 @@ impl Program<Message> for Envelope {
     fn draw(&self, bounds: Rectangle, _cursor: Cursor) -> Vec<Geometry>{
         let mut frame = Frame::new(bounds.size());
 
-        let sustain_duration = 0.05;
+        let sustain_duration = 0.1 / 4.0;
 
         let total_duration = self.attack_duration + self.decay_duration + sustain_duration + self.release_duration;
         let total_width = bounds.width;
 
         let max_height = bounds.height * 1.0;
 
+        let time_marker_interval = 0.01 / 4.0;
+
         // Draw time markers
-        for i in 0..(total_duration / 0.01) as usize {
-            let x = ((0.01 * i as f32) / total_duration) * total_width;
+        for i in 0..(total_duration / time_marker_interval) as usize {
+            let x = ((time_marker_interval * i as f32) / total_duration) * total_width;
 
             let path = Path::line(
                 Point::new(x, 0.0),
@@ -41,8 +43,8 @@ impl Program<Message> for Envelope {
 
             if i % 10 == 0 && i != 0 {
                 let text = iced_baseview::canvas::Text {
-                    content: format!("{:.1}s", 0.01 * i as f32),
-                    position: Point::new(x, max_height),
+                    content: format!("{:.1}s", time_marker_interval * 4.0 * i as f32),
+                    position: Point::new(x - 10.0, max_height),
                     size: 12.0,
                     ..Default::default()
                 };
