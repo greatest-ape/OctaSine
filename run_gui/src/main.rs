@@ -4,6 +4,7 @@ use iced_baseview::{settings, Parent, Runner, Settings, WindowScalePolicy};
 use octasine::{SyncHandle, OctaSinePresetBank, built_in_preset_bank};
 use octasine::gui::{GUI_WIDTH, GUI_HEIGHT};
 use octasine::gui::interface::{self, OctaSineIcedApplication};
+use simplelog::{ConfigBuilder, SimpleLogger, LevelFilter};
 
 
 struct SyncState {
@@ -23,6 +24,13 @@ impl SyncHandle for SyncState {
 
 
 fn main(){
+    SimpleLogger::init(
+        LevelFilter::Info,
+        ConfigBuilder::new()
+            .set_time_to_local(true)
+            .build()
+    ).unwrap();
+
     let sync_state = Arc::new(SyncState {
         presets: built_in_preset_bank(),
     });
