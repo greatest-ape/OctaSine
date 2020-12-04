@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use iced_baseview::{settings, Parent, Runner, Settings};
+use iced_baseview::{settings, Parent, Runner, Settings, WindowScalePolicy};
 use octasine::{SyncHandle, OctaSinePresetBank, built_in_preset_bank};
 use octasine::gui::{GUI_WIDTH, GUI_HEIGHT};
 use octasine::gui::interface::{self, OctaSineIcedApplication};
@@ -34,7 +34,8 @@ fn main(){
 
     let settings = Settings {
         window: settings::Window {
-            size: (GUI_WIDTH as u32, GUI_HEIGHT as u32),
+            logical_size: (GUI_WIDTH as u32, GUI_HEIGHT as u32),
+            scale: WindowScalePolicy::SystemScaleFactor,
         },
         flags: sync_state,
     };
