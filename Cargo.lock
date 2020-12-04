@@ -128,7 +128,7 @@ checksum = "904dfeac50f3cdaba28fc6f57fdcddb75f49ed61346676a78c4ffe55877802fd"
 [[package]]
 name = "baseview"
 version = "0.1.0"
-source = "git+https://github.com/RustAudio/baseview.git?branch=master#ff09c3a256136b70cfc6e9bcf88c33a05cba4523"
+source = "git+https://github.com/RustAudio/baseview.git?branch=master#3f34a70fa81fee3b44c14baea44cb3fefac98085"
 dependencies = [
  "cocoa",
  "keyboard-types",

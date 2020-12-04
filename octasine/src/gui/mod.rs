@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use iced_baseview::{settings, Parent, Runner, Settings};
+use iced_baseview::{settings, Parent, Runner, Settings, WindowScalePolicy};
 use vst::editor::Editor;
 use raw_window_handle::RawWindowHandle;
 
@@ -47,7 +47,8 @@ impl Editor for Gui {
 
         let settings = Settings {
             window: settings::Window {
-                size: (GUI_WIDTH as u32, GUI_HEIGHT as u32),
+                logical_size: (GUI_WIDTH as u32, GUI_HEIGHT as u32),
+                scale: WindowScalePolicy::SystemScaleFactor,
             },
             flags: self.sync_only.clone(),
         };
