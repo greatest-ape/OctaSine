@@ -7,4 +7,5 @@ edition = "2018"
 
 [dependencies]
 iced_baseview = { path = "../../iced_baseview" }
-octasine = { path = "../octasine" }
+octasine = { path = "../octasine", features = ["logging"] }
+simplelog = { version = "0.8", default-features = false }
