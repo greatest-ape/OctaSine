@@ -90,6 +90,7 @@ Depends on the following git repositories:
 
   * https://github.com/greatest-ape/simdeez (__octasine__ branch for avx support and very fast sleef sines)
   * https://github.com/greatest-ape/sleef-sys (__octasine__ branch for static linking and avx instruction generation)
+  * https://github.com/greatest-ape/iced_baseview (__octasine__ branch)
 
 Nightly toolchains known to work:
 
