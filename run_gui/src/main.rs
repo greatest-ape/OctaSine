@@ -48,11 +48,11 @@ fn main(){
         flags: sync_state,
     };
 
-    let runner = Runner::<OctaSineIcedApplication<SyncState>>::open(
+    let (_, opt_runner) = Runner::<OctaSineIcedApplication<SyncState>>::open(
         settings,
         Parent::None,
         Some(interface::Message::Frame)
     );
 
-    runner.app_run_blocking();
+    opt_runner.unwrap().app_run_blocking();
 }

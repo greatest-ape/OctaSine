@@ -128,7 +128,7 @@ checksum = "904dfeac50f3cdaba28fc6f57fdcddb75f49ed61346676a78c4ffe55877802fd"
 [[package]]
 name = "baseview"
 version = "0.1.0"
-source = "git+https://github.com/RustAudio/baseview.git?branch=master#3f34a70fa81fee3b44c14baea44cb3fefac98085"
+source = "git+https://github.com/RustAudio/baseview.git?branch=master#a13b3af3d15e565675d5ebeed318764680ec700b"
 dependencies = [
  "cocoa",
  "keyboard-types",
@@ -137,6 +137,8 @@ dependencies = [
  "nix",
  "objc",
  "raw-window-handle",
+ "rtrb",
+ "static_assertions",
  "uuid",
  "winapi",
  "x11",
@@ -236,6 +238,12 @@ name = "byteorder"
 version = "1.3.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "08c48aae112d48ed9f069b33538ea9e3e90aa263cfa3d1c24309612b1f7472de"
+
+[[package]]
+name = "cache-padded"
+version = "1.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "631ae5198c9be5e753e5cc215e1bd73c2b466a3565173db433f52bb9d3e66dba"
 
 [[package]]
 name = "cc"
@@ -1763,6 +1771,15 @@ name = "regex-syntax"
 version = "0.6.21"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3b181ba2dcf07aaccad5448e8ead58db5b742cf85dfe035e2227f137a539a189"
+
+[[package]]
+name = "rtrb"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "94ba7797ab8332ea7b087e7b1ef5a442aaeabed4c98dc1a27f4479d5bdc2053c"
+dependencies = [
+ "cache-padded",
+]
 
 [[package]]
 name = "run_gui"
