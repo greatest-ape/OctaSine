@@ -14,6 +14,9 @@ members = [
 # branch = "octasine"
 # features = ["static"]
 
+# [patch.'https://github.com/RustAudio/baseview']
+# baseview = { path = "../baseview" }
+
 [profile.release]
 debug = true
 lto = true
