@@ -12,7 +12,6 @@
   * Interaction with draggers
   * Possibly button for snapping viewport etc
   * Horizontal scrolling?
-* Use shift modifier
 * update_host_display stuff
   * Running update_host_display all the time tanks performance. Maybe only run
     it on knob release, or stillstand (very little movement since last event.)
