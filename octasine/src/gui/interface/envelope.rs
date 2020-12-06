@@ -339,7 +339,7 @@ impl Envelope {
         );
     }
 
-    pub fn view<H: SyncHandle>(&mut self, sync_handle: &Arc<H>) -> Element<Message> {
+    pub fn view(&mut self) -> Element<Message> {
         Canvas::new(self)
             .width(Length::Units(WIDTH))
             .height(Length::Units(HEIGHT))
@@ -445,16 +445,12 @@ impl Envelope {
 impl Program<Message> for Envelope {
     fn draw(&self, bounds: Rectangle, _cursor: Cursor) -> Vec<Geometry>{
         let geometry = self.cache.draw(bounds.size(), |frame| {
-            frame.with_save(|frame|{
-                // scale_frame_centered(frame, ENVELOPE_PATH_BOUNDS_SCALE);
+            self.draw_time_markers(frame);
+            self.draw_stage_paths(frame);
 
-                self.draw_time_markers(frame);
-                self.draw_stage_paths(frame);
-
-                Self::draw_dragger(frame, &self.attack_dragger);
-                Self::draw_dragger(frame, &self.decay_dragger);
-                Self::draw_dragger(frame, &self.release_dragger);
-            });
+            Self::draw_dragger(frame, &self.attack_dragger);
+            Self::draw_dragger(frame, &self.decay_dragger);
+            Self::draw_dragger(frame, &self.release_dragger);
         });
 
         vec![geometry]
@@ -469,16 +465,16 @@ impl Program<Message> for Envelope {
         match event {
             event::Event::Mouse(iced_baseview::mouse::Event::CursorMoved {x, y}) => {
                 if bounds.contains(Point::new(x, y)){
-                    let relative_cursor_position = Point::new(
+                    let relative_position = Point::new(
                         x - bounds.x,
                         y - bounds.y,
                     );
 
                     let mut changed = false;
 
-                    changed |= self.attack_dragger.update(relative_cursor_position);
-                    changed |= self.decay_dragger.update(relative_cursor_position);
-                    changed |= self.release_dragger.update(relative_cursor_position);
+                    changed |= self.attack_dragger.update(relative_position);
+                    changed |= self.decay_dragger.update(relative_position);
+                    changed |= self.release_dragger.update(relative_position);
 
                     if changed {
                         self.cache.clear();
