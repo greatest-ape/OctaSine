@@ -14,6 +14,9 @@ use crate::constants::*;
 use super::{ParameterWidget, Message};
 
 
+const KNOB_SIZE: Length = Length::Units(32);
+
+
 #[derive(Debug, Clone)]
 pub struct OctaSineKnob {
     knob_state: knob::State,
@@ -266,7 +269,7 @@ impl <H: SyncHandle>ParameterWidget<H> for OctaSineKnob {
             &mut self.knob_state,
             move |value| Message::ParameterChange(parameter_index, value),
         )
-            .size(Length::from(Length::Units(31)))
+            .size(Length::from(KNOB_SIZE))
             .modifier_keys(modifier_keys);
         
         if let Some(text_marks) = self.text_marks.as_ref() {

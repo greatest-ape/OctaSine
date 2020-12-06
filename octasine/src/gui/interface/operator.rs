@@ -104,11 +104,13 @@ impl OperatorWidgets {
         } else {
             row = row.push(Space::with_width(Length::Units(64)))
         }
+        /*
         if let Some(mod_out) = self.mod_out.as_mut() {
             row = row.push(mod_out.view(sync_handle))
         } else {
             row = row.push(Space::with_width(Length::Units(64)))
         }
+        */
         
         row = row
             .push(
