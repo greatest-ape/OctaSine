@@ -13,7 +13,12 @@
   * Possibly button for snapping viewport etc
   * Horizontal scrolling?
 * Use shift modifier
-* Maybe don't load parameter changes in processing while dragging.
+* update_host_display stuff
+  * Running update_host_display all the time tanks performance. Maybe only run
+    it on knob release, or stillstand (very little movement since last event.)
+  * Maybe don't load parameter changes in processing while dragging: not a
+    problem if the previous point is implemented and probably not a problem
+    now either
 
 ## Code quality / safety
 
