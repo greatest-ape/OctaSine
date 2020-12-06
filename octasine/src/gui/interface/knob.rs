@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use iced_baseview::{
-    Column, Element, Text, Length, HorizontalAlignment, Align, Row
+    Column, Element, keyboard::Modifiers, Text, Length, HorizontalAlignment, Align, Row
 };
 use iced_audio::{
     knob, Normal, NormalParam, text_marks, tick_marks
@@ -237,11 +237,17 @@ impl <H: SyncHandle>ParameterWidget<H> for OctaSineKnob {
 
         let parameter_index = self.parameter_index;
 
+        let modifier_keys = Modifiers {
+            shift: true,
+            ..Default::default()
+        };
+
         let mut knob = knob::Knob::new(
             &mut self.knob_state,
             move |value| Message::ParameterChange(parameter_index, value),
         )
-            .size(Length::from(Length::Units(31)));
+            .size(Length::from(Length::Units(31)))
+            .modifier_keys(modifier_keys);
         
         if let Some(text_marks) = self.text_marks.as_ref() {
             knob = knob.text_marks(text_marks);
