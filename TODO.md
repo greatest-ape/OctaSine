@@ -7,7 +7,6 @@
   right of the envelopes since they are concerned with routing?
 * Wave type could possibly be a tiny button under the operator number if
   there is a lack of space
-* There could be text above operator 4 like "Modulation", "Frequency", "Envelope", "Routing"
 * Envelopes
   * Maybe draw lines indicating top and bottom of draggable range
   * Interaction with draggers
