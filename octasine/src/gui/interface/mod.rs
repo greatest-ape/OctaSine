@@ -11,6 +11,7 @@ use crate::SyncHandle;
 mod envelope;
 mod knob;
 mod operator;
+mod picker;
 
 use operator::OperatorWidgets;
 use knob::OctaSineKnob;
