@@ -368,8 +368,8 @@ impl Envelope {
             let bottom_point = Point::new(x, self.size.height);
 
             let path = Path::line(
-                scale_point(self.size, top_point),
-                scale_point(self.size, bottom_point),
+                scale_point_x(self.size, top_point),
+                scale_point_x(self.size, bottom_point),
             );
 
             if i % 10 == 0 && i != 0 {
@@ -377,7 +377,7 @@ impl Envelope {
 
                 let text = Text {
                     content: format!("{:.1}s", time_marker_interval * 4.0 * i as f32),
-                    position: scale_point(self.size, text_point),
+                    position: scale_point_x(self.size, text_point),
                     size: 12.0,
                     ..Default::default()
                 };
@@ -499,6 +499,21 @@ fn scale_point(size: Size, point: Point) -> Point {
     let scaled = Point {
         x: point.x * ENVELOPE_PATH_SCALE_X,
         y: point.y * ENVELOPE_PATH_SCALE_Y,
+    };
+
+    scaled + translation
+}
+
+
+fn scale_point_x(size: Size, point: Point) -> Point {
+    let translation = Vector {
+        x: (1.0 - ENVELOPE_PATH_SCALE_X) * size.width / 2.0,
+        y: 0.0,
+    };
+
+    let scaled = Point {
+        x: point.x * ENVELOPE_PATH_SCALE_X,
+        y: point.y,
     };
 
     scaled + translation
