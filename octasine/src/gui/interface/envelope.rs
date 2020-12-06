@@ -4,7 +4,7 @@ use iced_baseview::canvas::{
     Cache, Canvas, Cursor, Frame, Geometry, Path, Program, Stroke, Text, path, event
 };
 use iced_baseview::{
-    Element, Color, Rectangle, Point, Length
+    Element, Color, Rectangle, Point, Length, Vector
 };
 
 use vst2_helpers::approximations::Log10Table;
@@ -18,6 +18,7 @@ use super::Message;
 
 const SUSTAIN_DURATION: f32 = 0.1 / 4.0;
 const DRAGGER_RADIUS: f32 = 4.0;
+const ENVELOPE_PATH_BOUNDS_SCALE: f32 = 0.8;
 
 
 struct EnvelopeStagePath {
@@ -110,8 +111,8 @@ impl EnvelopeStagePath {
 
         // Watch out for point.y.is_nan() when duration = 0.0 here
         Point::new(
-            ((start_duration + duration) / total_duration) * bounds.width,
-            bounds.height * (1.0 - value)
+            bounds.x + ((start_duration + duration) / total_duration) * bounds.width,
+            bounds.y + bounds.height * (1.0 - value)
         )
     }
 }
@@ -190,7 +191,7 @@ pub struct Envelope {
     decay_duration: f32,
     decay_end_value: f32,
     release_duration: f32,
-    bounds: Option<Rectangle>,
+    relative_bounds: Option<Rectangle>,
     attack_stage_path: EnvelopeStagePath,
     decay_stage_path: EnvelopeStagePath,
     sustain_stage_path: EnvelopeStagePath,
@@ -222,7 +223,7 @@ impl Envelope {
             decay_duration: sync_handle.get_presets().get_parameter_value_float(decay_dur) as f32,
             decay_end_value: sync_handle.get_presets().get_parameter_value_float(decay_val) as f32,
             release_duration: sync_handle.get_presets().get_parameter_value_float(release_dur) as f32,
-            bounds: None,
+            relative_bounds: None,
             attack_stage_path: EnvelopeStagePath::default(),
             decay_stage_path: EnvelopeStagePath::default(),
             sustain_stage_path: EnvelopeStagePath::default(),
@@ -240,40 +241,40 @@ impl Envelope {
     pub fn set_attack_duration(&mut self, value: f64){
         self.attack_duration = Self::process_envelope_duration(value);
 
-        self.update_data(None);
+        self.update_data();
     }
 
     pub fn set_attack_end_value(&mut self, value: f64){
         self.attack_end_value = value as f32;
 
-        self.update_data(None);
+        self.update_data();
     }
 
     pub fn set_decay_duration(&mut self, value: f64){
         self.decay_duration = Self::process_envelope_duration(value);
 
-        self.update_data(None);
+        self.update_data();
     }
 
     pub fn set_decay_end_value(&mut self, value: f64){
         self.decay_end_value = value as f32;
 
-        self.update_data(None);
+        self.update_data();
     }
 
     pub fn set_release_duration(&mut self, value: f64){
         self.release_duration = Self::process_envelope_duration(value);
 
-        self.update_data(None);
+        self.update_data();
     }
 
     fn get_total_duration(&self) -> f32 {
         self.attack_duration + self.decay_duration + SUSTAIN_DURATION + self.release_duration
     }
 
-    fn update_data(&mut self, bounds: Option<Rectangle>){
-        if let Some(bounds) = bounds {
-            self.bounds = Some(bounds);
+    fn update_data(&mut self){
+        if self.relative_bounds.is_none(){
+            return;
         }
 
         self.update_stage_paths();
@@ -286,9 +287,10 @@ impl Envelope {
     }
 
     fn update_stage_paths(&mut self){
-        let bounds = match self.bounds {
-            Some(bounds) => bounds,
-            None => return, // FIXME
+        let bounds = if let Some(bounds) = self.relative_bounds {
+            bounds
+        } else {
+            return
         };
 
         let total_duration = self.get_total_duration();
@@ -337,8 +339,8 @@ impl Envelope {
 
     pub fn view<H: SyncHandle>(&mut self, sync_handle: &Arc<H>) -> Element<Message> {
         Canvas::new(self)
-            .width(Length::Units(256))
-            .height(Length::Units(64))
+            .width(Length::Units(320))
+            .height(Length::Units(80))
             .into()
     }
 
@@ -436,7 +438,12 @@ impl Envelope {
 impl Program<Message> for Envelope {
     fn draw(&self, bounds: Rectangle, _cursor: Cursor) -> Vec<Geometry>{
         let geometry = self.cache.draw(bounds.size(), |frame| {
-            self.draw_time_markers(frame);
+            frame.with_save(|frame|{
+                scale_frame_centered(frame, ENVELOPE_PATH_BOUNDS_SCALE);
+
+                self.draw_time_markers(frame);
+            });
+
             self.draw_stage_paths(frame);
 
             Self::draw_dragger(frame, &self.attack_dragger);
@@ -453,8 +460,13 @@ impl Program<Message> for Envelope {
         bounds: Rectangle,
         _cursor: Cursor,
     ) -> (event::Status, Option<Message>) {
-        if self.bounds.is_none(){
-            self.update_data(Some(bounds))
+        if self.relative_bounds.is_none(){
+            self.relative_bounds = Some(calculate_relative_bounds(
+                bounds,
+                ENVELOPE_PATH_BOUNDS_SCALE
+            ));
+
+            self.update_data();
         }
 
         match event {
@@ -481,4 +493,30 @@ impl Program<Message> for Envelope {
 
         (event::Status::Ignored, None)
     }
+}
+
+
+fn calculate_relative_bounds(bounds: Rectangle, scale: f32) -> Rectangle {
+    let new_width = scale * bounds.width;
+    let new_height = scale * bounds.height;
+    let translation_x = (bounds.width - new_width) / 2.0;
+    let translation_y = (bounds.height - new_height) / 2.0;
+
+    Rectangle {
+        x: translation_x,
+        y: translation_y,
+        width: new_width,
+        height: new_height,
+    }
+}
+
+
+fn scale_frame_centered(frame: &mut Frame, scale: f32){
+    let translation = Vector {
+        x: (1.0 - scale) * frame.width() / 2.0,
+        y: (1.0 - scale) * frame.height() / 2.0
+    };
+
+    frame.scale(scale);
+    frame.translate(translation);
 }
