@@ -351,7 +351,7 @@ impl Envelope {
 
         let mut time_marker_interval = 0.01 / 4.0;
 
-        let num_markers = loop {
+        let mut num_markers = loop {
             let num_markers = (total_duration / time_marker_interval) as usize;
 
             if num_markers <= 110 {
@@ -360,6 +360,9 @@ impl Envelope {
                 time_marker_interval *= 10.0;
             }
         };
+
+        // End marker
+        num_markers += 1;
 
         for i in 0..num_markers {
             let x = ((time_marker_interval * i as f32) / total_duration) * self.size.width;
