@@ -479,6 +479,8 @@ impl Program<Message> for Envelope {
                     if changed {
                         self.cache.clear();
                     }
+
+                    return (event::Status::Captured, None);
                 }
             },
             _ => (),
