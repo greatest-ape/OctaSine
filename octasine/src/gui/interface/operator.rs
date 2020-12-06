@@ -8,8 +8,9 @@ use iced_baseview::{
 use crate::{OctaSine, SyncHandle, preset_parameters::OctaSinePresetParameters};
 
 use super::{Message, ParameterWidget};
-use super::knob::OctaSineKnob;
 use super::envelope::Envelope;
+use super::knob::OctaSineKnob;
+use super::picker::ModOutputPicker;
 
 
 pub struct OperatorWidgets {
@@ -22,7 +23,7 @@ pub struct OperatorWidgets {
     pub frequency_free: OctaSineKnob,
     pub frequency_fine: OctaSineKnob,
     pub additive: Option<OctaSineKnob>,
-    pub mod_out: Option<OctaSineKnob>,
+    pub mod_out: Option<ModOutputPicker>,
     pub envelope: Envelope,
 }
 
@@ -47,8 +48,8 @@ impl OperatorWidgets {
         };
 
         let mod_out_knob = match operator_index {
-            2 => Some(OctaSineKnob::operator_3_mod_output(sync_handle, mod_out)),
-            3 => Some(OctaSineKnob::operator_4_mod_output(sync_handle, mod_out)),
+            2 => Some(ModOutputPicker::operator_3_mod_output(sync_handle, mod_out)),
+            3 => Some(ModOutputPicker::operator_4_mod_output(sync_handle, mod_out)),
             _ => None,
         };
 

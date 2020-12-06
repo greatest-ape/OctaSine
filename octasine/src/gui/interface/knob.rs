@@ -234,68 +234,6 @@ impl OctaSineKnob {
             default_sync_value
         )
     }
-
-    pub fn operator_3_mod_output<H: SyncHandle>(
-        sync_handle: &Arc<H>,
-        parameter_index: usize,
-    ) -> Self {
-        let tick_marks = tick_marks::Group::subdivided(
-            0,
-            2,
-            0,
-            None
-        );
-
-        let mut normal_param = IntRange::new(1, 2)
-            .normal_param(
-                1,
-                2,
-            );
-        
-        normal_param.value = Normal::new(
-            sync_handle.get_presets()
-                .get_parameter_value_float(parameter_index) as f32
-            );
-        
-        Self {
-            knob_state: knob::State::new(normal_param),
-            text_marks: None,
-            tick_marks: None,
-            title: "Mod. out".to_string(),
-            parameter_index
-        }
-    }
-
-    pub fn operator_4_mod_output<H: SyncHandle>(
-        sync_handle: &Arc<H>,
-        parameter_index: usize,
-    ) -> Self {
-        let tick_marks = tick_marks::Group::subdivided(
-            0,
-            3,
-            0,
-            None
-        );
-
-        let mut normal_param = IntRange::new(1, 3)
-            .normal_param(
-                1,
-                3,
-            );
-        
-        normal_param.value = Normal::new(
-            sync_handle.get_presets()
-                .get_parameter_value_float(parameter_index) as f32
-            );
-        
-        Self {
-            knob_state: knob::State::new(normal_param),
-            text_marks: None,
-            tick_marks: None,
-            title: "Mod. out".to_string(),
-            parameter_index
-        }
-    }
 }
 
 
