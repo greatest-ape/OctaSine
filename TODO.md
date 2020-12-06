@@ -4,11 +4,9 @@
 
 * Fix ANOTHER `ERROR] thread 'unnamed' panicked at 'Tessellate path: UnsupportedParamater': /[..]/github.com-1ecc6299db9ec823/iced_graphics-0.1.0/src/widget/canvas/frame.rs:100`
 * Envelopes
-  * Fix that things are rendered outside
-  * Initialize bounds on load somehow
-    * Probably don't draw anything if bounds are not set
+  * Maybe draw lines indicating top and bottom of draggable range
   * Interaction with draggers
-* Shift modifer: implement in iced_baseview if necessary
+* Use shift modifier
 * Maybe don't load parameter changes in processing while dragging.
 
 ## Code quality / safety
