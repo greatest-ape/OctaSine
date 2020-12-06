@@ -23,7 +23,8 @@ const SIZE: Size = Size { width: WIDTH as f32, height: HEIGHT as f32 };
 const SUSTAIN_DURATION: f32 = 0.1 / 4.0;
 const DRAGGER_RADIUS: f32 = 4.0;
 
-const ENVELOPE_PATH_SCALE: f32 = 0.8;
+const ENVELOPE_PATH_SCALE_X: f32 = 1.0 - (1.0 / 16.0);
+const ENVELOPE_PATH_SCALE_Y: f32 = 1.0 - (1.0 / 8.0) - (1.0 / 16.0);
 
 
 struct EnvelopeStagePath {
@@ -490,16 +491,14 @@ impl Program<Message> for Envelope {
 
 
 fn scale_point(size: Size, point: Point) -> Point {
-    let scale = ENVELOPE_PATH_SCALE;
-
     let translation = Vector {
-        x: (1.0 - scale) * size.width / 2.0,
-        y: (1.0 - scale) * size.height / 2.0
+        x: (1.0 - ENVELOPE_PATH_SCALE_X) * size.width / 2.0,
+        y: (1.0 - ENVELOPE_PATH_SCALE_Y) * size.height / 2.0
     };
 
     let scaled = Point {
-        x: point.x * scale,
-        y: point.y * scale,
+        x: point.x * ENVELOPE_PATH_SCALE_X,
+        y: point.y * ENVELOPE_PATH_SCALE_Y,
     };
 
     scaled + translation
