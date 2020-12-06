@@ -135,6 +135,10 @@ impl<P> PresetBank<P> where P: PresetParameters {
         )
     }
 
+    pub fn gui_did_parameters_change(&self) -> bool {
+        self.parameter_change_info_gui.changes_exist()
+    }
+
     fn mark_parameters_as_changed(&self){
         self.parameter_change_info_processing.mark_all_as_changed();
         self.parameter_change_info_gui.mark_all_as_changed();

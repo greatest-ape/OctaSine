@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use iced_baseview::{executor, Align, Application, Command, Handle};
+use iced_baseview::{executor, Align, Application, Command};
 use iced_baseview::{
     Column, Element, Row, Container, Rule, Text, Length, Space
 };
@@ -18,7 +18,7 @@ use knob::OctaSineKnob;
 
 #[derive(Debug, Clone)]
 pub enum Message {
-    Frame,
+    ExternalDataChanged,
     ParameterChange(usize, Normal),
 }
 
@@ -31,7 +31,6 @@ trait ParameterWidget<H: SyncHandle> {
 
 pub struct OctaSineIcedApplication<H: SyncHandle> {
     sync_handle: Arc<H>,
-    handle: Handle,
     master_volume: OctaSineKnob,
     master_frequency: OctaSineKnob,
     operator_1: OperatorWidgets,
@@ -125,7 +124,6 @@ impl <H: SyncHandle>Application for OctaSineIcedApplication<H> {
 
     fn new(
         sync_handle: Self::Flags,
-        handle: Handle,
     ) -> (Self, Command<Self::Message>) {
         let master_volume = OctaSineKnob::master_volume(&sync_handle);
         let master_frequency = OctaSineKnob::master_frequency(&sync_handle);
@@ -137,7 +135,6 @@ impl <H: SyncHandle>Application for OctaSineIcedApplication<H> {
 
         let app = Self {
             sync_handle,
-            handle,
             master_volume,
             master_frequency,
             operator_1,
@@ -155,10 +152,8 @@ impl <H: SyncHandle>Application for OctaSineIcedApplication<H> {
 
     fn update(&mut self, message: Self::Message) -> Command<Self::Message> {
         match message {
-            Message::Frame => {
+            Message::ExternalDataChanged => {
                 self.update_widgets_from_parameters();
-
-                self.handle.request_redraw();
             },
             Message::ParameterChange(index, value) => {
                 self.sync_handle.get_presets().set_parameter_value_float_from_gui(
