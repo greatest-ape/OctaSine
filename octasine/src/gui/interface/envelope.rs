@@ -4,7 +4,7 @@ use iced_baseview::canvas::{
     Cache, Canvas, Cursor, Frame, Geometry, Path, Program, Stroke, Text, path, event
 };
 use iced_baseview::{
-    Element, Color, Rectangle, Point, Length, Vector
+    Element, Color, Rectangle, Point, Length, Vector, Size
 };
 
 use vst2_helpers::approximations::Log10Table;
@@ -16,9 +16,14 @@ use crate::constants::{ENVELOPE_MIN_DURATION, ENVELOPE_MAX_DURATION};
 use super::Message;
 
 
+const WIDTH: u16 = 256;
+const HEIGHT: u16 = 64;
+const SIZE: Size = Size { width: WIDTH as f32, height: HEIGHT as f32 };
+
 const SUSTAIN_DURATION: f32 = 0.1 / 4.0;
 const DRAGGER_RADIUS: f32 = 4.0;
-const ENVELOPE_PATH_BOUNDS_SCALE: f32 = 0.8;
+
+const ENVELOPE_PATH_SCALE: f32 = 0.8;
 
 
 struct EnvelopeStagePath {
@@ -30,7 +35,7 @@ struct EnvelopeStagePath {
 impl EnvelopeStagePath {
     fn new(
         log10_table: &Log10Table,
-        bounds: Rectangle,
+        size: Size,
         total_duration: f32,
         start_duration: f32,
         start_value: f32,
@@ -41,7 +46,7 @@ impl EnvelopeStagePath {
 
         let start = Self::calculate_stage_progress_point(
             log10_table,
-            bounds,
+            size,
             total_duration,
             start_duration,
             start_value,
@@ -51,7 +56,7 @@ impl EnvelopeStagePath {
         );
         let control_a = Self::calculate_stage_progress_point(
             log10_table,
-            bounds,
+            size,
             total_duration,
             start_duration,
             start_value,
@@ -61,7 +66,7 @@ impl EnvelopeStagePath {
         );
         let control_b = Self::calculate_stage_progress_point(
             log10_table,
-            bounds,
+            size,
             total_duration,
             start_duration,
             start_value,
@@ -71,7 +76,7 @@ impl EnvelopeStagePath {
         );
         let to = Self::calculate_stage_progress_point(
             log10_table,
-            bounds,
+            size,
             total_duration,
             start_duration,
             start_value,
@@ -91,7 +96,7 @@ impl EnvelopeStagePath {
 
     fn calculate_stage_progress_point(
         log10_table: &Log10Table,
-        bounds: Rectangle,
+        size: Size,
         total_duration: f32,
         start_duration: f32,
         start_value: f32,
@@ -110,10 +115,12 @@ impl EnvelopeStagePath {
         ) as f32;
 
         // Watch out for point.y.is_nan() when duration = 0.0 here
-        Point::new(
-            bounds.x + ((start_duration + duration) / total_duration) * bounds.width,
-            bounds.y + bounds.height * (1.0 - value)
-        )
+        let point = Point::new(
+            ((start_duration + duration) / total_duration) * size.width,
+            size.height * (1.0 - value)
+        );
+
+        scale_point(size, point)
     }
 }
 
@@ -191,7 +198,7 @@ pub struct Envelope {
     decay_duration: f32,
     decay_end_value: f32,
     release_duration: f32,
-    relative_bounds: Option<Rectangle>,
+    size: Size,
     attack_stage_path: EnvelopeStagePath,
     decay_stage_path: EnvelopeStagePath,
     sustain_stage_path: EnvelopeStagePath,
@@ -215,7 +222,7 @@ impl Envelope {
             _ => unreachable!(),
         };
 
-        Self {
+        let mut envelope = Self {
             log10_table: Log10Table::default(),
             cache: Cache::default(),
             attack_duration: sync_handle.get_presets().get_parameter_value_float(attack_dur) as f32,
@@ -223,7 +230,7 @@ impl Envelope {
             decay_duration: sync_handle.get_presets().get_parameter_value_float(decay_dur) as f32,
             decay_end_value: sync_handle.get_presets().get_parameter_value_float(decay_val) as f32,
             release_duration: sync_handle.get_presets().get_parameter_value_float(release_dur) as f32,
-            relative_bounds: None,
+            size: SIZE,
             attack_stage_path: EnvelopeStagePath::default(),
             decay_stage_path: EnvelopeStagePath::default(),
             sustain_stage_path: EnvelopeStagePath::default(),
@@ -231,7 +238,11 @@ impl Envelope {
             attack_dragger: EnvelopeDragger::default(),
             decay_dragger: EnvelopeDragger::default(),
             release_dragger: EnvelopeDragger::default(),
-        }
+        };
+
+        envelope.update_data();
+
+        envelope
     }
 
     fn process_envelope_duration(sync_value: f64) -> f32 {
@@ -273,10 +284,6 @@ impl Envelope {
     }
 
     fn update_data(&mut self){
-        if self.relative_bounds.is_none(){
-            return;
-        }
-
         self.update_stage_paths();
 
         self.attack_dragger.set_center(self.attack_stage_path.end_point);
@@ -287,18 +294,12 @@ impl Envelope {
     }
 
     fn update_stage_paths(&mut self){
-        let bounds = if let Some(bounds) = self.relative_bounds {
-            bounds
-        } else {
-            return
-        };
-
         let total_duration = self.get_total_duration();
         let sustain_duration = SUSTAIN_DURATION;
 
         self.attack_stage_path = EnvelopeStagePath::new(
             &self.log10_table,
-            bounds,
+            self.size,
             total_duration,
             0.0,
             0.0,
@@ -308,7 +309,7 @@ impl Envelope {
 
         self.decay_stage_path = EnvelopeStagePath::new(
             &self.log10_table,
-            bounds,
+            self.size,
             total_duration,
             self.attack_duration,
             self.attack_end_value,
@@ -318,7 +319,7 @@ impl Envelope {
 
         self.sustain_stage_path = EnvelopeStagePath::new(
             &self.log10_table,
-            bounds,
+            self.size,
             total_duration,
             self.attack_duration + self.decay_duration,
             self.decay_end_value,
@@ -328,7 +329,7 @@ impl Envelope {
 
         self.release_stage_path = EnvelopeStagePath::new(
             &self.log10_table,
-            bounds,
+            self.size,
             total_duration,
             self.attack_duration + self.decay_duration + sustain_duration,
             self.decay_end_value,
@@ -339,16 +340,13 @@ impl Envelope {
 
     pub fn view<H: SyncHandle>(&mut self, sync_handle: &Arc<H>) -> Element<Message> {
         Canvas::new(self)
-            .width(Length::Units(320))
-            .height(Length::Units(80))
+            .width(Length::Units(WIDTH))
+            .height(Length::Units(HEIGHT))
             .into()
     }
 
     fn draw_time_markers(&self, frame: &mut Frame){
         let total_duration = self.get_total_duration();
-
-        let total_width = frame.width();
-        let max_height = frame.height();
 
         let mut time_marker_interval = 0.01 / 4.0;
 
@@ -363,17 +361,22 @@ impl Envelope {
         };
 
         for i in 0..num_markers {
-            let x = ((time_marker_interval * i as f32) / total_duration) * total_width;
+            let x = ((time_marker_interval * i as f32) / total_duration) * self.size.width;
+
+            let top_point = Point::new(x, 0.0);
+            let bottom_point = Point::new(x, self.size.height);
 
             let path = Path::line(
-                Point::new(x, 0.0),
-                Point::new(x, max_height),
+                scale_point(self.size, top_point),
+                scale_point(self.size, bottom_point),
             );
 
             if i % 10 == 0 && i != 0 {
+                let text_point = Point::new(x - 10.0, self.size.height);
+
                 let text = Text {
                     content: format!("{:.1}s", time_marker_interval * 4.0 * i as f32),
-                    position: Point::new(x - 10.0, max_height),
+                    position: scale_point(self.size, text_point),
                     size: 12.0,
                     ..Default::default()
                 };
@@ -439,16 +442,15 @@ impl Program<Message> for Envelope {
     fn draw(&self, bounds: Rectangle, _cursor: Cursor) -> Vec<Geometry>{
         let geometry = self.cache.draw(bounds.size(), |frame| {
             frame.with_save(|frame|{
-                scale_frame_centered(frame, ENVELOPE_PATH_BOUNDS_SCALE);
+                // scale_frame_centered(frame, ENVELOPE_PATH_BOUNDS_SCALE);
 
                 self.draw_time_markers(frame);
+                self.draw_stage_paths(frame);
+
+                Self::draw_dragger(frame, &self.attack_dragger);
+                Self::draw_dragger(frame, &self.decay_dragger);
+                Self::draw_dragger(frame, &self.release_dragger);
             });
-
-            self.draw_stage_paths(frame);
-
-            Self::draw_dragger(frame, &self.attack_dragger);
-            Self::draw_dragger(frame, &self.decay_dragger);
-            Self::draw_dragger(frame, &self.release_dragger);
         });
 
         vec![geometry]
@@ -460,28 +462,19 @@ impl Program<Message> for Envelope {
         bounds: Rectangle,
         _cursor: Cursor,
     ) -> (event::Status, Option<Message>) {
-        if self.relative_bounds.is_none(){
-            self.relative_bounds = Some(calculate_relative_bounds(
-                bounds,
-                ENVELOPE_PATH_BOUNDS_SCALE
-            ));
-
-            self.update_data();
-        }
-
         match event {
             event::Event::Mouse(iced_baseview::mouse::Event::CursorMoved {x, y}) => {
                 if bounds.contains(Point::new(x, y)){
-                    let cursor_position = Point::new(
+                    let relative_cursor_position = Point::new(
                         x - bounds.x,
                         y - bounds.y,
                     );
 
                     let mut changed = false;
 
-                    changed |= self.attack_dragger.update(cursor_position);
-                    changed |= self.decay_dragger.update(cursor_position);
-                    changed |= self.release_dragger.update(cursor_position);
+                    changed |= self.attack_dragger.update(relative_cursor_position);
+                    changed |= self.decay_dragger.update(relative_cursor_position);
+                    changed |= self.release_dragger.update(relative_cursor_position);
 
                     if changed {
                         self.cache.clear();
@@ -496,27 +489,18 @@ impl Program<Message> for Envelope {
 }
 
 
-fn calculate_relative_bounds(bounds: Rectangle, scale: f32) -> Rectangle {
-    let new_width = scale * bounds.width;
-    let new_height = scale * bounds.height;
-    let translation_x = (bounds.width - new_width) / 2.0;
-    let translation_y = (bounds.height - new_height) / 2.0;
+fn scale_point(size: Size, point: Point) -> Point {
+    let scale = ENVELOPE_PATH_SCALE;
 
-    Rectangle {
-        x: translation_x,
-        y: translation_y,
-        width: new_width,
-        height: new_height,
-    }
-}
-
-
-fn scale_frame_centered(frame: &mut Frame, scale: f32){
     let translation = Vector {
-        x: (1.0 - scale) * frame.width() / 2.0,
-        y: (1.0 - scale) * frame.height() / 2.0
+        x: (1.0 - scale) * size.width / 2.0,
+        y: (1.0 - scale) * size.height / 2.0
     };
 
-    frame.scale(scale);
-    frame.translate(translation);
+    let scaled = Point {
+        x: point.x * scale,
+        y: point.y * scale,
+    };
+
+    scaled + translation
 }

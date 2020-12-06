@@ -81,6 +81,9 @@ impl OperatorWidgets {
                 )
                     .height(Length::Units(64)))
             .push(
+                Space::with_width(Length::Units(16))
+            )
+            .push(
                 Container::new(self.envelope.view(sync_handle))
                     .width(Length::Fill)
                     // .padding(16)
