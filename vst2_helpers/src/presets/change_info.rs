@@ -25,7 +25,6 @@ impl ParameterChangeInfo {
         self.changed.store(!0u64, Ordering::SeqCst);
     }
 
-    #[cfg(test)]
     pub fn changes_exist(&self) -> bool {
         self.changed.load(Ordering::SeqCst) != 0
     }
