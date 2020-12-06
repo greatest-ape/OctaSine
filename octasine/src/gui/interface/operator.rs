@@ -5,7 +5,7 @@ use iced_baseview::{
 };
 
 
-use crate::SyncHandle;
+use crate::{OctaSine, SyncHandle, preset_parameters::OctaSinePresetParameters};
 
 use super::{Message, ParameterWidget};
 use super::knob::OctaSineKnob;
@@ -21,6 +21,7 @@ pub struct OperatorWidgets {
     pub frequency_ratio: OctaSineKnob,
     pub frequency_free: OctaSineKnob,
     pub frequency_fine: OctaSineKnob,
+    pub additive: Option<OctaSineKnob>,
     pub envelope: Envelope,
 }
 
@@ -30,12 +31,18 @@ impl OperatorWidgets {
         sync_handle: &Arc<H>,
         operator_index: usize,
     ) -> Self {
-        let (volume, panning, mod_index, feedback, ratio, free, fine) = match operator_index {
-            0 => ( 2,  3,  5,  6,  7,  8,  9),
-            1 => (15, 16, 19, 20, 21, 22, 23),
-            2 => (29, 30, 34, 35, 36, 37, 38),
-            3 => (44, 45, 49, 50, 51, 52, 53),
+        let (volume, panning, additive, mod_index, feedback, ratio, free, fine) = match operator_index {
+            0 => ( 2,  3,  0,  5,  6,  7,  8,  9),
+            1 => (15, 16, 18, 19, 20, 21, 22, 23),
+            2 => (29, 30, 32, 34, 35, 36, 37, 38),
+            3 => (44, 45, 47, 49, 50, 51, 52, 53),
             _ => unreachable!(),
+        };
+
+        let additive_knob = if operator_index == 0 {
+            None
+        } else {
+            Some(OctaSineKnob::operator_additive(sync_handle, additive))
         };
 
         Self {
@@ -47,6 +54,7 @@ impl OperatorWidgets {
             frequency_ratio: OctaSineKnob::operator_frequency_ratio(sync_handle, ratio),
             frequency_free: OctaSineKnob::operator_frequency_free(sync_handle, free),
             frequency_fine: OctaSineKnob::operator_frequency_fine(sync_handle, fine),
+            additive: additive_knob,
             envelope: Envelope::new(&sync_handle, operator_index),
         }
     }
@@ -54,7 +62,7 @@ impl OperatorWidgets {
     pub fn view<H: SyncHandle>(&mut self, sync_handle: &Arc<H>) -> Element<Message> {
         let title = format!("{}", self.index + 1);
 
-        Row::new()
+        let mut row = Row::new()
             .align_items(Align::Center)
             .push(Text::new(title).size(32))
             .push(Space::with_width(Length::Units(16)))
@@ -79,15 +87,27 @@ impl OperatorWidgets {
                 Container::new(
                     Rule::vertical(16)
                 )
-                    .height(Length::Units(64)))
+                    .height(Length::Units(64))
+            );
+        
+        if let Some(additive) = self.additive.as_mut() {
+            row = row.push(additive.view(sync_handle))
+        } else {
+            row = row.push(Space::with_width(Length::Units(64)))
+        }
+        
+        row = row
             .push(
-                Space::with_width(Length::Units(16))
-            )
+                Container::new(
+                    Rule::vertical(16)
+                )
+                    .height(Length::Units(64)))
             .push(
                 Container::new(self.envelope.view())
                     .width(Length::Fill)
                     // .padding(16)
-            )
-            .into()
+            );
+
+        row.into()
     }
 }

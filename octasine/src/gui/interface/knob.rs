@@ -214,6 +214,26 @@ impl OctaSineKnob {
             DEFAULT_OPERATOR_FREQUENCY_FINE
         )
     }
+
+    pub fn operator_additive<H: SyncHandle>(
+        sync_handle: &Arc<H>,
+        parameter_index: usize,
+    ) -> Self {
+        let default_sync_value = 0.0;
+
+        let tick_marks = tick_marks::Group::min_max(
+            tick_marks::Tier::Two,
+        );
+
+        Self::new(
+            &sync_handle,
+            "Additive".to_string(),
+            parameter_index,
+            None,
+            Some(tick_marks),
+            default_sync_value
+        )
+    }
 }
 
 
