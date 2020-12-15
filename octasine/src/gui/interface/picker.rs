@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use iced_baseview::{
     Column, Element, Text, Length, HorizontalAlignment, Align, Row, Radio, Space
 };
@@ -11,7 +9,6 @@ use vst2_helpers::processing_parameters::utils::{
 };
 
 use crate::SyncHandle;
-use crate::constants::*;
 
 use super::{ParameterWidget, Message};
 
@@ -50,7 +47,7 @@ impl ModOutputPicker {
     }
 
     pub fn operator_3_mod_output<H: SyncHandle>(
-        sync_handle: &Arc<H>,
+        sync_handle: &H,
         parameter_index: usize,
     ) -> Self {
         let value = sync_handle.get_presets()
@@ -69,7 +66,7 @@ impl ModOutputPicker {
     }
 
     pub fn operator_4_mod_output<H: SyncHandle>(
-        sync_handle: &Arc<H>,
+        sync_handle: &H,
         parameter_index: usize,
     ) -> Self {
         let value = sync_handle.get_presets()
@@ -90,7 +87,7 @@ impl ModOutputPicker {
 
 
 impl <H: SyncHandle>ParameterWidget<H> for ModOutputPicker {
-    fn view(&mut self, sync_handle: &Arc<H>) -> Element<Message> {
+    fn view(&mut self, sync_handle: &H) -> Element<Message> {
         let title = Text::new(self.title.clone())
             .size(12)
             .horizontal_alignment(HorizontalAlignment::Center);
@@ -163,7 +160,7 @@ impl <H: SyncHandle>ParameterWidget<H> for ModOutputPicker {
 
 
 fn format_value<H: SyncHandle>(
-    sync_handle: &Arc<H>,
+    sync_handle: &H,
     parameter_index: usize,
     value: f64
 ) -> String {

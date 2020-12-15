@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use iced_baseview::{
     Container, Column, Element, Text, Length, HorizontalAlignment, Align, Row, Rule, Space, Canvas
 };
@@ -30,7 +28,7 @@ pub struct OperatorWidgets {
 
 impl OperatorWidgets {
     pub fn new<H: SyncHandle>(
-        sync_handle: &Arc<H>,
+        sync_handle: &H,
         operator_index: usize,
     ) -> Self {
         let (volume, panning, additive, mod_out, mod_index, feedback, ratio, free, fine) = match operator_index {
@@ -64,11 +62,11 @@ impl OperatorWidgets {
             frequency_fine: OctaSineKnob::operator_frequency_fine(sync_handle, fine),
             additive: additive_knob,
             mod_out: mod_out_knob,
-            envelope: Envelope::new(&sync_handle, operator_index),
+            envelope: Envelope::new(sync_handle, operator_index),
         }
     }
 
-    pub fn view<H: SyncHandle>(&mut self, sync_handle: &Arc<H>) -> Element<Message> {
+    pub fn view<H: SyncHandle>(&mut self, sync_handle: &H) -> Element<Message> {
         let title = format!("{}", self.index + 1);
 
         let mut row = Row::new()

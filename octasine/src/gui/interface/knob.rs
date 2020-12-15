@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use iced_baseview::{
     Column, Element, keyboard::Modifiers, Text, Length, HorizontalAlignment, Align, Row
 };
@@ -29,7 +27,7 @@ pub struct OctaSineKnob {
 
 impl OctaSineKnob {
     fn new<H: SyncHandle>(
-        sync_handle: &Arc<H>,
+        sync_handle: &H,
         title: String,
         parameter_index: usize,
         text_marks: Option<text_marks::Group>,
@@ -55,7 +53,7 @@ impl OctaSineKnob {
     }
 
     pub fn new_min_max_center<H: SyncHandle>(
-        sync_handle: &Arc<H>,
+        sync_handle: &H,
         parameter_index: usize,
         title: &str
     ) -> Self {
@@ -67,7 +65,7 @@ impl OctaSineKnob {
         );
 
         Self::new(
-            &sync_handle,
+            sync_handle,
             title.to_string(),
             parameter_index,
             None,
@@ -77,7 +75,7 @@ impl OctaSineKnob {
     }
 
     pub fn new_with_steps<H: SyncHandle>(
-        sync_handle: &Arc<H>,
+        sync_handle: &H,
         parameter_index: usize,
         title: &str,
         steps: &[f64],
@@ -93,7 +91,7 @@ impl OctaSineKnob {
         );
 
         Self::new(
-            &sync_handle,
+            sync_handle,
             title.to_string(),
             parameter_index,
             None,
@@ -103,7 +101,7 @@ impl OctaSineKnob {
     }
 
     pub fn master_volume<H: SyncHandle>(
-        sync_handle: &Arc<H>,
+        sync_handle: &H,
     ) -> Self {
         Self::new_min_max_center(
             sync_handle,
@@ -113,10 +111,10 @@ impl OctaSineKnob {
     }
 
     pub fn master_frequency<H: SyncHandle>(
-        sync_handle: &Arc<H>,
+        sync_handle: &H,
     ) -> Self {
         Self::new_with_steps(
-            &sync_handle,
+            sync_handle,
             1,
             "Master\nfrequency",
             &MASTER_FREQUENCY_STEPS,
@@ -125,7 +123,7 @@ impl OctaSineKnob {
     }
 
     pub fn operator_volume<H: SyncHandle>(
-        sync_handle: &Arc<H>,
+        sync_handle: &H,
         parameter_index: usize,
     ) -> Self {
         Self::new_min_max_center(
@@ -136,7 +134,7 @@ impl OctaSineKnob {
     }
 
     pub fn operator_panning<H: SyncHandle>(
-        sync_handle: &Arc<H>,
+        sync_handle: &H,
         parameter_index: usize,
     ) -> Self {
         Self::new_min_max_center(
@@ -147,7 +145,7 @@ impl OctaSineKnob {
     }
 
     pub fn operator_mod_index<H: SyncHandle>(
-        sync_handle: &Arc<H>,
+        sync_handle: &H,
         parameter_index: usize,
     ) -> Self {
         Self::new_with_steps(
@@ -160,7 +158,7 @@ impl OctaSineKnob {
     }
 
     pub fn operator_feedback<H: SyncHandle>(
-        sync_handle: &Arc<H>,
+        sync_handle: &H,
         parameter_index: usize,
     ) -> Self {
         let default_sync_value = 0.5;
@@ -170,7 +168,7 @@ impl OctaSineKnob {
         );
 
         Self::new(
-            &sync_handle,
+            sync_handle,
             "Feedback".to_string(),
             parameter_index,
             None,
@@ -180,7 +178,7 @@ impl OctaSineKnob {
     }
 
     pub fn operator_frequency_ratio<H: SyncHandle>(
-        sync_handle: &Arc<H>,
+        sync_handle: &H,
         parameter_index: usize,
     ) -> Self {
         Self::new_with_steps(
@@ -193,7 +191,7 @@ impl OctaSineKnob {
     }
 
     pub fn operator_frequency_free<H: SyncHandle>(
-        sync_handle: &Arc<H>,
+        sync_handle: &H,
         parameter_index: usize,
     ) -> Self {
         Self::new_with_steps(
@@ -206,7 +204,7 @@ impl OctaSineKnob {
     }
 
     pub fn operator_frequency_fine<H: SyncHandle>(
-        sync_handle: &Arc<H>,
+        sync_handle: &H,
         parameter_index: usize,
     ) -> Self {
         Self::new_with_steps(
@@ -219,7 +217,7 @@ impl OctaSineKnob {
     }
 
     pub fn operator_additive<H: SyncHandle>(
-        sync_handle: &Arc<H>,
+        sync_handle: &H,
         parameter_index: usize,
     ) -> Self {
         let default_sync_value = 0.0;
@@ -229,7 +227,7 @@ impl OctaSineKnob {
         );
 
         Self::new(
-            &sync_handle,
+            sync_handle,
             "Additive".to_string(),
             parameter_index,
             None,
@@ -241,7 +239,7 @@ impl OctaSineKnob {
 
 
 impl <H: SyncHandle>ParameterWidget<H> for OctaSineKnob {
-    fn view(&mut self, sync_handle: &Arc<H>) -> Element<Message> {
+    fn view(&mut self, sync_handle: &H) -> Element<Message> {
         let title = Text::new(self.title.clone())
             .size(12)
             .horizontal_alignment(HorizontalAlignment::Center);
@@ -303,7 +301,7 @@ impl <H: SyncHandle>ParameterWidget<H> for OctaSineKnob {
 
 
 fn format_value<H: SyncHandle>(
-    sync_handle: &Arc<H>,
+    sync_handle: &H,
     parameter_index: usize,
     value: f64
 ) -> String {

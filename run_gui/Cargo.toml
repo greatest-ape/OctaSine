@@ -6,6 +6,6 @@ license = "GPL-3.0"
 edition = "2018"
 
 [dependencies]
-iced_baseview = { path = "../../iced_baseview" }
+iced_baseview = { git = "https://github.com/BillyDM/iced_baseview.git", branch = "main", features = ["canvas"] }
 octasine = { path = "../octasine", features = ["logging"] }
 simplelog = { version = "0.8", default-features = false }
