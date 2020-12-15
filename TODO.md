@@ -2,6 +2,8 @@
 
 ## GUI
 
+* iced_audio knobs ticks: optimize drawing
+  * Try to turn off tick marks, see if performance improves
 * Fix ANOTHER `ERROR] thread 'unnamed' panicked at 'Tessellate path: UnsupportedParamater': /[..]/github.com-1ecc6299db9ec823/iced_graphics-0.1.0/src/widget/canvas/frame.rs:100`
 * Additive and modulation output knobs/dropdown/whatever. They could be to the
   right of the envelopes since they are concerned with routing?
@@ -18,6 +20,7 @@
   * Maybe don't load parameter changes in processing while dragging: not a
     problem if the previous point is implemented and probably not a problem
     now either
+* improve CI with macOS too, baseview linux deps
 
 ## Code quality / safety
 
