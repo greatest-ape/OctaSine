@@ -7,7 +7,7 @@ use iced_baseview::{
 
 use vst2_helpers::approximations::Log10Table;
 
-use crate::SyncHandle;
+use crate::GuiSyncHandle;
 use crate::voices::VoiceOperatorVolumeEnvelope;
 use crate::constants::{ENVELOPE_MIN_DURATION, ENVELOPE_MAX_DURATION};
 
@@ -209,7 +209,7 @@ pub struct Envelope {
 
 
 impl Envelope {
-    pub fn new<H: SyncHandle>(
+    pub fn new<H: GuiSyncHandle>(
         sync_handle: &H,
         operator_index: usize,
     ) -> Self {

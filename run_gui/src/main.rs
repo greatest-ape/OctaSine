@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use iced_baseview::{settings, Parent, Runner, Settings, WindowScalePolicy};
-use octasine::{SyncHandle, OctaSinePresetBank, built_in_preset_bank};
+use octasine::{GuiSyncHandle, OctaSinePresetBank, built_in_preset_bank};
 use octasine::constants::PLUGIN_NAME;
 use octasine::gui::{GUI_WIDTH, GUI_HEIGHT};
 use octasine::gui::interface::OctaSineIcedApplication;
@@ -13,7 +13,7 @@ struct SyncState {
 }
 
 
-impl SyncHandle for SyncState {
+impl GuiSyncHandle for SyncState {
     fn get_presets(&self) -> &OctaSinePresetBank {
         &self.presets
     }

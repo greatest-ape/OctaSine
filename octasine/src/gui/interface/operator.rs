@@ -3,7 +3,7 @@ use iced_baseview::{
 };
 
 
-use crate::{OctaSine, SyncHandle, preset_parameters::OctaSinePresetParameters};
+use crate::{OctaSine, GuiSyncHandle, preset_parameters::OctaSinePresetParameters};
 
 use super::{Message, ParameterWidget};
 use super::envelope::Envelope;
@@ -27,7 +27,7 @@ pub struct OperatorWidgets {
 
 
 impl OperatorWidgets {
-    pub fn new<H: SyncHandle>(
+    pub fn new<H: GuiSyncHandle>(
         sync_handle: &H,
         operator_index: usize,
     ) -> Self {
@@ -66,7 +66,7 @@ impl OperatorWidgets {
         }
     }
 
-    pub fn view<H: SyncHandle>(&mut self, sync_handle: &H) -> Element<Message> {
+    pub fn view<H: GuiSyncHandle>(&mut self, sync_handle: &H) -> Element<Message> {
         let title = format!("{}", self.index + 1);
 
         let mut row = Row::new()

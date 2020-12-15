@@ -8,7 +8,7 @@ use vst2_helpers::processing_parameters::utils::{
     map_step_to_parameter_value
 };
 
-use crate::SyncHandle;
+use crate::GuiSyncHandle;
 
 use super::{ParameterWidget, Message};
 
@@ -46,7 +46,7 @@ impl ModOutputPicker {
         map_step_to_parameter_value(&self.choices, self.selected)
     }
 
-    pub fn operator_3_mod_output<H: SyncHandle>(
+    pub fn operator_3_mod_output<H: GuiSyncHandle>(
         sync_handle: &H,
         parameter_index: usize,
     ) -> Self {
@@ -65,7 +65,7 @@ impl ModOutputPicker {
         }
     }
 
-    pub fn operator_4_mod_output<H: SyncHandle>(
+    pub fn operator_4_mod_output<H: GuiSyncHandle>(
         sync_handle: &H,
         parameter_index: usize,
     ) -> Self {
@@ -86,7 +86,7 @@ impl ModOutputPicker {
 }
 
 
-impl <H: SyncHandle>ParameterWidget<H> for ModOutputPicker {
+impl <H: GuiSyncHandle>ParameterWidget<H> for ModOutputPicker {
     fn view(&mut self, sync_handle: &H) -> Element<Message> {
         let title = Text::new(self.title.clone())
             .size(12)
@@ -159,7 +159,7 @@ impl <H: SyncHandle>ParameterWidget<H> for ModOutputPicker {
 }
 
 
-fn format_value<H: SyncHandle>(
+fn format_value<H: GuiSyncHandle>(
     sync_handle: &H,
     parameter_index: usize,
     value: f64

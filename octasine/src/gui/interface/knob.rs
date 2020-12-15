@@ -6,7 +6,7 @@ use iced_audio::{
 };
 use vst2_helpers::processing_parameters::utils::map_value_to_parameter_value_with_steps;
 
-use crate::SyncHandle;
+use crate::GuiSyncHandle;
 use crate::constants::*;
 
 use super::{ParameterWidget, Message};
@@ -26,7 +26,7 @@ pub struct OctaSineKnob {
 
 
 impl OctaSineKnob {
-    fn new<H: SyncHandle>(
+    fn new<H: GuiSyncHandle>(
         sync_handle: &H,
         title: String,
         parameter_index: usize,
@@ -52,7 +52,7 @@ impl OctaSineKnob {
         }
     }
 
-    pub fn new_min_max_center<H: SyncHandle>(
+    pub fn new_min_max_center<H: GuiSyncHandle>(
         sync_handle: &H,
         parameter_index: usize,
         title: &str
@@ -74,7 +74,7 @@ impl OctaSineKnob {
         )
     }
 
-    pub fn new_with_steps<H: SyncHandle>(
+    pub fn new_with_steps<H: GuiSyncHandle>(
         sync_handle: &H,
         parameter_index: usize,
         title: &str,
@@ -100,7 +100,7 @@ impl OctaSineKnob {
         )
     }
 
-    pub fn master_volume<H: SyncHandle>(
+    pub fn master_volume<H: GuiSyncHandle>(
         sync_handle: &H,
     ) -> Self {
         Self::new_min_max_center(
@@ -110,7 +110,7 @@ impl OctaSineKnob {
         )
     }
 
-    pub fn master_frequency<H: SyncHandle>(
+    pub fn master_frequency<H: GuiSyncHandle>(
         sync_handle: &H,
     ) -> Self {
         Self::new_with_steps(
@@ -122,7 +122,7 @@ impl OctaSineKnob {
         )
     }
 
-    pub fn operator_volume<H: SyncHandle>(
+    pub fn operator_volume<H: GuiSyncHandle>(
         sync_handle: &H,
         parameter_index: usize,
     ) -> Self {
@@ -133,7 +133,7 @@ impl OctaSineKnob {
         )
     }
 
-    pub fn operator_panning<H: SyncHandle>(
+    pub fn operator_panning<H: GuiSyncHandle>(
         sync_handle: &H,
         parameter_index: usize,
     ) -> Self {
@@ -144,7 +144,7 @@ impl OctaSineKnob {
         )
     }
 
-    pub fn operator_mod_index<H: SyncHandle>(
+    pub fn operator_mod_index<H: GuiSyncHandle>(
         sync_handle: &H,
         parameter_index: usize,
     ) -> Self {
@@ -157,7 +157,7 @@ impl OctaSineKnob {
         )
     }
 
-    pub fn operator_feedback<H: SyncHandle>(
+    pub fn operator_feedback<H: GuiSyncHandle>(
         sync_handle: &H,
         parameter_index: usize,
     ) -> Self {
@@ -177,7 +177,7 @@ impl OctaSineKnob {
         )
     }
 
-    pub fn operator_frequency_ratio<H: SyncHandle>(
+    pub fn operator_frequency_ratio<H: GuiSyncHandle>(
         sync_handle: &H,
         parameter_index: usize,
     ) -> Self {
@@ -190,7 +190,7 @@ impl OctaSineKnob {
         )
     }
 
-    pub fn operator_frequency_free<H: SyncHandle>(
+    pub fn operator_frequency_free<H: GuiSyncHandle>(
         sync_handle: &H,
         parameter_index: usize,
     ) -> Self {
@@ -203,7 +203,7 @@ impl OctaSineKnob {
         )
     }
 
-    pub fn operator_frequency_fine<H: SyncHandle>(
+    pub fn operator_frequency_fine<H: GuiSyncHandle>(
         sync_handle: &H,
         parameter_index: usize,
     ) -> Self {
@@ -216,7 +216,7 @@ impl OctaSineKnob {
         )
     }
 
-    pub fn operator_additive<H: SyncHandle>(
+    pub fn operator_additive<H: GuiSyncHandle>(
         sync_handle: &H,
         parameter_index: usize,
     ) -> Self {
@@ -238,7 +238,7 @@ impl OctaSineKnob {
 }
 
 
-impl <H: SyncHandle>ParameterWidget<H> for OctaSineKnob {
+impl <H: GuiSyncHandle>ParameterWidget<H> for OctaSineKnob {
     fn view(&mut self, sync_handle: &H) -> Element<Message> {
         let title = Text::new(self.title.clone())
             .size(12)
@@ -300,7 +300,7 @@ impl <H: SyncHandle>ParameterWidget<H> for OctaSineKnob {
 }
 
 
-fn format_value<H: SyncHandle>(
+fn format_value<H: GuiSyncHandle>(
     sync_handle: &H,
     parameter_index: usize,
     value: f64
