@@ -1,9 +1,10 @@
 use std::sync::Arc;
 
-use iced_baseview::{settings, ExternalData, Parent, Runner, Settings, WindowScalePolicy};
+use iced_baseview::{settings, Parent, Runner, Settings, WindowScalePolicy};
 use octasine::{SyncHandle, OctaSinePresetBank, built_in_preset_bank};
+use octasine::constants::PLUGIN_NAME;
 use octasine::gui::{GUI_WIDTH, GUI_HEIGHT};
-use octasine::gui::interface::{self, OctaSineIcedApplication};
+use octasine::gui::interface::OctaSineIcedApplication;
 use simplelog::{ConfigBuilder, SimpleLogger, LevelFilter};
 
 
@@ -17,15 +18,8 @@ impl SyncHandle for SyncState {
         &self.presets
     }
 
-    fn update_host_display(&self){
+    fn update_host_display(&self) {
 
-    }
-}
-
-
-impl ExternalData for SyncState {
-    fn did_data_change(&self) -> bool {
-        self.presets.gui_did_parameters_change()
     }
 }
 
@@ -50,16 +44,15 @@ fn main(){
     let settings = Settings {
         window: settings::Window {
             logical_size: (GUI_WIDTH as u32, GUI_HEIGHT as u32),
-            scale: WindowScalePolicy::SystemScaleFactor,
+            scale_policy: WindowScalePolicy::SystemScaleFactor,
+            title: PLUGIN_NAME.to_string(),
         },
         flags: sync_state.clone(),
     };
 
-    let (_, opt_runner) = Runner::<OctaSineIcedApplication<SyncState>, Arc<SyncState>>::open(
+    let (_, opt_runner) = Runner::<OctaSineIcedApplication<Arc<SyncState>>>::open(
         settings,
         Parent::None,
-        Some(interface::Message::ExternalDataChanged),
-        sync_state
     );
 
     opt_runner.unwrap().app_run_blocking();

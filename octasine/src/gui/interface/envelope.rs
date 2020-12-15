@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use iced_baseview::canvas::{
     Cache, Canvas, Cursor, Frame, Geometry, Path, Program, Stroke, Text, path, event
 };
@@ -212,7 +210,7 @@ pub struct Envelope {
 
 impl Envelope {
     pub fn new<H: SyncHandle>(
-        sync_handle: &Arc<H>,
+        sync_handle: &H,
         operator_index: usize,
     ) -> Self {
         let (attack_dur, attack_val, decay_dur, decay_val, release_dur) = match operator_index {

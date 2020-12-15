@@ -1,10 +1,11 @@
 use std::sync::Arc;
 
-use iced_baseview::{settings, Parent, Runner, Settings, WindowScalePolicy, ExternalData};
+use iced_baseview::{settings, Parent, Runner, Settings, WindowScalePolicy};
 use vst::editor::Editor;
 use raw_window_handle::RawWindowHandle;
 
 use super::SyncOnlyState;
+use crate::constants::PLUGIN_NAME;
 
 pub mod interface;
 
@@ -31,13 +32,6 @@ impl Gui {
 }
 
 
-impl ExternalData for SyncOnlyState {
-    fn did_data_change(&self) -> bool {
-        self.presets.gui_did_parameters_change()
-    }
-}
-
-
 impl Editor for Gui {
     fn size(&self) -> (i32, i32) {
         (GUI_WIDTH as i32, GUI_HEIGHT as i32)
@@ -55,16 +49,15 @@ impl Editor for Gui {
         let settings = Settings {
             window: settings::Window {
                 logical_size: (GUI_WIDTH as u32, GUI_HEIGHT as u32),
-                scale: WindowScalePolicy::SystemScaleFactor,
+                scale_policy: WindowScalePolicy::SystemScaleFactor,
+                title: PLUGIN_NAME.to_string(),
             },
             flags: self.sync_only.clone(),
         };
 
-        Runner::<OctaSineIcedApplication<SyncOnlyState>, Arc<SyncOnlyState>>::open(
+        Runner::<OctaSineIcedApplication<Arc<SyncOnlyState>>>::open(
             settings,
             Parent::WithParent(raw_window_handle_from_parent(parent)),
-            Some(interface::Message::ExternalDataChanged),
-            self.sync_only.clone()
         );
 
         true

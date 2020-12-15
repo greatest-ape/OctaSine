@@ -1,6 +1,4 @@
-use std::sync::Arc;
-
-use iced_baseview::{executor, Align, Application, Command};
+use iced_baseview::{executor, Align, Application, Command, Subscription, WindowSubs};
 use iced_baseview::{
     Column, Element, Row, Container, Rule, Text, Length, Space
 };
@@ -19,19 +17,19 @@ use knob::OctaSineKnob;
 
 #[derive(Debug, Clone)]
 pub enum Message {
-    ExternalDataChanged,
+    Frame,
     ParameterChange(usize, Normal),
 }
 
 
 trait ParameterWidget<H: SyncHandle> {
-    fn view(&mut self, sync_state: &Arc<H>) -> Element<Message>;
+    fn view(&mut self, sync_state: &H) -> Element<Message>;
     fn set_value(&mut self, value: f64);
 }
 
 
 pub struct OctaSineIcedApplication<H: SyncHandle> {
-    sync_handle: Arc<H>,
+    sync_handle: H,
     master_volume: OctaSineKnob,
     master_frequency: OctaSineKnob,
     operator_1: OperatorWidgets,
@@ -121,7 +119,7 @@ impl <H: SyncHandle> OctaSineIcedApplication<H> {
 impl <H: SyncHandle>Application for OctaSineIcedApplication<H> {
     type Executor = executor::Default;
     type Message = Message;
-    type Flags = Arc<H>;
+    type Flags = H;
 
     fn new(
         sync_handle: Self::Flags,
@@ -147,13 +145,18 @@ impl <H: SyncHandle>Application for OctaSineIcedApplication<H> {
         (app, Command::none())
     }
 
-    fn title(&self) -> String {
-        crate::PLUGIN_NAME.into()
+    fn subscription(
+        &self,
+        window_subs: &mut WindowSubs<Self::Message>
+    ) -> Subscription<Self::Message> {
+        window_subs.on_frame = Some(Message::Frame);
+
+        Subscription::none()
     }
 
     fn update(&mut self, message: Self::Message) -> Command<Self::Message> {
         match message {
-            Message::ExternalDataChanged => {
+            Message::Frame => {
                 self.update_widgets_from_parameters();
             },
             Message::ParameterChange(index, value) => {
