@@ -4,7 +4,7 @@ use iced_baseview::{
 };
 use iced_audio::Normal;
 
-use crate::SyncHandle;
+use crate::GuiSyncHandle;
 
 mod envelope;
 mod knob;
@@ -22,13 +22,13 @@ pub enum Message {
 }
 
 
-trait ParameterWidget<H: SyncHandle> {
+trait ParameterWidget<H: GuiSyncHandle> {
     fn view(&mut self, sync_state: &H) -> Element<Message>;
     fn set_value(&mut self, value: f64);
 }
 
 
-pub struct OctaSineIcedApplication<H: SyncHandle> {
+pub struct OctaSineIcedApplication<H: GuiSyncHandle> {
     sync_handle: H,
     master_volume: OctaSineKnob,
     master_frequency: OctaSineKnob,
@@ -39,7 +39,7 @@ pub struct OctaSineIcedApplication<H: SyncHandle> {
 }
 
 
-impl <H: SyncHandle> OctaSineIcedApplication<H> {
+impl <H: GuiSyncHandle> OctaSineIcedApplication<H> {
     fn update_widgets_from_parameters(&mut self){
         let opt_changes = self.sync_handle.get_presets()
             .get_changed_parameters_from_gui();
@@ -116,7 +116,7 @@ impl <H: SyncHandle> OctaSineIcedApplication<H> {
 }
 
 
-impl <H: SyncHandle>Application for OctaSineIcedApplication<H> {
+impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
     type Executor = executor::Default;
     type Message = Message;
     type Flags = H;

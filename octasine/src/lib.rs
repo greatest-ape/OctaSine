@@ -54,13 +54,13 @@ pub struct ProcessingState {
 
 
 /// Trait passed to GUI code for encapsulation
-pub trait SyncHandle: Send + Sync + 'static {
+pub trait GuiSyncHandle: Send + Sync + 'static {
     fn get_presets(&self) -> &OctaSinePresetBank;
     fn update_host_display(&self);
 }
 
 
-impl SyncHandle for SyncOnlyState {
+impl GuiSyncHandle for SyncOnlyState {
     fn get_presets(&self) -> &OctaSinePresetBank {
         &self.presets
     }
@@ -70,7 +70,7 @@ impl SyncHandle for SyncOnlyState {
 }
 
 
-impl <H: SyncHandle>SyncHandle for Arc<H> {
+impl <H: GuiSyncHandle>GuiSyncHandle for Arc<H> {
     fn get_presets(&self) -> &OctaSinePresetBank {
         ::std::ops::Deref::deref(self).get_presets()
     }
