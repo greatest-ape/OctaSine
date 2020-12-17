@@ -1022,7 +1022,7 @@ dependencies = [
 [[package]]
 name = "iced_baseview"
 version = "0.0.1"
-source = "git+https://github.com/BillyDM/iced_baseview.git?branch=main#4a759b5003384fc3b1557437538ea1169233050f"
+source = "git+https://github.com/BillyDM/iced_baseview.git?branch=main#efde90bb125031d71c77bdacabeb41d9f4aa6c6a"
 dependencies = [
  "baseview",
  "iced_core",
