@@ -1011,9 +1011,8 @@ dependencies = [
 
 [[package]]
 name = "iced_audio"
-version = "0.5.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4c7c8ee6404ff42ac7a7be6f922a642e7679f746af48628d50650f466285c9f2"
+version = "0.5.4"
+source = "git+https://github.com/BillyDM/iced_audio.git?branch=main#4834528fa07d7358f73f02217c1187335e81e252"
 dependencies = [
  "iced_graphics",
  "iced_native",
