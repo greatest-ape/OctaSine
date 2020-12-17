@@ -2,13 +2,10 @@
 
 ## GUI
 
-* iced_audio knobs ticks: optimize drawing
-  * Try to turn off tick marks, see if performance improves
 * Fix ANOTHER `ERROR] thread 'unnamed' panicked at 'Tessellate path: UnsupportedParamater': /[..]/github.com-1ecc6299db9ec823/iced_graphics-0.1.0/src/widget/canvas/frame.rs:100`
-* Additive and modulation output knobs/dropdown/whatever. They could be to the
-  right of the envelopes since they are concerned with routing?
 * Wave type could possibly be a tiny button under the operator number if
   there is a lack of space
+* Cache operator string value
 * Envelopes
   * Maybe draw lines indicating top and bottom of draggable range
   * Interaction with draggers
