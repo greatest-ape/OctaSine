@@ -8,14 +8,11 @@ members = [
     "run_gui",
 ]
 
-# Use sleef-sys fork
-# [patch.crates-io.sleef-sys]
-# git = 'https://github.com/greatest-ape/sleef-sys.git'
-# branch = "octasine"
-# features = ["static"]
-
 # [patch.'https://github.com/RustAudio/baseview']
 # baseview = { path = "../baseview" }
+
+# [patch.'https://github.com/BillyDM/iced_baseview']
+# iced_baseview = { path = "../iced_baseview" }
 
 [profile.release]
 debug = true
