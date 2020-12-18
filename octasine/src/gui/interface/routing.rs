@@ -15,11 +15,16 @@ use crate::processing_parameters::{
 use super::Message;
 
 
-const WIDTH: u16 = 84;
-const HEIGHT: u16 = 108;
-const SIZE: Size = Size { width: WIDTH as f32, height: HEIGHT as f32 };
-const OPERATOR_BOX_SCALE: f32 = 1.5;
-const SCALE: f32 = 1.0 - 1.0 / 8.0;
+const SMALL_BOX_SIZE: u16 = 12;
+const BIG_BOX_SIZE: u16 = 16;
+const HEIGHT: u16 = 4 * 29;
+
+const SCALE: f32 = SMALL_BOX_SIZE as f32 / (HEIGHT as f32 / 9.0);
+const WIDTH_FLOAT: f32 = ((HEIGHT as f64 / 9.0) * 7.0) as f32;
+const SIZE: Size = Size { width: WIDTH_FLOAT, height: HEIGHT as f32 };
+const OPERATOR_BOX_SCALE: f32 = BIG_BOX_SIZE as f32 / SMALL_BOX_SIZE as f32;
+
+const WIDTH: u16 = WIDTH_FLOAT as u16;
 
 
 struct OperatorBox {
@@ -75,7 +80,7 @@ impl OperatorBox {
         let center = Rectangle::new(top_left, size).center();
 
         let text_position = Point {
-            x: base_top_left.x + 2.45,
+            x: base_top_left.x + 3.5,
             y: base_top_left.y,
         };
 
