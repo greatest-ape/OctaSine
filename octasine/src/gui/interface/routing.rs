@@ -15,8 +15,8 @@ use crate::processing_parameters::{
 use super::Message;
 
 
-const WIDTH: u16 = 128;
-const HEIGHT: u16 = 128;
+const WIDTH: u16 = 108;
+const HEIGHT: u16 = 108;
 const SIZE: Size = Size { width: WIDTH as f32, height: HEIGHT as f32 };
 
 
@@ -114,13 +114,49 @@ impl ModulationMatrix {
         self.draw_box(frame, 6, 2, Box::Modulation { active: self.operator_3_target == 0 });
 
         self.draw_box(frame, 6, 4, Box::Modulation { active: true });
+
+        self.draw_output_box(frame);
+    }
+
+    fn draw_output_box(&self, frame: &mut Frame){
+        let bounds = frame.size();
+
+        let x_bla = bounds.width / 9.0;
+        let y_bla = bounds.height / 9.0;
+
+        let base_top_left = Point::new(
+            0.0,
+            8.0 * y_bla,
+        );
+        let base_size = Size::new(x_bla, y_bla);
+
+        let size_multiplier = 1.5;
+
+        let size = Size {
+            width: base_size.width * 6.0 + base_size.width * size_multiplier,
+            height: base_size.height * size_multiplier,
+        };
+        let top_left = Point {
+            x: base_top_left.x - (size_multiplier - 1.0) * base_size.width / 2.0,
+            y: base_top_left.y - (size_multiplier - 1.0) * base_size.height / 2.0,
+        };
+
+        let rect = Path::rectangle(top_left, size);
+
+        // frame.fill(&rect, Color::from_rgb8(27, 159, 31));
+
+        let stroke = Stroke::default()
+            .with_color(Color::BLACK)
+            .with_width(1.0);
+
+        frame.stroke(&rect, stroke);
     }
 
     fn draw_box(&self, frame: &mut Frame, x: usize, y: usize, box_type: Box) -> Point {
         let bounds = frame.size();
 
-        let x_bla = bounds.width / 8.0;
-        let y_bla = bounds.height / 8.0;
+        let x_bla = bounds.width / 9.0;
+        let y_bla = bounds.height / 9.0;
 
         let base_top_left = Point::new(
             x as f32 * x_bla,
@@ -130,7 +166,7 @@ impl ModulationMatrix {
 
         match box_type {
             Box::Operator { index } => {
-                let size_multiplier = 1.25;
+                let size_multiplier = 1.5;
 
                 let size = Size {
                     width: base_size.width * size_multiplier,
@@ -150,8 +186,8 @@ impl ModulationMatrix {
                 frame.stroke(&rect, stroke);
 
                 let text_position = Point {
-                    x: base_top_left.x + 4.0,
-                    y: base_top_left.y + 1.5,
+                    x: base_top_left.x + 2.45,
+                    y: base_top_left.y + 0.45,
                 };
 
                 let text = Text {
