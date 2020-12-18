@@ -10,9 +10,11 @@ mod envelope;
 mod knob;
 mod operator;
 mod picker;
+mod routing;
 
 use operator::OperatorWidgets;
 use knob::OctaSineKnob;
+use routing::ModulationMatrix;
 
 
 #[derive(Debug, Clone)]
@@ -32,6 +34,7 @@ pub struct OctaSineIcedApplication<H: GuiSyncHandle> {
     sync_handle: H,
     master_volume: OctaSineKnob,
     master_frequency: OctaSineKnob,
+    modulation_matrix: ModulationMatrix,
     operator_1: OperatorWidgets,
     operator_2: OperatorWidgets,
     operator_3: OperatorWidgets,
@@ -126,6 +129,7 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
     ) -> (Self, Command<Self::Message>) {
         let master_volume = OctaSineKnob::master_volume(&sync_handle);
         let master_frequency = OctaSineKnob::master_frequency(&sync_handle);
+        let modulation_matrix = ModulationMatrix::new(&sync_handle);
 
         let operator_1 = OperatorWidgets::new(&sync_handle, 0);
         let operator_2 = OperatorWidgets::new(&sync_handle, 1);
@@ -136,6 +140,7 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
             sync_handle,
             master_volume,
             master_frequency,
+            modulation_matrix,
             operator_1,
             operator_2,
             operator_3,
@@ -175,6 +180,7 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
     fn view(&mut self) -> Element<'_, Self::Message> {
         let master_volume = self.master_volume.view(&self.sync_handle);
         let master_frequency = self.master_frequency.view(&self.sync_handle);
+        let modulation_matrix = self.modulation_matrix.view();
         let operator_1 = self.operator_1.view(&self.sync_handle);
         let operator_2 = self.operator_2.view(&self.sync_handle);
         let operator_3 = self.operator_3.view(&self.sync_handle);
@@ -190,7 +196,7 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
                             .align_items(Align::Start)
                             .push(
                                 Row::new()
-                                    // .push(Text::new("OctaSine"))
+                                    .push(modulation_matrix)
                             )
                         )
                     .push(
