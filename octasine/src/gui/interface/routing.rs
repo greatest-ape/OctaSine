@@ -20,16 +20,6 @@ const HEIGHT: u16 = 108;
 const SIZE: Size = Size { width: WIDTH as f32, height: HEIGHT as f32 };
 
 
-enum Box {
-    Operator {
-        index: usize,
-    },
-    Modulation {
-        active: bool
-    }
-}
-
-
 struct OperatorBox {
     text: Text,
     path: Path,
@@ -145,17 +135,18 @@ impl ModulationBox {
         let x_bla = bounds.width / 7.0;
         let y_bla = bounds.height / 9.0;
 
-        let base_top_left = Point::new(
+        let top_left = Point::new(
             x as f32 * x_bla,
             y as f32 * y_bla,
         );
-        let base_size = Size::new(x_bla, y_bla);
+        let size = Size::new(x_bla, y_bla);
 
-        let path = Path::rectangle(base_top_left, base_size);
+        let path = Path::rectangle(top_left, size);
+        let center = Rectangle::new(top_left, size).center();
 
         Self {
             path,
-            center: Point::default(),
+            center,
             active,
         }
     }
@@ -257,19 +248,24 @@ impl ModulationMatrix {
         let operator_3_target = Self::convert_operator_3_target(
             sync_handle.get_presets().get_parameter_value_float(33)
         );
-
         let operator_4_target = Self::convert_operator_4_target(
             sync_handle.get_presets().get_parameter_value_float(48)
         );
+        let operator_2_additive = sync_handle.get_presets()
+            .get_parameter_value_float(18);
+        let operator_3_additive = sync_handle.get_presets()
+            .get_parameter_value_float(32);
+        let operator_4_additive = sync_handle.get_presets()
+            .get_parameter_value_float(47);
 
         let mut matrix = Self {
             cache: Cache::default(),
             size: SIZE,
             operator_3_target,
             operator_4_target,
-            operator_2_additive: sync_handle.get_presets().get_parameter_value_float(18),
-            operator_3_additive: sync_handle.get_presets().get_parameter_value_float(32),
-            operator_4_additive: sync_handle.get_presets().get_parameter_value_float(47),
+            operator_2_additive,
+            operator_3_additive,
+            operator_4_additive,
             operator_1_box: Default::default(),
             operator_2_box: Default::default(),
             operator_3_box: Default::default(),
