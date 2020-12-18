@@ -19,6 +19,7 @@ const WIDTH: u16 = 84;
 const HEIGHT: u16 = 108;
 const SIZE: Size = Size { width: WIDTH as f32, height: HEIGHT as f32 };
 const OPERATOR_BOX_SCALE: f32 = 1.5;
+const SCALE: f32 = 1.0 - 1.0 / 8.0;
 
 
 struct OperatorBox {
@@ -45,10 +46,10 @@ impl OperatorBox {
         let y_bla = bounds.height / 9.0;
 
         let (x, y) = match index {
-            0 => (0, 0),
-            1 => (2, 2),
-            2 => (4, 4),
-            3 => (6, 6),
+            3 => (0, 0),
+            2 => (2, 2),
+            1 => (4, 4),
+            0 => (6, 6),
             _ => unreachable!(),
         };
 
@@ -67,13 +68,18 @@ impl OperatorBox {
             y: base_top_left.y - (OPERATOR_BOX_SCALE - 1.0) * base_size.height / 2.0,
         };
 
+        let top_left = scale_point(bounds, top_left);
+        let size = scale_size(size);
+
         let path = Path::rectangle(top_left, size);
         let center = Rectangle::new(top_left, size).center();
 
         let text_position = Point {
             x: base_top_left.x + 2.45,
-            y: base_top_left.y + 0.45,
+            y: base_top_left.y,
         };
+
+        let text_position = scale_point(bounds, text_position);
 
         let text = Text {
             content: format!("{}", index + 1),
@@ -140,6 +146,9 @@ impl ModulationBox {
         );
         let size = Size::new(x_bla, y_bla);
 
+        let top_left = scale_point(bounds, top_left);
+        let size = scale_size(size);
+
         let path = Path::rectangle(top_left, size);
         let center = Rectangle::new(top_left, size).center();
 
@@ -199,6 +208,9 @@ impl OutputBox {
             x: base_top_left.x - (OPERATOR_BOX_SCALE - 1.0) * base_size.width / 2.0,
             y: base_top_left.y - (OPERATOR_BOX_SCALE - 1.0) * base_size.height / 2.0,
         };
+
+        let top_left = scale_point(bounds, top_left);
+        let size = scale_size(size);
 
         let path = Path::rectangle(top_left, size);
 
@@ -390,4 +402,27 @@ impl Program<Message> for ModulationMatrix {
 
         (event::Status::Ignored, None)
     }
+}
+
+
+fn scale_point(bounds: Size, point: Point) -> Point {
+    let translation = Vector {
+        x: (1.0 - SCALE) * bounds.width / 2.0,
+        y: (1.0 - SCALE) * bounds.height / 2.0
+    };
+
+    let scaled = Point {
+        x: point.x * SCALE,
+        y: point.y * SCALE,
+    };
+
+    scaled + translation
+}
+
+
+fn scale_size(size: Size) -> Size {
+    Size::new(
+        size.width * SCALE,
+        size.height * SCALE,
+    )
 }
