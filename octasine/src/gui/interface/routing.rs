@@ -15,7 +15,7 @@ use crate::processing_parameters::{
 use super::Message;
 
 
-const WIDTH: u16 = 96;
+const WIDTH: u16 = 84;
 const HEIGHT: u16 = 108;
 const SIZE: Size = Size { width: WIDTH as f32, height: HEIGHT as f32 };
 
@@ -121,7 +121,7 @@ impl ModulationMatrix {
     fn draw_output_box(&self, frame: &mut Frame){
         let bounds = frame.size();
 
-        let x_bla = bounds.width / 8.0;
+        let x_bla = bounds.width / 7.0;
         let y_bla = bounds.height / 9.0;
 
         let base_top_left = Point::new(
@@ -143,7 +143,7 @@ impl ModulationMatrix {
 
         let rect = Path::rectangle(top_left, size);
 
-        // frame.fill(&rect, Color::from_rgb8(27, 159, 31));
+        frame.fill(&rect, Color::from_rgb(0.8, 0.8, 0.8));
 
         let stroke = Stroke::default()
             .with_color(Color::BLACK)
@@ -155,7 +155,7 @@ impl ModulationMatrix {
     fn draw_box(&self, frame: &mut Frame, x: usize, y: usize, box_type: Box) -> Point {
         let bounds = frame.size();
 
-        let x_bla = bounds.width / 8.0;
+        let x_bla = bounds.width / 7.0;
         let y_bla = bounds.height / 9.0;
 
         let base_top_left = Point::new(
