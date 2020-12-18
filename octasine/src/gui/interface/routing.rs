@@ -1,5 +1,3 @@
-use std::ops::Add;
-
 use iced_baseview::canvas::{
     Cache, Canvas, Cursor, Frame, Geometry, Path, Program, Stroke, Text, path, event
 };
@@ -250,13 +248,13 @@ impl OutputBox {
 }
 
 
-struct AdditiveLine {
+struct OperatorLine {
     path: Path,
     opacity: f32,
 }
 
 
-impl Default for AdditiveLine {
+impl Default for OperatorLine {
     fn default() -> Self {
         Self {
             path: Path::line(Point::default(), Point::default()),
@@ -266,13 +264,33 @@ impl Default for AdditiveLine {
 }
 
 
-impl AdditiveLine {
-    fn new(from: Point, to_y: f32, opacity: f32) -> Self {
+impl OperatorLine {
+    fn additive(from: Point, to_y: f32, opacity: f32) -> Self {
         let mut to = from;
 
         to.y = to_y;
 
         let path = Path::line(from, to);
+
+        Self {
+            path,
+            opacity,
+        }
+    }
+
+    fn modulation(
+        from: Point,
+        through: Point,
+        to: Point,
+        opacity: f32,
+    ) -> Self {
+        let mut builder = path::Builder::new();
+
+        builder.move_to(from);
+        builder.line_to(through);
+        builder.line_to(to);
+
+        let path = builder.build();
 
         Self {
             path,
@@ -309,10 +327,13 @@ pub struct ModulationMatrix {
     operator_3_mod_1_box: ModulationBox,
     operator_2_mod_1_box: ModulationBox,
     output_box: OutputBox,
-    operator_4_additive_line: AdditiveLine,
-    operator_3_additive_line: AdditiveLine,
-    operator_2_additive_line: AdditiveLine,
-    operator_1_additive_line: AdditiveLine,
+    operator_4_additive_line: OperatorLine,
+    operator_3_additive_line: OperatorLine,
+    operator_2_additive_line: OperatorLine,
+    operator_1_additive_line: OperatorLine,
+    operator_4_modulation_line: OperatorLine,
+    operator_3_modulation_line: OperatorLine,
+    operator_2_modulation_line: OperatorLine,
 }
 
 
@@ -354,6 +375,9 @@ impl ModulationMatrix {
             operator_3_additive_line: Default::default(),
             operator_2_additive_line: Default::default(),
             operator_1_additive_line: Default::default(),
+            operator_4_modulation_line: Default::default(),
+            operator_3_modulation_line: Default::default(),
+            operator_2_modulation_line: Default::default(),
         };
 
 
@@ -417,31 +441,75 @@ impl ModulationMatrix {
 
         self.output_box = OutputBox::new(bounds);
 
-        self.update_lines();
+        self.update_additive_lines();
+
+        self.update_operator_4_modulation_line();
+        self.update_operator_3_modulation_line();
+        self.update_operator_2_modulation_line();
 
         self.cache.clear();
     }
 
-    fn update_lines(&mut self){
-        self.operator_4_additive_line = AdditiveLine::new(
+    fn update_additive_lines(&mut self){
+        self.operator_4_additive_line = OperatorLine::additive(
             self.operator_4_box.center,
             self.output_box.y,
             self.operator_4_additive as f32,
         );
-        self.operator_3_additive_line = AdditiveLine::new(
+        self.operator_3_additive_line = OperatorLine::additive(
             self.operator_3_box.center,
             self.output_box.y,
             self.operator_3_additive as f32,
         );
-        self.operator_2_additive_line = AdditiveLine::new(
+        self.operator_2_additive_line = OperatorLine::additive(
             self.operator_2_box.center,
             self.output_box.y,
             self.operator_2_additive as f32,
         );
-        self.operator_1_additive_line = AdditiveLine::new(
+        self.operator_1_additive_line = OperatorLine::additive(
             self.operator_1_box.center,
             self.output_box.y,
             1.0
+        );
+    }
+
+    fn update_operator_4_modulation_line(&mut self){
+        let (through, to) = match self.operator_4_target {
+            0 => (self.operator_4_mod_1_box.center, self.operator_1_box.center),
+            1 => (self.operator_4_mod_2_box.center, self.operator_2_box.center),
+            2 => (self.operator_4_mod_3_box.center, self.operator_3_box.center),
+            _ => unreachable!(),
+        };
+
+        self.operator_4_modulation_line = OperatorLine::modulation(
+            self.operator_4_box.center,
+            through,
+            to,
+            1.0 - self.operator_4_additive as f32 
+        );
+    }
+
+    fn update_operator_3_modulation_line(&mut self){
+        let (through, to) = match self.operator_3_target {
+            0 => (self.operator_3_mod_1_box.center, self.operator_1_box.center),
+            1 => (self.operator_3_mod_2_box.center, self.operator_2_box.center),
+            _ => unreachable!(),
+        };
+
+        self.operator_3_modulation_line = OperatorLine::modulation(
+            self.operator_3_box.center,
+            through,
+            to,
+            1.0 - self.operator_3_additive as f32 
+        );
+    }
+
+    fn update_operator_2_modulation_line(&mut self){
+        self.operator_2_modulation_line = OperatorLine::modulation(
+            self.operator_2_box.center,
+            self.operator_2_mod_1_box.center,
+            self.operator_1_box.center,
+            1.0 - self.operator_2_additive as f32 
         );
     }
 
@@ -478,6 +546,10 @@ impl ModulationMatrix {
         self.operator_3_additive_line.draw(frame);
         self.operator_2_additive_line.draw(frame);
         self.operator_1_additive_line.draw(frame);
+
+        self.operator_4_modulation_line.draw(frame);
+        self.operator_3_modulation_line.draw(frame);
+        self.operator_2_modulation_line.draw(frame);
     }
 
     fn draw_boxes(&self, frame: &mut Frame){
