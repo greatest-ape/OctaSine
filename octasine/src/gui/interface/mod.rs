@@ -188,6 +188,15 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
 
         let all = Column::new()
             .spacing(16)
+            .push(Rule::horizontal(0))
+            .push(operator_4)
+            .push(Rule::horizontal(0))
+            .push(operator_3)
+            .push(Rule::horizontal(0))
+            .push(operator_2)
+            .push(Rule::horizontal(0))
+            .push(operator_1)
+            .push(Rule::horizontal(0))
             .push(
                 Row::new()
                     .push(
@@ -196,7 +205,6 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
                             .align_items(Align::Start)
                             .push(
                                 Row::new()
-                                    .push(modulation_matrix)
                             )
                         )
                     .push(
@@ -205,20 +213,20 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
                             .align_items(Align::End)
                             .push(
                                 Row::new()
+                                    .align_items(Align::Center)
+                                    .push(modulation_matrix)
+                                    .push(
+                                        Container::new(
+                                            Rule::vertical(16)
+                                        )
+                                            .height(Length::Units(128)))
                                     .push(master_volume)
                                     .push(master_frequency)
                             )
                             // .push(Space::with_width(Length::Units(32)))
                         )
             )
-            .push(Rule::horizontal(0))
-            .push(operator_4)
-            .push(Rule::horizontal(0))
-            .push(operator_3)
-            .push(Rule::horizontal(0))
-            .push(operator_2)
-            .push(Rule::horizontal(0))
-            .push(operator_1);
+            .push(Rule::horizontal(0));
 
         Container::new(all)
             .padding(16)
