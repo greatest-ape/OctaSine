@@ -18,6 +18,7 @@ use super::Message;
 const WIDTH: u16 = 84;
 const HEIGHT: u16 = 108;
 const SIZE: Size = Size { width: WIDTH as f32, height: HEIGHT as f32 };
+const OPERATOR_BOX_SCALE: f32 = 1.5;
 
 
 struct OperatorBox {
@@ -57,15 +58,13 @@ impl OperatorBox {
         );
         let base_size = Size::new(x_bla, y_bla);
 
-        let size_multiplier = 1.5;
-
         let size = Size {
-            width: base_size.width * size_multiplier,
-            height: base_size.height * size_multiplier,
+            width: base_size.width * OPERATOR_BOX_SCALE,
+            height: base_size.height * OPERATOR_BOX_SCALE,
         };
         let top_left = Point {
-            x: base_top_left.x - (size_multiplier - 1.0) * base_size.width / 2.0,
-            y: base_top_left.y - (size_multiplier - 1.0) * base_size.height / 2.0,
+            x: base_top_left.x - (OPERATOR_BOX_SCALE - 1.0) * base_size.width / 2.0,
+            y: base_top_left.y - (OPERATOR_BOX_SCALE - 1.0) * base_size.height / 2.0,
         };
 
         let path = Path::rectangle(top_left, size);
@@ -192,15 +191,13 @@ impl OutputBox {
         );
         let base_size = Size::new(x_bla, y_bla);
 
-        let size_multiplier = 1.5;
-
         let size = Size {
-            width: base_size.width * 6.0 + base_size.width * size_multiplier,
-            height: base_size.height * size_multiplier,
+            width: base_size.width * 6.0 + base_size.width * OPERATOR_BOX_SCALE,
+            height: base_size.height * OPERATOR_BOX_SCALE,
         };
         let top_left = Point {
-            x: base_top_left.x - (size_multiplier - 1.0) * base_size.width / 2.0,
-            y: base_top_left.y - (size_multiplier - 1.0) * base_size.height / 2.0,
+            x: base_top_left.x - (OPERATOR_BOX_SCALE - 1.0) * base_size.width / 2.0,
+            y: base_top_left.y - (OPERATOR_BOX_SCALE - 1.0) * base_size.height / 2.0,
         };
 
         let path = Path::rectangle(top_left, size);
