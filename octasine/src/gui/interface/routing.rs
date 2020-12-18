@@ -15,15 +15,17 @@ use crate::processing_parameters::{
 use super::Message;
 
 
+const BACKGROUND_COLOR: Color = Color::from_rgb(0.9, 0.9, 0.9);
+
+pub const HEIGHT: u16 = 16 * 7;
 const SMALL_BOX_SIZE: u16 = 12;
 const BIG_BOX_SIZE: u16 = 16;
-pub const HEIGHT: u16 = 16 * 7;
 
+// Calculated from the constants above
 const SCALE: f32 = SMALL_BOX_SIZE as f32 / (HEIGHT as f32 / 8.0);
 const WIDTH_FLOAT: f32 = ((HEIGHT as f64 / 8.0) * 7.0) as f32;
 const SIZE: Size = Size { width: WIDTH_FLOAT, height: HEIGHT as f32 };
 const OPERATOR_BOX_SCALE: f32 = BIG_BOX_SIZE as f32 / SMALL_BOX_SIZE as f32;
-
 const WIDTH: u16 = WIDTH_FLOAT as u16;
 
 
@@ -92,7 +94,6 @@ impl OperatorBox {
             size: 12.0,
             ..Default::default()
         };
-
 
         Self {
             text,
@@ -531,14 +532,11 @@ impl ModulationMatrix {
             size
         );
 
-        frame.fill(
-            &background,
-            Color::from_rgb(0.9, 0.9, 0.9)
-        );
-        frame.stroke(
-            &background,
-            Stroke::default().with_width(1.0)
-        );
+        let stroke = Stroke::default()
+            .with_width(1.0);
+
+        frame.fill(&background, BACKGROUND_COLOR);
+        frame.stroke(&background, stroke);
     }
 
     fn draw_lines(&self, frame: &mut Frame){
