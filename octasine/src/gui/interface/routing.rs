@@ -30,6 +30,206 @@ enum Box {
 }
 
 
+struct OperatorBox {
+    text: Text,
+    path: Path,
+    center: Point,
+}
+
+
+impl Default for OperatorBox {
+    fn default() -> Self {
+        Self {
+            text: Text::default(),
+            path: Path::rectangle(Point::default(), Size::new(0.0, 0.0)),
+            center: Point::default(),
+        }
+    }
+}
+
+
+impl OperatorBox {
+    fn new(bounds: Size, index: usize) -> Self {
+        let x_bla = bounds.width / 7.0;
+        let y_bla = bounds.height / 9.0;
+
+        let (x, y) = match index {
+            0 => (0, 0),
+            1 => (2, 2),
+            2 => (4, 4),
+            3 => (6, 6),
+            _ => unreachable!(),
+        };
+
+        let base_top_left = Point::new(
+            x as f32 * x_bla,
+            y as f32 * y_bla,
+        );
+        let base_size = Size::new(x_bla, y_bla);
+
+        let size_multiplier = 1.5;
+
+        let size = Size {
+            width: base_size.width * size_multiplier,
+            height: base_size.height * size_multiplier,
+        };
+        let top_left = Point {
+            x: base_top_left.x - (size_multiplier - 1.0) * base_size.width / 2.0,
+            y: base_top_left.y - (size_multiplier - 1.0) * base_size.height / 2.0,
+        };
+
+        let path = Path::rectangle(top_left, size);
+        let center = Rectangle::new(top_left, size).center();
+
+        let text_position = Point {
+            x: base_top_left.x + 2.45,
+            y: base_top_left.y + 0.45,
+        };
+
+        let text = Text {
+            content: format!("{}", index + 1),
+            position: text_position,
+            size: 12.0,
+            ..Default::default()
+        };
+
+
+        Self {
+            text,
+            path,
+            center,
+        }
+    }
+
+    fn draw(&self, frame: &mut Frame){
+        let stroke = Stroke::default()
+            .with_color(Color::BLACK)
+            .with_width(1.0);
+
+        frame.stroke(&self.path, stroke);
+        frame.fill_text(self.text.clone());
+    }
+}
+
+
+struct ModulationBox {
+    path: Path,
+    center: Point,
+    active: bool
+}
+
+
+impl Default for ModulationBox {
+    fn default() -> Self {
+        Self {
+            path: Path::rectangle(Point::default(), Size::new(0.0, 0.0)),
+            center: Point::default(),
+            active: false,
+        }
+    }
+}
+
+
+impl ModulationBox {
+    fn new(bounds: Size, from: usize, to: usize, active: bool) -> Self {
+        let (x, y) = match (from, to) {
+            (3, 2) => (2, 0),
+            (3, 1) => (4, 0),
+            (3, 0) => (6, 0),
+            (2, 1) => (4, 2),
+            (2, 0) => (6, 2),
+            (1, 0) => (6, 4),
+            _ => unreachable!(),
+        };
+
+        let x_bla = bounds.width / 7.0;
+        let y_bla = bounds.height / 9.0;
+
+        let base_top_left = Point::new(
+            x as f32 * x_bla,
+            y as f32 * y_bla,
+        );
+        let base_size = Size::new(x_bla, y_bla);
+
+        let path = Path::rectangle(base_top_left, base_size);
+
+        Self {
+            path,
+            center: Point::default(),
+            active,
+        }
+    }
+
+    fn draw(&self, frame: &mut Frame){
+        let stroke = Stroke::default()
+            .with_color(Color::BLACK)
+            .with_width(1.0);
+
+        if self.active {
+            frame.fill(&self.path, Color::from_rgb8(27, 159, 31));
+        }
+
+        frame.stroke(&self.path, stroke);
+    }
+}
+
+
+struct OutputBox {
+    path: Path,
+    center: Point,
+}
+
+
+impl Default for OutputBox {
+    fn default() -> Self {
+        Self {
+            path: Path::rectangle(Point::default(), Size::new(0.0, 0.0)),
+            center: Point::default(),
+        }
+    }
+}
+
+
+impl OutputBox {
+    fn new(bounds: Size) -> Self {
+        let x_bla = bounds.width / 7.0;
+        let y_bla = bounds.height / 9.0;
+
+        let base_top_left = Point::new(
+            0.0,
+            8.0 * y_bla,
+        );
+        let base_size = Size::new(x_bla, y_bla);
+
+        let size_multiplier = 1.5;
+
+        let size = Size {
+            width: base_size.width * 6.0 + base_size.width * size_multiplier,
+            height: base_size.height * size_multiplier,
+        };
+        let top_left = Point {
+            x: base_top_left.x - (size_multiplier - 1.0) * base_size.width / 2.0,
+            y: base_top_left.y - (size_multiplier - 1.0) * base_size.height / 2.0,
+        };
+
+        let path = Path::rectangle(top_left, size);
+
+        Self {
+            path,
+            center: Rectangle::new(top_left, size).center()
+        }
+    }
+
+    fn draw(&self, frame: &mut Frame){
+        let stroke = Stroke::default()
+            .with_color(Color::BLACK)
+            .with_width(1.0);
+
+        frame.stroke(&self.path, stroke);
+    }
+}
+
+
 pub struct ModulationMatrix {
     cache: Cache,
     size: Size,
@@ -38,6 +238,17 @@ pub struct ModulationMatrix {
     operator_2_additive: f64,
     operator_3_additive: f64,
     operator_4_additive: f64,
+    operator_1_box: OperatorBox,
+    operator_2_box: OperatorBox,
+    operator_3_box: OperatorBox,
+    operator_4_box: OperatorBox,
+    operator_4_mod_3_box: ModulationBox,
+    operator_4_mod_2_box: ModulationBox,
+    operator_4_mod_1_box: ModulationBox,
+    operator_3_mod_2_box: ModulationBox,
+    operator_3_mod_1_box: ModulationBox,
+    operator_2_mod_1_box: ModulationBox,
+    output_box: OutputBox,
 }
 
 
@@ -59,6 +270,17 @@ impl ModulationMatrix {
             operator_2_additive: sync_handle.get_presets().get_parameter_value_float(18),
             operator_3_additive: sync_handle.get_presets().get_parameter_value_float(32),
             operator_4_additive: sync_handle.get_presets().get_parameter_value_float(47),
+            operator_1_box: Default::default(),
+            operator_2_box: Default::default(),
+            operator_3_box: Default::default(),
+            operator_4_box: Default::default(),
+            operator_4_mod_3_box: Default::default(),
+            operator_4_mod_2_box: Default::default(),
+            operator_4_mod_1_box: Default::default(),
+            operator_3_mod_2_box: Default::default(),
+            operator_3_mod_1_box: Default::default(),
+            operator_2_mod_1_box: Default::default(),
+            output_box: Default::default(),
         };
 
 
@@ -88,7 +310,21 @@ impl ModulationMatrix {
     }
 
     fn update_data(&mut self){
-        // FIXME: update stuff
+        let bounds = self.size;
+
+        self.operator_1_box = OperatorBox::new(bounds, 0);
+        self.operator_2_box = OperatorBox::new(bounds, 1);
+        self.operator_3_box = OperatorBox::new(bounds, 2);
+        self.operator_4_box = OperatorBox::new(bounds, 3);
+
+        self.operator_4_mod_3_box = ModulationBox::new(bounds, 3, 2, self.operator_4_target == 2);
+        self.operator_4_mod_2_box = ModulationBox::new(bounds, 3, 1, self.operator_4_target == 1);
+        self.operator_4_mod_1_box = ModulationBox::new(bounds, 3, 0, self.operator_4_target == 0);
+        self.operator_3_mod_2_box = ModulationBox::new(bounds, 2, 1, self.operator_3_target == 1);
+        self.operator_3_mod_1_box = ModulationBox::new(bounds, 2, 0, self.operator_3_target == 0);
+        self.operator_2_mod_1_box = ModulationBox::new(bounds, 1, 0, true);
+
+        self.output_box = OutputBox::new(bounds);
 
         self.cache.clear();
     }
@@ -101,124 +337,19 @@ impl ModulationMatrix {
     }
 
     fn draw_boxes(&self, frame: &mut Frame){
-        self.draw_box(frame, 0, 0, Box::Operator { index: 3 });
-        self.draw_box(frame, 2, 2, Box::Operator { index: 2 });
-        self.draw_box(frame, 4, 4, Box::Operator { index: 1 });
-        self.draw_box(frame, 6, 6, Box::Operator { index: 0 });
+        self.operator_1_box.draw(frame);
+        self.operator_2_box.draw(frame);
+        self.operator_3_box.draw(frame);
+        self.operator_4_box.draw(frame);
 
-        self.draw_box(frame, 2, 0, Box::Modulation { active: self.operator_4_target == 2 });
-        self.draw_box(frame, 4, 0, Box::Modulation { active: self.operator_4_target == 1 });
-        self.draw_box(frame, 6, 0, Box::Modulation { active: self.operator_4_target == 0 });
+        self.operator_4_mod_3_box.draw(frame);
+        self.operator_4_mod_2_box.draw(frame);
+        self.operator_4_mod_1_box.draw(frame);
+        self.operator_3_mod_2_box.draw(frame);
+        self.operator_3_mod_1_box.draw(frame);
+        self.operator_2_mod_1_box.draw(frame);
 
-        self.draw_box(frame, 4, 2, Box::Modulation { active: self.operator_3_target == 1 });
-        self.draw_box(frame, 6, 2, Box::Modulation { active: self.operator_3_target == 0 });
-
-        self.draw_box(frame, 6, 4, Box::Modulation { active: true });
-
-        self.draw_output_box(frame);
-    }
-
-    fn draw_output_box(&self, frame: &mut Frame){
-        let bounds = frame.size();
-
-        let x_bla = bounds.width / 7.0;
-        let y_bla = bounds.height / 9.0;
-
-        let base_top_left = Point::new(
-            0.0,
-            8.0 * y_bla,
-        );
-        let base_size = Size::new(x_bla, y_bla);
-
-        let size_multiplier = 1.5;
-
-        let size = Size {
-            width: base_size.width * 6.0 + base_size.width * size_multiplier,
-            height: base_size.height * size_multiplier,
-        };
-        let top_left = Point {
-            x: base_top_left.x - (size_multiplier - 1.0) * base_size.width / 2.0,
-            y: base_top_left.y - (size_multiplier - 1.0) * base_size.height / 2.0,
-        };
-
-        let rect = Path::rectangle(top_left, size);
-
-        frame.fill(&rect, Color::from_rgb(0.8, 0.8, 0.8));
-
-        let stroke = Stroke::default()
-            .with_color(Color::BLACK)
-            .with_width(1.0);
-
-        frame.stroke(&rect, stroke);
-    }
-
-    fn draw_box(&self, frame: &mut Frame, x: usize, y: usize, box_type: Box) -> Point {
-        let bounds = frame.size();
-
-        let x_bla = bounds.width / 7.0;
-        let y_bla = bounds.height / 9.0;
-
-        let base_top_left = Point::new(
-            x as f32 * x_bla,
-            y as f32 * y_bla,
-        );
-        let base_size = Size::new(x_bla, y_bla);
-
-        match box_type {
-            Box::Operator { index } => {
-                let size_multiplier = 1.5;
-
-                let size = Size {
-                    width: base_size.width * size_multiplier,
-                    height: base_size.height * size_multiplier,
-                };
-                let top_left = Point {
-                    x: base_top_left.x - (size_multiplier - 1.0) * base_size.width / 2.0,
-                    y: base_top_left.y - (size_multiplier - 1.0) * base_size.height / 2.0,
-                };
-
-                let rect = Path::rectangle(top_left, size);
-
-                let stroke = Stroke::default()
-                    .with_color(Color::BLACK)
-                    .with_width(1.0);
-
-                frame.stroke(&rect, stroke);
-
-                let text_position = Point {
-                    x: base_top_left.x + 2.45,
-                    y: base_top_left.y + 0.45,
-                };
-
-                let text = Text {
-                    content: format!("{}", index + 1),
-                    position: text_position,
-                    size: 12.0,
-                    ..Default::default()
-                };
-
-                frame.fill_text(text);
-            },
-            Box::Modulation { active } => {
-                let rect = Path::rectangle(base_top_left, base_size);
-
-                if active {
-                    frame.fill(&rect, Color::from_rgb8(27, 159, 31));
-                }
-
-                let stroke = Stroke::default()
-                    .with_color(Color::BLACK)
-                    .with_width(1.0);
-
-                frame.stroke(&rect, stroke);
-
-            },
-        }
-
-        Point::new(
-            base_top_left.x + base_size.width / 2.0,
-            base_top_left.y + base_size.height / 2.0,
-        )
+        self.output_box.draw(frame);
     }
 }
 
