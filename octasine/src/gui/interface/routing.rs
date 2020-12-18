@@ -43,17 +43,13 @@ pub struct ModulationMatrix {
 
 impl ModulationMatrix {
     pub fn new<H: GuiSyncHandle>(sync_handle: &H) -> Self {
-        let operator_3_target = {
-            ProcessingParameterOperatorModulationTarget2::to_processing(
-                sync_handle.get_presets().get_parameter_value_float(33)
-            )
-        };
+        let operator_3_target = Self::convert_operator_3_target(
+            sync_handle.get_presets().get_parameter_value_float(33)
+        );
 
-        let operator_4_target = {
-            ProcessingParameterOperatorModulationTarget3::to_processing(
-                sync_handle.get_presets().get_parameter_value_float(48)
-            )
-        };
+        let operator_4_target = Self::convert_operator_4_target(
+            sync_handle.get_presets().get_parameter_value_float(48)
+        );
 
         let mut matrix = Self {
             cache: Cache::default(),
@@ -69,6 +65,26 @@ impl ModulationMatrix {
         matrix.update_data();
 
         matrix
+    }
+
+    fn convert_operator_3_target(value: f64) -> usize {
+        ProcessingParameterOperatorModulationTarget2::to_processing(value)
+    }
+
+    fn convert_operator_4_target(value: f64) -> usize {
+        ProcessingParameterOperatorModulationTarget3::to_processing(value)
+    }
+
+    pub fn set_operator_3_target(&mut self, value: f64){
+        self.operator_3_target = Self::convert_operator_3_target(value);
+
+        self.update_data();
+    }
+
+    pub fn set_operator_4_target(&mut self, value: f64){
+        self.operator_4_target = Self::convert_operator_4_target(value);
+
+        self.update_data();
     }
 
     fn update_data(&mut self){
