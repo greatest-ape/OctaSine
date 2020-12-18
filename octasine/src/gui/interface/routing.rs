@@ -17,10 +17,10 @@ use super::Message;
 
 const SMALL_BOX_SIZE: u16 = 12;
 const BIG_BOX_SIZE: u16 = 16;
-pub const HEIGHT: u16 = 12 * 10;
+pub const HEIGHT: u16 = 16 * 7;
 
-const SCALE: f32 = SMALL_BOX_SIZE as f32 / (HEIGHT as f32 / 9.0);
-const WIDTH_FLOAT: f32 = ((HEIGHT as f64 / 9.0) * 7.0) as f32;
+const SCALE: f32 = SMALL_BOX_SIZE as f32 / (HEIGHT as f32 / 8.0);
+const WIDTH_FLOAT: f32 = ((HEIGHT as f64 / 8.0) * 7.0) as f32;
 const SIZE: Size = Size { width: WIDTH_FLOAT, height: HEIGHT as f32 };
 const OPERATOR_BOX_SCALE: f32 = BIG_BOX_SIZE as f32 / SMALL_BOX_SIZE as f32;
 
@@ -48,7 +48,7 @@ impl Default for OperatorBox {
 impl OperatorBox {
     fn new(bounds: Size, index: usize) -> Self {
         let x_bla = bounds.width / 7.0;
-        let y_bla = bounds.height / 9.0;
+        let y_bla = bounds.height / 8.0;
 
         let (x, y) = match index {
             3 => (0, 0),
@@ -106,6 +106,7 @@ impl OperatorBox {
             .with_color(Color::BLACK)
             .with_width(1.0);
 
+        frame.fill(&self.path, Color::WHITE);
         frame.stroke(&self.path, stroke);
         frame.fill_text(self.text.clone());
     }
@@ -143,7 +144,7 @@ impl ModulationBox {
         };
 
         let x_bla = bounds.width / 7.0;
-        let y_bla = bounds.height / 9.0;
+        let y_bla = bounds.height / 8.0;
 
         let top_left = Point::new(
             x as f32 * x_bla,
@@ -171,6 +172,8 @@ impl ModulationBox {
 
         if self.active {
             frame.fill(&self.path, Color::from_rgb8(27, 159, 31));
+        } else {
+            frame.fill(&self.path, Color::WHITE);
         }
 
         frame.stroke(&self.path, stroke);
@@ -197,11 +200,11 @@ impl Default for OutputBox {
 impl OutputBox {
     fn new(bounds: Size) -> Self {
         let x_bla = bounds.width / 7.0;
-        let y_bla = bounds.height / 9.0;
+        let y_bla = bounds.height / 8.0;
 
         let base_top_left = Point::new(
             0.0,
-            8.0 * y_bla,
+            7.0 * y_bla,
         );
         let base_size = Size::new(x_bla, y_bla);
 
@@ -209,19 +212,29 @@ impl OutputBox {
             width: base_size.width * 6.0 + base_size.width * OPERATOR_BOX_SCALE,
             height: base_size.height * OPERATOR_BOX_SCALE,
         };
-        let top_left = Point {
+        let left = Point {
             x: base_top_left.x - (OPERATOR_BOX_SCALE - 1.0) * base_size.width / 2.0,
             y: base_top_left.y - (OPERATOR_BOX_SCALE - 1.0) * base_size.height / 2.0,
         };
+        let right = Point {
+            x: left.x + size.width,
+            y: left.y,
+        };
 
-        let top_left = scale_point(bounds, top_left);
+        let mut left = scale_point(bounds, left);
+        let mut right = scale_point(bounds, right);
+
         let size = scale_size(size);
 
-        let path = Path::rectangle(top_left, size);
+        left.y += size.height;
+        right.y += size.height;
+
+        // let path = Path::rectangle(top_left, size);
+        let path = Path::line(left, right);
 
         Self {
             path,
-            center: Rectangle::new(top_left, size).center()
+            center: Rectangle::new(left, size).center()
         }
     }
 
@@ -346,6 +359,27 @@ impl ModulationMatrix {
             .into()
     }
 
+    fn draw_background(&self, frame: &mut Frame){
+        let mut size = frame.size();
+
+        size.width -= 2.0;
+        size.height -= 2.0;
+
+        let background = Path::rectangle(
+            Point::new(1.0, 1.0),
+            size
+        );
+
+        frame.fill(
+            &background,
+            Color::from_rgb(0.9, 0.9, 0.9)
+        );
+        frame.stroke(
+            &background,
+            Stroke::default().with_width(1.0)
+        );
+    }
+
     fn draw_boxes(&self, frame: &mut Frame){
         self.operator_1_box.draw(frame);
         self.operator_2_box.draw(frame);
@@ -367,7 +401,8 @@ impl ModulationMatrix {
 impl Program<Message> for ModulationMatrix {
     fn draw(&self, bounds: Rectangle, _cursor: Cursor) -> Vec<Geometry>{
         let geometry = self.cache.draw(bounds.size(), |frame| {
-            self.draw_boxes(frame)
+            self.draw_background(frame);
+            self.draw_boxes(frame);
         });
 
         vec![geometry]

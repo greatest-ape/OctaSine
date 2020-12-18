@@ -222,7 +222,7 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
                                         Container::new(
                                             Rule::vertical(16)
                                         )
-                                            .height(Length::Units(128)))
+                                            .height(Length::Units(routing::HEIGHT)))
                                     .push(master_volume)
                                     .push(master_frequency)
                             )
