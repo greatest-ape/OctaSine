@@ -183,10 +183,19 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
                 self.update_widgets_from_parameters();
             },
             Message::ParameterChange(index, value) => {
+                let value = value.as_f32() as f64;
+
                 self.sync_handle.get_presets().set_parameter_value_float_from_gui(
                     index,
-                    value.as_f32() as f64
+                    value,
                 );
+
+                match index {
+                    18 => self.modulation_matrix.set_operator_2_additive(value),
+                    32 => self.modulation_matrix.set_operator_3_additive(value),
+                    47 => self.modulation_matrix.set_operator_4_additive(value),
+                    _ => ()
+                }
 
                 self.sync_handle.update_host_display();
             },
