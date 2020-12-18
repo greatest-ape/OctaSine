@@ -79,7 +79,8 @@ impl OperatorBox {
         let size = scale_size(size);
 
         let path = Path::rectangle(top_left, size);
-        let center = Rectangle::new(top_left, size).center();
+        let rect = Rectangle::new(top_left, size);
+        let center = rect.center();
 
         let text_position = Point {
             x: base_top_left.x + 2.5,
@@ -117,7 +118,9 @@ impl OperatorBox {
 struct ModulationBox {
     path: Path,
     center: Point,
-    active: bool
+    rect: Rectangle,
+    active: bool,
+    hover: bool,
 }
 
 
@@ -126,7 +129,9 @@ impl Default for ModulationBox {
         Self {
             path: Path::rectangle(Point::default(), Size::new(0.0, 0.0)),
             center: Point::default(),
+            rect: Rectangle::new(Point::default(), Size::new(0.0, 0.0)),
             active: false,
+            hover: false,
         }
     }
 }
@@ -157,12 +162,31 @@ impl ModulationBox {
         let size = scale_size(size);
 
         let path = Path::rectangle(top_left, size);
-        let center = Rectangle::new(top_left, size).center();
+        let rect = Rectangle::new(top_left, size);
+        let center = rect.center();
 
         Self {
             path,
             center,
+            rect,
             active,
+            hover: false,
+        }
+    }
+
+    fn update(&mut self, cursor_position: Point) -> bool {
+        match (self.hover, self.rect.contains(cursor_position)){
+            (false, true) => {
+                self.hover = true;
+
+                true
+            },
+            (true, false) => {
+                self.hover = false;
+
+                true
+            },
+            _ => false,
         }
     }
 
@@ -171,7 +195,7 @@ impl ModulationBox {
             .with_color(Color::BLACK)
             .with_width(1.0);
 
-        if self.active {
+        if self.active || self.hover {
             frame.fill(&self.path, Color::from_rgb8(27, 159, 31));
         } else {
             frame.fill(&self.path, Color::WHITE);
@@ -588,7 +612,6 @@ impl Program<Message> for ModulationMatrix {
         match event {
             event::Event::Mouse(iced_baseview::mouse::Event::CursorMoved {x, y}) => {
                 if bounds.contains(Point::new(x, y)){
-                    /*
                     let relative_position = Point::new(
                         x - bounds.x,
                         y - bounds.y,
@@ -596,14 +619,15 @@ impl Program<Message> for ModulationMatrix {
 
                     let mut changed = false;
 
-                    changed |= self.attack_dragger.update(relative_position);
-                    changed |= self.decay_dragger.update(relative_position);
-                    changed |= self.release_dragger.update(relative_position);
+                    changed |= self.operator_4_mod_3_box.update(relative_position);
+                    changed |= self.operator_4_mod_2_box.update(relative_position);
+                    changed |= self.operator_4_mod_1_box.update(relative_position);
+                    changed |= self.operator_3_mod_2_box.update(relative_position);
+                    changed |= self.operator_3_mod_1_box.update(relative_position);
 
                     if changed {
                         self.cache.clear();
                     }
-                    */
 
                     return (event::Status::Captured, None);
                 }
