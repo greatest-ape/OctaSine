@@ -69,7 +69,13 @@ impl <H: GuiSyncHandle> OctaSineIcedApplication<H> {
                         15 => ParameterWidget::<H>::set_value(&mut self.operator_2.volume, *new_value),
                         16 => ParameterWidget::<H>::set_value(&mut self.operator_2.panning, *new_value),
                         17 => (),
-                        18 => ParameterWidget::<H>::set_value(self.operator_2.additive.as_mut().unwrap(), *new_value),
+                        18 => {
+                            ParameterWidget::<H>::set_value(
+                                self.operator_2.additive.as_mut().unwrap(),
+                                *new_value
+                            );
+                            self.modulation_matrix.set_operator_2_additive(*new_value);
+                        },
                         19 => ParameterWidget::<H>::set_value(&mut self.operator_2.mod_index, *new_value),
                         20 => ParameterWidget::<H>::set_value(&mut self.operator_2.feedback, *new_value),
                         21 => ParameterWidget::<H>::set_value(&mut self.operator_2.frequency_ratio, *new_value),
@@ -83,7 +89,13 @@ impl <H: GuiSyncHandle> OctaSineIcedApplication<H> {
                         29 => ParameterWidget::<H>::set_value(&mut self.operator_3.volume, *new_value),
                         30 => ParameterWidget::<H>::set_value(&mut self.operator_3.panning, *new_value),
                         31 => (),
-                        32 => ParameterWidget::<H>::set_value(self.operator_3.additive.as_mut().unwrap(), *new_value),
+                        32 => {
+                            ParameterWidget::<H>::set_value(
+                                self.operator_3.additive.as_mut().unwrap(),
+                                *new_value
+                            );
+                            self.modulation_matrix.set_operator_3_additive(*new_value);
+                        },
                         33 => self.modulation_matrix.set_operator_3_target(*new_value),
                         34 => ParameterWidget::<H>::set_value(&mut self.operator_3.mod_index, *new_value),
                         35 => ParameterWidget::<H>::set_value(&mut self.operator_3.feedback, *new_value),
@@ -98,7 +110,13 @@ impl <H: GuiSyncHandle> OctaSineIcedApplication<H> {
                         44 => ParameterWidget::<H>::set_value(&mut self.operator_4.volume, *new_value),
                         45 => ParameterWidget::<H>::set_value(&mut self.operator_4.panning, *new_value),
                         46 => (),
-                        47 => ParameterWidget::<H>::set_value(self.operator_4.additive.as_mut().unwrap(), *new_value),
+                        47 => {
+                            ParameterWidget::<H>::set_value(
+                                self.operator_4.additive.as_mut().unwrap(),
+                                *new_value
+                            );
+                            self.modulation_matrix.set_operator_4_additive(*new_value);
+                        },
                         48 => self.modulation_matrix.set_operator_4_target(*new_value),
                         49 => ParameterWidget::<H>::set_value(&mut self.operator_4.mod_index, *new_value),
                         50 => ParameterWidget::<H>::set_value(&mut self.operator_4.feedback, *new_value),

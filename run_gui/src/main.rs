@@ -41,6 +41,9 @@ fn main(){
     sync_state.presets.set_parameter_value_float_from_gui(12, 1.0 / 64.0);
     sync_state.presets.set_parameter_value_float_from_gui(13, 0.7);
 
+    // Operator 4 additive
+    sync_state.presets.set_parameter_value_float_from_gui(47, 0.7);
+
     let settings = Settings {
         window: settings::Window {
             logical_size: (GUI_WIDTH as u32, GUI_HEIGHT as u32),

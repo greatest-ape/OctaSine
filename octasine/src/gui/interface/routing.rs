@@ -1,3 +1,5 @@
+use std::ops::Add;
+
 use iced_baseview::canvas::{
     Cache, Canvas, Cursor, Frame, Geometry, Path, Program, Stroke, Text, path, event
 };
@@ -183,7 +185,7 @@ impl ModulationBox {
 
 struct OutputBox {
     path: Path,
-    center: Point,
+    y: f32,
 }
 
 
@@ -191,7 +193,7 @@ impl Default for OutputBox {
     fn default() -> Self {
         Self {
             path: Path::rectangle(Point::default(), Size::new(0.0, 0.0)),
-            center: Point::default(),
+            y: 0.0,
         }
     }
 }
@@ -234,7 +236,7 @@ impl OutputBox {
 
         Self {
             path,
-            center: Rectangle::new(left, size).center()
+            y: left.y,
         }
     }
 
@@ -242,6 +244,46 @@ impl OutputBox {
         let stroke = Stroke::default()
             .with_color(Color::BLACK)
             .with_width(1.0);
+
+        frame.stroke(&self.path, stroke);
+    }
+}
+
+
+struct AdditiveLine {
+    path: Path,
+    opacity: f32,
+}
+
+
+impl Default for AdditiveLine {
+    fn default() -> Self {
+        Self {
+            path: Path::line(Point::default(), Point::default()),
+            opacity: 0.0,
+        }
+    }
+}
+
+
+impl AdditiveLine {
+    fn new(from: Point, to_y: f32, opacity: f32) -> Self {
+        let mut to = from;
+
+        to.y = to_y;
+
+        let path = Path::line(from, to);
+
+        Self {
+            path,
+            opacity,
+        }
+    }
+
+    fn draw(&self, frame: &mut Frame){
+        let stroke = Stroke::default()
+            .with_width(1.0)
+            .with_color(Color::from_rgba(0.0, 0.0, 0.0, self.opacity));
 
         frame.stroke(&self.path, stroke);
     }
@@ -267,6 +309,10 @@ pub struct ModulationMatrix {
     operator_3_mod_1_box: ModulationBox,
     operator_2_mod_1_box: ModulationBox,
     output_box: OutputBox,
+    operator_4_additive_line: AdditiveLine,
+    operator_3_additive_line: AdditiveLine,
+    operator_2_additive_line: AdditiveLine,
+    operator_1_additive_line: AdditiveLine,
 }
 
 
@@ -304,6 +350,10 @@ impl ModulationMatrix {
             operator_3_mod_1_box: Default::default(),
             operator_2_mod_1_box: Default::default(),
             output_box: Default::default(),
+            operator_4_additive_line: Default::default(),
+            operator_3_additive_line: Default::default(),
+            operator_2_additive_line: Default::default(),
+            operator_1_additive_line: Default::default(),
         };
 
 
@@ -332,6 +382,24 @@ impl ModulationMatrix {
         self.update_data();
     }
 
+    pub fn set_operator_4_additive(&mut self, value: f64){
+        self.operator_4_additive = value;
+
+        self.update_data();
+    }
+
+    pub fn set_operator_3_additive(&mut self, value: f64){
+        self.operator_3_additive = value;
+
+        self.update_data();
+    }
+
+    pub fn set_operator_2_additive(&mut self, value: f64){
+        self.operator_2_additive = value;
+
+        self.update_data();
+    }
+
     fn update_data(&mut self){
         let bounds = self.size;
 
@@ -349,7 +417,32 @@ impl ModulationMatrix {
 
         self.output_box = OutputBox::new(bounds);
 
+        self.update_lines();
+
         self.cache.clear();
+    }
+
+    fn update_lines(&mut self){
+        self.operator_4_additive_line = AdditiveLine::new(
+            self.operator_4_box.center,
+            self.output_box.y,
+            self.operator_4_additive as f32,
+        );
+        self.operator_3_additive_line = AdditiveLine::new(
+            self.operator_3_box.center,
+            self.output_box.y,
+            self.operator_3_additive as f32,
+        );
+        self.operator_2_additive_line = AdditiveLine::new(
+            self.operator_2_box.center,
+            self.output_box.y,
+            self.operator_2_additive as f32,
+        );
+        self.operator_1_additive_line = AdditiveLine::new(
+            self.operator_1_box.center,
+            self.output_box.y,
+            1.0
+        );
     }
 
     pub fn view(&mut self) -> Element<Message> {
@@ -380,6 +473,13 @@ impl ModulationMatrix {
         );
     }
 
+    fn draw_lines(&self, frame: &mut Frame){
+        self.operator_4_additive_line.draw(frame);
+        self.operator_3_additive_line.draw(frame);
+        self.operator_2_additive_line.draw(frame);
+        self.operator_1_additive_line.draw(frame);
+    }
+
     fn draw_boxes(&self, frame: &mut Frame){
         self.operator_1_box.draw(frame);
         self.operator_2_box.draw(frame);
@@ -402,6 +502,7 @@ impl Program<Message> for ModulationMatrix {
     fn draw(&self, bounds: Rectangle, _cursor: Cursor) -> Vec<Geometry>{
         let geometry = self.cache.draw(bounds.size(), |frame| {
             self.draw_background(frame);
+            self.draw_lines(frame);
             self.draw_boxes(frame);
         });
 
