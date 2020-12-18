@@ -2,7 +2,7 @@ use iced_baseview::canvas::{
     Cache, Canvas, Cursor, Frame, Geometry, Path, Program, Stroke, Text, path, event
 };
 use iced_baseview::{
-    Element, Color, Rectangle, Point, Length, Vector, Size
+    Element, Color, Rectangle, Point, Length, Vector, Size, mouse
 };
 
 use vst2_helpers::processing_parameters::ParameterValueConversion;
@@ -115,12 +115,21 @@ impl OperatorBox {
 }
 
 
+enum ModulationBoxChange {
+    Update(Message),
+    ClearCache,
+    None
+}
+
+
 struct ModulationBox {
     path: Path,
     center: Point,
     rect: Rectangle,
     active: bool,
     hover: bool,
+    click_started: bool,
+    message: Option<Message>,
 }
 
 
@@ -132,13 +141,21 @@ impl Default for ModulationBox {
             rect: Rectangle::new(Point::default(), Size::new(0.0, 0.0)),
             active: false,
             hover: false,
+            click_started: false,
+            message: None,
         }
     }
 }
 
 
 impl ModulationBox {
-    fn new(bounds: Size, from: usize, to: usize, active: bool) -> Self {
+    fn new(
+        bounds: Size,
+        from: usize,
+        to: usize,
+        active: bool,
+        message: Option<Message>
+    ) -> Self {
         let (x, y) = match (from, to) {
             (3, 2) => (2, 0),
             (3, 1) => (4, 0),
@@ -171,23 +188,55 @@ impl ModulationBox {
             rect,
             active,
             hover: false,
+            click_started: false,
+            message
         }
     }
 
-    fn update(&mut self, cursor_position: Point) -> bool {
-        match (self.hover, self.rect.contains(cursor_position)){
-            (false, true) => {
-                self.hover = true;
+    fn update(
+        &mut self,
+        bounds: Rectangle,
+        event: event::Event
+    ) -> ModulationBoxChange {
+        if let Some(message) = self.message.as_ref() {
+            match event {
+                event::Event::Mouse(mouse::Event::CursorMoved {x, y}) => {
+                    let cursor = Point::new(
+                        x - bounds.x,
+                        y - bounds.y,
+                    );
 
-                true
-            },
-            (true, false) => {
-                self.hover = false;
+                    match (self.hover, self.rect.contains(cursor)){
+                        (false, true) => {
+                            self.hover = true;
+        
+                            return ModulationBoxChange::ClearCache;
+                        },
+                        (true, false) => {
+                            self.hover = false;
+        
+                            return ModulationBoxChange::ClearCache;
+                        },
+                        _ => (),
+                    }
+                },
+                event::Event::Mouse(mouse::Event::ButtonPressed(_)) => {
+                    if self.hover {
+                        self.click_started = true;
+                    }
+                },
+                event::Event::Mouse(mouse::Event::ButtonReleased(_)) => {
+                    if self.hover && self.click_started {
+                        self.click_started = false;
 
-                true
-            },
-            _ => false,
+                        return ModulationBoxChange::Update(message.clone());
+                    }
+                },
+                _ => (),
+            }
         }
+
+        ModulationBoxChange::None
     }
 
     fn draw(&self, frame: &mut Frame){
@@ -457,12 +506,48 @@ impl ModulationMatrix {
         self.operator_3_box = OperatorBox::new(bounds, 2);
         self.operator_4_box = OperatorBox::new(bounds, 3);
 
-        self.operator_4_mod_3_box = ModulationBox::new(bounds, 3, 2, self.operator_4_target == 2);
-        self.operator_4_mod_2_box = ModulationBox::new(bounds, 3, 1, self.operator_4_target == 1);
-        self.operator_4_mod_1_box = ModulationBox::new(bounds, 3, 0, self.operator_4_target == 0);
-        self.operator_3_mod_2_box = ModulationBox::new(bounds, 2, 1, self.operator_3_target == 1);
-        self.operator_3_mod_1_box = ModulationBox::new(bounds, 2, 0, self.operator_3_target == 0);
-        self.operator_2_mod_1_box = ModulationBox::new(bounds, 1, 0, true);
+        self.operator_4_mod_3_box = ModulationBox::new(
+            bounds,
+            3,
+            2,
+            self.operator_4_target == 2,
+            Some(Message::ParameterChange(48, iced_audio::Normal::new(1.0))),
+        );
+        self.operator_4_mod_2_box = ModulationBox::new(
+            bounds,
+            3,
+            1,
+            self.operator_4_target == 1,
+            Some(Message::ParameterChange(48, iced_audio::Normal::new(0.5))),
+        );
+        self.operator_4_mod_1_box = ModulationBox::new(
+            bounds,
+            3,
+            0,
+            self.operator_4_target == 0,
+            Some(Message::ParameterChange(48, iced_audio::Normal::new(0.0))),
+        );
+        self.operator_3_mod_2_box = ModulationBox::new(
+            bounds,
+            2,
+            1,
+            self.operator_3_target == 1,
+            Some(Message::ParameterChange(33, iced_audio::Normal::new(1.0))),
+        );
+        self.operator_3_mod_1_box = ModulationBox::new(
+            bounds,
+            2,
+            0,
+            self.operator_3_target == 0,
+            Some(Message::ParameterChange(33, iced_audio::Normal::new(0.0))),
+        );
+        self.operator_2_mod_1_box = ModulationBox::new(
+            bounds,
+            1,
+            0,
+            true,
+            None,
+        );
 
         self.output_box = OutputBox::new(bounds);
 
@@ -609,31 +694,27 @@ impl Program<Message> for ModulationMatrix {
         bounds: Rectangle,
         _cursor: Cursor,
     ) -> (event::Status, Option<Message>) {
-        match event {
-            event::Event::Mouse(iced_baseview::mouse::Event::CursorMoved {x, y}) => {
-                if bounds.contains(Point::new(x, y)){
-                    let relative_position = Point::new(
-                        x - bounds.x,
-                        y - bounds.y,
-                    );
+        let mod_boxes = vec![
+            &mut self.operator_4_mod_3_box,
+            &mut self.operator_4_mod_2_box,
+            &mut self.operator_4_mod_1_box,
+            &mut self.operator_3_mod_2_box,
+            &mut self.operator_3_mod_1_box,
+        ];
 
-                    let mut changed = false;
+        for mod_box in mod_boxes.into_iter(){
+            match mod_box.update(bounds, event){
+                ModulationBoxChange::Update(message) => {
+                    return (event::Status::Captured, Some(message));
+                },
+                ModulationBoxChange::ClearCache => {
+                    self.cache.clear();
 
-                    changed |= self.operator_4_mod_3_box.update(relative_position);
-                    changed |= self.operator_4_mod_2_box.update(relative_position);
-                    changed |= self.operator_4_mod_1_box.update(relative_position);
-                    changed |= self.operator_3_mod_2_box.update(relative_position);
-                    changed |= self.operator_3_mod_1_box.update(relative_position);
-
-                    if changed {
-                        self.cache.clear();
-                    }
-
-                    return (event::Status::Captured, None);
-                }
-            },
-            _ => (),
-        };
+                    return (event::Status::Ignored, None);
+                },
+                _ => (),
+            }
+        }
 
         (event::Status::Ignored, None)
     }
