@@ -216,6 +216,9 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
                                     .align_items(Align::Center)
                                     .push(modulation_matrix)
                                     .push(
+                                        Space::with_width(Length::Units(16))
+                                    )
+                                    .push(
                                         Container::new(
                                             Rule::vertical(16)
                                         )
