@@ -193,7 +193,9 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
                 match index {
                     18 => self.modulation_matrix.set_operator_2_additive(value),
                     32 => self.modulation_matrix.set_operator_3_additive(value),
+                    33 => self.modulation_matrix.set_operator_3_target(value),
                     47 => self.modulation_matrix.set_operator_4_additive(value),
+                    48 => self.modulation_matrix.set_operator_4_target(value),
                     _ => ()
                 }
 
