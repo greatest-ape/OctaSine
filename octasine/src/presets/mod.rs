@@ -4,25 +4,97 @@ use arc_swap::ArcSwap;
 use array_init::array_init;
 
 use vst2_helpers::utils::atomic_double::AtomicPositiveDouble;
+use vst2_helpers::processing_parameters::utils::*;
+
+use crate::constants::*;
 
 
-struct Parameter {
-    value: AtomicPositiveDouble,
-    name: String,
-    format_value: fn(f64) -> String,
-    unit_from_value: fn(f64) -> String,
-    value_from_text: fn(String) -> Option<f64>,
+enum ProcessingValue {
+    Double(f64)
 }
 
 
-impl Parameter {
-    fn bla() -> Self {
+impl ProcessingValue {
+    fn unwrap_double(self) -> f64 {
+        if let Self::Double(v) = self {
+            v
+        } else {
+            panic!("Not a double");
+        }
+    }
+
+    fn master_volume_from_sync(value: f64) -> Self {
+        Self::Double(value * 2.0)
+    }
+    fn master_volume_from_processing(self) -> f64 {
+        if let Self::Double(v) = self {
+            v / 2.0
+        } else {
+            unreachable!()
+        }
+    }
+    fn master_frequency_from_sync(value: f64) -> Self {
+        Self::Double(map_parameter_value_to_value_with_steps(
+            &MASTER_FREQUENCY_STEPS,
+            value
+        ))
+    }
+    fn master_frequency_from_processing(self) -> f64 {
+        if let Self::Double(v) = self {
+            map_value_to_parameter_value_with_steps(&MASTER_FREQUENCY_STEPS, v)
+        } else {
+            unreachable!()
+        }
+    }
+}
+
+
+struct SyncParameter {
+    value: AtomicPositiveDouble,
+    name: String,
+    unit_from_value: fn(f64) -> String,
+    value_from_text: fn(String) -> Option<f64>,
+    to_processing: fn(f64) -> ProcessingValue,
+    format_processing: fn(ProcessingValue) -> String,
+}
+
+
+impl SyncParameter {
+    fn master_volume() -> Self {
+        let value = ProcessingValue::master_volume_from_processing(
+            ProcessingValue::Double(DEFAULT_MASTER_VOLUME)
+        );
+
+        fn format_volume_db(amplitude_ratio: f64) -> String {
+            format!("{:.2}", 20.0 * amplitude_ratio.log10())
+        }
+
         Self {
-            value: AtomicPositiveDouble::new(0.0),
-            name: "Test".to_string(),
-            format_value: |v| format!("{}", v),
-            unit_from_value: |v| format!("{}", v),
-            value_from_text: |v| v.parse().ok(),
+            value: AtomicPositiveDouble::new(value),
+            name: "Master volume".to_string(),
+            unit_from_value: |_| "dB".to_string(),
+            value_from_text: |v| None,
+            to_processing: ProcessingValue::master_volume_from_sync,
+            format_processing: |v| {
+                format_volume_db(v.unwrap_double())
+            },
+        }
+    }
+
+    fn master_frequency() -> Self {
+        let value = ProcessingValue::master_frequency_from_processing(
+            ProcessingValue::Double(DEFAULT_MASTER_FREQUENCY)
+        );
+
+        Self {
+            value: AtomicPositiveDouble::new(value),
+            name: "Master frequency".to_string(),
+            unit_from_value: |_| "Hz".to_string(),
+            value_from_text: |v| None,
+            to_processing: ProcessingValue::master_frequency_from_sync,
+            format_processing: |v| {
+                format!("{:.02}", v.unwrap_double())
+            },
         }
     }
 
@@ -40,12 +112,12 @@ impl Parameter {
 
 struct Preset {
     name: ArcSwap<String>,
-    parameters: Vec<Parameter>,
+    parameters: Vec<SyncParameter>,
 }
 
 
 impl Preset {
-    fn get_parameter(&self, index: usize) -> Option<&Parameter> {
+    fn get_parameter(&self, index: usize) -> Option<&SyncParameter> {
         self.parameters.get(index)
     }
 
@@ -60,9 +132,6 @@ impl Preset {
     }
     fn get_parameter_value_if_changed(&self, index: usize) -> Option<f64> {
         self.parameters.get(index).and_then(|p| p.value.get_if_changed())
-    }
-    fn format_parameter_value(&self, index: usize, value: f64) -> Option<String> {
-        self.parameters.get(index).map(|p| (p.format_value)(value))
     }
 }
 
@@ -113,7 +182,12 @@ impl vst::plugin::PluginParameters for PresetBank {
     fn get_parameter_text(&self, index: i32) -> String {
         self.get_current_preset()
             .get_parameter(index as usize)
-            .map(|p| (p.format_value)(p.value.get()))
+            .map(|p| {
+                let value = p.value.get();
+                let processing = (p.to_processing)(value);
+
+                (p.format_processing)(processing)
+            })
             .unwrap_or_else(|| "".to_string())
     }
 
