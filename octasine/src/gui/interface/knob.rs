@@ -2,7 +2,7 @@ use iced_baseview::{
     Column, Element, keyboard::Modifiers, Text, Length, HorizontalAlignment, Align, Row
 };
 use iced_audio::{
-    knob, Normal, NormalParam, text_marks, tick_marks, range::IntRange
+    knob, Normal, NormalParam, text_marks, tick_marks
 };
 use vst2_helpers::processing_parameters::utils::map_value_to_parameter_value_with_steps;
 
@@ -265,7 +265,10 @@ impl <H: GuiSyncHandle>ParameterWidget<H> for OctaSineKnob {
 
         let mut knob = knob::Knob::new(
             &mut self.knob_state,
-            move |value| Message::ParameterChange(parameter_index, value),
+            move |value| Message::ParameterChange(
+                parameter_index,
+                value.as_f32() as f64
+            ),
         )
             .size(Length::from(KNOB_SIZE))
             .modifier_keys(modifier_keys);

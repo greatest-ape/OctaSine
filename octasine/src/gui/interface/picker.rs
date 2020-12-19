@@ -1,7 +1,6 @@
 use iced_baseview::{
     Column, Element, Text, Length, HorizontalAlignment, Align, Row, Radio, Space
 };
-use iced_audio::Normal;
 
 use vst2_helpers::processing_parameters::utils::{
     map_parameter_value_to_step,
@@ -119,12 +118,9 @@ impl <H: GuiSyncHandle>ParameterWidget<H> for ModOutputPicker {
                     let value = map_step_to_parameter_value(
                         &choices[..],
                         choice
-                    ) as f32;
+                    );
 
-                    Message::ParameterChange(
-                        parameter_index,
-                        Normal::new(value)
-                    )
+                    Message::ParameterChange(parameter_index, value)
                 }
             )
                 .size(12)

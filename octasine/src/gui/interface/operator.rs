@@ -3,7 +3,7 @@ use iced_baseview::{
 };
 
 
-use crate::{OctaSine, GuiSyncHandle, preset_parameters::OctaSinePresetParameters};
+use crate::GuiSyncHandle;
 
 use super::{Message, ParameterWidget};
 use super::envelope::Envelope;
