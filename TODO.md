@@ -4,8 +4,8 @@
 
 * Fix ANOTHER envelope error:
   `ERROR] thread 'unnamed' panicked at 'Tessellate path: UnsupportedParamater': /[..]/github.com-1ecc6299db9ec823/iced_graphics-0.1.0/src/widget/canvas/frame.rs:100`
+* Full-width horizontal rules
 * Reset knobs to default with backspace
-* Move frequency knobs to left of modulation stuff?
 * Mod matrix
   * Show modulation index with strong color in operator boxes?
   * Show feedback?
