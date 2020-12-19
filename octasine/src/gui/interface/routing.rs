@@ -16,6 +16,7 @@ use super::Message;
 
 
 const BACKGROUND_COLOR: Color = Color::from_rgb(0.9, 0.9, 0.9);
+const ACTIVE_MOD_BOX_COLOR: (u8, u8, u8) = (27, 159, 31);
 
 pub const HEIGHT: u16 = 16 * 7;
 const SMALL_BOX_SIZE: u16 = 12;
@@ -207,7 +208,9 @@ impl ModulationBox {
             .with_width(1.0);
 
         if self.active || self.hover {
-            frame.fill(&self.path, Color::from_rgb8(27, 159, 31));
+            let (r, g, b) = ACTIVE_MOD_BOX_COLOR;
+
+            frame.fill(&self.path, Color::from_rgb8(r, g, b));
         } else {
             frame.fill(&self.path, Color::WHITE);
         }
