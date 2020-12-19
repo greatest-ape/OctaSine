@@ -7,13 +7,13 @@ use crate::GuiSyncHandle;
 
 mod envelope;
 mod knob;
+mod mod_matrix;
 mod operator;
 mod picker;
-mod routing;
 
 use operator::OperatorWidgets;
 use knob::OctaSineKnob;
-use routing::ModulationMatrix;
+use mod_matrix::ModulationMatrix;
 
 
 #[derive(Debug, Clone)]
@@ -241,7 +241,7 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
                                         Container::new(
                                             Rule::vertical(16)
                                         )
-                                            .height(Length::Units(routing::HEIGHT)))
+                                            .height(Length::Units(mod_matrix::HEIGHT)))
                                     .push(master_volume)
                                     .push(master_frequency)
                             )
