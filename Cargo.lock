@@ -1521,6 +1521,7 @@ checksum = "8d3b63360ec3cb337817c2dbd47ab4a0f170d285d8e5a2064600f3def1402397"
 name = "octasine"
 version = "0.1.0"
 dependencies = [
+ "arc-swap",
  "array-init",
  "arrayvec",
  "assert_approx_eq",
