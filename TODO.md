@@ -9,11 +9,6 @@
 * Mod matrix
   * Show modulation index with strong color in operator boxes?
   * Show feedback?
-* Wave type
-  * Fix layout: choices should probably be centered vertically so they align
-    with knobs
-  * Wave type could possibly be a tiny button under the operator number if
-    there is a lack of space
 * Cache operator string value?
 * Envelopes
   * Maybe draw lines indicating top and bottom of draggable range

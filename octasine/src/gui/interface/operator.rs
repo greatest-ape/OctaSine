@@ -69,11 +69,6 @@ impl OperatorWidgets {
             .push(Space::with_width(Length::Units(16)))
             .push(self.volume.view(sync_handle))
             .push(self.panning.view(sync_handle))
-            .push(
-                Container::new(
-                    Rule::vertical(16)
-                )
-                    .height(Length::Units(64)))
             .push(self.wave_type.view())
             .push(
                 Container::new(
