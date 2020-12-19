@@ -2,10 +2,13 @@
 
 ## GUI
 
-* Fix ANOTHER `ERROR] thread 'unnamed' panicked at 'Tessellate path: UnsupportedParamater': /[..]/github.com-1ecc6299db9ec823/iced_graphics-0.1.0/src/widget/canvas/frame.rs:100`
-* Wave type could possibly be a tiny button under the operator number if
-  there is a lack of space
-* Cache operator string value
+* Fix ANOTHER envelope error:
+  `ERROR] thread 'unnamed' panicked at 'Tessellate path: UnsupportedParamater': /[..]/github.com-1ecc6299db9ec823/iced_graphics-0.1.0/src/widget/canvas/frame.rs:100`
+* Wave type
+  * Fix layout
+  * Wave type could possibly be a tiny button under the operator number if
+    there is a lack of space
+* Cache operator string value?
 * Envelopes
   * Maybe draw lines indicating top and bottom of draggable range
   * Interaction with draggers
