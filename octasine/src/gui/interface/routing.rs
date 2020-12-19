@@ -49,9 +49,6 @@ impl Default for OperatorBox {
 
 impl OperatorBox {
     fn new(bounds: Size, index: usize) -> Self {
-        let x_bla = bounds.width / 7.0;
-        let y_bla = bounds.height / 8.0;
-
         let (x, y) = match index {
             3 => (0, 0),
             2 => (2, 2),
@@ -60,11 +57,9 @@ impl OperatorBox {
             _ => unreachable!(),
         };
 
-        let base_top_left = Point::new(
-            x as f32 * x_bla,
-            y as f32 * y_bla,
+        let (base_top_left, base_size) = get_box_base_point_and_size(
+            bounds, x, y
         );
-        let base_size = Size::new(x_bla, y_bla);
 
         let size = Size {
             width: base_size.width * OPERATOR_BOX_SCALE,
@@ -166,14 +161,7 @@ impl ModulationBox {
             _ => unreachable!(),
         };
 
-        let x_bla = bounds.width / 7.0;
-        let y_bla = bounds.height / 8.0;
-
-        let top_left = Point::new(
-            x as f32 * x_bla,
-            y as f32 * y_bla,
-        );
-        let size = Size::new(x_bla, y_bla);
+        let (top_left, size) = get_box_base_point_and_size(bounds,x, y);
 
         let top_left = scale_point(bounds, top_left);
         let size = scale_size(size);
@@ -273,14 +261,11 @@ impl Default for OutputBox {
 
 impl OutputBox {
     fn new(bounds: Size) -> Self {
-        let x_bla = bounds.width / 7.0;
-        let y_bla = bounds.height / 8.0;
-
-        let base_top_left = Point::new(
-            0.0,
-            7.0 * y_bla,
+        let (base_top_left, base_size) = get_box_base_point_and_size(
+            bounds,
+            0,
+            7
         );
-        let base_size = Size::new(x_bla, y_bla);
 
         let size = Size {
             width: base_size.width * 6.0 + base_size.width * OPERATOR_BOX_SCALE,
@@ -303,7 +288,6 @@ impl OutputBox {
         left.y += size.height;
         right.y += size.height;
 
-        // let path = Path::rectangle(top_left, size);
         let path = Path::line(left, right);
 
         Self {
@@ -718,6 +702,25 @@ impl Program<Message> for ModulationMatrix {
 
         (event::Status::Ignored, None)
     }
+}
+
+
+fn get_box_base_point_and_size(
+    bounds: Size,
+    x: usize,
+    y: usize
+) -> (Point, Size) {
+    let x_bla = bounds.width / 7.0;
+    let y_bla = bounds.height / 8.0;
+
+    let base_top_left = Point::new(
+        x as f32 * x_bla,
+        y as f32 * y_bla,
+    );
+
+    let base_size = Size::new(x_bla, y_bla);
+
+    (base_top_left, base_size)
 }
 
 
