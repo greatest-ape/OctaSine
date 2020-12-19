@@ -9,7 +9,7 @@ use vst2_helpers::processing_parameters::utils::{
 
 use crate::GuiSyncHandle;
 
-use super::{ParameterWidget, Message};
+use super::Message;
 
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -82,11 +82,15 @@ impl ModOutputPicker {
             selected,
         }
     }
-}
 
+    pub fn set_value(&mut self, value: f64) {
+        self.selected = map_parameter_value_to_step(&self.choices[..], value);
+    }
 
-impl <H: GuiSyncHandle>ParameterWidget<H> for ModOutputPicker {
-    fn view(&mut self, sync_handle: &H) -> Element<Message> {
+    pub fn view<H: GuiSyncHandle>(
+        &mut self,
+        sync_handle: &H
+    ) -> Element<Message> {
         let title = Text::new(self.title.clone())
             .size(12)
             .horizontal_alignment(HorizontalAlignment::Center);
@@ -147,10 +151,6 @@ impl <H: GuiSyncHandle>ParameterWidget<H> for ModOutputPicker {
                     .push(radios)
             )
             .into()
-    }
-
-    fn set_value(&mut self, value: f64) {
-        self.selected = map_parameter_value_to_step(&self.choices[..], value);
     }
 }
 
