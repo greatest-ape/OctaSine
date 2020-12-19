@@ -9,6 +9,7 @@ pub mod gui;
 pub mod voices;
 pub mod processing_parameters;
 pub mod preset_parameters;
+pub mod presets;
 
 use std::sync::Arc;
 

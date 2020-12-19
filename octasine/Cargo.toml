@@ -18,6 +18,7 @@ name = "process"
 harness = false
 
 [dependencies]
+arc-swap = "0.4"
 arrayvec = { version = "0.5", optional = true }
 array-init = "0.1"
 cfg-if = "0.1"
