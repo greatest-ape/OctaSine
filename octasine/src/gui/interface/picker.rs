@@ -1,5 +1,5 @@
 use iced_baseview::{
-    Column, Element, Text, Length, HorizontalAlignment, Align, Row, Radio, Space
+    Color, Column, Element, Text, Length, HorizontalAlignment, Align, Row, Radio
 };
 
 use vst2_helpers::processing_parameters::utils::{
@@ -11,6 +11,9 @@ use crate::GuiSyncHandle;
 use crate::common::WaveType;
 
 use super::Message;
+
+
+const VALUE_TEXT_OPACITY: f32 = 0.0;
 
 
 #[derive(Debug, Clone)]
@@ -80,18 +83,21 @@ impl WaveTypePicker {
         Column::new()
             .width(Length::Units(64))
             .align_items(Align::Center)
-            .push(Space::with_height(Length::Units(4)))
+            .spacing(16)
             .push(
                 Row::new()
                     .align_items(Align::Center)
                     .push(title)
             )
-            .push(Space::with_height(Length::Units(16)))
             .push(
                 Row::new()
-                    .align_items(Align::Start)
-                    .height(Length::Units(64))
+                    .align_items(Align::Center)
                     .push(radios)
+            )
+            .push(
+                Text::new(format_wave_type(self.selected))
+                    .size(12)
+                    .color(Color::from_rgba(0.0, 0.0, 0.0, VALUE_TEXT_OPACITY))
             )
             .into()
     }
