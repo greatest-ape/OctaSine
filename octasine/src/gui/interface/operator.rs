@@ -8,20 +8,20 @@ use crate::GuiSyncHandle;
 use super::Message;
 use super::envelope::Envelope;
 use super::knob::OctaSineKnob;
-use super::picker::ModOutputPicker;
+use super::picker::WaveTypePicker;
 
 
 pub struct OperatorWidgets {
     index: usize,
     pub volume: OctaSineKnob,
     pub panning: OctaSineKnob,
+    pub wave_type: WaveTypePicker,
     pub mod_index: OctaSineKnob,
     pub feedback: OctaSineKnob,
     pub frequency_ratio: OctaSineKnob,
     pub frequency_free: OctaSineKnob,
     pub frequency_fine: OctaSineKnob,
     pub additive: Option<OctaSineKnob>,
-    pub mod_out: Option<ModOutputPicker>,
     pub envelope: Envelope,
 }
 
@@ -31,11 +31,11 @@ impl OperatorWidgets {
         sync_handle: &H,
         operator_index: usize,
     ) -> Self {
-        let (volume, panning, additive, mod_out, mod_index, feedback, ratio, free, fine) = match operator_index {
-            0 => ( 2,  3,  0,   0, 5,  6,  7,  8,  9),
-            1 => (15, 16, 18,  0, 19, 20, 21, 22, 23),
-            2 => (29, 30, 32, 33, 34, 35, 36, 37, 38),
-            3 => (44, 45, 47, 48, 49, 50, 51, 52, 53),
+        let (volume, panning, wave, additive, mod_index, feedback, ratio, free, fine) = match operator_index {
+            0 => ( 2,  3,  4,  0,  5,  6,  7,  8,  9),
+            1 => (15, 16, 17, 18, 19, 20, 21, 22, 23),
+            2 => (29, 30, 31, 32, 34, 35, 36, 37, 38),
+            3 => (44, 45, 46, 47, 49, 50, 51, 52, 53),
             _ => unreachable!(),
         };
 
@@ -45,23 +45,17 @@ impl OperatorWidgets {
             Some(OctaSineKnob::operator_additive(sync_handle, additive))
         };
 
-        let mod_out_knob = match operator_index {
-            2 => Some(ModOutputPicker::operator_3_mod_output(sync_handle, mod_out)),
-            3 => Some(ModOutputPicker::operator_4_mod_output(sync_handle, mod_out)),
-            _ => None,
-        };
-
         Self {
             index: operator_index,
             volume: OctaSineKnob::operator_volume(sync_handle, volume),
             panning: OctaSineKnob::operator_panning(sync_handle, panning),
+            wave_type: WaveTypePicker::new(sync_handle, wave),
             mod_index: OctaSineKnob::operator_mod_index(sync_handle, mod_index),
             feedback: OctaSineKnob::operator_feedback(sync_handle, feedback),
             frequency_ratio: OctaSineKnob::operator_frequency_ratio(sync_handle, ratio),
             frequency_free: OctaSineKnob::operator_frequency_free(sync_handle, free),
             frequency_fine: OctaSineKnob::operator_frequency_fine(sync_handle, fine),
             additive: additive_knob,
-            mod_out: mod_out_knob,
             envelope: Envelope::new(sync_handle, operator_index),
         }
     }
@@ -75,6 +69,12 @@ impl OperatorWidgets {
             .push(Space::with_width(Length::Units(16)))
             .push(self.volume.view(sync_handle))
             .push(self.panning.view(sync_handle))
+            .push(
+                Container::new(
+                    Rule::vertical(16)
+                )
+                    .height(Length::Units(64)))
+            .push(self.wave_type.view())
             .push(
                 Container::new(
                     Rule::vertical(16)
@@ -102,13 +102,6 @@ impl OperatorWidgets {
         } else {
             row = row.push(Space::with_width(Length::Units(64)))
         }
-        /*
-        if let Some(mod_out) = self.mod_out.as_mut() {
-            row = row.push(mod_out.view(sync_handle))
-        } else {
-            row = row.push(Space::with_width(Length::Units(64)))
-        }
-        */
         
         row = row
             .push(
