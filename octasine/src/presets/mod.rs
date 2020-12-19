@@ -9,43 +9,62 @@ use vst2_helpers::processing_parameters::utils::*;
 use crate::constants::*;
 
 
+trait ProcessingValueConversion {
+    fn from_sync(value: f64) -> Self;
+    fn to_sync(self) -> f64;
+    fn format(self) -> String;
+    fn format_sync(value: f64) -> String;
+}
+
+
+struct MasterVolume(f64);
+
+
+impl ProcessingValueConversion for MasterVolume {
+    fn from_sync(value: f64) -> Self {
+        Self(value * 2.0)
+    }
+    fn to_sync(self) -> f64 {
+        self.0 / 2.0
+    }
+    fn format(self) -> String {
+        format!("{:.2}", 20.0 * self.0.log10())
+    }
+    fn format_sync(value: f64) -> String {
+        Self::from_sync(value).format()
+    }
+}
+
+
+struct MasterFrequency(f64);
+
+
+impl ProcessingValueConversion for MasterFrequency {
+    fn from_sync(sync: f64) -> Self {
+        Self(map_parameter_value_to_value_with_steps(
+            &MASTER_FREQUENCY_STEPS,
+            sync
+        ))
+    }
+    fn to_sync(self) -> f64 {
+        map_value_to_parameter_value_with_steps(&MASTER_FREQUENCY_STEPS, self.0)
+    }
+    fn format(self) -> String {
+        format!("{:.02}", self.0)
+    }
+    fn format_sync(value: f64) -> String {
+        Self::from_sync(value).format()
+    }
+}
+
+
 enum ProcessingValue {
-    Double(f64)
+    MasterVolume(MasterVolume),
+    MasterFrequency(MasterFrequency),
 }
 
 
 impl ProcessingValue {
-    fn unwrap_double(self) -> f64 {
-        if let Self::Double(v) = self {
-            v
-        } else {
-            panic!("Not a double");
-        }
-    }
-
-    fn master_volume_from_sync(value: f64) -> Self {
-        Self::Double(value * 2.0)
-    }
-    fn master_volume_from_processing(self) -> f64 {
-        if let Self::Double(v) = self {
-            v / 2.0
-        } else {
-            unreachable!()
-        }
-    }
-    fn master_frequency_from_sync(value: f64) -> Self {
-        Self::Double(map_parameter_value_to_value_with_steps(
-            &MASTER_FREQUENCY_STEPS,
-            value
-        ))
-    }
-    fn master_frequency_from_processing(self) -> f64 {
-        if let Self::Double(v) = self {
-            map_value_to_parameter_value_with_steps(&MASTER_FREQUENCY_STEPS, v)
-        } else {
-            unreachable!()
-        }
-    }
 }
 
 
@@ -55,46 +74,38 @@ struct SyncParameter {
     unit_from_value: fn(f64) -> String,
     value_from_text: fn(String) -> Option<f64>,
     to_processing: fn(f64) -> ProcessingValue,
-    format_processing: fn(ProcessingValue) -> String,
+    format: fn(f64) -> String,
 }
 
 
 impl SyncParameter {
     fn master_volume() -> Self {
-        let value = ProcessingValue::master_volume_from_processing(
-            ProcessingValue::Double(DEFAULT_MASTER_VOLUME)
-        );
-
-        fn format_volume_db(amplitude_ratio: f64) -> String {
-            format!("{:.2}", 20.0 * amplitude_ratio.log10())
-        }
+        let value = MasterVolume(DEFAULT_MASTER_VOLUME).to_sync();
 
         Self {
             value: AtomicPositiveDouble::new(value),
             name: "Master volume".to_string(),
             unit_from_value: |_| "dB".to_string(),
             value_from_text: |v| None,
-            to_processing: ProcessingValue::master_volume_from_sync,
-            format_processing: |v| {
-                format_volume_db(v.unwrap_double())
-            },
+            to_processing: |v| ProcessingValue::MasterVolume(
+                MasterVolume::from_sync(v)
+            ),
+            format: |v| MasterVolume::from_sync(v).format(),
         }
     }
 
     fn master_frequency() -> Self {
-        let value = ProcessingValue::master_frequency_from_processing(
-            ProcessingValue::Double(DEFAULT_MASTER_FREQUENCY)
-        );
+        let value = MasterFrequency(DEFAULT_MASTER_FREQUENCY).to_sync();
 
         Self {
             value: AtomicPositiveDouble::new(value),
             name: "Master frequency".to_string(),
             unit_from_value: |_| "Hz".to_string(),
             value_from_text: |v| None,
-            to_processing: ProcessingValue::master_frequency_from_sync,
-            format_processing: |v| {
-                format!("{:.02}", v.unwrap_double())
-            },
+            to_processing: |v| ProcessingValue::MasterFrequency(
+                MasterFrequency::from_sync(v)
+            ),
+            format: |v| MasterFrequency::from_sync(v).format(),
         }
     }
 
@@ -182,12 +193,7 @@ impl vst::plugin::PluginParameters for PresetBank {
     fn get_parameter_text(&self, index: i32) -> String {
         self.get_current_preset()
             .get_parameter(index as usize)
-            .map(|p| {
-                let value = p.value.get();
-                let processing = (p.to_processing)(value);
-
-                (p.format_processing)(processing)
-            })
+            .map(|p| (p.format)(p.value.get()))
             .unwrap_or_else(|| "".to_string())
     }
 
