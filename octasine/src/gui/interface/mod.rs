@@ -1,6 +1,6 @@
 use iced_baseview::{executor, Align, Application, Command, Subscription, WindowSubs};
 use iced_baseview::{
-    Column, Element, Row, Container, Rule, Length, Space
+    Column, Element, Row, Container, Rule, Length, Space, Image, image
 };
 
 use crate::GuiSyncHandle;
@@ -25,6 +25,7 @@ pub enum Message {
 
 pub struct OctaSineIcedApplication<H: GuiSyncHandle> {
     sync_handle: H,
+    logo: image::Handle,
     master_volume: OctaSineKnob,
     master_frequency: OctaSineKnob,
     modulation_matrix: ModulationMatrix,
@@ -137,6 +138,9 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
     fn new(
         sync_handle: Self::Flags,
     ) -> (Self, Command<Self::Message>) {
+        let logo_bytes = include_bytes!("../../../resources/logo.png").to_vec();
+        let logo = image::Handle::from_memory(logo_bytes);
+
         let master_volume = OctaSineKnob::master_volume(&sync_handle);
         let master_frequency = OctaSineKnob::master_frequency(&sync_handle);
         let modulation_matrix = ModulationMatrix::new(&sync_handle);
@@ -147,6 +151,7 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
         let operator_4 = OperatorWidgets::new(&sync_handle, 3);
 
         let app = Self {
+            logo,
             sync_handle,
             master_volume,
             master_frequency,
@@ -228,6 +233,15 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
                             .align_items(Align::Start)
                             .push(
                                 Row::new()
+                                    .push(Space::with_width(Length::Units(32)))
+                                    .push(
+                                        Container::new(
+                                            Image::new(self.logo.clone())
+                                        )
+                                            .height(Length::Units(mod_matrix::HEIGHT))
+                                            .align_x(Align::Center)
+                                            .align_y(Align::Center)
+                                    )
                             )
                         )
                     .push(
