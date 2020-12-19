@@ -36,17 +36,6 @@ struct OperatorBox {
 }
 
 
-impl Default for OperatorBox {
-    fn default() -> Self {
-        Self {
-            text: Text::default(),
-            path: Path::rectangle(Point::default(), Size::new(0.0, 0.0)),
-            center: Point::default(),
-        }
-    }
-}
-
-
 impl OperatorBox {
     fn new(bounds: Size, index: usize) -> Self {
         let (x, y) = match index {
@@ -125,21 +114,6 @@ struct ModulationBox {
     hover: bool,
     click_started: bool,
     message: Option<Message>,
-}
-
-
-impl Default for ModulationBox {
-    fn default() -> Self {
-        Self {
-            path: Path::rectangle(Point::default(), Size::new(0.0, 0.0)),
-            center: Point::default(),
-            rect: Rectangle::new(Point::default(), Size::new(0.0, 0.0)),
-            active: false,
-            hover: false,
-            click_started: false,
-            message: None,
-        }
-    }
 }
 
 
@@ -249,16 +223,6 @@ struct OutputBox {
 }
 
 
-impl Default for OutputBox {
-    fn default() -> Self {
-        Self {
-            path: Path::rectangle(Point::default(), Size::new(0.0, 0.0)),
-            y: 0.0,
-        }
-    }
-}
-
-
 impl OutputBox {
     fn new(bounds: Size) -> Self {
         let (base_top_left, base_size) = get_box_base_point_and_size(
@@ -303,16 +267,6 @@ impl OutputBox {
 struct OperatorLine {
     path: Path,
     opacity: f32,
-}
-
-
-impl Default for OperatorLine {
-    fn default() -> Self {
-        Self {
-            path: Path::line(Point::default(), Point::default()),
-            opacity: 0.0,
-        }
-    }
 }
 
 
@@ -560,6 +514,33 @@ impl ModulationMatrixComponents {
             operator_2_modulation_line,
         }
     }
+
+    fn draw_lines(&self, frame: &mut Frame){
+        self.operator_4_additive_line.draw(frame);
+        self.operator_3_additive_line.draw(frame);
+        self.operator_2_additive_line.draw(frame);
+        self.operator_1_additive_line.draw(frame);
+
+        self.operator_4_modulation_line.draw(frame);
+        self.operator_3_modulation_line.draw(frame);
+        self.operator_2_modulation_line.draw(frame);
+    }
+
+    fn draw_boxes(&self, frame: &mut Frame){
+        self.operator_1_box.draw(frame);
+        self.operator_2_box.draw(frame);
+        self.operator_3_box.draw(frame);
+        self.operator_4_box.draw(frame);
+
+        self.operator_4_mod_3_box.draw(frame);
+        self.operator_4_mod_2_box.draw(frame);
+        self.operator_4_mod_1_box.draw(frame);
+        self.operator_3_mod_2_box.draw(frame);
+        self.operator_3_mod_1_box.draw(frame);
+        self.operator_2_mod_1_box.draw(frame);
+
+        self.output_box.draw(frame);
+    }
 }
 
 
@@ -649,33 +630,6 @@ impl ModulationMatrix {
         frame.fill(&background, BACKGROUND_COLOR);
         frame.stroke(&background, stroke);
     }
-
-    fn draw_lines(&self, frame: &mut Frame){
-        self.components.operator_4_additive_line.draw(frame);
-        self.components.operator_3_additive_line.draw(frame);
-        self.components.operator_2_additive_line.draw(frame);
-        self.components.operator_1_additive_line.draw(frame);
-
-        self.components.operator_4_modulation_line.draw(frame);
-        self.components.operator_3_modulation_line.draw(frame);
-        self.components.operator_2_modulation_line.draw(frame);
-    }
-
-    fn draw_boxes(&self, frame: &mut Frame){
-        self.components.operator_1_box.draw(frame);
-        self.components.operator_2_box.draw(frame);
-        self.components.operator_3_box.draw(frame);
-        self.components.operator_4_box.draw(frame);
-
-        self.components.operator_4_mod_3_box.draw(frame);
-        self.components.operator_4_mod_2_box.draw(frame);
-        self.components.operator_4_mod_1_box.draw(frame);
-        self.components.operator_3_mod_2_box.draw(frame);
-        self.components.operator_3_mod_1_box.draw(frame);
-        self.components.operator_2_mod_1_box.draw(frame);
-
-        self.components.output_box.draw(frame);
-    }
 }
 
 
@@ -683,8 +637,9 @@ impl Program<Message> for ModulationMatrix {
     fn draw(&self, bounds: Rectangle, _cursor: Cursor) -> Vec<Geometry>{
         let geometry = self.cache.draw(bounds.size(), |frame| {
             self.draw_background(frame);
-            self.draw_lines(frame);
-            self.draw_boxes(frame);
+
+            self.components.draw_lines(frame);
+            self.components.draw_boxes(frame);
         });
 
         vec![geometry]
