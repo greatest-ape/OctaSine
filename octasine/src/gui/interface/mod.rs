@@ -233,7 +233,8 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
                             .align_items(Align::Start)
                             .push(
                                 Row::new()
-                                    .push(Space::with_width(Length::Units(32)))
+                                    .push(Space::with_width(Length::Units(24)))
+                                    /*
                                     .push(
                                         Container::new(
                                             Image::new(self.logo.clone())
@@ -242,6 +243,7 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
                                             .align_x(Align::Center)
                                             .align_y(Align::Center)
                                     )
+                                    */
                             )
                         )
                     .push(
