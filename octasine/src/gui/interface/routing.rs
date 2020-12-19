@@ -360,14 +360,50 @@ impl OperatorLine {
 }
 
 
-pub struct ModulationMatrix {
-    cache: Cache,
-    size: Size,
+struct ModulationMatrixParameters {
     operator_3_target: usize,
     operator_4_target: usize,
     operator_2_additive: f64,
     operator_3_additive: f64,
     operator_4_additive: f64,
+}
+
+
+impl ModulationMatrixParameters {
+    fn new<H: GuiSyncHandle>(sync_handle: &H) -> Self {
+        let operator_3_target = Self::convert_operator_3_target(
+            sync_handle.get_presets().get_parameter_value_float(33)
+        );
+        let operator_4_target = Self::convert_operator_4_target(
+            sync_handle.get_presets().get_parameter_value_float(48)
+        );
+        let operator_2_additive = sync_handle.get_presets()
+            .get_parameter_value_float(18);
+        let operator_3_additive = sync_handle.get_presets()
+            .get_parameter_value_float(32);
+        let operator_4_additive = sync_handle.get_presets()
+            .get_parameter_value_float(47);
+
+        Self {
+            operator_3_target,
+            operator_4_target,
+            operator_2_additive,
+            operator_3_additive,
+            operator_4_additive,
+        }
+    }
+
+    fn convert_operator_3_target(value: f64) -> usize {
+        ProcessingParameterOperatorModulationTarget2::to_processing(value)
+    }
+
+    fn convert_operator_4_target(value: f64) -> usize {
+        ProcessingParameterOperatorModulationTarget3::to_processing(value)
+    }
+}
+
+
+struct ModulationMatrixComponents {
     operator_1_box: OperatorBox,
     operator_2_box: OperatorBox,
     operator_3_box: OperatorBox,
@@ -389,137 +425,52 @@ pub struct ModulationMatrix {
 }
 
 
-impl ModulationMatrix {
-    pub fn new<H: GuiSyncHandle>(sync_handle: &H) -> Self {
-        let operator_3_target = Self::convert_operator_3_target(
-            sync_handle.get_presets().get_parameter_value_float(33)
-        );
-        let operator_4_target = Self::convert_operator_4_target(
-            sync_handle.get_presets().get_parameter_value_float(48)
-        );
-        let operator_2_additive = sync_handle.get_presets()
-            .get_parameter_value_float(18);
-        let operator_3_additive = sync_handle.get_presets()
-            .get_parameter_value_float(32);
-        let operator_4_additive = sync_handle.get_presets()
-            .get_parameter_value_float(47);
+impl ModulationMatrixComponents {
+    fn new(
+        parameters: &ModulationMatrixParameters,
+        bounds: Size
+    ) -> Self {
+        let operator_1_box = OperatorBox::new(bounds, 0);
+        let operator_2_box = OperatorBox::new(bounds, 1);
+        let operator_3_box = OperatorBox::new(bounds, 2);
+        let operator_4_box = OperatorBox::new(bounds, 3);
 
-        let mut matrix = Self {
-            cache: Cache::default(),
-            size: SIZE,
-            operator_3_target,
-            operator_4_target,
-            operator_2_additive,
-            operator_3_additive,
-            operator_4_additive,
-            operator_1_box: Default::default(),
-            operator_2_box: Default::default(),
-            operator_3_box: Default::default(),
-            operator_4_box: Default::default(),
-            operator_4_mod_3_box: Default::default(),
-            operator_4_mod_2_box: Default::default(),
-            operator_4_mod_1_box: Default::default(),
-            operator_3_mod_2_box: Default::default(),
-            operator_3_mod_1_box: Default::default(),
-            operator_2_mod_1_box: Default::default(),
-            output_box: Default::default(),
-            operator_4_additive_line: Default::default(),
-            operator_3_additive_line: Default::default(),
-            operator_2_additive_line: Default::default(),
-            operator_1_additive_line: Default::default(),
-            operator_4_modulation_line: Default::default(),
-            operator_3_modulation_line: Default::default(),
-            operator_2_modulation_line: Default::default(),
-        };
-
-
-        matrix.update_data();
-
-        matrix
-    }
-
-    fn convert_operator_3_target(value: f64) -> usize {
-        ProcessingParameterOperatorModulationTarget2::to_processing(value)
-    }
-
-    fn convert_operator_4_target(value: f64) -> usize {
-        ProcessingParameterOperatorModulationTarget3::to_processing(value)
-    }
-
-    pub fn set_operator_3_target(&mut self, value: f64){
-        self.operator_3_target = Self::convert_operator_3_target(value);
-
-        self.update_data();
-    }
-
-    pub fn set_operator_4_target(&mut self, value: f64){
-        self.operator_4_target = Self::convert_operator_4_target(value);
-
-        self.update_data();
-    }
-
-    pub fn set_operator_4_additive(&mut self, value: f64){
-        self.operator_4_additive = value;
-
-        self.update_data();
-    }
-
-    pub fn set_operator_3_additive(&mut self, value: f64){
-        self.operator_3_additive = value;
-
-        self.update_data();
-    }
-
-    pub fn set_operator_2_additive(&mut self, value: f64){
-        self.operator_2_additive = value;
-
-        self.update_data();
-    }
-
-    fn update_data(&mut self){
-        let bounds = self.size;
-
-        self.operator_1_box = OperatorBox::new(bounds, 0);
-        self.operator_2_box = OperatorBox::new(bounds, 1);
-        self.operator_3_box = OperatorBox::new(bounds, 2);
-        self.operator_4_box = OperatorBox::new(bounds, 3);
-
-        self.operator_4_mod_3_box = ModulationBox::new(
+        let operator_4_mod_3_box = ModulationBox::new(
             bounds,
             3,
             2,
-            self.operator_4_target == 2,
+            parameters.operator_4_target == 2,
             Some(Message::ParameterChange(48, iced_audio::Normal::new(1.0))),
         );
-        self.operator_4_mod_2_box = ModulationBox::new(
+        let operator_4_mod_2_box = ModulationBox::new(
             bounds,
             3,
             1,
-            self.operator_4_target == 1,
+            parameters.operator_4_target == 1,
             Some(Message::ParameterChange(48, iced_audio::Normal::new(0.5))),
         );
-        self.operator_4_mod_1_box = ModulationBox::new(
+        let operator_4_mod_1_box = ModulationBox::new(
             bounds,
             3,
             0,
-            self.operator_4_target == 0,
+            parameters.operator_4_target == 0,
             Some(Message::ParameterChange(48, iced_audio::Normal::new(0.0))),
         );
-        self.operator_3_mod_2_box = ModulationBox::new(
+        let operator_3_mod_2_box = ModulationBox::new(
             bounds,
             2,
             1,
-            self.operator_3_target == 1,
+            parameters.operator_3_target == 1,
             Some(Message::ParameterChange(33, iced_audio::Normal::new(1.0))),
         );
-        self.operator_3_mod_1_box = ModulationBox::new(
+        let operator_3_mod_1_box = ModulationBox::new(
             bounds,
             2,
             0,
-            self.operator_3_target == 0,
+            parameters.operator_3_target == 0,
             Some(Message::ParameterChange(33, iced_audio::Normal::new(0.0))),
         );
-        self.operator_2_mod_1_box = ModulationBox::new(
+        let operator_2_mod_1_box = ModulationBox::new(
             bounds,
             1,
             0,
@@ -527,78 +478,151 @@ impl ModulationMatrix {
             None,
         );
 
-        self.output_box = OutputBox::new(bounds);
+        let output_box = OutputBox::new(bounds);
 
-        self.update_additive_lines();
-
-        self.update_operator_4_modulation_line();
-        self.update_operator_3_modulation_line();
-        self.update_operator_2_modulation_line();
-
-        self.cache.clear();
-    }
-
-    fn update_additive_lines(&mut self){
-        self.operator_4_additive_line = OperatorLine::additive(
-            self.operator_4_box.center,
-            self.output_box.y,
-            self.operator_4_additive as f32,
+        let operator_4_additive_line = OperatorLine::additive(
+            operator_4_box.center,
+            output_box.y,
+            parameters.operator_4_additive as f32,
         );
-        self.operator_3_additive_line = OperatorLine::additive(
-            self.operator_3_box.center,
-            self.output_box.y,
-            self.operator_3_additive as f32,
+        let operator_3_additive_line = OperatorLine::additive(
+            operator_3_box.center,
+            output_box.y,
+            parameters.operator_3_additive as f32,
         );
-        self.operator_2_additive_line = OperatorLine::additive(
-            self.operator_2_box.center,
-            self.output_box.y,
-            self.operator_2_additive as f32,
+        let operator_2_additive_line = OperatorLine::additive(
+            operator_2_box.center,
+            output_box.y,
+            parameters.operator_2_additive as f32,
         );
-        self.operator_1_additive_line = OperatorLine::additive(
-            self.operator_1_box.center,
-            self.output_box.y,
+        let operator_1_additive_line = OperatorLine::additive(
+            operator_1_box.center,
+            output_box.y,
             1.0
         );
-    }
 
-    fn update_operator_4_modulation_line(&mut self){
-        let (through, to) = match self.operator_4_target {
-            0 => (self.operator_4_mod_1_box.center, self.operator_1_box.center),
-            1 => (self.operator_4_mod_2_box.center, self.operator_2_box.center),
-            2 => (self.operator_4_mod_3_box.center, self.operator_3_box.center),
-            _ => unreachable!(),
+        let operator_4_modulation_line = {
+            let (through, to) = match parameters.operator_4_target {
+                0 => (operator_4_mod_1_box.center, operator_1_box.center),
+                1 => (operator_4_mod_2_box.center, operator_2_box.center),
+                2 => (operator_4_mod_3_box.center, operator_3_box.center),
+                _ => unreachable!(),
+            };
+    
+            OperatorLine::modulation(
+                operator_4_box.center,
+                through,
+                to,
+                1.0 - parameters.operator_4_additive as f32 
+            )
         };
 
-        self.operator_4_modulation_line = OperatorLine::modulation(
-            self.operator_4_box.center,
-            through,
-            to,
-            1.0 - self.operator_4_additive as f32 
-        );
-    }
-
-    fn update_operator_3_modulation_line(&mut self){
-        let (through, to) = match self.operator_3_target {
-            0 => (self.operator_3_mod_1_box.center, self.operator_1_box.center),
-            1 => (self.operator_3_mod_2_box.center, self.operator_2_box.center),
-            _ => unreachable!(),
+        let operator_3_modulation_line = {
+            let (through, to) = match parameters.operator_3_target {
+                0 => (operator_3_mod_1_box.center, operator_1_box.center),
+                1 => (operator_3_mod_2_box.center, operator_2_box.center),
+                _ => unreachable!(),
+            };
+    
+            OperatorLine::modulation(
+                operator_3_box.center,
+                through,
+                to,
+                1.0 - parameters.operator_3_additive as f32 
+            )
         };
 
-        self.operator_3_modulation_line = OperatorLine::modulation(
-            self.operator_3_box.center,
-            through,
-            to,
-            1.0 - self.operator_3_additive as f32 
+        let operator_2_modulation_line = OperatorLine::modulation(
+            operator_2_box.center,
+            operator_2_mod_1_box.center,
+            operator_1_box.center,
+            1.0 - parameters.operator_2_additive as f32 
         );
+
+        Self {
+            operator_1_box,
+            operator_2_box,
+            operator_3_box,
+            operator_4_box,
+            operator_4_mod_3_box,
+            operator_4_mod_2_box,
+            operator_4_mod_1_box,
+            operator_3_mod_2_box,
+            operator_3_mod_1_box,
+            operator_2_mod_1_box,
+            output_box,
+            operator_4_additive_line,
+            operator_3_additive_line,
+            operator_2_additive_line,
+            operator_1_additive_line,
+            operator_4_modulation_line,
+            operator_3_modulation_line,
+            operator_2_modulation_line,
+        }
+    }
+}
+
+
+pub struct ModulationMatrix {
+    cache: Cache,
+    size: Size,
+    parameters: ModulationMatrixParameters,
+    components: ModulationMatrixComponents,
+}
+
+
+impl ModulationMatrix {
+    pub fn new<H: GuiSyncHandle>(sync_handle: &H) -> Self {
+        let parameters = ModulationMatrixParameters::new(sync_handle);
+        let components = ModulationMatrixComponents::new(&parameters, SIZE);
+
+        Self {
+            cache: Cache::default(),
+            size: SIZE,
+            parameters,
+            components,
+        }
     }
 
-    fn update_operator_2_modulation_line(&mut self){
-        self.operator_2_modulation_line = OperatorLine::modulation(
-            self.operator_2_box.center,
-            self.operator_2_mod_1_box.center,
-            self.operator_1_box.center,
-            1.0 - self.operator_2_additive as f32 
+    pub fn set_operator_3_target(&mut self, value: f64){
+        self.parameters.operator_3_target =
+            ModulationMatrixParameters::convert_operator_3_target(value);
+
+        self.update_components();
+    }
+
+    pub fn set_operator_4_target(&mut self, value: f64){
+        self.parameters.operator_4_target =
+            ModulationMatrixParameters::convert_operator_4_target(value);
+
+        self.update_components();
+    }
+
+    pub fn set_operator_4_additive(&mut self, value: f64){
+        self.parameters.operator_4_additive = value;
+
+        self.update_components();
+    }
+
+    pub fn set_operator_3_additive(&mut self, value: f64){
+        self.parameters.operator_3_additive = value;
+
+        self.update_components();
+    }
+
+    pub fn set_operator_2_additive(&mut self, value: f64){
+        self.parameters.operator_2_additive = value;
+
+        self.update_components();
+    }
+
+    fn update_components(&mut self){
+        self.components = ModulationMatrixComponents::new(
+            &self.parameters,
+            self.size
         );
+
+        self.cache.clear();
     }
 
     pub fn view(&mut self) -> Element<Message> {
@@ -627,30 +651,30 @@ impl ModulationMatrix {
     }
 
     fn draw_lines(&self, frame: &mut Frame){
-        self.operator_4_additive_line.draw(frame);
-        self.operator_3_additive_line.draw(frame);
-        self.operator_2_additive_line.draw(frame);
-        self.operator_1_additive_line.draw(frame);
+        self.components.operator_4_additive_line.draw(frame);
+        self.components.operator_3_additive_line.draw(frame);
+        self.components.operator_2_additive_line.draw(frame);
+        self.components.operator_1_additive_line.draw(frame);
 
-        self.operator_4_modulation_line.draw(frame);
-        self.operator_3_modulation_line.draw(frame);
-        self.operator_2_modulation_line.draw(frame);
+        self.components.operator_4_modulation_line.draw(frame);
+        self.components.operator_3_modulation_line.draw(frame);
+        self.components.operator_2_modulation_line.draw(frame);
     }
 
     fn draw_boxes(&self, frame: &mut Frame){
-        self.operator_1_box.draw(frame);
-        self.operator_2_box.draw(frame);
-        self.operator_3_box.draw(frame);
-        self.operator_4_box.draw(frame);
+        self.components.operator_1_box.draw(frame);
+        self.components.operator_2_box.draw(frame);
+        self.components.operator_3_box.draw(frame);
+        self.components.operator_4_box.draw(frame);
 
-        self.operator_4_mod_3_box.draw(frame);
-        self.operator_4_mod_2_box.draw(frame);
-        self.operator_4_mod_1_box.draw(frame);
-        self.operator_3_mod_2_box.draw(frame);
-        self.operator_3_mod_1_box.draw(frame);
-        self.operator_2_mod_1_box.draw(frame);
+        self.components.operator_4_mod_3_box.draw(frame);
+        self.components.operator_4_mod_2_box.draw(frame);
+        self.components.operator_4_mod_1_box.draw(frame);
+        self.components.operator_3_mod_2_box.draw(frame);
+        self.components.operator_3_mod_1_box.draw(frame);
+        self.components.operator_2_mod_1_box.draw(frame);
 
-        self.output_box.draw(frame);
+        self.components.output_box.draw(frame);
     }
 }
 
@@ -673,11 +697,11 @@ impl Program<Message> for ModulationMatrix {
         _cursor: Cursor,
     ) -> (event::Status, Option<Message>) {
         let mod_boxes = vec![
-            &mut self.operator_4_mod_3_box,
-            &mut self.operator_4_mod_2_box,
-            &mut self.operator_4_mod_1_box,
-            &mut self.operator_3_mod_2_box,
-            &mut self.operator_3_mod_1_box,
+            &mut self.components.operator_4_mod_3_box,
+            &mut self.components.operator_4_mod_2_box,
+            &mut self.components.operator_4_mod_1_box,
+            &mut self.components.operator_3_mod_2_box,
+            &mut self.components.operator_3_mod_1_box,
         ];
 
         for mod_box in mod_boxes.into_iter(){
