@@ -9,7 +9,7 @@ use vst2_helpers::processing_parameters::utils::map_value_to_parameter_value_wit
 use crate::GuiSyncHandle;
 use crate::constants::*;
 
-use super::{ParameterWidget, Message};
+use super::Message;
 
 
 const KNOB_SIZE: Length = Length::Units(32);
@@ -235,11 +235,17 @@ impl OctaSineKnob {
             default_sync_value
         )
     }
-}
 
+    pub fn set_value(&mut self, value: f64) {
+        if !self.knob_state.is_dragging() {
+            self.knob_state.normal_param.value = Normal::new(value as f32);
+        }
+    }
 
-impl <H: GuiSyncHandle>ParameterWidget<H> for OctaSineKnob {
-    fn view(&mut self, sync_handle: &H) -> Element<Message> {
+    pub fn view<H: GuiSyncHandle>(
+        &mut self,
+        sync_handle: &H
+    ) -> Element<Message> {
         let title = Text::new(self.title.clone())
             .size(12)
             .horizontal_alignment(HorizontalAlignment::Center);
@@ -293,12 +299,6 @@ impl <H: GuiSyncHandle>ParameterWidget<H> for OctaSineKnob {
             .push(knob)
             .push(value)
             .into()
-    }
-
-    fn set_value(&mut self, value: f64) {
-        if !self.knob_state.is_dragging() {
-            self.knob_state.normal_param.value = Normal::new(value as f32);
-        }
     }
 }
 

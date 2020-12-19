@@ -5,7 +5,7 @@ use iced_baseview::{
 
 use crate::GuiSyncHandle;
 
-use super::{Message, ParameterWidget};
+use super::Message;
 use super::envelope::Envelope;
 use super::knob::OctaSineKnob;
 use super::picker::ModOutputPicker;
