@@ -31,7 +31,6 @@ impl WaveTypePicker {
             .get_parameter_value_float(parameter_index);
         
         let choices = vec![WaveType::Sine, WaveType::WhiteNoise];
-        
         let selected = map_parameter_value_to_step(&choices[..], value);
         
         Self {
