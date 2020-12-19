@@ -50,7 +50,7 @@ impl <H: GuiSyncHandle> OctaSineIcedApplication<H> {
                         1 => self.master_frequency.set_value(v),
                         2 => self.operator_1.volume.set_value(v),
                         3 => self.operator_1.panning.set_value(v),
-                        4 => (),
+                        4 => self.operator_1.wave_type.set_value(v),
                         5 => self.operator_1.mod_index.set_value(v),
                         6 => self.operator_1.feedback.set_value(v),
                         7 => self.operator_1.frequency_ratio.set_value(v),
@@ -63,7 +63,7 @@ impl <H: GuiSyncHandle> OctaSineIcedApplication<H> {
                         14 => self.operator_1.envelope.set_release_duration(v),
                         15 => self.operator_2.volume.set_value(v),
                         16 => self.operator_2.panning.set_value(v),
-                        17 => (),
+                        17 => self.operator_2.wave_type.set_value(v),
                         18 => {
                             self.operator_2.additive.as_mut()
                                 .unwrap()
@@ -82,7 +82,7 @@ impl <H: GuiSyncHandle> OctaSineIcedApplication<H> {
                         28 => self.operator_2.envelope.set_release_duration(v),
                         29 => self.operator_3.volume.set_value(v),
                         30 => self.operator_3.panning.set_value(v),
-                        31 => (),
+                        31 => self.operator_3.wave_type.set_value(v),
                         32 => {
                             self.operator_3.additive.as_mut()
                                 .unwrap()
@@ -102,7 +102,7 @@ impl <H: GuiSyncHandle> OctaSineIcedApplication<H> {
                         43 => self.operator_3.envelope.set_release_duration(v),
                         44 => self.operator_4.volume.set_value(v),
                         45 => self.operator_4.panning.set_value(v),
-                        46 => (),
+                        46 => self.operator_4.wave_type.set_value(v),
                         47 => {
                             self.operator_4.additive.as_mut()
                                 .unwrap()
@@ -181,9 +181,13 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
                 );
 
                 match index {
+                    4 => self.operator_1.wave_type.set_value(value),
+                    17 => self.operator_2.wave_type.set_value(value),
                     18 => self.modulation_matrix.set_operator_2_additive(value),
+                    31 => self.operator_3.wave_type.set_value(value),
                     32 => self.modulation_matrix.set_operator_3_additive(value),
                     33 => self.modulation_matrix.set_operator_3_target(value),
+                    46 => self.operator_4.wave_type.set_value(value),
                     47 => self.modulation_matrix.set_operator_4_additive(value),
                     48 => self.modulation_matrix.set_operator_4_target(value),
                     _ => ()
