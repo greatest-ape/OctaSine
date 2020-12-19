@@ -34,7 +34,7 @@ simplelog = { version = "0.8", optional = true, default-features = false }
 
 # GUI
 
-iced_baseview = { git = "https://github.com/BillyDM/iced_baseview.git", branch = "main", features = ["canvas"] }
+iced_baseview = { git = "https://github.com/BillyDM/iced_baseview.git", branch = "main", features = ["canvas", "image"] }
 iced_audio = { git = "https://github.com/BillyDM/iced_audio.git", branch = "main" }
 raw-window-handle = "0.3"
 
