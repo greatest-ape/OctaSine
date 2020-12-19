@@ -231,20 +231,21 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
                         Column::new()
                             .width(Length::Fill)
                             .align_items(Align::Start)
+                            /*
                             .push(
                                 Row::new()
-                                    .push(Space::with_width(Length::Units(24)))
-                                    /*
+                                    // .push(Space::with_width(Length::Units(24)))
                                     .push(
                                         Container::new(
                                             Image::new(self.logo.clone())
                                         )
                                             .height(Length::Units(mod_matrix::HEIGHT))
+                                            .width(Length::Units(mod_matrix::HEIGHT))
                                             .align_x(Align::Center)
                                             .align_y(Align::Center)
                                     )
-                                    */
                             )
+                            */
                         )
                     .push(
                         Column::new()
