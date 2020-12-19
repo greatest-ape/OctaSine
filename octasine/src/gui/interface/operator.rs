@@ -1,5 +1,5 @@
 use iced_baseview::{
-    Container, Element, Text, Length, Align, Row, Rule, Space
+    Container, Element, Text, Length, Align, Row, Rule, Space, HorizontalAlignment
 };
 
 
@@ -61,11 +61,17 @@ impl OperatorWidgets {
     }
 
     pub fn view<H: GuiSyncHandle>(&mut self, sync_handle: &H) -> Element<Message> {
-        let title = format!("{}", self.index + 1);
+        let operator_number = Text::new(format!("{}", self.index + 1))
+            .size(36)
+            .horizontal_alignment(HorizontalAlignment::Center);
 
         let mut row = Row::new()
             .align_items(Align::Center)
-            .push(Text::new(title).size(32))
+            .push(
+                Container::new(operator_number)
+                    .width(Length::Units(32))
+                    .align_x(Align::Center)
+            )
             .push(Space::with_width(Length::Units(16)))
             .push(self.wave_type.view())
             .push(self.volume.view(sync_handle))
