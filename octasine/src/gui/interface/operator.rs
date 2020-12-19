@@ -1,5 +1,5 @@
 use iced_baseview::{
-    Container, Column, Element, Text, Length, HorizontalAlignment, Align, Row, Rule, Space, Canvas
+    Container, Element, Text, Length, Align, Row, Rule, Space
 };
 
 
