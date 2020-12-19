@@ -267,26 +267,20 @@ impl OutputBox {
             7
         );
 
-        let size = Size {
-            width: base_size.width * 6.0 + base_size.width * OPERATOR_BOX_SCALE,
-            height: base_size.height * OPERATOR_BOX_SCALE,
-        };
+        let height = base_size.height * OPERATOR_BOX_SCALE;
+        let width = base_size.width * 6.0 + base_size.width * OPERATOR_BOX_SCALE;
+
         let left = Point {
             x: base_top_left.x - (OPERATOR_BOX_SCALE - 1.0) * base_size.width / 2.0,
-            y: base_top_left.y - (OPERATOR_BOX_SCALE - 1.0) * base_size.height / 2.0,
+            y: base_top_left.y - (OPERATOR_BOX_SCALE - 1.0) * base_size.height / 2.0 + height,
         };
         let right = Point {
-            x: left.x + size.width,
+            x: left.x + width,
             y: left.y,
         };
 
-        let mut left = scale_point(bounds, left);
-        let mut right = scale_point(bounds, right);
-
-        let size = scale_size(size);
-
-        left.y += size.height;
-        right.y += size.height;
+        let left = scale_point(bounds, left);
+        let right = scale_point(bounds, right);
 
         let path = Path::line(left, right);
 
