@@ -397,35 +397,35 @@ impl ModulationMatrixComponents {
             3,
             2,
             parameters.operator_4_target == 2,
-            Some(Message::ParameterChange(48, iced_audio::Normal::new(1.0))),
+            Some(Message::ParameterChange(48, 1.0)),
         );
         let operator_4_mod_2_box = ModulationBox::new(
             bounds,
             3,
             1,
             parameters.operator_4_target == 1,
-            Some(Message::ParameterChange(48, iced_audio::Normal::new(0.5))),
+            Some(Message::ParameterChange(48, 0.5)),
         );
         let operator_4_mod_1_box = ModulationBox::new(
             bounds,
             3,
             0,
             parameters.operator_4_target == 0,
-            Some(Message::ParameterChange(48, iced_audio::Normal::new(0.0))),
+            Some(Message::ParameterChange(48, 0.0)),
         );
         let operator_3_mod_2_box = ModulationBox::new(
             bounds,
             2,
             1,
             parameters.operator_3_target == 1,
-            Some(Message::ParameterChange(33, iced_audio::Normal::new(1.0))),
+            Some(Message::ParameterChange(33, 1.0)),
         );
         let operator_3_mod_1_box = ModulationBox::new(
             bounds,
             2,
             0,
             parameters.operator_3_target == 0,
-            Some(Message::ParameterChange(33, iced_audio::Normal::new(0.0))),
+            Some(Message::ParameterChange(33, 0.0)),
         );
         let operator_2_mod_1_box = ModulationBox::new(
             bounds,

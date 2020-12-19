@@ -1,8 +1,7 @@
 use iced_baseview::{executor, Align, Application, Command, Subscription, WindowSubs};
 use iced_baseview::{
-    Column, Element, Row, Container, Rule, Text, Length, Space
+    Column, Element, Row, Container, Rule, Length, Space
 };
-use iced_audio::Normal;
 
 use crate::GuiSyncHandle;
 
@@ -20,7 +19,7 @@ use routing::ModulationMatrix;
 #[derive(Debug, Clone)]
 pub enum Message {
     Frame,
-    ParameterChange(usize, Normal),
+    ParameterChange(usize, f64),
 }
 
 
@@ -183,8 +182,6 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
                 self.update_widgets_from_parameters();
             },
             Message::ParameterChange(index, value) => {
-                let value = value.as_f32() as f64;
-
                 self.sync_handle.get_presets().set_parameter_value_float_from_gui(
                     index,
                     value,
