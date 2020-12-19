@@ -67,16 +67,27 @@ impl OperatorWidgets {
             .align_items(Align::Center)
             .push(Text::new(title).size(32))
             .push(Space::with_width(Length::Units(16)))
-            .push(self.volume.view(sync_handle))
-            .push(self.panning.view(sync_handle))
             .push(self.wave_type.view())
+            .push(self.volume.view(sync_handle))
+            .push(self.panning.view(sync_handle));
+        
+        if let Some(additive) = self.additive.as_mut() {
+            row = row.push(additive.view(sync_handle))
+        } else {
+            row = row.push(Space::with_width(Length::Units(64)))
+        }
+
+        row = row
             .push(
                 Container::new(
                     Rule::vertical(16)
                 )
-                    .height(Length::Units(64)))
+                    .height(Length::Units(64))
+            )
             .push(self.mod_index.view(sync_handle))
-            .push(self.feedback.view(sync_handle))
+            .push(self.feedback.view(sync_handle));
+        
+        row = row
             .push(
                 Container::new(
                     Rule::vertical(16)
@@ -84,19 +95,7 @@ impl OperatorWidgets {
                     .height(Length::Units(64)))
             .push(self.frequency_ratio.view(sync_handle))
             .push(self.frequency_free.view(sync_handle))
-            .push(self.frequency_fine.view(sync_handle))
-            .push(
-                Container::new(
-                    Rule::vertical(16)
-                )
-                    .height(Length::Units(64))
-            );
-        
-        if let Some(additive) = self.additive.as_mut() {
-            row = row.push(additive.view(sync_handle))
-        } else {
-            row = row.push(Space::with_width(Length::Units(64)))
-        }
+            .push(self.frequency_fine.view(sync_handle));
         
         row = row
             .push(
