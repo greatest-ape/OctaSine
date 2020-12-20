@@ -2,8 +2,8 @@
 
 ## Simplify presets
 
-* Use e.g. presets::values::MasterVolume in function that sets processing
-  parameter from index and sync value
+* In function that sets processing parameter from index and sync value, embed
+  MasterVolume etc. in processing parameter instead of writing each time.
 
 ## GUI
 
