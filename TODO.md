@@ -2,8 +2,10 @@
 
 ## Simplify presets
 
+* Modulation targets
 * In function that sets processing parameter from index and sync value, embed
   MasterVolume etc. in ProcessingParameter trait instead of writing each time.
+* Remember to look for tests before removing files
 
 ## GUI
 
