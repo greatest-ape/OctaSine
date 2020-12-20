@@ -1,12 +1,5 @@
-use crate::common::*;
-use crate::constants::*;
-
-use crate::preset_bank::{
-    PresetParameter,
-    utils::atomic_double::AtomicPositiveDouble
-};
+use crate::preset_bank::PresetParameter;
 use crate::parameters::processing::values::*;
-use crate::parameters::processing::utils::*;
 
 
 pub fn create_parameters() -> Vec<PresetParameter> {
@@ -82,245 +75,131 @@ pub fn create_parameters() -> Vec<PresetParameter> {
 }
 
 
-macro_rules! create_preset_parameter {
-    ($name:expr, $processing_value:ident) => {
-        Self {
-            value: AtomicPositiveDouble::new($processing_value::default().to_sync()),
-            name: $name.to_string(),
-            unit_from_sync: |_| "".to_string(), // FIXME
-            sync_from_text: |v| {
-                $processing_value::from_text(v)
-                    .map(|v| v.to_sync())
-            },
-            format_sync: |v| $processing_value::from_sync(v).format(),
-        }
-    };
-}
-
-
 impl PresetParameter {
     pub fn master_volume() -> Self {
-        create_preset_parameter!("Master volume", MasterVolume)
+        Self::new(
+            "Master volume",
+            MasterVolume::default()
+        )
     }
 
     pub fn master_frequency() -> Self {
-        create_preset_parameter!("Master frequency", MasterFrequency)
+        Self::new(
+            "Master frequency",
+            MasterFrequency::default()
+        )
     }
 
     pub fn operator_volume(index: usize) -> Self {
-        let value = OperatorVolume::new(index).to_sync();
-
-        Self {
-            value: AtomicPositiveDouble::new(value),
-            name: format!("Op. {} volume", index + 1),
-            unit_from_sync: |_| "".to_string(),
-            sync_from_text: |v| {
-                OperatorVolume::from_text(v)
-                    .map(|v| v.to_sync())
-            },
-            format_sync: |v| OperatorVolume::from_sync(v).format(),
-        }
+        Self::new(
+            &format!("Op. {} volume", index + 1),
+            OperatorVolume::new(index)
+        )
     }
 
     pub fn operator_panning(index: usize) -> Self {
-        let value = OperatorPanning::default().to_sync();
-
-        Self {
-            value: AtomicPositiveDouble::new(value),
-            name: format!("Op. {} pan", index + 1),
-            unit_from_sync: |_| "".to_string(),
-            sync_from_text: |v| {
-                OperatorPanning::from_text(v)
-                    .map(|v| v.to_sync())
-            },
-            format_sync: |v| OperatorPanning::from_sync(v).format(),
-        }
+        Self::new(
+            &format!("Op. {} pan", index + 1),
+            OperatorPanning::default()
+        )
     }
 
     pub fn operator_additive(index: usize) -> Self {
-        let value = OperatorAdditive::default().to_sync();
-
-        Self {
-            value: AtomicPositiveDouble::new(value),
-            name: format!("Op. {} additive", index + 1),
-            unit_from_sync: |_| "%".to_string(),
-            sync_from_text: |v| {
-                OperatorAdditive::from_text(v)
-                    .map(|v| v.to_sync())
-            },
-            format_sync: |v| OperatorAdditive::from_sync(v).format(),
-        }
+        Self::new(
+            &format!("Op. {} additive", index + 1),
+            OperatorAdditive::default()
+        )
     }
 
     pub fn operator_frequency_ratio(index: usize) -> Self {
-        let value = OperatorFrequencyRatio::default().to_sync();
-
-        Self {
-            value: AtomicPositiveDouble::new(value),
-            name: format!("Op. {} freq. ratio", index + 1),
-            unit_from_sync: |_| "".to_string(),
-            sync_from_text: |v| {
-                OperatorFrequencyRatio::from_text(v)
-                    .map(|v| v.to_sync())
-            },
-            format_sync: |v| OperatorFrequencyRatio::from_sync(v).format(),
-        }
+        Self::new(
+            &format!("Op. {} freq ratio", index + 1),
+            OperatorFrequencyRatio::default()
+        )
     }
 
     pub fn operator_frequency_free(index: usize) -> Self {
-        let value = OperatorFrequencyFree::default().to_sync();
-
-        Self {
-            value: AtomicPositiveDouble::new(value),
-            name: format!("Op. {} freq. free", index + 1),
-            unit_from_sync: |_| "".to_string(),
-            sync_from_text: |v| {
-                OperatorFrequencyFree::from_text(v)
-                    .map(|v| v.to_sync())
-            },
-            format_sync: |v| OperatorFrequencyFree::from_sync(v).format(),
-        }
+        Self::new(
+            &format!("Op. {} freq free", index + 1),
+            OperatorFrequencyFree::default()
+        )
     }
 
     pub fn operator_frequency_fine(index: usize) -> Self {
-        let value = OperatorFrequencyFine::default().to_sync();
-
-        Self {
-            value: AtomicPositiveDouble::new(value),
-            name: format!("Op. {} freq. fine", index + 1),
-            unit_from_sync: |_| "".to_string(),
-            sync_from_text: |v| None, // FIXME: simple parameter parsing
-            format_sync: |v| OperatorFrequencyFine::from_sync(v).format(),
-        }
+        Self::new(
+            &format!("Op. {} freq fine", index + 1),
+            OperatorFrequencyFine::default()
+        )
     }
 
     pub fn operator_feedback(index: usize) -> Self {
-        let value = OperatorFeedback::default().to_sync();
-
-        Self {
-            value: AtomicPositiveDouble::new(value),
-            name: format!("Op. {} feedback", index + 1),
-            unit_from_sync: |_| "".to_string(),
-            sync_from_text: |v| None, // FIXME: simple parameter parsing
-            format_sync: |v| OperatorFeedback::from_sync(v).format(),
-        }
+        Self::new(
+            &format!("Op. {} feedback", index + 1),
+            OperatorFeedback::default()
+        )
     }
 
     pub fn operator_modulation_index(index: usize) -> Self {
-        let value = OperatorModulationIndex::default().to_sync();
-
-        Self {
-            value: AtomicPositiveDouble::new(value),
-            name: format!("Op. {} mod index", index + 1),
-            unit_from_sync: |_| "".to_string(),
-            sync_from_text: |v| None, // FIXME: simple parameter parsing
-            format_sync: |v| OperatorModulationIndex::from_sync(v).format(),
-        }
+        Self::new(
+            &format!("Op. {} mod index", index + 1),
+            OperatorModulationIndex::default()
+        )
     }
 
     pub fn operator_wave_type(index: usize) -> Self {
-        let value = OperatorWaveType::default().to_sync();
-
-        Self {
-            value: AtomicPositiveDouble::new(value),
-            name: format!("Op. {} wave type", index + 1),
-            unit_from_sync: |_| "".to_string(),
-            sync_from_text: |v| {
-                OperatorWaveType::from_text(v)
-                    .map(|v| v.to_sync())
-            },
-            format_sync: |v| OperatorWaveType::from_sync(v).format(),
-        }
+        Self::new(
+            &format!("Op. {} wave", index + 1),
+            OperatorWaveType::default()
+        )
     }
 
     pub fn operator_attack_duration(index: usize) -> Self {
-        let value = OperatorAttackDuration::default().to_sync();
-
-        Self {
-            value: AtomicPositiveDouble::new(value),
-            name: format!("Op. {} attack time", index + 1),
-            unit_from_sync: |_| "".to_string(),
-            sync_from_text: |value| None, // FIXME
-            format_sync: |v| OperatorAttackDuration::from_sync(v).format(),
-        }
+        Self::new(
+            &format!("Op. {} attack time", index + 1),
+            OperatorAttackDuration::default()
+        )
     }
 
     pub fn operator_attack_volume(index: usize) -> Self {
-        let value = OperatorAttackVolume::default().to_sync();
-
-        Self {
-            value: AtomicPositiveDouble::new(value),
-            name: format!("Op. {} attack volume", index + 1),
-            unit_from_sync: |_| "".to_string(),
-            sync_from_text: |value| None, // FIXME
-            format_sync: |v| OperatorAttackVolume::from_sync(v).format(),
-        }
+        Self::new(
+            &format!("Op. {} attack vol", index + 1),
+            OperatorAttackVolume::default()
+        )
     }
 
     pub fn operator_decay_duration(index: usize) -> Self {
-        let value = OperatorDecayDuration::default().to_sync();
-
-        Self {
-            value: AtomicPositiveDouble::new(value),
-            name: format!("Op. {} decay time", index + 1),
-            unit_from_sync: |_| "".to_string(),
-            sync_from_text: |value| None, // FIXME
-            format_sync: |v| OperatorDecayDuration::from_sync(v).format(),
-        }
+        Self::new(
+            &format!("Op. {} decay time", index + 1),
+            OperatorDecayDuration::default()
+        )
     }
 
     pub fn operator_decay_volume(index: usize) -> Self {
-        let value = OperatorDecayVolume::default().to_sync();
-
-        Self {
-            value: AtomicPositiveDouble::new(value),
-            name: format!("Op. {} decay volume", index + 1),
-            unit_from_sync: |_| "".to_string(),
-            sync_from_text: |value| None, // FIXME
-            format_sync: |v| OperatorDecayVolume::from_sync(v).format(),
-        }
+        Self::new(
+            &format!("Op. {} decay vol", index + 1),
+            OperatorDecayVolume::default()
+        )
     }
 
     pub fn operator_release_duration(index: usize) -> Self {
-        let value = OperatorReleaseDuration::default().to_sync();
-
-        Self {
-            value: AtomicPositiveDouble::new(value),
-            name: format!("Op. {} release time", index + 1),
-            unit_from_sync: |_| "".to_string(),
-            sync_from_text: |value| None, // FIXME
-            format_sync: |v| OperatorReleaseDuration::from_sync(v).format(),
-        }
+        Self::new(
+            &format!("Op. {} release time", index + 1),
+            OperatorReleaseDuration::default()
+        )
     }
 
     pub fn operator_modulation_target_2() -> Self {
-        let value = OperatorModulationTarget2::default().to_sync();
-
-        Self {
-            value: AtomicPositiveDouble::new(value),
-            name: format!("Op. 3 mod out"),
-            unit_from_sync: |_| "".to_string(),
-            sync_from_text: |v| {
-                OperatorModulationTarget2::from_text(v)
-                    .map(|v| v.to_sync())
-            },
-            format_sync: |v| OperatorModulationTarget2::from_sync(v).format(),
-        }
+        Self::new(
+            "Op. 2 mod out",
+            OperatorModulationTarget2::default()
+        )
     }
 
     pub fn operator_modulation_target_3() -> Self {
-        let value = OperatorModulationTarget3::default().to_sync();
-
-        Self {
-            value: AtomicPositiveDouble::new(value),
-            name: format!("Op. 4 mod out"),
-            unit_from_sync: |_| "".to_string(),
-            sync_from_text: |v| {
-                OperatorModulationTarget3::from_text(v)
-                    .map(|v| v.to_sync())
-            },
-            format_sync: |v| OperatorModulationTarget3::from_sync(v).format(),
-        }
+        Self::new(
+            "Op. 3 mod out",
+            OperatorModulationTarget3::default()
+        )
     }
 }
 
@@ -330,6 +209,7 @@ impl PresetParameter {
 mod tests {
     use assert_approx_eq::assert_approx_eq;
 
+    use crate::common::*;
     use crate::constants::*;
     use crate::parameters::processing::values::*;
 

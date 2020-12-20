@@ -48,13 +48,9 @@ macro_rules! impl_identity_value_conversion {
             fn format_sync(value: f64) -> String {
                 Self::from_sync(value).format()
             }
-            fn from_text(text: String) -> Option<Self> {
-                text.parse::<f64>().map(|v| Self(v)).ok()
-            }
         }
     };
 }
-
 
 
 pub trait ProcessingValueConversion: Sized {
@@ -65,29 +61,9 @@ pub trait ProcessingValueConversion: Sized {
     fn from_text(_text: String) -> Option<Self> {
         None
     }
-}
-
-
-#[derive(Debug, Clone, Copy)]
-pub enum ProcessingValue {
-    MasterVolume(MasterVolume),
-    MasterFrequency(MasterFrequency),
-    OperatorVolume(OperatorVolume),
-    OperatorPanning(OperatorPanning),
-    OperatorAdditive(OperatorAdditive),
-    OperatorFrequencyRatio(OperatorFrequencyRatio),
-    OperatorFrequencyFree(OperatorFrequencyFree),
-    OperatorFrequencyFine(OperatorFrequencyFine),
-    OperatorFeedback(OperatorFeedback),
-    OperatorModulationIndex(OperatorModulationIndex),
-    OperatorWaveType(OperatorWaveType),
-    OperatorAttackDuration(OperatorAttackDuration),
-    OperatorAttackVolume(OperatorAttackVolume),
-    OperatorDecayDuration(OperatorDecayDuration),
-    OperatorDecayVolume(OperatorDecayVolume),
-    OperatorReleaseDuration(OperatorReleaseDuration),
-    OperatorModulationTarget2(OperatorModulationTarget2),
-    OperatorModulationTarget3(OperatorModulationTarget3),
+    fn unit(&self) -> String {
+        "".to_string()
+    }
 }
 
 
@@ -399,7 +375,6 @@ impl ProcessingValueConversion for OperatorWaveType {
 }
 
 
-
 #[derive(Debug, Clone, Copy)]
 pub struct OperatorAttackDuration(pub f64);
 
@@ -414,7 +389,6 @@ impl Default for OperatorAttackDuration {
 impl_envelope_duration_value_conversion!(OperatorAttackDuration);
 
 
-
 #[derive(Debug, Clone, Copy)]
 pub struct OperatorDecayDuration(pub f64);
 
@@ -427,7 +401,6 @@ impl Default for OperatorDecayDuration {
 
 
 impl_envelope_duration_value_conversion!(OperatorDecayDuration);
-
 
 
 #[derive(Debug, Clone, Copy)]
@@ -456,7 +429,6 @@ impl Default for OperatorAttackVolume {
 
 
 impl_identity_value_conversion!(OperatorAttackVolume);
-
 
 
 #[derive(Debug, Clone, Copy)]
@@ -508,7 +480,6 @@ impl ProcessingValueConversion for OperatorPanning {
 }
 
 
-
 #[derive(Debug, Clone, Copy)]
 pub struct OperatorModulationTarget2(pub usize);
 
@@ -543,7 +514,6 @@ impl ProcessingValueConversion for OperatorModulationTarget2 {
         None
     }
 }
-
 
 
 #[derive(Debug, Clone, Copy)]

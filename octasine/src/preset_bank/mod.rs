@@ -8,7 +8,7 @@ use std::sync::{Arc, atomic::{AtomicUsize, Ordering}};
 use arc_swap::ArcSwap;
 use array_init::array_init;
 
-use crate::parameters::processing::values::ProcessingValue;
+use crate::parameters::processing::values::ProcessingValueConversion;
 use crate::parameters::preset::create_parameters;
 
 use change_info::ParameterChangeInfo;
@@ -38,6 +38,18 @@ impl PresetParameter {
     }
     pub fn get_value_text(&self) -> String {
         (self.format_sync)(self.value.get())
+    }
+    pub fn new<V: ProcessingValueConversion>(
+        name: &str,
+        default: V
+    ) -> Self {
+        Self {
+            name: name.to_string(),
+            value: AtomicPositiveDouble::new(default.to_sync()),
+            unit_from_sync: |v| V::from_sync(v).unit(),
+            sync_from_text: |v| V::from_text(v).map(|v| v.to_sync()),
+            format_sync: |v| V::from_sync(v).format(),
+        }
     }
 }
 
