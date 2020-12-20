@@ -14,7 +14,7 @@ TMP_DIR="tmp"
 
 cd octasine_vst2_plugin
 
-cargo +stable build --features "logging"
+cargo +stable build
 ../contrib/osx_vst_bundler.sh "$NAME" ../target/debug/liboctasine.dylib
 
 if [ -d "$MOVE_TO" ]; then

@@ -7,5 +7,5 @@ edition = "2018"
 
 [dependencies]
 iced_baseview = { git = "https://github.com/BillyDM/iced_baseview.git", branch = "main", features = ["canvas"] }
-octasine = { path = "../octasine", features = ["logging"] }
+octasine = { path = "../octasine" }
 simplelog = { version = "0.8", default-features = false }

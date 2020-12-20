@@ -14,7 +14,7 @@ TMP_DIR="tmp"
 
 cd octasine_vst2_plugin
 
-RUSTFLAGS="-C target-cpu=native" cargo +stable build --release --features "logging"
+RUSTFLAGS="-C target-cpu=native" cargo +stable build --release
 ../contrib/osx_vst_bundler.sh "$NAME" ../target/release/liboctasine.dylib
 
 if [ -d "$MOVE_TO" ]; then
