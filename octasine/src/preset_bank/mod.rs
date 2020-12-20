@@ -1,7 +1,7 @@
+mod atomic_double;
 mod change_info;
 mod import_export;
 mod import_export_utils;
-mod utils;
 
 use std::sync::{Arc, atomic::{AtomicUsize, Ordering}};
 
@@ -12,7 +12,7 @@ use crate::parameters::processing::values::ProcessingValueConversion;
 use crate::parameters::preset::create_parameters;
 
 use change_info::ParameterChangeInfo;
-use utils::atomic_double::AtomicPositiveDouble;
+use atomic_double::AtomicPositiveDouble;
 use import_export::*;
 use import_export_utils::*;
 
@@ -339,11 +339,9 @@ pub mod tests {
 
     use super::*;
 
+    /// Test importing and exporting, as well as some related functionality
     #[test]
     #[allow(clippy::float_cmp)]
-    /// Test importing and exporting, as well as some related functionality
-    /// 
-    /// Use this in other crates with your own preset parameter type!
     pub fn test_export_import() {
         for _ in 0..20 {
             let bank_1 = PresetBank::default();
