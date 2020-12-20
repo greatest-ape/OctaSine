@@ -94,7 +94,7 @@ impl SerdePreset {
                 parameters.push(SerdePresetParameter {
                     name: parameter.name.clone(),
                     value_float,
-                    value_text: (parameter.format)(value),
+                    value_text: (parameter.format_sync)(value),
                 });
             }
         }
