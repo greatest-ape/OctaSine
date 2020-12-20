@@ -12,7 +12,7 @@ VST_NAME="$NAME.vst"
 MOVE_TO="/Library/Audio/Plug-Ins/VST/$VST_NAME"
 TMP_DIR="tmp"
 
-cd octasine_vst
+cd octasine_vst2_plugin
 
 cargo +stable build --features "logging"
 ../contrib/osx_vst_bundler.sh "$NAME" ../target/debug/liboctasine.dylib
