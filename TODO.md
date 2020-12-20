@@ -3,6 +3,8 @@
 ## Simplify presets
 
 * Rename PresetParameter to SyncParameter?
+* Run tests
+* Test in DAW
 
 ## GUI
 

@@ -16,12 +16,10 @@ use simdeez::avx::*;
 use arrayvec::ArrayVec;
 use vst::buffer::AudioBuffer;
 
-use vst2_helpers::processing_parameters::ProcessingParameter;
-
 use crate::OctaSine;
 use crate::common::*;
 use crate::constants::*;
-use crate::processing_parameters::*;
+use crate::parameters::processing::parameters::*;
 
 /// Each SAMPLE_PASS_SIZE samples, load parameter changes and processing
 /// parameter values (interpolated values where applicable)
