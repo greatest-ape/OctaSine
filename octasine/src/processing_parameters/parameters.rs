@@ -74,45 +74,10 @@ impl ProcessingParameterOperatorVolume {
     }
 }
 
-impl ParameterValueConversion for ProcessingParameterOperatorVolume {
-    type ProcessingParameterValue = f64;
-
-    fn to_processing(value: f64) -> f64 {
-        value * 2.0
-    }
-    fn to_preset(value: f64) -> f64 {
-        value / 2.0
-    }
-    fn parse_string_value(value: String) -> Option<Self::ProcessingParameterValue> {
-        simple_parameter_string_parsing!(Self, value, Self::ProcessingParameterValue)
-    }
-
-    fn format_processing(internal_value: Self::ProcessingParameterValue) -> String {
-        format!("{:.02}", internal_value)
-    }
-}
-
 
 // Additive factor
 
 create_interpolatable_processing_parameter!(ProcessingParameterOperatorAdditiveFactor, DEFAULT_OPERATOR_ADDITIVE_FACTOR, TimeCounter);
-
-impl ParameterValueConversion for ProcessingParameterOperatorAdditiveFactor {
-    type ProcessingParameterValue = f64;
-
-    fn to_processing(value: f64) -> Self::ProcessingParameterValue {
-        value
-    }
-    fn to_preset(value: Self::ProcessingParameterValue) -> f64 {
-        value
-    }
-    fn parse_string_value(value: String) -> Option<Self::ProcessingParameterValue> {
-        simple_parameter_string_parsing!(Self, value, Self::ProcessingParameterValue)
-    }
-    fn format_processing(internal_value: Self::ProcessingParameterValue) -> String {
-        format!("{:.02}%", (internal_value * 100.0))
-    }
-}
 
 
 // Frequency - ratio

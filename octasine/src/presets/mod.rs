@@ -22,6 +22,7 @@ impl Preset {
         let parameters = vec![
             PresetParameter::master_volume(),
             PresetParameter::master_frequency(),
+            PresetParameter::operator_volume(0),
         ];
 
         Self {
