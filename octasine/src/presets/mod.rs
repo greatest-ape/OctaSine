@@ -8,6 +8,10 @@ use vst2_helpers::processing_parameters::utils::*;
 
 use crate::constants::*;
 
+mod change_info;
+
+use change_info::ParameterChangeInfo;
+
 
 trait ProcessingValueConversion {
     fn from_sync(value: f64) -> Self;
@@ -17,6 +21,7 @@ trait ProcessingValueConversion {
 }
 
 
+#[derive(Debug, Clone, Copy)]
 struct MasterVolume(f64);
 
 
@@ -36,6 +41,7 @@ impl ProcessingValueConversion for MasterVolume {
 }
 
 
+#[derive(Debug, Clone, Copy)]
 struct MasterFrequency(f64);
 
 
@@ -58,6 +64,7 @@ impl ProcessingValueConversion for MasterFrequency {
 }
 
 
+#[derive(Debug, Clone, Copy)]
 enum ProcessingValue {
     MasterVolume(MasterVolume),
     MasterFrequency(MasterFrequency),
@@ -128,10 +135,23 @@ struct Preset {
 
 
 impl Preset {
+    fn new(name: String) -> Self {
+        let parameters = vec![
+            SyncParameter::master_volume(),
+            SyncParameter::master_frequency(),
+        ];
+
+        Self {
+            name: ArcSwap::new(Arc::new(name)),
+            parameters
+        }
+    }
+
     fn get_parameter(&self, index: usize) -> Option<&SyncParameter> {
         self.parameters.get(index)
     }
 
+    /*
     fn set_parameter_value(&self, index: usize, value: f64){
         self.parameters.get(index).map(|p| p.value.set(value));
     }
@@ -144,12 +164,27 @@ impl Preset {
     fn get_parameter_value_if_changed(&self, index: usize) -> Option<f64> {
         self.parameters.get(index).and_then(|p| p.value.get_if_changed())
     }
+    */
 }
 
 
 struct PresetBank {
     presets: [Preset; 128],
     preset_index: AtomicUsize,
+    pub parameter_change_info_processing: ParameterChangeInfo,
+    pub parameter_change_info_gui: ParameterChangeInfo,
+}
+
+
+impl Default for PresetBank {
+    fn default() -> Self {
+        Self {
+            presets: array_init(|i| Preset::new(format!("{}", i + 1))),
+            preset_index: AtomicUsize::new(0),
+            parameter_change_info_processing: ParameterChangeInfo::default(),
+            parameter_change_info_gui: ParameterChangeInfo::default(),
+        }
+    }
 }
 
 
@@ -172,6 +207,18 @@ impl PresetBank {
         }
 
         self.preset_index.store(index, Ordering::SeqCst);
+    }
+
+    pub fn get_changed_parameters_from_processing(&self) -> Option<[Option<ProcessingValue>; 64]> {
+        self.parameter_change_info_processing.get_changed_parameters(
+            &self.get_current_preset().parameters
+        )
+    }
+
+    pub fn get_changed_parameters_from_gui(&self) -> Option<[Option<ProcessingValue>; 64]> {
+        self.parameter_change_info_processing.get_changed_parameters_transient(
+            &self.get_current_preset().parameters
+        )
     }
 }
 
