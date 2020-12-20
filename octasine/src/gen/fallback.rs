@@ -3,9 +3,8 @@
 use fastrand::Rng;
 use vst::buffer::AudioBuffer;
 
-use vst2_helpers::approximations::*;
-
 use crate::OctaSine;
+use crate::approximations::*;
 use crate::common::*;
 use crate::constants::*;
 use crate::voices::*;

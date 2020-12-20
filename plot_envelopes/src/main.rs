@@ -2,7 +2,7 @@ use plotlib::function::*;
 use plotlib::view::ContinuousView;
 use plotlib::page::Page;
 
-use vst2_helpers::approximations::Log10Table;
+use octasine::approximations::Log10Table;
 use octasine::voices::VoiceOperatorVolumeEnvelope;
 
 
