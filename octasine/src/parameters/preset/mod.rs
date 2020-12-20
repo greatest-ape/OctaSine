@@ -120,7 +120,13 @@ impl PresetParameter {
             value: AtomicPositiveDouble::new(value),
             name: format!("Op. {} volume", index + 1),
             unit_from_value: |_| "".to_string(),
-            value_from_text: |v| None,
+            value_from_text: |v| {
+                v.parse::<f64>()
+                    .map(|v| {
+                        OperatorVolume(v.min(2.0).max(0.0)).to_sync()
+                    })
+                    .ok()
+            },
             to_processing: |v| ProcessingValue::OperatorVolume(
                 OperatorVolume::from_sync(v)
             ),
