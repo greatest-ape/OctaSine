@@ -1542,7 +1542,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "octasine_vst"
+name = "octasine_vst2_plugin"
 version = "0.1.0"
 dependencies = [
  "octasine",

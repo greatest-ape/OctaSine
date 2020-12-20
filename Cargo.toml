@@ -2,7 +2,7 @@
 
 members = [ 
     "octasine",
-    "octasine_vst",
+    "octasine_vst2_plugin",
     "plot_envelopes",
     "run_gui",
 ]

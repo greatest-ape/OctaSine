@@ -1,5 +1,5 @@
 [package]
-name = "octasine_vst"
+name = "octasine_vst2_plugin"
 version = "0.1.0"
 authors = ["Joakim Frostegård <joakim.frostegard@gmail.com>"]
 edition = "2018"
@@ -11,9 +11,7 @@ crate-type = ["cdylib"]
 
 [dependencies]
 vst = "0.2"
-
-[dependencies.octasine]
-path = "../octasine"
+octasine = { path = "../octasine" }
 
 [features]
 simd = ["octasine/simd"]
