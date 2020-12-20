@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use iced_baseview::{settings, Parent, Runner, Settings, WindowScalePolicy};
-use octasine::{GuiSyncHandle, OctaSinePresetBank, built_in_preset_bank};
+use octasine::{GuiSyncHandle, OctaSinePresetBank};
 use octasine::constants::PLUGIN_NAME;
 use octasine::gui::{GUI_WIDTH, GUI_HEIGHT};
 use octasine::gui::interface::OctaSineIcedApplication;
@@ -14,11 +14,23 @@ struct SyncState {
 
 
 impl GuiSyncHandle for SyncState {
-    fn get_presets(&self) -> &OctaSinePresetBank {
+    fn get_bank(&self) -> &OctaSinePresetBank {
         &self.presets
     }
-
-    fn update_host_display(&self) {
+    fn set_parameter(&self, index: usize, value: f64){
+        self.presets.set_parameter_from_gui(index, value);
+    }
+    fn get_parameter(&self, index: usize) -> f64 {
+        self.presets.get_current_preset()
+            .get_parameter_value(index)
+            .unwrap() // FIXME: unwrap
+    }
+    fn format_parameter_value(&self, index: usize, value: f64) -> String {
+        self.presets.get_current_preset()
+            .format_parameter_value(index, value)
+            .unwrap() // FIXME: unwrap
+    }
+    fn update_host_display(&self){
 
     }
 }
@@ -33,16 +45,16 @@ fn main(){
     ).unwrap();
 
     let sync_state = Arc::new(SyncState {
-        presets: built_in_preset_bank(),
+        presets: OctaSinePresetBank::default(),
     });
 
     // Set envelope data for easier testing
-    sync_state.presets.set_parameter_value_float_from_gui(10, 1.0 / 16.0);
-    sync_state.presets.set_parameter_value_float_from_gui(12, 1.0 / 64.0);
-    sync_state.presets.set_parameter_value_float_from_gui(13, 0.7);
+    GuiSyncHandle::set_parameter(&sync_state, 10, 1.0 / 16.0);
+    GuiSyncHandle::set_parameter(&sync_state, 12, 1.0 / 64.0);
+    GuiSyncHandle::set_parameter(&sync_state, 13, 0.7);
 
     // Operator 4 additive
-    sync_state.presets.set_parameter_value_float_from_gui(47, 0.7);
+    GuiSyncHandle::set_parameter(&sync_state, 47, 0.7);
 
     let settings = Settings {
         window: settings::Window {

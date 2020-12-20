@@ -55,6 +55,13 @@ pub struct ProcessingState {
 }
 
 
+/// Thread-safe state used for parameter and preset calls
+pub struct SyncOnlyState {
+    pub host: HostCallback,
+    pub presets: OctaSinePresetBank,
+}
+
+
 /// Trait passed to GUI code for encapsulation
 pub trait GuiSyncHandle: Send + Sync + 'static {
     fn get_bank(&self) -> &OctaSinePresetBank;
@@ -70,15 +77,7 @@ impl GuiSyncHandle for SyncOnlyState {
         &self.presets
     }
     fn set_parameter(&self, index: usize, value: f64){
-        let opt_parameter = self.presets.get_current_preset()
-            .get_parameter(index);
-
-        if let Some(parameter) = opt_parameter {
-            parameter.value.set(value.min(1.0).max(0.0));
-
-            self.presets.parameter_change_info_processing
-                .mark_as_changed(index);
-        }
+        self.presets.set_parameter_from_gui(index, value);
     }
     fn get_parameter(&self, index: usize) -> f64 {
         self.presets.get_current_preset()
@@ -112,13 +111,6 @@ impl <H: GuiSyncHandle>GuiSyncHandle for Arc<H> {
     fn update_host_display(&self){
         Deref::deref(self).update_host_display()
     }
-}
-
-
-/// Thread-safe state used for parameter and preset calls
-pub struct SyncOnlyState {
-    pub host: HostCallback,
-    pub presets: OctaSinePresetBank,
 }
 
 
@@ -330,40 +322,14 @@ impl vst::plugin::PluginParameters for SyncOnlyState {
 
     /// Set the value of parameter at `index`. `value` is between 0.0 and 1.0.
     fn set_parameter(&self, index: i32, value: f32) {
-        let index = index as usize;
-
-        let opt_parameter = self.presets
-            .get_current_preset()
-            .get_parameter(index);
-
-        if let Some(parameter) = opt_parameter {
-            parameter.value.set(value as f64);
-
-            self.presets.parameter_change_info_processing.mark_as_changed(index);
-            self.presets.parameter_change_info_gui.mark_as_changed(index);
-        }
+        self.presets.set_parameter_from_host(index as usize, value as f64);
     }
 
     /// Use String as input for parameter value. Used by host to provide an editable field to
     /// adjust a parameter value. E.g. "100" may be interpreted as 100hz for parameter. Returns if
     /// the input string was used.
     fn string_to_parameter(&self, index: i32, text: String) -> bool {
-        let index = index as usize;
-
-        let opt_parameter = self.presets
-            .get_current_preset()
-            .get_parameter(index);
-
-        if let Some(parameter) = opt_parameter {
-            if parameter.set_from_text(text){
-                self.presets.parameter_change_info_processing.mark_as_changed(index);
-                self.presets.parameter_change_info_gui.mark_as_changed(index);
-
-                return true;
-            }
-        }
-
-        false
+        self.presets.set_parameter_text_from_host(index as usize, text)
     }
 
     /// Return whether parameter at `index` can be automated.

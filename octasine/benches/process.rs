@@ -5,7 +5,7 @@ use vst::plugin::Plugin;
 use vst::plugin::HostCallback;
 use vst::plugin::PluginParameters;
 
-use octasine::*;
+use octasine::OctaSine;
 
 
 /// Benchmark OctaSine process functions
