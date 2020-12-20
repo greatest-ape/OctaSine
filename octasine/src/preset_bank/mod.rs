@@ -3,12 +3,36 @@ use std::sync::{Arc, atomic::{AtomicUsize, Ordering}};
 use arc_swap::ArcSwap;
 use array_init::array_init;
 
+use vst2_helpers::utils::atomic_double::AtomicPositiveDouble;
+
+use crate::parameters::processing::values::ProcessingValue;
+
 mod change_info;
-pub mod values;
-mod parameters;
 
 use change_info::ParameterChangeInfo;
-use parameters::*;
+
+
+pub struct PresetParameter {
+    pub value: AtomicPositiveDouble,
+    pub name: String,
+    pub unit_from_value: fn(f64) -> String,
+    pub value_from_text: fn(String) -> Option<f64>,
+    pub to_processing: fn(f64) -> ProcessingValue,
+    pub format: fn(f64) -> String,
+}
+
+
+impl PresetParameter {
+    pub fn set_from_text(&self, text: String) -> bool {
+        if let Some(value) = (self.value_from_text)(text){
+            self.value.set(value);
+
+            true
+        } else {
+            false
+        }
+    }
+}
 
 
 struct Preset {

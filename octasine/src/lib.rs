@@ -7,9 +7,8 @@ pub mod constants;
 pub mod gen;
 pub mod gui;
 pub mod voices;
-pub mod processing_parameters;
-// pub mod preset_parameters;
-pub mod presets;
+pub mod parameters;
+pub mod preset_bank;
 
 use std::sync::Arc;
 use std::ops::Deref;
@@ -31,11 +30,11 @@ use crate::common::*;
 use crate::constants::*;
 use crate::gui::Gui;
 use crate::voices::*;
-use crate::processing_parameters::*;
+use crate::parameters::processing::*;
 // use crate::preset_parameters::*;
 
 
-pub type OctaSinePresetBank = presets::PresetBank;
+pub type OctaSinePresetBank = preset_bank::PresetBank;
 
 
 pub fn built_in_preset_bank<P>() -> PresetBank<P> where P: PresetParameters {
@@ -183,7 +182,7 @@ impl Plugin for OctaSine {
 
         let sync_only = Arc::new(SyncOnlyState {
             host,
-            presets: presets::PresetBank::default(), // built_in_preset_bank()
+            presets: OctaSinePresetBank::default(), // built_in_preset_bank()
         });
 
         let editor = Gui::new(sync_only.clone());
