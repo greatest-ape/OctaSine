@@ -23,6 +23,11 @@ macro_rules! impl_envelope_duration_value_conversion {
             fn format_sync(value: f64) -> String {
                 Self::from_sync(value).format()
             }
+            fn from_text(text: String) -> Option<Self> {
+                text.parse::<f64>()
+                    .map(|v| Self(v.max(ENVELOPE_MAX_DURATION).max(ENVELOPE_MAX_DURATION)))
+                    .ok()
+            }
         }
     };
 }
@@ -43,17 +48,23 @@ macro_rules! impl_identity_value_conversion {
             fn format_sync(value: f64) -> String {
                 Self::from_sync(value).format()
             }
+            fn from_text(text: String) -> Option<Self> {
+                text.parse::<f64>().map(|v| Self(v)).ok()
+            }
         }
     };
 }
 
 
 
-pub trait ProcessingValueConversion {
+pub trait ProcessingValueConversion: Sized {
     fn from_sync(value: f64) -> Self;
     fn to_sync(self) -> f64;
     fn format(self) -> String;
     fn format_sync(value: f64) -> String;
+    fn from_text(_text: String) -> Option<Self> {
+        None
+    }
 }
 
 
@@ -165,6 +176,11 @@ impl ProcessingValueConversion for OperatorVolume {
     fn format_sync(value: f64) -> String {
         Self::from_sync(value).format()
     }
+    fn from_text(text: String) -> Option<Self> {
+        text.parse::<f64>()
+            .map(|v| Self(v.max(0.0).min(2.0)))
+            .ok()
+    }
 }
 
 
@@ -218,6 +234,11 @@ impl ProcessingValueConversion for OperatorFrequencyRatio {
     }
     fn format_sync(value: f64) -> String {
         Self::from_sync(value).format()
+    }
+    fn from_text(text: String) -> Option<Self> {
+        text.parse::<f64>().ok().map(|value|
+            Self(round_to_step(&OPERATOR_RATIO_STEPS[..], value))
+        )
     }
 }
 
@@ -364,6 +385,17 @@ impl ProcessingValueConversion for OperatorWaveType {
     fn format_sync(value: f64) -> String {
         Self::from_sync(value).format()
     }
+    fn from_text(text: String) -> Option<Self> {
+        let value = text.to_lowercase();
+
+        if value.contains("sin"){
+            Some(OperatorWaveType(WaveType::Sine))
+        } else if value.contains("noise") {
+            Some(OperatorWaveType(WaveType::WhiteNoise))
+        } else {
+            None
+        }
+    }
 }
 
 
@@ -501,6 +533,15 @@ impl ProcessingValueConversion for OperatorModulationTarget2 {
     fn format_sync(value: f64) -> String {
         Self::from_sync(value).format()
     }
+    fn from_text(text: String) -> Option<Self> {
+        if let Ok(value) = text.parse::<usize>(){
+            if value == 1 || value == 2 {
+                return Some(Self(value - 1));
+            }
+        }
+
+        None
+    }
 }
 
 
@@ -528,5 +569,14 @@ impl ProcessingValueConversion for OperatorModulationTarget3 {
     }
     fn format_sync(value: f64) -> String {
         Self::from_sync(value).format()
+    }
+    fn from_text(text: String) -> Option<Self> {
+        if let Ok(value) = text.parse::<usize>(){
+            if value == 1 || value == 2 || value == 3 {
+                return Some(Self(value - 1));
+            }
+        }
+
+        None
     }
 }
