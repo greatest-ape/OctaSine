@@ -29,14 +29,12 @@ use constants::*;
 use gui::Gui;
 use voices::*;
 use parameters::processing::*;
+use preset_bank::PresetBank;
 
 
-pub type OctaSinePresetBank = preset_bank::PresetBank;
-
-
-// pub fn built_in_preset_bank<P>() -> PresetBank<P> where P: PresetParameters {
-//     PresetBank::new_from_bytes(include_bytes!("../presets/preset-bank.json"))
-// }
+pub fn built_in_preset_bank() -> PresetBank {
+    PresetBank::new_from_bytes(include_bytes!("../presets/preset-bank.json"))
+}
 
 
 /// State used for processing
@@ -54,13 +52,13 @@ pub struct ProcessingState {
 /// Thread-safe state used for parameter and preset calls
 pub struct SyncOnlyState {
     pub host: HostCallback,
-    pub presets: OctaSinePresetBank,
+    pub presets: PresetBank,
 }
 
 
 /// Trait passed to GUI code for encapsulation
 pub trait GuiSyncHandle: Send + Sync + 'static {
-    fn get_bank(&self) -> &OctaSinePresetBank;
+    fn get_bank(&self) -> &PresetBank;
     fn set_parameter(&self, index: usize, value: f64);
     fn get_parameter(&self, index: usize) -> f64;
     fn format_parameter_value(&self, index: usize, value: f64) -> String;
@@ -69,7 +67,7 @@ pub trait GuiSyncHandle: Send + Sync + 'static {
 
 
 impl GuiSyncHandle for SyncOnlyState {
-    fn get_bank(&self) -> &OctaSinePresetBank {
+    fn get_bank(&self) -> &PresetBank {
         &self.presets
     }
     fn set_parameter(&self, index: usize, value: f64){
@@ -88,7 +86,7 @@ impl GuiSyncHandle for SyncOnlyState {
 
 
 impl <H: GuiSyncHandle>GuiSyncHandle for Arc<H> {
-    fn get_bank(&self) -> &OctaSinePresetBank {
+    fn get_bank(&self) -> &PresetBank {
         Deref::deref(self).get_bank()
     }
     fn set_parameter(&self, index: usize, value: f64){
@@ -179,7 +177,7 @@ impl Plugin for OctaSine {
 
         let sync_only = Arc::new(SyncOnlyState {
             host,
-            presets: OctaSinePresetBank::new(parameters::preset::create_parameters), // built_in_preset_bank()
+            presets: built_in_preset_bank()
         });
 
         let editor = Gui::new(sync_only.clone());

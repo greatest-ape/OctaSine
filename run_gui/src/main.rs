@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use iced_baseview::{settings, Parent, Runner, Settings, WindowScalePolicy};
-use octasine::{GuiSyncHandle, OctaSinePresetBank};
+use octasine::{GuiSyncHandle, built_in_preset_bank, preset_bank::PresetBank};
 use octasine::constants::PLUGIN_NAME;
 use octasine::gui::{GUI_WIDTH, GUI_HEIGHT};
 use octasine::gui::interface::OctaSineIcedApplication;
@@ -9,12 +9,12 @@ use simplelog::{ConfigBuilder, SimpleLogger, LevelFilter};
 
 
 struct SyncState {
-    pub presets: OctaSinePresetBank,
+    pub presets: PresetBank,
 }
 
 
 impl GuiSyncHandle for SyncState {
-    fn get_bank(&self) -> &OctaSinePresetBank {
+    fn get_bank(&self) -> &PresetBank {
         &self.presets
     }
     fn set_parameter(&self, index: usize, value: f64){
@@ -43,7 +43,7 @@ fn main(){
     ).unwrap();
 
     let sync_state = Arc::new(SyncState {
-        presets: OctaSinePresetBank::new(octasine::parameters::preset::create_parameters),
+        presets: built_in_preset_bank(),
     });
 
     // Set envelope data for easier testing
