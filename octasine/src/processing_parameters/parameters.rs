@@ -118,31 +118,26 @@ create_simple_processing_parameter!(ProcessingParameterOperatorWaveType, WaveTyp
 // Attack duration
 
 create_simple_processing_parameter!(ProcessingParameterOperatorAttackDuration, f64, DEFAULT_ENVELOPE_ATTACK_DURATION);
-impl_envelope_duration_value_conversion!(ProcessingParameterOperatorAttackDuration);
 
 
 // Attack volume
 
 create_simple_processing_parameter!(ProcessingParameterOperatorAttackVolume, f64, DEFAULT_ENVELOPE_ATTACK_VOLUME);
-impl_parameter_value_conversion_identity!(ProcessingParameterOperatorAttackVolume);
 
 
 // Decay duration
 
 create_simple_processing_parameter!(ProcessingParameterOperatorDecayDuration, f64, DEFAULT_ENVELOPE_DECAY_DURATION);
-impl_envelope_duration_value_conversion!(ProcessingParameterOperatorDecayDuration);
 
 
 // Decay volume
 
 create_simple_processing_parameter!(ProcessingParameterOperatorDecayVolume, f64, DEFAULT_ENVELOPE_DECAY_VOLUME);
-impl_parameter_value_conversion_identity!(ProcessingParameterOperatorDecayVolume);
 
 
 // Release duration
 
 create_simple_processing_parameter!(ProcessingParameterOperatorReleaseDuration, f64, DEFAULT_ENVELOPE_RELEASE_DURATION);
-impl_envelope_duration_value_conversion!(ProcessingParameterOperatorReleaseDuration);
 
 
 // Modulation target

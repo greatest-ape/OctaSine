@@ -3,7 +3,7 @@
 ## Simplify presets
 
 * In function that sets processing parameter from index and sync value, embed
-  MasterVolume etc. in processing parameter instead of writing each time.
+  MasterVolume etc. in ProcessingParameter trait instead of writing each time.
 
 ## GUI
 

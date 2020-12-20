@@ -28,6 +28,26 @@ macro_rules! impl_envelope_duration_value_conversion {
 }
 
 
+macro_rules! impl_identity_value_conversion {
+    ($struct_name:ident) => {
+        impl ProcessingValueConversion for $struct_name {
+            fn from_sync(value: f64) -> Self {
+                Self(value)
+            }
+            fn to_sync(self) -> f64 {
+                self.0
+            }
+            fn format(self) -> String {
+                format!("{:.02}", self.0)
+            }
+            fn format_sync(value: f64) -> String {
+                Self::from_sync(value).format()
+            }
+        }
+    };
+}
+
+
 
 pub trait ProcessingValueConversion {
     fn from_sync(value: f64) -> Self;
@@ -50,7 +70,9 @@ pub enum ProcessingValue {
     OperatorModulationIndex(OperatorModulationIndex),
     OperatorWaveType(OperatorWaveType),
     OperatorAttackDuration(OperatorAttackDuration),
+    OperatorAttackVolume(OperatorAttackVolume),
     OperatorDecayDuration(OperatorDecayDuration),
+    OperatorDecayVolume(OperatorDecayVolume),
     OperatorReleaseDuration(OperatorReleaseDuration),
 }
 
@@ -385,3 +407,32 @@ impl Default for OperatorReleaseDuration {
 
 
 impl_envelope_duration_value_conversion!(OperatorReleaseDuration);
+
+
+#[derive(Debug, Clone, Copy)]
+pub struct OperatorAttackVolume(pub f64);
+
+
+impl Default for OperatorAttackVolume {
+    fn default() -> Self {
+        Self(DEFAULT_ENVELOPE_ATTACK_VOLUME)
+    }
+}
+
+
+impl_identity_value_conversion!(OperatorAttackVolume);
+
+
+
+#[derive(Debug, Clone, Copy)]
+pub struct OperatorDecayVolume(pub f64);
+
+
+impl Default for OperatorDecayVolume {
+    fn default() -> Self {
+        Self(DEFAULT_ENVELOPE_DECAY_VOLUME)
+    }
+}
+
+
+impl_identity_value_conversion!(OperatorDecayVolume);
