@@ -337,31 +337,32 @@ impl vst::plugin::PluginParameters for SyncOnlyState {
             .unwrap_or_else(|| "".to_string())
     }
 
-    /*
     /// If `preset_chunks` is set to true in plugin info, this should return the raw chunk data for
     /// the current preset.
     fn get_preset_data(&self) -> Vec<u8> {
-        self.export_current_preset_bytes()
+        self.presets.export_current_preset_bytes()
     }
 
     /// If `preset_chunks` is set to true in plugin info, this should return the raw chunk data for
     /// the current plugin bank.
     fn get_bank_data(&self) -> Vec<u8> {
-        self.export_bank_as_bytes()
+        self.presets.export_bank_as_bytes()
     }
 
     /// If `preset_chunks` is set to true in plugin info, this should load a preset from the given
     /// chunk data.
     fn load_preset_data(&self, data: &[u8]) {
-        self.import_bytes_into_current_preset(data);
+        self.presets.import_bytes_into_current_preset(data);
     }
 
     /// If `preset_chunks` is set to true in plugin info, this should load a preset bank from the
     /// given chunk data.
     fn load_bank_data(&self, data: &[u8]) {
-        self.import_bank_from_bytes(data);
+        if let Err(err) = self.presets.import_bank_from_bytes(data){
+            #[cfg(feature = "logging")]
+            ::log::error!("Couldn't load bank data: {}", err)
+        }
     }
-    */
 }
 
 
@@ -373,7 +374,7 @@ macro_rules! crate_version {
 }
 
 
-pub fn crate_version_to_vst_format(crate_version: String) -> i32 {
+fn crate_version_to_vst_format(crate_version: String) -> i32 {
     format!("{:0<4}", crate_version.replace(".", ""))
         .parse()
         .expect("convert crate version to i32")
