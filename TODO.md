@@ -2,7 +2,6 @@
 
 ## Simplify presets
 
-* Uncomment and fix preset parameter tests
 * Rename PresetParameter to SyncParameter?
 
 ## GUI

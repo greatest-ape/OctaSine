@@ -37,6 +37,9 @@ impl PresetParameter {
             false
         }
     }
+    pub fn get_value_text(&self) -> String {
+        (self.format)(self.value.get())
+    }
 }
 
 
@@ -312,7 +315,11 @@ impl PresetBank {
 
 
 #[cfg(test)]
-pub mod test {
+pub mod tests {
+    use assert_approx_eq::assert_approx_eq;
+
+    use crate::built_in_preset_bank;
+
     use super::*;
 
     #[test]
@@ -369,6 +376,51 @@ pub mod test {
                         parameter_2.value.get(),
                     );
                 }
+            }
+        }
+    }
+ 
+    #[test]
+    fn test_load_built_in_presets(){
+        let preset_bank = built_in_preset_bank();
+
+        // Hopefully prevent compiler from optimizing away code above (if it
+        // actually ever did.)
+        println!("Dummy info: {:?}", preset_bank.get_parameter_value(0));
+    }
+
+    /// Previous format used plain floats for value_float, so we need to check
+    /// that (almost) the same values are deserialized no matter the format
+    #[test]
+    fn test_compare_preset_format_versions(){
+        use assert_approx_eq::assert_approx_eq;
+
+        let bank_1: PresetBank = PresetBank::new_from_bytes(
+            include_bytes!("../../presets/test-preset-bank-format-1.json")
+        );
+        let bank_2: PresetBank = PresetBank::new_from_bytes(
+            include_bytes!("../../presets/test-preset-bank-format-2.json")
+        );
+
+        assert_eq!(bank_1.num_presets(), bank_2.num_presets());
+
+        for preset_index in 0..bank_1.num_presets(){
+            bank_1.set_preset_index(preset_index);
+            bank_2.set_preset_index(preset_index);
+
+            assert_eq!(
+                bank_1.num_parameters(),
+                bank_2.num_parameters()
+            );
+
+            for parameter_index in 0..bank_1.num_parameters(){
+                assert_approx_eq!(
+                    bank_1.get_parameter_value(parameter_index).unwrap(),
+                    bank_2.get_parameter_value(parameter_index).unwrap(),
+                    // Accept precision loss (probably due to
+                    // JSON/javascript shenanigans)
+                    0.0000000000000002
+                );
             }
         }
     }
