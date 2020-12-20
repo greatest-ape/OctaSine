@@ -190,7 +190,11 @@ impl PresetParameter {
             value: AtomicPositiveDouble::new(value),
             name: format!("Op. {} freq. free", index + 1),
             unit_from_sync: |_| "".to_string(),
-            sync_from_text: |v| None, // FIXME: simple parameter parsing
+            sync_from_text: |v| {
+                v.parse::<f64>()
+                    .map(|v| OperatorFrequencyFree(v).to_sync()) // FIXME: clamp value first
+                    .ok()
+            },
             sync_to_processing: |v| ProcessingValue::OperatorFrequencyFree(
                 OperatorFrequencyFree::from_sync(v)
             ),
