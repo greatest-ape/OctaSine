@@ -1,10 +1,10 @@
 use array_init::array_init;
 
-use vst2_helpers::processing_parameters::*;
-
+pub mod interpolatable_value;
 pub mod values;
 pub mod parameters;
 pub use parameters::*;
+pub mod utils;
 
 use crate::constants::*;
 

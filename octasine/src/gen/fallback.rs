@@ -4,7 +4,6 @@ use fastrand::Rng;
 use vst::buffer::AudioBuffer;
 
 use vst2_helpers::approximations::*;
-use vst2_helpers::processing_parameters::ProcessingParameter;
 
 use crate::OctaSine;
 use crate::common::*;

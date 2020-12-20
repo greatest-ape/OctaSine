@@ -3,24 +3,8 @@
 #![allow(clippy::len_without_is_empty)]
 
 pub mod approximations;
-pub mod processing_parameters;
-pub mod presets;
-pub mod utils;
+// pub mod presets;
 
-
-#[macro_export]
-macro_rules! crate_version {
-    () => {
-        env!("CARGO_PKG_VERSION").to_string()
-    };
-}
-
-
-pub fn crate_version_to_vst_format(crate_version: String) -> i32 {
-    format!("{:0<4}", crate_version.replace(".", ""))
-        .parse()
-        .expect("convert crate version to i32")
-}
 
 
 /// Implement VST PluginParameters on a struct by giving the field name to
@@ -210,94 +194,4 @@ macro_rules! impl_parameter_value_conversion_identity {
             }
         }
     };
-}
-
-
-#[macro_export]
-macro_rules! create_interpolatable_processing_parameter {
-    ($name:ident, $value_struct:ident, $default:ident, $extra_data:ident) => {
-        #[derive(Debug, Clone)]
-        pub struct $name {
-            value: InterpolatableProcessingValue,
-        }
-
-        impl Default for $name {
-            fn default() -> Self {
-                Self {
-                    value: InterpolatableProcessingValue::new($default)
-                }
-            }
-        }
-
-        impl ProcessingParameter for $name {
-            type Value = f64;
-            type ExtraData = $extra_data;
-
-            fn get_value(&mut self, extra_data: Self::ExtraData) -> Self::Value {
-                self.value.get_value(extra_data, &mut |_| ())
-            }
-            fn get_target_value(&self) -> Self::Value {
-                self.value.target_value
-            }
-            fn set_value(&mut self, value: Self::Value) {
-                self.value.set_value(value)
-            }
-            fn set_from_sync(&mut self, value: f64){
-                self.set_value($value_struct::from_sync(value).0)
-            }
-        }
-    }
-}
-
-
-#[macro_export]
-macro_rules! create_simple_processing_parameter {
-    ($name:ident, $value_struct:ident, $type:ty, $default:ident) => {
-        #[derive(Debug, Clone)]
-        pub struct $name {
-            pub value: $type
-        }
-
-        impl Default for $name {
-            fn default() -> Self {
-                Self {
-                    value: $default
-                }
-            }
-        }
-
-        impl ProcessingParameter for $name {
-            type Value = $type;
-            type ExtraData = ();
-
-            fn get_value(&mut self, _: Self::ExtraData) -> Self::Value {
-                self.value
-            }
-            fn get_target_value(&self) -> Self::Value {
-                self.value
-            }
-            fn set_value(&mut self, value: Self::Value){
-                self.value = value;
-            }
-            fn set_from_sync(&mut self, value: f64){
-                self.set_value($value_struct::from_sync(value).0)
-            }
-        }
-    };
-}
-
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[allow(clippy::zero_prefixed_literal)]
-    #[test]
-    fn test_crate_version_to_vst_format(){
-        assert_eq!(crate_version_to_vst_format("1".to_string()), 1000);
-        assert_eq!(crate_version_to_vst_format("0.1".to_string()), 0100);
-        assert_eq!(crate_version_to_vst_format("0.0.2".to_string()), 0020);
-        assert_eq!(crate_version_to_vst_format("0.5.2".to_string()), 0520);
-        assert_eq!(crate_version_to_vst_format("1.0.1".to_string()), 1010);
-    }
 }

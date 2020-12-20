@@ -1534,6 +1534,8 @@ dependencies = [
  "log-panics",
  "quickcheck",
  "raw-window-handle",
+ "serde",
+ "serde_json",
  "simdeez",
  "simplelog",
  "vst",

@@ -1,15 +1,20 @@
+mod change_info;
+mod import_export;
+mod serde_utils;
+pub mod utils;
+
 use std::sync::{Arc, atomic::{AtomicUsize, Ordering}};
 
 use arc_swap::ArcSwap;
 use array_init::array_init;
 
-use vst2_helpers::utils::atomic_double::AtomicPositiveDouble;
-
 use crate::parameters::processing::values::ProcessingValue;
-
-mod change_info;
+use crate::parameters::preset::create_parameters;
 
 use change_info::ParameterChangeInfo;
+use utils::atomic_double::AtomicPositiveDouble;
+use import_export::*;
+use serde_utils::*;
 
 
 pub struct PresetParameter {
@@ -48,6 +53,46 @@ impl Preset {
             parameters
         }
     }
+
+    fn get_name(&self) -> String {
+        (*self.name.load_full()).clone()
+    }
+
+    fn set_name(&self, name: String){
+        self.name.store(Arc::new(name));
+    }
+
+    fn import_bytes(&self, bytes: &[u8]) -> bool {
+        let res_serde_preset: Result<SerdePreset, _> = from_bytes(bytes);
+
+        if let Ok(serde_preset) = res_serde_preset {
+            self.import_serde_preset(&serde_preset);
+
+            true
+        } else {
+            false
+        }
+    }
+
+    fn import_serde_preset(&self, serde_preset: &SerdePreset){
+        for index in 0..self.parameters.len() {
+            if let Some(import_parameter) = serde_preset.parameters.get(index){
+                if let Some(parameter) = self.parameters.get(index){
+                    parameter.value.set(
+                        import_parameter.value_float.as_f64()
+                    );
+                }
+            }
+        }
+    }
+
+    fn export_bytes(&self) -> Vec<u8> {
+        to_bytes(&self.export_serde_preset())
+    }
+
+    fn export_serde_preset(&self) -> SerdePreset {
+        SerdePreset::new(self)
+    }
 }
 
 
@@ -56,6 +101,13 @@ pub struct PresetBank {
     preset_index: AtomicUsize,
     parameter_change_info_processing: ParameterChangeInfo,
     parameter_change_info_gui: ParameterChangeInfo,
+}
+
+
+impl Default for PresetBank {
+    fn default() -> Self {
+        Self::new(create_parameters)
+    }
 }
 
 
@@ -77,6 +129,11 @@ impl PresetBank {
 
     fn get_current_preset(&self) -> &Preset {
         &self.presets[self.get_preset_index()]
+    }
+
+    fn mark_parameters_as_changed(&self){
+        self.parameter_change_info_processing.mark_all_as_changed();
+        self.parameter_change_info_gui.mark_all_as_changed();
     }
 
     // Number of presets / parameters
@@ -195,5 +252,124 @@ impl PresetBank {
         }
 
         false
+    }
+
+    // Import / export
+
+    /// Import bytes into current bank, set sync parameters
+    pub fn import_bank_from_bytes(&self, bytes: &[u8]) -> Result<(), impl ::std::error::Error> {
+        let res_serde_preset_bank: Result<SerdePresetBank, _> =
+            from_bytes(bytes);
+
+        match res_serde_preset_bank {
+            Ok(serde_preset_bank) => {
+                let default_preset = Preset::new("1".to_string(), create_parameters());
+                let default_serde_preset = default_preset.export_serde_preset();
+
+                for (index, preset) in self.presets.iter().enumerate(){
+                    if let Some(serde_preset) = serde_preset_bank.presets.get(index){
+                        preset.import_serde_preset(serde_preset);
+                    } else {
+                        preset.import_serde_preset(&default_serde_preset);
+                        preset.set_name(format!("{}", index + 1));
+                    }
+                }
+
+                self.set_preset_index(0);
+                self.mark_parameters_as_changed();
+
+                Ok(())
+            },
+            Err(err) => {
+                Err(err)
+            }
+        }
+    }
+
+    pub fn import_bytes_into_current_preset(&self, bytes: &[u8]){
+        if self.get_current_preset().import_bytes(bytes){
+            self.mark_parameters_as_changed();
+        }
+    }
+
+    pub fn export_bank_as_bytes(&self) -> Vec<u8> {
+        to_bytes(&SerdePresetBank::new(self))
+    }
+
+    pub fn export_current_preset_bytes(&self) -> Vec<u8> {
+        self.get_current_preset().export_bytes()
+    }
+    
+    pub fn new_from_bytes(bytes: &[u8]) -> Self {
+        let preset_bank = Self::default();
+
+        preset_bank.import_bank_from_bytes(bytes)
+            .expect("import bank from bytes");
+
+        preset_bank
+    }
+}
+
+
+#[cfg(test)]
+pub mod test {
+    use super::*;
+
+    #[test]
+    #[allow(clippy::float_cmp)]
+    /// Test importing and exporting, as well as some related functionality
+    /// 
+    /// Use this in other crates with your own preset parameter type!
+    pub fn test_export_import() {
+        for _ in 0..20 {
+            let bank_1 = PresetBank::default();
+
+            for preset_index in 0..bank_1.num_presets(){
+                bank_1.set_preset_index(preset_index);
+
+                assert_eq!(bank_1.get_preset_index(), preset_index);
+
+                let current_preset = bank_1.get_current_preset();
+
+                for parameter_index in 0..current_preset.parameters.len(){
+                    let parameter = current_preset.parameters
+                        .get(parameter_index)
+                        .unwrap();
+                    
+                    let value = fastrand::f64();
+
+                    parameter.value.set(value);
+
+                    assert_eq!(parameter.value.get(), value);
+                }
+            }
+
+            let bank_2 = PresetBank::default();
+
+            bank_2.import_bank_from_bytes(&bank_1.export_bank_as_bytes()).unwrap();
+
+            for preset_index in 0..bank_1.num_presets(){
+                bank_1.set_preset_index(preset_index);
+                bank_2.set_preset_index(preset_index);
+
+                let current_preset_1 = bank_1.get_current_preset();
+                let current_preset_2 = bank_2.get_current_preset();
+
+                for parameter_index in 0..current_preset_1.parameters.len(){
+                    let parameter_1 = current_preset_1.parameters
+                        .get(parameter_index)
+                        .unwrap();
+
+                    let parameter_2 = current_preset_2.parameters
+                        .get(parameter_index).
+                        unwrap();
+
+                    assert_eq!(
+                        parameter_1.value.get(),
+                        parameter_2.value.get(),
+                    );
+                }
+            }
+        }
     }
 }
