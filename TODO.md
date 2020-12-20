@@ -2,8 +2,10 @@
 
 ## Simplify presets
 
-* Run tests
 * Test in DAW
+  * Master volume in dB
+  * Master frequency in Hz /KHz
+  * Envelopes don't update in GUI when set in host
 * Preset parameter from text: simple parsing etc
 * Move sync parameter text conversion tests to values.rs
 
