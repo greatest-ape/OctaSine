@@ -9,7 +9,7 @@ use arc_swap::ArcSwap;
 use array_init::array_init;
 
 use crate::parameters::values::ParameterValue;
-use crate::parameters::preset::create_parameters;
+use crate::parameters::sync::create_parameters;
 
 use change_info::ParameterChangeInfo;
 use atomic_double::AtomicPositiveDouble;
@@ -17,7 +17,7 @@ use import_export::*;
 use import_export_utils::*;
 
 
-pub struct PresetParameter {
+pub struct SyncParameter {
     value: AtomicPositiveDouble,
     name: String,
     unit_from_sync: fn(f64) -> String,
@@ -26,7 +26,7 @@ pub struct PresetParameter {
 }
 
 
-impl PresetParameter {
+impl SyncParameter {
     pub fn new<V: ParameterValue>(
         name: &str,
         default: V
@@ -62,12 +62,12 @@ impl PresetParameter {
 
 struct Preset {
     name: ArcSwap<String>,
-    parameters: Vec<PresetParameter>,
+    parameters: Vec<SyncParameter>,
 }
 
 
 impl Preset {
-    fn new(name: String, parameters: Vec<PresetParameter>) -> Self {
+    fn new(name: String, parameters: Vec<SyncParameter>) -> Self {
         Self {
             name: ArcSwap::new(Arc::new(name)),
             parameters
@@ -132,7 +132,7 @@ impl Default for PresetBank {
 
 
 impl PresetBank {
-    pub fn new(parameters: fn() -> Vec<PresetParameter>) -> Self {
+    pub fn new(parameters: fn() -> Vec<SyncParameter>) -> Self {
         Self {
             presets: array_init(|i| Preset::new(format!("{}", i + 1), parameters())),
             preset_index: AtomicUsize::new(0),
@@ -143,7 +143,7 @@ impl PresetBank {
 
     // Utils
 
-    fn get_parameter(&self, index: usize) -> Option<&PresetParameter> {
+    fn get_parameter(&self, index: usize) -> Option<&SyncParameter> {
         self.get_current_preset().parameters.get(index)
     }
 

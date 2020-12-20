@@ -1,82 +1,82 @@
-use crate::preset_bank::PresetParameter;
+use crate::preset_bank::SyncParameter;
 
 use super::values::*;
 
 
-pub fn create_parameters() -> Vec<PresetParameter> {
+pub fn create_parameters() -> Vec<SyncParameter> {
     vec![
-        PresetParameter::master_volume(),
-        PresetParameter::master_frequency(),
+        SyncParameter::master_volume(),
+        SyncParameter::master_frequency(),
 
         // Operator 1
-        PresetParameter::operator_volume(0),
-        PresetParameter::operator_panning(0),
-        PresetParameter::operator_wave_type(0),
-        PresetParameter::operator_modulation_index(0),
-        PresetParameter::operator_feedback(0),
-        PresetParameter::operator_frequency_ratio(0),
-        PresetParameter::operator_frequency_free(0),
-        PresetParameter::operator_frequency_fine(0),
-        PresetParameter::operator_attack_duration(0),
-        PresetParameter::operator_attack_volume(0),
-        PresetParameter::operator_decay_duration(0),
-        PresetParameter::operator_decay_volume(0),
-        PresetParameter::operator_release_duration(0),
+        SyncParameter::operator_volume(0),
+        SyncParameter::operator_panning(0),
+        SyncParameter::operator_wave_type(0),
+        SyncParameter::operator_modulation_index(0),
+        SyncParameter::operator_feedback(0),
+        SyncParameter::operator_frequency_ratio(0),
+        SyncParameter::operator_frequency_free(0),
+        SyncParameter::operator_frequency_fine(0),
+        SyncParameter::operator_attack_duration(0),
+        SyncParameter::operator_attack_volume(0),
+        SyncParameter::operator_decay_duration(0),
+        SyncParameter::operator_decay_volume(0),
+        SyncParameter::operator_release_duration(0),
 
         // Operator 2
-        PresetParameter::operator_volume(1),
-        PresetParameter::operator_panning(1),
-        PresetParameter::operator_wave_type(1),
-        PresetParameter::operator_additive(1),
-        PresetParameter::operator_modulation_index(1),
-        PresetParameter::operator_feedback(1),
-        PresetParameter::operator_frequency_ratio(1),
-        PresetParameter::operator_frequency_free(1),
-        PresetParameter::operator_frequency_fine(1),
-        PresetParameter::operator_attack_duration(1),
-        PresetParameter::operator_attack_volume(1),
-        PresetParameter::operator_decay_duration(1),
-        PresetParameter::operator_decay_volume(1),
-        PresetParameter::operator_release_duration(1),
+        SyncParameter::operator_volume(1),
+        SyncParameter::operator_panning(1),
+        SyncParameter::operator_wave_type(1),
+        SyncParameter::operator_additive(1),
+        SyncParameter::operator_modulation_index(1),
+        SyncParameter::operator_feedback(1),
+        SyncParameter::operator_frequency_ratio(1),
+        SyncParameter::operator_frequency_free(1),
+        SyncParameter::operator_frequency_fine(1),
+        SyncParameter::operator_attack_duration(1),
+        SyncParameter::operator_attack_volume(1),
+        SyncParameter::operator_decay_duration(1),
+        SyncParameter::operator_decay_volume(1),
+        SyncParameter::operator_release_duration(1),
 
         // Operator 3
-        PresetParameter::operator_volume(2),
-        PresetParameter::operator_panning(2),
-        PresetParameter::operator_wave_type(2),
-        PresetParameter::operator_additive(2),
-        PresetParameter::operator_modulation_target_2(),
-        PresetParameter::operator_modulation_index(2),
-        PresetParameter::operator_feedback(2),
-        PresetParameter::operator_frequency_ratio(2),
-        PresetParameter::operator_frequency_free(2),
-        PresetParameter::operator_frequency_fine(2),
-        PresetParameter::operator_attack_duration(2),
-        PresetParameter::operator_attack_volume(2),
-        PresetParameter::operator_decay_duration(2),
-        PresetParameter::operator_decay_volume(2),
-        PresetParameter::operator_release_duration(2),
+        SyncParameter::operator_volume(2),
+        SyncParameter::operator_panning(2),
+        SyncParameter::operator_wave_type(2),
+        SyncParameter::operator_additive(2),
+        SyncParameter::operator_modulation_target_2(),
+        SyncParameter::operator_modulation_index(2),
+        SyncParameter::operator_feedback(2),
+        SyncParameter::operator_frequency_ratio(2),
+        SyncParameter::operator_frequency_free(2),
+        SyncParameter::operator_frequency_fine(2),
+        SyncParameter::operator_attack_duration(2),
+        SyncParameter::operator_attack_volume(2),
+        SyncParameter::operator_decay_duration(2),
+        SyncParameter::operator_decay_volume(2),
+        SyncParameter::operator_release_duration(2),
 
         // Operator 4
-        PresetParameter::operator_volume(3),
-        PresetParameter::operator_panning(3),
-        PresetParameter::operator_wave_type(3),
-        PresetParameter::operator_additive(3),
-        PresetParameter::operator_modulation_target_3(),
-        PresetParameter::operator_modulation_index(3),
-        PresetParameter::operator_feedback(3),
-        PresetParameter::operator_frequency_ratio(3),
-        PresetParameter::operator_frequency_free(3),
-        PresetParameter::operator_frequency_fine(3),
-        PresetParameter::operator_attack_duration(3),
-        PresetParameter::operator_attack_volume(3),
-        PresetParameter::operator_decay_duration(3),
-        PresetParameter::operator_decay_volume(3),
-        PresetParameter::operator_release_duration(3),
+        SyncParameter::operator_volume(3),
+        SyncParameter::operator_panning(3),
+        SyncParameter::operator_wave_type(3),
+        SyncParameter::operator_additive(3),
+        SyncParameter::operator_modulation_target_3(),
+        SyncParameter::operator_modulation_index(3),
+        SyncParameter::operator_feedback(3),
+        SyncParameter::operator_frequency_ratio(3),
+        SyncParameter::operator_frequency_free(3),
+        SyncParameter::operator_frequency_fine(3),
+        SyncParameter::operator_attack_duration(3),
+        SyncParameter::operator_attack_volume(3),
+        SyncParameter::operator_decay_duration(3),
+        SyncParameter::operator_decay_volume(3),
+        SyncParameter::operator_release_duration(3),
     ]
 }
 
 
-impl PresetParameter {
+impl SyncParameter {
     pub fn master_volume() -> Self {
         Self::new(
             "Master volume",
@@ -223,7 +223,7 @@ mod tests {
 
     #[test]
     fn test_set_volume_text(){
-        let p = PresetParameter::operator_volume(3);
+        let p = SyncParameter::operator_volume(3);
 
         assert!(p.set_from_text("-1.0".to_string()));
         assert_eq!(OperatorVolume::from_sync(p.get_value()).get(), 0.0);
@@ -249,7 +249,7 @@ mod tests {
 
     #[test]
     fn test_set_output_operator_text(){
-        let p = PresetParameter::operator_modulation_target_3();
+        let p = SyncParameter::operator_modulation_target_3();
 
         assert!(!p.set_from_text("abc".to_string()));
         assert!(!p.set_from_text("0".to_string()));
@@ -268,7 +268,7 @@ mod tests {
 
     #[test]
     fn test_set_frequency_ratio_text(){
-        let p = PresetParameter::operator_frequency_ratio(3);
+        let p = SyncParameter::operator_frequency_ratio(3);
 
         assert!(p.set_from_text("0.0".to_string()));
         assert_eq!(OperatorFrequencyRatio::from_sync(p.get_value()).get(), OPERATOR_RATIO_STEPS[0]);
@@ -297,7 +297,7 @@ mod tests {
 
     #[test]
     fn test_set_frequency_free_text(){
-        let p = PresetParameter::operator_frequency_free(3);
+        let p = SyncParameter::operator_frequency_free(3);
 
         assert!(p.set_from_text("1.0".to_string()));
         assert_eq!(OperatorFrequencyFree::from_sync(p.get_value()).get(), 1.0);
@@ -323,7 +323,7 @@ mod tests {
 
     #[test]
     fn test_set_wave_type_text(){
-        let p = PresetParameter::operator_wave_type(3);
+        let p = SyncParameter::operator_wave_type(3);
 
         assert!(p.set_from_text("sine".to_string()));
         assert_eq!(OperatorWaveType::from_sync(p.get_value()).get(), WaveType::Sine);
@@ -334,7 +334,7 @@ mod tests {
 
     #[test]
     fn test_set_attack_duration_text(){
-        let p = PresetParameter::operator_attack_duration(3);
+        let p = SyncParameter::operator_attack_duration(3);
 
         assert!(p.set_from_text("0.0".to_string()));
         assert_eq!(OperatorAttackDuration::from_sync(p.get_value()).get(), ENVELOPE_MIN_DURATION);
