@@ -25,7 +25,13 @@ macro_rules! impl_envelope_duration_value_conversion {
             }
             fn from_text(text: String) -> Option<Self> {
                 text.parse::<f64>()
-                    .map(|v| Self(v.max(ENVELOPE_MAX_DURATION).max(ENVELOPE_MAX_DURATION)))
+                    .map(|v| {
+                        let v = v
+                            .min(ENVELOPE_MAX_DURATION)
+                            .max(ENVELOPE_MIN_DURATION);
+
+                        Self(v)
+                    })
                     .ok()
             }
         }
