@@ -30,8 +30,7 @@ impl WaveTypePicker {
         sync_handle: &H,
         parameter_index: usize,
     ) -> Self {
-        let value = sync_handle.get_presets()
-            .get_parameter_value_float(parameter_index);
+        let value = sync_handle.get_parameter(parameter_index);
         
         let choices = vec![WaveType::Sine, WaveType::WhiteNoise];
         let selected = map_parameter_value_to_step(&choices[..], value);

@@ -8,10 +8,11 @@ pub mod gen;
 pub mod gui;
 pub mod voices;
 pub mod processing_parameters;
-pub mod preset_parameters;
+// pub mod preset_parameters;
 pub mod presets;
 
 use std::sync::Arc;
+use std::ops::Deref;
 
 use array_init::array_init;
 use fastrand::Rng;
@@ -24,17 +25,17 @@ use vst::host::Host;
 
 use vst2_helpers::approximations::*;
 use vst2_helpers::presets::*;
-use vst2_helpers::{crate_version_to_vst_format, crate_version, impl_plugin_parameters};
+use vst2_helpers::{crate_version_to_vst_format, crate_version};
 
 use crate::common::*;
 use crate::constants::*;
 use crate::gui::Gui;
 use crate::voices::*;
 use crate::processing_parameters::*;
-use crate::preset_parameters::*;
+// use crate::preset_parameters::*;
 
 
-pub type OctaSinePresetBank = PresetBank<OctaSinePresetParameters>;
+pub type OctaSinePresetBank = presets::PresetBank;
 
 
 pub fn built_in_preset_bank<P>() -> PresetBank<P> where P: PresetParameters {
@@ -56,14 +57,38 @@ pub struct ProcessingState {
 
 /// Trait passed to GUI code for encapsulation
 pub trait GuiSyncHandle: Send + Sync + 'static {
-    fn get_presets(&self) -> &OctaSinePresetBank;
+    fn get_bank(&self) -> &OctaSinePresetBank;
+    fn set_parameter(&self, index: usize, value: f64);
+    fn get_parameter(&self, index: usize) -> f64;
+    fn format_parameter_value(&self, index: usize, value: f64) -> String;
     fn update_host_display(&self);
 }
 
 
 impl GuiSyncHandle for SyncOnlyState {
-    fn get_presets(&self) -> &OctaSinePresetBank {
+    fn get_bank(&self) -> &OctaSinePresetBank {
         &self.presets
+    }
+    fn set_parameter(&self, index: usize, value: f64){
+        let opt_parameter = self.presets.get_current_preset()
+            .get_parameter(index);
+
+        if let Some(parameter) = opt_parameter {
+            parameter.value.set(value.min(1.0).max(0.0));
+
+            self.presets.parameter_change_info_processing
+                .mark_as_changed(index);
+        }
+    }
+    fn get_parameter(&self, index: usize) -> f64 {
+        self.presets.get_current_preset()
+            .get_parameter_value(index)
+            .unwrap() // FIXME: unwrap
+    }
+    fn format_parameter_value(&self, index: usize, value: f64) -> String {
+        self.presets.get_current_preset()
+            .format_parameter_value(index, value)
+            .unwrap() // FIXME: unwrap
     }
     fn update_host_display(&self){
         self.host.update_display();
@@ -72,11 +97,20 @@ impl GuiSyncHandle for SyncOnlyState {
 
 
 impl <H: GuiSyncHandle>GuiSyncHandle for Arc<H> {
-    fn get_presets(&self) -> &OctaSinePresetBank {
-        ::std::ops::Deref::deref(self).get_presets()
+    fn get_bank(&self) -> &OctaSinePresetBank {
+        Deref::deref(self).get_bank()
+    }
+    fn set_parameter(&self, index: usize, value: f64){
+        Deref::deref(self).set_parameter(index, value)
+    }
+    fn get_parameter(&self, index: usize) -> f64 {
+        Deref::deref(self).get_parameter(index)
+    }
+    fn format_parameter_value(&self, index: usize, value: f64) -> String {
+        Deref::deref(self).format_parameter_value(index, value)
     }
     fn update_host_display(&self){
-        ::std::ops::Deref::deref(self).update_host_display()
+        Deref::deref(self).update_host_display()
     }
 }
 
@@ -161,7 +195,7 @@ impl Plugin for OctaSine {
 
         let sync_only = Arc::new(SyncOnlyState {
             host,
-            presets: built_in_preset_bank()
+            presets: presets::PresetBank::default(), // built_in_preset_bank()
         });
 
         let editor = Gui::new(sync_only.clone());
@@ -253,4 +287,137 @@ impl Plugin for OctaSine {
 }
 
 
-impl_plugin_parameters!(SyncOnlyState, presets);
+impl vst::plugin::PluginParameters for SyncOnlyState {
+    /// Get parameter label for parameter at `index` (e.g. "db", "sec", "ms", "%").
+    fn get_parameter_label(&self, index: i32) -> String {
+        self.presets
+            .get_current_preset()
+            .get_parameter(index as usize)
+            .map(|p| {
+                let value = p.value.get();
+
+                (&p.unit_from_value)(value)
+            })
+            .unwrap_or_else(|| "".to_string())
+    }
+
+    /// Get the parameter value for parameter at `index` (e.g. "1.0", "150", "Plate", "Off").
+    fn get_parameter_text(&self, index: i32) -> String {
+        self.presets
+            .get_current_preset()
+            .get_parameter(index as usize)
+            .map(|p| (p.format)(p.value.get()))
+            .unwrap_or_else(|| "".to_string())
+    }
+
+    /// Get the name of parameter at `index`.
+    fn get_parameter_name(&self, index: i32) -> String {
+        self.presets
+            .get_current_preset()
+            .get_parameter(index as usize)
+            .map(|p| p.name.clone())
+            .unwrap_or_else(|| "".to_string())
+    }
+
+    /// Get the value of paramater at `index`. Should be value between 0.0 and 1.0.
+    fn get_parameter(&self, index: i32) -> f32 {
+        self.presets
+            .get_current_preset()
+            .get_parameter(index as usize)
+            .map(|p| p.value.get() as f32)
+            .unwrap_or(0.0)
+    }
+
+    /// Set the value of parameter at `index`. `value` is between 0.0 and 1.0.
+    fn set_parameter(&self, index: i32, value: f32) {
+        let index = index as usize;
+
+        let opt_parameter = self.presets
+            .get_current_preset()
+            .get_parameter(index);
+
+        if let Some(parameter) = opt_parameter {
+            parameter.value.set(value as f64);
+
+            self.presets.parameter_change_info_processing.mark_as_changed(index);
+            self.presets.parameter_change_info_gui.mark_as_changed(index);
+        }
+    }
+
+    /// Use String as input for parameter value. Used by host to provide an editable field to
+    /// adjust a parameter value. E.g. "100" may be interpreted as 100hz for parameter. Returns if
+    /// the input string was used.
+    fn string_to_parameter(&self, index: i32, text: String) -> bool {
+        let index = index as usize;
+
+        let opt_parameter = self.presets
+            .get_current_preset()
+            .get_parameter(index);
+
+        if let Some(parameter) = opt_parameter {
+            if parameter.set_from_text(text){
+                self.presets.parameter_change_info_processing.mark_as_changed(index);
+                self.presets.parameter_change_info_gui.mark_as_changed(index);
+
+                return true;
+            }
+        }
+
+        false
+    }
+
+    /// Return whether parameter at `index` can be automated.
+    fn can_be_automated(&self, index: i32) -> bool {
+        self.presets.get_num_parameters() < index as usize
+    }
+
+    /// Set the current preset to the index specified by `preset`.
+    ///
+    /// This method can be called on the processing thread for automation.
+    fn change_preset(&self, index: i32) {
+        self.presets.set_preset_index(index as usize);
+    }
+
+    /// Get the current preset index.
+    fn get_preset_num(&self) -> i32 {
+        self.presets.get_preset_index() as i32
+    }
+
+    /// Set the current preset name.
+    fn set_preset_name(&self, name: String) {
+        self.presets.get_current_preset().name.store(Arc::new(name));
+    }
+
+    /// Get the name of the preset at the index specified by `preset`.
+    fn get_preset_name(&self, index: i32) -> String {
+        self.presets.get_preset(index as usize)
+            .map(|p| (*p.name.load_full()).clone())
+            .unwrap_or_else(|| "".to_string())
+    }
+
+    /*
+    /// If `preset_chunks` is set to true in plugin info, this should return the raw chunk data for
+    /// the current preset.
+    fn get_preset_data(&self) -> Vec<u8> {
+        self.export_current_preset_bytes()
+    }
+
+    /// If `preset_chunks` is set to true in plugin info, this should return the raw chunk data for
+    /// the current plugin bank.
+    fn get_bank_data(&self) -> Vec<u8> {
+        self.export_bank_as_bytes()
+    }
+
+    /// If `preset_chunks` is set to true in plugin info, this should load a preset from the given
+    /// chunk data.
+    fn load_preset_data(&self, data: &[u8]) {
+        self.import_bytes_into_current_preset(data);
+    }
+
+    /// If `preset_chunks` is set to true in plugin info, this should load a preset bank from the
+    /// given chunk data.
+    fn load_bank_data(&self, data: &[u8]) {
+        self.import_bank_from_bytes(data);
+    }
+    */
+}

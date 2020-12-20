@@ -34,7 +34,7 @@ impl OctaSineKnob {
         tick_marks: Option<tick_marks::Group>,
         default: f64,
     ) -> Self {
-        let value = Normal::new(sync_handle.get_presets().get_parameter_value_float(
+        let value = Normal::new(sync_handle.get_parameter(
             parameter_index
         ) as f32);
 
@@ -308,7 +308,7 @@ fn format_value<H: GuiSyncHandle>(
     parameter_index: usize,
     value: f64
 ) -> String {
-    sync_handle.get_presets().format_parameter_value(parameter_index, value)
+    sync_handle.format_parameter_value(parameter_index, value)
 }
 
 

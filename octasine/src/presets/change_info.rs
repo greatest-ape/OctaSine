@@ -35,7 +35,7 @@ impl ParameterChangeInfo {
     pub fn get_changed_parameters(
         &self,
         parameters: &Vec<SyncParameter>
-    ) -> Option<[Option<ProcessingValue>; 64]> {
+    ) -> Option<[Option<f64>; 64]> {
         let changed = self.changed.fetch_and(0, Ordering::SeqCst);
 
         if changed == 0 {
@@ -48,7 +48,7 @@ impl ParameterChangeInfo {
             if (changed >> index) & 1 == 1 {
                 if let Some(p) = parameters.get(index){
                     if let Some(value) = p.value.get_if_changed(){
-                        *c = Some((p.to_processing)(value));
+                        *c = Some(value);
                     } else {
                         self.mark_as_changed(index);
                     }
@@ -64,7 +64,7 @@ impl ParameterChangeInfo {
     pub fn get_changed_parameters_transient(
         &self,
         parameters: &Vec<SyncParameter>
-    ) -> Option<[Option<ProcessingValue>; 64]> {
+    ) -> Option<[Option<f64>; 64]> {
         let changed = self.changed.fetch_and(0, Ordering::SeqCst);
 
         if changed == 0 {
@@ -76,7 +76,7 @@ impl ParameterChangeInfo {
         for (index, c) in changes.iter_mut().enumerate(){
             if (changed >> index) & 1 == 1 {
                 if let Some(p) = parameters.get(index){
-                    *c = Some((p.to_processing)(p.value.get()));
+                    *c = Some(p.value.get());
                 }
             }
         }

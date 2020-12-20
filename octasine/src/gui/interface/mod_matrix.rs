@@ -329,17 +329,14 @@ struct ModulationMatrixParameters {
 impl ModulationMatrixParameters {
     fn new<H: GuiSyncHandle>(sync_handle: &H) -> Self {
         let operator_3_target = Self::convert_operator_3_target(
-            sync_handle.get_presets().get_parameter_value_float(33)
+            sync_handle.get_parameter(33)
         );
         let operator_4_target = Self::convert_operator_4_target(
-            sync_handle.get_presets().get_parameter_value_float(48)
+            sync_handle.get_parameter(48)
         );
-        let operator_2_additive = sync_handle.get_presets()
-            .get_parameter_value_float(18);
-        let operator_3_additive = sync_handle.get_presets()
-            .get_parameter_value_float(32);
-        let operator_4_additive = sync_handle.get_presets()
-            .get_parameter_value_float(47);
+        let operator_2_additive = sync_handle.get_parameter(18);
+        let operator_3_additive = sync_handle.get_parameter(32);
+        let operator_4_additive = sync_handle.get_parameter(47);
 
         Self {
             operator_3_target,

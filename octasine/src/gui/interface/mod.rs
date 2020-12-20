@@ -38,7 +38,7 @@ pub struct OctaSineIcedApplication<H: GuiSyncHandle> {
 
 impl <H: GuiSyncHandle> OctaSineIcedApplication<H> {
     fn update_widgets_from_parameters(&mut self){
-        let opt_changes = self.sync_handle.get_presets()
+        let opt_changes = self.sync_handle.get_bank()
             .get_changed_parameters_from_gui();
         
         if let Some(changes) = opt_changes {
@@ -180,10 +180,7 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
                 self.update_widgets_from_parameters();
             },
             Message::ParameterChange(index, value) => {
-                self.sync_handle.get_presets().set_parameter_value_float_from_gui(
-                    index,
-                    value,
-                );
+                self.sync_handle.set_parameter(index, value);
 
                 match index {
                     4 => self.operator_1.wave_type.set_value(value),
