@@ -43,7 +43,7 @@ fn main(){
     ).unwrap();
 
     let sync_state = Arc::new(SyncState {
-        presets: OctaSinePresetBank::default(),
+        presets: OctaSinePresetBank::new(octasine::parameters::preset::create_parameters),
     });
 
     // Set envelope data for easier testing

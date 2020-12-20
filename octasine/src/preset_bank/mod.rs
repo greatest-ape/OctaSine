@@ -36,19 +36,13 @@ impl PresetParameter {
 
 
 struct Preset {
-    pub name: ArcSwap<String>,
-    pub parameters: Vec<PresetParameter>,
+    name: ArcSwap<String>,
+    parameters: Vec<PresetParameter>,
 }
 
 
 impl Preset {
-    fn new(name: String) -> Self {
-        let parameters = vec![
-            PresetParameter::master_volume(),
-            PresetParameter::master_frequency(),
-            PresetParameter::operator_volume(0),
-        ];
-
+    fn new(name: String, parameters: Vec<PresetParameter>) -> Self {
         Self {
             name: ArcSwap::new(Arc::new(name)),
             parameters
@@ -65,19 +59,16 @@ pub struct PresetBank {
 }
 
 
-impl Default for PresetBank {
-    fn default() -> Self {
+impl PresetBank {
+    pub fn new(parameters: fn() -> Vec<PresetParameter>) -> Self {
         Self {
-            presets: array_init(|i| Preset::new(format!("{}", i + 1))),
+            presets: array_init(|i| Preset::new(format!("{}", i + 1), parameters())),
             preset_index: AtomicUsize::new(0),
             parameter_change_info_processing: ParameterChangeInfo::default(),
             parameter_change_info_gui: ParameterChangeInfo::default(),
         }
     }
-}
 
-
-impl PresetBank {
     // Utils
 
     fn get_parameter(&self, index: usize) -> Option<&PresetParameter> {

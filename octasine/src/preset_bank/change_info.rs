@@ -111,7 +111,7 @@ mod tests {
         let c = ParameterChangeInfo::default();
 
         // Not checked
-        let preset_parameters = Preset::new("1".to_string()).parameters;
+        let preset_parameters = crate::parameters::preset::create_parameters();
 
         assert!(c.get_changed_parameters(&preset_parameters).is_none());
 
@@ -156,7 +156,7 @@ mod tests {
     #[test]
     fn test_changed_parameters_quickcheck(){
         fn prop(data: Vec<(usize, f64)>) -> TestResult {
-            let preset_parameters = Preset::new("1".to_string()).parameters;
+            let preset_parameters = crate::parameters::preset::create_parameters();
 
             for (i, v) in data.iter(){
                 if *i > 63 || *v < 0.0 {
