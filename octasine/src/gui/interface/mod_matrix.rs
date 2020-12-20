@@ -6,8 +6,8 @@ use iced_baseview::{
 };
 
 use crate::GuiSyncHandle;
-use crate::parameters::processing::values::{
-    ProcessingValueConversion,
+use crate::parameters::values::{
+    ParameterValue,
     OperatorModulationTarget2,
     OperatorModulationTarget3,
 };

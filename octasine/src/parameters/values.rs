@@ -6,7 +6,7 @@ use crate::parameters::utils::*;
 
 macro_rules! impl_envelope_duration_value_conversion {
     ($struct_name:ident) => {
-        impl ProcessingValueConversion for $struct_name {
+        impl ParameterValue for $struct_name {
             type Value = f64;
 
             fn get(self) -> Self::Value {
@@ -46,7 +46,7 @@ macro_rules! impl_envelope_duration_value_conversion {
 
 macro_rules! impl_identity_value_conversion {
     ($struct_name:ident) => {
-        impl ProcessingValueConversion for $struct_name {
+        impl ParameterValue for $struct_name {
             type Value = f64;
 
             fn get(self) -> Self::Value {
@@ -69,9 +69,10 @@ macro_rules! impl_identity_value_conversion {
 }
 
 
-pub trait ProcessingValueConversion: Sized {
+pub trait ParameterValue: Sized {
     type Value;
 
+    /// Get inner (processing) value
     fn get(self) -> Self::Value;
     fn from_sync(value: f64) -> Self;
     fn to_sync(self) -> f64;
@@ -97,7 +98,7 @@ impl Default for MasterVolume {
 }
 
 
-impl ProcessingValueConversion for MasterVolume {
+impl ParameterValue for MasterVolume {
     type Value = f64;
 
     fn get(self) -> Self::Value {
@@ -129,7 +130,7 @@ impl Default for MasterFrequency {
 }
 
 
-impl ProcessingValueConversion for MasterFrequency {
+impl ParameterValue for MasterFrequency {
     type Value = f64;
 
     fn get(self) -> Self::Value {
@@ -168,7 +169,7 @@ impl OperatorVolume {
 }
 
 
-impl ProcessingValueConversion for OperatorVolume {
+impl ParameterValue for OperatorVolume {
     type Value = f64;
 
     fn get(self) -> Self::Value {
@@ -205,7 +206,7 @@ impl Default for OperatorAdditive {
 }
 
 
-impl ProcessingValueConversion for OperatorAdditive {
+impl ParameterValue for OperatorAdditive {
     type Value = f64;
 
     fn get(self) -> Self::Value {
@@ -237,7 +238,7 @@ impl Default for OperatorFrequencyRatio {
 }
 
 
-impl ProcessingValueConversion for OperatorFrequencyRatio {
+impl ParameterValue for OperatorFrequencyRatio {
     type Value = f64;
 
     fn get(self) -> Self::Value {
@@ -274,7 +275,7 @@ impl Default for OperatorFrequencyFree {
 }
 
 
-impl ProcessingValueConversion for OperatorFrequencyFree {
+impl ParameterValue for OperatorFrequencyFree {
     type Value = f64;
 
     fn get(self) -> Self::Value {
@@ -306,7 +307,7 @@ impl Default for OperatorFrequencyFine {
 }
 
 
-impl ProcessingValueConversion for OperatorFrequencyFine {
+impl ParameterValue for OperatorFrequencyFine {
     type Value = f64;
 
     fn get(self) -> Self::Value {
@@ -338,7 +339,7 @@ impl Default for OperatorFeedback {
 }
 
 
-impl ProcessingValueConversion for OperatorFeedback {
+impl ParameterValue for OperatorFeedback {
     type Value = f64;
 
     fn get(self) -> Self::Value {
@@ -370,7 +371,7 @@ impl Default for OperatorModulationIndex {
 }
 
 
-impl ProcessingValueConversion for OperatorModulationIndex {
+impl ParameterValue for OperatorModulationIndex {
     type Value = f64;
 
     fn get(self) -> Self::Value {
@@ -402,7 +403,7 @@ impl Default for OperatorWaveType {
 }
 
 
-impl ProcessingValueConversion for OperatorWaveType {
+impl ParameterValue for OperatorWaveType {
     type Value = WaveType;
 
     fn get(self) -> Self::Value {
@@ -525,7 +526,7 @@ impl Default for OperatorPanning {
 }
 
 
-impl ProcessingValueConversion for OperatorPanning {
+impl ParameterValue for OperatorPanning {
     type Value = f64;
 
     fn get(self) -> Self::Value {
@@ -565,7 +566,7 @@ impl Default for OperatorModulationTarget2 {
 }
 
 
-impl ProcessingValueConversion for OperatorModulationTarget2 {
+impl ParameterValue for OperatorModulationTarget2 {
     type Value = usize;
 
     fn get(self) -> Self::Value {
@@ -606,7 +607,7 @@ impl Default for OperatorModulationTarget3 {
 }
 
 
-impl ProcessingValueConversion for OperatorModulationTarget3 {
+impl ParameterValue for OperatorModulationTarget3 {
     type Value = usize;
 
     fn get(self) -> Self::Value {

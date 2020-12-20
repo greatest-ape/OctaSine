@@ -8,7 +8,7 @@ use std::sync::{Arc, atomic::{AtomicUsize, Ordering}};
 use arc_swap::ArcSwap;
 use array_init::array_init;
 
-use crate::parameters::processing::values::ProcessingValueConversion;
+use crate::parameters::values::ParameterValue;
 use crate::parameters::preset::create_parameters;
 
 use change_info::ParameterChangeInfo;
@@ -27,7 +27,7 @@ pub struct PresetParameter {
 
 
 impl PresetParameter {
-    pub fn new<V: ProcessingValueConversion>(
+    pub fn new<V: ParameterValue>(
         name: &str,
         default: V
     ) -> Self {
