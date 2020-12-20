@@ -2,7 +2,7 @@ use std::sync::atomic::{AtomicU64, Ordering};
 
 use array_init::array_init;
 
-use super::{SyncParameter, ProcessingValue};
+use super::{PresetParameter, ProcessingValue};
 
 
 /// Cache for marking parameters as changed and listing them.
@@ -34,7 +34,7 @@ impl ParameterChangeInfo {
     /// PresetParameters, mark them as changed in Self.changed
     pub fn get_changed_parameters(
         &self,
-        parameters: &Vec<SyncParameter>
+        parameters: &Vec<PresetParameter>
     ) -> Option<[Option<f64>; 64]> {
         let changed = self.changed.fetch_and(0, Ordering::SeqCst);
 
@@ -63,7 +63,7 @@ impl ParameterChangeInfo {
     /// in the AtomicPositiveDouble
     pub fn get_changed_parameters_transient(
         &self,
-        parameters: &Vec<SyncParameter>
+        parameters: &Vec<PresetParameter>
     ) -> Option<[Option<f64>; 64]> {
         let changed = self.changed.fetch_and(0, Ordering::SeqCst);
 

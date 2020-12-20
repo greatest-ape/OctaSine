@@ -204,8 +204,8 @@ impl Plugin for OctaSine {
             category: Category::Synth,
             inputs: 0,
             outputs: 2,
-            presets: self.sync_only.presets.len() as i32,
-            parameters: self.sync_only.presets.get_num_parameters() as i32,
+            presets: self.sync_only.presets.num_presets() as i32,
+            parameters: self.sync_only.presets.num_parameters() as i32,
             initial_delay: 0,
             preset_chunks: true,
             f64_precision: false,
@@ -314,7 +314,7 @@ impl vst::plugin::PluginParameters for SyncOnlyState {
 
     /// Return whether parameter at `index` can be automated.
     fn can_be_automated(&self, index: i32) -> bool {
-        self.presets.get_num_parameters() < index as usize
+        self.presets.num_parameters() < index as usize
     }
 
     /// Set the current preset to the index specified by `preset`.
@@ -331,13 +331,12 @@ impl vst::plugin::PluginParameters for SyncOnlyState {
 
     /// Set the current preset name.
     fn set_preset_name(&self, name: String) {
-        self.presets.get_current_preset().name.store(Arc::new(name));
+        self.presets.set_preset_name(name);
     }
 
     /// Get the name of the preset at the index specified by `preset`.
     fn get_preset_name(&self, index: i32) -> String {
-        self.presets.get_preset(index as usize)
-            .map(|p| (*p.name.load_full()).clone())
+        self.presets.get_preset_name(index as usize)
             .unwrap_or_else(|| "".to_string())
     }
 

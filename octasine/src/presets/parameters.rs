@@ -63,11 +63,7 @@ pub enum ProcessingValue {
 }
 
 
-impl ProcessingValue {
-}
-
-
-pub struct SyncParameter {
+pub struct PresetParameter {
     pub value: AtomicPositiveDouble,
     pub name: String,
     pub unit_from_value: fn(f64) -> String,
@@ -77,7 +73,7 @@ pub struct SyncParameter {
 }
 
 
-impl SyncParameter {
+impl PresetParameter {
     pub fn set_from_text(&self, text: String) -> bool {
         if let Some(value) = (self.value_from_text)(text){
             self.value.set(value);
