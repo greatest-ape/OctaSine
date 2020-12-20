@@ -29,7 +29,6 @@ use constants::*;
 use gui::Gui;
 use voices::*;
 use parameters::processing::*;
-use parameters::processing::interpolatable_value::TimeCounter;
 
 
 pub type OctaSinePresetBank = preset_bank::PresetBank;

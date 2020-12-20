@@ -6,6 +6,7 @@ use crate::constants::*;
 use super::values::*;
 use super::interpolatable_value::*;
 
+
 pub trait ProcessingParameter {
     type Value;
     type ExtraData;

@@ -3,9 +3,7 @@ pub const INTERPOLATION_STEPS: u8 = 8;
 pub const INTERPOLATION_STEPS_FLOAT: f64 = INTERPOLATION_STEPS as f64;
 
 
-/// Number that gets incremented with 1.0 every second
-#[derive(Debug, Copy, Clone, PartialEq)]
-pub struct TimeCounter(pub f64);
+use crate::common::TimeCounter;
 
 
 #[derive(Debug, Copy, Clone)]
@@ -17,6 +15,7 @@ pub struct InterpolatableProcessingValue {
     samples_remaining: u8,
     last_time: TimeCounter,
 }
+
 
 impl InterpolatableProcessingValue {
     pub fn new(value: f64) -> Self {
