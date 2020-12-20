@@ -5,6 +5,7 @@
 * Run tests
 * Test in DAW
 * Preset parameter from text: simple parsing etc
+* Move sync parameter text conversion tests to values.rs
 
 ## GUI
 
