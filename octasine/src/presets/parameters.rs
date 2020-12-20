@@ -4,7 +4,6 @@ use vst2_helpers::processing_parameters::utils::*;
 use crate::constants::*;
 
 
-
 trait ProcessingValueConversion {
     fn from_sync(value: f64) -> Self;
     fn to_sync(self) -> f64;
