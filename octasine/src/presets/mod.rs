@@ -10,17 +10,17 @@ use change_info::ParameterChangeInfo;
 use parameters::*;
 
 
-pub struct Preset {
+struct Preset {
     pub name: ArcSwap<String>,
-    pub parameters: Vec<SyncParameter>,
+    pub parameters: Vec<PresetParameter>,
 }
 
 
 impl Preset {
     fn new(name: String) -> Self {
         let parameters = vec![
-            SyncParameter::master_volume(),
-            SyncParameter::master_frequency(),
+            PresetParameter::master_volume(),
+            PresetParameter::master_frequency(),
         ];
 
         Self {
@@ -52,23 +52,27 @@ impl Default for PresetBank {
 
 
 impl PresetBank {
-    pub fn len(&self) -> usize {
+    // Utils
+
+    fn get_parameter(&self, index: usize) -> Option<&PresetParameter> {
+        self.get_current_preset().parameters.get(index)
+    }
+
+    fn get_current_preset(&self) -> &Preset {
+        &self.presets[self.get_preset_index()]
+    }
+
+    // Number of presets / parameters
+
+    pub fn num_presets(&self) -> usize {
         self.presets.len()
     }
 
-    pub fn get_num_parameters(&self) -> usize {
+    pub fn num_parameters(&self) -> usize {
         self.get_current_preset().parameters.len()
     }
 
     // Manage presets
-
-    pub fn get_current_preset(&self) -> &Preset {
-        &self.presets[self.get_preset_index()]
-    }
-
-    pub fn get_preset(&self, index: usize) -> Option<&Preset> {
-        self.presets.get(index)
-    }
 
     pub fn get_preset_index(&self) -> usize {
         self.preset_index.load(Ordering::SeqCst)
@@ -80,6 +84,15 @@ impl PresetBank {
         }
 
         self.preset_index.store(index, Ordering::SeqCst);
+    }
+
+    pub fn get_preset_name(&self, index: usize) -> Option<String> {
+        self.presets.get(index as usize)
+            .map(|p| (*p.name.load_full()).clone())
+    }
+
+    pub fn set_preset_name(&self, name: String){
+        self.get_current_preset().name.store(Arc::new(name));
     }
 
     // Get parameter changes
@@ -97,10 +110,6 @@ impl PresetBank {
     }
 
     // Get parameter values
-
-    fn get_parameter(&self, index: usize) -> Option<&SyncParameter> {
-        self.get_current_preset().parameters.get(index)
-    }
 
     pub fn get_parameter_value(&self, index: usize) -> Option<f64> {
         self.get_current_preset().parameters.get(index).map(|p| p.value.get())
