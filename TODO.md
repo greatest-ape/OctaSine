@@ -2,9 +2,8 @@
 
 ## Simplify presets
 
-* Modulation targets
-* In function that sets processing parameter from index and sync value, embed
-  MasterVolume etc. in ProcessingParameter trait instead of writing each time.
+* Hook up all parameters, both PresetParameter and ProcessingParameter
+* Rename PresetParameter to SyncParameter?
 * Remember to look for tests before removing files
 
 ## GUI
