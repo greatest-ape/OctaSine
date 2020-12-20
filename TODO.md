@@ -2,8 +2,6 @@
 
 ## Simplify presets
 
-* Test in DAW
-  * Envelopes don't update in GUI when set in host
 * Preset parameter from text: simple parsing etc
 * Move sync parameter text conversion tests to values.rs
 
