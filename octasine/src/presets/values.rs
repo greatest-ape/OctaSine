@@ -1,5 +1,6 @@
 use vst2_helpers::processing_parameters::utils::*;
 
+use crate::common::*;
 use crate::constants::*;
 
 
@@ -22,6 +23,7 @@ pub enum ProcessingValue {
     OperatorFrequencyFine(OperatorFrequencyFine),
     OperatorFeedback(OperatorFeedback),
     OperatorModulationIndex(OperatorModulationIndex),
+    OperatorWaveType(OperatorWaveType),
 }
 
 
@@ -268,6 +270,43 @@ impl ProcessingValueConversion for OperatorModulationIndex {
     }
     fn format(self) -> String {
         format!("{:.02}", self.0)
+    }
+    fn format_sync(value: f64) -> String {
+        Self::from_sync(value).format()
+    }
+}
+
+
+#[derive(Debug, Clone, Copy)]
+pub struct OperatorWaveType(pub WaveType);
+
+
+impl Default for OperatorWaveType {
+    fn default() -> Self {
+        Self(DEFAULT_OPERATOR_WAVE_TYPE)
+    }
+}
+
+
+impl ProcessingValueConversion for OperatorWaveType {
+    fn from_sync(sync: f64) -> Self {
+        if sync <= 0.5 {
+            Self(WaveType::Sine)
+        } else {
+            Self(WaveType::WhiteNoise)
+        }
+    }
+    fn to_sync(self) -> f64 {
+        match self.0 {
+            WaveType::Sine => 0.0,
+            WaveType::WhiteNoise => 1.0,
+        }
+    }
+    fn format(self) -> String {
+        match self.0 {
+            WaveType::Sine => "Sine".to_string(),
+            WaveType::WhiteNoise => "White noise".to_string(),
+        }
     }
     fn format_sync(value: f64) -> String {
         Self::from_sync(value).format()

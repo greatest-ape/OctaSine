@@ -109,46 +109,10 @@ create_interpolatable_processing_parameter!(ProcessingParameterOperatorModulatio
 
 create_simple_processing_parameter!(ProcessingParameterOperatorWaveType, WaveType, DEFAULT_OPERATOR_WAVE_TYPE);
 
-impl ParameterValueConversion for ProcessingParameterOperatorWaveType {
-    type ProcessingParameterValue = WaveType;
 
-    fn to_processing(value: f64) -> WaveType {
-        if value <= 0.5 {
-            WaveType::Sine
-        }
-        else {
-            WaveType::WhiteNoise
-        }
-    }
-    fn to_preset(value: WaveType) -> f64 {
-        match value {
-            WaveType::Sine => 0.0,
-            WaveType::WhiteNoise => 1.0,
-        }
-    }
 
-    fn parse_string_value(value: String) -> Option<WaveType> {
-        let value = value.to_lowercase();
+// CONTINUE HERE
 
-        if value == "sine" {
-            return Some(WaveType::Sine);
-        } else if value == "noise" || value == "white noise" {
-            return Some(WaveType::WhiteNoise);
-        }
-
-        if let Ok(value) = value.parse::<f64>() {
-            return Some(Self::to_processing(value));
-        }
-
-        None
-    }
-    fn format_processing(internal_value: Self::ProcessingParameterValue) -> String {
-        match internal_value {
-            WaveType::Sine => "Sine".to_string(),
-            WaveType::WhiteNoise => "White noise".to_string(),
-        }
-    }
-}
 
 
 // Attack duration
