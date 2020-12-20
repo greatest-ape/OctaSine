@@ -3,7 +3,7 @@ use std::f64::consts::E;
 use vst2_helpers::approximations::Log10Table;
 use crate::common::*;
 use crate::constants::*;
-use crate::processing_parameters::*;
+use crate::parameters::processing::*;
 
 
 pub enum CurveType {

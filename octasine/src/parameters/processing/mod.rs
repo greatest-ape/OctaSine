@@ -4,11 +4,11 @@ use array_init::array_init;
 
 use vst2_helpers::processing_parameters::*;
 
+pub mod values;
 pub mod parameters;
 pub use parameters::*;
 
 use crate::constants::*;
-use crate::presets::values;
 
 
 #[derive(Debug, Clone)]
@@ -183,6 +183,7 @@ impl ProcessingParameters {
 }
 
 
+/*
 #[cfg(test)]
 mod tests {
     use assert_approx_eq::assert_approx_eq;
@@ -224,3 +225,4 @@ mod tests {
         assert_approx_eq!(left_and_right[1], 1.0);
     }
 }
+*/

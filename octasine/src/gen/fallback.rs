@@ -10,7 +10,7 @@ use crate::OctaSine;
 use crate::common::*;
 use crate::constants::*;
 use crate::voices::*;
-use crate::processing_parameters::*;
+use crate::parameters::processing::*;
 
 /// One for left channel, one for right
 pub struct OutputChannel {

@@ -7,7 +7,8 @@ use vst2_helpers::*;
 
 use crate::common::*;
 use crate::constants::*;
-use crate::presets::values::*;
+
+use super::values::*;
 
 
 // Master volume
