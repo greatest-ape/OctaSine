@@ -20,16 +20,16 @@ use serde_utils::*;
 pub struct PresetParameter {
     pub value: AtomicPositiveDouble,
     pub name: String,
-    pub unit_from_value: fn(f64) -> String,
-    pub value_from_text: fn(String) -> Option<f64>,
-    pub to_processing: fn(f64) -> ProcessingValue,
-    pub format: fn(f64) -> String,
+    pub unit_from_sync: fn(f64) -> String,
+    pub sync_from_text: fn(String) -> Option<f64>,
+    pub sync_to_processing: fn(f64) -> ProcessingValue,
+    pub format_sync: fn(f64) -> String,
 }
 
 
 impl PresetParameter {
     pub fn set_from_text(&self, text: String) -> bool {
-        if let Some(value) = (self.value_from_text)(text){
+        if let Some(value) = (self.sync_from_text)(text){
             self.value.set(value);
 
             true
@@ -38,7 +38,7 @@ impl PresetParameter {
         }
     }
     pub fn get_value_text(&self) -> String {
-        (self.format)(self.value.get())
+        (self.format_sync)(self.value.get())
     }
 }
 
@@ -194,7 +194,7 @@ impl PresetBank {
 
     pub fn get_parameter_value_text(&self, index: usize) -> Option<String> {
         self.get_current_preset().parameters.get(index)
-            .map(|p| (p.format)(p.value.get()))
+            .map(|p| (p.format_sync)(p.value.get()))
     }
 
     pub fn get_parameter_name(&self, index: usize) -> Option<String> {
@@ -206,7 +206,7 @@ impl PresetBank {
             .map(|p| {
                 let value = p.value.get();
 
-                (&p.unit_from_value)(value)
+                (&p.unit_from_sync)(value)
             })
     }
 
@@ -215,7 +215,7 @@ impl PresetBank {
     }
 
     pub fn format_parameter_value(&self, index: usize, value: f64) -> Option<String> {
-        self.get_current_preset().parameters.get(index).map(|p| (p.format)(value))
+        self.get_current_preset().parameters.get(index).map(|p| (p.format_sync)(value))
     }
 
     // Set parameters
