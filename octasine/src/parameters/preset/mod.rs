@@ -12,7 +12,71 @@ pub fn create_parameters() -> Vec<PresetParameter> {
     vec![
         PresetParameter::master_volume(),
         PresetParameter::master_frequency(),
+
+        // Operator 1
         PresetParameter::operator_volume(0),
+        PresetParameter::operator_panning(0),
+        PresetParameter::operator_wave_type(0),
+        PresetParameter::operator_modulation_index(0),
+        PresetParameter::operator_feedback(0),
+        PresetParameter::operator_frequency_ratio(0),
+        PresetParameter::operator_frequency_free(0),
+        PresetParameter::operator_frequency_fine(0),
+        PresetParameter::operator_attack_duration(0),
+        PresetParameter::operator_attack_volume(0),
+        PresetParameter::operator_decay_duration(0),
+        PresetParameter::operator_decay_volume(0),
+        PresetParameter::operator_release_duration(0),
+
+        // Operator 2
+        PresetParameter::operator_volume(1),
+        PresetParameter::operator_panning(1),
+        PresetParameter::operator_wave_type(1),
+        PresetParameter::operator_additive(1),
+        PresetParameter::operator_modulation_index(1),
+        PresetParameter::operator_feedback(1),
+        PresetParameter::operator_frequency_ratio(1),
+        PresetParameter::operator_frequency_free(1),
+        PresetParameter::operator_frequency_fine(1),
+        PresetParameter::operator_attack_duration(1),
+        PresetParameter::operator_attack_volume(1),
+        PresetParameter::operator_decay_duration(1),
+        PresetParameter::operator_decay_volume(1),
+        PresetParameter::operator_release_duration(1),
+
+        // Operator 3
+        PresetParameter::operator_volume(2),
+        PresetParameter::operator_panning(2),
+        PresetParameter::operator_wave_type(2),
+        PresetParameter::operator_additive(2),
+        PresetParameter::operator_modulation_target_2(),
+        PresetParameter::operator_modulation_index(2),
+        PresetParameter::operator_feedback(2),
+        PresetParameter::operator_frequency_ratio(2),
+        PresetParameter::operator_frequency_free(2),
+        PresetParameter::operator_frequency_fine(2),
+        PresetParameter::operator_attack_duration(2),
+        PresetParameter::operator_attack_volume(2),
+        PresetParameter::operator_decay_duration(2),
+        PresetParameter::operator_decay_volume(2),
+        PresetParameter::operator_release_duration(2),
+
+        // Operator 4
+        PresetParameter::operator_volume(3),
+        PresetParameter::operator_panning(3),
+        PresetParameter::operator_wave_type(3),
+        PresetParameter::operator_additive(3),
+        PresetParameter::operator_modulation_target_3(),
+        PresetParameter::operator_modulation_index(3),
+        PresetParameter::operator_feedback(3),
+        PresetParameter::operator_frequency_ratio(3),
+        PresetParameter::operator_frequency_free(3),
+        PresetParameter::operator_frequency_fine(3),
+        PresetParameter::operator_attack_duration(3),
+        PresetParameter::operator_attack_volume(3),
+        PresetParameter::operator_decay_duration(3),
+        PresetParameter::operator_decay_volume(3),
+        PresetParameter::operator_release_duration(3),
     ]
 }
 
@@ -272,12 +336,12 @@ impl PresetParameter {
         }
     }
 
-    pub fn operator_modulation_target_2(index: usize) -> Self {
+    pub fn operator_modulation_target_2() -> Self {
         let value = OperatorModulationTarget2::default().to_sync();
 
         Self {
             value: AtomicPositiveDouble::new(value),
-            name: format!("Op. {} mod out", index + 1),
+            name: format!("Op. 3 mod out"),
             unit_from_value: |_| "".to_string(),
             value_from_text: |value| {
                 if let Ok(value) = value.parse::<usize>(){
@@ -295,12 +359,12 @@ impl PresetParameter {
         }
     }
 
-    pub fn operator_modulation_target_3(index: usize) -> Self {
+    pub fn operator_modulation_target_3() -> Self {
         let value = OperatorModulationTarget3::default().to_sync();
 
         Self {
             value: AtomicPositiveDouble::new(value),
-            name: format!("Op. {} mod out", index + 1),
+            name: format!("Op. 4 mod out"),
             unit_from_value: |_| "".to_string(),
             value_from_text: |value| {
                 if let Ok(value) = value.parse::<usize>(){
