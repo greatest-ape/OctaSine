@@ -64,6 +64,13 @@ struct Preset {
 }
 
 
+impl Default for Preset {
+    fn default() -> Self {
+        Self::new("-".to_string(), create_parameters())
+    }
+}
+
+
 impl Preset {
     fn new(name: String, parameters: Vec<SyncParameter>) -> Self {
         Self {
@@ -93,13 +100,11 @@ impl Preset {
     }
 
     fn import_serde_preset(&self, serde_preset: &SerdePreset){
-        for index in 0..self.parameters.len() {
+        self.set_name(serde_preset.name.clone());
+
+        for (index, parameter) in self.parameters.iter().enumerate(){
             if let Some(import_parameter) = serde_preset.parameters.get(index){
-                if let Some(parameter) = self.parameters.get(index){
-                    parameter.value.set(
-                        import_parameter.value_float.as_f64()
-                    );
-                }
+                parameter.value.set(import_parameter.value_float.as_f64())
             }
         }
     }
@@ -132,7 +137,9 @@ impl Default for PresetBank {
 impl PresetBank {
     pub fn new(parameters: fn() -> Vec<SyncParameter>) -> Self {
         Self {
-            presets: array_init(|i| Preset::new(format!("{}", i + 1), parameters())),
+            presets: array_init(|i| Preset::new(
+                format!("{:03}", i + 1), parameters()
+            )),
             preset_index: AtomicUsize::new(0),
             parameter_change_info_processing: ParameterChangeInfo::default(),
             parameter_change_info_gui: ParameterChangeInfo::default(),
@@ -272,15 +279,15 @@ impl PresetBank {
 
         match res_serde_preset_bank {
             Ok(serde_preset_bank) => {
-                let default_preset = Preset::new("1".to_string(), create_parameters());
-                let default_serde_preset = default_preset.export_serde_preset();
+                let default_serde_preset = Preset::default()
+                    .export_serde_preset();
 
                 for (index, preset) in self.presets.iter().enumerate(){
                     if let Some(serde_preset) = serde_preset_bank.presets.get(index){
                         preset.import_serde_preset(serde_preset);
                     } else {
                         preset.import_serde_preset(&default_serde_preset);
-                        preset.set_name(format!("{}", index + 1));
+                        preset.set_name(format!("{:03}", index + 1));
                     }
                 }
 
