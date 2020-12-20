@@ -62,6 +62,7 @@ pub enum ProcessingValue {
     MasterVolume(MasterVolume),
     MasterFrequency(MasterFrequency),
     OperatorVolume(OperatorVolume),
+    OperatorPanning(OperatorPanning),
     OperatorAdditive(OperatorAdditive),
     OperatorFrequencyRatio(OperatorFrequencyRatio),
     OperatorFrequencyFree(OperatorFrequencyFree),
@@ -436,3 +437,38 @@ impl Default for OperatorDecayVolume {
 
 
 impl_identity_value_conversion!(OperatorDecayVolume);
+
+
+#[derive(Debug, Clone, Copy)]
+pub struct OperatorPanning(pub f64);
+
+
+impl Default for OperatorPanning {
+    fn default() -> Self {
+        Self(DEFAULT_OPERATOR_PANNING)
+    }
+}
+
+
+impl ProcessingValueConversion for OperatorPanning {
+    fn from_sync(sync: f64) -> Self {
+        Self(sync)
+    }
+    fn to_sync(self) -> f64 {
+        self.0
+    }
+    fn format(self) -> String {
+        let tmp = ((self.0 - 0.5) * 100.0) as isize;
+
+        if tmp > 0 {
+            format!("{}R", tmp)
+        } else if tmp < 0 {
+            format!("{}L", tmp)
+        } else {
+            "C".to_string()
+        }
+    }
+    fn format_sync(value: f64) -> String {
+        Self::from_sync(value).format()
+    }
+}

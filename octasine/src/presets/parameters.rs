@@ -73,6 +73,21 @@ impl PresetParameter {
         }
     }
 
+    pub fn operator_panning(index: usize) -> Self {
+        let value = OperatorPanning::default().to_sync();
+
+        Self {
+            value: AtomicPositiveDouble::new(value),
+            name: format!("Op. {} pan", index + 1),
+            unit_from_value: |_| "".to_string(),
+            value_from_text: |v| None, // FIXME
+            to_processing: |v| ProcessingValue::OperatorPanning(
+                OperatorPanning::from_sync(v)
+            ),
+            format: |v| OperatorPanning::from_sync(v).format(),
+        }
+    }
+
     pub fn operator_additive(index: usize) -> Self {
         let value = OperatorAdditive::default().to_sync();
 

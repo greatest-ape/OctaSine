@@ -10,36 +10,6 @@ use crate::common::*;
 use crate::constants::*;
 
 
-/// Implement ParameterValueConversion for envelope durations
-macro_rules! impl_envelope_duration_value_conversion {
-    ($struct_name:ident) => {
-        impl ParameterValueConversion for $struct_name {
-            type ProcessingParameterValue = f64;
-
-            fn to_processing(value: f64) -> Self::ProcessingParameterValue {
-                // Force some decay to avoid clicks
-                (value * ENVELOPE_MAX_DURATION)
-                    .max(ENVELOPE_MIN_DURATION)
-            }
-            fn to_preset(value: Self::ProcessingParameterValue) -> f64 {
-                value / ENVELOPE_MAX_DURATION
-            }
-
-            fn parse_string_value(value: String) -> Option<Self::ProcessingParameterValue> {
-                value.parse::<f64>().ok().map(|value|
-                    value.max(ENVELOPE_MIN_DURATION)
-                        .min(ENVELOPE_MAX_DURATION)
-                )
-            }
-
-            fn format_processing(internal_value: Self::ProcessingParameterValue) -> String {
-                format!("{:.02}", internal_value)
-            }
-        }
-    };
-}
-
-
 // Master volume
 
 create_interpolatable_processing_parameter!(
@@ -108,11 +78,6 @@ create_interpolatable_processing_parameter!(ProcessingParameterOperatorModulatio
 // Wave type
 
 create_simple_processing_parameter!(ProcessingParameterOperatorWaveType, WaveType, DEFAULT_OPERATOR_WAVE_TYPE);
-
-
-
-// CONTINUE HERE
-
 
 
 // Attack duration
@@ -228,6 +193,7 @@ pub struct ProcessingParameterOperatorPanning {
     pub left_and_right: [f64; 2],
 }
 
+
 impl ProcessingParameterOperatorPanning {
     pub fn calculate_left_and_right(panning: f64) -> [f64; 2] {
         let pan_phase = panning * FRAC_PI_2;
@@ -235,6 +201,7 @@ impl ProcessingParameterOperatorPanning {
         [pan_phase.cos(), pan_phase.sin()]
     }
 }
+
 
 impl ProcessingParameter for ProcessingParameterOperatorPanning {
     type Value = f64;
@@ -262,6 +229,7 @@ impl ProcessingParameter for ProcessingParameterOperatorPanning {
     }
 }
 
+
 impl Default for ProcessingParameterOperatorPanning {
     fn default() -> Self {
         let default = DEFAULT_OPERATOR_PANNING;
@@ -269,34 +237,6 @@ impl Default for ProcessingParameterOperatorPanning {
         Self {
             value: InterpolatableProcessingValue::new(default),
             left_and_right: Self::calculate_left_and_right(default),
-        }
-    }
-}
-
-
-impl ParameterValueConversion for ProcessingParameterOperatorPanning {
-    type ProcessingParameterValue = f64;
-
-    fn to_processing(value: f64) -> Self::ProcessingParameterValue {
-        value
-    }
-    fn to_preset(value: Self::ProcessingParameterValue) -> f64 {
-        value
-    }
-
-    fn parse_string_value(_: String) -> Option<f64> {
-        None
-    }
-
-    fn format_processing(internal_value: Self::ProcessingParameterValue) -> String {
-        let tmp = ((internal_value - 0.5) * 100.0) as isize;
-
-        if tmp > 0 {
-            format!("{}R", tmp)
-        } else if tmp < 0 {
-            format!("{}L", tmp)
-        } else {
-            "C".to_string()
         }
     }
 }

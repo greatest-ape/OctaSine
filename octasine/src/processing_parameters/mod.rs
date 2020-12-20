@@ -96,7 +96,7 @@ impl ProcessingParameters {
             0 => self.master_volume.set_value(values::MasterVolume::from_sync(value).0),
             1 => self.master_frequency.set_value(values::MasterFrequency::from_sync(value).0),
             2 => self.operators[0].volume.set_value(values::OperatorVolume::from_sync(value).0),
-            // 3 => Some(&mut self.operators[0].panning),
+            3 => self.operators[0].panning.set_value(values::OperatorPanning::from_sync(value).0),
             4 => self.operators[0].wave_type.set_value(values::OperatorWaveType::from_sync(value).0),
             5 => self.operators[0].modulation_index.set_value(values::OperatorModulationIndex::from_sync(value).0),
             6 => self.operators[0].feedback.set_value(values::OperatorFeedback::from_sync(value).0),
@@ -192,6 +192,7 @@ mod tests {
     #[test]
     fn test_operator_panning_left_and_right(){
         use vst2_helpers::processing_parameters::interpolatable_value::*;
+        use crate::presets::values::ProcessingValueConversion;
         use super::*;
 
         let mut operator = ProcessingParameterOperatorPanning::default();
@@ -199,7 +200,7 @@ mod tests {
         let mut time = TimeCounter(0.0);
         let mut value = operator.get_value(time);
 
-        operator.set_from_preset_value(1.0);
+        operator.set_value(values::OperatorPanning::from_sync(1.0).0);
 
         let n = INTERPOLATION_SAMPLES_PER_STEP * INTERPOLATION_STEPS + 1;
         let mut left_and_right = [0.0, 0.0];
