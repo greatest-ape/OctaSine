@@ -2,7 +2,7 @@ use std::sync::atomic::{AtomicU64, Ordering};
 
 use array_init::array_init;
 
-use super::{PresetParameter, ProcessingValue};
+use super::PresetParameter;
 
 
 /// Cache for marking parameters as changed and listing them.
