@@ -82,41 +82,29 @@ pub fn create_parameters() -> Vec<PresetParameter> {
 }
 
 
-impl PresetParameter {
-    pub fn master_volume() -> Self {
-        let value = MasterVolume::default().to_sync();
-
+macro_rules! create_preset_parameter {
+    ($name:expr, $processing_value:ident) => {
         Self {
-            value: AtomicPositiveDouble::new(value),
-            name: "Master volume".to_string(),
-            unit_from_sync: |_| "dB".to_string(),
+            value: AtomicPositiveDouble::new($processing_value::default().to_sync()),
+            name: $name.to_string(),
+            unit_from_sync: |_| "".to_string(), // FIXME
             sync_from_text: |v| {
-                MasterVolume::from_text(v)
+                $processing_value::from_text(v)
                     .map(|v| v.to_sync())
             },
-            sync_to_processing: |v| ProcessingValue::MasterVolume(
-                MasterVolume::from_sync(v)
-            ),
-            format_sync: |v| MasterVolume::from_sync(v).format(),
+            format_sync: |v| $processing_value::from_sync(v).format(),
         }
+    };
+}
+
+
+impl PresetParameter {
+    pub fn master_volume() -> Self {
+        create_preset_parameter!("Master volume", MasterVolume)
     }
 
     pub fn master_frequency() -> Self {
-        let value = MasterFrequency::default().to_sync();
-
-        Self {
-            value: AtomicPositiveDouble::new(value),
-            name: "Master frequency".to_string(),
-            unit_from_sync: |_| "Hz".to_string(),
-            sync_from_text: |v| {
-                MasterFrequency::from_text(v)
-                    .map(|v| v.to_sync())
-            },
-            sync_to_processing: |v| ProcessingValue::MasterFrequency(
-                MasterFrequency::from_sync(v)
-            ),
-            format_sync: |v| MasterFrequency::from_sync(v).format(),
-        }
+        create_preset_parameter!("Master frequency", MasterFrequency)
     }
 
     pub fn operator_volume(index: usize) -> Self {
@@ -130,9 +118,6 @@ impl PresetParameter {
                 OperatorVolume::from_text(v)
                     .map(|v| v.to_sync())
             },
-            sync_to_processing: |v| ProcessingValue::OperatorVolume(
-                OperatorVolume::from_sync(v)
-            ),
             format_sync: |v| OperatorVolume::from_sync(v).format(),
         }
     }
@@ -148,9 +133,6 @@ impl PresetParameter {
                 OperatorPanning::from_text(v)
                     .map(|v| v.to_sync())
             },
-            sync_to_processing: |v| ProcessingValue::OperatorPanning(
-                OperatorPanning::from_sync(v)
-            ),
             format_sync: |v| OperatorPanning::from_sync(v).format(),
         }
     }
@@ -166,9 +148,6 @@ impl PresetParameter {
                 OperatorAdditive::from_text(v)
                     .map(|v| v.to_sync())
             },
-            sync_to_processing: |v| ProcessingValue::OperatorAdditive(
-                OperatorAdditive::from_sync(v)
-            ),
             format_sync: |v| OperatorAdditive::from_sync(v).format(),
         }
     }
@@ -184,9 +163,6 @@ impl PresetParameter {
                 OperatorFrequencyRatio::from_text(v)
                     .map(|v| v.to_sync())
             },
-            sync_to_processing: |v| ProcessingValue::OperatorFrequencyRatio(
-                OperatorFrequencyRatio::from_sync(v)
-            ),
             format_sync: |v| OperatorFrequencyRatio::from_sync(v).format(),
         }
     }
@@ -202,9 +178,6 @@ impl PresetParameter {
                 OperatorFrequencyFree::from_text(v)
                     .map(|v| v.to_sync())
             },
-            sync_to_processing: |v| ProcessingValue::OperatorFrequencyFree(
-                OperatorFrequencyFree::from_sync(v)
-            ),
             format_sync: |v| OperatorFrequencyFree::from_sync(v).format(),
         }
     }
@@ -217,9 +190,6 @@ impl PresetParameter {
             name: format!("Op. {} freq. fine", index + 1),
             unit_from_sync: |_| "".to_string(),
             sync_from_text: |v| None, // FIXME: simple parameter parsing
-            sync_to_processing: |v| ProcessingValue::OperatorFrequencyFine(
-                OperatorFrequencyFine::from_sync(v)
-            ),
             format_sync: |v| OperatorFrequencyFine::from_sync(v).format(),
         }
     }
@@ -232,9 +202,6 @@ impl PresetParameter {
             name: format!("Op. {} feedback", index + 1),
             unit_from_sync: |_| "".to_string(),
             sync_from_text: |v| None, // FIXME: simple parameter parsing
-            sync_to_processing: |v| ProcessingValue::OperatorFeedback(
-                OperatorFeedback::from_sync(v)
-            ),
             format_sync: |v| OperatorFeedback::from_sync(v).format(),
         }
     }
@@ -247,9 +214,6 @@ impl PresetParameter {
             name: format!("Op. {} mod index", index + 1),
             unit_from_sync: |_| "".to_string(),
             sync_from_text: |v| None, // FIXME: simple parameter parsing
-            sync_to_processing: |v| ProcessingValue::OperatorModulationIndex(
-                OperatorModulationIndex::from_sync(v)
-            ),
             format_sync: |v| OperatorModulationIndex::from_sync(v).format(),
         }
     }
@@ -265,9 +229,6 @@ impl PresetParameter {
                 OperatorWaveType::from_text(v)
                     .map(|v| v.to_sync())
             },
-            sync_to_processing: |v| ProcessingValue::OperatorWaveType(
-                OperatorWaveType::from_sync(v)
-            ),
             format_sync: |v| OperatorWaveType::from_sync(v).format(),
         }
     }
@@ -280,9 +241,6 @@ impl PresetParameter {
             name: format!("Op. {} attack time", index + 1),
             unit_from_sync: |_| "".to_string(),
             sync_from_text: |value| None, // FIXME
-            sync_to_processing: |v| ProcessingValue::OperatorAttackDuration(
-                OperatorAttackDuration::from_sync(v)
-            ),
             format_sync: |v| OperatorAttackDuration::from_sync(v).format(),
         }
     }
@@ -295,9 +253,6 @@ impl PresetParameter {
             name: format!("Op. {} attack volume", index + 1),
             unit_from_sync: |_| "".to_string(),
             sync_from_text: |value| None, // FIXME
-            sync_to_processing: |v| ProcessingValue::OperatorAttackVolume(
-                OperatorAttackVolume::from_sync(v)
-            ),
             format_sync: |v| OperatorAttackVolume::from_sync(v).format(),
         }
     }
@@ -310,9 +265,6 @@ impl PresetParameter {
             name: format!("Op. {} decay time", index + 1),
             unit_from_sync: |_| "".to_string(),
             sync_from_text: |value| None, // FIXME
-            sync_to_processing: |v| ProcessingValue::OperatorDecayDuration(
-                OperatorDecayDuration::from_sync(v)
-            ),
             format_sync: |v| OperatorDecayDuration::from_sync(v).format(),
         }
     }
@@ -325,9 +277,6 @@ impl PresetParameter {
             name: format!("Op. {} decay volume", index + 1),
             unit_from_sync: |_| "".to_string(),
             sync_from_text: |value| None, // FIXME
-            sync_to_processing: |v| ProcessingValue::OperatorDecayVolume(
-                OperatorDecayVolume::from_sync(v)
-            ),
             format_sync: |v| OperatorDecayVolume::from_sync(v).format(),
         }
     }
@@ -340,9 +289,6 @@ impl PresetParameter {
             name: format!("Op. {} release time", index + 1),
             unit_from_sync: |_| "".to_string(),
             sync_from_text: |value| None, // FIXME
-            sync_to_processing: |v| ProcessingValue::OperatorReleaseDuration(
-                OperatorReleaseDuration::from_sync(v)
-            ),
             format_sync: |v| OperatorReleaseDuration::from_sync(v).format(),
         }
     }
@@ -358,9 +304,6 @@ impl PresetParameter {
                 OperatorModulationTarget2::from_text(v)
                     .map(|v| v.to_sync())
             },
-            sync_to_processing: |v| ProcessingValue::OperatorModulationTarget2(
-                OperatorModulationTarget2::from_sync(v)
-            ),
             format_sync: |v| OperatorModulationTarget2::from_sync(v).format(),
         }
     }
@@ -376,9 +319,6 @@ impl PresetParameter {
                 OperatorModulationTarget3::from_text(v)
                     .map(|v| v.to_sync())
             },
-            sync_to_processing: |v| ProcessingValue::OperatorModulationTarget3(
-                OperatorModulationTarget3::from_sync(v)
-            ),
             format_sync: |v| OperatorModulationTarget3::from_sync(v).format(),
         }
     }
