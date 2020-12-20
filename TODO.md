@@ -21,11 +21,9 @@
   * Maybe don't load parameter changes in processing while dragging: not a
     problem if the previous point is implemented and probably not a problem
     now either
-* improve CI with macOS too, baseview linux deps
 
 ## Code quality / safety
 
-* NUM_PARAMETERS constant?
 * rustfmt
 
 ## Other
@@ -38,7 +36,7 @@
 
 ## Maybe do
 
-* Iterator for presets and preset parameters
+* Test that number of sync and processing parameters is equal
 * proper beta scaling - double with doubling modulator frequency
 * suspend mode and so on, maybe just reset time, note time, envelopes etc on resume
 * Use FMA again for precision, possibly enabling removing .fract() call
