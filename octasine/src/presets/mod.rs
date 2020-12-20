@@ -50,8 +50,8 @@ impl Preset {
 pub struct PresetBank {
     presets: [Preset; 128],
     preset_index: AtomicUsize,
-    pub parameter_change_info_processing: ParameterChangeInfo,
-    pub parameter_change_info_gui: ParameterChangeInfo,
+    parameter_change_info_processing: ParameterChangeInfo,
+    parameter_change_info_gui: ParameterChangeInfo,
 }
 
 
@@ -106,5 +106,45 @@ impl PresetBank {
         self.parameter_change_info_processing.get_changed_parameters_transient(
             &self.get_current_preset().parameters
         )
+    }
+
+    pub fn set_parameter_from_gui(&self, index: usize, value: f64){
+        let opt_parameter = self.get_current_preset()
+            .get_parameter(index);
+
+        if let Some(parameter) = opt_parameter {
+            parameter.value.set(value.min(1.0).max(0.0));
+
+            self.parameter_change_info_processing
+                .mark_as_changed(index);
+        }
+    }
+
+    pub fn set_parameter_from_host(&self, index: usize, value: f64){
+        let opt_parameter = self.get_current_preset()
+            .get_parameter(index);
+
+        if let Some(parameter) = opt_parameter {
+            parameter.value.set(value as f64);
+
+            self.parameter_change_info_processing.mark_as_changed(index);
+            self.parameter_change_info_gui.mark_as_changed(index);
+        }
+    }
+
+    pub fn set_parameter_text_from_host(&self, index: usize, value: String) -> bool {
+        let opt_parameter = self.get_current_preset()
+            .get_parameter(index);
+
+        if let Some(parameter) = opt_parameter {
+            if parameter.set_from_text(value){
+                self.parameter_change_info_processing.mark_as_changed(index);
+                self.parameter_change_info_gui.mark_as_changed(index);
+
+                return true;
+            }
+        }
+
+        false
     }
 }
