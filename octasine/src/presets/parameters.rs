@@ -281,4 +281,50 @@ impl PresetParameter {
             format: |v| OperatorReleaseDuration::from_sync(v).format(),
         }
     }
+
+    pub fn operator_modulation_target_2(index: usize) -> Self {
+        let value = OperatorModulationTarget2::default().to_sync();
+
+        Self {
+            value: AtomicPositiveDouble::new(value),
+            name: format!("Op. {} mod out", index + 1),
+            unit_from_value: |_| "".to_string(),
+            value_from_text: |value| {
+                if let Ok(value) = value.parse::<usize>(){
+                    if value == 1 || value == 2 {
+                        return Some(OperatorModulationTarget2(value - 1).to_sync());
+                    }
+                }
+
+                None
+            },
+            to_processing: |v| ProcessingValue::OperatorModulationTarget2(
+                OperatorModulationTarget2::from_sync(v)
+            ),
+            format: |v| OperatorModulationTarget2::from_sync(v).format(),
+        }
+    }
+
+    pub fn operator_modulation_target_3(index: usize) -> Self {
+        let value = OperatorModulationTarget3::default().to_sync();
+
+        Self {
+            value: AtomicPositiveDouble::new(value),
+            name: format!("Op. {} mod out", index + 1),
+            unit_from_value: |_| "".to_string(),
+            value_from_text: |value| {
+                if let Ok(value) = value.parse::<usize>(){
+                    if value == 1 || value == 2 || value == 3 {
+                        return Some(OperatorModulationTarget3(value - 1).to_sync());
+                    }
+                }
+
+                None
+            },
+            to_processing: |v| ProcessingValue::OperatorModulationTarget3(
+                OperatorModulationTarget3::from_sync(v)
+            ),
+            format: |v| OperatorModulationTarget3::from_sync(v).format(),
+        }
+    }
 }

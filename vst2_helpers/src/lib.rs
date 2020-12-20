@@ -215,7 +215,7 @@ macro_rules! impl_parameter_value_conversion_identity {
 
 #[macro_export]
 macro_rules! create_interpolatable_processing_parameter {
-    ($name:ident, $default:ident, $extra_data:ident) => {
+    ($name:ident, $value_struct:ident, $default:ident, $extra_data:ident) => {
         #[derive(Debug, Clone)]
         pub struct $name {
             value: InterpolatableProcessingValue,
@@ -242,6 +242,9 @@ macro_rules! create_interpolatable_processing_parameter {
             fn set_value(&mut self, value: Self::Value) {
                 self.value.set_value(value)
             }
+            fn set_from_sync(&mut self, value: f64){
+                self.set_value($value_struct::from_sync(value).0)
+            }
         }
     }
 }
@@ -249,7 +252,7 @@ macro_rules! create_interpolatable_processing_parameter {
 
 #[macro_export]
 macro_rules! create_simple_processing_parameter {
-    ($name:ident, $type:ty, $default:ident) => {
+    ($name:ident, $value_struct:ident, $type:ty, $default:ident) => {
         #[derive(Debug, Clone)]
         pub struct $name {
             pub value: $type
@@ -275,6 +278,9 @@ macro_rules! create_simple_processing_parameter {
             }
             fn set_value(&mut self, value: Self::Value){
                 self.value = value;
+            }
+            fn set_from_sync(&mut self, value: f64){
+                self.set_value($value_struct::from_sync(value).0)
             }
         }
     };
