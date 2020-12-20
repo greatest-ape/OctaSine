@@ -196,7 +196,7 @@ impl PresetBank {
     }
 
     pub fn get_changed_parameters_from_gui(&self) -> Option<[Option<f64>; 64]> {
-        self.parameter_change_info_processing.get_changed_parameters_transient(
+        self.parameter_change_info_gui.get_changed_parameters_transient(
             &self.get_current_preset().parameters
         )
     }
