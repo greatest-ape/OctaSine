@@ -90,7 +90,10 @@ impl PresetParameter {
             value: AtomicPositiveDouble::new(value),
             name: "Master volume".to_string(),
             unit_from_sync: |_| "dB".to_string(),
-            sync_from_text: |v| None,
+            sync_from_text: |v| {
+                MasterVolume::from_text(v)
+                    .map(|v| v.to_sync())
+            },
             sync_to_processing: |v| ProcessingValue::MasterVolume(
                 MasterVolume::from_sync(v)
             ),
@@ -105,7 +108,10 @@ impl PresetParameter {
             value: AtomicPositiveDouble::new(value),
             name: "Master frequency".to_string(),
             unit_from_sync: |_| "Hz".to_string(),
-            sync_from_text: |v| None,
+            sync_from_text: |v| {
+                MasterFrequency::from_text(v)
+                    .map(|v| v.to_sync())
+            },
             sync_to_processing: |v| ProcessingValue::MasterFrequency(
                 MasterFrequency::from_sync(v)
             ),
@@ -121,11 +127,8 @@ impl PresetParameter {
             name: format!("Op. {} volume", index + 1),
             unit_from_sync: |_| "".to_string(),
             sync_from_text: |v| {
-                v.parse::<f64>()
-                    .map(|v| {
-                        OperatorVolume(v.min(2.0).max(0.0)).to_sync()
-                    })
-                    .ok()
+                OperatorVolume::from_text(v)
+                    .map(|v| v.to_sync())
             },
             sync_to_processing: |v| ProcessingValue::OperatorVolume(
                 OperatorVolume::from_sync(v)
@@ -141,7 +144,10 @@ impl PresetParameter {
             value: AtomicPositiveDouble::new(value),
             name: format!("Op. {} pan", index + 1),
             unit_from_sync: |_| "".to_string(),
-            sync_from_text: |v| None, // FIXME
+            sync_from_text: |v| {
+                OperatorPanning::from_text(v)
+                    .map(|v| v.to_sync())
+            },
             sync_to_processing: |v| ProcessingValue::OperatorPanning(
                 OperatorPanning::from_sync(v)
             ),
@@ -156,7 +162,10 @@ impl PresetParameter {
             value: AtomicPositiveDouble::new(value),
             name: format!("Op. {} additive", index + 1),
             unit_from_sync: |_| "%".to_string(),
-            sync_from_text: |v| None,
+            sync_from_text: |v| {
+                OperatorAdditive::from_text(v)
+                    .map(|v| v.to_sync())
+            },
             sync_to_processing: |v| ProcessingValue::OperatorAdditive(
                 OperatorAdditive::from_sync(v)
             ),
@@ -172,9 +181,8 @@ impl PresetParameter {
             name: format!("Op. {} freq. ratio", index + 1),
             unit_from_sync: |_| "".to_string(),
             sync_from_text: |v| {
-                v.parse::<f64>().ok().map(|value|
-                    round_to_step(&OPERATOR_RATIO_STEPS[..], value)
-                ).map(|v| OperatorFrequencyRatio(v).to_sync())
+                OperatorFrequencyRatio::from_text(v)
+                    .map(|v| v.to_sync())
             },
             sync_to_processing: |v| ProcessingValue::OperatorFrequencyRatio(
                 OperatorFrequencyRatio::from_sync(v)
@@ -191,9 +199,8 @@ impl PresetParameter {
             name: format!("Op. {} freq. free", index + 1),
             unit_from_sync: |_| "".to_string(),
             sync_from_text: |v| {
-                v.parse::<f64>()
-                    .map(|v| OperatorFrequencyFree(v).to_sync()) // FIXME: clamp value first
-                    .ok()
+                OperatorFrequencyFree::from_text(v)
+                    .map(|v| v.to_sync())
             },
             sync_to_processing: |v| ProcessingValue::OperatorFrequencyFree(
                 OperatorFrequencyFree::from_sync(v)
@@ -254,16 +261,9 @@ impl PresetParameter {
             value: AtomicPositiveDouble::new(value),
             name: format!("Op. {} wave type", index + 1),
             unit_from_sync: |_| "".to_string(),
-            sync_from_text: |value| {
-                let value = value.to_lowercase();
-
-                if value.contains("sin"){
-                    Some(OperatorWaveType(WaveType::Sine).to_sync())
-                } else if value.contains("noise") {
-                    Some(OperatorWaveType(WaveType::WhiteNoise).to_sync())
-                } else {
-                    None
-                }
+            sync_from_text: |v| {
+                OperatorWaveType::from_text(v)
+                    .map(|v| v.to_sync())
             },
             sync_to_processing: |v| ProcessingValue::OperatorWaveType(
                 OperatorWaveType::from_sync(v)
@@ -354,14 +354,9 @@ impl PresetParameter {
             value: AtomicPositiveDouble::new(value),
             name: format!("Op. 3 mod out"),
             unit_from_sync: |_| "".to_string(),
-            sync_from_text: |value| {
-                if let Ok(value) = value.parse::<usize>(){
-                    if value == 1 || value == 2 {
-                        return Some(OperatorModulationTarget2(value - 1).to_sync());
-                    }
-                }
-
-                None
+            sync_from_text: |v| {
+                OperatorModulationTarget2::from_text(v)
+                    .map(|v| v.to_sync())
             },
             sync_to_processing: |v| ProcessingValue::OperatorModulationTarget2(
                 OperatorModulationTarget2::from_sync(v)
@@ -377,14 +372,9 @@ impl PresetParameter {
             value: AtomicPositiveDouble::new(value),
             name: format!("Op. 4 mod out"),
             unit_from_sync: |_| "".to_string(),
-            sync_from_text: |value| {
-                if let Ok(value) = value.parse::<usize>(){
-                    if value == 1 || value == 2 || value == 3 {
-                        return Some(OperatorModulationTarget3(value - 1).to_sync());
-                    }
-                }
-
-                None
+            sync_from_text: |v| {
+                OperatorModulationTarget3::from_text(v)
+                    .map(|v| v.to_sync())
             },
             sync_to_processing: |v| ProcessingValue::OperatorModulationTarget3(
                 OperatorModulationTarget3::from_sync(v)
