@@ -95,8 +95,8 @@ impl ProcessingParameters {
         match index {
             0 => self.master_volume.set_value(values::MasterVolume::from_sync(value).0),
             1 => self.master_frequency.set_value(values::MasterFrequency::from_sync(value).0),
+            2 => self.operators[0].volume.set_value(values::OperatorVolume::from_sync(value).0),
             /*
-            2 => Some(&mut self.operators[0].volume),
             3 => Some(&mut self.operators[0].panning),
             4 => Some(&mut self.operators[0].wave_type),
             5 => Some(&mut self.operators[0].modulation_index),

@@ -12,6 +12,15 @@ pub trait ProcessingValueConversion {
 
 
 #[derive(Debug, Clone, Copy)]
+pub enum ProcessingValue {
+    MasterVolume(MasterVolume),
+    MasterFrequency(MasterFrequency),
+    OperatorVolume(OperatorVolume),
+    OperatorAdditive(OperatorAdditive),
+}
+
+
+#[derive(Debug, Clone, Copy)]
 pub struct MasterVolume(pub f64);
 
 
@@ -69,7 +78,58 @@ impl ProcessingValueConversion for MasterFrequency {
 
 
 #[derive(Debug, Clone, Copy)]
-pub enum ProcessingValue {
-    MasterVolume(MasterVolume),
-    MasterFrequency(MasterFrequency),
+pub struct OperatorVolume(pub f64);
+
+
+impl OperatorVolume {
+    pub fn new(index: usize) -> Self {
+        if index == 0 {
+            Self(DEFAULT_OPERATOR_VOLUME)
+        } else {
+            Self(0.0)
+        }
+    }
+}
+
+
+impl ProcessingValueConversion for OperatorVolume {
+    fn from_sync(sync: f64) -> Self {
+        Self(sync * 2.0)
+    }
+    fn to_sync(self) -> f64 {
+        self.0 / 2.0
+    }
+    fn format(self) -> String {
+        format!("{:.02}", self.0)
+    }
+    fn format_sync(value: f64) -> String {
+        Self::from_sync(value).format()
+    }
+}
+
+
+#[derive(Debug, Clone, Copy)]
+pub struct OperatorAdditive(pub f64);
+
+
+impl Default for OperatorAdditive {
+    fn default() -> Self {
+        Self(DEFAULT_OPERATOR_ADDITIVE_FACTOR)
+    }
+}
+
+
+impl ProcessingValueConversion for OperatorAdditive {
+    fn from_sync(sync: f64) -> Self {
+        Self(sync)
+    }
+    fn to_sync(self) -> f64 {
+        self.0
+    }
+    fn format(self) -> String {
+        format!("{:.02}%", (self.0 * 100.0))
+    }
+    fn format_sync(value: f64) -> String {
+        Self::from_sync(value).format()
+    }
 }
