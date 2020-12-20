@@ -1,6 +1,7 @@
 use vst2_helpers::processing_parameters::utils::*;
 use vst2_helpers::utils::atomic_double::AtomicPositiveDouble;
 
+use crate::common::*;
 use crate::constants::*;
 
 use super::values::*;
@@ -97,7 +98,7 @@ impl PresetParameter {
             value_from_text: |v| {
                 v.parse::<f64>().ok().map(|value|
                     round_to_step(&OPERATOR_RATIO_STEPS[..], value)
-                )
+                ).map(|v| OperatorFrequencyRatio(v).to_sync())
             },
             to_processing: |v| ProcessingValue::OperatorFrequencyRatio(
                 OperatorFrequencyRatio::from_sync(v)
@@ -163,6 +164,31 @@ impl PresetParameter {
                 OperatorModulationIndex::from_sync(v)
             ),
             format: |v| OperatorModulationIndex::from_sync(v).format(),
+        }
+    }
+
+    pub fn operator_wave_type(index: usize) -> Self {
+        let value = OperatorWaveType::default().to_sync();
+
+        Self {
+            value: AtomicPositiveDouble::new(value),
+            name: format!("Op. {} wave type", index + 1),
+            unit_from_value: |_| "".to_string(),
+            value_from_text: |value| {
+                let value = value.to_lowercase();
+
+                if value.contains("sin"){
+                    Some(OperatorWaveType(WaveType::Sine).to_sync())
+                } else if value.contains("noise") {
+                    Some(OperatorWaveType(WaveType::WhiteNoise).to_sync())
+                } else {
+                    None
+                }
+            },
+            to_processing: |v| ProcessingValue::OperatorWaveType(
+                OperatorWaveType::from_sync(v)
+            ),
+            format: |v| OperatorWaveType::from_sync(v).format(),
         }
     }
 }

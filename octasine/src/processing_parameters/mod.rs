@@ -97,7 +97,7 @@ impl ProcessingParameters {
             1 => self.master_frequency.set_value(values::MasterFrequency::from_sync(value).0),
             2 => self.operators[0].volume.set_value(values::OperatorVolume::from_sync(value).0),
             // 3 => Some(&mut self.operators[0].panning),
-            // 4 => Some(&mut self.operators[0].wave_type),
+            4 => self.operators[0].wave_type.set_value(values::OperatorWaveType::from_sync(value).0),
             5 => self.operators[0].modulation_index.set_value(values::OperatorModulationIndex::from_sync(value).0),
             6 => self.operators[0].feedback.set_value(values::OperatorFeedback::from_sync(value).0),
             7 => self.operators[0].frequency_ratio.set_value(values::OperatorFrequencyRatio::from_sync(value).0),
