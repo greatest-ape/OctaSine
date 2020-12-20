@@ -18,6 +18,7 @@ pub struct ProcessingParameterOperatorEnvelope {
     pub release_duration: ProcessingParameterOperatorReleaseDuration,
 }
 
+
 impl ProcessingParameterOperatorEnvelope {
     fn new() -> Self {
         Self {
@@ -68,11 +69,13 @@ impl ProcessingParameterOperator {
 
 pub type ProcessingParameterOperators = [ProcessingParameterOperator; NUM_OPERATORS];
 
+
 pub struct ProcessingParameters {
     pub master_volume: ProcessingParameterMasterVolume,
     pub master_frequency: ProcessingParameterMasterFrequency,
     pub operators: ProcessingParameterOperators,
 }
+
 
 impl Default for ProcessingParameters {
     fn default() -> Self {
@@ -174,15 +177,15 @@ impl ProcessingParameters {
 }
 
 
-/*
 #[cfg(test)]
 mod tests {
     use assert_approx_eq::assert_approx_eq;
 
     #[test]
     fn test_operator_panning_left_and_right(){
-        use vst2_helpers::processing_parameters::interpolatable_value::*;
-        use crate::presets::values::ProcessingValueConversion;
+        use crate::parameters::processing::values::ProcessingValueConversion;
+        use crate::common::*;
+        use super::interpolatable_value::*;
         use super::*;
 
         let mut operator = ProcessingParameterOperatorPanning::default();
@@ -216,4 +219,3 @@ mod tests {
         assert_approx_eq!(left_and_right[1], 1.0);
     }
 }
-*/
