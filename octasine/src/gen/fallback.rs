@@ -54,7 +54,10 @@ pub fn gen_samples_for_voices(octasine: &mut OctaSine) -> (f64, f64) {
     if let Some(indeces) = changed_preset_parameters {
         for (index, opt_new_value) in indeces.iter().enumerate(){
             if let Some(new_value) = opt_new_value {
-                octasine.processing.parameters.set(index, *new_value);
+                octasine.processing.parameters.set_from_sync(
+                    index,
+                    *new_value
+                );
             }
         }
     }

@@ -5,11 +5,11 @@ use iced_baseview::{
     Element, Color, Rectangle, Point, Length, Vector, Size, mouse
 };
 
-use vst2_helpers::processing_parameters::ParameterValueConversion;
 use crate::GuiSyncHandle;
-use crate::processing_parameters::{
-    ProcessingParameterOperatorModulationTarget2,
-    ProcessingParameterOperatorModulationTarget3,
+use crate::presets::values::{
+    ProcessingValueConversion,
+    OperatorModulationTarget2,
+    OperatorModulationTarget3,
 };
 
 use super::Message;
@@ -348,11 +348,11 @@ impl ModulationMatrixParameters {
     }
 
     fn convert_operator_3_target(value: f64) -> usize {
-        ProcessingParameterOperatorModulationTarget2::to_processing(value)
+        OperatorModulationTarget2::from_sync(value).0
     }
 
     fn convert_operator_4_target(value: f64) -> usize {
-        ProcessingParameterOperatorModulationTarget3::to_processing(value)
+        OperatorModulationTarget3::from_sync(value).0
     }
 }
 

@@ -75,6 +75,8 @@ pub enum ProcessingValue {
     OperatorDecayDuration(OperatorDecayDuration),
     OperatorDecayVolume(OperatorDecayVolume),
     OperatorReleaseDuration(OperatorReleaseDuration),
+    OperatorModulationTarget2(OperatorModulationTarget2),
+    OperatorModulationTarget3(OperatorModulationTarget3),
 }
 
 
@@ -467,6 +469,62 @@ impl ProcessingValueConversion for OperatorPanning {
         } else {
             "C".to_string()
         }
+    }
+    fn format_sync(value: f64) -> String {
+        Self::from_sync(value).format()
+    }
+}
+
+
+
+#[derive(Debug, Clone, Copy)]
+pub struct OperatorModulationTarget2(pub usize);
+
+
+impl Default for OperatorModulationTarget2 {
+    fn default() -> Self {
+        Self(DEFAULT_OPERATOR_3_MOD_TARGET)
+    }
+}
+
+
+impl ProcessingValueConversion for OperatorModulationTarget2 {
+    fn from_sync(sync: f64) -> Self {
+        Self(map_parameter_value_to_step(&[0, 1], sync))
+    }
+    fn to_sync(self) -> f64 {
+        map_step_to_parameter_value(&[0, 1], self.0)
+    }
+    fn format(self) -> String {
+        format!("Operator {}", self.0 + 1)
+    }
+    fn format_sync(value: f64) -> String {
+        Self::from_sync(value).format()
+    }
+}
+
+
+
+#[derive(Debug, Clone, Copy)]
+pub struct OperatorModulationTarget3(pub usize);
+
+
+impl Default for OperatorModulationTarget3 {
+    fn default() -> Self {
+        Self(DEFAULT_OPERATOR_4_MOD_TARGET)
+    }
+}
+
+
+impl ProcessingValueConversion for OperatorModulationTarget3 {
+    fn from_sync(sync: f64) -> Self {
+        Self(map_parameter_value_to_step(&[0, 1, 2], sync))
+    }
+    fn to_sync(self) -> f64 {
+        map_step_to_parameter_value(&[0, 1, 2], self.0)
+    }
+    fn format(self) -> String {
+        format!("Operator {}", self.0 + 1)
     }
     fn format_sync(value: f64) -> String {
         Self::from_sync(value).format()

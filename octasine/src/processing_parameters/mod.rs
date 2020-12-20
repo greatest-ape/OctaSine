@@ -89,25 +89,23 @@ impl Default for ProcessingParameters {
 
 #[allow(clippy::len_without_is_empty)]
 impl ProcessingParameters {
-    pub fn set(&mut self, index: usize, value: f64){
-        use crate::presets::values::ProcessingValueConversion;
-
+    pub fn set_from_sync(&mut self, index: usize, value: f64){
         match index {
-            0 => self.master_volume.set_value(values::MasterVolume::from_sync(value).0),
-            1 => self.master_frequency.set_value(values::MasterFrequency::from_sync(value).0),
-            2 => self.operators[0].volume.set_value(values::OperatorVolume::from_sync(value).0),
-            3 => self.operators[0].panning.set_value(values::OperatorPanning::from_sync(value).0),
-            4 => self.operators[0].wave_type.set_value(values::OperatorWaveType::from_sync(value).0),
-            5 => self.operators[0].modulation_index.set_value(values::OperatorModulationIndex::from_sync(value).0),
-            6 => self.operators[0].feedback.set_value(values::OperatorFeedback::from_sync(value).0),
-            7 => self.operators[0].frequency_ratio.set_value(values::OperatorFrequencyRatio::from_sync(value).0),
-            8 => self.operators[0].frequency_free.set_value(values::OperatorFrequencyFree::from_sync(value).0),
-            9 => self.operators[0].frequency_fine.set_value(values::OperatorFrequencyFine::from_sync(value).0),
-            10 => self.operators[0].volume_envelope.attack_duration.set_value(values::OperatorAttackDuration::from_sync(value).0),
-            11 => self.operators[0].volume_envelope.attack_end_value.set_value(values::OperatorAttackVolume::from_sync(value).0),
-            12 => self.operators[0].volume_envelope.decay_duration.set_value(values::OperatorDecayDuration::from_sync(value).0),
-            13 => self.operators[0].volume_envelope.decay_end_value.set_value(values::OperatorAttackVolume::from_sync(value).0),
-            14 => self.operators[0].volume_envelope.release_duration.set_value(values::OperatorReleaseDuration::from_sync(value).0),
+            0 => self.master_volume.set_from_sync(value),
+            1 => self.master_frequency.set_from_sync(value),
+            2 => self.operators[0].volume.set_from_sync(value),
+            3 => self.operators[0].panning.set_from_sync(value),
+            4 => self.operators[0].wave_type.set_from_sync(value),
+            5 => self.operators[0].modulation_index.set_from_sync(value),
+            6 => self.operators[0].feedback.set_from_sync(value),
+            7 => self.operators[0].frequency_ratio.set_from_sync(value),
+            8 => self.operators[0].frequency_free.set_from_sync(value),
+            9 => self.operators[0].frequency_fine.set_from_sync(value),
+            10 => self.operators[0].volume_envelope.attack_duration.set_from_sync(value),
+            11 => self.operators[0].volume_envelope.attack_end_value.set_from_sync(value),
+            12 => self.operators[0].volume_envelope.decay_duration.set_from_sync(value),
+            13 => self.operators[0].volume_envelope.decay_end_value.set_from_sync(value),
+            14 => self.operators[0].volume_envelope.release_duration.set_from_sync(value),
             /*
             15 => Some(&mut self.operators[1].volume),
             16 => Some(&mut self.operators[1].panning),

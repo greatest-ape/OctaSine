@@ -30,6 +30,7 @@ pub trait ProcessingParameter {
     fn get_value(&mut self, extra_data: Self::ExtraData) -> Self::Value;
     fn get_target_value(&self) -> Self::Value;
     fn set_value(&mut self, value: Self::Value);
+    fn set_from_sync(&mut self, value: f64);
 }
 
 pub trait ProcessingParameterPresetValueAccess {

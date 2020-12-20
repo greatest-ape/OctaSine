@@ -1,19 +1,20 @@
 use std::f64::consts::FRAC_PI_2;
 
 use vst2_helpers::processing_parameters::*;
-use vst2_helpers::processing_parameters::utils::*;
 use vst2_helpers::processing_parameters::interpolatable_value::*;
 
 use vst2_helpers::*;
 
 use crate::common::*;
 use crate::constants::*;
+use crate::presets::values::*;
 
 
 // Master volume
 
 create_interpolatable_processing_parameter!(
     ProcessingParameterMasterVolume,
+    MasterVolume,
     DEFAULT_MASTER_VOLUME,
     TimeCounter
 );
@@ -23,6 +24,7 @@ create_interpolatable_processing_parameter!(
 
 create_simple_processing_parameter!(
     ProcessingParameterMasterFrequency,
+    MasterFrequency,
     f64,
     DEFAULT_MASTER_FREQUENCY
 );
@@ -30,7 +32,12 @@ create_simple_processing_parameter!(
 
 // Operator volume
 
-create_interpolatable_processing_parameter!(ProcessingParameterOperatorVolume, DEFAULT_OPERATOR_VOLUME, TimeCounter);
+create_interpolatable_processing_parameter!(
+    ProcessingParameterOperatorVolume,
+    OperatorVolume,
+    DEFAULT_OPERATOR_VOLUME,
+    TimeCounter
+);
 
 impl ProcessingParameterOperatorVolume {
     pub fn new(operator_index: usize) -> Self {
@@ -47,120 +54,140 @@ impl ProcessingParameterOperatorVolume {
 
 // Additive factor
 
-create_interpolatable_processing_parameter!(ProcessingParameterOperatorAdditiveFactor, DEFAULT_OPERATOR_ADDITIVE_FACTOR, TimeCounter);
+create_interpolatable_processing_parameter!(
+    ProcessingParameterOperatorAdditiveFactor,
+    OperatorAdditive,
+    DEFAULT_OPERATOR_ADDITIVE_FACTOR,
+    TimeCounter
+);
 
 
 // Frequency - ratio
 
-create_simple_processing_parameter!(ProcessingParameterOperatorFrequencyRatio, f64, DEFAULT_OPERATOR_FREQUENCY_RATIO);
+create_simple_processing_parameter!(
+    ProcessingParameterOperatorFrequencyRatio,
+    OperatorFrequencyRatio,
+    f64,
+    DEFAULT_OPERATOR_FREQUENCY_RATIO
+);
 
 
 // Frequency - free
 
-create_simple_processing_parameter!(ProcessingParameterOperatorFrequencyFree, f64, DEFAULT_OPERATOR_FREQUENCY_FREE);
+create_simple_processing_parameter!(
+    ProcessingParameterOperatorFrequencyFree,
+    OperatorFrequencyFree,
+    f64,
+    DEFAULT_OPERATOR_FREQUENCY_FREE
+);
 
 
 // Frequency - fine
 
-create_simple_processing_parameter!(ProcessingParameterOperatorFrequencyFine, f64, DEFAULT_OPERATOR_FREQUENCY_FINE);
+create_simple_processing_parameter!(
+    ProcessingParameterOperatorFrequencyFine,
+    OperatorFrequencyFine,
+    f64,
+    DEFAULT_OPERATOR_FREQUENCY_FINE
+);
 
 
 // Feedback
 
-create_interpolatable_processing_parameter!(ProcessingParameterOperatorFeedback, DEFAULT_OPERATOR_FEEDBACK, TimeCounter);
+create_interpolatable_processing_parameter!(
+    ProcessingParameterOperatorFeedback,
+    OperatorFeedback,
+    DEFAULT_OPERATOR_FEEDBACK,
+    TimeCounter
+);
 
 
 // Modulation index
 
-create_interpolatable_processing_parameter!(ProcessingParameterOperatorModulationIndex, DEFAULT_OPERATOR_MODULATION_INDEX, TimeCounter);
+create_interpolatable_processing_parameter!(
+    ProcessingParameterOperatorModulationIndex,
+    OperatorModulationIndex,
+    DEFAULT_OPERATOR_MODULATION_INDEX,
+    TimeCounter
+);
 
 
 // Wave type
 
-create_simple_processing_parameter!(ProcessingParameterOperatorWaveType, WaveType, DEFAULT_OPERATOR_WAVE_TYPE);
+create_simple_processing_parameter!(
+    ProcessingParameterOperatorWaveType,
+    OperatorWaveType,
+    WaveType,
+    DEFAULT_OPERATOR_WAVE_TYPE
+);
 
 
 // Attack duration
 
-create_simple_processing_parameter!(ProcessingParameterOperatorAttackDuration, f64, DEFAULT_ENVELOPE_ATTACK_DURATION);
+create_simple_processing_parameter!(
+    ProcessingParameterOperatorAttackDuration,
+    OperatorAttackDuration,
+    f64,
+    DEFAULT_ENVELOPE_ATTACK_DURATION
+);
 
 
 // Attack volume
 
-create_simple_processing_parameter!(ProcessingParameterOperatorAttackVolume, f64, DEFAULT_ENVELOPE_ATTACK_VOLUME);
+create_simple_processing_parameter!(
+    ProcessingParameterOperatorAttackVolume,
+    OperatorAttackVolume,
+    f64,
+    DEFAULT_ENVELOPE_ATTACK_VOLUME
+);
 
 
 // Decay duration
 
-create_simple_processing_parameter!(ProcessingParameterOperatorDecayDuration, f64, DEFAULT_ENVELOPE_DECAY_DURATION);
+create_simple_processing_parameter!(
+    ProcessingParameterOperatorDecayDuration,
+    OperatorDecayDuration,
+    f64,
+    DEFAULT_ENVELOPE_DECAY_DURATION
+);
 
 
 // Decay volume
 
-create_simple_processing_parameter!(ProcessingParameterOperatorDecayVolume, f64, DEFAULT_ENVELOPE_DECAY_VOLUME);
+create_simple_processing_parameter!(
+    ProcessingParameterOperatorDecayVolume,
+    OperatorDecayVolume,
+    f64,
+    DEFAULT_ENVELOPE_DECAY_VOLUME
+);
 
 
 // Release duration
 
-create_simple_processing_parameter!(ProcessingParameterOperatorReleaseDuration, f64, DEFAULT_ENVELOPE_RELEASE_DURATION);
+create_simple_processing_parameter!(
+    ProcessingParameterOperatorReleaseDuration,
+    OperatorReleaseDuration,
+    f64,
+    DEFAULT_ENVELOPE_RELEASE_DURATION
+);
 
 
 // Modulation target
 
-create_simple_processing_parameter!(ProcessingParameterOperatorModulationTarget2, usize, DEFAULT_OPERATOR_3_MOD_TARGET);
-
-impl ParameterValueConversion for ProcessingParameterOperatorModulationTarget2 {
-    type ProcessingParameterValue = usize;
-
-    fn to_processing(value: f64) -> Self::ProcessingParameterValue {
-        map_parameter_value_to_step(&[0, 1], value)
-    }
-    fn to_preset(value: Self::ProcessingParameterValue) -> f64 {
-        map_step_to_parameter_value(&[0, 1], value)
-    }
-
-    fn parse_string_value(value: String) -> Option<usize> {
-        if let Ok(value) = value.parse::<usize>(){
-            if value == 1 || value == 2 {
-                return Some(value - 1);
-            }
-        }
-
-        None
-    }
-
-    fn format_processing(internal_value: Self::ProcessingParameterValue) -> String {
-        format!("Operator {}", internal_value + 1)
-    }
-}
+create_simple_processing_parameter!(
+    ProcessingParameterOperatorModulationTarget2,
+    OperatorModulationTarget2,
+    usize,
+    DEFAULT_OPERATOR_3_MOD_TARGET
+);
 
 
-create_simple_processing_parameter!(ProcessingParameterOperatorModulationTarget3, usize, DEFAULT_OPERATOR_4_MOD_TARGET);
-
-impl ParameterValueConversion for ProcessingParameterOperatorModulationTarget3 {
-    type ProcessingParameterValue = usize;
-
-    fn to_processing(value: f64) -> Self::ProcessingParameterValue {
-        map_parameter_value_to_step(&[0, 1, 2], value)
-    }
-    fn to_preset(value: Self::ProcessingParameterValue) -> f64 {
-        map_step_to_parameter_value(&[0, 1, 2], value)
-    }
-
-    fn parse_string_value(value: String) -> Option<usize> {
-        if let Ok(value) = value.parse::<usize>(){
-            if value == 1 || value == 2 || value == 3 {
-                return Some(value - 1);
-            }
-        }
-
-        None
-    }
-
-    fn format_processing(internal_value: Self::ProcessingParameterValue) -> String {
-        format!("Operator {}", internal_value + 1)
-    }
-}
+create_simple_processing_parameter!(
+    ProcessingParameterOperatorModulationTarget3,
+    OperatorModulationTarget3,
+    usize,
+    DEFAULT_OPERATOR_4_MOD_TARGET
+);
 
 
 #[derive(Debug)]
@@ -226,6 +253,9 @@ impl ProcessingParameter for ProcessingParameterOperatorPanning {
     }
     fn get_target_value(&self) -> Self::Value {
         self.value.target_value
+    }
+    fn set_from_sync(&mut self, value: f64) {
+        self.set_value(OperatorPanning::from_sync(value).0)
     }
 }
 

@@ -524,6 +524,9 @@ pub mod tests {
         fn set_value(&mut self, value: Self::Value){
             self.value = value;
         }
+        fn set_from_sync(&mut self, value: f64){
+            self.value = value;
+        }
     }
 
     impl ParameterValueConversion for TestProcessingParameter {
