@@ -2,7 +2,7 @@ use iced_baseview::{
     Color, Column, Element, Text, Length, HorizontalAlignment, Align, Row, Radio
 };
 
-use vst2_helpers::processing_parameters::utils::{
+use crate::parameters::processing::utils::{
     map_parameter_value_to_step,
     map_step_to_parameter_value
 };

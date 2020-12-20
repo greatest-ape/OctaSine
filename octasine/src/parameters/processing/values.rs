@@ -1,7 +1,7 @@
-use vst2_helpers::processing_parameters::utils::*;
-
 use crate::common::*;
 use crate::constants::*;
+
+use super::utils::*;
 
 
 macro_rules! impl_envelope_duration_value_conversion {

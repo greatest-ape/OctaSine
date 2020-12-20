@@ -4,8 +4,8 @@ use iced_baseview::{
 use iced_audio::{
     knob, Normal, NormalParam, text_marks, tick_marks
 };
-use vst2_helpers::processing_parameters::utils::map_value_to_parameter_value_with_steps;
 
+use crate::parameters::processing::utils::map_value_to_parameter_value_with_steps;
 use crate::GuiSyncHandle;
 use crate::constants::*;
 

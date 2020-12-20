@@ -1,11 +1,12 @@
-use vst2_helpers::utils::atomic_double::AtomicPositiveDouble;
-use vst2_helpers::processing_parameters::utils::*;
-
 use crate::common::*;
 use crate::constants::*;
 
-use crate::preset_bank::PresetParameter;
+use crate::preset_bank::{
+    PresetParameter,
+    utils::atomic_double::AtomicPositiveDouble
+};
 use crate::parameters::processing::values::*;
+use crate::parameters::processing::utils::*;
 
 
 pub fn create_parameters() -> Vec<PresetParameter> {

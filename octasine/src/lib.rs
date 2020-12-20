@@ -23,23 +23,21 @@ use vst::plugin::{Category, Plugin, Info, CanDo, HostCallback, PluginParameters}
 use vst::host::Host;
 
 use vst2_helpers::approximations::*;
-use vst2_helpers::presets::*;
-use vst2_helpers::{crate_version_to_vst_format, crate_version};
 
 use crate::common::*;
 use crate::constants::*;
 use crate::gui::Gui;
 use crate::voices::*;
 use crate::parameters::processing::*;
-// use crate::preset_parameters::*;
+use crate::parameters::processing::interpolatable_value::TimeCounter;
 
 
 pub type OctaSinePresetBank = preset_bank::PresetBank;
 
 
-pub fn built_in_preset_bank<P>() -> PresetBank<P> where P: PresetParameters {
-    PresetBank::new_from_bytes(include_bytes!("../presets/preset-bank.json"))
-}
+// pub fn built_in_preset_bank<P>() -> PresetBank<P> where P: PresetParameters {
+//     PresetBank::new_from_bytes(include_bytes!("../presets/preset-bank.json"))
+// }
 
 
 /// State used for processing
@@ -364,4 +362,35 @@ impl vst::plugin::PluginParameters for SyncOnlyState {
         self.import_bank_from_bytes(data);
     }
     */
+}
+
+
+#[macro_export]
+macro_rules! crate_version {
+    () => {
+        env!("CARGO_PKG_VERSION").to_string()
+    };
+}
+
+
+pub fn crate_version_to_vst_format(crate_version: String) -> i32 {
+    format!("{:0<4}", crate_version.replace(".", ""))
+        .parse()
+        .expect("convert crate version to i32")
+}
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[allow(clippy::zero_prefixed_literal)]
+    #[test]
+    fn test_crate_version_to_vst_format(){
+        assert_eq!(crate_version_to_vst_format("1".to_string()), 1000);
+        assert_eq!(crate_version_to_vst_format("0.1".to_string()), 0100);
+        assert_eq!(crate_version_to_vst_format("0.0.2".to_string()), 0020);
+        assert_eq!(crate_version_to_vst_format("0.5.2".to_string()), 0520);
+        assert_eq!(crate_version_to_vst_format("1.0.1".to_string()), 1010);
+    }
 }

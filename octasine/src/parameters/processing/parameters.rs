@@ -1,14 +1,92 @@
 use std::f64::consts::FRAC_PI_2;
 
-use vst2_helpers::processing_parameters::*;
-use vst2_helpers::processing_parameters::interpolatable_value::*;
-
-use vst2_helpers::*;
-
 use crate::common::*;
 use crate::constants::*;
 
 use super::values::*;
+use super::interpolatable_value::*;
+
+pub trait ProcessingParameter {
+    type Value;
+    type ExtraData;
+
+    fn get_value(&mut self, extra_data: Self::ExtraData) -> Self::Value;
+    fn get_target_value(&self) -> Self::Value;
+    fn set_value(&mut self, value: Self::Value);
+    fn set_from_sync(&mut self, value: f64);
+}
+
+
+macro_rules! create_interpolatable_processing_parameter {
+    ($name:ident, $value_struct:ident, $default:ident, $extra_data:ident) => {
+        #[derive(Debug, Clone)]
+        pub struct $name {
+            value: InterpolatableProcessingValue,
+        }
+
+        impl Default for $name {
+            fn default() -> Self {
+                Self {
+                    value: InterpolatableProcessingValue::new($default)
+                }
+            }
+        }
+
+        impl ProcessingParameter for $name {
+            type Value = f64;
+            type ExtraData = $extra_data;
+
+            fn get_value(&mut self, extra_data: Self::ExtraData) -> Self::Value {
+                self.value.get_value(extra_data, &mut |_| ())
+            }
+            fn get_target_value(&self) -> Self::Value {
+                self.value.target_value
+            }
+            fn set_value(&mut self, value: Self::Value) {
+                self.value.set_value(value)
+            }
+            fn set_from_sync(&mut self, value: f64){
+                self.set_value($value_struct::from_sync(value).0)
+            }
+        }
+    }
+}
+
+
+macro_rules! create_simple_processing_parameter {
+    ($name:ident, $value_struct:ident, $type:ty, $default:ident) => {
+        #[derive(Debug, Clone)]
+        pub struct $name {
+            pub value: $type
+        }
+
+        impl Default for $name {
+            fn default() -> Self {
+                Self {
+                    value: $default
+                }
+            }
+        }
+
+        impl ProcessingParameter for $name {
+            type Value = $type;
+            type ExtraData = ();
+
+            fn get_value(&mut self, _: Self::ExtraData) -> Self::Value {
+                self.value
+            }
+            fn get_target_value(&self) -> Self::Value {
+                self.value
+            }
+            fn set_value(&mut self, value: Self::Value){
+                self.value = value;
+            }
+            fn set_from_sync(&mut self, value: f64){
+                self.set_value($value_struct::from_sync(value).0)
+            }
+        }
+    };
+}
 
 
 // Master volume
