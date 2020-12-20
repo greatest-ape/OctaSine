@@ -182,7 +182,7 @@ impl Plugin for OctaSine {
 
         let sync_only = Arc::new(SyncOnlyState {
             host,
-            presets: OctaSinePresetBank::default(), // built_in_preset_bank()
+            presets: OctaSinePresetBank::new(parameters::preset::create_parameters), // built_in_preset_bank()
         });
 
         let editor = Gui::new(sync_only.clone());

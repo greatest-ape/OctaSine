@@ -8,6 +8,15 @@ use crate::preset_bank::PresetParameter;
 use crate::parameters::processing::values::*;
 
 
+pub fn create_parameters() -> Vec<PresetParameter> {
+    vec![
+        PresetParameter::master_volume(),
+        PresetParameter::master_frequency(),
+        PresetParameter::operator_volume(0),
+    ]
+}
+
+
 impl PresetParameter {
     pub fn master_volume() -> Self {
         let value = MasterVolume::default().to_sync();
