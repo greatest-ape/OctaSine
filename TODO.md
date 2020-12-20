@@ -2,9 +2,8 @@
 
 ## Simplify presets
 
-* Hook up all parameters, both PresetParameter and ProcessingParameter
+* Uncomment and fix preset parameter tests
 * Rename PresetParameter to SyncParameter?
-* Remember to look for tests before removing files
 
 ## GUI
 
