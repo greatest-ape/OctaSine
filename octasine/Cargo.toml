@@ -6,9 +6,10 @@ license = "GPL-3.0"
 edition = "2018"
 
 [features]
-default = []
+default = ["logging", "gui"]
 simd = ["simdeez", "arrayvec"]
 logging = ["dirs", "log", "log-panics", "simplelog"]
+gui = ["iced_baseview", "iced_audio", "raw-window-handle"]
 
 [lib]
 name = "octasine"
@@ -36,9 +37,18 @@ simplelog = { version = "0.8", optional = true, default-features = false }
 
 # GUI
 
-iced_baseview = { git = "https://github.com/BillyDM/iced_baseview.git", branch = "main", features = ["canvas", "image"] }
-iced_audio = { git = "https://github.com/BillyDM/iced_audio.git", branch = "main" }
-raw-window-handle = "0.3"
+raw-window-handle = { version = "0.3", optional = true }
+
+[dependencies.iced_baseview]
+git = "https://github.com/BillyDM/iced_baseview.git"
+branch = "main"
+features = ["canvas", "image"]
+optional = true
+
+[dependencies.iced_audio]
+git = "https://github.com/BillyDM/iced_audio.git"
+branch = "main"
+optional = true
 
 # SIMD
 

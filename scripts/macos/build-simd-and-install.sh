@@ -15,7 +15,7 @@ TMP_DIR="tmp"
 cd octasine_vst2_plugin
 
 # Don't use RUSTFLAGS="-C target-cpu=native", so that distribution works
-cargo +nightly build --release --features "simd logging"
+cargo +nightly build --release --features "simd"
 
 ../contrib/osx_vst_bundler.sh "$NAME" ../target/release/liboctasine.dylib
 

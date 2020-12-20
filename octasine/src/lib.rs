@@ -6,10 +6,12 @@ pub mod approximations;
 pub mod common;
 pub mod constants;
 pub mod gen;
-pub mod gui;
 pub mod voices;
 pub mod parameters;
 pub mod preset_bank;
+
+#[cfg(feature = "gui")]
+pub mod gui;
 
 use std::sync::Arc;
 use std::ops::Deref;
@@ -26,15 +28,9 @@ use vst::host::Host;
 use approximations::*;
 use common::*;
 use constants::*;
-use gui::Gui;
 use voices::*;
 use parameters::processing::*;
 use preset_bank::PresetBank;
-
-
-pub fn built_in_preset_bank() -> PresetBank {
-    PresetBank::new_from_bytes(include_bytes!("../presets/preset-bank.json"))
-}
 
 
 /// State used for processing
@@ -55,60 +51,12 @@ pub struct SyncOnlyState {
     pub presets: PresetBank,
 }
 
-
-/// Trait passed to GUI code for encapsulation
-pub trait GuiSyncHandle: Send + Sync + 'static {
-    fn get_bank(&self) -> &PresetBank;
-    fn set_parameter(&self, index: usize, value: f64);
-    fn get_parameter(&self, index: usize) -> f64;
-    fn format_parameter_value(&self, index: usize, value: f64) -> String;
-    fn update_host_display(&self);
-}
-
-
-impl GuiSyncHandle for SyncOnlyState {
-    fn get_bank(&self) -> &PresetBank {
-        &self.presets
-    }
-    fn set_parameter(&self, index: usize, value: f64){
-        self.presets.set_parameter_from_gui(index, value);
-    }
-    fn get_parameter(&self, index: usize) -> f64 {
-        self.presets.get_parameter_value(index).unwrap() // FIXME: unwrap
-    }
-    fn format_parameter_value(&self, index: usize, value: f64) -> String {
-        self.presets.format_parameter_value(index, value).unwrap() // FIXME: unwrap
-    }
-    fn update_host_display(&self){
-        self.host.update_display();
-    }
-}
-
-
-impl <H: GuiSyncHandle>GuiSyncHandle for Arc<H> {
-    fn get_bank(&self) -> &PresetBank {
-        Deref::deref(self).get_bank()
-    }
-    fn set_parameter(&self, index: usize, value: f64){
-        Deref::deref(self).set_parameter(index, value)
-    }
-    fn get_parameter(&self, index: usize) -> f64 {
-        Deref::deref(self).get_parameter(index)
-    }
-    fn format_parameter_value(&self, index: usize, value: f64) -> String {
-        Deref::deref(self).format_parameter_value(index, value)
-    }
-    fn update_host_display(&self){
-        Deref::deref(self).update_host_display()
-    }
-}
-
-
 /// Main structure
 pub struct OctaSine {
     processing: ProcessingState,
     pub sync_only: Arc<SyncOnlyState>,
-    editor: Option<Gui>,
+    #[cfg(feature = "gui")]
+    editor: Option<crate::gui::Gui>,
 }
 
 impl Default for OctaSine {
@@ -180,11 +128,12 @@ impl Plugin for OctaSine {
             presets: built_in_preset_bank()
         });
 
-        let editor = Gui::new(sync_only.clone());
+        let editor = crate::gui::Gui::new(sync_only.clone());
 
         Self {
             processing,
             sync_only,
+            #[cfg(feature = "gui")]
             editor: Some(editor),
         }
     }
@@ -259,6 +208,7 @@ impl Plugin for OctaSine {
         Arc::clone(&self.sync_only) as Arc<dyn PluginParameters>
     }
 
+    #[cfg(feature = "gui")]
     fn get_editor(&mut self) -> Option<Box<dyn Editor>> {
         if let Some(editor) = self.editor.take(){
             Some(Box::new(editor) as Box<dyn Editor>)
@@ -359,6 +309,63 @@ impl vst::plugin::PluginParameters for SyncOnlyState {
             ::log::error!("Couldn't load bank data: {}", err)
         }
     }
+}
+
+
+cfg_if::cfg_if! {
+    if #[cfg(feature = "gui")] {
+        /// Trait passed to GUI code for encapsulation
+        pub trait GuiSyncHandle: Send + Sync + 'static {
+            fn get_bank(&self) -> &PresetBank;
+            fn set_parameter(&self, index: usize, value: f64);
+            fn get_parameter(&self, index: usize) -> f64;
+            fn format_parameter_value(&self, index: usize, value: f64) -> String;
+            fn update_host_display(&self);
+        }
+
+
+        impl GuiSyncHandle for SyncOnlyState {
+            fn get_bank(&self) -> &PresetBank {
+                &self.presets
+            }
+            fn set_parameter(&self, index: usize, value: f64){
+                self.presets.set_parameter_from_gui(index, value);
+            }
+            fn get_parameter(&self, index: usize) -> f64 {
+                self.presets.get_parameter_value(index).unwrap() // FIXME: unwrap
+            }
+            fn format_parameter_value(&self, index: usize, value: f64) -> String {
+                self.presets.format_parameter_value(index, value).unwrap() // FIXME: unwrap
+            }
+            fn update_host_display(&self){
+                self.host.update_display();
+            }
+        }
+
+
+        impl <H: GuiSyncHandle>GuiSyncHandle for Arc<H> {
+            fn get_bank(&self) -> &PresetBank {
+                Deref::deref(self).get_bank()
+            }
+            fn set_parameter(&self, index: usize, value: f64){
+                Deref::deref(self).set_parameter(index, value)
+            }
+            fn get_parameter(&self, index: usize) -> f64 {
+                Deref::deref(self).get_parameter(index)
+            }
+            fn format_parameter_value(&self, index: usize, value: f64) -> String {
+                Deref::deref(self).format_parameter_value(index, value)
+            }
+            fn update_host_display(&self){
+                Deref::deref(self).update_host_display()
+            }
+        }
+    }
+}
+
+
+pub fn built_in_preset_bank() -> PresetBank {
+    PresetBank::new_from_bytes(include_bytes!("../presets/preset-bank.json"))
 }
 
 
