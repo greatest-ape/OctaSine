@@ -4,6 +4,31 @@ use crate::common::*;
 use crate::constants::*;
 
 
+macro_rules! impl_envelope_duration_value_conversion {
+    ($struct_name:ident) => {
+        impl ProcessingValueConversion for $struct_name {
+            fn from_sync(value: f64) -> Self {
+                // Force some decay to avoid clicks
+                Self((value * ENVELOPE_MAX_DURATION)
+                    .max(ENVELOPE_MIN_DURATION))
+            }
+            fn to_sync(self) -> f64 {
+                self.0 / ENVELOPE_MAX_DURATION
+            }
+
+            fn format(self) -> String {
+                format!("{:.02}", self.0)
+            }
+
+            fn format_sync(value: f64) -> String {
+                Self::from_sync(value).format()
+            }
+        }
+    };
+}
+
+
+
 pub trait ProcessingValueConversion {
     fn from_sync(value: f64) -> Self;
     fn to_sync(self) -> f64;
@@ -24,6 +49,9 @@ pub enum ProcessingValue {
     OperatorFeedback(OperatorFeedback),
     OperatorModulationIndex(OperatorModulationIndex),
     OperatorWaveType(OperatorWaveType),
+    OperatorAttackDuration(OperatorAttackDuration),
+    OperatorDecayDuration(OperatorDecayDuration),
+    OperatorReleaseDuration(OperatorReleaseDuration),
 }
 
 
@@ -312,3 +340,48 @@ impl ProcessingValueConversion for OperatorWaveType {
         Self::from_sync(value).format()
     }
 }
+
+
+
+#[derive(Debug, Clone, Copy)]
+pub struct OperatorAttackDuration(pub f64);
+
+
+impl Default for OperatorAttackDuration {
+    fn default() -> Self {
+        Self(DEFAULT_ENVELOPE_ATTACK_DURATION)
+    }
+}
+
+
+impl_envelope_duration_value_conversion!(OperatorAttackDuration);
+
+
+
+#[derive(Debug, Clone, Copy)]
+pub struct OperatorDecayDuration(pub f64);
+
+
+impl Default for OperatorDecayDuration {
+    fn default() -> Self {
+        Self(DEFAULT_ENVELOPE_DECAY_DURATION)
+    }
+}
+
+
+impl_envelope_duration_value_conversion!(OperatorDecayDuration);
+
+
+
+#[derive(Debug, Clone, Copy)]
+pub struct OperatorReleaseDuration(pub f64);
+
+
+impl Default for OperatorReleaseDuration {
+    fn default() -> Self {
+        Self(DEFAULT_ENVELOPE_RELEASE_DURATION)
+    }
+}
+
+
+impl_envelope_duration_value_conversion!(OperatorReleaseDuration);

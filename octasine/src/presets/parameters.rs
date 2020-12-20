@@ -191,4 +191,49 @@ impl PresetParameter {
             format: |v| OperatorWaveType::from_sync(v).format(),
         }
     }
+
+    pub fn operator_attack_duration(index: usize) -> Self {
+        let value = OperatorAttackDuration::default().to_sync();
+
+        Self {
+            value: AtomicPositiveDouble::new(value),
+            name: format!("Op. {} attack time", index + 1),
+            unit_from_value: |_| "".to_string(),
+            value_from_text: |value| None, // FIXME
+            to_processing: |v| ProcessingValue::OperatorAttackDuration(
+                OperatorAttackDuration::from_sync(v)
+            ),
+            format: |v| OperatorAttackDuration::from_sync(v).format(),
+        }
+    }
+
+    pub fn operator_decay_duration(index: usize) -> Self {
+        let value = OperatorDecayDuration::default().to_sync();
+
+        Self {
+            value: AtomicPositiveDouble::new(value),
+            name: format!("Op. {} decay time", index + 1),
+            unit_from_value: |_| "".to_string(),
+            value_from_text: |value| None, // FIXME
+            to_processing: |v| ProcessingValue::OperatorDecayDuration(
+                OperatorDecayDuration::from_sync(v)
+            ),
+            format: |v| OperatorDecayDuration::from_sync(v).format(),
+        }
+    }
+
+    pub fn operator_release_duration(index: usize) -> Self {
+        let value = OperatorReleaseDuration::default().to_sync();
+
+        Self {
+            value: AtomicPositiveDouble::new(value),
+            name: format!("Op. {} release time", index + 1),
+            unit_from_value: |_| "".to_string(),
+            value_from_text: |value| None, // FIXME
+            to_processing: |v| ProcessingValue::OperatorReleaseDuration(
+                OperatorReleaseDuration::from_sync(v)
+            ),
+            format: |v| OperatorReleaseDuration::from_sync(v).format(),
+        }
+    }
 }
