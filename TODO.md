@@ -1,10 +1,5 @@
 # TODO
 
-## Simplify presets
-
-* Preset parameter from text: simple parsing etc
-* Move sync parameter text conversion tests to values.rs
-
 ## GUI
 
 * Fix ANOTHER envelope error:
@@ -35,14 +30,14 @@
 
 ## Other
 
-* manual text input in parameters: DAW integration working anywhere?
+* Preset parameter from text
+  * Implement simple parsing etc for all
+  * DAW integration working anywhere?
 * sample rate change: what needs to be done? (time reset?)
 * Nice online documentation
-* Consider logging when preset can't be loaded (see `load_bank_data`)
 
 ## Maybe do
 
-* Volume shown in dB
 * Iterator for presets and preset parameters
 * proper beta scaling - double with doubling modulator frequency
 * suspend mode and so on, maybe just reset time, note time, envelopes etc on resume
