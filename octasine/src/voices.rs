@@ -1,6 +1,6 @@
 use std::f64::consts::E;
 
-use vst2_helpers::approximations::Log10Table;
+use crate::approximations::Log10Table;
 use crate::common::*;
 use crate::constants::*;
 use crate::parameters::processing::*;

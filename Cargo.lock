@@ -1539,7 +1539,6 @@ dependencies = [
  "simdeez",
  "simplelog",
  "vst",
- "vst2_helpers",
 ]
 
 [[package]]
@@ -1687,7 +1686,6 @@ version = "0.1.0"
 dependencies = [
  "octasine",
  "plotlib",
- "vst2_helpers",
 ]
 
 [[package]]

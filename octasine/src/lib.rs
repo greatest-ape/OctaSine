@@ -2,6 +2,7 @@
 #[macro_use]
 extern crate log;
 
+pub mod approximations;
 pub mod common;
 pub mod constants;
 pub mod gen;
@@ -22,14 +23,13 @@ use vst::event::Event;
 use vst::plugin::{Category, Plugin, Info, CanDo, HostCallback, PluginParameters};
 use vst::host::Host;
 
-use vst2_helpers::approximations::*;
-
-use crate::common::*;
-use crate::constants::*;
-use crate::gui::Gui;
-use crate::voices::*;
-use crate::parameters::processing::*;
-use crate::parameters::processing::interpolatable_value::TimeCounter;
+use approximations::*;
+use common::*;
+use constants::*;
+use gui::Gui;
+use voices::*;
+use parameters::processing::*;
+use parameters::processing::interpolatable_value::TimeCounter;
 
 
 pub type OctaSinePresetBank = preset_bank::PresetBank;

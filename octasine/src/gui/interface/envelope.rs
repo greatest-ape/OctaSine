@@ -5,7 +5,7 @@ use iced_baseview::{
     Element, Color, Rectangle, Point, Length, Vector, Size
 };
 
-use vst2_helpers::approximations::Log10Table;
+use crate::approximations::Log10Table;
 
 use crate::GuiSyncHandle;
 use crate::voices::VoiceOperatorVolumeEnvelope;

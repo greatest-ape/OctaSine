@@ -8,8 +8,5 @@ edition = "2018"
 [dependencies]
 plotlib = "0.4"
 
-[dependencies.vst2_helpers]
-path = "../vst2_helpers"
-
 [dependencies.octasine]
 path = "../octasine"
