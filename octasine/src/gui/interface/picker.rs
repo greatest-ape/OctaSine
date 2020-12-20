@@ -2,7 +2,7 @@ use iced_baseview::{
     Color, Column, Element, Text, Length, HorizontalAlignment, Align, Row, Radio
 };
 
-use crate::parameters::processing::utils::{
+use crate::parameters::utils::{
     map_parameter_value_to_step,
     map_step_to_parameter_value
 };
