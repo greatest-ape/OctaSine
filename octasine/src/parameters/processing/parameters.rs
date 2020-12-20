@@ -47,7 +47,7 @@ macro_rules! create_interpolatable_processing_parameter {
                 self.value.set_value(value)
             }
             fn set_from_sync(&mut self, value: f64){
-                self.set_value($value_struct::from_sync(value).0)
+                self.set_value($value_struct::from_sync(value).get())
             }
         }
     }
@@ -83,7 +83,7 @@ macro_rules! create_simple_processing_parameter {
                 self.value = value;
             }
             fn set_from_sync(&mut self, value: f64){
-                self.set_value($value_struct::from_sync(value).0)
+                self.set_value($value_struct::from_sync(value).get())
             }
         }
     };
@@ -335,7 +335,7 @@ impl ProcessingParameter for ProcessingParameterOperatorPanning {
         self.value.target_value
     }
     fn set_from_sync(&mut self, value: f64) {
-        self.set_value(OperatorPanning::from_sync(value).0)
+        self.set_value(OperatorPanning::from_sync(value).get())
     }
 }
 
