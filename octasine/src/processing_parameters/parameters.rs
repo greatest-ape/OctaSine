@@ -84,116 +84,25 @@ create_interpolatable_processing_parameter!(ProcessingParameterOperatorAdditiveF
 
 create_simple_processing_parameter!(ProcessingParameterOperatorFrequencyRatio, f64, DEFAULT_OPERATOR_FREQUENCY_RATIO);
 
-impl ParameterValueConversion for ProcessingParameterOperatorFrequencyRatio {
-    type ProcessingParameterValue = f64;
-
-    fn to_processing(value: f64) -> Self::ProcessingParameterValue {
-        map_parameter_value_to_step(&OPERATOR_RATIO_STEPS[..], value)
-    }
-    fn to_preset(value: Self::ProcessingParameterValue) -> f64 {
-        map_step_to_parameter_value(&OPERATOR_RATIO_STEPS[..], value)
-    }
-
-    fn parse_string_value(value: String) -> Option<f64> {
-        value.parse::<f64>().ok().map(|value|
-            round_to_step(&OPERATOR_RATIO_STEPS[..], value)
-        )
-    }
-
-    fn format_processing(internal_value: Self::ProcessingParameterValue) -> String {
-        format!("{:.02}", internal_value)
-    }
-}
-
 
 // Frequency - free
 
 create_simple_processing_parameter!(ProcessingParameterOperatorFrequencyFree, f64, DEFAULT_OPERATOR_FREQUENCY_FREE);
-
-impl ParameterValueConversion for ProcessingParameterOperatorFrequencyFree {
-    type ProcessingParameterValue = f64;
-
-    fn to_processing(value: f64) -> Self::ProcessingParameterValue {
-        map_parameter_value_to_value_with_steps(&OPERATOR_FREE_STEPS, value)
-    }
-    fn to_preset(value: Self::ProcessingParameterValue) -> f64 {
-        map_value_to_parameter_value_with_steps(&OPERATOR_FREE_STEPS, value)
-    }
-    fn parse_string_value(value: String) -> Option<Self::ProcessingParameterValue> {
-        simple_parameter_string_parsing!(Self, value, Self::ProcessingParameterValue)
-    }
-
-    fn format_processing(internal_value: Self::ProcessingParameterValue) -> String {
-        format!("{:.02}", internal_value)
-    }
-}
 
 
 // Frequency - fine
 
 create_simple_processing_parameter!(ProcessingParameterOperatorFrequencyFine, f64, DEFAULT_OPERATOR_FREQUENCY_FINE);
 
-impl ParameterValueConversion for ProcessingParameterOperatorFrequencyFine {
-    type ProcessingParameterValue = f64;
-
-    fn to_processing(value: f64) -> Self::ProcessingParameterValue {
-        map_parameter_value_to_value_with_steps(&OPERATOR_FINE_STEPS, value)
-    }
-    fn to_preset(value: Self::ProcessingParameterValue) -> f64 {
-        map_value_to_parameter_value_with_steps(&OPERATOR_FINE_STEPS, value)
-    }
-    fn parse_string_value(value: String) -> Option<Self::ProcessingParameterValue> {
-        simple_parameter_string_parsing!(Self, value, Self::ProcessingParameterValue)
-    }
-
-    fn format_processing(internal_value: Self::ProcessingParameterValue) -> String {
-        format!("{:.02}", internal_value)
-    }
-}
-
 
 // Feedback
 
 create_interpolatable_processing_parameter!(ProcessingParameterOperatorFeedback, DEFAULT_OPERATOR_FEEDBACK, TimeCounter);
 
-impl ParameterValueConversion for ProcessingParameterOperatorFeedback {
-    type ProcessingParameterValue = f64;
-
-    fn to_processing(value: f64) -> Self::ProcessingParameterValue {
-        value
-    }
-    fn to_preset(value: Self::ProcessingParameterValue) -> f64 {
-        value
-    }
-    fn parse_string_value(value: String) -> Option<Self::ProcessingParameterValue> {
-        simple_parameter_string_parsing!(Self, value, Self::ProcessingParameterValue)
-    }
-    fn format_processing(internal_value: Self::ProcessingParameterValue) -> String {
-        format!("{:.02}%", (internal_value * 100.0))
-    }
-}
-
 
 // Modulation index
 
 create_interpolatable_processing_parameter!(ProcessingParameterOperatorModulationIndex, DEFAULT_OPERATOR_MODULATION_INDEX, TimeCounter);
-
-impl ParameterValueConversion for ProcessingParameterOperatorModulationIndex {
-    type ProcessingParameterValue = f64;
-
-    fn to_processing(value: f64) -> Self::ProcessingParameterValue {
-        map_parameter_value_to_value_with_steps(&OPERATOR_BETA_STEPS[..], value)
-    }
-    fn to_preset(value: Self::ProcessingParameterValue) -> f64 {
-        map_value_to_parameter_value_with_steps(&OPERATOR_BETA_STEPS[..], value)
-    }
-    fn parse_string_value(value: String) -> Option<Self::ProcessingParameterValue> {
-        simple_parameter_string_parsing!(Self, value, Self::ProcessingParameterValue)
-    }
-    fn format_processing(internal_value: Self::ProcessingParameterValue) -> String {
-        format!("{:.02}", internal_value)
-    }
-}
 
 
 // Wave type
