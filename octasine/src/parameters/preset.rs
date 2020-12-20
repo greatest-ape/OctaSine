@@ -1,5 +1,6 @@
 use crate::preset_bank::PresetParameter;
-use crate::parameters::processing::values::*;
+
+use super::values::*;
 
 
 pub fn create_parameters() -> Vec<PresetParameter> {
@@ -211,7 +212,6 @@ mod tests {
 
     use crate::common::*;
     use crate::constants::*;
-    use crate::parameters::processing::values::*;
 
     use super::*;
 

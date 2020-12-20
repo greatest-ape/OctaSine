@@ -1,7 +1,6 @@
 use array_init::array_init;
 
 pub mod interpolatable_value;
-pub mod values;
 pub mod parameters;
 pub use parameters::*;
 
@@ -182,7 +181,7 @@ mod tests {
 
     #[test]
     fn test_operator_panning_left_and_right(){
-        use crate::parameters::processing::values::ProcessingValueConversion;
+        use crate::parameters::values::*;
         use crate::common::*;
         use super::interpolatable_value::*;
         use super::*;
@@ -192,7 +191,7 @@ mod tests {
         let mut time = TimeCounter(0.0);
         let mut value = operator.get_value(time);
 
-        operator.set_value(values::OperatorPanning::from_sync(1.0).get());
+        operator.set_value(OperatorPanning::from_sync(1.0).get());
 
         let n = INTERPOLATION_SAMPLES_PER_STEP * INTERPOLATION_STEPS + 1;
         let mut left_and_right = [0.0, 0.0];
