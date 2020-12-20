@@ -40,53 +40,22 @@ macro_rules! impl_envelope_duration_value_conversion {
 }
 
 
-fn format_volume_db(amplitude_ratio: f64) -> String {
-    format!("{:.2}", 20.0 * amplitude_ratio.log10())
-}
-
-
 // Master volume
 
-create_interpolatable_processing_parameter!(ProcessingParameterMasterVolume, DEFAULT_MASTER_VOLUME, TimeCounter);
-
-impl ParameterValueConversion for ProcessingParameterMasterVolume {
-    type ProcessingParameterValue = f64;
-
-    fn to_processing(value: f64) -> Self::ProcessingParameterValue {
-        value * 2.0
-    }
-    fn to_preset(value: Self::ProcessingParameterValue) -> f64 {
-        value / 2.0
-    }
-    fn parse_string_value(value: String) -> Option<Self::ProcessingParameterValue> {
-        simple_parameter_string_parsing!(Self, value, Self::ProcessingParameterValue)
-    }
-    fn format_processing(internal_value: Self::ProcessingParameterValue) -> String {
-        format_volume_db(internal_value)
-    }
-}
+create_interpolatable_processing_parameter!(
+    ProcessingParameterMasterVolume,
+    DEFAULT_MASTER_VOLUME,
+    TimeCounter
+);
 
 
 // Master frequency
 
-create_simple_processing_parameter!(ProcessingParameterMasterFrequency, f64, DEFAULT_MASTER_FREQUENCY);
-
-impl ParameterValueConversion for ProcessingParameterMasterFrequency {
-    type ProcessingParameterValue = f64;
-
-    fn to_processing(value: f64) -> Self::ProcessingParameterValue {
-        map_parameter_value_to_value_with_steps(&MASTER_FREQUENCY_STEPS, value)
-    }
-    fn to_preset(value: Self::ProcessingParameterValue) -> f64 {
-        map_value_to_parameter_value_with_steps(&MASTER_FREQUENCY_STEPS, value)
-    }
-    fn parse_string_value(value: String) -> Option<Self::ProcessingParameterValue> {
-        simple_parameter_string_parsing!(Self, value, Self::ProcessingParameterValue)
-    }
-    fn format_processing(internal_value: Self::ProcessingParameterValue) -> String {
-        format!("{:.02}", internal_value)
-    }
-}
+create_simple_processing_parameter!(
+    ProcessingParameterMasterFrequency,
+    f64,
+    DEFAULT_MASTER_FREQUENCY
+);
 
 
 // Operator volume

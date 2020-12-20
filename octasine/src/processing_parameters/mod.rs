@@ -8,6 +8,7 @@ pub mod parameters;
 pub use parameters::*;
 
 use crate::constants::*;
+use crate::presets::values;
 
 
 #[derive(Debug, Clone)]
@@ -88,18 +89,21 @@ impl Default for ProcessingParameters {
 
 #[allow(clippy::len_without_is_empty)]
 impl ProcessingParameters {
-    pub fn get(&mut self, index: usize) -> Option<&mut dyn ProcessingParameterPresetValueAccess> {
+    pub fn set(&mut self, index: usize, value: f64){
+        use crate::presets::values::ProcessingValueConversion;
+
         match index {
-            0  => Some(&mut self.master_volume),
-            1  => Some(&mut self.master_frequency),
-            2  => Some(&mut self.operators[0].volume),
-            3  => Some(&mut self.operators[0].panning),
-            4  => Some(&mut self.operators[0].wave_type),
-            5  => Some(&mut self.operators[0].modulation_index),
-            6  => Some(&mut self.operators[0].feedback),
-            7  => Some(&mut self.operators[0].frequency_ratio),
-            8  => Some(&mut self.operators[0].frequency_free),
-            9  => Some(&mut self.operators[0].frequency_fine),
+            0 => self.master_volume.set_value(values::MasterVolume::from_sync(value).0),
+            1 => self.master_frequency.set_value(values::MasterFrequency::from_sync(value).0),
+            /*
+            2 => Some(&mut self.operators[0].volume),
+            3 => Some(&mut self.operators[0].panning),
+            4 => Some(&mut self.operators[0].wave_type),
+            5 => Some(&mut self.operators[0].modulation_index),
+            6 => Some(&mut self.operators[0].feedback),
+            7 => Some(&mut self.operators[0].frequency_ratio),
+            8 => Some(&mut self.operators[0].frequency_free),
+            9 => Some(&mut self.operators[0].frequency_fine),
             10 => Some(&mut self.operators[0].volume_envelope.attack_duration),
             11 => Some(&mut self.operators[0].volume_envelope.attack_end_value),
             12 => Some(&mut self.operators[0].volume_envelope.decay_duration),
@@ -169,8 +173,9 @@ impl ProcessingParameters {
             56 => Some(&mut self.operators[3].volume_envelope.decay_duration),
             57 => Some(&mut self.operators[3].volume_envelope.decay_end_value),
             58 => Some(&mut self.operators[3].volume_envelope.release_duration),
+            */
 
-            _  => None
+            _  => ()
         }
     }
 
