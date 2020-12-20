@@ -20,7 +20,6 @@ use import_export_utils::*;
 pub struct SyncParameter {
     value: AtomicPositiveDouble,
     name: String,
-    unit_from_sync: fn(f64) -> String,
     sync_from_text: fn(String) -> Option<f64>,
     format_sync: fn(f64) -> String,
 }
@@ -34,7 +33,6 @@ impl SyncParameter {
         Self {
             name: name.to_string(),
             value: AtomicPositiveDouble::new(default.to_sync()),
-            unit_from_sync: |v| V::from_sync(v).unit(),
             sync_from_text: |v| V::from_text(v).map(|v| v.to_sync()),
             format_sync: |v| V::from_sync(v).format(),
         }
@@ -216,15 +214,6 @@ impl PresetBank {
 
     pub fn get_parameter_name(&self, index: usize) -> Option<String> {
         self.get_current_preset().parameters.get(index).map(|p| p.name.clone())
-    }
-
-    pub fn get_parameter_unit(&self, index: usize) -> Option<String> {
-        self.get_current_preset().parameters.get(index)
-            .map(|p| {
-                let value = p.value.get();
-
-                (&p.unit_from_sync)(value)
-            })
     }
 
     pub fn get_parameter_value_if_changed(&self, index: usize) -> Option<f64> {
