@@ -5,6 +5,7 @@
 * Rename PresetParameter to SyncParameter?
 * Run tests
 * Test in DAW
+* Preset parameter from text: simple parsing etc
 
 ## GUI
 
