@@ -21,13 +21,11 @@ impl GuiSyncHandle for SyncState {
         self.presets.set_parameter_from_gui(index, value);
     }
     fn get_parameter(&self, index: usize) -> f64 {
-        self.presets.get_current_preset()
-            .get_parameter_value(index)
+        self.presets.get_parameter_value(index)
             .unwrap() // FIXME: unwrap
     }
     fn format_parameter_value(&self, index: usize, value: f64) -> String {
-        self.presets.get_current_preset()
-            .format_parameter_value(index, value)
+        self.presets.format_parameter_value(index, value)
             .unwrap() // FIXME: unwrap
     }
     fn update_host_display(&self){

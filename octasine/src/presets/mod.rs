@@ -28,22 +28,6 @@ impl Preset {
             parameters
         }
     }
-
-    pub fn get_parameter(&self, index: usize) -> Option<&SyncParameter> {
-        self.parameters.get(index)
-    }
-    pub fn get_parameter_value(&self, index: usize) -> Option<f64> {
-        self.parameters.get(index).map(|p| p.value.get())
-    }
-    pub fn get_parameter_name(&self, index: usize) -> Option<String> {
-        self.parameters.get(index).map(|p| p.name.clone())
-    }
-    pub fn get_parameter_value_if_changed(&self, index: usize) -> Option<f64> {
-        self.parameters.get(index).and_then(|p| p.value.get_if_changed())
-    }
-    pub fn format_parameter_value(&self, index: usize, value: f64) -> Option<String> {
-        self.parameters.get(index).map(|p| (p.format)(value))
-    }
 }
 
 
@@ -76,6 +60,8 @@ impl PresetBank {
         self.get_current_preset().parameters.len()
     }
 
+    // Manage presets
+
     pub fn get_current_preset(&self) -> &Preset {
         &self.presets[self.get_preset_index()]
     }
@@ -96,6 +82,8 @@ impl PresetBank {
         self.preset_index.store(index, Ordering::SeqCst);
     }
 
+    // Get parameter changes
+
     pub fn get_changed_parameters_from_processing(&self) -> Option<[Option<f64>; 64]> {
         self.parameter_change_info_processing.get_changed_parameters(
             &self.get_current_preset().parameters
@@ -108,9 +96,46 @@ impl PresetBank {
         )
     }
 
+    // Get parameter values
+
+    fn get_parameter(&self, index: usize) -> Option<&SyncParameter> {
+        self.get_current_preset().parameters.get(index)
+    }
+
+    pub fn get_parameter_value(&self, index: usize) -> Option<f64> {
+        self.get_current_preset().parameters.get(index).map(|p| p.value.get())
+    }
+
+    pub fn get_parameter_value_text(&self, index: usize) -> Option<String> {
+        self.get_current_preset().parameters.get(index)
+            .map(|p| (p.format)(p.value.get()))
+    }
+
+    pub fn get_parameter_name(&self, index: usize) -> Option<String> {
+        self.get_current_preset().parameters.get(index).map(|p| p.name.clone())
+    }
+
+    pub fn get_parameter_unit(&self, index: usize) -> Option<String> {
+        self.get_current_preset().parameters.get(index)
+            .map(|p| {
+                let value = p.value.get();
+
+                (&p.unit_from_value)(value)
+            })
+    }
+
+    pub fn get_parameter_value_if_changed(&self, index: usize) -> Option<f64> {
+        self.get_current_preset().parameters.get(index).and_then(|p| p.value.get_if_changed())
+    }
+
+    pub fn format_parameter_value(&self, index: usize, value: f64) -> Option<String> {
+        self.get_current_preset().parameters.get(index).map(|p| (p.format)(value))
+    }
+
+    // Set parameters
+
     pub fn set_parameter_from_gui(&self, index: usize, value: f64){
-        let opt_parameter = self.get_current_preset()
-            .get_parameter(index);
+        let opt_parameter = self.get_parameter(index);
 
         if let Some(parameter) = opt_parameter {
             parameter.value.set(value.min(1.0).max(0.0));
@@ -121,8 +146,7 @@ impl PresetBank {
     }
 
     pub fn set_parameter_from_host(&self, index: usize, value: f64){
-        let opt_parameter = self.get_current_preset()
-            .get_parameter(index);
+        let opt_parameter = self.get_parameter(index);
 
         if let Some(parameter) = opt_parameter {
             parameter.value.set(value as f64);
@@ -133,8 +157,7 @@ impl PresetBank {
     }
 
     pub fn set_parameter_text_from_host(&self, index: usize, value: String) -> bool {
-        let opt_parameter = self.get_current_preset()
-            .get_parameter(index);
+        let opt_parameter = self.get_parameter(index);
 
         if let Some(parameter) = opt_parameter {
             if parameter.set_from_text(value){

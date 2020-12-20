@@ -80,14 +80,10 @@ impl GuiSyncHandle for SyncOnlyState {
         self.presets.set_parameter_from_gui(index, value);
     }
     fn get_parameter(&self, index: usize) -> f64 {
-        self.presets.get_current_preset()
-            .get_parameter_value(index)
-            .unwrap() // FIXME: unwrap
+        self.presets.get_parameter_value(index).unwrap() // FIXME: unwrap
     }
     fn format_parameter_value(&self, index: usize, value: f64) -> String {
-        self.presets.get_current_preset()
-            .format_parameter_value(index, value)
-            .unwrap() // FIXME: unwrap
+        self.presets.format_parameter_value(index, value).unwrap() // FIXME: unwrap
     }
     fn update_host_display(&self){
         self.host.update_display();
@@ -282,42 +278,26 @@ impl Plugin for OctaSine {
 impl vst::plugin::PluginParameters for SyncOnlyState {
     /// Get parameter label for parameter at `index` (e.g. "db", "sec", "ms", "%").
     fn get_parameter_label(&self, index: i32) -> String {
-        self.presets
-            .get_current_preset()
-            .get_parameter(index as usize)
-            .map(|p| {
-                let value = p.value.get();
-
-                (&p.unit_from_value)(value)
-            })
+        self.presets.get_parameter_unit(index as usize)
             .unwrap_or_else(|| "".to_string())
     }
 
     /// Get the parameter value for parameter at `index` (e.g. "1.0", "150", "Plate", "Off").
     fn get_parameter_text(&self, index: i32) -> String {
-        self.presets
-            .get_current_preset()
-            .get_parameter(index as usize)
-            .map(|p| (p.format)(p.value.get()))
+        self.presets.get_parameter_value_text(index as usize)
             .unwrap_or_else(|| "".to_string())
     }
 
     /// Get the name of parameter at `index`.
     fn get_parameter_name(&self, index: i32) -> String {
-        self.presets
-            .get_current_preset()
-            .get_parameter(index as usize)
-            .map(|p| p.name.clone())
+        self.presets.get_parameter_name(index as usize)
             .unwrap_or_else(|| "".to_string())
     }
 
     /// Get the value of paramater at `index`. Should be value between 0.0 and 1.0.
     fn get_parameter(&self, index: i32) -> f32 {
-        self.presets
-            .get_current_preset()
-            .get_parameter(index as usize)
-            .map(|p| p.value.get() as f32)
-            .unwrap_or(0.0)
+        self.presets.get_parameter_value(index as usize)
+            .unwrap_or(0.0) as f32
     }
 
     /// Set the value of parameter at `index`. `value` is between 0.0 and 1.0.
