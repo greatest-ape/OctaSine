@@ -205,7 +205,6 @@ impl SyncParameter {
 }
 
 
-// FIXME: these should be rewritten and moved to values.rs
 #[allow(clippy::float_cmp)]
 #[cfg(test)]
 mod tests {
