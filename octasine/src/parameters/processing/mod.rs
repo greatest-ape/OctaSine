@@ -1,5 +1,3 @@
-//! Processing parameters
-
 use array_init::array_init;
 
 use vst2_helpers::processing_parameters::*;
@@ -106,72 +104,65 @@ impl ProcessingParameters {
             12 => self.operators[0].volume_envelope.decay_duration.set_from_sync(value),
             13 => self.operators[0].volume_envelope.decay_end_value.set_from_sync(value),
             14 => self.operators[0].volume_envelope.release_duration.set_from_sync(value),
-            /*
-            15 => Some(&mut self.operators[1].volume),
-            16 => Some(&mut self.operators[1].panning),
-            17 => Some(&mut self.operators[1].wave_type),
-            18 => Some(&mut self.operators[1].additive_factor),
-            19 => Some(&mut self.operators[1].modulation_index),
-            20 => Some(&mut self.operators[1].feedback),
-            21 => Some(&mut self.operators[1].frequency_ratio),
-            22 => Some(&mut self.operators[1].frequency_free),
-            23 => Some(&mut self.operators[1].frequency_fine),
-            24 => Some(&mut self.operators[1].volume_envelope.attack_duration),
-            25 => Some(&mut self.operators[1].volume_envelope.attack_end_value),
-            26 => Some(&mut self.operators[1].volume_envelope.decay_duration),
-            27 => Some(&mut self.operators[1].volume_envelope.decay_end_value),
-            28 => Some(&mut self.operators[1].volume_envelope.release_duration),
-            29 => Some(&mut self.operators[2].volume),
-            30 => Some(&mut self.operators[2].panning),
-            31 => Some(&mut self.operators[2].wave_type),
-            32 => Some(&mut self.operators[2].additive_factor),
+            15 => self.operators[1].volume.set_from_sync(value),
+            16 => self.operators[1].panning.set_from_sync(value),
+            17 => self.operators[1].wave_type.set_from_sync(value),
+            18 => self.operators[1].additive_factor.set_from_sync(value),
+            19 => self.operators[1].modulation_index.set_from_sync(value),
+            20 => self.operators[1].feedback.set_from_sync(value),
+            21 => self.operators[1].frequency_ratio.set_from_sync(value),
+            22 => self.operators[1].frequency_free.set_from_sync(value),
+            23 => self.operators[1].frequency_fine.set_from_sync(value),
+            24 => self.operators[1].volume_envelope.attack_duration.set_from_sync(value),
+            25 => self.operators[1].volume_envelope.attack_end_value.set_from_sync(value),
+            26 => self.operators[1].volume_envelope.decay_duration.set_from_sync(value),
+            27 => self.operators[1].volume_envelope.decay_end_value.set_from_sync(value),
+            28 => self.operators[1].volume_envelope.release_duration.set_from_sync(value),
+            29 => self.operators[2].volume.set_from_sync(value),
+            30 => self.operators[2].panning.set_from_sync(value),
+            31 => self.operators[2].wave_type.set_from_sync(value),
+            32 => self.operators[2].additive_factor.set_from_sync(value),
             33 => {
                 use ProcessingParameterOperatorModulationTarget::*;
 
                 let opt_p = self.operators[2].output_operator.as_mut();
 
                 if let Some(OperatorIndex2(p)) = opt_p {
-                    Some(p as &mut dyn ProcessingParameterPresetValueAccess)
-                } else {
-                    None
-                }
-            },
-            34 => Some(&mut self.operators[2].modulation_index),
-            35 => Some(&mut self.operators[2].feedback),
-            36 => Some(&mut self.operators[2].frequency_ratio),
-            37 => Some(&mut self.operators[2].frequency_free),
-            38 => Some(&mut self.operators[2].frequency_fine),
-            39 => Some(&mut self.operators[2].volume_envelope.attack_duration),
-            40 => Some(&mut self.operators[2].volume_envelope.attack_end_value),
-            41 => Some(&mut self.operators[2].volume_envelope.decay_duration),
-            42 => Some(&mut self.operators[2].volume_envelope.decay_end_value),
-            43 => Some(&mut self.operators[2].volume_envelope.release_duration),
-            44 => Some(&mut self.operators[3].volume),
-            45 => Some(&mut self.operators[3].panning),
-            46 => Some(&mut self.operators[3].wave_type),
-            47 => Some(&mut self.operators[3].additive_factor),
+                    p.set_from_sync(value)
+                }            },
+            34 => self.operators[2].modulation_index.set_from_sync(value),
+            35 => self.operators[2].feedback.set_from_sync(value),
+            36 => self.operators[2].frequency_ratio.set_from_sync(value),
+            37 => self.operators[2].frequency_free.set_from_sync(value),
+            38 => self.operators[2].frequency_fine.set_from_sync(value),
+            39 => self.operators[2].volume_envelope.attack_duration.set_from_sync(value),
+            40 => self.operators[2].volume_envelope.attack_end_value.set_from_sync(value),
+            41 => self.operators[2].volume_envelope.decay_duration.set_from_sync(value),
+            42 => self.operators[2].volume_envelope.decay_end_value.set_from_sync(value),
+            43 => self.operators[2].volume_envelope.release_duration.set_from_sync(value),
+            44 => self.operators[3].volume.set_from_sync(value),
+            45 => self.operators[3].panning.set_from_sync(value),
+            46 => self.operators[3].wave_type.set_from_sync(value),
+            47 => self.operators[3].additive_factor.set_from_sync(value),
             48 => {
                 use ProcessingParameterOperatorModulationTarget::*;
 
                 let opt_p = self.operators[3].output_operator.as_mut();
 
                 if let Some(OperatorIndex3(p)) = opt_p {
-                    Some(p as &mut dyn ProcessingParameterPresetValueAccess)
-                } else {
-                    None
+                    p.set_from_sync(value)
                 }
             },
-            49 => Some(&mut self.operators[3].modulation_index),
-            50 => Some(&mut self.operators[3].feedback),
-            51 => Some(&mut self.operators[3].frequency_ratio),
-            52 => Some(&mut self.operators[3].frequency_free),
-            53 => Some(&mut self.operators[3].frequency_fine),
-            54 => Some(&mut self.operators[3].volume_envelope.attack_duration),
-            55 => Some(&mut self.operators[3].volume_envelope.attack_end_value),
-            56 => Some(&mut self.operators[3].volume_envelope.decay_duration),
-            57 => Some(&mut self.operators[3].volume_envelope.decay_end_value),
-            58 => Some(&mut self.operators[3].volume_envelope.release_duration),
-            */
+            49 => self.operators[3].modulation_index.set_from_sync(value),
+            50 => self.operators[3].feedback.set_from_sync(value),
+            51 => self.operators[3].frequency_ratio.set_from_sync(value),
+            52 => self.operators[3].frequency_free.set_from_sync(value),
+            53 => self.operators[3].frequency_fine.set_from_sync(value),
+            54 => self.operators[3].volume_envelope.attack_duration.set_from_sync(value),
+            55 => self.operators[3].volume_envelope.attack_end_value.set_from_sync(value),
+            56 => self.operators[3].volume_envelope.decay_duration.set_from_sync(value),
+            57 => self.operators[3].volume_envelope.decay_end_value.set_from_sync(value),
+            58 => self.operators[3].volume_envelope.release_duration.set_from_sync(value),
 
             _  => ()
         }
