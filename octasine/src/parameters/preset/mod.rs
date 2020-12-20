@@ -226,25 +226,25 @@ mod tests {
         let p = PresetParameter::operator_volume(3);
 
         assert!(p.set_from_text("-1.0".to_string()));
-        assert_eq!(OperatorVolume::from_sync(p.value.get()).0, 0.0);
+        assert_eq!(OperatorVolume::from_sync(p.get_value()).0, 0.0);
 
         assert!(p.set_from_text("0".to_string()));
-        assert_eq!(OperatorVolume::from_sync(p.value.get()).0, 0.0);
+        assert_eq!(OperatorVolume::from_sync(p.get_value()).0, 0.0);
 
         assert!(p.set_from_text("0.0".to_string()));
-        assert_eq!(OperatorVolume::from_sync(p.value.get()).0, 0.0);
+        assert_eq!(OperatorVolume::from_sync(p.get_value()).0, 0.0);
 
         assert!(p.set_from_text("1.0".to_string()));
-        assert_eq!(OperatorVolume::from_sync(p.value.get()).0, 1.0);
+        assert_eq!(OperatorVolume::from_sync(p.get_value()).0, 1.0);
 
         assert!(p.set_from_text("1.2".to_string()));
-        assert_eq!(OperatorVolume::from_sync(p.value.get()).0, 1.2);
+        assert_eq!(OperatorVolume::from_sync(p.get_value()).0, 1.2);
 
         assert!(p.set_from_text("2.0".to_string()));
-        assert_eq!(OperatorVolume::from_sync(p.value.get()).0, 2.0);
+        assert_eq!(OperatorVolume::from_sync(p.get_value()).0, 2.0);
 
         assert!(p.set_from_text("3.0".to_string()));
-        assert_eq!(OperatorVolume::from_sync(p.value.get()).0, 2.0);
+        assert_eq!(OperatorVolume::from_sync(p.get_value()).0, 2.0);
     }
 
     #[test]
@@ -257,13 +257,13 @@ mod tests {
         assert!(!p.set_from_text("4".to_string()));
 
         assert!(p.set_from_text("1".to_string()));
-        assert_eq!(OperatorModulationTarget3::from_sync(p.value.get()).0, 0);
+        assert_eq!(OperatorModulationTarget3::from_sync(p.get_value()).0, 0);
 
         assert!(p.set_from_text("2".to_string()));
-        assert_eq!(OperatorModulationTarget3::from_sync(p.value.get()).0, 1);
+        assert_eq!(OperatorModulationTarget3::from_sync(p.get_value()).0, 1);
 
         assert!(p.set_from_text("3".to_string()));
-        assert_eq!(OperatorModulationTarget3::from_sync(p.value.get()).0, 2);
+        assert_eq!(OperatorModulationTarget3::from_sync(p.get_value()).0, 2);
     }
 
     #[test]
@@ -271,22 +271,22 @@ mod tests {
         let p = PresetParameter::operator_frequency_ratio(3);
 
         assert!(p.set_from_text("0.0".to_string()));
-        assert_eq!(OperatorFrequencyRatio::from_sync(p.value.get()).0, OPERATOR_RATIO_STEPS[0]);
+        assert_eq!(OperatorFrequencyRatio::from_sync(p.get_value()).0, OPERATOR_RATIO_STEPS[0]);
 
         assert!(p.set_from_text("10000000.0".to_string()));
-        assert_eq!(OperatorFrequencyRatio::from_sync(p.value.get()).0, *OPERATOR_RATIO_STEPS.last().unwrap());
+        assert_eq!(OperatorFrequencyRatio::from_sync(p.get_value()).0, *OPERATOR_RATIO_STEPS.last().unwrap());
 
         assert!(p.set_from_text("1.0".to_string()));
-        assert_eq!(OperatorFrequencyRatio::from_sync(p.value.get()).0, 1.0);
+        assert_eq!(OperatorFrequencyRatio::from_sync(p.get_value()).0, 1.0);
 
         assert!(p.set_from_text("0.99".to_string()));
-        assert_eq!(OperatorFrequencyRatio::from_sync(p.value.get()).0, 1.0);
+        assert_eq!(OperatorFrequencyRatio::from_sync(p.get_value()).0, 1.0);
 
         assert!(p.set_from_text("0.5".to_string()));
-        assert_eq!(OperatorFrequencyRatio::from_sync(p.value.get()).0, 0.5);
+        assert_eq!(OperatorFrequencyRatio::from_sync(p.get_value()).0, 0.5);
 
         assert!(p.set_from_text("0.51".to_string()));
-        assert_eq!(OperatorFrequencyRatio::from_sync(p.value.get()).0, 0.5);
+        assert_eq!(OperatorFrequencyRatio::from_sync(p.get_value()).0, 0.5);
 
         for step in OPERATOR_RATIO_STEPS.iter() {
             let s = format!("{:.02}", step);
@@ -300,19 +300,19 @@ mod tests {
         let p = PresetParameter::operator_frequency_free(3);
 
         assert!(p.set_from_text("1.0".to_string()));
-        assert_eq!(OperatorFrequencyFree::from_sync(p.value.get()).0, 1.0);
+        assert_eq!(OperatorFrequencyFree::from_sync(p.get_value()).0, 1.0);
 
         assert!(p.set_from_text("1".to_string()));
-        assert_eq!(OperatorFrequencyFree::from_sync(p.value.get()).0, 1.0);
+        assert_eq!(OperatorFrequencyFree::from_sync(p.get_value()).0, 1.0);
 
         assert!(p.set_from_text("0.0".to_string()));
-        assert_approx_eq!(OperatorFrequencyFree::from_sync(p.value.get()).0, OPERATOR_FREE_STEPS[0]);
+        assert_approx_eq!(OperatorFrequencyFree::from_sync(p.get_value()).0, OPERATOR_FREE_STEPS[0]);
 
         assert!(p.set_from_text("4.0".to_string()));
-        assert_approx_eq!(OperatorFrequencyFree::from_sync(p.value.get()).0, 4.0);
+        assert_approx_eq!(OperatorFrequencyFree::from_sync(p.get_value()).0, 4.0);
 
         assert!(p.set_from_text("256.0".to_string()));
-        assert_approx_eq!(OperatorFrequencyFree::from_sync(p.value.get()).0, OPERATOR_FREE_STEPS.last().unwrap());
+        assert_approx_eq!(OperatorFrequencyFree::from_sync(p.get_value()).0, OPERATOR_FREE_STEPS.last().unwrap());
 
         for step in OPERATOR_FREE_STEPS.iter() {
             let s = format!("{:.02}", step);
@@ -326,10 +326,10 @@ mod tests {
         let p = PresetParameter::operator_wave_type(3);
 
         assert!(p.set_from_text("sine".to_string()));
-        assert_eq!(OperatorWaveType::from_sync(p.value.get()).0, WaveType::Sine);
+        assert_eq!(OperatorWaveType::from_sync(p.get_value()).0, WaveType::Sine);
 
         assert!(p.set_from_text("noise".to_string()));
-        assert_eq!(OperatorWaveType::from_sync(p.value.get()).0, WaveType::WhiteNoise);
+        assert_eq!(OperatorWaveType::from_sync(p.get_value()).0, WaveType::WhiteNoise);
     }
 
     #[test]
@@ -337,13 +337,13 @@ mod tests {
         let p = PresetParameter::operator_attack_duration(3);
 
         assert!(p.set_from_text("0.0".to_string()));
-        assert_eq!(OperatorAttackDuration::from_sync(p.value.get()).0, ENVELOPE_MIN_DURATION);
+        assert_eq!(OperatorAttackDuration::from_sync(p.get_value()).0, ENVELOPE_MIN_DURATION);
 
         assert!(p.set_from_text("1.0".to_string()));
-        assert_eq!(OperatorAttackDuration::from_sync(p.value.get()).0, 1.0);
+        assert_eq!(OperatorAttackDuration::from_sync(p.get_value()).0, 1.0);
 
         assert!(p.set_from_text("10".to_string()));
-        assert_eq!(OperatorAttackDuration::from_sync(p.value.get()).0,
+        assert_eq!(OperatorAttackDuration::from_sync(p.get_value()).0,
             ENVELOPE_MAX_DURATION);
     }
 }

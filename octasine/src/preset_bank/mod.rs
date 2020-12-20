@@ -18,27 +18,15 @@ use import_export_utils::*;
 
 
 pub struct PresetParameter {
-    pub value: AtomicPositiveDouble,
-    pub name: String,
-    pub unit_from_sync: fn(f64) -> String,
-    pub sync_from_text: fn(String) -> Option<f64>,
-    pub format_sync: fn(f64) -> String,
+    value: AtomicPositiveDouble,
+    name: String,
+    unit_from_sync: fn(f64) -> String,
+    sync_from_text: fn(String) -> Option<f64>,
+    format_sync: fn(f64) -> String,
 }
 
 
 impl PresetParameter {
-    pub fn set_from_text(&self, text: String) -> bool {
-        if let Some(value) = (self.sync_from_text)(text){
-            self.value.set(value);
-
-            true
-        } else {
-            false
-        }
-    }
-    pub fn get_value_text(&self) -> String {
-        (self.format_sync)(self.value.get())
-    }
     pub fn new<V: ProcessingValueConversion>(
         name: &str,
         default: V
@@ -49,6 +37,24 @@ impl PresetParameter {
             unit_from_sync: |v| V::from_sync(v).unit(),
             sync_from_text: |v| V::from_text(v).map(|v| v.to_sync()),
             format_sync: |v| V::from_sync(v).format(),
+        }
+    }
+
+    pub fn get_value(&self) -> f64 {
+        self.value.get()
+    }
+
+    pub fn get_value_text(&self) -> String {
+        (self.format_sync)(self.value.get())
+    }
+
+    pub fn set_from_text(&self, text: String) -> bool {
+        if let Some(value) = (self.sync_from_text)(text){
+            self.value.set(value);
+
+            true
+        } else {
+            false
         }
     }
 }
