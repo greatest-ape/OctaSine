@@ -352,7 +352,7 @@ impl ModulationMatrixParameters {
     }
 
     fn convert_operator_4_target(value: f64) -> usize {
-        OperatorModulationTarget3::from_sync(value).0
+        OperatorModulationTarget3::from_sync(value).get()
     }
 }
 

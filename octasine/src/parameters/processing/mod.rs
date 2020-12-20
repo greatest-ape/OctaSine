@@ -192,7 +192,7 @@ mod tests {
         let mut time = TimeCounter(0.0);
         let mut value = operator.get_value(time);
 
-        operator.set_value(values::OperatorPanning::from_sync(1.0).0);
+        operator.set_value(values::OperatorPanning::from_sync(1.0).get());
 
         let n = INTERPOLATION_SAMPLES_PER_STEP * INTERPOLATION_STEPS + 1;
         let mut left_and_right = [0.0, 0.0];

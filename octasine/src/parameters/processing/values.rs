@@ -7,6 +7,11 @@ use crate::parameters::utils::*;
 macro_rules! impl_envelope_duration_value_conversion {
     ($struct_name:ident) => {
         impl ProcessingValueConversion for $struct_name {
+            type Value = f64;
+
+            fn get(self) -> Self::Value {
+                self.0
+            }
             fn from_sync(value: f64) -> Self {
                 // Force some decay to avoid clicks
                 Self((value * ENVELOPE_MAX_DURATION)
@@ -42,6 +47,11 @@ macro_rules! impl_envelope_duration_value_conversion {
 macro_rules! impl_identity_value_conversion {
     ($struct_name:ident) => {
         impl ProcessingValueConversion for $struct_name {
+            type Value = f64;
+
+            fn get(self) -> Self::Value {
+                self.0
+            }
             fn from_sync(value: f64) -> Self {
                 Self(value)
             }
@@ -60,6 +70,9 @@ macro_rules! impl_identity_value_conversion {
 
 
 pub trait ProcessingValueConversion: Sized {
+    type Value;
+
+    fn get(self) -> Self::Value;
     fn from_sync(value: f64) -> Self;
     fn to_sync(self) -> f64;
     fn format(self) -> String;
@@ -74,7 +87,7 @@ pub trait ProcessingValueConversion: Sized {
 
 
 #[derive(Debug, Clone, Copy)]
-pub struct MasterVolume(pub f64);
+pub struct MasterVolume(f64);
 
 
 impl Default for MasterVolume {
@@ -85,6 +98,11 @@ impl Default for MasterVolume {
 
 
 impl ProcessingValueConversion for MasterVolume {
+    type Value = f64;
+
+    fn get(self) -> Self::Value {
+        self.0
+    }
     fn from_sync(value: f64) -> Self {
         Self(value * 2.0)
     }
@@ -101,7 +119,7 @@ impl ProcessingValueConversion for MasterVolume {
 
 
 #[derive(Debug, Clone, Copy)]
-pub struct MasterFrequency(pub f64);
+pub struct MasterFrequency(f64);
 
 
 impl Default for MasterFrequency {
@@ -112,6 +130,11 @@ impl Default for MasterFrequency {
 
 
 impl ProcessingValueConversion for MasterFrequency {
+    type Value = f64;
+
+    fn get(self) -> Self::Value {
+        self.0
+    }
     fn from_sync(sync: f64) -> Self {
         Self(map_parameter_value_to_value_with_steps(
             &MASTER_FREQUENCY_STEPS,
@@ -131,7 +154,7 @@ impl ProcessingValueConversion for MasterFrequency {
 
 
 #[derive(Debug, Clone, Copy)]
-pub struct OperatorVolume(pub f64);
+pub struct OperatorVolume(f64);
 
 
 impl OperatorVolume {
@@ -146,6 +169,11 @@ impl OperatorVolume {
 
 
 impl ProcessingValueConversion for OperatorVolume {
+    type Value = f64;
+
+    fn get(self) -> Self::Value {
+        self.0
+    }
     fn from_sync(sync: f64) -> Self {
         Self(sync * 2.0)
     }
@@ -167,7 +195,7 @@ impl ProcessingValueConversion for OperatorVolume {
 
 
 #[derive(Debug, Clone, Copy)]
-pub struct OperatorAdditive(pub f64);
+pub struct OperatorAdditive(f64);
 
 
 impl Default for OperatorAdditive {
@@ -178,6 +206,11 @@ impl Default for OperatorAdditive {
 
 
 impl ProcessingValueConversion for OperatorAdditive {
+    type Value = f64;
+
+    fn get(self) -> Self::Value {
+        self.0
+    }
     fn from_sync(sync: f64) -> Self {
         Self(sync)
     }
@@ -194,7 +227,7 @@ impl ProcessingValueConversion for OperatorAdditive {
 
 
 #[derive(Debug, Clone, Copy)]
-pub struct OperatorFrequencyRatio(pub f64);
+pub struct OperatorFrequencyRatio(f64);
 
 
 impl Default for OperatorFrequencyRatio {
@@ -205,6 +238,11 @@ impl Default for OperatorFrequencyRatio {
 
 
 impl ProcessingValueConversion for OperatorFrequencyRatio {
+    type Value = f64;
+
+    fn get(self) -> Self::Value {
+        self.0
+    }
     fn from_sync(sync: f64) -> Self {
         Self(map_parameter_value_to_step(&OPERATOR_RATIO_STEPS[..], sync))
     }
@@ -226,7 +264,7 @@ impl ProcessingValueConversion for OperatorFrequencyRatio {
 
 
 #[derive(Debug, Clone, Copy)]
-pub struct OperatorFrequencyFree(pub f64);
+pub struct OperatorFrequencyFree(f64);
 
 
 impl Default for OperatorFrequencyFree {
@@ -237,6 +275,11 @@ impl Default for OperatorFrequencyFree {
 
 
 impl ProcessingValueConversion for OperatorFrequencyFree {
+    type Value = f64;
+
+    fn get(self) -> Self::Value {
+        self.0
+    }
     fn from_sync(sync: f64) -> Self {
         Self(map_parameter_value_to_value_with_steps(&OPERATOR_FREE_STEPS, sync))
     }
@@ -253,7 +296,7 @@ impl ProcessingValueConversion for OperatorFrequencyFree {
 
 
 #[derive(Debug, Clone, Copy)]
-pub struct OperatorFrequencyFine(pub f64);
+pub struct OperatorFrequencyFine(f64);
 
 
 impl Default for OperatorFrequencyFine {
@@ -264,6 +307,11 @@ impl Default for OperatorFrequencyFine {
 
 
 impl ProcessingValueConversion for OperatorFrequencyFine {
+    type Value = f64;
+
+    fn get(self) -> Self::Value {
+        self.0
+    }
     fn from_sync(sync: f64) -> Self {
         Self(map_parameter_value_to_value_with_steps(&OPERATOR_FINE_STEPS, sync))
     }
@@ -280,7 +328,7 @@ impl ProcessingValueConversion for OperatorFrequencyFine {
 
 
 #[derive(Debug, Clone, Copy)]
-pub struct OperatorFeedback(pub f64);
+pub struct OperatorFeedback(f64);
 
 
 impl Default for OperatorFeedback {
@@ -291,6 +339,11 @@ impl Default for OperatorFeedback {
 
 
 impl ProcessingValueConversion for OperatorFeedback {
+    type Value = f64;
+
+    fn get(self) -> Self::Value {
+        self.0
+    }
     fn from_sync(sync: f64) -> Self {
         Self(sync)
     }
@@ -307,7 +360,7 @@ impl ProcessingValueConversion for OperatorFeedback {
 
 
 #[derive(Debug, Clone, Copy)]
-pub struct OperatorModulationIndex(pub f64);
+pub struct OperatorModulationIndex(f64);
 
 
 impl Default for OperatorModulationIndex {
@@ -318,6 +371,11 @@ impl Default for OperatorModulationIndex {
 
 
 impl ProcessingValueConversion for OperatorModulationIndex {
+    type Value = f64;
+
+    fn get(self) -> Self::Value {
+        self.0
+    }
     fn from_sync(sync: f64) -> Self {
         Self(map_parameter_value_to_value_with_steps(&OPERATOR_BETA_STEPS[..], sync))
     }
@@ -345,6 +403,11 @@ impl Default for OperatorWaveType {
 
 
 impl ProcessingValueConversion for OperatorWaveType {
+    type Value = WaveType;
+
+    fn get(self) -> Self::Value {
+        self.0
+    }
     fn from_sync(sync: f64) -> Self {
         if sync <= 0.5 {
             Self(WaveType::Sine)
@@ -382,7 +445,7 @@ impl ProcessingValueConversion for OperatorWaveType {
 
 
 #[derive(Debug, Clone, Copy)]
-pub struct OperatorAttackDuration(pub f64);
+pub struct OperatorAttackDuration(f64);
 
 
 impl Default for OperatorAttackDuration {
@@ -396,7 +459,7 @@ impl_envelope_duration_value_conversion!(OperatorAttackDuration);
 
 
 #[derive(Debug, Clone, Copy)]
-pub struct OperatorDecayDuration(pub f64);
+pub struct OperatorDecayDuration(f64);
 
 
 impl Default for OperatorDecayDuration {
@@ -410,7 +473,7 @@ impl_envelope_duration_value_conversion!(OperatorDecayDuration);
 
 
 #[derive(Debug, Clone, Copy)]
-pub struct OperatorReleaseDuration(pub f64);
+pub struct OperatorReleaseDuration(f64);
 
 
 impl Default for OperatorReleaseDuration {
@@ -424,7 +487,7 @@ impl_envelope_duration_value_conversion!(OperatorReleaseDuration);
 
 
 #[derive(Debug, Clone, Copy)]
-pub struct OperatorAttackVolume(pub f64);
+pub struct OperatorAttackVolume(f64);
 
 
 impl Default for OperatorAttackVolume {
@@ -438,7 +501,7 @@ impl_identity_value_conversion!(OperatorAttackVolume);
 
 
 #[derive(Debug, Clone, Copy)]
-pub struct OperatorDecayVolume(pub f64);
+pub struct OperatorDecayVolume(f64);
 
 
 impl Default for OperatorDecayVolume {
@@ -452,7 +515,7 @@ impl_identity_value_conversion!(OperatorDecayVolume);
 
 
 #[derive(Debug, Clone, Copy)]
-pub struct OperatorPanning(pub f64);
+pub struct OperatorPanning(f64);
 
 
 impl Default for OperatorPanning {
@@ -463,6 +526,11 @@ impl Default for OperatorPanning {
 
 
 impl ProcessingValueConversion for OperatorPanning {
+    type Value = f64;
+
+    fn get(self) -> Self::Value {
+        self.0
+    }
     fn from_sync(sync: f64) -> Self {
         Self(sync)
     }
@@ -498,6 +566,11 @@ impl Default for OperatorModulationTarget2 {
 
 
 impl ProcessingValueConversion for OperatorModulationTarget2 {
+    type Value = usize;
+
+    fn get(self) -> Self::Value {
+        self.0
+    }
     fn from_sync(sync: f64) -> Self {
         Self(map_parameter_value_to_step(&[0, 1], sync))
     }
@@ -523,7 +596,7 @@ impl ProcessingValueConversion for OperatorModulationTarget2 {
 
 
 #[derive(Debug, Clone, Copy)]
-pub struct OperatorModulationTarget3(pub usize);
+pub struct OperatorModulationTarget3(usize);
 
 
 impl Default for OperatorModulationTarget3 {
@@ -534,6 +607,11 @@ impl Default for OperatorModulationTarget3 {
 
 
 impl ProcessingValueConversion for OperatorModulationTarget3 {
+    type Value = usize;
+
+    fn get(self) -> Self::Value {
+        self.0
+    }
     fn from_sync(sync: f64) -> Self {
         Self(map_parameter_value_to_step(&[0, 1, 2], sync))
     }
