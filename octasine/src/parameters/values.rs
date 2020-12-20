@@ -81,9 +81,6 @@ pub trait ParameterValue: Sized {
     fn from_text(_text: String) -> Option<Self> {
         None
     }
-    fn unit(&self) -> String {
-        "".to_string()
-    }
 }
 
 
@@ -111,7 +108,7 @@ impl ParameterValue for MasterVolume {
         self.0 / 2.0
     }
     fn format(self) -> String {
-        format!("{:.2}", 20.0 * self.0.log10())
+        format!("{:.2} dB", 20.0 * self.0.log10())
     }
     fn format_sync(value: f64) -> String {
         Self::from_sync(value).format()
@@ -146,7 +143,7 @@ impl ParameterValue for MasterFrequency {
         map_value_to_parameter_value_with_steps(&MASTER_FREQUENCY_STEPS, self.0)
     }
     fn format(self) -> String {
-        format!("{:.02}", self.0)
+        format!("{:.02} Hz", self.0)
     }
     fn format_sync(value: f64) -> String {
         Self::from_sync(value).format()

@@ -271,9 +271,8 @@ impl Plugin for OctaSine {
 
 impl vst::plugin::PluginParameters for SyncOnlyState {
     /// Get parameter label for parameter at `index` (e.g. "db", "sec", "ms", "%").
-    fn get_parameter_label(&self, index: i32) -> String {
-        self.presets.get_parameter_unit(index as usize)
-            .unwrap_or_else(|| "".to_string())
+    fn get_parameter_label(&self, _: i32) -> String {
+        "".to_string()
     }
 
     /// Get the parameter value for parameter at `index` (e.g. "1.0", "150", "Plate", "Off").
