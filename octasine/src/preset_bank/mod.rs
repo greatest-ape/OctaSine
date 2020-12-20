@@ -22,7 +22,6 @@ pub struct PresetParameter {
     pub name: String,
     pub unit_from_sync: fn(f64) -> String,
     pub sync_from_text: fn(String) -> Option<f64>,
-    pub sync_to_processing: fn(f64) -> ProcessingValue,
     pub format_sync: fn(f64) -> String,
 }
 
