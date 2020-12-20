@@ -4,6 +4,7 @@ use arc_swap::ArcSwap;
 use array_init::array_init;
 
 mod change_info;
+mod values;
 mod parameters;
 
 use change_info::ParameterChangeInfo;
