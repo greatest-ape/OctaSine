@@ -1,22 +1,25 @@
-name: Rust
+name: CI
 
-on:
-  push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
+on: [push, pull_request]
 
 env:
   CARGO_TERM_COLOR: always
 
 jobs:
   build:
-
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macOS-latest]
 
     steps:
     - uses: actions/checkout@v2
-    - name: Install latest nightly
+    - name: Install baseview dependencies
+      run: |
+        sudo apt update
+        sudo apt install libx11-xcb-dev libxcb-dri2-0-dev libgl1-mesa-dev libxcb-icccm4-dev libxcursor-dev
+      if: contains(matrix.os, 'ubuntu'
+    - name: Install latest nightly Rust
       uses: actions-rs/toolchain@v1
       with:
           toolchain: nightly
