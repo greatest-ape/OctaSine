@@ -1,5 +1,10 @@
 # TODO
 
+## Simplify presets
+
+* Use e.g. presets::values::MasterVolume in function that sets processing
+  parameter from index and sync value
+
 ## GUI
 
 * Fix ANOTHER envelope error:

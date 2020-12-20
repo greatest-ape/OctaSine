@@ -12,7 +12,7 @@ pub trait ProcessingValueConversion {
 
 
 #[derive(Debug, Clone, Copy)]
-pub struct MasterVolume(f64);
+pub struct MasterVolume(pub f64);
 
 
 impl Default for MasterVolume {
@@ -39,7 +39,7 @@ impl ProcessingValueConversion for MasterVolume {
 
 
 #[derive(Debug, Clone, Copy)]
-pub struct MasterFrequency(f64);
+pub struct MasterFrequency(pub f64);
 
 
 impl Default for MasterFrequency {
