@@ -19,7 +19,7 @@ pub trait ProcessingParameter {
 
 
 macro_rules! create_interpolatable_processing_parameter {
-    ($name:ident, $value_struct:ident, $default:ident, $extra_data:ident) => {
+    ($name:ident, $value_struct:ident, $default:ident) => {
         #[derive(Debug, Clone)]
         pub struct $name {
             value: InterpolatableProcessingValue,
@@ -35,7 +35,7 @@ macro_rules! create_interpolatable_processing_parameter {
 
         impl ProcessingParameter for $name {
             type Value = f64;
-            type ExtraData = $extra_data;
+            type ExtraData = TimeCounter;
 
             fn get_value(&mut self, extra_data: Self::ExtraData) -> Self::Value {
                 self.value.get_value(extra_data, &mut |_| ())
@@ -55,22 +55,22 @@ macro_rules! create_interpolatable_processing_parameter {
 
 
 macro_rules! create_simple_processing_parameter {
-    ($name:ident, $value_struct:ident, $type:ty, $default:ident) => {
+    ($name:ident, $value_struct:ident) => {
         #[derive(Debug, Clone)]
         pub struct $name {
-            pub value: $type
+            pub value: <$value_struct as ParameterValue>::Value,
         }
 
         impl Default for $name {
             fn default() -> Self {
                 Self {
-                    value: $default
+                    value: $value_struct::default().get()
                 }
             }
         }
 
         impl ProcessingParameter for $name {
-            type Value = $type;
+            type Value = <$value_struct as ParameterValue>::Value;
             type ExtraData = ();
 
             fn get_value(&mut self, _: Self::ExtraData) -> Self::Value {
@@ -95,8 +95,7 @@ macro_rules! create_simple_processing_parameter {
 create_interpolatable_processing_parameter!(
     ProcessingParameterMasterVolume,
     MasterVolume,
-    DEFAULT_MASTER_VOLUME,
-    TimeCounter
+    DEFAULT_MASTER_VOLUME
 );
 
 
@@ -104,9 +103,7 @@ create_interpolatable_processing_parameter!(
 
 create_simple_processing_parameter!(
     ProcessingParameterMasterFrequency,
-    MasterFrequency,
-    f64,
-    DEFAULT_MASTER_FREQUENCY
+    MasterFrequency
 );
 
 
@@ -115,8 +112,7 @@ create_simple_processing_parameter!(
 create_interpolatable_processing_parameter!(
     ProcessingParameterOperatorVolume,
     OperatorVolume,
-    DEFAULT_OPERATOR_VOLUME,
-    TimeCounter
+    DEFAULT_OPERATOR_VOLUME
 );
 
 impl ProcessingParameterOperatorVolume {
@@ -137,8 +133,7 @@ impl ProcessingParameterOperatorVolume {
 create_interpolatable_processing_parameter!(
     ProcessingParameterOperatorAdditiveFactor,
     OperatorAdditive,
-    DEFAULT_OPERATOR_ADDITIVE_FACTOR,
-    TimeCounter
+    DEFAULT_OPERATOR_ADDITIVE_FACTOR
 );
 
 
@@ -146,9 +141,7 @@ create_interpolatable_processing_parameter!(
 
 create_simple_processing_parameter!(
     ProcessingParameterOperatorFrequencyRatio,
-    OperatorFrequencyRatio,
-    f64,
-    DEFAULT_OPERATOR_FREQUENCY_RATIO
+    OperatorFrequencyRatio
 );
 
 
@@ -156,9 +149,7 @@ create_simple_processing_parameter!(
 
 create_simple_processing_parameter!(
     ProcessingParameterOperatorFrequencyFree,
-    OperatorFrequencyFree,
-    f64,
-    DEFAULT_OPERATOR_FREQUENCY_FREE
+    OperatorFrequencyFree
 );
 
 
@@ -166,9 +157,7 @@ create_simple_processing_parameter!(
 
 create_simple_processing_parameter!(
     ProcessingParameterOperatorFrequencyFine,
-    OperatorFrequencyFine,
-    f64,
-    DEFAULT_OPERATOR_FREQUENCY_FINE
+    OperatorFrequencyFine
 );
 
 
@@ -177,8 +166,7 @@ create_simple_processing_parameter!(
 create_interpolatable_processing_parameter!(
     ProcessingParameterOperatorFeedback,
     OperatorFeedback,
-    DEFAULT_OPERATOR_FEEDBACK,
-    TimeCounter
+    DEFAULT_OPERATOR_FEEDBACK
 );
 
 
@@ -187,8 +175,7 @@ create_interpolatable_processing_parameter!(
 create_interpolatable_processing_parameter!(
     ProcessingParameterOperatorModulationIndex,
     OperatorModulationIndex,
-    DEFAULT_OPERATOR_MODULATION_INDEX,
-    TimeCounter
+    DEFAULT_OPERATOR_MODULATION_INDEX
 );
 
 
@@ -196,9 +183,7 @@ create_interpolatable_processing_parameter!(
 
 create_simple_processing_parameter!(
     ProcessingParameterOperatorWaveType,
-    OperatorWaveType,
-    WaveType,
-    DEFAULT_OPERATOR_WAVE_TYPE
+    OperatorWaveType
 );
 
 
@@ -206,9 +191,7 @@ create_simple_processing_parameter!(
 
 create_simple_processing_parameter!(
     ProcessingParameterOperatorAttackDuration,
-    OperatorAttackDuration,
-    f64,
-    DEFAULT_ENVELOPE_ATTACK_DURATION
+    OperatorAttackDuration
 );
 
 
@@ -216,9 +199,7 @@ create_simple_processing_parameter!(
 
 create_simple_processing_parameter!(
     ProcessingParameterOperatorAttackVolume,
-    OperatorAttackVolume,
-    f64,
-    DEFAULT_ENVELOPE_ATTACK_VOLUME
+    OperatorAttackVolume
 );
 
 
@@ -226,9 +207,7 @@ create_simple_processing_parameter!(
 
 create_simple_processing_parameter!(
     ProcessingParameterOperatorDecayDuration,
-    OperatorDecayDuration,
-    f64,
-    DEFAULT_ENVELOPE_DECAY_DURATION
+    OperatorDecayDuration
 );
 
 
@@ -236,9 +215,7 @@ create_simple_processing_parameter!(
 
 create_simple_processing_parameter!(
     ProcessingParameterOperatorDecayVolume,
-    OperatorDecayVolume,
-    f64,
-    DEFAULT_ENVELOPE_DECAY_VOLUME
+    OperatorDecayVolume
 );
 
 
@@ -246,9 +223,7 @@ create_simple_processing_parameter!(
 
 create_simple_processing_parameter!(
     ProcessingParameterOperatorReleaseDuration,
-    OperatorReleaseDuration,
-    f64,
-    DEFAULT_ENVELOPE_RELEASE_DURATION
+    OperatorReleaseDuration
 );
 
 
@@ -256,17 +231,13 @@ create_simple_processing_parameter!(
 
 create_simple_processing_parameter!(
     ProcessingParameterOperatorModulationTarget2,
-    OperatorModulationTarget2,
-    usize,
-    DEFAULT_OPERATOR_3_MOD_TARGET
+    OperatorModulationTarget2
 );
 
 
 create_simple_processing_parameter!(
     ProcessingParameterOperatorModulationTarget3,
-    OperatorModulationTarget3,
-    usize,
-    DEFAULT_OPERATOR_4_MOD_TARGET
+    OperatorModulationTarget3
 );
 
 
