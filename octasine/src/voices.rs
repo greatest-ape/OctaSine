@@ -1,21 +1,7 @@
-use std::f64::consts::E;
-
 use crate::approximations::Log10Table;
 use crate::common::*;
 use crate::constants::*;
 use crate::parameters::processing::*;
-
-
-pub enum CurveType {
-    Exp,
-    Ln,
-    Log2,
-    Log10,
-    Sqrt,
-    Cbrt,
-    Sqrt4,
-    Linear
-}
 
 
 #[derive(Debug, Copy, Clone)]
@@ -309,23 +295,6 @@ impl Voice {
         if all_envelopes_ended {
             self.active = false;
         }
-    }
-}
-
-
-
-/// Kept here for reference
-#[allow(dead_code)]
-fn calculate_curve(curve: CurveType, v: f64) -> f64 {
-    match curve {
-        CurveType::Exp => (v.exp() - 1.0) / (E - 1.0),
-        CurveType::Ln => (1.0 + v * (E - 1.0)).ln(),
-        CurveType::Log2 => (1.0 + v * (2.0 - 1.0)).log2(),
-        CurveType::Log10 => (1.0 + v * (10.0 - 1.0)).log10(),
-        CurveType::Sqrt => v.sqrt(),
-        CurveType::Cbrt => v.cbrt(),
-        CurveType::Sqrt4 => v.sqrt().sqrt(),
-        CurveType::Linear => v,
     }
 }
 
