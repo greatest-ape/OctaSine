@@ -5,203 +5,201 @@ use super::values::*;
 
 pub fn create_parameters() -> Vec<SyncParameter> {
     vec![
-        SyncParameter::master_volume(),
-        SyncParameter::master_frequency(),
+        master_volume(),
+        master_frequency(),
 
         // Operator 1
-        SyncParameter::operator_volume(0),
-        SyncParameter::operator_panning(0),
-        SyncParameter::operator_wave_type(0),
-        SyncParameter::operator_modulation_index(0),
-        SyncParameter::operator_feedback(0),
-        SyncParameter::operator_frequency_ratio(0),
-        SyncParameter::operator_frequency_free(0),
-        SyncParameter::operator_frequency_fine(0),
-        SyncParameter::operator_attack_duration(0),
-        SyncParameter::operator_attack_volume(0),
-        SyncParameter::operator_decay_duration(0),
-        SyncParameter::operator_decay_volume(0),
-        SyncParameter::operator_release_duration(0),
+        operator_volume(0),
+        operator_panning(0),
+        operator_wave_type(0),
+        operator_modulation_index(0),
+        operator_feedback(0),
+        operator_frequency_ratio(0),
+        operator_frequency_free(0),
+        operator_frequency_fine(0),
+        operator_attack_duration(0),
+        operator_attack_volume(0),
+        operator_decay_duration(0),
+        operator_decay_volume(0),
+        operator_release_duration(0),
 
         // Operator 2
-        SyncParameter::operator_volume(1),
-        SyncParameter::operator_panning(1),
-        SyncParameter::operator_wave_type(1),
-        SyncParameter::operator_additive(1),
-        SyncParameter::operator_modulation_index(1),
-        SyncParameter::operator_feedback(1),
-        SyncParameter::operator_frequency_ratio(1),
-        SyncParameter::operator_frequency_free(1),
-        SyncParameter::operator_frequency_fine(1),
-        SyncParameter::operator_attack_duration(1),
-        SyncParameter::operator_attack_volume(1),
-        SyncParameter::operator_decay_duration(1),
-        SyncParameter::operator_decay_volume(1),
-        SyncParameter::operator_release_duration(1),
+        operator_volume(1),
+        operator_panning(1),
+        operator_wave_type(1),
+        operator_additive(1),
+        operator_modulation_index(1),
+        operator_feedback(1),
+        operator_frequency_ratio(1),
+        operator_frequency_free(1),
+        operator_frequency_fine(1),
+        operator_attack_duration(1),
+        operator_attack_volume(1),
+        operator_decay_duration(1),
+        operator_decay_volume(1),
+        operator_release_duration(1),
 
         // Operator 3
-        SyncParameter::operator_volume(2),
-        SyncParameter::operator_panning(2),
-        SyncParameter::operator_wave_type(2),
-        SyncParameter::operator_additive(2),
-        SyncParameter::operator_modulation_target_2(),
-        SyncParameter::operator_modulation_index(2),
-        SyncParameter::operator_feedback(2),
-        SyncParameter::operator_frequency_ratio(2),
-        SyncParameter::operator_frequency_free(2),
-        SyncParameter::operator_frequency_fine(2),
-        SyncParameter::operator_attack_duration(2),
-        SyncParameter::operator_attack_volume(2),
-        SyncParameter::operator_decay_duration(2),
-        SyncParameter::operator_decay_volume(2),
-        SyncParameter::operator_release_duration(2),
+        operator_volume(2),
+        operator_panning(2),
+        operator_wave_type(2),
+        operator_additive(2),
+        operator_modulation_target_2(),
+        operator_modulation_index(2),
+        operator_feedback(2),
+        operator_frequency_ratio(2),
+        operator_frequency_free(2),
+        operator_frequency_fine(2),
+        operator_attack_duration(2),
+        operator_attack_volume(2),
+        operator_decay_duration(2),
+        operator_decay_volume(2),
+        operator_release_duration(2),
 
         // Operator 4
-        SyncParameter::operator_volume(3),
-        SyncParameter::operator_panning(3),
-        SyncParameter::operator_wave_type(3),
-        SyncParameter::operator_additive(3),
-        SyncParameter::operator_modulation_target_3(),
-        SyncParameter::operator_modulation_index(3),
-        SyncParameter::operator_feedback(3),
-        SyncParameter::operator_frequency_ratio(3),
-        SyncParameter::operator_frequency_free(3),
-        SyncParameter::operator_frequency_fine(3),
-        SyncParameter::operator_attack_duration(3),
-        SyncParameter::operator_attack_volume(3),
-        SyncParameter::operator_decay_duration(3),
-        SyncParameter::operator_decay_volume(3),
-        SyncParameter::operator_release_duration(3),
+        operator_volume(3),
+        operator_panning(3),
+        operator_wave_type(3),
+        operator_additive(3),
+        operator_modulation_target_3(),
+        operator_modulation_index(3),
+        operator_feedback(3),
+        operator_frequency_ratio(3),
+        operator_frequency_free(3),
+        operator_frequency_fine(3),
+        operator_attack_duration(3),
+        operator_attack_volume(3),
+        operator_decay_duration(3),
+        operator_decay_volume(3),
+        operator_release_duration(3),
     ]
 }
 
 
-impl SyncParameter {
-    pub fn master_volume() -> Self {
-        Self::new(
-            "Master volume",
-            MasterVolume::default()
-        )
-    }
+fn master_volume() -> SyncParameter {
+    SyncParameter::new(
+        "Master volume",
+        MasterVolume::default()
+    )
+}
 
-    pub fn master_frequency() -> Self {
-        Self::new(
-            "Master frequency",
-            MasterFrequency::default()
-        )
-    }
+fn master_frequency() -> SyncParameter {
+    SyncParameter::new(
+        "Master frequency",
+        MasterFrequency::default()
+    )
+}
 
-    pub fn operator_volume(index: usize) -> Self {
-        Self::new(
-            &format!("Op. {} volume", index + 1),
-            OperatorVolume::new(index)
-        )
-    }
+fn operator_volume(index: usize) -> SyncParameter {
+    SyncParameter::new(
+        &format!("Op. {} volume", index + 1),
+        OperatorVolume::new(index)
+    )
+}
 
-    pub fn operator_panning(index: usize) -> Self {
-        Self::new(
-            &format!("Op. {} pan", index + 1),
-            OperatorPanning::default()
-        )
-    }
+fn operator_panning(index: usize) -> SyncParameter {
+    SyncParameter::new(
+        &format!("Op. {} pan", index + 1),
+        OperatorPanning::default()
+    )
+}
 
-    pub fn operator_additive(index: usize) -> Self {
-        Self::new(
-            &format!("Op. {} additive", index + 1),
-            OperatorAdditive::default()
-        )
-    }
+fn operator_additive(index: usize) -> SyncParameter {
+    SyncParameter::new(
+        &format!("Op. {} additive", index + 1),
+        OperatorAdditive::default()
+    )
+}
 
-    pub fn operator_frequency_ratio(index: usize) -> Self {
-        Self::new(
-            &format!("Op. {} freq ratio", index + 1),
-            OperatorFrequencyRatio::default()
-        )
-    }
+fn operator_frequency_ratio(index: usize) -> SyncParameter {
+    SyncParameter::new(
+        &format!("Op. {} freq ratio", index + 1),
+        OperatorFrequencyRatio::default()
+    )
+}
 
-    pub fn operator_frequency_free(index: usize) -> Self {
-        Self::new(
-            &format!("Op. {} freq free", index + 1),
-            OperatorFrequencyFree::default()
-        )
-    }
+fn operator_frequency_free(index: usize) -> SyncParameter {
+    SyncParameter::new(
+        &format!("Op. {} freq free", index + 1),
+        OperatorFrequencyFree::default()
+    )
+}
 
-    pub fn operator_frequency_fine(index: usize) -> Self {
-        Self::new(
-            &format!("Op. {} freq fine", index + 1),
-            OperatorFrequencyFine::default()
-        )
-    }
+fn operator_frequency_fine(index: usize) -> SyncParameter {
+    SyncParameter::new(
+        &format!("Op. {} freq fine", index + 1),
+        OperatorFrequencyFine::default()
+    )
+}
 
-    pub fn operator_feedback(index: usize) -> Self {
-        Self::new(
-            &format!("Op. {} feedback", index + 1),
-            OperatorFeedback::default()
-        )
-    }
+fn operator_feedback(index: usize) -> SyncParameter {
+    SyncParameter::new(
+        &format!("Op. {} feedback", index + 1),
+        OperatorFeedback::default()
+    )
+}
 
-    pub fn operator_modulation_index(index: usize) -> Self {
-        Self::new(
-            &format!("Op. {} mod index", index + 1),
-            OperatorModulationIndex::default()
-        )
-    }
+fn operator_modulation_index(index: usize) -> SyncParameter {
+    SyncParameter::new(
+        &format!("Op. {} mod index", index + 1),
+        OperatorModulationIndex::default()
+    )
+}
 
-    pub fn operator_wave_type(index: usize) -> Self {
-        Self::new(
-            &format!("Op. {} wave", index + 1),
-            OperatorWaveType::default()
-        )
-    }
+fn operator_wave_type(index: usize) -> SyncParameter {
+    SyncParameter::new(
+        &format!("Op. {} wave", index + 1),
+        OperatorWaveType::default()
+    )
+}
 
-    pub fn operator_attack_duration(index: usize) -> Self {
-        Self::new(
-            &format!("Op. {} attack time", index + 1),
-            OperatorAttackDuration::default()
-        )
-    }
+fn operator_attack_duration(index: usize) -> SyncParameter {
+    SyncParameter::new(
+        &format!("Op. {} attack time", index + 1),
+        OperatorAttackDuration::default()
+    )
+}
 
-    pub fn operator_attack_volume(index: usize) -> Self {
-        Self::new(
-            &format!("Op. {} attack vol", index + 1),
-            OperatorAttackVolume::default()
-        )
-    }
+fn operator_attack_volume(index: usize) -> SyncParameter {
+    SyncParameter::new(
+        &format!("Op. {} attack vol", index + 1),
+        OperatorAttackVolume::default()
+    )
+}
 
-    pub fn operator_decay_duration(index: usize) -> Self {
-        Self::new(
-            &format!("Op. {} decay time", index + 1),
-            OperatorDecayDuration::default()
-        )
-    }
+fn operator_decay_duration(index: usize) -> SyncParameter {
+    SyncParameter::new(
+        &format!("Op. {} decay time", index + 1),
+        OperatorDecayDuration::default()
+    )
+}
 
-    pub fn operator_decay_volume(index: usize) -> Self {
-        Self::new(
-            &format!("Op. {} decay vol", index + 1),
-            OperatorDecayVolume::default()
-        )
-    }
+fn operator_decay_volume(index: usize) -> SyncParameter {
+    SyncParameter::new(
+        &format!("Op. {} decay vol", index + 1),
+        OperatorDecayVolume::default()
+    )
+}
 
-    pub fn operator_release_duration(index: usize) -> Self {
-        Self::new(
-            &format!("Op. {} release time", index + 1),
-            OperatorReleaseDuration::default()
-        )
-    }
+fn operator_release_duration(index: usize) -> SyncParameter {
+    SyncParameter::new(
+        &format!("Op. {} release time", index + 1),
+        OperatorReleaseDuration::default()
+    )
+}
 
-    pub fn operator_modulation_target_2() -> Self {
-        Self::new(
-            "Op. 2 mod out",
-            OperatorModulationTarget2::default()
-        )
-    }
+fn operator_modulation_target_2() -> SyncParameter {
+    SyncParameter::new(
+        "Op. 2 mod out",
+        OperatorModulationTarget2::default()
+    )
+}
 
-    pub fn operator_modulation_target_3() -> Self {
-        Self::new(
-            "Op. 3 mod out",
-            OperatorModulationTarget3::default()
-        )
-    }
+fn operator_modulation_target_3() -> SyncParameter {
+    SyncParameter::new(
+        "Op. 3 mod out",
+        OperatorModulationTarget3::default()
+    )
 }
 
 
@@ -223,7 +221,7 @@ mod tests {
 
     #[test]
     fn test_set_volume_text(){
-        let p = SyncParameter::operator_volume(3);
+        let p = operator_volume(3);
 
         assert!(p.set_from_text("-1.0".to_string()));
         assert_eq!(OperatorVolume::from_sync(p.get_value()).get(), 0.0);
@@ -249,7 +247,7 @@ mod tests {
 
     #[test]
     fn test_set_output_operator_text(){
-        let p = SyncParameter::operator_modulation_target_3();
+        let p = operator_modulation_target_3();
 
         assert!(!p.set_from_text("abc".to_string()));
         assert!(!p.set_from_text("0".to_string()));
@@ -268,7 +266,7 @@ mod tests {
 
     #[test]
     fn test_set_frequency_ratio_text(){
-        let p = SyncParameter::operator_frequency_ratio(3);
+        let p = operator_frequency_ratio(3);
 
         assert!(p.set_from_text("0.0".to_string()));
         assert_eq!(OperatorFrequencyRatio::from_sync(p.get_value()).get(), OPERATOR_RATIO_STEPS[0]);
@@ -298,7 +296,7 @@ mod tests {
     /*
     #[test]
     fn test_set_frequency_free_text(){
-        let p = SyncParameter::operator_frequency_free(3);
+        let p = operator_frequency_free(3);
 
         assert!(p.set_from_text("1.0".to_string()));
         assert_eq!(OperatorFrequencyFree::from_sync(p.get_value()).get(), 1.0);
@@ -325,7 +323,7 @@ mod tests {
 
     #[test]
     fn test_set_wave_type_text(){
-        let p = SyncParameter::operator_wave_type(3);
+        let p = operator_wave_type(3);
 
         assert!(p.set_from_text("sine".to_string()));
         assert_eq!(OperatorWaveType::from_sync(p.get_value()).get(), WaveType::Sine);
@@ -336,7 +334,7 @@ mod tests {
 
     #[test]
     fn test_set_attack_duration_text(){
-        let p = SyncParameter::operator_attack_duration(3);
+        let p = operator_attack_duration(3);
 
         assert!(p.set_from_text("0.0".to_string()));
         assert_eq!(OperatorAttackDuration::from_sync(p.get_value()).get(), ENVELOPE_MIN_DURATION);
