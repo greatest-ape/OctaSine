@@ -12,7 +12,6 @@ pub trait ProcessingParameter {
     type ExtraData;
 
     fn get_value(&mut self, extra_data: Self::ExtraData) -> Self::Value;
-    fn set_value(&mut self, value: Self::Value);
     fn set_from_sync(&mut self, value: f64);
 }
 
@@ -41,11 +40,8 @@ macro_rules! create_interpolatable_processing_parameter {
             fn get_value(&mut self, extra_data: Self::ExtraData) -> Self::Value {
                 self.value.get_value(extra_data, &mut |_| ())
             }
-            fn set_value(&mut self, value: Self::Value) {
-                self.value.set_value(value)
-            }
             fn set_from_sync(&mut self, value: f64){
-                self.set_value($value_struct::from_sync(value).get())
+                self.value.set_value($value_struct::from_sync(value).get())
             }
         }
     }
@@ -74,11 +70,8 @@ macro_rules! create_simple_processing_parameter {
             fn get_value(&mut self, _: Self::ExtraData) -> Self::Value {
                 self.value
             }
-            fn set_value(&mut self, value: Self::Value){
-                self.value = value;
-            }
             fn set_from_sync(&mut self, value: f64){
-                self.set_value($value_struct::from_sync(value).get())
+                self.value = $value_struct::from_sync(value).get();
             }
         }
     };
@@ -125,11 +118,8 @@ impl ProcessingParameter for ProcessingParameterOperatorVolume {
     fn get_value(&mut self, extra_data: Self::ExtraData) -> Self::Value {
         self.value.get_value(extra_data, &mut |_| ())
     }
-    fn set_value(&mut self, value: Self::Value) {
-        self.value.set_value(value)
-    }
     fn set_from_sync(&mut self, value: f64){
-        self.set_value(OperatorVolume::from_sync(value).get())
+        self.value.set_value(OperatorVolume::from_sync(value).get())
     }
 }
 
@@ -302,11 +292,8 @@ impl ProcessingParameter for ProcessingParameterOperatorPanning {
 
         value
     }
-    fn set_value(&mut self, value: Self::Value) {
-        self.value.set_value(value)
-    }
     fn set_from_sync(&mut self, value: f64) {
-        self.set_value(OperatorPanning::from_sync(value).get())
+        self.value.set_value(OperatorPanning::from_sync(value).get())
     }
 }
 
