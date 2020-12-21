@@ -12,14 +12,13 @@ pub trait ProcessingParameter {
     type ExtraData;
 
     fn get_value(&mut self, extra_data: Self::ExtraData) -> Self::Value;
-    fn get_target_value(&self) -> Self::Value;
     fn set_value(&mut self, value: Self::Value);
     fn set_from_sync(&mut self, value: f64);
 }
 
 
 macro_rules! create_interpolatable_processing_parameter {
-    ($name:ident, $value_struct:ident, $default:ident) => {
+    ($name:ident, $value_struct:ident) => {
         #[derive(Debug, Clone)]
         pub struct $name {
             value: InterpolatableProcessingValue,
@@ -27,8 +26,10 @@ macro_rules! create_interpolatable_processing_parameter {
 
         impl Default for $name {
             fn default() -> Self {
+                let default = $value_struct::default().get();
+
                 Self {
-                    value: InterpolatableProcessingValue::new($default)
+                    value: InterpolatableProcessingValue::new(default)
                 }
             }
         }
@@ -39,9 +40,6 @@ macro_rules! create_interpolatable_processing_parameter {
 
             fn get_value(&mut self, extra_data: Self::ExtraData) -> Self::Value {
                 self.value.get_value(extra_data, &mut |_| ())
-            }
-            fn get_target_value(&self) -> Self::Value {
-                self.value.target_value
             }
             fn set_value(&mut self, value: Self::Value) {
                 self.value.set_value(value)
@@ -76,9 +74,6 @@ macro_rules! create_simple_processing_parameter {
             fn get_value(&mut self, _: Self::ExtraData) -> Self::Value {
                 self.value
             }
-            fn get_target_value(&self) -> Self::Value {
-                self.value
-            }
             fn set_value(&mut self, value: Self::Value){
                 self.value = value;
             }
@@ -94,8 +89,7 @@ macro_rules! create_simple_processing_parameter {
 
 create_interpolatable_processing_parameter!(
     ProcessingParameterMasterVolume,
-    MasterVolume,
-    DEFAULT_MASTER_VOLUME
+    MasterVolume
 );
 
 
@@ -109,21 +103,33 @@ create_simple_processing_parameter!(
 
 // Operator volume
 
-create_interpolatable_processing_parameter!(
-    ProcessingParameterOperatorVolume,
-    OperatorVolume,
-    DEFAULT_OPERATOR_VOLUME
-);
+#[derive(Debug, Clone)]
+pub struct ProcessingParameterOperatorVolume {
+    value: InterpolatableProcessingValue,
+}
 
 impl ProcessingParameterOperatorVolume {
     pub fn new(operator_index: usize) -> Self {
-        let mut parameter = Self::default();
+        let value = OperatorVolume::new(operator_index).get();
 
-        if operator_index > 0 {
-            parameter.set_value(0.0);
+        Self {
+            value: InterpolatableProcessingValue::new(value)
         }
+    }
+}
 
-        parameter
+impl ProcessingParameter for ProcessingParameterOperatorVolume {
+    type Value = f64;
+    type ExtraData = TimeCounter;
+
+    fn get_value(&mut self, extra_data: Self::ExtraData) -> Self::Value {
+        self.value.get_value(extra_data, &mut |_| ())
+    }
+    fn set_value(&mut self, value: Self::Value) {
+        self.value.set_value(value)
+    }
+    fn set_from_sync(&mut self, value: f64){
+        self.set_value(OperatorVolume::from_sync(value).get())
     }
 }
 
@@ -132,8 +138,7 @@ impl ProcessingParameterOperatorVolume {
 
 create_interpolatable_processing_parameter!(
     ProcessingParameterOperatorAdditiveFactor,
-    OperatorAdditive,
-    DEFAULT_OPERATOR_ADDITIVE_FACTOR
+    OperatorAdditive
 );
 
 
@@ -165,8 +170,7 @@ create_simple_processing_parameter!(
 
 create_interpolatable_processing_parameter!(
     ProcessingParameterOperatorFeedback,
-    OperatorFeedback,
-    DEFAULT_OPERATOR_FEEDBACK
+    OperatorFeedback
 );
 
 
@@ -174,8 +178,7 @@ create_interpolatable_processing_parameter!(
 
 create_interpolatable_processing_parameter!(
     ProcessingParameterOperatorModulationIndex,
-    OperatorModulationIndex,
-    DEFAULT_OPERATOR_MODULATION_INDEX
+    OperatorModulationIndex
 );
 
 
@@ -301,9 +304,6 @@ impl ProcessingParameter for ProcessingParameterOperatorPanning {
     }
     fn set_value(&mut self, value: Self::Value) {
         self.value.set_value(value)
-    }
-    fn get_target_value(&self) -> Self::Value {
-        self.value.target_value
     }
     fn set_from_sync(&mut self, value: f64) {
         self.set_value(OperatorPanning::from_sync(value).get())
