@@ -46,7 +46,7 @@ pub struct ProcessingState {
 
 
 /// Thread-safe state used for parameter and preset calls
-pub struct SyncOnlyState {
+pub struct SyncState {
     pub host: HostCallback,
     pub presets: PresetBank,
 }
@@ -54,7 +54,7 @@ pub struct SyncOnlyState {
 /// Main structure
 pub struct OctaSine {
     processing: ProcessingState,
-    pub sync_only: Arc<SyncOnlyState>,
+    pub sync: Arc<SyncState>,
     #[cfg(feature = "gui")]
     editor: Option<crate::gui::Gui>,
 }
@@ -123,16 +123,16 @@ impl Plugin for OctaSine {
             parameters: ProcessingParameters::default(),
         };
 
-        let sync_only = Arc::new(SyncOnlyState {
+        let sync= Arc::new(SyncState {
             host,
             presets: built_in_preset_bank()
         });
 
-        let editor = crate::gui::Gui::new(sync_only.clone());
+        let editor = crate::gui::Gui::new(sync.clone());
 
         Self {
             processing,
-            sync_only,
+            sync,
             #[cfg(feature = "gui")]
             editor: Some(editor),
         }
@@ -147,8 +147,8 @@ impl Plugin for OctaSine {
             category: Category::Synth,
             inputs: 0,
             outputs: 2,
-            presets: self.sync_only.presets.num_presets() as i32,
-            parameters: self.sync_only.presets.num_parameters() as i32,
+            presets: self.sync.presets.num_presets() as i32,
+            parameters: self.sync.presets.num_parameters() as i32,
             initial_delay: 0,
             preset_chunks: true,
             f64_precision: false,
@@ -205,7 +205,7 @@ impl Plugin for OctaSine {
     }
 
     fn get_parameter_object(&mut self) -> Arc<dyn PluginParameters> {
-        Arc::clone(&self.sync_only) as Arc<dyn PluginParameters>
+        Arc::clone(&self.sync) as Arc<dyn PluginParameters>
     }
 
     #[cfg(feature = "gui")]
@@ -219,7 +219,7 @@ impl Plugin for OctaSine {
 }
 
 
-impl vst::plugin::PluginParameters for SyncOnlyState {
+impl vst::plugin::PluginParameters for SyncState {
     /// Get parameter label for parameter at `index` (e.g. "db", "sec", "ms", "%").
     fn get_parameter_label(&self, _: i32) -> String {
         "".to_string()
@@ -324,7 +324,7 @@ cfg_if::cfg_if! {
         }
 
 
-        impl GuiSyncHandle for SyncOnlyState {
+        impl GuiSyncHandle for SyncState {
             fn get_bank(&self) -> &PresetBank {
                 &self.presets
             }

@@ -112,10 +112,10 @@ fn benchmark(
     let iterations = 50_000;
 
     for p in envelope_duration_parameters.iter() {
-        octasine.sync_only.set_parameter(*p, 1.0);
+        octasine.sync.set_parameter(*p, 1.0);
     }
     for p in wave_type_parameters.iter() {
-        octasine.sync_only.set_parameter(*p, 0.0);
+        octasine.sync.set_parameter(*p, 0.0);
     }
 
     let now = Instant::now();
@@ -139,7 +139,7 @@ fn benchmark(
                 continue;
             }
 
-            octasine.sync_only.set_parameter(j, (i % 64) as f32 / 64.0);
+            octasine.sync.set_parameter(j, (i % 64) as f32 / 64.0);
         }
 
         unsafe {

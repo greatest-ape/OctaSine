@@ -4,7 +4,7 @@ use iced_baseview::{settings, Parent, Runner, Settings, WindowScalePolicy};
 use vst::editor::Editor;
 use raw_window_handle::RawWindowHandle;
 
-use super::SyncOnlyState;
+use super::SyncState;
 use crate::constants::PLUGIN_NAME;
 
 pub mod interface;
@@ -17,15 +17,15 @@ pub const GUI_HEIGHT: usize = 750;
 
 
 pub struct Gui {
-    sync_only: Arc<SyncOnlyState>,
+    sync_state: Arc<SyncState>,
     opened: bool,
 }
 
 
 impl Gui {
-    pub fn new(sync_only: Arc<SyncOnlyState>) -> Self {
+    pub fn new(sync_state: Arc<SyncState>) -> Self {
         Self {
-            sync_only,
+            sync_state,
             opened: false,
         }
     }
@@ -52,10 +52,10 @@ impl Editor for Gui {
                 scale_policy: WindowScalePolicy::SystemScaleFactor,
                 title: PLUGIN_NAME.to_string(),
             },
-            flags: self.sync_only.clone(),
+            flags: self.sync_state.clone(),
         };
 
-        Runner::<OctaSineIcedApplication<Arc<SyncOnlyState>>>::open(
+        Runner::<OctaSineIcedApplication<Arc<SyncState>>>::open(
             settings,
             Parent::WithParent(raw_window_handle_from_parent(parent)),
         );
