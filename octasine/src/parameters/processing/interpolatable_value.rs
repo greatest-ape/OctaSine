@@ -8,7 +8,6 @@ use crate::common::TimeCounter;
 
 #[derive(Debug, Copy, Clone)]
 pub struct InterpolatableProcessingValue {
-    pub target_value: f64,
     current_value: f64,
     step_size: f64,
     steps_remaining: u8,
@@ -20,7 +19,6 @@ pub struct InterpolatableProcessingValue {
 impl InterpolatableProcessingValue {
     pub fn new(value: f64) -> Self {
         Self {
-            target_value: value,
             current_value: value,
             step_size: 0.0,
             steps_remaining: 0,
@@ -59,10 +57,7 @@ impl InterpolatableProcessingValue {
     }
 
     #[allow(clippy::float_cmp)]
-    // Set target value, possibly restart interpolation
     pub fn set_value(&mut self, value: f64){
-        self.target_value = value;
-
         if INTERPOLATION_STEPS == 0 {
             self.current_value = value;
         } else if value == self.current_value || (value - self.current_value).abs() <= ::std::f64::EPSILON {
