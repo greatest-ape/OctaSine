@@ -9,10 +9,11 @@ license = "GPL-3.0"
 name = "octasine"
 crate-type = ["cdylib"]
 
-[dependencies]
-vst = "0.2"
-octasine = { path = "../octasine" }
-
 [features]
 simd = ["octasine/simd"]
 logging = ["octasine/logging"]
+gui = ["octasine/gui"]
+
+[dependencies]
+vst = "0.2"
+octasine = { path = "../octasine" }

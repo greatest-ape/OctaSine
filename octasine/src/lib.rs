@@ -14,16 +14,13 @@ pub mod preset_bank;
 pub mod gui;
 
 use std::sync::Arc;
-use std::ops::Deref;
 
 use array_init::array_init;
 use fastrand::Rng;
 
 use vst::api::{Supported, Events};
-use vst::editor::Editor;
 use vst::event::Event;
 use vst::plugin::{Category, Plugin, Info, CanDo, HostCallback, PluginParameters};
-use vst::host::Host;
 
 use approximations::*;
 use common::*;
@@ -128,6 +125,7 @@ impl Plugin for OctaSine {
             presets: built_in_preset_bank()
         });
 
+        #[cfg(feature = "gui")]
         let editor = crate::gui::Gui::new(sync.clone());
 
         Self {
@@ -209,9 +207,9 @@ impl Plugin for OctaSine {
     }
 
     #[cfg(feature = "gui")]
-    fn get_editor(&mut self) -> Option<Box<dyn Editor>> {
+    fn get_editor(&mut self) -> Option<Box<dyn ::vst::editor::Editor>> {
         if let Some(editor) = self.editor.take(){
-            Some(Box::new(editor) as Box<dyn Editor>)
+            Some(Box::new(editor) as Box<dyn ::vst::editor::Editor>)
         } else {
             None
         }
@@ -314,6 +312,9 @@ impl vst::plugin::PluginParameters for SyncState {
 
 cfg_if::cfg_if! {
     if #[cfg(feature = "gui")] {
+        use std::ops::Deref;
+        use vst::host::Host;
+
         /// Trait passed to GUI code for encapsulation
         pub trait GuiSyncHandle: Send + Sync + 'static {
             fn get_bank(&self) -> &PresetBank;
