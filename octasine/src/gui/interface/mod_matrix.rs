@@ -27,7 +27,7 @@ const SCALE: f32 = SMALL_BOX_SIZE as f32 / (HEIGHT as f32 / 8.0);
 const WIDTH_FLOAT: f32 = ((HEIGHT as f64 / 8.0) * 7.0) as f32;
 const SIZE: Size = Size { width: WIDTH_FLOAT, height: HEIGHT as f32 };
 const OPERATOR_BOX_SCALE: f32 = BIG_BOX_SIZE as f32 / SMALL_BOX_SIZE as f32;
-const WIDTH: u16 = WIDTH_FLOAT as u16;
+const WIDTH: u16 = WIDTH_FLOAT as u16 + 1;
 
 
 struct OperatorBox {
@@ -61,8 +61,10 @@ impl OperatorBox {
             y: base_top_left.y - (OPERATOR_BOX_SCALE - 1.0) * base_size.height / 2.0,
         };
 
-        let top_left = scale_point(bounds, top_left);
+        let mut top_left = scale_point(bounds, top_left);
         let size = scale_size(size);
+
+        top_left.x += 1.0;
 
         let path = Path::rectangle(top_left, size);
         let rect = Rectangle::new(top_left, size);
@@ -80,7 +82,9 @@ impl OperatorBox {
             y: base_top_left.y,
         };
 
-        let text_position = scale_point(bounds, text_position);
+        let mut text_position = scale_point(bounds, text_position);
+
+        text_position.x += 1.0;
 
         let text = Text {
             content: format!("{}", index + 1),
@@ -147,8 +151,10 @@ impl ModulationBox {
 
         let (top_left, size) = get_box_base_point_and_size(bounds,x, y);
 
-        let top_left = scale_point(bounds, top_left);
+        let mut top_left = scale_point(bounds, top_left);
         let size = scale_size(size);
+
+        top_left.x += 1.0;
 
         let path = Path::rectangle(top_left, size);
         let rect = Rectangle::new(top_left, size);
@@ -255,8 +261,11 @@ impl OutputBox {
             y: left.y,
         };
 
-        let left = scale_point(bounds, left);
-        let right = scale_point(bounds, right);
+        let mut left = scale_point(bounds, left);
+        let mut right = scale_point(bounds, right);
+
+        left.x += 1.0;
+        right.x += 1.0;
 
         let path = Path::line(left, right);
 
@@ -704,8 +713,8 @@ impl ModulationMatrix {
     fn draw_background(&self, frame: &mut Frame){
         let mut size = frame.size();
 
-        size.width -= 2.0;
-        size.height -= 2.0;
+        size.width -= 1.0;
+        size.height -= 1.0;
 
         let background = Path::rectangle(
             Point::new(1.0, 1.0),
