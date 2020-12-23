@@ -1,5 +1,5 @@
 use iced_baseview::{
-    Color, Column, Element, Text, Length, HorizontalAlignment, Align, Row, Radio
+    Color, Column, Element, Text, Length, HorizontalAlignment, Align, Row, Radio, Space
 };
 
 use crate::parameters::utils::{
@@ -36,7 +36,7 @@ impl WaveTypePicker {
         let selected = map_parameter_value_to_step(&choices[..], value);
         
         Self {
-            title: "WAVE\n ".to_string(),
+            title: "WAVE".to_string(),
             parameter_index,
             choices,
             selected,
@@ -53,7 +53,7 @@ impl WaveTypePicker {
             .font(FONT_BOLD);
         
         let mut radios = Column::new()
-            .spacing(4);
+            .spacing(6);
         
         for choice in self.choices.clone().into_iter() {
             let parameter_index = self.parameter_index;
@@ -82,16 +82,21 @@ impl WaveTypePicker {
         Column::new()
             .width(Length::Units(64))
             .align_items(Align::Center)
-            .spacing(16)
             .push(
                 Row::new()
                     .align_items(Align::Center)
                     .push(title)
             )
             .push(
+                Space::with_height(Length::Units(16))
+            )
+            .push(
                 Row::new()
                     .align_items(Align::Center)
                     .push(radios)
+            )
+            .push(
+                Space::with_height(Length::Units(14))
             )
             .push(
                 Text::new(format_wave_type(self.selected))

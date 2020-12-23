@@ -5,7 +5,7 @@ use iced_baseview::{
 
 use crate::GuiSyncHandle;
 
-use super::Message;
+use super::{FONT_SIZE, Message};
 use super::envelope::Envelope;
 use super::knob::OctaSineKnob;
 use super::picker::WaveTypePicker;
@@ -73,9 +73,9 @@ impl OperatorWidgets {
 
     pub fn view<H: GuiSyncHandle>(&mut self, sync_handle: &H) -> Element<Message> {
         let operator_number = Text::new(format!("{}", self.index + 1))
-            .size(36)
+            .size(FONT_SIZE * 3)
             .horizontal_alignment(HorizontalAlignment::Center);
-        let operator_number = image::Image::new(self.number_handle.clone());
+        // let operator_number = image::Image::new(self.number_handle.clone());
 
         let mut row = Row::new()
             .align_items(Align::Center)

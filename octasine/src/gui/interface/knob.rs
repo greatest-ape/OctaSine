@@ -129,7 +129,7 @@ impl OctaSineKnob {
         Self::new_min_max_center(
             sync_handle,
             parameter_index,
-            "VOLUME\n "
+            "VOLUME"
         )
     }
 
@@ -140,7 +140,7 @@ impl OctaSineKnob {
         Self::new_min_max_center(
             sync_handle,
             parameter_index,
-            "PAN\n "
+            "PAN"
         )
     }
 
@@ -151,7 +151,7 @@ impl OctaSineKnob {
         Self::new_with_steps(
             sync_handle,
             parameter_index,
-            "MOD\nINDEX",
+            "MOD",
             &OPERATOR_BETA_STEPS,
             DEFAULT_OPERATOR_MODULATION_INDEX,
         )
@@ -169,7 +169,7 @@ impl OctaSineKnob {
 
         Self::new(
             sync_handle,
-            "MOD\nFEEDBACK".to_string(),
+            "FEEDBACK".to_string(),
             parameter_index,
             None,
             Some(tick_marks),
@@ -184,7 +184,7 @@ impl OctaSineKnob {
         Self::new_with_steps(
             sync_handle,
             parameter_index,
-            "FREQ\nRATIO",
+            "RATIO",
             &OPERATOR_RATIO_STEPS,
             DEFAULT_OPERATOR_FREQUENCY_RATIO
         )
@@ -197,7 +197,7 @@ impl OctaSineKnob {
         Self::new_with_steps(
             sync_handle,
             parameter_index,
-            "FREQ\nFREE",
+            "FREE",
             &OPERATOR_FREE_STEPS,
             DEFAULT_OPERATOR_FREQUENCY_FREE
         )
@@ -210,7 +210,7 @@ impl OctaSineKnob {
         Self::new_with_steps(
             sync_handle,
             parameter_index,
-            "FREQ\nFINE",
+            "FINE",
             &OPERATOR_FINE_STEPS,
             DEFAULT_OPERATOR_FREQUENCY_FINE
         )
@@ -228,7 +228,7 @@ impl OctaSineKnob {
 
         Self::new(
             sync_handle,
-            "ADDITIVE\n ".to_string(),
+            "ADDITIVE".to_string(),
             parameter_index,
             None,
             Some(tick_marks),
