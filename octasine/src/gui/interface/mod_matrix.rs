@@ -362,6 +362,10 @@ struct ModulationMatrixParameters {
     operator_2_feedback: f64,
     operator_3_feedback: f64,
     operator_4_feedback: f64,
+    operator_1_volume: f64,
+    operator_2_volume: f64,
+    operator_3_volume: f64,
+    operator_4_volume: f64,
 }
 
 
@@ -382,6 +386,11 @@ impl ModulationMatrixParameters {
         let operator_3_feedback = sync_handle.get_parameter(35);
         let operator_4_feedback = sync_handle.get_parameter(50);
 
+        let operator_1_volume = Self::convert_volume(sync_handle.get_parameter(2));
+        let operator_2_volume = Self::convert_volume(sync_handle.get_parameter(15));
+        let operator_3_volume = Self::convert_volume(sync_handle.get_parameter(29));
+        let operator_4_volume = Self::convert_volume(sync_handle.get_parameter(44));
+
         Self {
             operator_3_target,
             operator_4_target,
@@ -392,6 +401,10 @@ impl ModulationMatrixParameters {
             operator_2_feedback,
             operator_3_feedback,
             operator_4_feedback,
+            operator_1_volume,
+            operator_2_volume,
+            operator_3_volume,
+            operator_4_volume,
         }
     }
 
@@ -401,6 +414,10 @@ impl ModulationMatrixParameters {
 
     fn convert_operator_4_target(value: f64) -> usize {
         OperatorModulationTarget3::from_sync(value).get()
+    }
+
+    fn convert_volume(value: f64) -> f64 {
+        value.min(0.5) * 2.0
     }
 }
 
@@ -489,22 +506,22 @@ impl ModulationMatrixComponents {
         let operator_4_additive_line = OperatorLine::additive(
             operator_4_box.center,
             output_box.y,
-            parameters.operator_4_additive as f32,
+            (parameters.operator_4_additive * parameters.operator_4_volume) as f32,
         );
         let operator_3_additive_line = OperatorLine::additive(
             operator_3_box.center,
             output_box.y,
-            parameters.operator_3_additive as f32,
+            (parameters.operator_3_additive * parameters.operator_3_volume) as f32,
         );
         let operator_2_additive_line = OperatorLine::additive(
             operator_2_box.center,
             output_box.y,
-            parameters.operator_2_additive as f32,
+            (parameters.operator_2_additive * parameters.operator_2_volume) as f32,
         );
         let operator_1_additive_line = OperatorLine::additive(
             operator_1_box.center,
             output_box.y,
-            1.0
+            (1.0 * parameters.operator_1_volume) as f32
         );
 
         let operator_4_modulation_line = {
@@ -519,7 +536,7 @@ impl ModulationMatrixComponents {
                 operator_4_box.center,
                 through,
                 to,
-                1.0 - parameters.operator_4_additive as f32 
+                ((1.0 - parameters.operator_4_additive) * parameters.operator_4_volume) as f32
             )
         };
 
@@ -534,7 +551,7 @@ impl ModulationMatrixComponents {
                 operator_3_box.center,
                 through,
                 to,
-                1.0 - parameters.operator_3_additive as f32 
+                ((1.0 - parameters.operator_3_additive) * parameters.operator_3_volume) as f32
             )
         };
 
@@ -542,7 +559,7 @@ impl ModulationMatrixComponents {
             operator_2_box.center,
             operator_2_mod_1_box.center,
             operator_1_box.center,
-            1.0 - parameters.operator_2_additive as f32 
+            ((1.0 - parameters.operator_2_additive) * parameters.operator_2_volume) as f32
         );
 
         let operator_4_feedback_line = OperatorLine::feedback(
@@ -695,6 +712,38 @@ impl ModulationMatrix {
 
     pub fn set_operator_1_feedback(&mut self, value: f64){
         self.parameters.operator_1_feedback = value;
+
+        self.update_components();
+    }
+
+    pub fn set_operator_4_volume(&mut self, value: f64){
+        let converted = ModulationMatrixParameters::convert_volume(value);
+
+        self.parameters.operator_4_volume = converted;
+
+        self.update_components();
+    }
+
+    pub fn set_operator_3_volume(&mut self, value: f64){
+        let converted = ModulationMatrixParameters::convert_volume(value);
+
+        self.parameters.operator_3_volume = converted;
+
+        self.update_components();
+    }
+
+    pub fn set_operator_2_volume(&mut self, value: f64){
+        let converted = ModulationMatrixParameters::convert_volume(value);
+
+        self.parameters.operator_2_volume = converted;
+
+        self.update_components();
+    }
+
+    pub fn set_operator_1_volume(&mut self, value: f64){
+        let converted = ModulationMatrixParameters::convert_volume(value);
+
+        self.parameters.operator_1_volume = converted;
 
         self.update_components();
     }
