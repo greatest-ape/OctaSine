@@ -287,7 +287,7 @@ impl OutputBox {
 
 struct OperatorLine {
     path: Path,
-    opacity: f32,
+    stroke: Stroke,
 }
 
 
@@ -298,10 +298,13 @@ impl OperatorLine {
         to.y = to_y;
 
         let path = Path::line(from, to);
+        let stroke = Stroke::default()
+            .with_width(3.0)
+            .with_color(Color::from_rgba(0.0, 0.0, 0.0, opacity));
 
         Self {
             path,
-            opacity,
+            stroke,
         }
     }
 
@@ -318,10 +321,13 @@ impl OperatorLine {
         builder.line_to(to);
 
         let path = builder.build();
+        let stroke = Stroke::default()
+            .with_width(3.0)
+            .with_color(Color::from_rgba(0.0, 0.0, 0.0, opacity));
 
         Self {
             path,
-            opacity,
+            stroke,
         }
     }
 
@@ -330,19 +336,18 @@ impl OperatorLine {
         opacity: f32
     ) -> Self {
         let path = Path::circle(center, 4.0);
+        let stroke = Stroke::default()
+            .with_width(1.0)
+            .with_color(Color::from_rgba(0.0, 0.0, 0.0, opacity));
 
         Self {
             path,
-            opacity
+            stroke,
         }
     }
 
     fn draw(&self, frame: &mut Frame){
-        let stroke = Stroke::default()
-            .with_width(1.0)
-            .with_color(Color::from_rgba(0.0, 0.0, 0.0, self.opacity));
-
-        frame.stroke(&self.path, stroke);
+        frame.stroke(&self.path, self.stroke);
     }
 }
 
@@ -593,10 +598,10 @@ impl ModulationMatrixComponents {
         self.operator_3_modulation_line.draw(frame);
         self.operator_2_modulation_line.draw(frame);
 
-        self.operator_4_feedback_line.draw(frame);
-        self.operator_3_feedback_line.draw(frame);
-        self.operator_2_feedback_line.draw(frame);
-        self.operator_1_feedback_line.draw(frame);
+        // self.operator_4_feedback_line.draw(frame);
+        // self.operator_3_feedback_line.draw(frame);
+        // self.operator_2_feedback_line.draw(frame);
+        // self.operator_1_feedback_line.draw(frame);
     }
 
     fn draw_boxes(&self, frame: &mut Frame){
