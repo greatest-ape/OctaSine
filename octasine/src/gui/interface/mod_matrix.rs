@@ -34,6 +34,7 @@ struct OperatorBox {
     text: Text,
     path: Path,
     center: Point,
+    feedback_center: Point,
 }
 
 
@@ -67,6 +68,13 @@ impl OperatorBox {
         let rect = Rectangle::new(top_left, size);
         let center = rect.center();
 
+        let half_box_size = (BIG_BOX_SIZE as f32) / 2.0;
+
+        let feedback_center = Point {
+            x: center.x + half_box_size - 1.0,
+            y: center.y - half_box_size,
+        };
+
         let text_position = Point {
             x: base_top_left.x + 2.5,
             y: base_top_left.y,
@@ -85,6 +93,7 @@ impl OperatorBox {
             text,
             path,
             center,
+            feedback_center,
         }
     }
 
@@ -307,6 +316,18 @@ impl OperatorLine {
         }
     }
 
+    fn feedback(
+        center: Point,
+        opacity: f32
+    ) -> Self {
+        let path = Path::circle(center, 4.0);
+
+        Self {
+            path,
+            opacity
+        }
+    }
+
     fn draw(&self, frame: &mut Frame){
         let stroke = Stroke::default()
             .with_width(1.0)
@@ -323,6 +344,10 @@ struct ModulationMatrixParameters {
     operator_2_additive: f64,
     operator_3_additive: f64,
     operator_4_additive: f64,
+    operator_1_feedback: f64,
+    operator_2_feedback: f64,
+    operator_3_feedback: f64,
+    operator_4_feedback: f64,
 }
 
 
@@ -338,12 +363,21 @@ impl ModulationMatrixParameters {
         let operator_3_additive = sync_handle.get_parameter(32);
         let operator_4_additive = sync_handle.get_parameter(47);
 
+        let operator_1_feedback = sync_handle.get_parameter(6);
+        let operator_2_feedback = sync_handle.get_parameter(20);
+        let operator_3_feedback = sync_handle.get_parameter(35);
+        let operator_4_feedback = sync_handle.get_parameter(50);
+
         Self {
             operator_3_target,
             operator_4_target,
             operator_2_additive,
             operator_3_additive,
             operator_4_additive,
+            operator_1_feedback,
+            operator_2_feedback,
+            operator_3_feedback,
+            operator_4_feedback,
         }
     }
 
@@ -376,6 +410,10 @@ struct ModulationMatrixComponents {
     operator_4_modulation_line: OperatorLine,
     operator_3_modulation_line: OperatorLine,
     operator_2_modulation_line: OperatorLine,
+    operator_1_feedback_line: OperatorLine,
+    operator_2_feedback_line: OperatorLine,
+    operator_3_feedback_line: OperatorLine,
+    operator_4_feedback_line: OperatorLine,
 }
 
 
@@ -493,6 +531,23 @@ impl ModulationMatrixComponents {
             1.0 - parameters.operator_2_additive as f32 
         );
 
+        let operator_4_feedback_line = OperatorLine::feedback(
+            operator_4_box.feedback_center,
+            parameters.operator_4_feedback as f32,
+        );
+        let operator_3_feedback_line = OperatorLine::feedback(
+            operator_3_box.feedback_center,
+            parameters.operator_3_feedback as f32,
+        );
+        let operator_2_feedback_line = OperatorLine::feedback(
+            operator_2_box.feedback_center,
+            parameters.operator_2_feedback as f32,
+        );
+        let operator_1_feedback_line = OperatorLine::feedback(
+            operator_1_box.feedback_center,
+            parameters.operator_1_feedback as f32,
+        );
+
         Self {
             operator_1_box,
             operator_2_box,
@@ -512,6 +567,10 @@ impl ModulationMatrixComponents {
             operator_4_modulation_line,
             operator_3_modulation_line,
             operator_2_modulation_line,
+            operator_4_feedback_line,
+            operator_3_feedback_line,
+            operator_2_feedback_line,
+            operator_1_feedback_line,
         }
     }
 
@@ -524,6 +583,11 @@ impl ModulationMatrixComponents {
         self.operator_4_modulation_line.draw(frame);
         self.operator_3_modulation_line.draw(frame);
         self.operator_2_modulation_line.draw(frame);
+
+        self.operator_4_feedback_line.draw(frame);
+        self.operator_3_feedback_line.draw(frame);
+        self.operator_2_feedback_line.draw(frame);
+        self.operator_1_feedback_line.draw(frame);
     }
 
     fn draw_boxes(&self, frame: &mut Frame){
@@ -593,6 +657,30 @@ impl ModulationMatrix {
 
     pub fn set_operator_2_additive(&mut self, value: f64){
         self.parameters.operator_2_additive = value;
+
+        self.update_components();
+    }
+
+    pub fn set_operator_4_feedback(&mut self, value: f64){
+        self.parameters.operator_4_feedback = value;
+
+        self.update_components();
+    }
+
+    pub fn set_operator_3_feedback(&mut self, value: f64){
+        self.parameters.operator_3_feedback = value;
+
+        self.update_components();
+    }
+
+    pub fn set_operator_2_feedback(&mut self, value: f64){
+        self.parameters.operator_2_feedback = value;
+
+        self.update_components();
+    }
+
+    pub fn set_operator_1_feedback(&mut self, value: f64){
+        self.parameters.operator_1_feedback = value;
 
         self.update_components();
     }

@@ -184,14 +184,18 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
 
                 match index {
                     4 => self.operator_1.wave_type.set_value(value),
+                    6 => self.modulation_matrix.set_operator_1_feedback(value),
                     17 => self.operator_2.wave_type.set_value(value),
                     18 => self.modulation_matrix.set_operator_2_additive(value),
+                    20 => self.modulation_matrix.set_operator_2_feedback(value),
                     31 => self.operator_3.wave_type.set_value(value),
                     32 => self.modulation_matrix.set_operator_3_additive(value),
                     33 => self.modulation_matrix.set_operator_3_target(value),
+                    35 => self.modulation_matrix.set_operator_3_feedback(value),
                     46 => self.operator_4.wave_type.set_value(value),
                     47 => self.modulation_matrix.set_operator_4_additive(value),
                     48 => self.modulation_matrix.set_operator_4_target(value),
+                    50 => self.modulation_matrix.set_operator_4_feedback(value),
                     _ => ()
                 }
 

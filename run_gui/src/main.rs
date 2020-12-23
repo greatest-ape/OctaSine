@@ -54,6 +54,10 @@ fn main(){
     // Operator 4 additive
     GuiSyncHandle::set_parameter(&sync_state, 47, 0.7);
 
+    // Feedback
+    GuiSyncHandle::set_parameter(&sync_state, 6, 1.0);
+    GuiSyncHandle::set_parameter(&sync_state, 20, 0.9);
+
     let settings = Settings {
         window: settings::Window {
             logical_size: (GUI_WIDTH as u32, GUI_HEIGHT as u32),
