@@ -16,7 +16,7 @@ use super::Message;
 
 
 const BACKGROUND_COLOR: Color = Color::from_rgb(0.9, 0.9, 0.9);
-const ACTIVE_MOD_BOX_COLOR: (u8, u8, u8) = (27, 159, 31);
+const ACTIVE_MOD_BOX_COLOR: (u8, u8, u8) = (119, 133, 181);
 
 pub const HEIGHT: u16 = 16 * 7;
 const SMALL_BOX_SIZE: u16 = 12;
