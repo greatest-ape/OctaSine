@@ -11,7 +11,7 @@ use crate::GuiSyncHandle;
 use crate::voices::VoiceOperatorVolumeEnvelope;
 use crate::constants::{ENVELOPE_MIN_DURATION, ENVELOPE_MAX_DURATION};
 
-use super::Message;
+use super::{FONT_SIZE, Message};
 
 
 const WIDTH: u16 = 256;
@@ -379,7 +379,7 @@ impl Envelope {
                 let text = Text {
                     content: format!("{:.1}s", time_marker_interval * 4.0 * i as f32),
                     position: scale_point_x(self.size, text_point),
-                    size: 12.0,
+                    size: FONT_SIZE as f32,
                     ..Default::default()
                 };
         

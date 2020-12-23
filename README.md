@@ -74,6 +74,9 @@ should work fine.
 
 OctaSine is licensed under the __GNU General Public License, Version 3__.
 
+Contents of `contrib` directory are licensed under other terms. Please
+refer to the contained directories and/or files for details.
+
 ## Notes
 
 Depends on the following git repositories:

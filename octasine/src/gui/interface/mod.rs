@@ -1,6 +1,6 @@
 use iced_baseview::{executor, Align, Application, Command, Subscription, WindowSubs};
 use iced_baseview::{
-    Column, Element, Row, Container, Rule, Length, Space, Image, image
+    Column, Element, Row, Container, Rule, Length, Space, Image, image, renderer, Font
 };
 
 use crate::GuiSyncHandle;
@@ -14,6 +14,23 @@ mod picker;
 use operator::OperatorWidgets;
 use knob::OctaSineKnob;
 use mod_matrix::ModulationMatrix;
+
+
+pub const FONT_SIZE: u16 = 14;
+
+const FONT_REGULAR: &[u8] = OPEN_SANS_SEMI_BOLD;
+
+const FONT_BOLD: Font = Font::External {
+    name: "Open Sans Bold",
+    bytes: OPEN_SANS_BOLD,
+};
+
+const OPEN_SANS_SEMI_BOLD: &[u8] = include_bytes!(
+    "../../../../contrib/open-sans/OpenSans-SemiBold.ttf"
+);
+const OPEN_SANS_BOLD: &[u8] = include_bytes!(
+    "../../../../contrib/open-sans/OpenSans-Bold.ttf"
+);
 
 
 #[derive(Debug, Clone)]
@@ -172,6 +189,14 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
         window_subs.on_frame = Some(Message::Frame);
 
         Subscription::none()
+    }
+    
+    fn renderer_settings() -> renderer::Settings {
+        renderer::Settings {
+            default_font: Some(FONT_REGULAR),
+            default_text_size: FONT_SIZE,
+            ..Default::default()
+        }
     }
 
     fn update(&mut self, message: Self::Message) -> Command<Self::Message> {

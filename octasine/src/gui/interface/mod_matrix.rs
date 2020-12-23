@@ -12,7 +12,7 @@ use crate::parameters::values::{
     OperatorModulationTarget3,
 };
 
-use super::Message;
+use super::{FONT_BOLD, FONT_SIZE, Message};
 
 
 const BACKGROUND_COLOR: Color = Color::from_rgb(0.9, 0.9, 0.9);
@@ -79,7 +79,7 @@ impl OperatorBox {
 
         let text_position = Point {
             x: base_top_left.x + 2.5,
-            y: base_top_left.y,
+            y: base_top_left.y - 2.5,
         };
 
         let mut text_position = scale_point(bounds, text_position);
@@ -89,7 +89,7 @@ impl OperatorBox {
         let text = Text {
             content: format!("{}", index + 1),
             position: text_position,
-            size: 12.0,
+            font: FONT_BOLD,
             ..Default::default()
         };
 

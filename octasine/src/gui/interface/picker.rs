@@ -10,7 +10,7 @@ use crate::parameters::utils::{
 use crate::GuiSyncHandle;
 use crate::common::WaveType;
 
-use super::Message;
+use super::{FONT_BOLD, FONT_SIZE, Message};
 
 
 const VALUE_TEXT_OPACITY: f32 = 0.0;
@@ -36,7 +36,7 @@ impl WaveTypePicker {
         let selected = map_parameter_value_to_step(&choices[..], value);
         
         Self {
-            title: "Wave".to_string(),
+            title: "WAVE\n ".to_string(),
             parameter_index,
             choices,
             selected,
@@ -49,11 +49,11 @@ impl WaveTypePicker {
 
     pub fn view(&mut self) -> Element<Message> {
         let title = Text::new(self.title.clone())
-            .size(12)
-            .horizontal_alignment(HorizontalAlignment::Center);
+            .horizontal_alignment(HorizontalAlignment::Center)
+            .font(FONT_BOLD);
         
         let mut radios = Column::new()
-            .spacing(8);
+            .spacing(4);
         
         for choice in self.choices.clone().into_iter() {
             let parameter_index = self.parameter_index;
@@ -72,8 +72,8 @@ impl WaveTypePicker {
                     Message::ParameterChange(parameter_index, value)
                 }
             )
-                .size(12)
-                .text_size(12)
+                .size(FONT_SIZE)
+                .text_size(FONT_SIZE)
                 .spacing(4);
 
             radios = radios.push(radio);
@@ -95,7 +95,6 @@ impl WaveTypePicker {
             )
             .push(
                 Text::new(format_wave_type(self.selected))
-                    .size(12)
                     .color(Color::from_rgba(0.0, 0.0, 0.0, VALUE_TEXT_OPACITY))
             )
             .into()

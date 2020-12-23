@@ -9,7 +9,7 @@ use crate::parameters::utils::map_value_to_parameter_value_with_steps;
 use crate::GuiSyncHandle;
 use crate::constants::*;
 
-use super::Message;
+use super::{FONT_BOLD, Message};
 
 
 const KNOB_SIZE: Length = Length::Units(32);
@@ -106,7 +106,7 @@ impl OctaSineKnob {
         Self::new_min_max_center(
             sync_handle,
             0,
-            "Master\nvolume"
+            "MASTER\nVOLUME"
         )
     }
 
@@ -116,7 +116,7 @@ impl OctaSineKnob {
         Self::new_with_steps(
             sync_handle,
             1,
-            "Master\nfrequency",
+            "MASTER\nFREQ",
             &MASTER_FREQUENCY_STEPS,
             DEFAULT_MASTER_FREQUENCY
         )
@@ -129,7 +129,7 @@ impl OctaSineKnob {
         Self::new_min_max_center(
             sync_handle,
             parameter_index,
-            "Volume"
+            "VOLUME\n "
         )
     }
 
@@ -140,7 +140,7 @@ impl OctaSineKnob {
         Self::new_min_max_center(
             sync_handle,
             parameter_index,
-            "Panning"
+            "PAN\n "
         )
     }
 
@@ -151,7 +151,7 @@ impl OctaSineKnob {
         Self::new_with_steps(
             sync_handle,
             parameter_index,
-            "Modulation",
+            "MOD\nINDEX",
             &OPERATOR_BETA_STEPS,
             DEFAULT_OPERATOR_MODULATION_INDEX,
         )
@@ -169,7 +169,7 @@ impl OctaSineKnob {
 
         Self::new(
             sync_handle,
-            "Feedback".to_string(),
+            "MOD\nFEEDBACK".to_string(),
             parameter_index,
             None,
             Some(tick_marks),
@@ -184,7 +184,7 @@ impl OctaSineKnob {
         Self::new_with_steps(
             sync_handle,
             parameter_index,
-            "Ratio",
+            "FREQ\nRATIO",
             &OPERATOR_RATIO_STEPS,
             DEFAULT_OPERATOR_FREQUENCY_RATIO
         )
@@ -197,7 +197,7 @@ impl OctaSineKnob {
         Self::new_with_steps(
             sync_handle,
             parameter_index,
-            "Free",
+            "FREQ\nFREE",
             &OPERATOR_FREE_STEPS,
             DEFAULT_OPERATOR_FREQUENCY_FREE
         )
@@ -210,7 +210,7 @@ impl OctaSineKnob {
         Self::new_with_steps(
             sync_handle,
             parameter_index,
-            "Fine",
+            "FREQ\nFINE",
             &OPERATOR_FINE_STEPS,
             DEFAULT_OPERATOR_FREQUENCY_FINE
         )
@@ -228,7 +228,7 @@ impl OctaSineKnob {
 
         Self::new(
             sync_handle,
-            "Additive".to_string(),
+            "ADDITIVE\n ".to_string(),
             parameter_index,
             None,
             Some(tick_marks),
@@ -247,8 +247,8 @@ impl OctaSineKnob {
         sync_handle: &H
     ) -> Element<Message> {
         let title = Text::new(self.title.clone())
-            .size(12)
-            .horizontal_alignment(HorizontalAlignment::Center);
+            .horizontal_alignment(HorizontalAlignment::Center)
+            .font(FONT_BOLD);
 
         let value = {
             let value = format_value(
@@ -258,7 +258,6 @@ impl OctaSineKnob {
             );
 
             Text::new(value)
-                .size(12)
                 .horizontal_alignment(HorizontalAlignment::Center)
         };
 
