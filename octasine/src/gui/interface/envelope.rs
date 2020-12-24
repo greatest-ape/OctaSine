@@ -365,12 +365,12 @@ impl Envelope {
         for i in 0..num_markers {
             let x = ((time_marker_interval * i as f32) / total_duration) * self.size.width;
 
-            let top_point = Point::new(x, 0.0).snap();
-            let bottom_point = Point::new(x, self.size.height).snap();
+            let top_point = Point::new(x, 0.0);
+            let bottom_point = Point::new(x, self.size.height);
 
             let path = Path::line(
-                scale_point_x(self.size, top_point),
-                scale_point_x(self.size, bottom_point),
+                scale_point_x(self.size, top_point).snap(),
+                scale_point_x(self.size, bottom_point).snap(),
             );
 
             if i % 10 == 0 && i != 0 {
