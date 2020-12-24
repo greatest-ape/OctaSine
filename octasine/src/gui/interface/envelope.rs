@@ -11,7 +11,7 @@ use crate::GuiSyncHandle;
 use crate::voices::VoiceOperatorVolumeEnvelope;
 use crate::constants::{ENVELOPE_MIN_DURATION, ENVELOPE_MAX_DURATION};
 
-use super::{FONT_SIZE, Message};
+use super::{FONT_SIZE, Message, SnapPoint};
 
 
 const WIDTH: u16 = 256;
@@ -119,7 +119,7 @@ impl EnvelopeStagePath {
             size.height * (1.0 - value)
         );
 
-        scale_point(size, point)
+        scale_point(size, point).snap()
     }
 }
 
@@ -365,8 +365,8 @@ impl Envelope {
         for i in 0..num_markers {
             let x = ((time_marker_interval * i as f32) / total_duration) * self.size.width;
 
-            let top_point = Point::new(x, 0.0);
-            let bottom_point = Point::new(x, self.size.height);
+            let top_point = Point::new(x, 0.0).snap();
+            let bottom_point = Point::new(x, self.size.height).snap();
 
             let path = Path::line(
                 scale_point_x(self.size, top_point),

@@ -12,7 +12,7 @@ use crate::parameters::values::{
     OperatorModulationTarget3,
 };
 
-use super::{FONT_BOLD, FONT_SIZE, Message};
+use super::{FONT_BOLD, FONT_SIZE, Message, SnapPoint};
 
 
 const BACKGROUND_COLOR: Color = Color::from_rgb(0.9, 0.9, 0.9);
@@ -65,6 +65,7 @@ impl OperatorBox {
         let size = scale_size(size);
 
         top_left.x += 1.0;
+        top_left = top_left.snap();
 
         let path = Path::rectangle(top_left, size);
         let rect = Rectangle::new(top_left, size);
@@ -78,13 +79,16 @@ impl OperatorBox {
         };
 
         let text_position = Point {
-            x: base_top_left.x + 2.5,
-            y: base_top_left.y - 2.5,
+            x: base_top_left.x,
+            y: base_top_left.y,
         };
 
         let mut text_position = scale_point(bounds, text_position);
 
-        text_position.x += 1.0;
+        text_position = text_position.snap();
+
+        text_position.x += 3.0;
+        text_position.y -= 2.5;
 
         let text = Text {
             content: format!("{}", index + 1),
@@ -155,6 +159,8 @@ impl ModulationBox {
         let size = scale_size(size);
 
         top_left.x += 1.0;
+
+        top_left = top_left.snap();
 
         let rect = Rectangle::new(top_left, size);
         let center = rect.center();
@@ -268,6 +274,9 @@ impl OutputBox {
         left.x += 1.0;
         right.x += 1.0;
 
+        left = left.snap();
+        right = right.snap();
+
         let path = Path::line(left, right);
 
         Self {
@@ -298,7 +307,7 @@ impl OperatorLine {
 
         to.y = to_y;
 
-        let path = Path::line(from, to);
+        let path = Path::line(from.snap(), to.snap());
         let stroke = Stroke::default()
             .with_width(3.0)
             .with_color(Color::from_rgba(0.0, 0.0, 0.0, opacity));
@@ -317,9 +326,9 @@ impl OperatorLine {
     ) -> Self {
         let mut builder = path::Builder::new();
 
-        builder.move_to(from);
-        builder.line_to(through);
-        builder.line_to(to);
+        builder.move_to(from.snap());
+        builder.line_to(through.snap());
+        builder.line_to(to.snap());
 
         let path = builder.build();
         let stroke = Stroke::default()
@@ -772,7 +781,7 @@ impl ModulationMatrix {
         size.height -= 1.0;
 
         let background = Path::rectangle(
-            Point::new(1.0, 1.0),
+            Point::new(0.5, 0.5),
             size
         );
 

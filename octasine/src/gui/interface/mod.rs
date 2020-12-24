@@ -1,6 +1,6 @@
 use iced_baseview::{executor, Align, Application, Command, Subscription, WindowSubs};
 use iced_baseview::{
-    Column, Element, Row, Container, Rule, Length, Space, Image, image, renderer, Font
+    Column, Element, Row, Container, Rule, Length, Space, Image, image, renderer, Font, Point
 };
 
 use crate::GuiSyncHandle;
@@ -31,6 +31,21 @@ const OPEN_SANS_SEMI_BOLD: &[u8] = include_bytes!(
 const OPEN_SANS_BOLD: &[u8] = include_bytes!(
     "../../../../contrib/open-sans/OpenSans-Bold.ttf"
 );
+
+
+pub trait SnapPoint {
+    fn snap(self) -> Self;
+}
+
+
+impl SnapPoint for Point {
+    fn snap(self) -> Self {
+        Point {
+            x: self.x.floor() + 0.5,
+            y: self.y.floor() + 0.5,
+        }
+    }
+}
 
 
 #[derive(Debug, Clone)]
@@ -195,6 +210,7 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
         renderer::Settings {
             default_font: Some(FONT_REGULAR),
             default_text_size: FONT_SIZE,
+            antialiasing: Some(renderer::Antialiasing::MSAAx4),
             ..Default::default()
         }
     }
