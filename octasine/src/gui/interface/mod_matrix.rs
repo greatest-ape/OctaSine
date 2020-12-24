@@ -27,7 +27,7 @@ const SCALE: f32 = SMALL_BOX_SIZE as f32 / (HEIGHT as f32 / 8.0);
 const WIDTH_FLOAT: f32 = ((HEIGHT as f64 / 8.0) * 7.0) as f32;
 const SIZE: Size = Size { width: WIDTH_FLOAT, height: HEIGHT as f32 };
 const OPERATOR_BOX_SCALE: f32 = BIG_BOX_SIZE as f32 / SMALL_BOX_SIZE as f32;
-const WIDTH: u16 = WIDTH_FLOAT as u16 + 1;
+const WIDTH: u16 = WIDTH_FLOAT as u16 + 2;
 
 
 struct OperatorBox {
