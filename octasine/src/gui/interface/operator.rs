@@ -1,5 +1,5 @@
 use iced_baseview::{
-    Container, Element, Text, Length, Align, Row, Rule, Space, HorizontalAlignment, image
+    Container, Element, Text, Length, Align, Row, Rule, Space, HorizontalAlignment, image, Column
 };
 
 
@@ -78,7 +78,6 @@ impl OperatorWidgets {
         // let operator_number = image::Image::new(self.number_handle.clone());
 
         let mut row = Row::new()
-            .align_items(Align::Center)
             .push(
                 Container::new(operator_number)
                     .width(Length::Units(32))
@@ -120,11 +119,18 @@ impl OperatorWidgets {
                 Container::new(
                     Rule::vertical(16)
                 )
-                    .height(Length::Units(64)))
+                    .height(Length::Units(64))
+                    .align_y(Align::Center)
+            )
             .push(
-                Container::new(self.envelope.view())
-                    .width(Length::Fill)
-                    // .padding(16)
+                Column::new()
+                    // .push(
+                    //     Space::with_height(Length::Units(14))
+                    // )
+                    .push(
+                        Container::new(self.envelope.view())
+                            .width(Length::Fill)
+                    )
             );
 
         row.into()

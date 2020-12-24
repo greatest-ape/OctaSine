@@ -2,10 +2,9 @@
 
 ## GUI
 
-* Don't do spacing and centering in knobs, do fixed spaces between, so that
-  wave type title/picker won't be strangely off
 * Fix ANOTHER envelope error:
   `ERROR] thread 'unnamed' panicked at 'Tessellate path: UnsupportedParamater': /[..]/github.com-1ecc6299db9ec823/iced_graphics-0.1.0/src/widget/canvas/frame.rs:100`
+* Full-height vertical rules
 * Full-width horizontal rules
 * Reset knobs to default with backspace
 * Mod matrix

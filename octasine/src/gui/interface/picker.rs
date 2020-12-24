@@ -53,7 +53,7 @@ impl WaveTypePicker {
             .font(FONT_BOLD);
         
         let mut radios = Column::new()
-            .spacing(6);
+            .spacing(4);
         
         for choice in self.choices.clone().into_iter() {
             let parameter_index = self.parameter_index;
@@ -82,26 +82,11 @@ impl WaveTypePicker {
         Column::new()
             .width(Length::Units(64))
             .align_items(Align::Center)
-            .push(
-                Row::new()
-                    .align_items(Align::Center)
-                    .push(title)
-            )
+            .push(title)
             .push(
                 Space::with_height(Length::Units(16))
             )
-            .push(
-                Row::new()
-                    .align_items(Align::Center)
-                    .push(radios)
-            )
-            .push(
-                Space::with_height(Length::Units(14))
-            )
-            .push(
-                Text::new(format_wave_type(self.selected))
-                    .color(Color::from_rgba(0.0, 0.0, 0.0, VALUE_TEXT_OPACITY))
-            )
+            .push(radios)
             .into()
     }
 }

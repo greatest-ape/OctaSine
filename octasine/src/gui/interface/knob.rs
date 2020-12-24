@@ -1,5 +1,5 @@
 use iced_baseview::{
-    Column, Element, keyboard::Modifiers, Text, Length, HorizontalAlignment, Align, Row
+    Column, Element, keyboard::Modifiers, Text, Length, HorizontalAlignment, Align, Row, Space
 };
 use iced_audio::{
     knob, Normal, NormalParam, text_marks, tick_marks
@@ -288,14 +288,18 @@ impl OctaSineKnob {
         Column::new()
             .width(Length::Units(64))
             .align_items(Align::Center)
-            .spacing(16)
             .push(
                 Row::new()
                     // .height(Length::Units(32))
-                    .align_items(Align::Center)
                     .push(title)
             )
+            .push(
+                Space::with_height(Length::Units(16))
+            )
             .push(knob)
+            .push(
+                Space::with_height(Length::Units(16))
+            )
             .push(value)
             .into()
     }
