@@ -109,7 +109,7 @@ impl WaveTypePicker {
 
 fn format_wave_type(wave_type: WaveType) -> String {
     match wave_type {
-        WaveType::Sine => "Sine".to_string(),
-        WaveType::WhiteNoise => "Noise".to_string(),
+        WaveType::Sine => "SINE".to_string(),
+        WaveType::WhiteNoise => "NOISE".to_string(),
     }
 }
