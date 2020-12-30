@@ -1,10 +1,9 @@
 # OctaSine
 
-Frequency modulation based VST2 plugin written in Rust. 
+VST2 frequency modulation synthesizer written in Rust. Audio examples are available at [soundcloud.com/octasine](https://soundcloud.com/octasine).
 
 ## About
 
-* Audio examples are available at [soundcloud.com/octasine](https://soundcloud.com/octasine)
 * Four operators with independent parameters such as volume, panning,
   modulation index, feedback, three different frequency modifiers (ratio, free
   and fine) and ASDR volume envelope parameters. The operators can be
