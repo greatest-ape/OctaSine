@@ -6,7 +6,7 @@ VST2 frequency modulation synthesizer written in Rust. Audio examples are availa
 
 * Four operators with independent parameters such as volume, panning,
   modulation index, feedback, three different frequency modifiers (ratio, free
-  and fine) and ASDR volume envelope parameters. The operators can be
+  and fine) and ADSR volume envelope parameters. The operators can be
   independently switched to white noise mode
 * Flexible routing allowing setting the output operator (with some
   limitations) as well as the percentage of signal that is simply added to the
@@ -92,10 +92,6 @@ Depends on the following git repositories:
 
   * https://github.com/greatest-ape/simdeez (__octasine__ branch for avx support and very fast sleef sines)
   * https://github.com/greatest-ape/sleef-sys (__octasine__ branch for static linking and avx instruction generation)
-
-Nightly toolchains known to work:
-
-  * rustc 1.43.0-nightly (436494b8f 2020-02-22)
 
 ## Trivia
 
