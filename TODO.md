@@ -12,7 +12,6 @@
 * Mod matrix
   * Show modulation index with strong color in operator boxes?
   * Show feedback?
-* Cache operator string value?
 * Envelopes
   * Maybe draw lines indicating top and bottom of draggable range
   * Interaction with draggers

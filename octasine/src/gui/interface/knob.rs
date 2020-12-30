@@ -21,6 +21,7 @@ pub struct OctaSineKnob {
     text_marks: Option<text_marks::Group>,
     tick_marks: Option<tick_marks::Group>,
     title: String,
+    value_text: String,
     parameter_index: usize,
 }
 
@@ -42,12 +43,19 @@ impl OctaSineKnob {
             value,
             default: Normal::new(default as f32),
         };
+
+        let value_text = format_value(
+            sync_handle,
+            parameter_index,
+            normal_param.value.as_f32() as f64
+        );
         
         Self {
             knob_state: knob::State::new(normal_param),
             text_marks,
             tick_marks,
             title,
+            value_text,
             parameter_index
         }
     }
@@ -236,30 +244,25 @@ impl OctaSineKnob {
         )
     }
 
-    pub fn set_value(&mut self, value: f64) {
+    pub fn set_value<H: GuiSyncHandle>(&mut self, sync_handle: &H, value: f64){
         if !self.knob_state.is_dragging() {
             self.knob_state.set_normal(Normal::new(value as f32));
         }
+
+        self.value_text = format_value(
+            sync_handle,
+            self.parameter_index,
+            self.knob_state.normal_param.value.as_f32() as f64
+        );
     }
 
-    pub fn view<H: GuiSyncHandle>(
-        &mut self,
-        sync_handle: &H
-    ) -> Element<Message> {
+    pub fn view(&mut self) -> Element<Message> {
         let title = Text::new(self.title.clone())
             .horizontal_alignment(HorizontalAlignment::Center)
             .font(FONT_BOLD);
 
-        let value = {
-            let value = format_value(
-                sync_handle,
-                self.parameter_index,
-                self.knob_state.normal_param.value.as_f32() as f64
-            );
-
-            Text::new(value)
-                .horizontal_alignment(HorizontalAlignment::Center)
-        };
+        let value = Text::new(self.value_text.clone())
+            .horizontal_alignment(HorizontalAlignment::Center);
 
         let parameter_index = self.parameter_index;
 

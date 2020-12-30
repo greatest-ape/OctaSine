@@ -71,7 +71,7 @@ impl OperatorWidgets {
         }
     }
 
-    pub fn view<H: GuiSyncHandle>(&mut self, sync_handle: &H) -> Element<Message> {
+    pub fn view(&mut self) -> Element<Message> {
         let operator_number = Text::new(format!("{}", self.index + 1))
             .size(FONT_SIZE * 3)
             .horizontal_alignment(HorizontalAlignment::Center);
@@ -85,11 +85,11 @@ impl OperatorWidgets {
             )
             .push(Space::with_width(Length::Units(16)))
             .push(self.wave_type.view())
-            .push(self.volume.view(sync_handle))
-            .push(self.panning.view(sync_handle));
+            .push(self.volume.view())
+            .push(self.panning.view());
         
         if let Some(additive) = self.additive.as_mut() {
-            row = row.push(additive.view(sync_handle))
+            row = row.push(additive.view())
         } else {
             row = row.push(Space::with_width(Length::Units(64)))
         }
@@ -101,8 +101,8 @@ impl OperatorWidgets {
                 )
                     .height(Length::Units(64))
             )
-            .push(self.mod_index.view(sync_handle))
-            .push(self.feedback.view(sync_handle));
+            .push(self.mod_index.view())
+            .push(self.feedback.view());
         
         row = row
             .push(
@@ -110,9 +110,9 @@ impl OperatorWidgets {
                     Rule::vertical(16)
                 )
                     .height(Length::Units(64)))
-            .push(self.frequency_ratio.view(sync_handle))
-            .push(self.frequency_free.view(sync_handle))
-            .push(self.frequency_fine.view(sync_handle));
+            .push(self.frequency_ratio.view())
+            .push(self.frequency_free.view())
+            .push(self.frequency_fine.view());
         
         row = row
             .push(
