@@ -221,14 +221,24 @@ impl Envelope {
             _ => unreachable!(),
         };
 
+        let attack_duration = Self::process_envelope_duration(
+            sync_handle.get_parameter(attack_dur)
+        );
+        let decay_duration = Self::process_envelope_duration(
+            sync_handle.get_parameter(decay_dur)
+        );
+        let release_duration = Self::process_envelope_duration(
+            sync_handle.get_parameter(release_dur)
+        );
+
         let mut envelope = Self {
             log10_table: Log10Table::default(),
             cache: Cache::default(),
-            attack_duration: sync_handle.get_parameter(attack_dur) as f32,
+            attack_duration,
             attack_end_value: sync_handle.get_parameter(attack_val) as f32,
-            decay_duration: sync_handle.get_parameter(decay_dur) as f32,
+            decay_duration,
             decay_end_value: sync_handle.get_parameter(decay_val) as f32,
-            release_duration: sync_handle.get_parameter(release_dur) as f32,
+            release_duration,
             size: SIZE,
             attack_stage_path: EnvelopeStagePath::default(),
             decay_stage_path: EnvelopeStagePath::default(),
