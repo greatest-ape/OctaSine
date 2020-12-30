@@ -238,7 +238,7 @@ impl OctaSineKnob {
 
     pub fn set_value(&mut self, value: f64) {
         if !self.knob_state.is_dragging() {
-            self.knob_state.normal_param.value = Normal::new(value as f32);
+            self.knob_state.set_normal(Normal::new(value as f32));
         }
     }
 
