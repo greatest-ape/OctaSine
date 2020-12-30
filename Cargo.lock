@@ -57,15 +57,15 @@ dependencies = [
 
 [[package]]
 name = "arc-swap"
-version = "0.4.8"
+version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dabe5a181f83789739c194cbe5a897dde195078fac08568d09221fd6137a7ba8"
+checksum = "ec5a4539a733493f412c4d0bb962748ea1f90f3dfdba9ff3ee18acbefc3b33f0"
 
 [[package]]
 name = "array-init"
-version = "0.1.1"
+version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f30bbe2f5e3d117f55bd8c7a1f9191e4a5deba9f15f595bbea4f670c59c765db"
+checksum = "a51c983d65b6691893a791e55aa8bda43bbd9b11f947e5a9581710362277cc95"
 
 [[package]]
 name = "arrayref"
@@ -134,14 +134,14 @@ checksum = "904dfeac50f3cdaba28fc6f57fdcddb75f49ed61346676a78c4ffe55877802fd"
 [[package]]
 name = "baseview"
 version = "0.1.0"
-source = "git+https://github.com/RustAudio/baseview.git?branch=master#d138cfaccf65f2b5d95ff965efe848c1190ef806"
+source = "git+https://github.com/RustAudio/baseview.git#72302e9dd09ad2b97dea2463c3f400fe415182c1"
 dependencies = [
  "cocoa",
+ "core-foundation 0.9.1",
  "keyboard-types",
  "nix",
  "objc",
  "raw-window-handle",
- "static_assertions",
  "uuid",
  "winapi",
  "x11",
@@ -1052,8 +1052,8 @@ dependencies = [
 
 [[package]]
 name = "iced_audio"
-version = "0.5.4"
-source = "git+https://github.com/BillyDM/iced_audio.git?branch=main#4834528fa07d7358f73f02217c1187335e81e252"
+version = "0.6.0"
+source = "git+https://github.com/BillyDM/iced_audio.git?branch=main#7cdb81ad7982ed9a911cb99e45c7386f3cf97d46"
 dependencies = [
  "iced_graphics",
  "iced_native",
@@ -1062,7 +1062,7 @@ dependencies = [
 [[package]]
 name = "iced_baseview"
 version = "0.0.1"
-source = "git+https://github.com/BillyDM/iced_baseview.git?branch=main#bd2e8e9c25fc54b3e629bc2845aa8dd4ad9ebe96"
+source = "git+https://github.com/BillyDM/iced_baseview.git?branch=main#95eb94db73dbed3db313902d05b4484c3ae4c785"
 dependencies = [
  "baseview",
  "iced_core",
@@ -1185,9 +1185,9 @@ dependencies = [
 
 [[package]]
 name = "itoa"
-version = "0.4.6"
+version = "0.4.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dc6f3ad7b9d11a0c00842ff8de1b60ee58661048eb8049ed33c73594f359d7e6"
+checksum = "dd25036021b0de88a0aff6b850051563c6516d0bf53f8638938edbb9de732736"
 
 [[package]]
 name = "jobserver"
@@ -1525,7 +1525,8 @@ dependencies = [
  "array-init",
  "arrayvec",
  "assert_approx_eq",
- "cfg-if 0.1.10",
+ "baseview",
+ "cfg-if 1.0.0",
  "dirs 3.0.1",
  "fastrand",
  "iced_audio",
@@ -1891,6 +1892,7 @@ dependencies = [
 name = "run_gui"
 version = "0.1.0"
 dependencies = [
+ "baseview",
  "iced_baseview",
  "octasine",
  "simplelog",
@@ -1993,9 +1995,9 @@ dependencies = [
 
 [[package]]
 name = "serde_json"
-version = "1.0.60"
+version = "1.0.61"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1500e84d27fe482ed1dc791a56eddc2f230046a040fa908c08bda1d9fb615779"
+checksum = "4fceb2595057b6891a4ee808f70054bd2d12f0e97f1cbb78689b59f676df325a"
 dependencies = [
  "itoa",
  "ryu",
@@ -2060,9 +2062,9 @@ dependencies = [
 
 [[package]]
 name = "simplelog"
-version = "0.8.0"
+version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2b2736f58087298a448859961d3f4a0850b832e72619d75adc69da7993c2cd3c"
+checksum = "4bc0ffd69814a9b251d43afcabf96dad1b29f5028378056257be9e3fecc9f720"
 dependencies = [
  "chrono",
  "log",
@@ -2142,9 +2144,9 @@ checksum = "8fb1df15f412ee2e9dfc1c504260fa695c1c3f10fe9f4a6ee2d2184d7d6450e2"
 
 [[package]]
 name = "syn"
-version = "1.0.55"
+version = "1.0.56"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a571a711dddd09019ccc628e1b17fe87c59b09d513c06c026877aa708334f37a"
+checksum = "a9802ddde94170d186eeee5005b798d9c159fa970403f1be19976d0cfb939b72"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -2174,18 +2176,18 @@ dependencies = [
 
 [[package]]
 name = "thiserror"
-version = "1.0.22"
+version = "1.0.23"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0e9ae34b84616eedaaf1e9dd6026dbe00dcafa92aa0c8077cb69df1fcfe5e53e"
+checksum = "76cc616c6abf8c8928e2fdcc0dbfab37175edd8fb49a4641066ad1364fdab146"
 dependencies = [
  "thiserror-impl",
 ]
 
 [[package]]
 name = "thiserror-impl"
-version = "1.0.22"
+version = "1.0.23"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9ba20f23e85b10754cd195504aebf6a27e2e6cbe28c17778a0c930724628dd56"
+checksum = "9be73a2caec27583d0046ef3796c3794f868a5bc813db689eed00c7631275cd1"
 dependencies = [
  "proc-macro2",
  "quote",

@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
-use iced_baseview::{settings, Parent, Runner, Settings, WindowScalePolicy};
+use baseview::{Parent, Size, WindowOpenOptions, WindowScalePolicy};
+use iced_baseview::{Runner, Settings};
 use vst::editor::Editor;
 use raw_window_handle::RawWindowHandle;
 
@@ -46,19 +47,21 @@ impl Editor for Gui {
             return false;
         }
 
+        let parent = Parent::WithParent(
+            raw_window_handle_from_parent(parent)
+        );
+
         let settings = Settings {
-            window: settings::Window {
-                logical_size: (GUI_WIDTH as u32, GUI_HEIGHT as u32),
-                scale_policy: WindowScalePolicy::SystemScaleFactor,
+            window: WindowOpenOptions {
+                parent,
+                size: Size::new(GUI_WIDTH as f64, GUI_HEIGHT as f64),
+                scale: WindowScalePolicy::SystemScaleFactor,
                 title: PLUGIN_NAME.to_string(),
             },
             flags: self.sync_state.clone(),
         };
 
-        Runner::<OctaSineIcedApplication<Arc<SyncState>>>::open(
-            settings,
-            Parent::WithParent(raw_window_handle_from_parent(parent)),
-        );
+        Runner::<OctaSineIcedApplication<_>>::open(settings);
 
         true
     }
