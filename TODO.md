@@ -2,6 +2,8 @@
 
 ## GUI
 
+* Four digits after comma in frequency parameters, possibly also in others
+* Maybe use ParameterValue when creating knobs
 * Fix ANOTHER envelope error:
   `ERROR] thread 'unnamed' panicked at 'Tessellate path: UnsupportedParamater': /[..]/github.com-1ecc6299db9ec823/iced_graphics-0.1.0/src/widget/canvas/frame.rs:100`
 * Full-height vertical rules
