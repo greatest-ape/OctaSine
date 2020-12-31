@@ -20,7 +20,7 @@ VST2 frequency modulation synthesizer written in Rust. Audio examples are availa
 
 ## Copyright and license
 
-Copyright (C) 2019-2020 Joakim Frostgård
+Copyright (C) 2019-2020 Joakim Frostegård
 
 This program is free software: you can redistribute it and/or modify it under
 the terms of the GNU General Public License, Version 3, as published by the
