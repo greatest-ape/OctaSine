@@ -1,5 +1,5 @@
 use iced_baseview::{
-    Column, Element, keyboard::Modifiers, Text, Length, HorizontalAlignment, Align, Row, Space
+    Column, Element, keyboard::Modifiers, Text, Length, HorizontalAlignment, Align, Space
 };
 use iced_audio::{
     knob, Normal, NormalParam, text_marks, tick_marks

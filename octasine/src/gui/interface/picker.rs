@@ -1,5 +1,5 @@
 use iced_baseview::{
-    Color, Column, Element, Text, Length, HorizontalAlignment, Align, Row, Radio, Space
+    Column, Element, Text, Length, HorizontalAlignment, Align, Radio, Space
 };
 
 use crate::parameters::utils::{
@@ -11,9 +11,6 @@ use crate::GuiSyncHandle;
 use crate::common::WaveType;
 
 use super::{FONT_BOLD, FONT_SIZE, LINE_HEIGHT, Message};
-
-
-const VALUE_TEXT_OPACITY: f32 = 0.0;
 
 
 #[derive(Debug, Clone)]

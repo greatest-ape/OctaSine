@@ -47,7 +47,7 @@ optional = true
 [dependencies.iced_baseview]
 git = "https://github.com/BillyDM/iced_baseview.git"
 branch = "main"
-features = ["canvas", "image"]
+features = ["canvas"]
 optional = true
 
 [dependencies.iced_audio]

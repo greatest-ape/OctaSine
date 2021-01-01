@@ -68,10 +68,4 @@ impl PresetPicker {
             .push(list)
             .into()
     }
-
-    pub fn set_selected(&mut self, index: usize){
-        if index < self.options.len() {
-            self.selected = index;
-        }
-    }
 }

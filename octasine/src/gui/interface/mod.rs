@@ -1,6 +1,6 @@
 use iced_baseview::{executor, Align, Application, Command, Subscription, WindowSubs};
 use iced_baseview::{
-    Column, Element, Row, Container, Rule, Length, Space, Image, image, renderer, Font, Point, Text, HorizontalAlignment
+    Column, Element, Row, Container, Rule, Length, Space, renderer, Font, Point, Text, HorizontalAlignment
 };
 
 use crate::GuiSyncHandle;
@@ -70,7 +70,6 @@ pub struct OctaSineIcedApplication<H: GuiSyncHandle> {
     sync_handle: H,
     host_display_needs_update: bool,
     frame_counter: usize,
-    logo: image::Handle,
     master_volume: OctaSineKnob,
     master_frequency: OctaSineKnob,
     modulation_matrix: ModulationMatrix,
@@ -217,9 +216,6 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
     fn new(
         sync_handle: Self::Flags,
     ) -> (Self, Command<Self::Message>) {
-        let logo_bytes = include_bytes!("../../../resources/logo.png").to_vec();
-        let logo = image::Handle::from_memory(logo_bytes);
-
         let master_volume = OctaSineKnob::master_volume(&sync_handle);
         let master_frequency = OctaSineKnob::master_frequency(&sync_handle);
         let modulation_matrix = ModulationMatrix::new(&sync_handle);
@@ -231,7 +227,6 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
         let operator_4 = OperatorWidgets::new(&sync_handle, 3);
 
         let app = Self {
-            logo,
             sync_handle,
             host_display_needs_update: false,
             frame_counter: 0,
@@ -326,7 +321,6 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
                                 .size(FONT_SIZE * 2)
                                 .horizontal_alignment(HorizontalAlignment::Center)
                         )
-                            // .height(Length::Units(mod_matrix::HEIGHT))
                             .width(Length::FillPortion(1))
                             .align_y(Align::Center)
                             .align_x(Align::Center)
@@ -386,7 +380,6 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
             ;
 
         Container::new(all)
-            // .padding(LINE_HEIGHT)
             .into()
     }
 }

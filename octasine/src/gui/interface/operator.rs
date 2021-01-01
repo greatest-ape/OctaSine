@@ -1,5 +1,5 @@
 use iced_baseview::{
-    Container, Element, Text, Length, Align, Row, Rule, Space, HorizontalAlignment, image, Column
+    Container, Element, Text, Length, Align, Row, Rule, Space, HorizontalAlignment, Column
 };
 
 
@@ -13,7 +13,6 @@ use super::picker::WaveTypePicker;
 
 pub struct OperatorWidgets {
     index: usize,
-    number_handle: image::Handle,
     pub volume: OctaSineKnob,
     pub panning: OctaSineKnob,
     pub wave_type: WaveTypePicker,
@@ -32,15 +31,6 @@ impl OperatorWidgets {
         sync_handle: &H,
         operator_index: usize,
     ) -> Self {
-        let image_bytes = match operator_index {
-            0 => include_bytes!("../../../resources/1-36.png").to_vec(),
-            1 => include_bytes!("../../../resources/2-36.png").to_vec(),
-            2 => include_bytes!("../../../resources/3-36.png").to_vec(),
-            3 => include_bytes!("../../../resources/4-36.png").to_vec(),
-            _ => unreachable!(),
-        };
-        let number_handle = image::Handle::from_memory(image_bytes);
-
         let (volume, panning, wave, additive, mod_index, feedback, ratio, free, fine) = match operator_index {
             0 => ( 2,  3,  4,  0,  5,  6,  7,  8,  9),
             1 => (15, 16, 17, 18, 19, 20, 21, 22, 23),
@@ -57,7 +47,6 @@ impl OperatorWidgets {
 
         Self {
             index: operator_index,
-            number_handle,
             volume: OctaSineKnob::operator_volume(sync_handle, volume),
             panning: OctaSineKnob::operator_panning(sync_handle, panning),
             wave_type: WaveTypePicker::new(sync_handle, wave),
@@ -76,7 +65,6 @@ impl OperatorWidgets {
             .size(FONT_SIZE * 2)
             .font(FONT_VERY_BOLD)
             .horizontal_alignment(HorizontalAlignment::Center);
-        // let operator_number = image::Image::new(self.number_handle.clone());
 
         let mut row = Row::new()
             .push(
