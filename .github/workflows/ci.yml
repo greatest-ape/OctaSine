@@ -25,7 +25,5 @@ jobs:
           toolchain: nightly
           override: true
           components: clippy
-    - name: Build
-      run: cargo +nightly build --release --all-features --verbose
-    - name: Run tests
-      run: cargo +nightly test --workspace --exclude plot_envelopes --all-features --release --verbose
+    - name: Build and run tests
+      run: cargo +nightly test --workspace --all-features --verbose
