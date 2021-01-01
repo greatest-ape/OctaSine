@@ -29,6 +29,15 @@ impl GuiSyncHandle for SyncState {
         self.presets.format_parameter_value(index, value)
             .unwrap() // FIXME: unwrap
     }
+    fn get_presets(&self) -> (usize, Vec<String>) {
+        let index = self.presets.get_preset_index();
+        let names = self.presets.get_preset_names();
+
+        (index, names)
+    }
+    fn set_preset_index(&self, index: usize){
+        self.presets.set_preset_index(index);
+    }
     fn update_host_display(&self){
 
     }

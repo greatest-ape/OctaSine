@@ -321,6 +321,8 @@ cfg_if::cfg_if! {
             fn set_parameter(&self, index: usize, value: f64);
             fn get_parameter(&self, index: usize) -> f64;
             fn format_parameter_value(&self, index: usize, value: f64) -> String;
+            fn get_presets(&self) -> (usize, Vec<String>);
+            fn set_preset_index(&self, index: usize);
             fn update_host_display(&self);
         }
 
@@ -337,6 +339,15 @@ cfg_if::cfg_if! {
             }
             fn format_parameter_value(&self, index: usize, value: f64) -> String {
                 self.presets.format_parameter_value(index, value).unwrap() // FIXME: unwrap
+            }
+            fn get_presets(&self) -> (usize, Vec<String>){
+                let index = self.presets.get_preset_index();
+                let names = self.presets.get_preset_names();
+
+                (index, names)
+            }
+            fn set_preset_index(&self, index: usize){
+                self.presets.set_preset_index(index);
             }
             fn update_host_display(&self){
                 self.host.update_display();
@@ -356,6 +367,12 @@ cfg_if::cfg_if! {
             }
             fn format_parameter_value(&self, index: usize, value: f64) -> String {
                 Deref::deref(self).format_parameter_value(index, value)
+            }
+            fn get_presets(&self) -> (usize, Vec<String>){
+                Deref::deref(self).get_presets()
+            }
+            fn set_preset_index(&self, index: usize){
+                Deref::deref(self).set_preset_index(index)
             }
             fn update_host_display(&self){
                 Deref::deref(self).update_host_display()

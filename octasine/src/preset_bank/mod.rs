@@ -3,7 +3,7 @@ mod change_info;
 mod import_export;
 mod import_export_utils;
 
-use std::sync::{Arc, atomic::{AtomicUsize, Ordering}};
+use std::sync::{Arc, atomic::{AtomicUsize, Ordering, AtomicBool}};
 
 use arc_swap::ArcSwap;
 use array_init::array_init;
@@ -124,6 +124,7 @@ pub struct PresetBank {
     preset_index: AtomicUsize,
     parameter_change_info_processing: ParameterChangeInfo,
     parameter_change_info_gui: ParameterChangeInfo,
+    presets_changed: AtomicBool,
 }
 
 
@@ -143,6 +144,7 @@ impl PresetBank {
             preset_index: AtomicUsize::new(0),
             parameter_change_info_processing: ParameterChangeInfo::default(),
             parameter_change_info_gui: ParameterChangeInfo::default(),
+            presets_changed: AtomicBool::new(false),
         }
     }
 
@@ -183,6 +185,7 @@ impl PresetBank {
         }
 
         self.preset_index.store(index, Ordering::SeqCst);
+        self.presets_changed.store(true, Ordering::SeqCst);
     }
 
     pub fn get_preset_name(&self, index: usize) -> Option<String> {
@@ -190,8 +193,19 @@ impl PresetBank {
             .map(|p| (*p.name.load_full()).clone())
     }
 
+    pub fn get_preset_names(&self) -> Vec<String> {
+        self.presets.iter()
+            .map(|p| (*p.name.load_full()).clone())
+            .collect()
+    }
+
     pub fn set_preset_name(&self, name: String){
         self.get_current_preset().name.store(Arc::new(name));
+        self.presets_changed.store(true, Ordering::SeqCst);
+    }
+
+    pub fn get_presets_changed(&self) -> bool {
+        self.presets_changed.fetch_and(false, Ordering::SeqCst)
     }
 
     // Get parameter changes
@@ -293,6 +307,7 @@ impl PresetBank {
 
                 self.set_preset_index(0);
                 self.mark_parameters_as_changed();
+                self.presets_changed.store(true, Ordering::SeqCst);
 
                 Ok(())
             },
@@ -305,6 +320,7 @@ impl PresetBank {
     pub fn import_bytes_into_current_preset(&self, bytes: &[u8]){
         if self.get_current_preset().import_bytes(bytes){
             self.mark_parameters_as_changed();
+            self.presets_changed.store(true, Ordering::SeqCst);
         }
     }
 

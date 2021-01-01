@@ -9,11 +9,13 @@ mod envelope;
 mod knob;
 mod mod_matrix;
 mod operator;
+mod presets;
 mod picker;
 
 use operator::OperatorWidgets;
 use knob::OctaSineKnob;
 use mod_matrix::ModulationMatrix;
+use presets::PresetPicker;
 
 
 pub const FONT_SIZE: u16 = 14;
@@ -60,6 +62,7 @@ impl SnapPoint for Point {
 pub enum Message {
     Frame,
     ParameterChange(usize, f64),
+    PresetChange(usize),
 }
 
 
@@ -71,6 +74,7 @@ pub struct OctaSineIcedApplication<H: GuiSyncHandle> {
     master_volume: OctaSineKnob,
     master_frequency: OctaSineKnob,
     modulation_matrix: ModulationMatrix,
+    preset_picker: PresetPicker,
     operator_1: OperatorWidgets,
     operator_2: OperatorWidgets,
     operator_3: OperatorWidgets,
@@ -219,6 +223,7 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
         let master_volume = OctaSineKnob::master_volume(&sync_handle);
         let master_frequency = OctaSineKnob::master_frequency(&sync_handle);
         let modulation_matrix = ModulationMatrix::new(&sync_handle);
+        let preset_picker = PresetPicker::new(&sync_handle);
 
         let operator_1 = OperatorWidgets::new(&sync_handle, 0);
         let operator_2 = OperatorWidgets::new(&sync_handle, 1);
@@ -233,6 +238,7 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
             master_volume,
             master_frequency,
             modulation_matrix,
+            preset_picker,
             operator_1,
             operator_2,
             operator_3,
@@ -263,6 +269,9 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
     fn update(&mut self, message: Self::Message) -> Command<Self::Message> {
         match message {
             Message::Frame => {
+                if self.sync_handle.get_bank().get_presets_changed(){
+                    self.preset_picker = PresetPicker::new(&self.sync_handle);
+                }
                 self.update_widgets_from_parameters();
 
                 // Update host display less often for better performance.
@@ -283,6 +292,10 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
                 self.sync_handle.set_parameter(index, value);
                 self.host_display_needs_update = true;
             },
+            Message::PresetChange(index) => {
+                self.sync_handle.set_preset_index(index);
+                self.host_display_needs_update = true;
+            }
         }
 
         Command::none()
@@ -292,6 +305,7 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
         let master_volume = self.master_volume.view();
         let master_frequency = self.master_frequency.view();
         let modulation_matrix = self.modulation_matrix.view();
+        let preset_picker = self.preset_picker.view();
         let operator_1 = self.operator_1.view();
         let operator_2 = self.operator_2.view();
         let operator_3 = self.operator_3.view();
@@ -337,7 +351,12 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
                     .height(Length::Units(mod_matrix::HEIGHT))
                     .push(
                         Column::new()
-                            .width(Length::FillPortion(2))
+                            .width(Length::FillPortion(1))
+                            .push(
+                                Row::new()
+                                    .push(Space::with_width(Length::Units(LINE_HEIGHT)))
+                                    .push(preset_picker)
+                            )
                     )
                     .push(
                         Column::new()
@@ -346,6 +365,9 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
                             .push(
                                 Row::new()
                                     .align_items(Align::Center)
+                                    .push(
+                                        Space::with_width(Length::Units(LINE_HEIGHT))
+                                    )
                                     .push(modulation_matrix)
                                     .push(
                                         Space::with_width(Length::Units(LINE_HEIGHT))
