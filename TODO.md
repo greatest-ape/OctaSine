@@ -2,21 +2,25 @@
 
 ## GUI
 
-* Maybe use ParameterValue when creating knobs and other values (envelope)
-* Fix ANOTHER envelope error:
-  `ERROR] thread 'unnamed' panicked at 'Tessellate path: UnsupportedParamater': /[..]/github.com-1ecc6299db9ec823/iced_graphics-0.1.0/src/widget/canvas/frame.rs:100`
-  * Probably also related to zero envelope section length
-* Full-height vertical rules
-* Full-width horizontal rules
-* Reset knobs to default with backspace
-* Mod matrix
-  * Show modulation index with strong color in operator boxes?
-  * Show feedback?
+### Important
+
 * Envelopes
   * Maybe draw lines indicating top and bottom of draggable range
   * Interaction with draggers
   * Possibly button for snapping viewport etc
   * Horizontal scrolling?
+  * Fix ANOTHER envelope error:
+    `ERROR] thread 'unnamed' panicked at 'Tessellate path: UnsupportedParamater': /[..]/github.com-1ecc6299db9ec823/iced_graphics-0.1.0/src/widget/canvas/frame.rs:100`
+    * Probably also related to zero envelope section length
+
+### Not important
+
+* Maybe use ParameterValue when creating knobs and other values (envelope)
+* Full-width horizontal rules?
+* Reset knobs to default with backspace
+* Mod matrix
+  * Show modulation index with strong color in operator boxes?
+  * Show feedback?
 * update_host_display stuff
   * Running update_host_display all the time tanks performance. Maybe only run
     it on knob release, or stillstand (very little movement since last event.)
