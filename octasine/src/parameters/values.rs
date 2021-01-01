@@ -59,7 +59,7 @@ macro_rules! impl_identity_value_conversion {
                 self.0
             }
             fn format(self) -> String {
-                format!("{:.02}", self.0)
+                format!("{:.04}", self.0)
             }
             fn format_sync(value: f64) -> String {
                 Self::from_sync(value).format()
@@ -179,7 +179,7 @@ impl ParameterValue for OperatorVolume {
         self.0 / 2.0
     }
     fn format(self) -> String {
-        format!("{:.02}", self.0)
+        format!("{:.04}", self.0)
     }
     fn format_sync(value: f64) -> String {
         Self::from_sync(value).format()
@@ -248,7 +248,7 @@ impl ParameterValue for OperatorFrequencyRatio {
         map_step_to_parameter_value(&OPERATOR_RATIO_STEPS[..], self.0)
     }
     fn format(self) -> String {
-        format!("{:.02}", self.0)
+        format!("{:.04}", self.0)
     }
     fn format_sync(value: f64) -> String {
         Self::from_sync(value).format()
@@ -285,7 +285,7 @@ impl ParameterValue for OperatorFrequencyFree {
         map_value_to_parameter_value_with_steps(&OPERATOR_FREE_STEPS, self.0)
     }
     fn format(self) -> String {
-        format!("{:.02}", self.0)
+        format!("{:.04}", self.0)
     }
     fn format_sync(value: f64) -> String {
         Self::from_sync(value).format()
@@ -317,7 +317,7 @@ impl ParameterValue for OperatorFrequencyFine {
         map_value_to_parameter_value_with_steps(&OPERATOR_FINE_STEPS, self.0)
     }
     fn format(self) -> String {
-        format!("{:.02}", self.0)
+        format!("{:.04}", self.0)
     }
     fn format_sync(value: f64) -> String {
         Self::from_sync(value).format()
@@ -381,7 +381,7 @@ impl ParameterValue for OperatorModulationIndex {
         map_value_to_parameter_value_with_steps(&OPERATOR_BETA_STEPS[..], self.0)
     }
     fn format(self) -> String {
-        format!("{:.02}", self.0)
+        format!("{:.04}", self.0)
     }
     fn format_sync(value: f64) -> String {
         Self::from_sync(value).format()
