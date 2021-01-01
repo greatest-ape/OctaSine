@@ -11,11 +11,11 @@ use crate::GuiSyncHandle;
 use crate::voices::VoiceOperatorVolumeEnvelope;
 use crate::constants::{ENVELOPE_MIN_DURATION, ENVELOPE_MAX_DURATION};
 
-use super::{FONT_SIZE, Message, SnapPoint};
+use super::{FONT_SIZE, LINE_HEIGHT, Message, SnapPoint};
 
 
-const WIDTH: u16 = 256;
-const HEIGHT: u16 = 78;
+const WIDTH: u16 = LINE_HEIGHT * 20;
+const HEIGHT: u16 = LINE_HEIGHT * 5;
 const SIZE: Size = Size { width: WIDTH as f32, height: HEIGHT as f32 };
 
 const SUSTAIN_DURATION: f32 = 0.1 / 4.0;

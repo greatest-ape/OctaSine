@@ -5,7 +5,7 @@ use iced_baseview::{
 
 use crate::GuiSyncHandle;
 
-use super::{FONT_SIZE, Message};
+use super::{FONT_SIZE, FONT_BOLD, LINE_HEIGHT, Message};
 use super::envelope::Envelope;
 use super::knob::OctaSineKnob;
 use super::picker::WaveTypePicker;
@@ -74,16 +74,19 @@ impl OperatorWidgets {
     pub fn view(&mut self) -> Element<Message> {
         let operator_number = Text::new(format!("{}", self.index + 1))
             .size(FONT_SIZE * 3)
+            .font(FONT_BOLD)
             .horizontal_alignment(HorizontalAlignment::Center);
         // let operator_number = image::Image::new(self.number_handle.clone());
 
         let mut row = Row::new()
             .push(
                 Container::new(operator_number)
-                    .width(Length::Units(32))
+                    .width(Length::Units(LINE_HEIGHT * 2))
+                    .height(Length::Units(LINE_HEIGHT * 6))
                     .align_x(Align::Center)
+                    .align_y(Align::Center)
             )
-            .push(Space::with_width(Length::Units(16)))
+            .push(Space::with_width(Length::Units(LINE_HEIGHT)))
             .push(self.wave_type.view())
             .push(self.volume.view())
             .push(self.panning.view());
@@ -91,15 +94,15 @@ impl OperatorWidgets {
         if let Some(additive) = self.additive.as_mut() {
             row = row.push(additive.view())
         } else {
-            row = row.push(Space::with_width(Length::Units(64)))
+            row = row.push(Space::with_width(Length::Units(LINE_HEIGHT * 4)))
         }
 
         row = row
             .push(
                 Container::new(
-                    Rule::vertical(16)
+                    Rule::vertical(LINE_HEIGHT)
                 )
-                    .height(Length::Units(64))
+                    .height(Length::Units(LINE_HEIGHT * 6))
             )
             .push(self.mod_index.view())
             .push(self.feedback.view());
@@ -107,9 +110,9 @@ impl OperatorWidgets {
         row = row
             .push(
                 Container::new(
-                    Rule::vertical(16)
+                    Rule::vertical(LINE_HEIGHT)
                 )
-                    .height(Length::Units(64)))
+                    .height(Length::Units(LINE_HEIGHT * 6)))
             .push(self.frequency_ratio.view())
             .push(self.frequency_free.view())
             .push(self.frequency_fine.view());
@@ -117,10 +120,9 @@ impl OperatorWidgets {
         row = row
             .push(
                 Container::new(
-                    Rule::vertical(16)
+                    Rule::vertical(LINE_HEIGHT)
                 )
-                    .height(Length::Units(64))
-                    .align_y(Align::Center)
+                    .height(Length::Units(LINE_HEIGHT * 6))
             )
             .push(
                 Column::new()

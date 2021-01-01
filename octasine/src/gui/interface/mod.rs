@@ -17,14 +17,18 @@ use mod_matrix::ModulationMatrix;
 
 
 pub const FONT_SIZE: u16 = 14;
+pub const LINE_HEIGHT: u16 = 14;
 
-const FONT_REGULAR: &[u8] = OPEN_SANS_SEMI_BOLD;
+const FONT_REGULAR: &[u8] = OPEN_SANS_REGULAR;
 
 const FONT_BOLD: Font = Font::External {
-    name: "Open Sans Bold",
-    bytes: OPEN_SANS_BOLD,
+    name: "Open Sans Semi Bold",
+    bytes: OPEN_SANS_SEMI_BOLD,
 };
 
+const OPEN_SANS_REGULAR: &[u8] = include_bytes!(
+    "../../../../contrib/open-sans/OpenSans-Regular.ttf"
+);
 const OPEN_SANS_SEMI_BOLD: &[u8] = include_bytes!(
     "../../../../contrib/open-sans/OpenSans-SemiBold.ttf"
 );
@@ -290,7 +294,7 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
         let operator_4 = self.operator_4.view();
 
         let all = Column::new()
-            .spacing(16)
+            .spacing(LINE_HEIGHT)
             .push(Rule::horizontal(0))
             .push(operator_4)
             .push(Rule::horizontal(0))
@@ -331,11 +335,11 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
                                     .align_items(Align::Center)
                                     .push(modulation_matrix)
                                     .push(
-                                        Space::with_width(Length::Units(16))
+                                        Space::with_width(Length::Units(LINE_HEIGHT))
                                     )
                                     .push(
                                         Container::new(
-                                            Rule::vertical(16)
+                                            Rule::vertical(LINE_HEIGHT)
                                         )
                                             .height(Length::Units(mod_matrix::HEIGHT)))
                                     .push(master_volume)
@@ -347,7 +351,7 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
             .push(Rule::horizontal(0));
 
         Container::new(all)
-            .padding(16)
+            .padding(LINE_HEIGHT)
             .into()
     }
 }

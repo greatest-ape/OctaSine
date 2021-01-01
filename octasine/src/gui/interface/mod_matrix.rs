@@ -12,15 +12,15 @@ use crate::parameters::values::{
     OperatorModulationTarget3,
 };
 
-use super::{FONT_BOLD, FONT_SIZE, Message, SnapPoint};
+use super::{FONT_BOLD, FONT_SIZE, LINE_HEIGHT, Message, SnapPoint};
 
 
 const BACKGROUND_COLOR: Color = Color::from_rgb(0.9, 0.9, 0.9);
 const ACTIVE_MOD_BOX_COLOR: (u8, u8, u8) = (0, 0, 0);
 
-pub const HEIGHT: u16 = 16 * 7;
-const SMALL_BOX_SIZE: u16 = 12;
-const BIG_BOX_SIZE: u16 = 16;
+pub const HEIGHT: u16 = LINE_HEIGHT * 7;
+const SMALL_BOX_SIZE: u16 = 10;
+const BIG_BOX_SIZE: u16 = LINE_HEIGHT;
 
 // Calculated from the constants above
 const SCALE: f32 = SMALL_BOX_SIZE as f32 / (HEIGHT as f32 / 8.0);
@@ -87,8 +87,8 @@ impl OperatorBox {
 
         text_position = text_position.snap();
 
-        text_position.x += 3.0;
-        text_position.y -= 2.5;
+        text_position.x += 2.0;
+        text_position.y -= 3.0;
 
         let text = Text {
             content: format!("{}", index + 1),

@@ -10,7 +10,7 @@ use crate::parameters::utils::{
 use crate::GuiSyncHandle;
 use crate::common::WaveType;
 
-use super::{FONT_BOLD, FONT_SIZE, Message};
+use super::{FONT_BOLD, FONT_SIZE, LINE_HEIGHT, Message};
 
 
 const VALUE_TEXT_OPACITY: f32 = 0.0;
@@ -80,11 +80,11 @@ impl WaveTypePicker {
         }
             
         Column::new()
-            .width(Length::Units(64))
+            .width(Length::Units(LINE_HEIGHT * 4))
             .align_items(Align::Center)
             .push(title)
             .push(
-                Space::with_height(Length::Units(16))
+                Space::with_height(Length::Units(LINE_HEIGHT))
             )
             .push(radios)
             .into()

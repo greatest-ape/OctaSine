@@ -9,10 +9,10 @@ use crate::parameters::utils::map_value_to_parameter_value_with_steps;
 use crate::GuiSyncHandle;
 use crate::constants::*;
 
-use super::{FONT_BOLD, Message};
+use super::{FONT_BOLD, LINE_HEIGHT, Message};
 
 
-const KNOB_SIZE: Length = Length::Units(32);
+const KNOB_SIZE: Length = Length::Units(LINE_HEIGHT * 2);
 
 
 #[derive(Debug, Clone)]
@@ -289,19 +289,15 @@ impl OctaSineKnob {
         }
 
         Column::new()
-            .width(Length::Units(64))
+            .width(Length::Units(LINE_HEIGHT * 4))
             .align_items(Align::Center)
+            .push(title)
             .push(
-                Row::new()
-                    // .height(Length::Units(32))
-                    .push(title)
-            )
-            .push(
-                Space::with_height(Length::Units(16))
+                Space::with_height(Length::Units(LINE_HEIGHT))
             )
             .push(knob)
             .push(
-                Space::with_height(Length::Units(16))
+                Space::with_height(Length::Units(LINE_HEIGHT))
             )
             .push(value)
             .into()
