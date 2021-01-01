@@ -9,13 +9,13 @@ mod envelope;
 mod knob;
 mod mod_matrix;
 mod operator;
-mod presets;
-mod picker;
+mod preset_picker;
+mod wave_picker;
 
 use operator::OperatorWidgets;
 use knob::OctaSineKnob;
 use mod_matrix::ModulationMatrix;
-use presets::PresetPicker;
+use preset_picker::PresetPicker;
 
 
 pub const FONT_SIZE: u16 = 14;

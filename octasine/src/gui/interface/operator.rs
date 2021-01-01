@@ -8,7 +8,7 @@ use crate::GuiSyncHandle;
 use super::{FONT_SIZE, FONT_VERY_BOLD, LINE_HEIGHT, Message};
 use super::envelope::Envelope;
 use super::knob::OctaSineKnob;
-use super::picker::WaveTypePicker;
+use super::wave_picker::WaveTypePicker;
 
 
 pub struct OperatorWidgets {
