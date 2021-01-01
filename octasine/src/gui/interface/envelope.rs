@@ -19,7 +19,7 @@ const HEIGHT: u16 = LINE_HEIGHT * 5;
 const SIZE: Size = Size { width: WIDTH as f32, height: HEIGHT as f32 };
 
 const SUSTAIN_DURATION: f32 = 0.1 / 4.0;
-const DRAGGER_RADIUS: f32 = 4.0;
+const DRAGGER_RADIUS: f32 = 5.0;
 
 const ENVELOPE_PATH_SCALE_X: f32 = 1.0 - (1.0 / 16.0);
 const ENVELOPE_PATH_SCALE_Y: f32 = 1.0 - (1.0 / 8.0) - (1.0 / 16.0);
