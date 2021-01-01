@@ -298,19 +298,32 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
         let operator_4 = self.operator_4.view();
 
         let all = Column::new()
-            .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
+            .push(Space::with_height(Length::Units(LINE_HEIGHT * 2)))
             .push(
-                Container::new(
-                    Text::new("OctaSine")
-                        .font(FONT_VERY_BOLD)
-                        .size(FONT_SIZE * 2)
-                        .horizontal_alignment(HorizontalAlignment::Center)
-                )
-                    .width(Length::Fill)
-                    // .align_y(Align::Center)
-                    .align_x(Align::Center)
+                Row::new()
+                    .push(
+                        Column::new()
+                            .width(Length::FillPortion(1))
+                    )
+                    .push(
+                        Container::new(
+                            Text::new("OctaSine")
+                                .font(FONT_VERY_BOLD)
+                                .size(FONT_SIZE * 2)
+                                .horizontal_alignment(HorizontalAlignment::Center)
+                        )
+                            // .height(Length::Units(mod_matrix::HEIGHT))
+                            .width(Length::FillPortion(1))
+                            .align_y(Align::Center)
+                            .align_x(Align::Center)
+                    )
+                    .push(
+                        Column::new()
+                            .width(Length::FillPortion(1))
+                            .align_items(Align::End)
+                    )
             )
-            .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
+            .push(Space::with_height(Length::Units(LINE_HEIGHT * 2)))
             .push(operator_4)
             .push(Space::with_height(Length::Units(LINE_HEIGHT * 2)))
             .push(operator_3)
@@ -321,9 +334,14 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
             .push(Space::with_height(Length::Units(LINE_HEIGHT * 2)))
             .push(
                 Row::new()
+                    .height(Length::Units(mod_matrix::HEIGHT))
                     .push(
                         Column::new()
-                            .width(Length::Fill)
+                            .width(Length::FillPortion(2))
+                    )
+                    .push(
+                        Column::new()
+                            .width(Length::FillPortion(1))
                             .align_items(Align::End)
                             .push(
                                 Row::new()
@@ -339,10 +357,11 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
                                             .height(Length::Units(mod_matrix::HEIGHT)))
                                     .push(master_volume)
                                     .push(master_frequency)
-                    .push(Space::with_width(Length::Units(LINE_HEIGHT)))
+                                    .push(Space::with_width(Length::Units(LINE_HEIGHT)))
                             )
-                        )
-            );
+                    )
+            )
+            ;
 
         Container::new(all)
             // .padding(LINE_HEIGHT)
