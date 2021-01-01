@@ -1,6 +1,6 @@
 use iced_baseview::{executor, Align, Application, Command, Subscription, WindowSubs};
 use iced_baseview::{
-    Column, Element, Row, Container, Rule, Length, Space, Image, image, renderer, Font, Point
+    Column, Element, Row, Container, Rule, Length, Space, Image, image, renderer, Font, Point, Text, HorizontalAlignment
 };
 
 use crate::GuiSyncHandle;
@@ -24,6 +24,10 @@ const FONT_REGULAR: &[u8] = OPEN_SANS_REGULAR;
 const FONT_BOLD: Font = Font::External {
     name: "Open Sans Semi Bold",
     bytes: OPEN_SANS_SEMI_BOLD,
+};
+const FONT_VERY_BOLD: Font = Font::External {
+    name: "Open Sans Bold",
+    bytes: OPEN_SANS_BOLD,
 };
 
 const OPEN_SANS_REGULAR: &[u8] = include_bytes!(
@@ -294,38 +298,29 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
         let operator_4 = self.operator_4.view();
 
         let all = Column::new()
-            .spacing(LINE_HEIGHT)
-            .push(Rule::horizontal(0))
+            .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
+            .push(
+                Container::new(
+                    Text::new("OctaSine")
+                        .font(FONT_VERY_BOLD)
+                        .size(FONT_SIZE * 2)
+                        .horizontal_alignment(HorizontalAlignment::Center)
+                )
+                    .width(Length::Fill)
+                    // .align_y(Align::Center)
+                    .align_x(Align::Center)
+            )
+            .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
             .push(operator_4)
-            .push(Rule::horizontal(0))
+            .push(Space::with_height(Length::Units(LINE_HEIGHT * 2)))
             .push(operator_3)
-            .push(Rule::horizontal(0))
+            .push(Space::with_height(Length::Units(LINE_HEIGHT * 2)))
             .push(operator_2)
-            .push(Rule::horizontal(0))
+            .push(Space::with_height(Length::Units(LINE_HEIGHT * 2)))
             .push(operator_1)
-            .push(Rule::horizontal(0))
+            .push(Space::with_height(Length::Units(LINE_HEIGHT * 2)))
             .push(
                 Row::new()
-                    .push(
-                        Column::new()
-                            .width(Length::Fill)
-                            .align_items(Align::Start)
-                            /*
-                            .push(
-                                Row::new()
-                                    // .push(Space::with_width(Length::Units(24)))
-                                    .push(
-                                        Container::new(
-                                            Image::new(self.logo.clone())
-                                        )
-                                            .height(Length::Units(mod_matrix::HEIGHT))
-                                            .width(Length::Units(mod_matrix::HEIGHT))
-                                            .align_x(Align::Center)
-                                            .align_y(Align::Center)
-                                    )
-                            )
-                            */
-                        )
                     .push(
                         Column::new()
                             .width(Length::Fill)
@@ -344,14 +339,13 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
                                             .height(Length::Units(mod_matrix::HEIGHT)))
                                     .push(master_volume)
                                     .push(master_frequency)
+                    .push(Space::with_width(Length::Units(LINE_HEIGHT)))
                             )
-                            // .push(Space::with_width(Length::Units(32)))
                         )
-            )
-            .push(Rule::horizontal(0));
+            );
 
         Container::new(all)
-            .padding(LINE_HEIGHT)
+            // .padding(LINE_HEIGHT)
             .into()
     }
 }
