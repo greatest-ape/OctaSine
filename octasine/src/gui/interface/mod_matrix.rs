@@ -88,12 +88,13 @@ impl OperatorBox {
         text_position = text_position.snap();
 
         text_position.x += 2.0;
-        text_position.y -= 3.0;
+        text_position.y -= 2.0;
 
         let text = Text {
             content: format!("{}", index + 1),
             position: text_position,
             font: FONT_BOLD,
+            size: FONT_SIZE as f32,
             ..Default::default()
         };
 
