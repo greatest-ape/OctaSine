@@ -287,7 +287,7 @@ mod tests {
         assert_eq!(OperatorFrequencyRatio::from_sync(p.get_value()).get(), 0.5);
 
         for step in OPERATOR_RATIO_STEPS.iter() {
-            let s = format!("{:.02}", step);
+            let s = format!("{:.04}", step);
             assert!(p.set_from_text(s.clone()));
             assert_eq!(p.get_value_text(), s.clone());
         }
@@ -314,7 +314,7 @@ mod tests {
         assert_approx_eq!(OperatorFrequencyFree::from_sync(p.get_value()).get(), OPERATOR_FREE_STEPS.last().unwrap());
 
         for step in OPERATOR_FREE_STEPS.iter() {
-            let s = format!("{:.02}", step);
+            let s = format!("{:.04}", step);
             assert!(p.set_from_text(s.clone()));
             assert_eq!(p.get_value_text(), s.clone());
         }
