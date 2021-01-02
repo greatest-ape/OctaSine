@@ -2,12 +2,11 @@
 
 ## LFO
 
-* Fix LfoTargetParameter to text conversion
-* Implement lfos in simd gen
 * Control LFOs with LFOs
+  * Also, look at audio gen target parameter lookups. Use perfect hash map?
+* Implement lfos in simd gen
+* Ratio and free speed / frequency
 * Sample and hold
-* New LFO param: hold (on or off), which return last value instead of 0.0 when
-  lfo cycle is over?
 * Is it necessary to look at time signatures etc for bpm sync?
   https://rustaudio.github.io/vst-rs/vst/api/struct.TimeInfo.html
 * Don't interpolate for e.g. frequency?
