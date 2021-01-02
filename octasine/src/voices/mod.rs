@@ -3,9 +3,10 @@ use crate::constants::*;
 
 pub mod envelopes;
 pub mod lfos;
+pub mod lfos2;
 
 use envelopes::*;
-use lfos::*;
+use lfos2::*;
 
 
 #[derive(Debug, Copy, Clone)]

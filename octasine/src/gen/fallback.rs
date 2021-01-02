@@ -162,7 +162,6 @@ pub fn generate_voice_samples(
         };
 
         let addition = voice_lfo.get_value(
-            voice.duration,
             time_per_sample,
             bpm,
             shape,
