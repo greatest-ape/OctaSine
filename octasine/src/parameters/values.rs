@@ -9,6 +9,10 @@ macro_rules! impl_envelope_duration_value_conversion {
         impl ParameterValue for $struct_name {
             type Value = f64;
 
+            fn from_processing(value: Self::Value) -> Self {
+                Self(value)
+            }
+
             fn get(self) -> Self::Value {
                 self.0
             }
@@ -49,6 +53,10 @@ macro_rules! impl_identity_value_conversion {
         impl ParameterValue for $struct_name {
             type Value = f64;
 
+            fn from_processing(value: Self::Value) -> Self {
+                Self(value)
+            }
+
             fn get(self) -> Self::Value {
                 self.0
             }
@@ -72,6 +80,7 @@ macro_rules! impl_identity_value_conversion {
 pub trait ParameterValue: Sized {
     type Value;
 
+    fn from_processing(value: Self::Value) -> Self;
     /// Get inner (processing) value
     fn get(self) -> Self::Value;
     fn from_sync(value: f64) -> Self;
@@ -98,6 +107,9 @@ impl Default for MasterVolume {
 impl ParameterValue for MasterVolume {
     type Value = f64;
 
+    fn from_processing(value: Self::Value) -> Self {
+        Self(value)
+    }
     fn get(self) -> Self::Value {
         self.0
     }
@@ -130,6 +142,9 @@ impl Default for MasterFrequency {
 impl ParameterValue for MasterFrequency {
     type Value = f64;
 
+    fn from_processing(value: Self::Value) -> Self {
+        Self(value)
+    }
     fn get(self) -> Self::Value {
         self.0
     }
@@ -169,6 +184,9 @@ impl OperatorVolume {
 impl ParameterValue for OperatorVolume {
     type Value = f64;
 
+    fn from_processing(value: Self::Value) -> Self {
+        Self(value)
+    }
     fn get(self) -> Self::Value {
         self.0
     }
@@ -206,6 +224,9 @@ impl Default for OperatorAdditive {
 impl ParameterValue for OperatorAdditive {
     type Value = f64;
 
+    fn from_processing(value: Self::Value) -> Self {
+        Self(value)
+    }
     fn get(self) -> Self::Value {
         self.0
     }
@@ -238,6 +259,9 @@ impl Default for OperatorFrequencyRatio {
 impl ParameterValue for OperatorFrequencyRatio {
     type Value = f64;
 
+    fn from_processing(value: Self::Value) -> Self {
+        Self(value)
+    }
     fn get(self) -> Self::Value {
         self.0
     }
@@ -275,6 +299,9 @@ impl Default for OperatorFrequencyFree {
 impl ParameterValue for OperatorFrequencyFree {
     type Value = f64;
 
+    fn from_processing(value: Self::Value) -> Self {
+        Self(value)
+    }
     fn get(self) -> Self::Value {
         self.0
     }
@@ -307,6 +334,9 @@ impl Default for OperatorFrequencyFine {
 impl ParameterValue for OperatorFrequencyFine {
     type Value = f64;
 
+    fn from_processing(value: Self::Value) -> Self {
+        Self(value)
+    }
     fn get(self) -> Self::Value {
         self.0
     }
@@ -339,6 +369,9 @@ impl Default for OperatorFeedback {
 impl ParameterValue for OperatorFeedback {
     type Value = f64;
 
+    fn from_processing(value: Self::Value) -> Self {
+        Self(value)
+    }
     fn get(self) -> Self::Value {
         self.0
     }
@@ -371,6 +404,9 @@ impl Default for OperatorModulationIndex {
 impl ParameterValue for OperatorModulationIndex {
     type Value = f64;
 
+    fn from_processing(value: Self::Value) -> Self {
+        Self(value)
+    }
     fn get(self) -> Self::Value {
         self.0
     }
@@ -403,6 +439,9 @@ impl Default for OperatorWaveType {
 impl ParameterValue for OperatorWaveType {
     type Value = WaveType;
 
+    fn from_processing(value: Self::Value) -> Self {
+        Self(value)
+    }
     fn get(self) -> Self::Value {
         self.0
     }
@@ -526,6 +565,9 @@ impl Default for OperatorPanning {
 impl ParameterValue for OperatorPanning {
     type Value = f64;
 
+    fn from_processing(value: Self::Value) -> Self {
+        Self(value)
+    }
     fn get(self) -> Self::Value {
         self.0
     }
@@ -566,6 +608,9 @@ impl Default for OperatorModulationTarget2 {
 impl ParameterValue for OperatorModulationTarget2 {
     type Value = usize;
 
+    fn from_processing(value: Self::Value) -> Self {
+        Self(value)
+    }
     fn get(self) -> Self::Value {
         self.0
     }
@@ -607,6 +652,9 @@ impl Default for OperatorModulationTarget3 {
 impl ParameterValue for OperatorModulationTarget3 {
     type Value = usize;
 
+    fn from_processing(value: Self::Value) -> Self {
+        Self(value)
+    }
     fn get(self) -> Self::Value {
         self.0
     }
@@ -630,5 +678,345 @@ impl ParameterValue for OperatorModulationTarget3 {
         }
 
         None
+    }
+}
+
+
+
+
+#[derive(Debug, Clone, Copy)]
+pub struct LfoTargetParameterValue(pub LfoTargetParameter);
+
+
+impl Default for LfoTargetParameterValue {
+    fn default() -> Self {
+        Self(LfoTargetParameter::Master(LfoTargetMasterParameter::Volume))
+    }
+}
+
+
+impl ParameterValue for LfoTargetParameterValue {
+    type Value = LfoTargetParameter;
+
+    fn from_processing(value: Self::Value) -> Self {
+        Self(value)
+    }
+    fn get(self) -> Self::Value {
+        self.0
+    }
+    fn from_sync(sync: f64) -> Self {
+        Self(map_parameter_value_to_step(&LFO_TARGET_CONTEXT_STEPS[..], sync))
+    }
+    fn to_sync(self) -> f64 {
+        map_step_to_parameter_value(&LFO_TARGET_CONTEXT_STEPS[..], self.0)
+    }
+    fn format(self) -> String {
+        match self.0 {
+            LfoTargetParameter::Master(p) => {
+                format!("Master {}", format!("{:?}", p).to_lowercase())
+            },
+            LfoTargetParameter::Operator(n, p) => {
+                format!(
+                    "Op. {} {}",
+                    n + 1,
+                    format!("{:?}", p).to_lowercase()
+                )
+            },
+            LfoTargetParameter::Lfo(n, p) => {
+                format!(
+                    "LFO {} {}",
+                    n + 1,
+                    format!("{:?}", p).to_lowercase()
+                )
+            },
+        }
+    }
+    fn format_sync(value: f64) -> String {
+        Self::from_sync(value).format()
+    }
+    fn from_text(text: String) -> Option<Self> {
+        let value = text.to_lowercase();
+
+        let mut parts = value.split_ascii_whitespace();
+
+        match parts.next(){
+            Some("master") => {
+                use LfoTargetParameter::Master;
+                use LfoTargetMasterParameter::{Volume, Frequency};
+
+                match parts.next(){
+                    Some("volume") => {
+                        Some(Self(Master(Volume)))
+                    },  
+                    Some("frequency") => {
+                        Some(Self(Master(Frequency)))
+                    },  
+                    _ => None,
+                }   
+            },  
+            Some("operator") | Some("op") => {
+                use LfoTargetParameter::Operator;
+                use LfoTargetOperatorParameter::Volume;
+
+                let operator_index: usize = parts.next()?
+                    .parse()
+                    .ok()?;
+
+                if operator_index > 3 { 
+                    return None;
+                }   
+
+                match parts.next(){
+                    Some("volume") => {
+                        Some(Self(Operator(operator_index, Volume)))
+                    },  
+                    _ => None,
+                }   
+            },  
+            Some("lfo") => {
+                use LfoTargetParameter::Lfo;
+                use LfoTargetLfoParameter::Magnitude;
+
+                let operator_index: usize = parts.next()?
+                    .parse()
+                    .ok()?;
+
+                if operator_index > 3 {
+                    return None;
+                }
+
+                match parts.next(){
+                    Some("magnitude") => {
+                        Some(Self(Lfo(operator_index, Magnitude)))
+                    },
+                    _ => None,
+                }
+            },
+            _ => None
+        }
+    }
+}
+
+
+#[derive(Debug, Clone, Copy)]
+pub struct LfoShapeValue(pub LfoShape);
+
+
+impl Default for LfoShapeValue {
+    fn default() -> Self {
+        Self(LfoShape::LinearDown)
+    }
+}
+
+
+impl ParameterValue for LfoShapeValue {
+    type Value = LfoShape;
+
+    fn from_processing(value: Self::Value) -> Self {
+        Self(value)
+    }
+    fn get(self) -> Self::Value {
+        self.0
+    }
+    fn from_sync(sync: f64) -> Self {
+        Self(map_parameter_value_to_step(&LFO_SHAPE_STEPS[..], sync))
+    }
+    fn to_sync(self) -> f64 {
+        map_step_to_parameter_value(&LFO_SHAPE_STEPS[..], self.0)
+    }
+    fn format(self) -> String {
+        match self.0 {
+            LfoShape::LinearUp => "Linear up".to_string(),
+            LfoShape::LinearDown => "Linear down".to_string(),
+        }
+    }
+    fn format_sync(value: f64) -> String {
+        Self::from_sync(value).format()
+    }
+    fn from_text(text: String) -> Option<Self> {
+        match text.to_lowercase().as_ref(){
+            "linear up" => Some(Self(LfoShape::LinearUp)),
+            "linear down" => Some(Self(LfoShape::LinearDown)),
+            _ => None,
+        }
+    }
+}
+
+
+#[derive(Debug, Clone, Copy)]
+pub struct LfoModeValue(pub LfoMode);
+
+
+impl Default for LfoModeValue {
+    fn default() -> Self {
+        Self(LfoMode::Forever)
+    }
+}
+
+
+impl ParameterValue for LfoModeValue {
+    type Value = LfoMode;
+
+    fn from_processing(value: Self::Value) -> Self {
+        Self(value)
+    }
+    fn get(self) -> Self::Value {
+        self.0
+    }
+    fn from_sync(sync: f64) -> Self {
+        Self(map_parameter_value_to_step(&LFO_MODE_STEPS[..], sync))
+    }
+    fn to_sync(self) -> f64 {
+        map_step_to_parameter_value(&LFO_MODE_STEPS[..], self.0)
+    }
+    fn format(self) -> String {
+        match self.0 {
+            LfoMode::Half => "Half".to_string(),
+            LfoMode::Once => "Once".to_string(),
+            LfoMode::Forever => "Forever".to_string(),
+        }
+    }
+    fn format_sync(value: f64) -> String {
+        Self::from_sync(value).format()
+    }
+    fn from_text(text: String) -> Option<Self> {
+        match text.to_lowercase().as_ref(){
+            "half" => Some(Self(LfoMode::Half)),
+            "once" => Some(Self(LfoMode::Once)),
+            "forever" => Some(Self(LfoMode::Forever)),
+            _ => None,
+        }
+    }
+}
+
+
+
+#[derive(Debug, Clone, Copy)]
+pub struct LfoBpmSyncValue(pub bool);
+
+
+impl Default for LfoBpmSyncValue {
+    fn default() -> Self {
+        Self(true)
+    }
+}
+
+
+impl ParameterValue for LfoBpmSyncValue {
+    type Value = bool;
+
+    fn from_processing(value: Self::Value) -> Self {
+        Self(value)
+    }
+    fn get(self) -> Self::Value {
+        self.0
+    }
+    fn from_sync(sync: f64) -> Self {
+        Self(sync <= 0.5)
+    }
+    fn to_sync(self) -> f64 {
+        if self.0 {
+            0.0
+        } else {
+            1.0
+        }
+    }
+    fn format(self) -> String {
+        if self.0 {
+            "On".to_string()
+        } else {
+            "Off".to_string()
+        }
+    }
+    fn format_sync(value: f64) -> String {
+        Self::from_sync(value).format()
+    }
+    fn from_text(text: String) -> Option<Self> {
+        match text.to_lowercase().as_ref(){
+            "true" | "on" => Some(Self(true)),
+            "false" | "off" => Some(Self(false)),
+            _ => None
+        }
+    }
+}
+
+
+
+
+#[derive(Debug, Clone, Copy)]
+pub struct LfoSpeedValue(pub f64);
+
+
+impl Default for LfoSpeedValue {
+    fn default() -> Self {
+        Self(1.0)
+    }
+}
+
+
+impl ParameterValue for LfoSpeedValue {
+    type Value = f64;
+
+    fn from_processing(value: Self::Value) -> Self {
+        Self(value)
+    }
+    fn get(self) -> Self::Value {
+        self.0
+    }
+    fn from_sync(sync: f64) -> Self {
+        Self(map_parameter_value_to_value_with_steps(&LFO_SPEED_STEPS, sync))
+    }
+    fn to_sync(self) -> f64 {
+        map_value_to_parameter_value_with_steps(&LFO_SPEED_STEPS, self.0)
+    }
+    fn format(self) -> String {
+        format!("{:.04}", self.0)
+    }
+    fn format_sync(value: f64) -> String {
+        Self::from_sync(value).format()
+    }
+    fn from_text(_: String) -> Option<Self> {
+        None // FIXME
+    }
+}
+
+
+
+
+
+#[derive(Debug, Clone, Copy)]
+pub struct LfoMagnitudeValue(pub f64);
+
+
+impl Default for LfoMagnitudeValue {
+    fn default() -> Self {
+        Self(1.0)
+    }
+}
+
+
+impl ParameterValue for LfoMagnitudeValue {
+    type Value = f64;
+
+    fn from_processing(value: Self::Value) -> Self {
+        Self(value)
+    }
+    fn get(self) -> Self::Value {
+        self.0
+    }
+    fn from_sync(sync: f64) -> Self {
+        Self(map_parameter_value_to_value_with_steps(&LFO_MAGNITUDE_STEPS[..], sync))
+    }
+    fn to_sync(self) -> f64 {
+        map_value_to_parameter_value_with_steps(&LFO_MAGNITUDE_STEPS[..], self.0)
+    }
+    fn format(self) -> String {
+        format!("{:.04}", self.0)
+    }
+    fn format_sync(value: f64) -> String {
+        Self::from_sync(value).format()
+    }
+    fn from_text(_: String) -> Option<Self> {
+        None // FIXME
     }
 }

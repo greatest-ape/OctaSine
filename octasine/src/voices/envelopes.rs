@@ -1,55 +1,9 @@
 use crate::approximations::Log10Table;
 use crate::common::*;
 use crate::constants::*;
-use crate::parameters::processing::*;
+use crate::parameters::processing::ProcessingParameterOperatorEnvelope;
 
-
-#[derive(Debug, Copy, Clone)]
-pub struct VoiceDuration(pub f64);
-
-#[derive(Debug, Copy, Clone)]
-pub struct KeyVelocity(pub f64);
-
-impl KeyVelocity {
-    pub fn from_midi_velocity(midi_velocity: u8) -> Self {
-        if midi_velocity == 0 {
-            Self::default()
-        }
-        else {
-            Self(f64::from(midi_velocity) / 127.0)
-        }
-    }
-}
-
-impl Default for KeyVelocity {
-    fn default() -> Self {
-        Self(100.0 / 127.0)
-    }
-}
-
-
-#[derive(Debug, Copy, Clone)]
-pub struct MidiPitch {
-    frequency_factor: f64,
-}
-
-impl MidiPitch {
-    pub fn new(midi_pitch: u8) -> Self {
-        Self {
-            frequency_factor: Self::calculate_frequency_factor(midi_pitch),
-        }
-    }
-
-    fn calculate_frequency_factor(midi_pitch: u8) -> f64 {
-        let note_diff = f64::from(midi_pitch as i8 - 69);
-
-        (note_diff / 12.0).exp2()
-    }
-
-    pub fn get_frequency(self, master_frequency: f64) -> f64 {
-        self.frequency_factor * master_frequency
-    }
-}
+use super::VoiceDuration;
 
 
 #[derive(Debug, Copy, Clone)]
@@ -59,6 +13,7 @@ pub struct VoiceOperatorVolumeEnvelope {
     volume_at_stage_change: f64,
     last_volume: f64,
 }
+
 
 impl VoiceOperatorVolumeEnvelope {
     #[inline]
@@ -214,7 +169,13 @@ impl VoiceOperatorVolumeEnvelope {
         self.volume_at_stage_change = self.last_volume;
         self.duration_at_stage_change = VoiceDuration(0.0);
     }
+
+    #[inline]
+    pub fn is_ended(&self) -> bool {
+        self.stage == EnvelopeStage::Ended
+    }
 }
+
 
 impl Default for VoiceOperatorVolumeEnvelope {
     fn default() -> Self {
@@ -223,77 +184,6 @@ impl Default for VoiceOperatorVolumeEnvelope {
             duration_at_stage_change: VoiceDuration(0.0),
             volume_at_stage_change: 0.0,
             last_volume: 0.0
-        }
-    }
-}
-
-
-#[derive(Debug, Copy, Clone)]
-pub struct VoiceOperator {
-    pub last_phase: Phase,
-    pub volume_envelope: VoiceOperatorVolumeEnvelope,
-}
-
-impl Default for VoiceOperator {
-    fn default() -> Self {
-        Self {
-            last_phase: Phase(0.0),
-            volume_envelope: VoiceOperatorVolumeEnvelope::default(),
-        }
-    }
-}
-
-
-#[derive(Debug, Clone)]
-pub struct Voice {
-    pub active: bool,
-    pub midi_pitch: MidiPitch,
-    pub duration: VoiceDuration,
-    pub key_pressed: bool,
-    pub key_velocity: KeyVelocity,
-    pub operators: [VoiceOperator; NUM_OPERATORS],
-}
-
-impl Voice {
-    pub fn new(midi_pitch: MidiPitch) -> Self {
-        let operators = [VoiceOperator::default(); NUM_OPERATORS];
-
-        Self {
-            active: false,
-            midi_pitch,
-            duration: VoiceDuration(0.0),
-            key_pressed: false,
-            key_velocity: KeyVelocity::default(),
-            operators,
-        }
-    }
-
-    #[inline]
-    pub fn press_key(&mut self, velocity: u8){
-        self.key_velocity = KeyVelocity::from_midi_velocity(velocity);
-        self.key_pressed = true;
-        self.duration = VoiceDuration(0.0);
-
-        for operator in self.operators.iter_mut(){
-            operator.volume_envelope.restart();
-        }
-
-        self.active = true;
-    }
-
-    #[inline]
-    pub fn release_key(&mut self){
-        self.key_pressed = false;
-    }
-
-    #[inline]
-    pub fn deactivate_if_envelopes_ended(&mut self) {
-        let all_envelopes_ended = self.operators.iter().all(|voice_operator|
-            voice_operator.volume_envelope.stage == EnvelopeStage::Ended
-        );
-
-        if all_envelopes_ended {
-            self.active = false;
         }
     }
 }

@@ -18,7 +18,7 @@ pub struct ProcessingParameterOperatorEnvelope {
 
 
 impl ProcessingParameterOperatorEnvelope {
-    fn new() -> Self {
+    pub fn new() -> Self {
         Self {
             attack_duration: ProcessingParameterOperatorAttackDuration::default(),
             attack_end_value: ProcessingParameterOperatorAttackVolume::default(),
@@ -67,11 +67,23 @@ impl ProcessingParameterOperator {
 
 pub type ProcessingParameterOperators = [ProcessingParameterOperator; NUM_OPERATORS];
 
+#[derive(Default)]
+pub struct ProcessingParameterLfo {
+    pub target_parameter: ProcessingParameterLfoTargetParameter,
+    pub shape: ProcessingParameterLfoShape,
+    pub mode: ProcessingParameterLfoMode,
+    pub bpm_sync: ProcessingParameterLfoBpmSync,
+    pub speed: ProcessingParameterLfoSpeed,
+    pub magnitude: ProcessingParameterLfoMagnitude,
+}
+
+pub type ProcessingParameterLfos = [ProcessingParameterLfo; NUM_LFOS];
 
 pub struct ProcessingParameters {
     pub master_volume: ProcessingParameterMasterVolume,
     pub master_frequency: ProcessingParameterMasterFrequency,
     pub operators: ProcessingParameterOperators,
+    pub lfos: ProcessingParameterLfos,
 }
 
 
@@ -81,6 +93,7 @@ impl Default for ProcessingParameters {
             master_volume: ProcessingParameterMasterVolume::default(),
             master_frequency: ProcessingParameterMasterFrequency::default(),
             operators: array_init(ProcessingParameterOperator::new),
+            lfos: array_init(|_| ProcessingParameterLfo::default()),
         }
     }
 }

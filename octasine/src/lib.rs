@@ -99,6 +99,14 @@ impl OctaSine {
         TimePerSample(1.0 / sample_rate.0)
     }
 
+    fn get_bpm(&self) -> BeatsPerMinute {
+        // Use TEMPO_VALID constant content as mask directly because
+        // of problems with using TimeInfoFlags
+        self.sync.host.get_time_info(1 << 10)
+            .map(|time_info| BeatsPerMinute(time_info.tempo as f64))
+            .unwrap_or_default()
+    }  
+
     /// MIDI keyboard support
 
     pub fn process_midi_event(&mut self, data: [u8; 3]) {

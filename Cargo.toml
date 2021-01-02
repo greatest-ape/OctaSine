@@ -3,7 +3,7 @@
 members = [ 
     "octasine",
     "octasine_vst2_plugin",
-    "plot_envelopes",
+    "plot_curves",
     "run_gui",
 ]
 

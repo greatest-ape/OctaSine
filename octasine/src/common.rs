@@ -9,11 +9,17 @@ pub struct Phase(pub f64);
 #[derive(Debug, Copy, Clone)]
 pub struct SampleRate(pub f64);
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub struct TimePerSample(pub f64);
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub struct BeatsPerMinute(pub f64);
+
+impl Default for BeatsPerMinute {
+    fn default() -> Self {
+        Self(120.0)
+    }
+}
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum EnvelopeStage {
@@ -28,4 +34,41 @@ pub enum EnvelopeStage {
 pub enum WaveType {
     Sine,
     WhiteNoise
+}
+
+
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
+pub enum LfoTargetMasterParameter {
+    Volume,
+    Frequency
+}
+
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
+pub enum LfoTargetOperatorParameter {
+    Volume
+}
+
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
+pub enum LfoTargetLfoParameter {
+    Magnitude
+}
+
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
+pub enum LfoTargetParameter {
+    Master(LfoTargetMasterParameter),
+    Operator(usize, LfoTargetOperatorParameter),
+    Lfo(usize, LfoTargetLfoParameter),
+}
+
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+pub enum LfoShape {
+    LinearUp,
+    LinearDown,
+}
+
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+pub enum LfoMode {
+    Half,
+    Once,
+    Forever
 }

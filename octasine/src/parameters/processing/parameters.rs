@@ -13,6 +13,11 @@ pub trait ProcessingParameter {
 
     fn get_value(&mut self, extra_data: Self::ExtraData) -> Self::Value;
     fn set_from_sync(&mut self, value: f64);
+    fn get_value_with_lfo_addition(
+        &mut self,
+        extra_data: Self::ExtraData,
+        lfo_addition: Option<f64>
+    ) -> Self::Value;
 }
 
 
@@ -43,6 +48,23 @@ macro_rules! create_interpolatable_processing_parameter {
             fn set_from_sync(&mut self, value: f64){
                 self.value.set_value($value_struct::from_sync(value).get())
             }
+            fn get_value_with_lfo_addition(
+                &mut self,
+                extra_data: Self::ExtraData,
+                lfo_addition: Option<f64>
+            ) -> Self::Value {
+                if let Some(lfo_addition) = lfo_addition {
+                    let sync_value = $value_struct::from_processing(
+                        self.get_value(extra_data)
+                    ).to_sync();
+        
+                    $value_struct::from_sync(
+                        (sync_value + lfo_addition).min(1.0).max(0.0)
+                    ).get()
+                } else {
+                    self.get_value(extra_data)
+                }   
+            }   
         }
     }
 }
@@ -73,6 +95,23 @@ macro_rules! create_simple_processing_parameter {
             fn set_from_sync(&mut self, value: f64){
                 self.value = $value_struct::from_sync(value).get();
             }
+            fn get_value_with_lfo_addition(
+                &mut self,
+                extra_data: Self::ExtraData,
+                lfo_addition: Option<f64>
+            ) -> Self::Value {
+                if let Some(lfo_addition) = lfo_addition {
+                    let sync_value = $value_struct::from_processing(
+                        self.get_value(extra_data)
+                    ).to_sync();
+        
+                    $value_struct::from_sync(
+                        (sync_value + lfo_addition).min(1.0).max(0.0)
+                    ).get()
+                } else {
+                    self.get_value(extra_data)
+                }   
+            }   
         }
     };
 }
@@ -92,6 +131,7 @@ create_simple_processing_parameter!(
     ProcessingParameterMasterFrequency,
     MasterFrequency
 );
+
 
 
 // Operator volume
@@ -121,6 +161,23 @@ impl ProcessingParameter for ProcessingParameterOperatorVolume {
     fn set_from_sync(&mut self, value: f64){
         self.value.set_value(OperatorVolume::from_sync(value).get())
     }
+    fn get_value_with_lfo_addition(
+        &mut self,
+        extra_data: Self::ExtraData,
+        lfo_addition: Option<f64>
+    ) -> Self::Value {
+        if let Some(lfo_addition) = lfo_addition {
+            let sync_value = OperatorVolume::from_processing(
+                self.get_value(extra_data)
+            ).to_sync();
+
+            OperatorVolume::from_sync(
+                (sync_value + lfo_addition).min(1.0).max(0.0)
+            ).get()
+        } else {
+            self.get_value(extra_data)
+        }   
+    }   
 }
 
 
@@ -295,6 +352,23 @@ impl ProcessingParameter for ProcessingParameterOperatorPanning {
     fn set_from_sync(&mut self, value: f64) {
         self.value.set_value(OperatorPanning::from_sync(value).get())
     }
+    fn get_value_with_lfo_addition(
+        &mut self,
+        extra_data: Self::ExtraData,
+        lfo_addition: Option<f64>
+    ) -> Self::Value {
+        if let Some(lfo_addition) = lfo_addition {
+            let sync_value = OperatorPanning::from_processing(
+                self.get_value(extra_data)
+            ).to_sync();
+
+            OperatorPanning::from_sync(
+                (sync_value + lfo_addition).min(1.0).max(0.0)
+            ).get()
+        } else {
+            self.get_value(extra_data)
+        }   
+    }   
 }
 
 
@@ -308,3 +382,54 @@ impl Default for ProcessingParameterOperatorPanning {
         }
     }
 }
+
+
+// LFO target parameter
+
+create_simple_processing_parameter!(
+    ProcessingParameterLfoTargetParameter,
+    LfoTargetParameterValue
+);
+
+
+
+// LFO shape
+
+create_simple_processing_parameter!(
+    ProcessingParameterLfoShape,
+    LfoShapeValue
+);
+
+
+
+// LFO mode
+
+create_simple_processing_parameter!(
+    ProcessingParameterLfoMode,
+    LfoModeValue
+);
+
+
+
+// LFO bpm sync
+
+create_simple_processing_parameter!(
+    ProcessingParameterLfoBpmSync,
+    LfoBpmSyncValue
+);
+
+
+// LFO speed
+
+create_simple_processing_parameter!(
+    ProcessingParameterLfoSpeed,
+    LfoSpeedValue
+);
+
+
+// LFO magnitude
+
+create_interpolatable_processing_parameter!(
+    ProcessingParameterLfoMagnitude,
+    LfoMagnitudeValue
+);

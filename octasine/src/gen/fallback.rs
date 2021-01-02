@@ -1,20 +1,23 @@
 //! Fallback audio generation not requiring simd
 
+use arrayvec::ArrayVec;
 use fastrand::Rng;
 use vst::buffer::AudioBuffer;
 
-use crate::OctaSine;
 use crate::approximations::*;
 use crate::common::*;
 use crate::constants::*;
 use crate::voices::*;
 use crate::parameters::processing::*;
+use crate::OctaSine;
+
 
 /// One for left channel, one for right
 pub struct OutputChannel {
     pub additive: f64,
     pub operator_inputs: [f64; NUM_OPERATORS],
 }
+
 
 impl Default for OutputChannel {
     fn default() -> Self {
@@ -25,45 +28,83 @@ impl Default for OutputChannel {
     }
 }
 
+
+#[derive(Default)]
+pub struct LfoTargetValues(ArrayVec<[(LfoTargetParameter, f64); NUM_LFOS]>);
+
+
+impl LfoTargetValues {
+    fn set_or_add(
+        &mut self,
+        target: LfoTargetParameter,
+        value: f64
+    ){
+        for (t, v) in self.0.iter_mut(){
+            if *t == target {
+                *v += value;
+
+                return;
+            }
+        }
+
+        self.0.push((target, value));
+    }
+
+    fn get(&mut self, target: LfoTargetParameter) -> Option<f64> {
+        for (t, v) in self.0.iter() {
+            if *t == target {
+                return Some(*v)
+            }
+        }
+
+        None
+    }
+}
+
+
 #[inline]
 fn hard_limit(value: f64) -> f64 {
     value.min(1.0).max(-1.0)
 }
 
+
 #[inline]
 pub fn process_f32(octasine: &mut OctaSine, audio_buffer: &mut AudioBuffer<f32>){
+    let bpm = octasine.get_bpm();
+
     let mut outputs = audio_buffer.split().1;
     let lefts = outputs.get_mut(0).iter_mut();
     let rights = outputs.get_mut(1).iter_mut();
 
     for (buffer_sample_left, buffer_sample_right) in lefts.zip(rights){
-        let (left, right) = gen_samples_for_voices(octasine);
+        let (left, right) = gen_samples_for_voices(octasine, bpm);
 
         *buffer_sample_left = left as f32;
         *buffer_sample_right = right as f32;
     }
 }
 
+
 #[inline]
-pub fn gen_samples_for_voices(octasine: &mut OctaSine) -> (f64, f64) {
+pub fn gen_samples_for_voices(
+    octasine: &mut OctaSine,
+    bpm: BeatsPerMinute
+) -> (f64, f64) {
     let changed_preset_parameters = octasine.sync.presets
         .get_changed_parameters_from_processing();
 
     if let Some(indeces) = changed_preset_parameters {
         for (index, opt_new_value) in indeces.iter().enumerate(){
             if let Some(new_value) = opt_new_value {
-                octasine.processing.parameters.set_from_sync(
-                    index,
-                    *new_value
-                );
+                octasine.processing.parameters.set_from_sync(index, *new_value);
             }
         }
     }
 
+    let time_per_sample = octasine.processing.time_per_sample;
+
     let mut voice_sum_left: f64 = 0.0;
     let mut voice_sum_right: f64 = 0.0;
-
-    let time_per_sample = octasine.processing.time_per_sample;
 
     for voice in octasine.processing.voices.iter_mut(){
         if voice.active {
@@ -73,6 +114,7 @@ pub fn gen_samples_for_voices(octasine: &mut OctaSine) -> (f64, f64) {
                 octasine.processing.global_time,
                 time_per_sample,
                 &mut octasine.processing.parameters,
+                bpm,
                 voice,
             );
 
@@ -90,6 +132,7 @@ pub fn gen_samples_for_voices(octasine: &mut OctaSine) -> (f64, f64) {
     (voice_sum_left, voice_sum_right)
 }
 
+
 /// Generate stereo samples for a voice
 #[inline]
 pub fn generate_voice_samples(
@@ -98,18 +141,54 @@ pub fn generate_voice_samples(
     time: TimeCounter,
     time_per_sample: TimePerSample,
     parameters: &mut ProcessingParameters,
+    bpm: BeatsPerMinute,
     voice: &mut Voice,
 ) -> (f64, f64) {
-    let operators = &mut parameters.operators;
+    let mut lfo_values = LfoTargetValues::default();
+
+    for (voice_lfo, lfo_parameter) in voice.lfos.iter_mut()
+        .zip(parameters.lfos.iter_mut())
+    {
+        let shape = lfo_parameter.shape.value;
+        let mode = lfo_parameter.mode.value;
+        let bpm_sync = lfo_parameter.bpm_sync.value;
+        let speed = lfo_parameter.speed.value;
+        let magnitude = lfo_parameter.magnitude.get_value(time);
+
+        let bpm = if bpm_sync {
+            bpm
+        } else {
+            BeatsPerMinute::default()
+        };
+
+        let addition = voice_lfo.get_value(
+            voice.duration,
+            time_per_sample,
+            bpm,
+            shape,
+            mode,
+            speed,
+            magnitude,
+        );
+
+        let target = lfo_parameter.target_parameter.value;
+
+        lfo_values.set_or_add(target, addition);
+    }
 
     let base_frequency = voice.midi_pitch.get_frequency(
-        parameters.master_frequency.value
+        parameters.master_frequency.get_value_with_lfo_addition(
+            (),
+            lfo_values.get(LfoTargetParameter::Master(LfoTargetMasterParameter::Frequency))
+        )
     );
 
     let mut output_channels = [
         OutputChannel::default(),
         OutputChannel::default()
     ];
+
+    let operators = &mut parameters.operators;
 
     for (operator_index, operator) in (operators.iter_mut().enumerate()).rev() {
         // Fetch all operator values here to make sure all interpolatable
@@ -258,8 +337,12 @@ pub fn generate_voice_samples(
     let signal_left = output_channels[0].additive;
     let signal_right = output_channels[1].additive;
 
-    let volume_factor = VOICE_VOLUME_FACTOR * voice.key_velocity.0 *
-        parameters.master_volume.get_value(time);
+    let master_volume = parameters.master_volume.get_value_with_lfo_addition(
+        time,
+        lfo_values.get(LfoTargetParameter::Master(LfoTargetMasterParameter::Volume))
+    );
+
+    let volume_factor = VOICE_VOLUME_FACTOR * voice.key_velocity.0 * master_volume;
 
     (signal_left * volume_factor, signal_right * volume_factor)
 }

@@ -8,7 +8,7 @@ use iced_baseview::{
 use crate::approximations::Log10Table;
 
 use crate::GuiSyncHandle;
-use crate::voices::VoiceOperatorVolumeEnvelope;
+use crate::voices::envelopes::VoiceOperatorVolumeEnvelope;
 use crate::constants::{ENVELOPE_MIN_DURATION, ENVELOPE_MAX_DURATION};
 
 use super::{FONT_SIZE, LINE_HEIGHT, Message, SnapPoint};

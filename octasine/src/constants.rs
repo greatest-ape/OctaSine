@@ -1,7 +1,6 @@
 use std::f64::consts::PI;
 
-use crate::common::WaveType;
-
+use crate::common::*;
 
 pub const TAU: f64 = PI * 2.0;
 
@@ -12,6 +11,7 @@ pub const PLUGIN_NAME: &str = "OctaSine";
 pub const PLUGIN_UNIQUE_ID: i32 = 43789;
 
 pub const NUM_OPERATORS: usize = 4;
+pub const NUM_LFOS: usize = 2;
 
 /// Multiply the volume of each voice with this factor
 pub const VOICE_VOLUME_FACTOR: f64 = 0.1;
@@ -30,6 +30,27 @@ pub const ENVELOPE_MIN_DURATION: f64 = 0.004;
 /// slope at all
 pub const ENVELOPE_CURVE_TAKEOVER: f64 = 0.01;
 pub const ENVELOPE_CURVE_TAKEOVER_RECIP: f64 = 1.0 / ENVELOPE_CURVE_TAKEOVER;
+
+pub const LFO_TARGET_CONTEXT_STEPS: [LfoTargetParameter; 2] = [ 
+    LfoTargetParameter::Master(LfoTargetMasterParameter::Frequency),
+    LfoTargetParameter::Master(LfoTargetMasterParameter::Volume),
+    // LfoTargetParameter::Operator(0, LfoTargetOperatorParameter::Volume),
+    // LfoTargetParameter::Operator(1, LfoTargetOperatorParameter::Volume),
+    // LfoTargetParameter::Operator(2, LfoTargetOperatorParameter::Volume),
+    // LfoTargetParameter::Operator(3, LfoTargetOperatorParameter::Volume),
+    // LfoTargetParameter::Lfo(0, LfoTargetLfoParameter::Magnitude),
+];
+pub const LFO_SHAPE_STEPS: [LfoShape; 2] = [ 
+    LfoShape::LinearUp,
+    LfoShape::LinearDown,
+];
+pub const LFO_MODE_STEPS: [LfoMode; 3] = [ 
+    LfoMode::Half,
+    LfoMode::Once,
+    LfoMode::Forever,
+];
+pub const LFO_SPEED_STEPS: [f64; 7] = [0.125, 0.5, 0.9, 1.0, 1.1, 2.0, 16.0];
+pub const LFO_MAGNITUDE_STEPS: [f64; 3] = [0.0, 1.0, 5.0];
 
 // Default values
 

@@ -7,7 +7,7 @@ edition = "2018"
 
 [features]
 default = ["logging"]
-simd = ["simdeez", "arrayvec"]
+simd = ["simdeez"]
 logging = ["dirs", "log", "log-panics", "simplelog"]
 gui = ["baseview", "iced_baseview", "iced_audio", "raw-window-handle"]
 
@@ -20,7 +20,7 @@ harness = false
 
 [dependencies]
 arc-swap = "1"
-arrayvec = { version = "0.5", optional = true }
+arrayvec = "0.5"
 array-init = "1"
 cfg-if = "1"
 fastrand = "1"
