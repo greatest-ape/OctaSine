@@ -193,16 +193,31 @@ pub fn generate_voice_samples(
         // Fetch all operator values here to make sure all interpolatable
         // ones are advanced even if calculations are skipped below.
 
-        let operator_volume = operator.volume.get_value(time);
-        let operator_feedback = operator.feedback.get_value(time);
-        let operator_modulation_index = operator.modulation_index.get_value(time);
-        let operator_panning = operator.panning.get_value(time);
+        let operator_volume = operator.volume.get_value_with_lfo_addition(
+            time,
+            lfo_values.get(LfoTargetParameter::Operator(operator_index, LfoTargetOperatorParameter::Volume))
+        );
+        let operator_feedback = operator.feedback.get_value_with_lfo_addition(
+            time,
+            lfo_values.get(LfoTargetParameter::Operator(operator_index, LfoTargetOperatorParameter::Feedback))
+        );
+        let operator_modulation_index = operator.modulation_index.get_value_with_lfo_addition(
+            time,
+            lfo_values.get(LfoTargetParameter::Operator(operator_index, LfoTargetOperatorParameter::ModulationIndex))
+        );
+        let operator_panning = operator.panning.get_value_with_lfo_addition(
+            time,
+            lfo_values.get(LfoTargetParameter::Operator(operator_index, LfoTargetOperatorParameter::Panning))
+        );
 
         // Get additive factor; use 1.0 for operator 1
         let operator_additive = if operator_index == 0 {
             1.0
         } else {
-            operator.additive_factor.get_value(time)
+            operator.additive_factor.get_value_with_lfo_addition(
+                time,
+                lfo_values.get(LfoTargetParameter::Operator(operator_index, LfoTargetOperatorParameter::Additive))
+            )
         };
 
         // Get modulation target; use operator 1 for operator 1 and 2.
@@ -217,10 +232,23 @@ pub fn generate_voice_samples(
             0
         };
 
+        let frequency_ratio = operator.frequency_ratio.get_value_with_lfo_addition(
+            (),
+            lfo_values.get(LfoTargetParameter::Operator(operator_index, LfoTargetOperatorParameter::FrequencyRatio))
+        );
+        let frequency_free = operator.frequency_free.get_value_with_lfo_addition(
+            (),
+            lfo_values.get(LfoTargetParameter::Operator(operator_index, LfoTargetOperatorParameter::FrequencyFree))
+        );
+        let frequency_fine = operator.frequency_fine.get_value_with_lfo_addition(
+            (),
+            lfo_values.get(LfoTargetParameter::Operator(operator_index, LfoTargetOperatorParameter::FrequencyFine))
+        );
+
         let operator_frequency = base_frequency *
-            operator.frequency_ratio.value *
-            operator.frequency_free.value *
-            operator.frequency_fine.value;
+            frequency_ratio *
+            frequency_free *
+            frequency_fine;
 
         // Always calculate envelope to make sure it advances
         let envelope_volume = {

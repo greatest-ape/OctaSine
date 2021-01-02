@@ -45,7 +45,14 @@ pub enum LfoTargetMasterParameter {
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub enum LfoTargetOperatorParameter {
-    Volume
+    Volume,
+    Panning,
+    Additive,
+    ModulationIndex,
+    Feedback,
+    FrequencyRatio,
+    FrequencyFree,
+    FrequencyFine
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
