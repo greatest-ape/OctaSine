@@ -11,7 +11,7 @@ pub const PLUGIN_NAME: &str = "OctaSine";
 pub const PLUGIN_UNIQUE_ID: i32 = 43789;
 
 pub const NUM_OPERATORS: usize = 4;
-pub const NUM_LFOS: usize = 2;
+pub const NUM_LFOS: usize = 1;
 
 /// Multiply the volume of each voice with this factor
 pub const VOICE_VOLUME_FACTOR: f64 = 0.1;

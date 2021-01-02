@@ -20,6 +20,7 @@ use fastrand::Rng;
 
 use vst::api::{Supported, Events};
 use vst::event::Event;
+use vst::host::Host;
 use vst::plugin::{Category, Plugin, Info, CanDo, HostCallback, PluginParameters};
 
 use approximations::*;
@@ -102,7 +103,8 @@ impl OctaSine {
     fn get_bpm(&self) -> BeatsPerMinute {
         // Use TEMPO_VALID constant content as mask directly because
         // of problems with using TimeInfoFlags
-        self.sync.host.get_time_info(1 << 10)
+        self.sync.host
+            .and_then(|host| host.get_time_info(1 << 10))
             .map(|time_info| BeatsPerMinute(time_info.tempo as f64))
             .unwrap_or_default()
     }  
@@ -326,8 +328,6 @@ impl vst::plugin::PluginParameters for SyncState {
 
 cfg_if::cfg_if! {
     if #[cfg(feature = "gui")] {
-        use vst::host::Host;
-
         /// Trait passed to GUI code for encapsulation
         pub trait GuiSyncHandle: Send + Sync + 'static {
             fn get_bank(&self) -> &PresetBank;

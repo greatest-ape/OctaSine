@@ -16,6 +16,8 @@ use atomic_double::AtomicPositiveDouble;
 use import_export::*;
 use import_export_utils::*;
 
+pub use change_info::MAX_NUM_PARAMETERS;
+
 
 pub struct SyncParameter {
     value: AtomicPositiveDouble,
@@ -210,13 +212,13 @@ impl PresetBank {
 
     // Get parameter changes
 
-    pub fn get_changed_parameters_from_processing(&self) -> Option<[Option<f64>; 64]> {
+    pub fn get_changed_parameters_from_processing(&self) -> Option<[Option<f64>; MAX_NUM_PARAMETERS]> {
         self.parameter_change_info_processing.get_changed_parameters(
             &self.get_current_preset().parameters
         )
     }
 
-    pub fn get_changed_parameters_from_gui(&self) -> Option<[Option<f64>; 64]> {
+    pub fn get_changed_parameters_from_gui(&self) -> Option<[Option<f64>; MAX_NUM_PARAMETERS]> {
         self.parameter_change_info_gui.get_changed_parameters_transient(
             &self.get_current_preset().parameters
         )

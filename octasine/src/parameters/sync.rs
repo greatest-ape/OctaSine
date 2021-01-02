@@ -72,6 +72,14 @@ pub fn create_parameters() -> Vec<SyncParameter> {
         operator_decay_duration(3),
         operator_decay_volume(3),
         operator_release_duration(3),
+
+        // LFO 1
+        lfo_target_parameter(0),
+        lfo_shape(0),
+        lfo_mode(0),
+        lfo_bpm_sync(0),
+        lfo_speed(0),
+        lfo_magnitude(0),
     ]
 }
 
@@ -199,6 +207,48 @@ fn operator_modulation_target_3() -> SyncParameter {
     SyncParameter::new(
         "Op. 3 mod out",
         OperatorModulationTarget3::default()
+    )
+}
+
+fn lfo_target_parameter(index: usize) -> SyncParameter {
+    SyncParameter::new(
+        &format!("LFO {} target", index + 1),
+        LfoTargetParameterValue::default()
+    )
+}
+
+fn lfo_shape(index: usize) -> SyncParameter {
+    SyncParameter::new(
+        &format!("LFO {} shape", index + 1),
+        LfoShapeValue::default()
+    )
+}
+
+fn lfo_mode(index: usize) -> SyncParameter {
+    SyncParameter::new(
+        &format!("LFO {} mode", index + 1),
+        LfoModeValue::default()
+    )
+}
+
+fn lfo_bpm_sync(index: usize) -> SyncParameter {
+    SyncParameter::new(
+        &format!("LFO {} bpm sync", index + 1),
+        LfoBpmSyncValue::default()
+    )
+}
+
+fn lfo_speed(index: usize) -> SyncParameter {
+    SyncParameter::new(
+        &format!("LFO {} speed", index + 1),
+        LfoSpeedValue::default()
+    )
+}
+
+fn lfo_magnitude(index: usize) -> SyncParameter {
+    SyncParameter::new(
+        &format!("LFO {} magnitude", index + 1),
+        LfoMagnitudeValue::default()
     )
 }
 

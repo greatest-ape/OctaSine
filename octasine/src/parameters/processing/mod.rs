@@ -177,13 +177,18 @@ impl ProcessingParameters {
             56 => self.operators[3].volume_envelope.decay_duration.set_from_sync(value),
             57 => self.operators[3].volume_envelope.decay_end_value.set_from_sync(value),
             58 => self.operators[3].volume_envelope.release_duration.set_from_sync(value),
-
+            59 => self.lfos[0].target_parameter.set_from_sync(value),
+            60 => self.lfos[0].shape.set_from_sync(value),
+            61 => self.lfos[0].mode.set_from_sync(value),
+            62 => self.lfos[0].bpm_sync.set_from_sync(value),
+            63 => self.lfos[0].speed.set_from_sync(value),
+            64 => self.lfos[0].magnitude.set_from_sync(value),
             _  => ()
         }
     }
 
     pub fn len(&self) -> usize {
-        59
+        65
     }
 }
 

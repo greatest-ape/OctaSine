@@ -11,6 +11,7 @@ use octasine::voices::lfos::*;
 use octasine::parameters::processing::ProcessingParameterOperatorEnvelope;
 
 
+#[allow(dead_code)]
 fn plot_envelope_stage(
     start_volume: f64,
     end_volume: f64,

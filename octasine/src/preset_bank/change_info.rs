@@ -5,29 +5,45 @@ use array_init::array_init;
 use super::SyncParameter;
 
 
+const NUM_ATOMIC_U64S: usize = 2;
+pub const MAX_NUM_PARAMETERS: usize = NUM_ATOMIC_U64S * 64;
+
+
 /// Cache for marking parameters as changed and listing them.
 pub struct ParameterChangeInfo {
-    changed: AtomicU64,
+    atomic_u64s: [AtomicU64; NUM_ATOMIC_U64S],
     index_masks: [u64; 64],
 }
 
 
 impl ParameterChangeInfo {
-    pub fn mark_as_changed(&self, index: usize){
-        if index > 63 {
+    pub fn mark_as_changed(&self, parameter_index: usize){
+        if parameter_index > MAX_NUM_PARAMETERS - 1 {
             return;
         }
 
-        self.changed.fetch_or(self.index_masks[index], Ordering::SeqCst);
+        let atomic_u64_index = parameter_index / 64;
+        let atomic_u64_bit = parameter_index % 64;
+
+        self.atomic_u64s[atomic_u64_index]
+            .fetch_or(self.index_masks[atomic_u64_bit], Ordering::SeqCst);
     }
 
     pub fn mark_all_as_changed(&self){
-        self.changed.store(!0u64, Ordering::SeqCst);
+        for atomic_u64 in self.atomic_u64s.iter() {
+            atomic_u64.store(!0u64, Ordering::SeqCst);
+        }
     }
 
     #[cfg(test)]
     pub fn changes_exist(&self) -> bool {
-        self.changed.load(Ordering::SeqCst) != 0
+        for atomic_u64 in self.atomic_u64s.iter(){
+            if atomic_u64.load(Ordering::SeqCst) != 0 {
+                return true;
+            }
+        }
+
+        false
     }
 
     /// Go through change info. Get all changed parameters. If parameters are
@@ -36,22 +52,36 @@ impl ParameterChangeInfo {
     pub fn get_changed_parameters(
         &self,
         parameters: &Vec<SyncParameter>
-    ) -> Option<[Option<f64>; 64]> {
-        let changed = self.changed.fetch_and(0, Ordering::SeqCst);
+    ) -> Option<[Option<f64>; MAX_NUM_PARAMETERS]> {
+        let mut no_changes = true;
+        let mut changed = [0u64; NUM_ATOMIC_U64S];
 
-        if changed == 0 {
+        for (c, atomic_u64) in changed.iter_mut().zip(self.atomic_u64s.iter()){
+            let changed = atomic_u64.fetch_and(0, Ordering::SeqCst);
+
+            no_changes &= changed == 0;
+
+            *c = changed;
+        }
+
+        if no_changes {
             return None;
         }
 
-        let mut changes = [None; 64];
+        let mut changes = [None; MAX_NUM_PARAMETERS];
 
-        for (index, c) in changes.iter_mut().enumerate(){
-            if (changed >> index) & 1 == 1 {
-                if let Some(p) = parameters.get(index){
+        for (parameter_index, c) in changes.iter_mut().enumerate(){
+            let u64_index = parameter_index / 64;
+            let u64_bit = parameter_index % 64;
+
+            let changed = changed[u64_index];
+
+            if (changed >> u64_bit) & 1 == 1 {
+                if let Some(p) = parameters.get(parameter_index){
                     if let Some(value) = p.value.get_if_changed(){
                         *c = Some(value);
                     } else {
-                        self.mark_as_changed(index);
+                        self.mark_as_changed(parameter_index);
                     }
                 }
             }
@@ -65,19 +95,33 @@ impl ParameterChangeInfo {
     pub fn get_changed_parameters_transient(
         &self,
         parameters: &Vec<SyncParameter>
-    ) -> Option<[Option<f64>; 64]> {
-        let changed = self.changed.fetch_and(0, Ordering::SeqCst);
+    ) -> Option<[Option<f64>; MAX_NUM_PARAMETERS]> {
+        let mut no_changes = true;
+        let mut changed = [0u64; NUM_ATOMIC_U64S];
 
-        if changed == 0 {
+        for (c, atomic_u64) in changed.iter_mut().zip(self.atomic_u64s.iter()){
+            let changed = atomic_u64.fetch_and(0, Ordering::SeqCst);
+
+            no_changes &= changed == 0;
+
+            *c = changed;
+        }
+
+        if no_changes {
             return None;
         }
 
-        let mut changes = [None; 64];
+        let mut changes = [None; MAX_NUM_PARAMETERS];
 
-        for (index, c) in changes.iter_mut().enumerate(){
-            if (changed >> index) & 1 == 1 {
-                if let Some(p) = parameters.get(index){
-                    *c = Some(p.value.get());
+        for (parameter_index, c) in changes.iter_mut().enumerate(){
+            let u64_index = parameter_index / 64;
+            let u64_bit = parameter_index % 64;
+
+            let changed = changed[u64_index];
+
+            if (changed >> u64_bit) & 1 == 1 {
+                if let Some(p) = parameters.get(parameter_index){
+                    *c = Some(p.get_value());
                 }
             }
         }
@@ -90,7 +134,7 @@ impl ParameterChangeInfo {
 impl Default for ParameterChangeInfo {
     fn default() -> Self {
         Self {
-            changed: AtomicU64::new(0),
+            atomic_u64s: array_init(|_| AtomicU64::new(0)),
             index_masks: array_init(|i| 2u64.pow(i as u32))
         }
     }

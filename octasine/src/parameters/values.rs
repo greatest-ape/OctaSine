@@ -990,7 +990,7 @@ pub struct LfoMagnitudeValue(pub f64);
 
 impl Default for LfoMagnitudeValue {
     fn default() -> Self {
-        Self(1.0)
+        Self(0.0)
     }
 }
 
