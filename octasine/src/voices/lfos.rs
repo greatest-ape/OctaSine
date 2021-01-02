@@ -92,6 +92,18 @@ impl VoiceLfo {
 
                 multiplier * magnitude
             },
+            LfoShape::Triangle => {
+                let phase = self.phase.0;
+                let phase_cutoff = 0.5;
+
+                let multiplier = if phase <= phase_cutoff {
+                    phase / phase_cutoff
+                } else {
+                    1.0 - (phase - phase_cutoff) / (1.0 - phase_cutoff)
+                };
+
+                multiplier * magnitude
+            },
         };
 
         if let Some(interpolate) = self.interpolate {

@@ -837,6 +837,7 @@ impl ParameterValue for LfoShapeValue {
         match self.0 {
             LfoShape::LinearUp => "Linear up".to_string(),
             LfoShape::LinearDown => "Linear down".to_string(),
+            LfoShape::Triangle => "Triangle".to_string(),
         }
     }
     fn format_sync(value: f64) -> String {
@@ -846,6 +847,7 @@ impl ParameterValue for LfoShapeValue {
         match text.to_lowercase().as_ref(){
             "linear up" => Some(Self(LfoShape::LinearUp)),
             "linear down" => Some(Self(LfoShape::LinearDown)),
+            "triangle" => Some(Self(LfoShape::Triangle)),
             _ => None,
         }
     }

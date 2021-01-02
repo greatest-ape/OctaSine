@@ -71,6 +71,7 @@ pub enum LfoTargetParameter {
 pub enum LfoShape {
     LinearUp,
     LinearDown,
+    Triangle,
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
