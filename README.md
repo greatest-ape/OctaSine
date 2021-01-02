@@ -18,24 +18,6 @@ VST2 frequency modulation synthesizer written in Rust. Audio examples are availa
   graphical user interface)
 * Master volume and master frequency parameters
 
-## Copyright and license
-
-Copyright (C) 2019-2020 Joakim Frostegård
-
-This program is free software: you can redistribute it and/or modify it under
-the terms of the GNU General Public License, Version 3, as published by the
-Free Software Foundation.
-
-This program is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
-PARTICULAR PURPOSE.  See the GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License along with
-this program.  If not, see <https://www.gnu.org/licenses/>.
-
-Contents of `contrib` directory are licensed under other terms. Please
-refer to the contained directories and/or files for details.
-
 ## Installation
 
 ### macOS
@@ -85,6 +67,16 @@ Binary (pre-built) releases might be uploaded eventually.
 
 Have a look at the cargo invocations from the macOS section scripts, they
 should work fine.
+
+## Copyright and license
+
+Copyright (C) 2019-2021 Joakim Frostegård
+
+OctaSine is licensed under the GNU General Public License, Version 3, as
+published by the Free Software Foundation. See [LICENSE](LICENSE) for details.
+
+Contents of the `contrib` directory are licensed under other terms. Please
+refer to the contained directories and/or files for details.
 
 ## Notes
 
