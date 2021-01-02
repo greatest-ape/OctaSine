@@ -2,7 +2,9 @@
 
 ## LFO
 
-* Implement lfos in simd gen and for many more parameters
+* Fix LfoTargetParameter to text conversion
+* Implement lfos in simd gen
+* Control LFOs with LFOs
 * Sample and hold
 * New LFO param: hold (on or off), which return last value instead of 0.0 when
   lfo cycle is over?
