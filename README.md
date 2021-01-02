@@ -1,6 +1,8 @@
 # OctaSine
 
-VST2 frequency modulation synthesizer written in Rust. Audio examples are available at [soundcloud.com/octasine](https://soundcloud.com/octasine).
+VST2 frequency modulation synthesizer written in Rust.
+
+Audio examples are available at [soundcloud.com/octasine](https://soundcloud.com/octasine).
 
 ## About
 
@@ -14,9 +16,10 @@ VST2 frequency modulation synthesizer written in Rust. Audio examples are availa
   to operator 3, operator 3 to operator 2 and operator 2 to operator 1.
 * 128 voices (using them all simultaneously might consume quite a bit
   of CPU time though)
-* Fully automatable (nice way of saying there is currently no built-in
-  graphical user interface)
+* Fully automatable
 * Master volume and master frequency parameters
+* Work-in-progress graphical user interface. To use, compile OctaSine with
+  `gui` feature.
 
 ## Installation
 

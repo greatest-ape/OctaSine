@@ -6,7 +6,7 @@ license = "GPL-3.0"
 edition = "2018"
 
 [features]
-default = ["logging", "gui"]
+default = ["logging"]
 simd = ["simdeez", "arrayvec"]
 logging = ["dirs", "log", "log-panics", "simplelog"]
 gui = ["baseview", "iced_baseview", "iced_audio", "raw-window-handle"]
