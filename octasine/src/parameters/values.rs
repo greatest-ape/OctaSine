@@ -716,11 +716,20 @@ impl ParameterValue for LfoTargetParameterValue {
                 format!("Master {}", format!("{:?}", p).to_lowercase())
             },
             LfoTargetParameter::Operator(n, p) => {
-                format!(
-                    "Op. {} {}",
-                    n + 1,
-                    format!("{:?}", p).to_lowercase()
-                )
+                use LfoTargetOperatorParameter::*;
+
+                let p = match p {
+                    Volume => "vol",
+                    Panning => "pan",
+                    Additive => "additive",
+                    ModulationIndex => "mod index",
+                    Feedback => "feedback",
+                    FrequencyRatio => "freq ratio",
+                    FrequencyFree => "freq free",
+                    FrequencyFine => "freq fine",
+                };
+
+                format!("Op. {} {}", n + 1, p)
             },
             LfoTargetParameter::Lfo(n, p) => {
                 format!(
