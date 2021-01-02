@@ -69,26 +69,10 @@ fn plot_lfo_values(filename: &str){
     let mut restart_points = Vec::new();
     let mut seconds_points = Vec::new();
 
-    let mut drawing_points = Vec::new();
-    let mut interpolating_points = Vec::new();
-
     let mut envelope_value_points = Vec::with_capacity(num_samples);
 
     for i in 0..num_samples {
-        if i % 32 == 0 {
-            match lfo.status {
-                LfoStatus::DrawingShape => {
-                    drawing_points.push((i as f64, -0.1));
-                },
-                LfoStatus::Interpolating(_) => {
-                    interpolating_points.push((i as f64, 0.5));
-                },
-                _ => ()
-            };
-        }
-
         let lfo_value = lfo.get_value(
-            voice_duration,
             time_per_sample,
             bpm,
             shape,
@@ -153,12 +137,6 @@ fn plot_lfo_values(filename: &str){
     let restarts_plot = Plot::new(restart_points)
         .point_style(PointStyle::new().marker(PointMarker::Square).colour("#ccc").size(1.0));
 
-    let drawing_plot = Plot::new(drawing_points)
-        .point_style(PointStyle::new().marker(PointMarker::Circle).colour("green").size(0.1));
-
-    let interpolating_plot = Plot::new(interpolating_points)
-        .point_style(PointStyle::new().marker(PointMarker::Circle).colour("red").size(0.1));
-
     let value_product_plot = Plot::new(value_product_points)
         .line_style(LineStyle::new().colour("red").width(0.1));
 
@@ -174,8 +152,6 @@ fn plot_lfo_values(filename: &str){
     let v = ContinuousView::new()
         .add(seconds_plot)
         .add(restarts_plot)
-        .add(drawing_plot)
-        .add(interpolating_plot)
         .add(value_product_plot)
         .add(value_product_plot_nonzero_base)
         .add(lfo_values_plot)
