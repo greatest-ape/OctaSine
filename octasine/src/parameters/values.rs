@@ -871,7 +871,6 @@ impl ParameterValue for LfoModeValue {
     }
     fn format(self) -> String {
         match self.0 {
-            LfoMode::Half => "Half".to_string(),
             LfoMode::Once => "Once".to_string(),
             LfoMode::Forever => "Forever".to_string(),
         }
@@ -881,7 +880,6 @@ impl ParameterValue for LfoModeValue {
     }
     fn from_text(text: String) -> Option<Self> {
         match text.to_lowercase().as_ref(){
-            "half" => Some(Self(LfoMode::Half)),
             "once" => Some(Self(LfoMode::Once)),
             "forever" => Some(Self(LfoMode::Forever)),
             _ => None,
