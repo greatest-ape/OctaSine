@@ -265,8 +265,7 @@ mod tests {
 
     #[test]
     fn test_preset_parameters_len(){
-        // Required for ChangedParametersInfo
-        assert!(create_parameters().len() <= 64);
+        assert!(create_parameters().len() <= crate::preset_bank::MAX_NUM_PARAMETERS);
     }
 
     #[test]
