@@ -68,7 +68,7 @@ pub enum LfoShape {
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum LfoMode {
-    Half,
+    Half, // FIXME: remove
     Once,
     Forever
 }

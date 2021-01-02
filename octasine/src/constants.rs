@@ -44,8 +44,7 @@ pub const LFO_SHAPE_STEPS: [LfoShape; 2] = [
     LfoShape::LinearUp,
     LfoShape::LinearDown,
 ];
-pub const LFO_MODE_STEPS: [LfoMode; 3] = [ 
-    LfoMode::Half,
+pub const LFO_MODE_STEPS: [LfoMode; 2] = [ 
     LfoMode::Once,
     LfoMode::Forever,
 ];
