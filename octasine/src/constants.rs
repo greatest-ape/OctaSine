@@ -76,7 +76,7 @@ pub const LFO_MODE_STEPS: [LfoMode; 2] = [
     LfoMode::Forever,
 ];
 pub const LFO_SPEED_STEPS: [f64; 7] = [0.125, 0.5, 0.9, 1.0, 1.1, 2.0, 16.0];
-pub const LFO_MAGNITUDE_STEPS: [f64; 3] = [0.0, 1.0, 5.0];
+pub const LFO_MAGNITUDE_STEPS: [f64; 2] = [-2.0, 2.0];
 
 // Default values
 
