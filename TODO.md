@@ -1,5 +1,22 @@
 # TODO
 
+## LFO
+
+* LFO seems to affect sound somewhat once, even if if magnitude is zero
+* Look over code, see if it can be simplified. Look at TODO list from old lfo
+  branch:
+  * Clicks when restarting running LFO: probably, the solution is to interpolate
+    BEFORE new cycle starts. This would at least mean avoiding the current issue
+  * Bug with very high speeds where interpolation overstretches cycle. Just
+    use .fract()?
+  * Don't interpolate for e.g. frequency
+  * Implement lfos in simd gen and for many more parameters
+  * Sample and hold
+  * New LFO param: hold (on or off), which return last value instead of 0.0 when
+    lfo cycle is over?
+  * Is it necessary to look at time signatures etc for bpm sync?
+    https://rustaudio.github.io/vst-rs/vst/api/struct.TimeInfo.html
+
 ## GUI
 
 ### Important
