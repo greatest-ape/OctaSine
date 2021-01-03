@@ -33,7 +33,7 @@ macro_rules! create_interpolatable_processing_parameter {
                 let default = $value_struct::default().get();
 
                 Self {
-                    value: InterpolatableProcessingValue::new(default)
+                    value: InterpolatableProcessingValue::new(default),
                 }
             }
         }
@@ -57,7 +57,7 @@ macro_rules! create_interpolatable_processing_parameter {
                     let sync_value = $value_struct::from_processing(
                         self.get_value(extra_data)
                     ).to_sync();
-        
+
                     $value_struct::from_sync(
                         (sync_value + lfo_addition).min(1.0).max(0.0)
                     ).get()
@@ -75,12 +75,15 @@ macro_rules! create_simple_processing_parameter {
         #[derive(Debug, Clone)]
         pub struct $name {
             pub value: <$value_struct as ParameterValue>::Value,
+            sync_cache: f64,
         }
 
         impl Default for $name {
             fn default() -> Self {
+                let default = $value_struct::default();
                 Self {
-                    value: $value_struct::default().get()
+                    value: default.get(),
+                    sync_cache: default.to_sync(),
                 }
             }
         }
@@ -93,6 +96,7 @@ macro_rules! create_simple_processing_parameter {
                 self.value
             }
             fn set_from_sync(&mut self, value: f64){
+                self.sync_cache = value;
                 self.value = $value_struct::from_sync(value).get();
             }
             fn get_value_with_lfo_addition(
@@ -101,12 +105,8 @@ macro_rules! create_simple_processing_parameter {
                 lfo_addition: Option<f64>
             ) -> Self::Value {
                 if let Some(lfo_addition) = lfo_addition {
-                    let sync_value = $value_struct::from_processing(
-                        self.get_value(extra_data)
-                    ).to_sync();
-        
                     $value_struct::from_sync(
-                        (sync_value + lfo_addition).min(1.0).max(0.0)
+                        (self.sync_cache + lfo_addition).min(1.0).max(0.0)
                     ).get()
                 } else {
                     self.get_value(extra_data)
