@@ -2,9 +2,12 @@
 
 ## LFO
 
-* Ratio and free speed / frequency
+* Replace LFO speed with ratio and free frequency
 * Panning
-* Does triangle wave behave properly?
+* Performance
+  * Avoid mul_add in LFO code and in step conversion
+  * Audio gen: if LFO magnitude is almost zero, call `continue`
+  * Cache sync value in ProcessingParameter in order to do less conversions
 * Implement lfos in simd gen
 * Sample and hold
 * Is it necessary to look at time signatures etc for bpm sync?
