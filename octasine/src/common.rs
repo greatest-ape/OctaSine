@@ -69,6 +69,40 @@ pub enum LfoTargetParameter {
     Lfo(usize, LfoTargetLfoParameter),
 }
 
+
+impl LfoTargetParameter {
+    pub fn to_string(&self) -> String {
+        match self {
+            LfoTargetParameter::Master(p) => {
+                format!("Master {}", format!("{:?}", p).to_lowercase())
+            },
+            LfoTargetParameter::Operator(n, p) => {
+                use LfoTargetOperatorParameter::*;
+
+                let p = match p {
+                    Volume => "vol",
+                    Panning => "pan",
+                    Additive => "additive",
+                    ModulationIndex => "mod index",
+                    Feedback => "feedback",
+                    FrequencyRatio => "freq ratio",
+                    FrequencyFree => "freq free",
+                    FrequencyFine => "freq fine",
+                };
+
+                format!("Op. {} {}", n + 1, p)
+            },
+            LfoTargetParameter::Lfo(n, p) => {
+                format!(
+                    "LFO {} {}",
+                    n + 1,
+                    format!("{:?}", p).to_lowercase()
+                )
+            },
+        }
+    }
+}
+
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum LfoShape {
     LinearUp,

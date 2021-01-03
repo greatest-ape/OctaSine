@@ -11,7 +11,7 @@ pub const PLUGIN_NAME: &str = "OctaSine";
 pub const PLUGIN_UNIQUE_ID: i32 = 43789;
 
 pub const NUM_OPERATORS: usize = 4;
-pub const NUM_LFOS: usize = 2;
+pub const NUM_LFOS: usize = 4;
 
 /// Multiply the volume of each voice with this factor
 pub const VOICE_VOLUME_FACTOR: f64 = 0.1;
@@ -31,7 +31,8 @@ pub const ENVELOPE_MIN_DURATION: f64 = 0.004;
 pub const ENVELOPE_CURVE_TAKEOVER: f64 = 0.01;
 pub const ENVELOPE_CURVE_TAKEOVER_RECIP: f64 = 1.0 / ENVELOPE_CURVE_TAKEOVER;
 
-pub const LFO_TARGET_CONTEXT_STEPS: [LfoTargetParameter; 39] = [ 
+// When adjusting this, remember to also modify LfoTargetParameterValues
+pub const LFO_TARGET_CONTEXT_STEPS: [LfoTargetParameter; 42] = [ 
     LfoTargetParameter::Master(LfoTargetMasterParameter::Frequency),
     LfoTargetParameter::Master(LfoTargetMasterParameter::Volume),
     LfoTargetParameter::Operator(0, LfoTargetOperatorParameter::Volume),
@@ -71,6 +72,9 @@ pub const LFO_TARGET_CONTEXT_STEPS: [LfoTargetParameter; 39] = [
     LfoTargetParameter::Lfo(1, LfoTargetLfoParameter::Shape),
     LfoTargetParameter::Lfo(1, LfoTargetLfoParameter::Speed),
     LfoTargetParameter::Lfo(1, LfoTargetLfoParameter::Magnitude),
+    LfoTargetParameter::Lfo(2, LfoTargetLfoParameter::Shape),
+    LfoTargetParameter::Lfo(2, LfoTargetLfoParameter::Speed),
+    LfoTargetParameter::Lfo(2, LfoTargetLfoParameter::Magnitude),
 ];
 
 pub const LFO_SHAPE_STEPS: [LfoShape; 3] = [ 

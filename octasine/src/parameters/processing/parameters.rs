@@ -387,10 +387,59 @@ impl Default for ProcessingParameterOperatorPanning {
 // LFO target parameter
 
 create_simple_processing_parameter!(
-    ProcessingParameterLfoTargetParameter,
-    LfoTargetParameterValue
+    ProcessingParameterLfo1TargetParameter,
+    Lfo1TargetParameterValue
+);
+create_simple_processing_parameter!(
+    ProcessingParameterLfo2TargetParameter,
+    Lfo2TargetParameterValue
+);
+create_simple_processing_parameter!(
+    ProcessingParameterLfo3TargetParameter,
+    Lfo3TargetParameterValue
+);
+create_simple_processing_parameter!(
+    ProcessingParameterLfo4TargetParameter,
+    Lfo4TargetParameterValue
 );
 
+
+pub enum ProcessingParameterLfoTargetParameter {
+    One(ProcessingParameterLfo1TargetParameter),
+    Two(ProcessingParameterLfo2TargetParameter),
+    Three(ProcessingParameterLfo3TargetParameter),
+    Four(ProcessingParameterLfo4TargetParameter),
+}
+
+impl ProcessingParameterLfoTargetParameter {
+    pub fn new(lfo_index: usize) -> Self {
+        match lfo_index {
+            0 => Self::One(ProcessingParameterLfo1TargetParameter::default()),
+            1 => Self::Two(ProcessingParameterLfo2TargetParameter::default()),
+            2 => Self::Three(ProcessingParameterLfo3TargetParameter::default()),
+            3 => Self::Four(ProcessingParameterLfo4TargetParameter::default()),
+            _ => unreachable!(),
+        }
+    }
+
+    pub fn set_from_sync(&mut self, value: f64){
+        match self {
+            Self::One(p) => p.set_from_sync(value),
+            Self::Two(p) => p.set_from_sync(value),
+            Self::Three(p) => p.set_from_sync(value),
+            Self::Four(p) => p.set_from_sync(value),
+        }
+    }
+
+    pub fn get_value(&self) -> LfoTargetParameter {
+        match self {
+            Self::One(p) => p.value,
+            Self::Two(p) => p.value,
+            Self::Three(p) => p.value,
+            Self::Four(p) => p.value,
+        }
+    }
+}
 
 
 // LFO shape

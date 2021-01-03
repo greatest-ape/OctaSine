@@ -180,7 +180,7 @@ pub fn generate_voice_samples(
             magnitude,
         );
 
-        let target = lfo_parameter.target_parameter.value;
+        let target = lfo_parameter.target_parameter.get_value();
 
         lfo_values.set_or_add(target, addition);
     }

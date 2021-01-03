@@ -682,20 +682,18 @@ impl ParameterValue for OperatorModulationTarget3 {
 }
 
 
-
-
 #[derive(Debug, Clone, Copy)]
-pub struct LfoTargetParameterValue(pub LfoTargetParameter);
+pub struct Lfo1TargetParameterValue(pub LfoTargetParameter);
 
 
-impl Default for LfoTargetParameterValue {
+impl Default for Lfo1TargetParameterValue {
     fn default() -> Self {
         Self(LfoTargetParameter::Master(LfoTargetMasterParameter::Volume))
     }
 }
 
 
-impl ParameterValue for LfoTargetParameterValue {
+impl ParameterValue for Lfo1TargetParameterValue {
     type Value = LfoTargetParameter;
 
     fn from_processing(value: Self::Value) -> Self {
@@ -705,104 +703,133 @@ impl ParameterValue for LfoTargetParameterValue {
         self.0
     }
     fn from_sync(sync: f64) -> Self {
-        Self(map_parameter_value_to_step(&LFO_TARGET_CONTEXT_STEPS[..], sync))
+        Self(map_parameter_value_to_step(
+            &LFO_TARGET_CONTEXT_STEPS[..33],
+            sync
+        ))
     }
     fn to_sync(self) -> f64 {
-        map_step_to_parameter_value(&LFO_TARGET_CONTEXT_STEPS[..], self.0)
+        map_step_to_parameter_value(&LFO_TARGET_CONTEXT_STEPS[..33], self.0)
     }
     fn format(self) -> String {
-        match self.0 {
-            LfoTargetParameter::Master(p) => {
-                format!("Master {}", format!("{:?}", p).to_lowercase())
-            },
-            LfoTargetParameter::Operator(n, p) => {
-                use LfoTargetOperatorParameter::*;
-
-                let p = match p {
-                    Volume => "vol",
-                    Panning => "pan",
-                    Additive => "additive",
-                    ModulationIndex => "mod index",
-                    Feedback => "feedback",
-                    FrequencyRatio => "freq ratio",
-                    FrequencyFree => "freq free",
-                    FrequencyFine => "freq fine",
-                };
-
-                format!("Op. {} {}", n + 1, p)
-            },
-            LfoTargetParameter::Lfo(n, p) => {
-                format!(
-                    "LFO {} {}",
-                    n + 1,
-                    format!("{:?}", p).to_lowercase()
-                )
-            },
-        }
+        self.0.to_string()
     }
     fn format_sync(value: f64) -> String {
         Self::from_sync(value).format()
     }
-    fn from_text(text: String) -> Option<Self> {
-        let value = text.to_lowercase();
+}
 
-        let mut parts = value.split_ascii_whitespace();
 
-        match parts.next(){
-            Some("master") => {
-                use LfoTargetParameter::Master;
-                use LfoTargetMasterParameter::{Volume, Frequency};
+#[derive(Debug, Clone, Copy)]
+pub struct Lfo2TargetParameterValue(pub LfoTargetParameter);
 
-                match parts.next(){
-                    Some("volume") => {
-                        Some(Self(Master(Volume)))
-                    },  
-                    Some("frequency") => {
-                        Some(Self(Master(Frequency)))
-                    },  
-                    _ => None,
-                }   
-            },  
-            Some("operator") | Some("op") => {
-                use LfoTargetParameter::Operator;
-                use LfoTargetOperatorParameter::Volume;
 
-                let operator_index: usize = parts.next()?
-                    .parse()
-                    .ok()?;
+impl Default for Lfo2TargetParameterValue {
+    fn default() -> Self {
+        Self(LfoTargetParameter::Master(LfoTargetMasterParameter::Volume))
+    }
+}
 
-                if operator_index > 3 { 
-                    return None;
-                }   
 
-                match parts.next(){
-                    Some("volume") => {
-                        Some(Self(Operator(operator_index, Volume)))
-                    },  
-                    _ => None,
-                }   
-            },  
-            Some("lfo") => {
-                use LfoTargetParameter::Lfo;
-                use LfoTargetLfoParameter::Magnitude;
+impl ParameterValue for Lfo2TargetParameterValue {
+    type Value = LfoTargetParameter;
 
-                let operator_index: usize = parts.next()?
-                    .parse()
-                    .ok()?;
+    fn from_processing(value: Self::Value) -> Self {
+        Self(value)
+    }
+    fn get(self) -> Self::Value {
+        self.0
+    }
+    fn from_sync(sync: f64) -> Self {
+        Self(map_parameter_value_to_step(
+            &LFO_TARGET_CONTEXT_STEPS[..36],
+            sync
+        ))
+    }
+    fn to_sync(self) -> f64 {
+        map_step_to_parameter_value(&LFO_TARGET_CONTEXT_STEPS[..36], self.0)
+    }
+    fn format(self) -> String {
+        self.0.to_string()
+    }
+    fn format_sync(value: f64) -> String {
+        Self::from_sync(value).format()
+    }
+}
 
-                if operator_index > 3 {
-                    return None;
-                }
 
-                match parts.next(){
-                    Some("magnitude") => {
-                        Some(Self(Lfo(operator_index, Magnitude)))
-                    },
-                    _ => None,
-                }
-            },
-            _ => None
-        }
+#[derive(Debug, Clone, Copy)]
+pub struct Lfo3TargetParameterValue(pub LfoTargetParameter);
+
+
+impl Default for Lfo3TargetParameterValue {
+    fn default() -> Self {
+        Self(LfoTargetParameter::Master(LfoTargetMasterParameter::Volume))
+    }
+}
+
+
+impl ParameterValue for Lfo3TargetParameterValue {
+    type Value = LfoTargetParameter;
+
+    fn from_processing(value: Self::Value) -> Self {
+        Self(value)
+    }
+    fn get(self) -> Self::Value {
+        self.0
+    }
+    fn from_sync(sync: f64) -> Self {
+        Self(map_parameter_value_to_step(
+            &LFO_TARGET_CONTEXT_STEPS[..39],
+            sync
+        ))
+    }
+    fn to_sync(self) -> f64 {
+        map_step_to_parameter_value(&LFO_TARGET_CONTEXT_STEPS[..39], self.0)
+    }
+    fn format(self) -> String {
+        self.0.to_string()
+    }
+    fn format_sync(value: f64) -> String {
+        Self::from_sync(value).format()
+    }
+}
+
+
+#[derive(Debug, Clone, Copy)]
+pub struct Lfo4TargetParameterValue(pub LfoTargetParameter);
+
+
+impl Default for Lfo4TargetParameterValue {
+    fn default() -> Self {
+        Self(LfoTargetParameter::Master(LfoTargetMasterParameter::Volume))
+    }
+}
+
+
+impl ParameterValue for Lfo4TargetParameterValue {
+    type Value = LfoTargetParameter;
+
+    fn from_processing(value: Self::Value) -> Self {
+        Self(value)
+    }
+    fn get(self) -> Self::Value {
+        self.0
+    }
+    fn from_sync(sync: f64) -> Self {
+        Self(map_parameter_value_to_step(
+            &LFO_TARGET_CONTEXT_STEPS[..42],
+            sync
+        ))
+    }
+    fn to_sync(self) -> f64 {
+        map_step_to_parameter_value(&LFO_TARGET_CONTEXT_STEPS[..42], self.0)
+    }
+    fn format(self) -> String {
+        self.0.to_string()
+    }
+    fn format_sync(value: f64) -> String {
+        Self::from_sync(value).format()
     }
 }
 

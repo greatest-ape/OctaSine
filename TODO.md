@@ -2,10 +2,10 @@
 
 ## LFO
 
-* Control LFOs with LFOs
-  * Also, look at audio gen target parameter lookups. Use perfect hash map?
-* Implement lfos in simd gen
 * Ratio and free speed / frequency
+* Panning
+* Does triangle wave behave properly?
+* Implement lfos in simd gen
 * Sample and hold
 * Is it necessary to look at time signatures etc for bpm sync?
   https://rustaudio.github.io/vst-rs/vst/api/struct.TimeInfo.html

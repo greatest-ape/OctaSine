@@ -216,10 +216,15 @@ fn operator_modulation_target_3() -> SyncParameter {
 }
 
 fn lfo_target_parameter(index: usize) -> SyncParameter {
-    SyncParameter::new(
-        &format!("LFO {} target", index + 1),
-        LfoTargetParameterValue::default()
-    )
+    let title = format!("LFO {} target", index + 1);
+
+    match index {
+        0 => SyncParameter::new(&title, Lfo1TargetParameterValue::default()),
+        1 => SyncParameter::new(&title, Lfo2TargetParameterValue::default()),
+        2 => SyncParameter::new(&title, Lfo3TargetParameterValue::default()),
+        3 => SyncParameter::new(&title, Lfo4TargetParameterValue::default()),
+        _ => unreachable!(),
+    }
 }
 
 fn lfo_shape(index: usize) -> SyncParameter {
