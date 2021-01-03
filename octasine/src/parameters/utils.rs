@@ -41,7 +41,7 @@ pub fn map_parameter_value_to_value_with_steps(
         let step_low = steps[index_low];
         let step_high = steps[index_low + 1];
 
-        index_fract.mul_add(step_high - step_low, step_low)
+        step_low + index_fract * (step_high - step_low)
     }
 }
 
@@ -59,10 +59,7 @@ pub fn map_value_to_parameter_value_with_steps(
             let ratio = (internal_value - prev_step) / (step - prev_step);
             let fraction = ((steps.len() - 1) as f64).recip();
 
-            return ratio.mul_add(
-                fraction,
-                fraction * index as f64,
-            );
+            return ratio * fraction + fraction * index as f64;
         }
 
         prev_step = step;
