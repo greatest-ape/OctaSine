@@ -57,9 +57,10 @@ pub enum LfoTargetOperatorParameter {
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub enum LfoTargetLfoParameter {
+    Shape,
+    FrequencyRatio,
+    FrequencyFree,
     Magnitude,
-    Speed,
-    Shape
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
@@ -93,11 +94,16 @@ impl LfoTargetParameter {
                 format!("Op. {} {}", n + 1, p)
             },
             LfoTargetParameter::Lfo(n, p) => {
-                format!(
-                    "LFO {} {}",
-                    n + 1,
-                    format!("{:?}", p).to_lowercase()
-                )
+                use LfoTargetLfoParameter::*;
+
+                let p = match p {
+                    Shape => "shape",
+                    FrequencyRatio => "freq ratio",
+                    FrequencyFree => "freq free",
+                    Magnitude => "magnitude",
+                };
+
+                format!("LFO {} {}", n + 1, p)
             },
         }
     }

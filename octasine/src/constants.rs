@@ -32,7 +32,7 @@ pub const ENVELOPE_CURVE_TAKEOVER: f64 = 0.01;
 pub const ENVELOPE_CURVE_TAKEOVER_RECIP: f64 = 1.0 / ENVELOPE_CURVE_TAKEOVER;
 
 // When adjusting this, remember to also modify LfoTargetParameterValues
-pub const LFO_TARGET_CONTEXT_STEPS: [LfoTargetParameter; 42] = [ 
+pub const LFO_TARGET_CONTEXT_STEPS: [LfoTargetParameter; 45] = [ 
     LfoTargetParameter::Master(LfoTargetMasterParameter::Frequency),
     LfoTargetParameter::Master(LfoTargetMasterParameter::Volume),
     LfoTargetParameter::Operator(0, LfoTargetOperatorParameter::Volume),
@@ -67,13 +67,16 @@ pub const LFO_TARGET_CONTEXT_STEPS: [LfoTargetParameter; 42] = [
     LfoTargetParameter::Operator(3, LfoTargetOperatorParameter::FrequencyFree),
     LfoTargetParameter::Operator(3, LfoTargetOperatorParameter::FrequencyFine),
     LfoTargetParameter::Lfo(0, LfoTargetLfoParameter::Shape),
-    LfoTargetParameter::Lfo(0, LfoTargetLfoParameter::Speed),
+    LfoTargetParameter::Lfo(0, LfoTargetLfoParameter::FrequencyRatio),
+    LfoTargetParameter::Lfo(0, LfoTargetLfoParameter::FrequencyFree),
     LfoTargetParameter::Lfo(0, LfoTargetLfoParameter::Magnitude),
     LfoTargetParameter::Lfo(1, LfoTargetLfoParameter::Shape),
-    LfoTargetParameter::Lfo(1, LfoTargetLfoParameter::Speed),
+    LfoTargetParameter::Lfo(1, LfoTargetLfoParameter::FrequencyRatio),
+    LfoTargetParameter::Lfo(1, LfoTargetLfoParameter::FrequencyFree),
     LfoTargetParameter::Lfo(1, LfoTargetLfoParameter::Magnitude),
     LfoTargetParameter::Lfo(2, LfoTargetLfoParameter::Shape),
-    LfoTargetParameter::Lfo(2, LfoTargetLfoParameter::Speed),
+    LfoTargetParameter::Lfo(2, LfoTargetLfoParameter::FrequencyRatio),
+    LfoTargetParameter::Lfo(2, LfoTargetLfoParameter::FrequencyFree),
     LfoTargetParameter::Lfo(2, LfoTargetLfoParameter::Magnitude),
 ];
 
@@ -86,7 +89,8 @@ pub const LFO_MODE_STEPS: [LfoMode; 2] = [
     LfoMode::Once,
     LfoMode::Forever,
 ];
-pub const LFO_SPEED_STEPS: [f64; 7] = [0.125, 0.5, 0.9, 1.0, 1.1, 2.0, 16.0];
+pub const LFO_FREQUENCY_RATIO_STEPS: [f64; 9] = [1.0/16.0, 1.0/8.0, 1.0/4.0, 1.0/2.0, 1.0, 2.0, 4.0, 8.0, 16.0];
+pub const LFO_FREQUENCY_FREE_STEPS: [f64; 7] = [1.0/16.0, 0.5, 0.9, 1.0, 1.1, 2.0, 16.0];
 pub const LFO_MAGNITUDE_STEPS: [f64; 2] = [-2.0, 2.0];
 
 // Default values

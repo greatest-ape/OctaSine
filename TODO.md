@@ -2,7 +2,6 @@
 
 ## LFO
 
-* Replace LFO speed with ratio and free frequency
 * Performance
   * Cache sync value in interpolatable parameters too? Don't do this, it seems
     to hurt performance.

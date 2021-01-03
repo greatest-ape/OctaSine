@@ -472,11 +472,19 @@ create_simple_processing_parameter!(
 );
 
 
-// LFO speed
+// LFO frequency - ratio
 
 create_simple_processing_parameter!(
-    ProcessingParameterLfoSpeed,
-    LfoSpeedValue
+    ProcessingParameterLfoFrequencyRatio,
+    LfoFrequencyRatioValue
+);
+
+
+// LFO frequency - free
+
+create_simple_processing_parameter!(
+    ProcessingParameterLfoFrequencyFree,
+    LfoFrequencyFreeValue
 );
 
 

@@ -165,9 +165,13 @@ pub fn generate_voice_samples(
             (),
             lfo_values.get(LfoTargetParameter::Lfo(lfo_index, LfoTargetLfoParameter::Shape))
         );
-        let speed = lfo_parameter.speed.get_value_with_lfo_addition(
+        let frequency_ratio = lfo_parameter.frequency_ratio.get_value_with_lfo_addition(
             (),
-            lfo_values.get(LfoTargetParameter::Lfo(lfo_index, LfoTargetLfoParameter::Speed))
+            lfo_values.get(LfoTargetParameter::Lfo(lfo_index, LfoTargetLfoParameter::FrequencyRatio))
+        );
+        let frequency_free = lfo_parameter.frequency_free.get_value_with_lfo_addition(
+            (),
+            lfo_values.get(LfoTargetParameter::Lfo(lfo_index, LfoTargetLfoParameter::FrequencyFree))
         );
 
         let bpm = if bpm_sync {
@@ -181,7 +185,7 @@ pub fn generate_voice_samples(
             bpm,
             shape,
             mode,
-            speed,
+            frequency_ratio * frequency_free,
             magnitude,
         );
 

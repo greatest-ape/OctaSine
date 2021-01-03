@@ -742,12 +742,12 @@ impl ParameterValue for Lfo2TargetParameterValue {
     }
     fn from_sync(sync: f64) -> Self {
         Self(map_parameter_value_to_step(
-            &LFO_TARGET_CONTEXT_STEPS[..36],
+            &LFO_TARGET_CONTEXT_STEPS[..37],
             sync
         ))
     }
     fn to_sync(self) -> f64 {
-        map_step_to_parameter_value(&LFO_TARGET_CONTEXT_STEPS[..36], self.0)
+        map_step_to_parameter_value(&LFO_TARGET_CONTEXT_STEPS[..37], self.0)
     }
     fn format(self) -> String {
         self.0.to_string()
@@ -780,12 +780,12 @@ impl ParameterValue for Lfo3TargetParameterValue {
     }
     fn from_sync(sync: f64) -> Self {
         Self(map_parameter_value_to_step(
-            &LFO_TARGET_CONTEXT_STEPS[..39],
+            &LFO_TARGET_CONTEXT_STEPS[..41],
             sync
         ))
     }
     fn to_sync(self) -> f64 {
-        map_step_to_parameter_value(&LFO_TARGET_CONTEXT_STEPS[..39], self.0)
+        map_step_to_parameter_value(&LFO_TARGET_CONTEXT_STEPS[..41], self.0)
     }
     fn format(self) -> String {
         self.0.to_string()
@@ -818,12 +818,12 @@ impl ParameterValue for Lfo4TargetParameterValue {
     }
     fn from_sync(sync: f64) -> Self {
         Self(map_parameter_value_to_step(
-            &LFO_TARGET_CONTEXT_STEPS[..42],
+            &LFO_TARGET_CONTEXT_STEPS[..45],
             sync
         ))
     }
     fn to_sync(self) -> f64 {
-        map_step_to_parameter_value(&LFO_TARGET_CONTEXT_STEPS[..42], self.0)
+        map_step_to_parameter_value(&LFO_TARGET_CONTEXT_STEPS[..45], self.0)
     }
     fn format(self) -> String {
         self.0.to_string()
@@ -977,20 +977,18 @@ impl ParameterValue for LfoBpmSyncValue {
 }
 
 
-
-
 #[derive(Debug, Clone, Copy)]
-pub struct LfoSpeedValue(pub f64);
+pub struct LfoFrequencyRatioValue(pub f64);
 
 
-impl Default for LfoSpeedValue {
+impl Default for LfoFrequencyRatioValue {
     fn default() -> Self {
         Self(1.0)
     }
 }
 
 
-impl ParameterValue for LfoSpeedValue {
+impl ParameterValue for LfoFrequencyRatioValue {
     type Value = f64;
 
     fn from_processing(value: Self::Value) -> Self {
@@ -1000,10 +998,48 @@ impl ParameterValue for LfoSpeedValue {
         self.0
     }
     fn from_sync(sync: f64) -> Self {
-        Self(map_parameter_value_to_value_with_steps(&LFO_SPEED_STEPS, sync))
+        Self(map_parameter_value_to_step(&LFO_FREQUENCY_RATIO_STEPS, sync))
     }
     fn to_sync(self) -> f64 {
-        map_value_to_parameter_value_with_steps(&LFO_SPEED_STEPS, self.0)
+        map_step_to_parameter_value(&LFO_FREQUENCY_RATIO_STEPS, self.0)
+    }
+    fn format(self) -> String {
+        format!("{:.04}", self.0)
+    }
+    fn format_sync(value: f64) -> String {
+        Self::from_sync(value).format()
+    }
+    fn from_text(_: String) -> Option<Self> {
+        None // FIXME
+    }
+}
+
+
+#[derive(Debug, Clone, Copy)]
+pub struct LfoFrequencyFreeValue(pub f64);
+
+
+impl Default for LfoFrequencyFreeValue {
+    fn default() -> Self {
+        Self(1.0)
+    }
+}
+
+
+impl ParameterValue for LfoFrequencyFreeValue {
+    type Value = f64;
+
+    fn from_processing(value: Self::Value) -> Self {
+        Self(value)
+    }
+    fn get(self) -> Self::Value {
+        self.0
+    }
+    fn from_sync(sync: f64) -> Self {
+        Self(map_parameter_value_to_value_with_steps(&LFO_FREQUENCY_FREE_STEPS, sync))
+    }
+    fn to_sync(self) -> f64 {
+        map_value_to_parameter_value_with_steps(&LFO_FREQUENCY_FREE_STEPS, self.0)
     }
     fn format(self) -> String {
         format!("{:.04}", self.0)
