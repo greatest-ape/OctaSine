@@ -362,9 +362,13 @@ impl ProcessingParameter for ProcessingParameterOperatorPanning {
                 self.get_value(extra_data)
             ).to_sync();
 
-            OperatorPanning::from_sync(
+            let new_panning = OperatorPanning::from_sync(
                 (sync_value + lfo_addition).min(1.0).max(0.0)
-            ).get()
+            ).get();
+
+            self.left_and_right = Self::calculate_left_and_right(new_panning);
+
+            new_panning
         } else {
             self.get_value(extra_data)
         }   

@@ -3,7 +3,6 @@
 ## LFO
 
 * Replace LFO speed with ratio and free frequency
-* Panning
 * Performance
   * Cache sync value in interpolatable parameters too?
 * Implement lfos in simd gen
