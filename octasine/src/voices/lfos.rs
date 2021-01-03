@@ -47,10 +47,8 @@ impl VoiceLfo {
 
         let bpm_ratio = bpm.0 / 120.0;
 
-        let new_phase = (frequency * bpm_ratio).mul_add(
-            time_per_sample.0,
-            self.phase.0
-        );
+        let new_phase = self.phase.0 +
+            frequency * bpm_ratio * time_per_sample.0;
 
         if new_phase >= 1.0 {
             if mode == LfoMode::Once {
