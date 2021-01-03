@@ -5,6 +5,8 @@
 * Replace LFO speed with ratio and free frequency
 * Performance
   * Cache sync value in interpolatable parameters too?
+  * Think about doing panning left_and_right calculation differently, now that
+    it is done for each sample if targeted by LFO
 * Implement lfos in simd gen
 * Sample and hold
 * Is it necessary to look at time signatures etc for bpm sync?
