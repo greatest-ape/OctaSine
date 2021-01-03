@@ -80,6 +80,14 @@ pub fn create_parameters() -> Vec<SyncParameter> {
         lfo_bpm_sync(0),
         lfo_speed(0),
         lfo_magnitude(0),
+
+        // LFO 2
+        lfo_target_parameter(1),
+        lfo_shape(1),
+        lfo_mode(1),
+        lfo_bpm_sync(1),
+        lfo_speed(1),
+        lfo_magnitude(1),
     ]
 }
 

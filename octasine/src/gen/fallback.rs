@@ -146,14 +146,24 @@ pub fn generate_voice_samples(
 ) -> (f64, f64) {
     let mut lfo_values = LfoTargetValues::default();
 
-    for (voice_lfo, lfo_parameter) in voice.lfos.iter_mut()
-        .zip(parameters.lfos.iter_mut())
+    for (lfo_index, (voice_lfo, lfo_parameter)) in voice.lfos.iter_mut()
+        .zip(parameters.lfos.iter_mut()).enumerate().rev()
     {
-        let shape = lfo_parameter.shape.value;
         let mode = lfo_parameter.mode.value;
         let bpm_sync = lfo_parameter.bpm_sync.value;
-        let speed = lfo_parameter.speed.value;
-        let magnitude = lfo_parameter.magnitude.get_value(time);
+
+        let shape = lfo_parameter.shape.get_value_with_lfo_addition(
+            (),
+            lfo_values.get(LfoTargetParameter::Lfo(lfo_index, LfoTargetLfoParameter::Shape))
+        );
+        let speed = lfo_parameter.speed.get_value_with_lfo_addition(
+            (),
+            lfo_values.get(LfoTargetParameter::Lfo(lfo_index, LfoTargetLfoParameter::Speed))
+        );
+        let magnitude = lfo_parameter.magnitude.get_value_with_lfo_addition(
+            time,
+            lfo_values.get(LfoTargetParameter::Lfo(lfo_index, LfoTargetLfoParameter::Magnitude))
+        );
 
         let bpm = if bpm_sync {
             bpm

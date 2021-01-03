@@ -183,12 +183,18 @@ impl ProcessingParameters {
             62 => self.lfos[0].bpm_sync.set_from_sync(value),
             63 => self.lfos[0].speed.set_from_sync(value),
             64 => self.lfos[0].magnitude.set_from_sync(value),
+            65 => self.lfos[1].target_parameter.set_from_sync(value),
+            66 => self.lfos[1].shape.set_from_sync(value),
+            67 => self.lfos[1].mode.set_from_sync(value),
+            68 => self.lfos[1].bpm_sync.set_from_sync(value),
+            69 => self.lfos[1].speed.set_from_sync(value),
+            70 => self.lfos[1].magnitude.set_from_sync(value),
             _  => ()
         }
     }
 
     pub fn len(&self) -> usize {
-        65
+        71
     }
 }
 

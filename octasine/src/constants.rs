@@ -11,7 +11,7 @@ pub const PLUGIN_NAME: &str = "OctaSine";
 pub const PLUGIN_UNIQUE_ID: i32 = 43789;
 
 pub const NUM_OPERATORS: usize = 4;
-pub const NUM_LFOS: usize = 1;
+pub const NUM_LFOS: usize = 2;
 
 /// Multiply the volume of each voice with this factor
 pub const VOICE_VOLUME_FACTOR: f64 = 0.1;
@@ -31,45 +31,52 @@ pub const ENVELOPE_MIN_DURATION: f64 = 0.004;
 pub const ENVELOPE_CURVE_TAKEOVER: f64 = 0.01;
 pub const ENVELOPE_CURVE_TAKEOVER_RECIP: f64 = 1.0 / ENVELOPE_CURVE_TAKEOVER;
 
-pub const LFO_TARGET_CONTEXT_STEPS: [LfoTargetParameter; 33] = [ 
+pub const LFO_TARGET_CONTEXT_STEPS: [LfoTargetParameter; 39] = [ 
     LfoTargetParameter::Master(LfoTargetMasterParameter::Frequency),
     LfoTargetParameter::Master(LfoTargetMasterParameter::Volume),
     LfoTargetParameter::Operator(0, LfoTargetOperatorParameter::Volume),
-    LfoTargetParameter::Operator(1, LfoTargetOperatorParameter::Volume),
-    LfoTargetParameter::Operator(2, LfoTargetOperatorParameter::Volume),
-    LfoTargetParameter::Operator(3, LfoTargetOperatorParameter::Volume),
     LfoTargetParameter::Operator(0, LfoTargetOperatorParameter::Panning),
-    LfoTargetParameter::Operator(1, LfoTargetOperatorParameter::Panning),
-    LfoTargetParameter::Operator(2, LfoTargetOperatorParameter::Panning),
-    LfoTargetParameter::Operator(3, LfoTargetOperatorParameter::Panning),
-    LfoTargetParameter::Operator(1, LfoTargetOperatorParameter::Additive),
-    LfoTargetParameter::Operator(2, LfoTargetOperatorParameter::Additive),
-    LfoTargetParameter::Operator(3, LfoTargetOperatorParameter::Additive),
     LfoTargetParameter::Operator(0, LfoTargetOperatorParameter::ModulationIndex),
-    LfoTargetParameter::Operator(1, LfoTargetOperatorParameter::ModulationIndex),
-    LfoTargetParameter::Operator(2, LfoTargetOperatorParameter::ModulationIndex),
-    LfoTargetParameter::Operator(3, LfoTargetOperatorParameter::ModulationIndex),
     LfoTargetParameter::Operator(0, LfoTargetOperatorParameter::Feedback),
-    LfoTargetParameter::Operator(1, LfoTargetOperatorParameter::Feedback),
-    LfoTargetParameter::Operator(2, LfoTargetOperatorParameter::Feedback),
-    LfoTargetParameter::Operator(3, LfoTargetOperatorParameter::Feedback),
     LfoTargetParameter::Operator(0, LfoTargetOperatorParameter::FrequencyRatio),
-    LfoTargetParameter::Operator(1, LfoTargetOperatorParameter::FrequencyRatio),
-    LfoTargetParameter::Operator(2, LfoTargetOperatorParameter::FrequencyRatio),
-    LfoTargetParameter::Operator(3, LfoTargetOperatorParameter::FrequencyRatio),
     LfoTargetParameter::Operator(0, LfoTargetOperatorParameter::FrequencyFree),
-    LfoTargetParameter::Operator(1, LfoTargetOperatorParameter::FrequencyFree),
-    LfoTargetParameter::Operator(2, LfoTargetOperatorParameter::FrequencyFree),
-    LfoTargetParameter::Operator(3, LfoTargetOperatorParameter::FrequencyFree),
     LfoTargetParameter::Operator(0, LfoTargetOperatorParameter::FrequencyFine),
+    LfoTargetParameter::Operator(1, LfoTargetOperatorParameter::Volume),
+    LfoTargetParameter::Operator(1, LfoTargetOperatorParameter::Panning),
+    LfoTargetParameter::Operator(1, LfoTargetOperatorParameter::Additive),
+    LfoTargetParameter::Operator(1, LfoTargetOperatorParameter::ModulationIndex),
+    LfoTargetParameter::Operator(1, LfoTargetOperatorParameter::Feedback),
+    LfoTargetParameter::Operator(1, LfoTargetOperatorParameter::FrequencyRatio),
+    LfoTargetParameter::Operator(1, LfoTargetOperatorParameter::FrequencyFree),
     LfoTargetParameter::Operator(1, LfoTargetOperatorParameter::FrequencyFine),
+    LfoTargetParameter::Operator(2, LfoTargetOperatorParameter::Volume),
+    LfoTargetParameter::Operator(2, LfoTargetOperatorParameter::Panning),
+    LfoTargetParameter::Operator(2, LfoTargetOperatorParameter::Additive),
+    LfoTargetParameter::Operator(2, LfoTargetOperatorParameter::ModulationIndex),
+    LfoTargetParameter::Operator(2, LfoTargetOperatorParameter::Feedback),
+    LfoTargetParameter::Operator(2, LfoTargetOperatorParameter::FrequencyRatio),
+    LfoTargetParameter::Operator(2, LfoTargetOperatorParameter::FrequencyFree),
     LfoTargetParameter::Operator(2, LfoTargetOperatorParameter::FrequencyFine),
+    LfoTargetParameter::Operator(3, LfoTargetOperatorParameter::Volume),
+    LfoTargetParameter::Operator(3, LfoTargetOperatorParameter::Panning),
+    LfoTargetParameter::Operator(3, LfoTargetOperatorParameter::Additive),
+    LfoTargetParameter::Operator(3, LfoTargetOperatorParameter::ModulationIndex),
+    LfoTargetParameter::Operator(3, LfoTargetOperatorParameter::Feedback),
+    LfoTargetParameter::Operator(3, LfoTargetOperatorParameter::FrequencyRatio),
+    LfoTargetParameter::Operator(3, LfoTargetOperatorParameter::FrequencyFree),
     LfoTargetParameter::Operator(3, LfoTargetOperatorParameter::FrequencyFine),
-    // LfoTargetParameter::Lfo(0, LfoTargetLfoParameter::Magnitude),
+    LfoTargetParameter::Lfo(0, LfoTargetLfoParameter::Shape),
+    LfoTargetParameter::Lfo(0, LfoTargetLfoParameter::Speed),
+    LfoTargetParameter::Lfo(0, LfoTargetLfoParameter::Magnitude),
+    LfoTargetParameter::Lfo(1, LfoTargetLfoParameter::Shape),
+    LfoTargetParameter::Lfo(1, LfoTargetLfoParameter::Speed),
+    LfoTargetParameter::Lfo(1, LfoTargetLfoParameter::Magnitude),
 ];
-pub const LFO_SHAPE_STEPS: [LfoShape; 2] = [ 
+
+pub const LFO_SHAPE_STEPS: [LfoShape; 3] = [ 
     LfoShape::LinearUp,
     LfoShape::LinearDown,
+    LfoShape::Triangle,
 ];
 pub const LFO_MODE_STEPS: [LfoMode; 2] = [ 
     LfoMode::Once,

@@ -57,7 +57,9 @@ pub enum LfoTargetOperatorParameter {
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub enum LfoTargetLfoParameter {
-    Magnitude
+    Magnitude,
+    Speed,
+    Shape
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]

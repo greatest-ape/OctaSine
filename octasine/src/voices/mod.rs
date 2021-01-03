@@ -1,3 +1,5 @@
+use array_init::array_init;
+
 use crate::common::*;
 use crate::constants::*;
 
@@ -100,7 +102,7 @@ impl Voice {
             key_pressed: false,
             key_velocity: KeyVelocity::default(),
             operators,
-            lfos: [VoiceLfo::default(); NUM_LFOS]
+            lfos: array_init(|_| VoiceLfo::default()),
         }
     }
 
