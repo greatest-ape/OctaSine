@@ -1,10 +1,10 @@
-use crate::preset_bank::SyncParameter;
+use crate::{constants::NUM_LFOS, preset_bank::SyncParameter};
 
 use super::values::*;
 
 
 pub fn create_parameters() -> Vec<SyncParameter> {
-    vec![
+    let mut parameters = vec![
         master_volume(),
         master_frequency(),
 
@@ -72,23 +72,20 @@ pub fn create_parameters() -> Vec<SyncParameter> {
         operator_decay_duration(3),
         operator_decay_volume(3),
         operator_release_duration(3),
+    ];
 
-        // LFO 1
-        lfo_target_parameter(0),
-        lfo_shape(0),
-        lfo_mode(0),
-        lfo_bpm_sync(0),
-        lfo_speed(0),
-        lfo_magnitude(0),
+    for lfo_index in 0..NUM_LFOS {
+        parameters.extend(vec![
+            lfo_target_parameter(lfo_index),
+            lfo_shape(lfo_index),
+            lfo_mode(lfo_index),
+            lfo_bpm_sync(lfo_index),
+            lfo_speed(lfo_index),
+            lfo_magnitude(lfo_index),
+        ])
+    }
 
-        // LFO 2
-        lfo_target_parameter(1),
-        lfo_shape(1),
-        lfo_mode(1),
-        lfo_bpm_sync(1),
-        lfo_speed(1),
-        lfo_magnitude(1),
-    ]
+    parameters
 }
 
 
