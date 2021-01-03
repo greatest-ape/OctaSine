@@ -2,6 +2,8 @@
 
 ## LFO
 
+* Check that LFO code makes no difference to audio output if LFOs are turned
+  off.
 * Performance
   * Cache sync value in interpolatable parameters too? Don't do this, it seems
     to hurt performance.
