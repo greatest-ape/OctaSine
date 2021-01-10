@@ -2,46 +2,11 @@ use std::sync::Arc;
 
 use baseview::{Parent, Size, WindowOpenOptions, WindowScalePolicy};
 use iced_baseview::{Runner, Settings};
-use octasine::{GuiSyncHandle, built_in_preset_bank, preset_bank::PresetBank};
+use octasine::{GuiSyncHandle, built_in_preset_bank, SyncState};
 use octasine::constants::PLUGIN_NAME;
 use octasine::gui::{GUI_WIDTH, GUI_HEIGHT};
 use octasine::gui::interface::OctaSineIcedApplication;
 use simplelog::{ConfigBuilder, SimpleLogger, LevelFilter};
-
-
-struct SyncState {
-    pub presets: PresetBank,
-}
-
-
-impl GuiSyncHandle for SyncState {
-    fn get_bank(&self) -> &PresetBank {
-        &self.presets
-    }
-    fn set_parameter(&self, index: usize, value: f64){
-        self.presets.set_parameter_from_gui(index, value);
-    }
-    fn get_parameter(&self, index: usize) -> f64 {
-        self.presets.get_parameter_value(index)
-            .unwrap() // FIXME: unwrap
-    }
-    fn format_parameter_value(&self, index: usize, value: f64) -> String {
-        self.presets.format_parameter_value(index, value)
-            .unwrap() // FIXME: unwrap
-    }
-    fn get_presets(&self) -> (usize, Vec<String>) {
-        let index = self.presets.get_preset_index();
-        let names = self.presets.get_preset_names();
-
-        (index, names)
-    }
-    fn set_preset_index(&self, index: usize){
-        self.presets.set_preset_index(index);
-    }
-    fn update_host_display(&self){
-
-    }
-}
 
 
 fn main(){
@@ -54,6 +19,7 @@ fn main(){
 
     let sync_state = Arc::new(SyncState {
         presets: built_in_preset_bank(),
+        host: None,
     });
 
     // Set envelope data for easier testing

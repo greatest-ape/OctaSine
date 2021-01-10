@@ -1,10 +1,7 @@
 use std::time::Instant;
 
 use vst::buffer::AudioBuffer;
-use vst::plugin::Plugin;
-use vst::plugin::HostCallback;
 use vst::plugin::PluginParameters;
-
 use sha2::{Digest, Sha256};
 
 use octasine::OctaSine;
@@ -81,7 +78,7 @@ fn benchmark(
     name: &str,
     process_fn: unsafe fn(&mut OctaSine, &mut AudioBuffer<f32>)
 ) -> f32 {
-    let mut octasine = OctaSine::new(HostCallback::default());
+    let mut octasine = OctaSine::default();
 
     let envelope_duration_parameters =
         [10i32, 12, 14, 24, 26, 28, 39, 41, 43, 54, 56, 58];

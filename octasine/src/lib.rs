@@ -44,7 +44,9 @@ pub struct ProcessingState {
 
 /// Thread-safe state used for parameter and preset calls
 pub struct SyncState {
-    pub host: HostCallback,
+    /// Host should always be set when running as real plugin, but having the
+    /// option of leaving this field empty is useful when benchmarking.
+    pub host: Option<HostCallback>,
     pub presets: PresetBank,
 }
 
@@ -58,12 +60,41 @@ pub struct OctaSine {
 
 impl Default for OctaSine {
     fn default() -> Self {
-        Self::new(HostCallback::default())
+        Self::create(None)
     }
 }
 
 
 impl OctaSine {
+    fn create(host: Option<HostCallback>) -> Self {
+        let sample_rate = SampleRate(44100.0);
+
+        let processing = ProcessingState {
+            global_time: TimeCounter(0.0),
+            sample_rate,
+            time_per_sample: Self::time_per_sample(sample_rate),
+            rng: Rng::new(),
+            log10_table: Log10Table::default(),
+            voices: array_init(|i| Voice::new(MidiPitch::new(i as u8))),
+            parameters: ProcessingParameters::default(),
+        };
+
+        let sync= Arc::new(SyncState {
+            host,
+            presets: built_in_preset_bank()
+        });
+
+        #[cfg(feature = "gui")]
+        let editor = crate::gui::Gui::new(sync.clone());
+
+        Self {
+            processing,
+            sync,
+            #[cfg(feature = "gui")]
+            editor: Some(editor),
+        }
+    }
+
     fn time_per_sample(sample_rate: SampleRate) -> TimePerSample {
         TimePerSample(1.0 / sample_rate.0)
     }
@@ -108,32 +139,7 @@ impl Plugin for OctaSine {
     }
 
     fn new(host: HostCallback) -> Self {
-        let sample_rate = SampleRate(44100.0);
-
-        let processing = ProcessingState {
-            global_time: TimeCounter(0.0),
-            sample_rate,
-            time_per_sample: Self::time_per_sample(sample_rate),
-            rng: Rng::new(),
-            log10_table: Log10Table::default(),
-            voices: array_init(|i| Voice::new(MidiPitch::new(i as u8))),
-            parameters: ProcessingParameters::default(),
-        };
-
-        let sync= Arc::new(SyncState {
-            host,
-            presets: built_in_preset_bank()
-        });
-
-        #[cfg(feature = "gui")]
-        let editor = crate::gui::Gui::new(sync.clone());
-
-        Self {
-            processing,
-            sync,
-            #[cfg(feature = "gui")]
-            editor: Some(editor),
-        }
+        Self::create(Some(host))
     }
 
     fn get_info(&self) -> Info {
@@ -312,7 +318,6 @@ impl vst::plugin::PluginParameters for SyncState {
 
 cfg_if::cfg_if! {
     if #[cfg(feature = "gui")] {
-        use std::ops::Deref;
         use vst::host::Host;
 
         /// Trait passed to GUI code for encapsulation
@@ -326,8 +331,7 @@ cfg_if::cfg_if! {
             fn update_host_display(&self);
         }
 
-
-        impl GuiSyncHandle for SyncState {
+        impl GuiSyncHandle for Arc<SyncState> {
             fn get_bank(&self) -> &PresetBank {
                 &self.presets
             }
@@ -350,32 +354,9 @@ cfg_if::cfg_if! {
                 self.presets.set_preset_index(index);
             }
             fn update_host_display(&self){
-                self.host.update_display();
-            }
-        }
-
-
-        impl <H: GuiSyncHandle>GuiSyncHandle for Arc<H> {
-            fn get_bank(&self) -> &PresetBank {
-                Deref::deref(self).get_bank()
-            }
-            fn set_parameter(&self, index: usize, value: f64){
-                Deref::deref(self).set_parameter(index, value)
-            }
-            fn get_parameter(&self, index: usize) -> f64 {
-                Deref::deref(self).get_parameter(index)
-            }
-            fn format_parameter_value(&self, index: usize, value: f64) -> String {
-                Deref::deref(self).format_parameter_value(index, value)
-            }
-            fn get_presets(&self) -> (usize, Vec<String>){
-                Deref::deref(self).get_presets()
-            }
-            fn set_preset_index(&self, index: usize){
-                Deref::deref(self).set_preset_index(index)
-            }
-            fn update_host_display(&self){
-                Deref::deref(self).update_host_display()
+                if let Some(host) = self.host {
+                    host.update_display();
+                }
             }
         }
     }
