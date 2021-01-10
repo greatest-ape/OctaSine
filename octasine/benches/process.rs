@@ -5,6 +5,8 @@ use vst::plugin::Plugin;
 use vst::plugin::HostCallback;
 use vst::plugin::PluginParameters;
 
+use sha2::{Digest, Sha256};
+
 use octasine::OctaSine;
 
 
@@ -107,7 +109,7 @@ fn benchmark(
         )
     };
 
-    let mut results = Vec::new();
+    let mut results = Sha256::new();
 
     let iterations = 50_000;
 
@@ -146,8 +148,9 @@ fn benchmark(
             process_fn(&mut octasine, &mut buffer);
         }
 
-        for samples in output_1.iter().zip(output_2.iter()) {
-            results.push(samples);
+        for (l, r) in output_1.iter().zip(output_2.iter()) {
+            results.update(&l.to_ne_bytes());
+            results.update(&r.to_ne_bytes());
         }
     }
 
@@ -169,19 +172,22 @@ fn benchmark(
         processing_time_per_sample);
     println!("Estimated CPU use:            {}%",
         elapsed_millis as f32 / (num_seconds * 10.0));
-    
-    let mut bla = 0;
 
-    for (a, b) in results {
-        #[allow(clippy::float_cmp)] 
-        if a == b {
-            bla += 1;
-        }
-    }
+    let result_hash = results.finalize();
+    let result_hash: String = result_hash.iter()
+        .enumerate()
+        .map(|(i, byte)| {
+            if i == 0 {
+                format!("Output hash:                  {:02x} ", byte)
+            } else if i % 8 == 0 {
+                format!("\n                              {:02x} ", byte)
+            } else {
+                format!("{:02x} ", byte)
+            }
+        })
+        .collect();
 
-    if bla == iterations {
-        println!("dummy info: {}", bla);
-    }
+    println!("{}", result_hash);
 
     processing_time_per_sample
 }
