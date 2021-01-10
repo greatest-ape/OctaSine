@@ -14,33 +14,41 @@ use octasine::OctaSine;
 /// --- Benchmarking OctaSine process_f32 variant: fallback ---
 /// Total number of samples:      12800000
 /// Equivalent to audio duration: 290.24942 seconds
-/// Processing time in total:     23393 milliseconds
-/// Processing time per sample:   1827.6355 nanoseconds
-/// Estimated CPU use:            8.05962%
+/// Processing time in total:     24786 milliseconds
+/// Processing time per sample:   1936.4103 nanoseconds
+/// Estimated CPU use:            8.539552%
+/// Output hash (first 16 bytes): ab db fa d4 4d bd 62 48 
+///                               6f 75 2c 02 61 d7 ba a9 
 /// 
 /// --- Benchmarking OctaSine process_f32 variant: sse2 ---
 /// Total number of samples:      12800000
 /// Equivalent to audio duration: 290.24942 seconds
-/// Processing time in total:     17536 milliseconds
-/// Processing time per sample:   1370.048 nanoseconds
-/// Estimated CPU use:            6.0417004%
-/// Speed compared to fallback:   1.3339938x
+/// Processing time in total:     18771 milliseconds
+/// Processing time per sample:   1466.5243 nanoseconds
+/// Estimated CPU use:            6.4671965%
+/// Output hash (first 16 bytes): ac fd ce 1e a2 7b 79 e1 
+///                               75 06 b6 94 fe be c9 5f 
+/// Speed compared to fallback:   1.3204079x
 /// 
 /// --- Benchmarking OctaSine process_f32 variant: sse41 ---
 /// Total number of samples:      12800000
 /// Equivalent to audio duration: 290.24942 seconds
-/// Processing time in total:     17359 milliseconds
-/// Processing time per sample:   1356.2168 nanoseconds
-/// Estimated CPU use:            5.980718%
-/// Speed compared to fallback:   1.3475983x
+/// Processing time in total:     18857 milliseconds
+/// Processing time per sample:   1473.2283 nanoseconds
+/// Estimated CPU use:            6.496826%
+/// Output hash (first 16 bytes): ac fd ce 1e a2 7b 79 e1 
+///                               75 06 b6 94 fe be c9 5f 
+/// Speed compared to fallback:   1.3143994x
 /// 
 /// --- Benchmarking OctaSine process_f32 variant: avx ---
 /// Total number of samples:      12800000
 /// Equivalent to audio duration: 290.24942 seconds
-/// Processing time in total:     10977 milliseconds
-/// Processing time per sample:   857.6477 nanoseconds
-/// Estimated CPU use:            3.7819197%
-/// Speed compared to fallback:   2.1309862x
+/// Processing time in total:     12289 milliseconds
+/// Processing time per sample:   960.0951 nanoseconds
+/// Estimated CPU use:            4.233945%
+/// Output hash (first 16 bytes): ac fd ce 1e a2 7b 79 e1 
+///                               75 06 b6 94 fe be c9 5f 
+/// Speed compared to fallback:   2.0168943x
 /// ```
 fn main(){
     // Unsafe because process_fn argument is unsafe, which is necessary for simd functions
@@ -170,12 +178,12 @@ fn benchmark(
     println!("Estimated CPU use:            {}%",
         elapsed_millis as f32 / (num_seconds * 10.0));
 
-    let result_hash = results.finalize();
-    let result_hash: String = result_hash.iter()
+    let result_hash: String = results.finalize().iter()
+        .take(16)
         .enumerate()
         .map(|(i, byte)| {
             if i == 0 {
-                format!("Output hash:                  {:02x} ", byte)
+                format!("Output hash (first 16 bytes): {:02x} ", byte)
             } else if i % 8 == 0 {
                 format!("\n                              {:02x} ", byte)
             } else {
