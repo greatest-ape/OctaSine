@@ -62,22 +62,24 @@ fn main(){
 
     #[cfg(feature = "simd")]
     {
+        use octasine::gen::simd::AudioGen;
+
         if is_x86_feature_detected!("sse2") {
-            let r = benchmark("sse2", octasine::gen::simd::process_f32_sse2);
+            let r = benchmark("sse2", octasine::gen::simd::Sse2::process_f32);
             println!("Speed compared to fallback:   {}x", reference / r);
         }
-        if is_x86_feature_detected!("sse4.1") {
-            let r = benchmark("sse41", octasine::gen::simd::process_f32_sse41);
-            println!("Speed compared to fallback:   {}x", reference / r);
-        }
+        // if is_x86_feature_detected!("sse4.1") {
+        //     let r = benchmark("sse41", octasine::gen::simd::process_f32_sse41);
+        //     println!("Speed compared to fallback:   {}x", reference / r);
+        // }
         if is_x86_feature_detected!("avx") {
-            let r = benchmark("avx", octasine::gen::simd::process_f32_avx);
+            let r = benchmark("avx", octasine::gen::simd::Avx::process_f32);
             println!("Speed compared to fallback:   {}x", reference / r);
         }
-        if is_x86_feature_detected!("avx2") {
-            let r = benchmark("avx2", octasine::gen::simd::process_f32_avx2);
-            println!("Speed compared to fallback:   {}x", reference / r);
-        }
+        // if is_x86_feature_detected!("avx2") {
+        //     let r = benchmark("avx2", octasine::gen::simd::process_f32_avx2);
+        //     println!("Speed compared to fallback:   {}x", reference / r);
+        // }
     }
 }
 

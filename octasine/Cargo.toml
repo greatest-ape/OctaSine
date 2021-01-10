@@ -7,7 +7,7 @@ edition = "2018"
 
 [features]
 default = ["logging"]
-simd = ["simdeez"]
+simd = ["sleef-sys", "duplicate"]
 logging = ["dirs", "log", "log-panics", "simplelog"]
 gui = ["baseview", "iced_baseview", "iced_audio", "raw-window-handle"]
 
@@ -23,6 +23,7 @@ arc-swap = "1"
 arrayvec = "0.5"
 array-init = "1"
 cfg-if = "1"
+duplicate = { version = "0.2", optional = true }
 fastrand = "1"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
@@ -57,10 +58,10 @@ optional = true
 
 # SIMD
 
-[dependencies.simdeez]
-git = 'https://github.com/greatest-ape/simdeez.git'
+[dependencies.sleef-sys]
+git = 'https://github.com/greatest-ape/sleef-sys.git'
 branch = "octasine"
-features = ["sleef"]
+features = ["static"]
 optional = true
 
 [dev-dependencies]
