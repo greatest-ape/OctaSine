@@ -10,6 +10,8 @@
   * Think about doing panning left_and_right calculation differently, now that
     it is done for each sample if targeted by LFO
 * Implement lfos in simd gen
+  * Doesn't work with current simd gen, since lfos change operator values
+    per-voice
 * Sample and hold
 * Is it necessary to look at time signatures etc for bpm sync?
   https://rustaudio.github.io/vst-rs/vst/api/struct.TimeInfo.html
