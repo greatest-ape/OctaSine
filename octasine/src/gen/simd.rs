@@ -63,7 +63,7 @@ pub fn process_f32_runtime_select(
         pd_mul [ _mm_mul_pd ]
         pd_min [ _mm_min_pd ]
         pd_fast_sin [ sleef_sys::Sleef_sind2_u35sse2 ]
-        pd_gt [ (|a, b| _mm_cmp_pd(a, b, _CMP_GT_OQ))]
+        pd_gt [ (|a, b| _mm_cmpgt_pd(a, b))]
         pd_mod_input_panning [ (|mod_in, mod_in_slice: &[f64]| {
             let permuted = [mod_in_slice[1], mod_in_slice[0]];
 
