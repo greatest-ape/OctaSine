@@ -1,5 +1,5 @@
 pub mod common;
-pub mod fallback;
+pub mod reference;
 
-#[cfg(all(target_feature = "sse2", feature = "simd"))]
+#[cfg(feature = "simd")]
 pub mod simd;

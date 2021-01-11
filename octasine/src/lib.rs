@@ -137,7 +137,7 @@ impl Plugin for OctaSine {
             }
         } else {
             fn process(&mut self, buffer: &mut vst::buffer::AudioBuffer<f32>){
-                gen::fallback::process_f32(self, buffer);
+                gen::reference::process_f32(self, buffer);
             }
         }
     }

@@ -1,11 +1,3 @@
-//! Audio generation using explicit simd
-//! 
-//! At least SSE2 is required. Simdeez scalar fallback will fail due to the
-//! method used for stereo modulation input calculation.
-//! 
-//! TODO:
-//!   - Interpolation for processing parameters every sample? Build long arrays here too?
-
 use duplicate::duplicate;
 use vst::buffer::AudioBuffer;
 
@@ -15,6 +7,7 @@ use crate::constants::*;
 use crate::parameters::processing::parameters::*;
 
 use super::common::*;
+
 
 /// Each SAMPLE_PASS_SIZE samples, load parameter changes and processing
 /// parameter values (interpolated values where applicable)
@@ -356,7 +349,7 @@ mod gen {
                 pd_set1(VOICE_VOLUME_FACTOR * master_volume * key_velocity)
             };
 
-            let operator_generate_audio = get_operator_generate_audio(
+            let operator_generate_audio = run_operator_dependency_analysis(
                 operator_volume,
                 operator_additive,
                 operator_modulation_index,
@@ -380,8 +373,6 @@ mod gen {
                     continue;
                 }
                 
-                // --- White noise audio generation
-
                 if operator_wave_type[operator_index] == WaveType::WhiteNoise {
                     let random_numbers = {
                         let mut random_numbers = [0.0f64; SAMPLE_PASS_SIZE * 2];
@@ -440,7 +431,7 @@ mod gen {
                         );
                     }
                 } else {
-                    // --- Sine frequency modulation audio generation: setup operator SIMD vars
+                    // --- Setup operator SIMD vars
 
                     let operator_volume_splat = pd_set1(operator_volume[operator_index]);
                     let operator_feedback_splat = pd_set1(operator_feedback[operator_index]);
@@ -454,7 +445,7 @@ mod gen {
                         let r = pan_transformed.max(0.0);
                         let l = (pan_transformed * -1.0).max(0.0);
 
-                        // Width 8 in case of eventual avx512 support in simdeez
+                        // Width 8 in case of eventual avx512 support
                         let data = [l, r, l, r, l, r, l, r];
                         
                         let tendency = pd_loadu(&data[0]);
@@ -569,7 +560,7 @@ mod gen {
 
     /// Operator dependency analysis to allow skipping audio generation when possible
     #[target_feature_enable]
-    unsafe fn get_operator_generate_audio(
+    unsafe fn run_operator_dependency_analysis(
         operator_volume: [f64; 4],
         operator_additive: [f64; 4],
         operator_modulation_index: [f64; 4],
