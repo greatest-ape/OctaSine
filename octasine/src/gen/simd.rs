@@ -1,3 +1,5 @@
+use core::arch::x86_64::*;
+
 use duplicate::duplicate;
 use vst::buffer::AudioBuffer;
 
@@ -12,19 +14,6 @@ use super::common::*;
 /// Each SAMPLE_PASS_SIZE samples, load parameter changes and processing
 /// parameter values (interpolated values where applicable)
 const SAMPLE_PASS_SIZE: usize = 16;
-
-
-pub trait AudioGen {
-    unsafe fn process_f32(
-        octasine: &mut OctaSine,
-        audio_buffer: &mut AudioBuffer<f32>,
-    );
-}
-
-
-pub struct Fallback;
-pub struct Sse2;
-pub struct Avx;
 
 
 #[inline]
@@ -47,79 +36,195 @@ pub fn process_f32_runtime_select(
 }
 
 
+pub trait AudioGen {
+    unsafe fn process_f32(
+        octasine: &mut OctaSine,
+        audio_buffer: &mut AudioBuffer<f32>,
+    );
+}
+
+
+pub trait Simd {
+    type PackedDouble;
+    const PD_WIDTH: usize;
+
+    unsafe fn pd_set1(value: f64) -> Self::PackedDouble;
+    unsafe fn pd_loadu(source: *const f64) -> Self::PackedDouble;
+    unsafe fn pd_storeu(target: *mut f64, a: Self::PackedDouble);
+    unsafe fn pd_add(a: Self::PackedDouble, b: Self::PackedDouble) -> Self::PackedDouble;
+    unsafe fn pd_sub(a: Self::PackedDouble, b: Self::PackedDouble) -> Self::PackedDouble;
+    unsafe fn pd_mul(a: Self::PackedDouble, b: Self::PackedDouble) -> Self::PackedDouble;
+    unsafe fn pd_min(a: Self::PackedDouble, b: Self::PackedDouble) -> Self::PackedDouble;
+    unsafe fn pd_max(a: Self::PackedDouble, b: Self::PackedDouble) -> Self::PackedDouble;
+    unsafe fn pd_gt(a: Self::PackedDouble, b: Self::PackedDouble) -> Self::PackedDouble;
+    unsafe fn pd_fast_sin(a: Self::PackedDouble) -> Self::PackedDouble;
+    unsafe fn pd_mod_input_panning(a: Self::PackedDouble) -> Self::PackedDouble;
+}
+
+
+pub struct Fallback;
+
+
+impl Simd for Fallback {
+    type PackedDouble = [f64; 2];
+    const PD_WIDTH: usize = 2;
+
+    unsafe fn pd_set1(value: f64) -> [f64; 2] {
+        [value, value]
+    }
+    unsafe fn pd_loadu(source: *const f64) -> [f64; 2] {
+        *(source as *const [f64; 2])
+    }
+    unsafe fn pd_storeu(target: *mut f64, a: [f64; 2]){
+        ::std::ptr::write(target as *mut [f64; 2], a);
+    }
+    unsafe fn pd_add([a1, a2]: [f64; 2], [b1, b2]: [f64; 2]) -> [f64; 2] {
+        [a1 + b1, a2 + b2]
+    }
+    unsafe fn pd_sub([a1, a2]: [f64; 2], [b1, b2]: [f64; 2]) -> [f64; 2] {
+        [a1 - b1, a2 - b2]
+    }
+    unsafe fn pd_mul([a1, a2]: [f64; 2], [b1, b2]: [f64; 2]) -> [f64; 2] {
+        [a1 * b1, a2 * b2]
+    }
+    unsafe fn pd_min([a1, a2]: [f64; 2], [b1, b2]: [f64; 2]) -> [f64; 2] {
+        [a1.min(b1), a2.min(b2)]
+    }
+    unsafe fn pd_max([a1, a2]: [f64; 2], [b1, b2]: [f64; 2]) -> [f64; 2] {
+        [a1.max(b1), a2.max(b2)]
+    }
+    unsafe fn pd_gt([a1, a2]: [f64; 2], [b1, b2]: [f64; 2]) -> [f64; 2] {
+        [(a1 > b1) as u64 as f64, (a2 > b2) as u64 as f64]
+    }
+    unsafe fn pd_fast_sin([a1, a2]: [f64; 2]) -> [f64; 2] {
+        [sleef_sys::Sleef_sin_u35(a1), sleef_sys::Sleef_sin_u35(a2)]
+    }
+    unsafe fn pd_mod_input_panning([l, r]: [f64; 2]) -> [f64; 2] {
+        [l + r, l + r]
+    }
+}
+
+
+pub struct Sse2;
+
+
+impl Simd for Sse2 {
+    type PackedDouble = __m128d;
+    const PD_WIDTH: usize = 2;
+
+    #[target_feature(enable = "sse2")]
+    unsafe fn pd_set1(value: f64) -> __m128d {
+        _mm_set1_pd(value)
+    }
+    #[target_feature(enable = "sse2")]
+    unsafe fn pd_loadu(source: *const f64) -> __m128d {
+        _mm_loadu_pd(source)
+    }
+    #[target_feature(enable = "sse2")]
+    unsafe fn pd_storeu(target: *mut f64, a: __m128d){
+        _mm_storeu_pd(target, a)
+    }
+    #[target_feature(enable = "sse2")]
+    unsafe fn pd_add(a: __m128d, b: __m128d) -> __m128d {
+        _mm_add_pd(a, b)
+    }
+    #[target_feature(enable = "sse2")]
+    unsafe fn pd_sub(a: __m128d, b: __m128d) -> __m128d {
+        _mm_sub_pd(a, b)
+    }
+    #[target_feature(enable = "sse2")]
+    unsafe fn pd_mul(a: __m128d, b: __m128d) -> __m128d {
+        _mm_mul_pd(a, b)
+    }
+    #[target_feature(enable = "sse2")]
+    unsafe fn pd_min(a: __m128d, b: __m128d) -> __m128d {
+        _mm_min_pd(a, b)
+    }
+    #[target_feature(enable = "sse2")]
+    unsafe fn pd_max(a: __m128d, b: __m128d) -> __m128d {
+        _mm_max_pd(a, b)
+    }
+    #[target_feature(enable = "sse2")]
+    unsafe fn pd_gt(a: __m128d, b: __m128d) -> __m128d {
+        _mm_cmpgt_pd(a, b)
+    }
+    #[target_feature(enable = "sse2")]
+    unsafe fn pd_fast_sin(a: __m128d) -> __m128d {
+        sleef_sys::Sleef_sind2_u35sse2(a)
+    }
+    #[target_feature(enable = "sse2")]
+    unsafe fn pd_mod_input_panning(a: __m128d) -> __m128d {
+        _mm_add_pd(a, _mm_shuffle_pd(a, a, 0b01))
+    }
+}
+
+
+pub struct Avx;
+
+
+impl Simd for Avx {
+    type PackedDouble = __m256d;
+    const PD_WIDTH: usize = 4;
+
+    #[target_feature(enable = "avx")]
+    unsafe fn pd_set1(value: f64) -> __m256d {
+        _mm256_set1_pd(value)
+    }
+    #[target_feature(enable = "avx")]
+    unsafe fn pd_loadu(source: *const f64) -> __m256d {
+        _mm256_loadu_pd(source)
+    }
+    #[target_feature(enable = "avx")]
+    unsafe fn pd_storeu(target: *mut f64, a: __m256d){
+        _mm256_storeu_pd(target, a)
+    }
+    #[target_feature(enable = "avx")]
+    unsafe fn pd_add(a: __m256d, b: __m256d) -> __m256d {
+        _mm256_add_pd(a, b)
+    }
+    #[target_feature(enable = "avx")]
+    unsafe fn pd_sub(a: __m256d, b: __m256d) -> __m256d {
+        _mm256_sub_pd(a, b)
+    }
+    #[target_feature(enable = "avx")]
+    unsafe fn pd_mul(a: __m256d, b: __m256d) -> __m256d {
+        _mm256_mul_pd(a, b)
+    }
+    #[target_feature(enable = "avx")]
+    unsafe fn pd_min(a: __m256d, b: __m256d) -> __m256d {
+        _mm256_min_pd(a, b)
+    }
+    #[target_feature(enable = "avx")]
+    unsafe fn pd_max(a: __m256d, b: __m256d) -> __m256d {
+        _mm256_max_pd(a, b)
+    }
+    #[target_feature(enable = "avx")]
+    unsafe fn pd_gt(a: __m256d, b: __m256d) -> __m256d {
+        _mm256_cmp_pd(a, b, _CMP_GT_OQ)
+    }
+    #[target_feature(enable = "avx")]
+    unsafe fn pd_fast_sin(a: __m256d) -> __m256d {
+        sleef_sys::Sleef_sind4_u35avx(a)
+    }
+    #[target_feature(enable = "avx")]
+    unsafe fn pd_mod_input_panning(a: __m256d) -> __m256d {
+        _mm256_add_pd(a, _mm256_permute_pd(a, 0b0101))
+    }
+}
+
+
 #[duplicate(
     [
-        instruction_set [ Fallback ]
+        S [ Fallback ]
         target_feature_enable [ cfg(not(feature = "fake-feature")) ]
-        pd  [ [f64; 2] ]
-        pd_width [ 2 ] 
-        pd_set1 [ (|v| [v, v]) ]
-        pd_loadu [ (|source: *const f64| *(source as *const [f64; 2])) ]
-        pd_storeu [ (|target: *mut f64, v: [f64; 2]| {
-            ::std::ptr::write(target as *mut [f64; 2], v);
-        }) ]
-        pd_add [ (|[a1, a2]: [f64; 2], [b1, b2]: [f64; 2]|
-            [a1 + b1, a2 + b2]
-        ) ]
-        pd_sub [ (|[a1, a2]: [f64; 2], [b1, b2]: [f64; 2]|
-            [a1 - b1, a2 - b2]
-        ) ]
-        pd_mul [ (|[a1, a2]: [f64; 2], [b1, b2]: [f64; 2]|
-            [a1 * b1, a2 * b2]
-        ) ]
-        pd_min [ (|[a1, a2]: [f64; 2], [b1, b2]: [f64; 2]|
-            [a1.min(b1), a2.min(b2)]
-        ) ]
-        pd_max [ (|[a1, a2]: [f64; 2], [b1, b2]: [f64; 2]|
-            [a1.max(b1), a2.max(b2)]
-        ) ]
-        pd_fast_sin [ (|[a1, a2]: [f64; 2]| [
-            sleef_sys::Sleef_sin_u35(a1),
-            sleef_sys::Sleef_sin_u35(a2),
-        ]) ]
-        pd_gt [ (|[a1, a2]: [f64; 2], [b1, b2]: [f64; 2]| [
-            (a1 > b1) as u64 as f64,
-            (a2 > b2) as u64 as f64
-        ]) ]
-        pd_mod_input_panning [ (|[l, r]: [f64; 2]| [l + r, l + r]) ]
     ]
     [
-        instruction_set [ Sse2 ]
+        S [ Sse2 ]
         target_feature_enable [ target_feature(enable = "sse2") ]
-        pd  [ __m128d ]
-        pd_width [ 2 ] 
-        pd_set1 [ _mm_set1_pd ]
-        pd_loadu [ _mm_loadu_pd ]
-        pd_storeu [ _mm_storeu_pd ]
-        pd_add [ _mm_add_pd ]
-        pd_sub [ _mm_sub_pd ]
-        pd_mul [ _mm_mul_pd ]
-        pd_min [ _mm_min_pd ]
-        pd_max [ _mm_max_pd ]
-        pd_fast_sin [ sleef_sys::Sleef_sind2_u35sse2 ]
-        pd_gt [ (|a, b| _mm_cmpgt_pd(a, b))]
-        pd_mod_input_panning [ (|mod_in| {
-            _mm_add_pd(mod_in, _mm_shuffle_pd(mod_in, mod_in, 0b01))
-        }) ]
     ]
     [
-        instruction_set [ Avx ]
+        S [ Avx ]
         target_feature_enable [ target_feature(enable = "avx") ]
-        pd  [ __m256d ]
-        pd_width [ 4 ] 
-        pd_set1 [ _mm256_set1_pd ]
-        pd_loadu [ _mm256_loadu_pd ]
-        pd_storeu [ _mm256_storeu_pd ]
-        pd_add [ _mm256_add_pd ]
-        pd_sub [ _mm256_sub_pd ]
-        pd_mul [ _mm256_mul_pd ]
-        pd_min [ _mm256_min_pd ]
-        pd_max [ _mm256_max_pd ]
-        pd_fast_sin [ sleef_sys::Sleef_sind4_u35avx ]
-        pd_gt [ (|a, b| _mm256_cmp_pd(a, b, _CMP_GT_OQ))]
-        pd_mod_input_panning [ (|mod_in| {
-            _mm256_add_pd(mod_in, _mm256_permute_pd(mod_in, 0b0101))
-        }) ]
     ]
 )]
 mod gen {
@@ -128,7 +233,7 @@ mod gen {
 
     use super::*;
 
-    impl AudioGen for instruction_set {
+    impl AudioGen for S {
         #[target_feature_enable]
         unsafe fn process_f32(
             octasine: &mut OctaSine,
@@ -196,7 +301,7 @@ mod gen {
         // Sample pass size * 2 because of two channels. Even index = left channel
         let mut summed_additive_outputs = [0.0f64; SAMPLE_PASS_SIZE * 2];
 
-        let zero_value_limit_splat = pd_set1(ZERO_VALUE_LIMIT);
+        let zero_value_limit_splat = S::pd_set1(ZERO_VALUE_LIMIT);
 
         for voice in octasine.processing.voices.iter_mut().filter(|voice| voice.active){
             // --- Get voice data
@@ -346,7 +451,7 @@ mod gen {
 
                 let key_velocity = voice.key_velocity.0;
 
-                pd_set1(VOICE_VOLUME_FACTOR * master_volume * key_velocity)
+                S::pd_set1(VOICE_VOLUME_FACTOR * master_volume * key_velocity)
             };
 
             let operator_generate_audio = run_operator_dependency_analysis(
@@ -400,32 +505,32 @@ mod gen {
                             *v = left_and_right[i % 2];
                         }
 
-                        pd_loadu(&data[0])
+                        S::pd_loadu(&data[0])
                     };
 
-                    let operator_volume_splat = pd_set1(operator_volume[operator_index]);
-                    let operator_additive_splat = pd_set1(operator_additive[operator_index]);
+                    let operator_volume_splat = S::pd_set1(operator_volume[operator_index]);
+                    let operator_additive_splat = S::pd_set1(operator_additive[operator_index]);
 
-                    for i in (0..SAMPLE_PASS_SIZE * 2).step_by(pd_width){
-                        let envelope_volume = pd_loadu(&operator_envelope_volumes[operator_index][i]);
-                        let volume_product = pd_mul(operator_volume_splat, envelope_volume);
+                    for i in (0..SAMPLE_PASS_SIZE * 2).step_by(S::PD_WIDTH){
+                        let envelope_volume = S::pd_loadu(&operator_envelope_volumes[operator_index][i]);
+                        let volume_product = S::pd_mul(operator_volume_splat, envelope_volume);
 
-                        let sample = pd_loadu(&random_numbers[i]);
+                        let sample = S::pd_loadu(&random_numbers[i]);
 
-                        let sample_adjusted = pd_mul(pd_mul(sample, volume_product), constant_power_panning);
-                        let additive_out = pd_mul(sample_adjusted, operator_additive_splat);
-                        let modulation_out = pd_sub(sample_adjusted, additive_out);
+                        let sample_adjusted = S::pd_mul(S::pd_mul(sample, volume_product), constant_power_panning);
+                        let additive_out = S::pd_mul(sample_adjusted, operator_additive_splat);
+                        let modulation_out = S::pd_sub(sample_adjusted, additive_out);
 
                         // Add modulation output to target operator's modulation inputs
-                        let modulation_sum = pd_add(pd_loadu(&voice_modulation_inputs[modulation_target][i]), modulation_out);
-                        pd_storeu(&mut voice_modulation_inputs[modulation_target][i], modulation_sum);
+                        let modulation_sum = S::pd_add(S::pd_loadu(&voice_modulation_inputs[modulation_target][i]), modulation_out);
+                        S::pd_storeu(&mut voice_modulation_inputs[modulation_target][i], modulation_sum);
 
                         // Add additive output to summed_additive_outputs
-                        let summed_plus_new = pd_add(
-                            pd_loadu(&summed_additive_outputs[i]),
-                            pd_mul(additive_out, voice_volume_factor_splat)
+                        let summed_plus_new = S::pd_add(
+                            S::pd_loadu(&summed_additive_outputs[i]),
+                            S::pd_mul(additive_out, voice_volume_factor_splat)
                         );
-                        pd_storeu(
+                        S::pd_storeu(
                             &mut summed_additive_outputs[i],
                             summed_plus_new
                         );
@@ -433,10 +538,10 @@ mod gen {
                 } else {
                     // --- Setup operator SIMD vars
 
-                    let operator_volume_splat = pd_set1(operator_volume[operator_index]);
-                    let operator_feedback_splat = pd_set1(operator_feedback[operator_index]);
-                    let operator_additive_splat = pd_set1(operator_additive[operator_index]);
-                    let operator_modulation_index_splat = pd_set1(operator_modulation_index[operator_index]);
+                    let operator_volume_splat = S::pd_set1(operator_volume[operator_index]);
+                    let operator_feedback_splat = S::pd_set1(operator_feedback[operator_index]);
+                    let operator_additive_splat = S::pd_set1(operator_additive[operator_index]);
+                    let operator_modulation_index_splat = S::pd_set1(operator_modulation_index[operator_index]);
 
                     let (pan_tendency, one_minus_pan_tendency) = {
                         // Get panning as value between -1 and 1
@@ -448,8 +553,8 @@ mod gen {
                         // Width 8 in case of eventual avx512 support
                         let data = [l, r, l, r, l, r, l, r];
                         
-                        let tendency = pd_loadu(&data[0]);
-                        let one_minus_tendency = pd_sub(pd_set1(1.0), tendency);
+                        let tendency = S::pd_loadu(&data[0]);
+                        let one_minus_tendency = S::pd_sub(S::pd_set1(1.0), tendency);
 
                         (tendency, one_minus_tendency)
                     };
@@ -463,27 +568,27 @@ mod gen {
                             *v = left_and_right[i % 2];
                         }
 
-                        pd_loadu(&data[0])
+                        S::pd_loadu(&data[0])
                     };
 
                     let modulation_target = operator_modulation_targets[operator_index];
 
                     // --- Create samples for both channels
 
-                    let tau_splat = pd_set1(TAU);
+                    let tau_splat = S::pd_set1(TAU);
 
-                    for i in (0..SAMPLE_PASS_SIZE * 2).step_by(pd_width) {
-                        let envelope_volume = pd_loadu(&operator_envelope_volumes[operator_index][i]);
-                        let volume_product = pd_mul(operator_volume_splat, envelope_volume);
+                    for i in (0..SAMPLE_PASS_SIZE * 2).step_by(S::PD_WIDTH) {
+                        let envelope_volume = S::pd_loadu(&operator_envelope_volumes[operator_index][i]);
+                        let volume_product = S::pd_mul(operator_volume_splat, envelope_volume);
 
                         // Skip generation when envelope volume or operator volume is zero.
                         // Helps performance when operator envelope lengths vary a lot.
                         // Otherwise, the branching probably negatively impacts performance.
                         {
-                            let volume_on = pd_gt(volume_product, zero_value_limit_splat);
+                            let volume_on = S::pd_gt(volume_product, zero_value_limit_splat);
 
-                            let mut volume_on_tmp = [0.0f64; pd_width];
-                            pd_storeu(&mut volume_on_tmp[0], volume_on);
+                            let mut volume_on_tmp = [0.0f64; S::PD_WIDTH];
+                            S::pd_storeu(&mut volume_on_tmp[0], volume_on);
 
                             // Higher indeces don't really matter: if previous sample has zero
                             // envelope volume, next one probably does too. Worst case scenario
@@ -493,38 +598,38 @@ mod gen {
                             }
                         }
 
-                        let modulation_in_for_channel = pd_loadu(&voice_modulation_inputs[operator_index][i]);
-                        let phase = pd_mul(pd_loadu(&operator_phases[operator_index][i]), tau_splat);
+                        let modulation_in_for_channel = S::pd_loadu(&voice_modulation_inputs[operator_index][i]);
+                        let phase = S::pd_mul(S::pd_loadu(&operator_phases[operator_index][i]), tau_splat);
 
                         // Weird modulation input panning
-                        // Note: breaks unless pd_width >= 2
-                        let modulation_in_channel_sum = pd_mod_input_panning(
+                        // Note: breaks unless S::PD_WIDTH >= 2
+                        let modulation_in_channel_sum = S::pd_mod_input_panning(
                             modulation_in_for_channel
                         );
 
-                        let modulation_in = pd_add(pd_mul(pan_tendency, modulation_in_channel_sum),
-                            pd_mul(one_minus_pan_tendency, modulation_in_for_channel));
+                        let modulation_in = S::pd_add(S::pd_mul(pan_tendency, modulation_in_channel_sum),
+                            S::pd_mul(one_minus_pan_tendency, modulation_in_for_channel));
 
-                        let feedback = pd_mul(operator_feedback_splat, pd_fast_sin(phase));
+                        let feedback = S::pd_mul(operator_feedback_splat, S::pd_fast_sin(phase));
 
-                        let sin_input = pd_add(pd_mul(operator_modulation_index_splat, pd_add(feedback, modulation_in)), phase);
+                        let sin_input = S::pd_add(S::pd_mul(operator_modulation_index_splat, S::pd_add(feedback, modulation_in)), phase);
 
-                        let sample = pd_fast_sin(sin_input);
+                        let sample = S::pd_fast_sin(sin_input);
 
-                        let sample_adjusted = pd_mul(pd_mul(sample, volume_product), constant_power_panning);
-                        let additive_out = pd_mul(sample_adjusted, operator_additive_splat);
-                        let modulation_out = pd_sub(sample_adjusted, additive_out);
+                        let sample_adjusted = S::pd_mul(S::pd_mul(sample, volume_product), constant_power_panning);
+                        let additive_out = S::pd_mul(sample_adjusted, operator_additive_splat);
+                        let modulation_out = S::pd_sub(sample_adjusted, additive_out);
 
                         // Add modulation output to target operator's modulation inputs
-                        let modulation_sum = pd_add(pd_loadu(&voice_modulation_inputs[modulation_target][i]), modulation_out);
-                        pd_storeu(&mut voice_modulation_inputs[modulation_target][i], modulation_sum);
+                        let modulation_sum = S::pd_add(S::pd_loadu(&voice_modulation_inputs[modulation_target][i]), modulation_out);
+                        S::pd_storeu(&mut voice_modulation_inputs[modulation_target][i], modulation_sum);
 
                         // Add additive output to summed_additive_outputs
-                        let summed_plus_new = pd_add(
-                            pd_loadu(&summed_additive_outputs[i]),
-                            pd_mul(additive_out, voice_volume_factor_splat)
+                        let summed_plus_new = S::pd_add(
+                            S::pd_loadu(&summed_additive_outputs[i]),
+                            S::pd_mul(additive_out, voice_volume_factor_splat)
                         );
-                        pd_storeu(
+                        S::pd_storeu(
                             &mut summed_additive_outputs[i],
                             summed_plus_new
                         );
@@ -535,16 +640,16 @@ mod gen {
 
         // --- Summed additive outputs: apply hard limit.
 
-        let max_value_splat = pd_set1(5.0);
-        let min_value_splat = pd_set1(-5.0);
+        let max_value_splat = S::pd_set1(5.0);
+        let min_value_splat = S::pd_set1(-5.0);
 
-        for i in (0..SAMPLE_PASS_SIZE * 2).step_by(pd_width) {
-            let additive = pd_loadu(&summed_additive_outputs[i]);
+        for i in (0..SAMPLE_PASS_SIZE * 2).step_by(S::PD_WIDTH) {
+            let additive = S::pd_loadu(&summed_additive_outputs[i]);
 
-            let additive = pd_min(additive, max_value_splat);
-            let additive = pd_max(additive, min_value_splat);
+            let additive = S::pd_min(additive, max_value_splat);
+            let additive = S::pd_max(additive, min_value_splat);
 
-            pd_storeu(&mut summed_additive_outputs[i], additive);
+            S::pd_storeu(&mut summed_additive_outputs[i], additive);
         }
 
         // --- Write additive outputs to audio buffer

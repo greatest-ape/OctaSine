@@ -14,42 +14,41 @@ use octasine::OctaSine;
 /// --- Benchmarking OctaSine process_f32 variant: reference ---
 /// Total number of samples:      12800000
 /// Equivalent to audio duration: 290.24942 seconds
-/// Processing time in total:     36061 milliseconds
-/// Processing time per sample:   2817.2913 nanoseconds
-/// Estimated CPU use:            12.424142%
+/// Processing time in total:     34110 milliseconds
+/// Processing time per sample:   2664.8982 nanoseconds
+/// Estimated CPU use:            11.751962%
 /// Output hash (first 16 bytes): ab db fa d4 4d bd 62 48 
 ///                               6f 75 2c 02 61 d7 ba a9 
 /// 
 /// --- Benchmarking OctaSine process_f32 variant: fallback ---
 /// Total number of samples:      12800000
 /// Equivalent to audio duration: 290.24942 seconds
-/// Processing time in total:     27703 milliseconds
-/// Processing time per sample:   2164.3123 nanoseconds
-/// Estimated CPU use:            9.54455%
+/// Processing time in total:     26353 milliseconds
+/// Processing time per sample:   2058.8918 nanoseconds
+/// Estimated CPU use:            9.0794325%
 /// Output hash (first 16 bytes): ac fd ce 1e a2 7b 79 e1 
 ///                               75 06 b6 94 fe be c9 5f 
-/// Speed compared to reference:  1.3017027x
+/// Speed compared to reference:  1.2943362x
 /// 
 /// --- Benchmarking OctaSine process_f32 variant: sse2 ---
 /// Total number of samples:      12800000
 /// Equivalent to audio duration: 290.24942 seconds
-/// Processing time in total:     17919 milliseconds
-/// Processing time per sample:   1399.9979 nanoseconds
-/// Estimated CPU use:            6.173656%
+/// Processing time in total:     18694 milliseconds
+/// Processing time per sample:   1460.5168 nanoseconds
+/// Estimated CPU use:            6.4406676%
 /// Output hash (first 16 bytes): ac fd ce 1e a2 7b 79 e1 
 ///                               75 06 b6 94 fe be c9 5f 
-/// Speed compared to reference:  2.012354x
+/// Speed compared to reference:  1.8246268x
 /// 
 /// --- Benchmarking OctaSine process_f32 variant: avx ---
 /// Total number of samples:      12800000
 /// Equivalent to audio duration: 290.24942 seconds
-/// Processing time in total:     11596 milliseconds
-/// Processing time per sample:   905.96625 nanoseconds
-/// Estimated CPU use:            3.9951847%
+/// Processing time in total:     10612 milliseconds
+/// Processing time per sample:   829.1055 nanoseconds
+/// Estimated CPU use:            3.6561658%
 /// Output hash (first 16 bytes): ac fd ce 1e a2 7b 79 e1 
 ///                               75 06 b6 94 fe be c9 5f 
-/// Speed compared to reference:  3.1097088x
-
+/// Speed compared to reference:  3.2141845x
 /// ```
 fn main(){
     // Unsafe because process_fn argument is unsafe, which is necessary for simd functions
