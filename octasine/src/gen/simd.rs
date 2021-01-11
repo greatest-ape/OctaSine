@@ -64,10 +64,8 @@ pub fn process_f32_runtime_select(
         pd_min [ _mm_min_pd ]
         pd_fast_sin [ sleef_sys::Sleef_sind2_u35sse2 ]
         pd_gt [ (|a, b| _mm_cmpgt_pd(a, b))]
-        pd_mod_input_panning [ (|mod_in, mod_in_slice: &[f64]| {
-            let permuted = [mod_in_slice[1], mod_in_slice[0]];
-
-            _mm_add_pd(_mm_loadu_pd(&permuted[0]), mod_in)
+        pd_mod_input_panning [ (|mod_in| {
+            _mm_add_pd(mod_in, _mm_shuffle_pd(mod_in, mod_in, 0b01))
         }) ]
     ]
     [
@@ -84,7 +82,7 @@ pub fn process_f32_runtime_select(
         pd_min [ _mm256_min_pd ]
         pd_fast_sin [ sleef_sys::Sleef_sind4_u35avx ]
         pd_gt [ (|a, b| _mm256_cmp_pd(a, b, _CMP_GT_OQ))]
-        pd_mod_input_panning [ (|mod_in, _| {
+        pd_mod_input_panning [ (|mod_in| {
             _mm256_add_pd(mod_in, _mm256_permute_pd(mod_in, 0b0101))
         }) ]
     ]
@@ -450,8 +448,7 @@ mod gen {
                         // Weird modulation input panning
                         // Note: breaks without pd_width >= 2 (SSE2 or newer)
                         let modulation_in_channel_sum = pd_mod_input_panning(
-                            modulation_in_for_channel,
-                            &voice_modulation_inputs[operator_index][i..i + pd_width]
+                            modulation_in_for_channel
                         );
 
                         let modulation_in = pd_add(pd_mul(pan_tendency, modulation_in_channel_sum),
