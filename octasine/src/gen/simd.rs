@@ -55,7 +55,7 @@ pub fn process_f32_runtime_select(
 #[duplicate(
     [
         instruction_set [ Portable ]
-        target_feature_enable [ "sse2" ]
+        target_feature_enable [ cfg(not(feature = "fake-feature")) ]
         pd  [ [f64; 2] ]
         pd_width [ 2 ] 
         pd_set1 [ (|v| [v, v]) ]
@@ -87,7 +87,7 @@ pub fn process_f32_runtime_select(
     ]
     [
         instruction_set [ Sse2 ]
-        target_feature_enable [ "sse2" ]
+        target_feature_enable [ target_feature(enable = "sse2") ]
         pd  [ __m128d ]
         pd_width [ 2 ] 
         pd_set1 [ _mm_set1_pd ]
@@ -105,7 +105,7 @@ pub fn process_f32_runtime_select(
     ]
     [
         instruction_set [ Avx ]
-        target_feature_enable [ "avx" ]
+        target_feature_enable [ target_feature(enable = "avx") ]
         pd  [ __m256d ]
         pd_width [ 4 ] 
         pd_set1 [ _mm256_set1_pd ]
@@ -123,12 +123,13 @@ pub fn process_f32_runtime_select(
     ]
 )]
 mod gen {
+    #[allow(unused_imports)]
     use core::arch::x86_64::*;
 
     use super::*;
 
     impl AudioGen for instruction_set {
-        #[target_feature(enable = target_feature_enable)]
+        #[target_feature_enable]
         unsafe fn process_f32(
             octasine: &mut OctaSine,
             audio_buffer: &mut AudioBuffer<f32>,
@@ -152,7 +153,7 @@ mod gen {
         }
     }
 
-    #[target_feature(enable = target_feature_enable)]
+    #[target_feature_enable]
     unsafe fn run_pass(
         octasine: &mut OctaSine,
         audio_buffer_lefts: &mut [f32],
@@ -536,7 +537,7 @@ mod gen {
     }
 
     /// Operator dependency analysis to allow skipping audio generation when possible
-    #[target_feature(enable = target_feature_enable)]
+    #[target_feature_enable]
     unsafe fn get_operator_generate_audio(
         operator_volume: [f64; 4],
         operator_additive: [f64; 4],
