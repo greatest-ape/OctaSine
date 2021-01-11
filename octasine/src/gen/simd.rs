@@ -64,6 +64,11 @@ pub fn process_f32_runtime_select(
         pd_min [ _mm_min_pd ]
         pd_fast_sin [ sleef_sys::Sleef_sind2_u35sse2 ]
         pd_gt [ (|a, b| _mm_cmp_pd(a, b, _CMP_GT_OQ))]
+        pd_mod_input_panning [ (|mod_in, mod_in_slice: &[f64]| {
+            let permuted = [mod_in_slice[1], mod_in_slice[0]];
+
+            _mm_add_pd(_mm_loadu_pd(&permuted[0]), mod_in)
+        }) ]
     ]
     [
         instruction_set [ Avx ]
@@ -79,6 +84,9 @@ pub fn process_f32_runtime_select(
         pd_min [ _mm256_min_pd ]
         pd_fast_sin [ sleef_sys::Sleef_sind4_u35avx ]
         pd_gt [ (|a, b| _mm256_cmp_pd(a, b, _CMP_GT_OQ))]
+        pd_mod_input_panning [ (|mod_in, _| {
+            _mm256_add_pd(mod_in, _mm256_permute_pd(mod_in, 0b0101))
+        }) ]
     ]
 )]
 mod gen {
@@ -440,30 +448,11 @@ mod gen {
                         let phase = pd_mul(pd_loadu(&operator_phases[operator_index][i]), tau_splat);
 
                         // Weird modulation input panning
-                        // Note: breaks without VF64_WIDTH >= 2 (SSE2 or newer)
-                        let modulation_in_channel_sum = {
-                            // Replacing with SIMD: suitable instructions in avx:
-                            //   _mm256_permute_pd with imm8 = [1, 0, 1, 0] followed by addition
-                            //     Indices:
-                            //       0 -> 1
-                            //       1 -> 0
-                            //       2 -> 3
-                            //       3 -> 2
-                            //   _mm256_hadd_pd (takes two variables which would need to be identical): pretty slow
-                            // So the idea is to take modulation_in_for_channel and run any of the above on it.
-
-                            let mut permuted = [0.0f64; 8]; // Width 8 in case of eventual avx512 support in simdeez
-
-                            // Should be equivalent to simd instruction permute_pd with imm8 = [1, 0, 1, 0]
-                            for (j, input) in (&voice_modulation_inputs[operator_index][i..i + pd_width]).iter().enumerate(){
-                                let add = (j + 1) % 2;
-                                let subtract = j % 2;
-
-                                permuted[j + add - subtract] = *input;
-                            }
-
-                            pd_add(pd_loadu(&permuted[0]), modulation_in_for_channel)
-                        };
+                        // Note: breaks without pd_width >= 2 (SSE2 or newer)
+                        let modulation_in_channel_sum = pd_mod_input_panning(
+                            modulation_in_for_channel,
+                            &voice_modulation_inputs[operator_index][i..i + pd_width]
+                        );
 
                         let modulation_in = pd_add(pd_mul(pan_tendency, modulation_in_channel_sum),
                             pd_mul(one_minus_pan_tendency, modulation_in_for_channel));
