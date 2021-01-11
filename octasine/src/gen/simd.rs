@@ -184,53 +184,16 @@ mod gen {
             }
         }
 
-        // Operator dependency analysis to allow skipping audio generation when possible
-        let operator_generate_audio: [bool; 4] = {
-            let mut operator_generate_audio = [true; 4];
-            let mut operator_additive_zero = [false; 4];
-            let mut operator_modulation_index_zero = [false; 4];
-            
-            for operator_index in 0..4 {
-                // If volume is off, just set to skippable, don't even bother with lt calculations
-                if operator_volume[operator_index].lt(&ZERO_VALUE_LIMIT){
-                    operator_generate_audio[operator_index] = false;
-                } else {
-                    operator_additive_zero[operator_index] =
-                        operator_additive[operator_index].lt(&ZERO_VALUE_LIMIT);
-
-                    operator_modulation_index_zero[operator_index] =
-                        operator_modulation_index[operator_index].lt(&ZERO_VALUE_LIMIT);
-                }
-            }
-
-            for _ in 0..3 {
-                for operator_index in 1..4 {
-                    let modulation_target = operator_modulation_targets[operator_index];
-
-                    // Skip generation if operator was previously determined to be skippable OR
-                    let skip_condition = !operator_generate_audio[operator_index] || (
-                        // Additive factor for this operator is off AND
-                        operator_additive_zero[operator_index] && (
-                            // Modulation target was previously determined to be skippable OR
-                            !operator_generate_audio[modulation_target] ||
-                            // Modulation target is white noise OR
-                            operator_wave_type[modulation_target] == WaveType::WhiteNoise ||
-                            // Modulation target doesn't do anything with its input modulation
-                            operator_modulation_index_zero[modulation_target]
-                        )
-                    );
-
-                    if skip_condition {
-                        operator_generate_audio[operator_index] = false;
-                    }
-                }
-            }
-
-            operator_generate_audio
-        };
-
         // Necessary for interpolation
         octasine.processing.global_time.0 += time_per_sample.0 * (SAMPLE_PASS_SIZE as f64);
+
+        let operator_generate_audio = get_operator_generate_audio(
+            operator_volume,
+            operator_additive,
+            operator_modulation_index,
+            operator_wave_type,
+            operator_modulation_targets,
+        );
 
         // --- Collect voice data (envelope volume, phases) necessary for sound generation
 
@@ -521,5 +484,57 @@ mod gen {
             audio_buffer_lefts[i + sample_offset] = summed_additive_outputs[j] as f32;
             audio_buffer_rights[i + sample_offset] = summed_additive_outputs[j + 1] as f32;
         }
+    }
+
+    /// Operator dependency analysis to allow skipping audio generation when possible
+    #[target_feature(enable = target_feature_enable)]
+    unsafe fn get_operator_generate_audio(
+        operator_volume: [f64; 4],
+        operator_additive: [f64; 4],
+        operator_modulation_index: [f64; 4],
+        operator_wave_type: [WaveType; 4],
+        operator_modulation_targets: [usize; 4],
+    ) -> [bool; 4] {
+        let mut operator_generate_audio = [true; 4];
+        let mut operator_additive_zero = [false; 4];
+        let mut operator_modulation_index_zero = [false; 4];
+        
+        for operator_index in 0..4 {
+            // If volume is off, just set to skippable, don't even bother with lt calculations
+            if operator_volume[operator_index].lt(&ZERO_VALUE_LIMIT){
+                operator_generate_audio[operator_index] = false;
+            } else {
+                operator_additive_zero[operator_index] =
+                    operator_additive[operator_index].lt(&ZERO_VALUE_LIMIT);
+
+                operator_modulation_index_zero[operator_index] =
+                    operator_modulation_index[operator_index].lt(&ZERO_VALUE_LIMIT);
+            }
+        }
+
+        for _ in 0..3 {
+            for operator_index in 1..4 {
+                let modulation_target = operator_modulation_targets[operator_index];
+
+                // Skip generation if operator was previously determined to be skippable OR
+                let skip_condition = !operator_generate_audio[operator_index] || (
+                    // Additive factor for this operator is off AND
+                    operator_additive_zero[operator_index] && (
+                        // Modulation target was previously determined to be skippable OR
+                        !operator_generate_audio[modulation_target] ||
+                        // Modulation target is white noise OR
+                        operator_wave_type[modulation_target] == WaveType::WhiteNoise ||
+                        // Modulation target doesn't do anything with its input modulation
+                        operator_modulation_index_zero[modulation_target]
+                    )
+                );
+
+                if skip_condition {
+                    operator_generate_audio[operator_index] = false;
+                }
+            }
+        }
+
+        operator_generate_audio
     }
 }
