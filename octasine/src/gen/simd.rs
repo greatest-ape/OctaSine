@@ -373,122 +373,120 @@ mod gen {
                         let summed_plus_new = pd_add(pd_loadu(&summed_additive_outputs[i]), pd_mul(additive_out, key_velocity_splat));
                         pd_storeu(&mut summed_additive_outputs[i], summed_plus_new);
                     }
+                } else {
+                    // --- Sine frequency modulation audio generation: setup operator SIMD vars
 
-                    continue;
-                }
+                    let operator_volume_splat = pd_set1(operator_volume[operator_index]);
+                    let operator_feedback_splat = pd_set1(operator_feedback[operator_index]);
+                    let operator_additive_splat = pd_set1(operator_additive[operator_index]);
+                    let operator_modulation_index_splat = pd_set1(operator_modulation_index[operator_index]);
 
-                // --- Sine frequency modulation audio generation: setup operator SIMD vars
+                    let (pan_tendency, one_minus_pan_tendency) = {
+                        // Get panning as value between -1 and 1
+                        let pan_transformed = 2.0 * (operator_panning[operator_index] - 0.5);
 
-                let operator_volume_splat = pd_set1(operator_volume[operator_index]);
-                let operator_feedback_splat = pd_set1(operator_feedback[operator_index]);
-                let operator_additive_splat = pd_set1(operator_additive[operator_index]);
-                let operator_modulation_index_splat = pd_set1(operator_modulation_index[operator_index]);
+                        let r = pan_transformed.max(0.0);
+                        let l = (pan_transformed * -1.0).max(0.0);
 
-                let (pan_tendency, one_minus_pan_tendency) = {
-                    // Get panning as value between -1 and 1
-                    let pan_transformed = 2.0 * (operator_panning[operator_index] - 0.5);
+                        // Width 8 in case of eventual avx512 support in simdeez
+                        let data = [l, r, l, r, l, r, l, r];
+                        
+                        let tendency = pd_loadu(&data[0]);
+                        let one_minus_tendency = pd_sub(pd_set1(1.0), tendency);
 
-                    let r = pan_transformed.max(0.0);
-                    let l = (pan_transformed * -1.0).max(0.0);
-
-                    // Width 8 in case of eventual avx512 support in simdeez
-                    let data = [l, r, l, r, l, r, l, r];
-                    
-                    let tendency = pd_loadu(&data[0]);
-                    let one_minus_tendency = pd_sub(pd_set1(1.0), tendency);
-
-                    (tendency, one_minus_tendency)
-                };
-
-                let constant_power_panning = {
-                    let mut data = [0.0f64; 8];
-
-                    let left_and_right = operators[operator_index].panning.left_and_right;
-                    
-                    for (i, v) in data.iter_mut().enumerate() {
-                        *v = left_and_right[i % 2];
-                    }
-
-                    pd_loadu(&data[0])
-                };
-
-                let modulation_target = operator_modulation_targets[operator_index];
-
-                // --- Create samples for both channels
-
-                let tau_splat = pd_set1(TAU);
-
-                for i in (0..SAMPLE_PASS_SIZE * 2).step_by(pd_width) {
-                    let envelope_volume = pd_loadu(&operator_envelope_volumes[operator_index][i]);
-                    let volume_product = pd_mul(operator_volume_splat, envelope_volume);
-
-                    // Skip generation when envelope volume or operator volume is zero.
-                    // Helps performance when operator envelope lengths vary a lot.
-                    // Otherwise, the branching probably negatively impacts performance.
-                    {
-                        let volume_on = pd_gt(volume_product, zero_value_limit_splat);
-
-                        let mut volume_on_tmp = [0.0; pd_width];
-                        pd_storeu(&mut volume_on_tmp[0], volume_on);
-
-                        // Higher indeces don't really matter: if previous sample has zero
-                        // envelope volume, next one probably does too. Worst case scenario
-                        // is that attacks are a tiny bit slower.
-                        if volume_on_tmp[0].to_bits() == 0 {
-                            continue;
-                        }
-                    }
-
-                    let modulation_in_for_channel = pd_loadu(&voice_modulation_inputs[operator_index][i]);
-                    let phase = pd_mul(pd_loadu(&operator_phases[operator_index][i]), tau_splat);
-
-                    // Weird modulation input panning
-                    // Note: breaks without VF64_WIDTH >= 2 (SSE2 or newer)
-                    let modulation_in_channel_sum = {
-                        // Replacing with SIMD: suitable instructions in avx:
-                        //   _mm256_permute_pd with imm8 = [1, 0, 1, 0] followed by addition
-                        //     Indices:
-                        //       0 -> 1
-                        //       1 -> 0
-                        //       2 -> 3
-                        //       3 -> 2
-                        //   _mm256_hadd_pd (takes two variables which would need to be identical): pretty slow
-                        // So the idea is to take modulation_in_for_channel and run any of the above on it.
-
-                        let mut permuted = [0.0f64; 8]; // Width 8 in case of eventual avx512 support in simdeez
-
-                        // Should be equivalent to simd instruction permute_pd with imm8 = [1, 0, 1, 0]
-                        for (j, input) in (&voice_modulation_inputs[operator_index][i..i + pd_width]).iter().enumerate(){
-                            let add = (j + 1) % 2;
-                            let subtract = j % 2;
-
-                            permuted[j + add - subtract] = *input;
-                        }
-
-                        pd_add(pd_loadu(&permuted[0]), modulation_in_for_channel)
+                        (tendency, one_minus_tendency)
                     };
 
-                    let modulation_in = pd_add(pd_mul(pan_tendency, modulation_in_channel_sum),
-                        pd_mul(one_minus_pan_tendency, modulation_in_for_channel));
+                    let constant_power_panning = {
+                        let mut data = [0.0f64; 8];
 
-                    let feedback = pd_mul(operator_feedback_splat, pd_fast_sin(phase));
+                        let left_and_right = operators[operator_index].panning.left_and_right;
+                        
+                        for (i, v) in data.iter_mut().enumerate() {
+                            *v = left_and_right[i % 2];
+                        }
 
-                    let sin_input = pd_add(pd_mul(operator_modulation_index_splat, pd_add(feedback, modulation_in)), phase);
+                        pd_loadu(&data[0])
+                    };
 
-                    let sample = pd_fast_sin(sin_input);
+                    let modulation_target = operator_modulation_targets[operator_index];
 
-                    let sample_adjusted = pd_mul(pd_mul(sample, volume_product), constant_power_panning);
-                    let additive_out = pd_mul(sample_adjusted, operator_additive_splat);
-                    let modulation_out = pd_sub(sample_adjusted, additive_out);
+                    // --- Create samples for both channels
 
-                    // Add modulation output to target operator's modulation inputs
-                    let modulation_sum = pd_add(pd_loadu(&voice_modulation_inputs[modulation_target][i]), modulation_out);
-                    pd_storeu(&mut voice_modulation_inputs[modulation_target][i], modulation_sum);
+                    let tau_splat = pd_set1(TAU);
 
-                    // Add additive output to summed_additive_outputs
-                    let summed_plus_new = pd_add(pd_loadu(&summed_additive_outputs[i]), pd_mul(additive_out, key_velocity_splat));
-                    pd_storeu(&mut summed_additive_outputs[i], summed_plus_new);
-                } // End of sample pass size *  2 iteration
+                    for i in (0..SAMPLE_PASS_SIZE * 2).step_by(pd_width) {
+                        let envelope_volume = pd_loadu(&operator_envelope_volumes[operator_index][i]);
+                        let volume_product = pd_mul(operator_volume_splat, envelope_volume);
+
+                        // Skip generation when envelope volume or operator volume is zero.
+                        // Helps performance when operator envelope lengths vary a lot.
+                        // Otherwise, the branching probably negatively impacts performance.
+                        {
+                            let volume_on = pd_gt(volume_product, zero_value_limit_splat);
+
+                            let mut volume_on_tmp = [0.0; pd_width];
+                            pd_storeu(&mut volume_on_tmp[0], volume_on);
+
+                            // Higher indeces don't really matter: if previous sample has zero
+                            // envelope volume, next one probably does too. Worst case scenario
+                            // is that attacks are a tiny bit slower.
+                            if volume_on_tmp[0].to_bits() == 0 {
+                                continue;
+                            }
+                        }
+
+                        let modulation_in_for_channel = pd_loadu(&voice_modulation_inputs[operator_index][i]);
+                        let phase = pd_mul(pd_loadu(&operator_phases[operator_index][i]), tau_splat);
+
+                        // Weird modulation input panning
+                        // Note: breaks without VF64_WIDTH >= 2 (SSE2 or newer)
+                        let modulation_in_channel_sum = {
+                            // Replacing with SIMD: suitable instructions in avx:
+                            //   _mm256_permute_pd with imm8 = [1, 0, 1, 0] followed by addition
+                            //     Indices:
+                            //       0 -> 1
+                            //       1 -> 0
+                            //       2 -> 3
+                            //       3 -> 2
+                            //   _mm256_hadd_pd (takes two variables which would need to be identical): pretty slow
+                            // So the idea is to take modulation_in_for_channel and run any of the above on it.
+
+                            let mut permuted = [0.0f64; 8]; // Width 8 in case of eventual avx512 support in simdeez
+
+                            // Should be equivalent to simd instruction permute_pd with imm8 = [1, 0, 1, 0]
+                            for (j, input) in (&voice_modulation_inputs[operator_index][i..i + pd_width]).iter().enumerate(){
+                                let add = (j + 1) % 2;
+                                let subtract = j % 2;
+
+                                permuted[j + add - subtract] = *input;
+                            }
+
+                            pd_add(pd_loadu(&permuted[0]), modulation_in_for_channel)
+                        };
+
+                        let modulation_in = pd_add(pd_mul(pan_tendency, modulation_in_channel_sum),
+                            pd_mul(one_minus_pan_tendency, modulation_in_for_channel));
+
+                        let feedback = pd_mul(operator_feedback_splat, pd_fast_sin(phase));
+
+                        let sin_input = pd_add(pd_mul(operator_modulation_index_splat, pd_add(feedback, modulation_in)), phase);
+
+                        let sample = pd_fast_sin(sin_input);
+
+                        let sample_adjusted = pd_mul(pd_mul(sample, volume_product), constant_power_panning);
+                        let additive_out = pd_mul(sample_adjusted, operator_additive_splat);
+                        let modulation_out = pd_sub(sample_adjusted, additive_out);
+
+                        // Add modulation output to target operator's modulation inputs
+                        let modulation_sum = pd_add(pd_loadu(&voice_modulation_inputs[modulation_target][i]), modulation_out);
+                        pd_storeu(&mut voice_modulation_inputs[modulation_target][i], modulation_sum);
+
+                        // Add additive output to summed_additive_outputs
+                        let summed_plus_new = pd_add(pd_loadu(&summed_additive_outputs[i]), pd_mul(additive_out, key_velocity_splat));
+                        pd_storeu(&mut summed_additive_outputs[i], summed_plus_new);
+                    } // End of sample pass size *  2 iteration
+                }
             } // End of operator iteration
         } // End of voice iteration
 
