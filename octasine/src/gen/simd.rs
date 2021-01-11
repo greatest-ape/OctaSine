@@ -138,148 +138,134 @@ mod gen {
         let time = octasine.processing.global_time;
         let master_volume_factor = VOICE_VOLUME_FACTOR * octasine.processing.parameters.master_volume.get_value(time);
 
-        // --- Get operator-only data which will be valid for whole pass and all voices.
-
-        // Interpolated
-        let mut operator_volume: [f64; 4] = [0.0; 4];
-        let mut operator_modulation_index = [0.0f64; 4];
-        let mut operator_feedback: [f64; 4] = [0.0; 4];
-        let mut operator_panning: [f64; 4] = [0.0; 4];
-        let mut operator_additive: [f64; 4] = [0.0; 4];
-        
-        // Not interpolated
-        let mut operator_wave_type = [WaveType::Sine; 4];
-        let mut operator_frequency_modifiers: [f64; 4] = [0.0; 4]; 
-        let mut operator_modulation_targets = [0usize; 4];
-
-        for (index, operator) in operators.iter_mut().enumerate(){
-            operator_volume[index] = operator.volume.get_value(time);
-            operator_modulation_index[index] = operator.modulation_index.get_value(time);
-            operator_feedback[index] = operator.feedback.get_value(time);
-            operator_panning[index] = operator.panning.get_value(time);
-
-            // Get additive factor; use 1.0 for operator 1
-            operator_additive[index] = if index == 0 {
-                1.0
-            } else {
-                operator.additive_factor.get_value(time)
-            };
-
-            operator_wave_type[index] = operator.wave_type.value;
-
-            operator_frequency_modifiers[index] = operator.frequency_ratio.value *
-                operator.frequency_free.value * operator.frequency_fine.value;
-
-            if let Some(p) = &mut operator.output_operator {
-                use ProcessingParameterOperatorModulationTarget::*;
-
-                let opt_value = match p {
-                    OperatorIndex2(p) => Some(p.get_value(())),
-                    OperatorIndex3(p) => Some(p.get_value(())),
-                };
-
-                if let Some(value) = opt_value {
-                    operator_modulation_targets[index] = value;
-                }
-            }
-        }
-
         // Necessary for interpolation
         octasine.processing.global_time.0 += time_per_sample.0 * (SAMPLE_PASS_SIZE as f64);
 
-        let operator_generate_audio = get_operator_generate_audio(
-            operator_volume,
-            operator_additive,
-            operator_modulation_index,
-            operator_wave_type,
-            operator_modulation_targets,
-        );
-
-        // --- Collect voice data (envelope volume, phases) necessary for sound generation
+        // --- Collect parameter data and do audio generation
 
         // FIXME: optimize section, possibly with simd. Maybe envelopes can be calculated less often
 
         // Maybe operator indexes should be inversed (3 - operator_index)
         // because that is how they will be accessed later.
-        let mut voice_envelope_volumes: ArrayVec<[[[f64; SAMPLE_PASS_SIZE * 2]; 4]; 128]> = ArrayVec::new();
-        let mut voice_phases: ArrayVec<[[[f64; SAMPLE_PASS_SIZE * 2]; 4]; 128]> = ArrayVec::new();
-        let mut key_velocities: ArrayVec<[f64; 128]> = ArrayVec::new();
-        
-        let mut num_active_voices = 0;
-
-        for voice in octasine.processing.voices.iter_mut(){
-            if voice.active {
-                let mut operator_envelope_volumes = [[0.0f64; SAMPLE_PASS_SIZE * 2]; 4];
-                let mut operator_phases = [[0.0f64; SAMPLE_PASS_SIZE * 2]; 4];
-
-                let voice_base_frequency = voice.midi_pitch.get_frequency(
-                    octasine.processing.parameters.master_frequency.value
-                );
-
-                // Envelope
-                for i in 0..SAMPLE_PASS_SIZE {
-                    for (operator_index, operator) in operators.iter_mut().enumerate(){
-                        let v = voice.operators[operator_index].volume_envelope.get_volume(
-                            &octasine.processing.log10_table,
-                            &operator.volume_envelope,
-                            voice.key_pressed,
-                            voice.duration
-                        );
-
-                        let j = i * 2;
-
-                        operator_envelope_volumes[operator_index][j] = v;
-                        operator_envelope_volumes[operator_index][j + 1] = v;
-                    }
-
-                    voice.duration.0 += time_per_sample.0;
-                }
-
-                // Phase
-                for operator_index in 0..4 {
-                    let last_phase = voice.operators[operator_index].last_phase.0;
-                    let frequency = voice_base_frequency * operator_frequency_modifiers[operator_index];
-                    let phase_addition = frequency * time_per_sample.0;
-
-                    let mut new_phase = 0.0;
-
-                    for i in 0..SAMPLE_PASS_SIZE {
-                        // Do multiplication instead of successive addition for less precision loss (hopefully)
-                        new_phase = last_phase + phase_addition * ((i + 1) as f64);
-
-                        let j = i * 2;
-
-                        operator_phases[operator_index][j] = new_phase;
-                        operator_phases[operator_index][j + 1] = new_phase;
-                    }
-
-                    // Save phase
-                    voice.operators[operator_index].last_phase.0 = new_phase;
-                }
-
-                voice_envelope_volumes.push(operator_envelope_volumes);
-                voice_phases.push(operator_phases);
-                key_velocities.push(voice.key_velocity.0);
-
-                voice.deactivate_if_envelopes_ended();
-
-                num_active_voices += 1;
-            }
-        }
-
-        // --- Generate samples for all operators and voices
 
         // Sample pass size * 2 because of two channels. Even index = left channel
         let mut summed_additive_outputs = [0.0f64; SAMPLE_PASS_SIZE * 2];
 
         let zero_value_limit_splat = pd_set1(ZERO_VALUE_LIMIT);
 
-        // Voice index here is not the same as in processing storage
-        for voice_index in 0..num_active_voices {
+        for voice in octasine.processing.voices.iter_mut().filter(|voice| voice.active){
+            // --- Get operator data
+
+            // Interpolated
+            let mut operator_volume: [f64; 4] = [0.0; 4];
+            let mut operator_modulation_index = [0.0f64; 4];
+            let mut operator_feedback: [f64; 4] = [0.0; 4];
+            let mut operator_panning: [f64; 4] = [0.0; 4];
+            let mut operator_additive: [f64; 4] = [0.0; 4];
+            
+            // Not interpolated
+            let mut operator_wave_type = [WaveType::Sine; 4];
+            let mut operator_frequency_modifiers: [f64; 4] = [0.0; 4]; 
+            let mut operator_modulation_targets = [0usize; 4];
+
+            for (index, operator) in operators.iter_mut().enumerate(){
+                operator_volume[index] = operator.volume.get_value(time);
+                operator_modulation_index[index] = operator.modulation_index.get_value(time);
+                operator_feedback[index] = operator.feedback.get_value(time);
+                operator_panning[index] = operator.panning.get_value(time);
+
+                // Get additive factor; use 1.0 for operator 1
+                operator_additive[index] = if index == 0 {
+                    1.0
+                } else {
+                    operator.additive_factor.get_value(time)
+                };
+
+                operator_wave_type[index] = operator.wave_type.value;
+
+                operator_frequency_modifiers[index] = operator.frequency_ratio.value *
+                    operator.frequency_free.value * operator.frequency_fine.value;
+
+                if let Some(p) = &mut operator.output_operator {
+                    use ProcessingParameterOperatorModulationTarget::*;
+
+                    let opt_value = match p {
+                        OperatorIndex2(p) => Some(p.get_value(())),
+                        OperatorIndex3(p) => Some(p.get_value(())),
+                    };
+
+                    if let Some(value) = opt_value {
+                        operator_modulation_targets[index] = value;
+                    }
+                }
+            }
+
+            let operator_generate_audio = get_operator_generate_audio(
+                operator_volume,
+                operator_additive,
+                operator_modulation_index,
+                operator_wave_type,
+                operator_modulation_targets,
+            );
+
+            // --- Get voice data
+
+            let mut operator_envelope_volumes = [[0.0f64; SAMPLE_PASS_SIZE * 2]; 4];
+            let mut operator_phases = [[0.0f64; SAMPLE_PASS_SIZE * 2]; 4];
+
+            let voice_base_frequency = voice.midi_pitch.get_frequency(
+                octasine.processing.parameters.master_frequency.value
+            );
+
+            // Envelope
+            for i in 0..SAMPLE_PASS_SIZE {
+                for (operator_index, operator) in operators.iter_mut().enumerate(){
+                    let v = voice.operators[operator_index].volume_envelope.get_volume(
+                        &octasine.processing.log10_table,
+                        &operator.volume_envelope,
+                        voice.key_pressed,
+                        voice.duration
+                    );
+
+                    let j = i * 2;
+
+                    operator_envelope_volumes[operator_index][j] = v;
+                    operator_envelope_volumes[operator_index][j + 1] = v;
+                }
+
+                voice.duration.0 += time_per_sample.0;
+            }
+
+            // Phase
+            for operator_index in 0..4 {
+                let last_phase = voice.operators[operator_index].last_phase.0;
+                let frequency = voice_base_frequency * operator_frequency_modifiers[operator_index];
+                let phase_addition = frequency * time_per_sample.0;
+
+                let mut new_phase = 0.0;
+
+                for i in 0..SAMPLE_PASS_SIZE {
+                    // Do multiplication instead of successive addition for less precision loss (hopefully)
+                    new_phase = last_phase + phase_addition * ((i + 1) as f64);
+
+                    let j = i * 2;
+
+                    operator_phases[operator_index][j] = new_phase;
+                    operator_phases[operator_index][j + 1] = new_phase;
+                }
+
+                // Save phase
+                voice.operators[operator_index].last_phase.0 = new_phase;
+            }
+
+            voice.deactivate_if_envelopes_ended();
+
+            // --- Generate samples for all operators
+
             // Voice modulation input storage, indexed by operator
             let mut voice_modulation_inputs = [[0.0f64; SAMPLE_PASS_SIZE * 2]; 4];
 
-            let key_velocity_splat = pd_set1(key_velocities[voice_index]);
+            let key_velocity_splat = pd_set1(voice.key_velocity.0);
 
             // Go through operators downwards, starting with operator 4
             for operator_index in 0..4 { // FIXME: better iterator with 3, 2, 1, 0 possible?
@@ -326,7 +312,7 @@ mod gen {
                     let operator_additive_splat = pd_set1(operator_additive[operator_index]);
 
                     for i in (0..SAMPLE_PASS_SIZE * 2).step_by(pd_width){
-                        let envelope_volume = pd_loadu(&voice_envelope_volumes[voice_index][operator_index][i]);
+                        let envelope_volume = pd_loadu(&operator_envelope_volumes[operator_index][i]);
                         let volume_product = pd_mul(operator_volume_splat, envelope_volume);
 
                         let sample = pd_loadu(&random_numbers[i]);
@@ -389,7 +375,7 @@ mod gen {
                 let tau_splat = pd_set1(TAU);
 
                 for i in (0..SAMPLE_PASS_SIZE * 2).step_by(pd_width) {
-                    let envelope_volume = pd_loadu(&voice_envelope_volumes[voice_index][operator_index][i]);
+                    let envelope_volume = pd_loadu(&operator_envelope_volumes[operator_index][i]);
                     let volume_product = pd_mul(operator_volume_splat, envelope_volume);
 
                     // Skip generation when envelope volume or operator volume is zero.
@@ -410,7 +396,7 @@ mod gen {
                     }
 
                     let modulation_in_for_channel = pd_loadu(&voice_modulation_inputs[operator_index][i]);
-                    let phase = pd_mul(pd_loadu(&voice_phases[voice_index][operator_index][i]), tau_splat);
+                    let phase = pd_mul(pd_loadu(&operator_phases[operator_index][i]), tau_splat);
 
                     // Weird modulation input panning
                     // Note: breaks without VF64_WIDTH >= 2 (SSE2 or newer)
