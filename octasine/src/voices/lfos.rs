@@ -29,7 +29,7 @@ impl Default for VoiceLfo {
 impl VoiceLfo {
     pub fn get_value(
         &mut self,
-        time_per_sample: TimePerSample,
+        time_advancement: f64,
         bpm: BeatsPerMinute,
         shape: LfoShape,
         mode: LfoMode,
@@ -48,7 +48,7 @@ impl VoiceLfo {
         let bpm_ratio = bpm.0 / 120.0;
 
         let new_phase = self.phase.0 +
-            frequency * bpm_ratio * time_per_sample.0;
+            frequency * bpm_ratio * time_advancement;
 
         if new_phase >= 1.0 {
             if mode == LfoMode::Once {

@@ -183,13 +183,14 @@ mod gen {
 
         let time_per_sample = octasine.processing.time_per_sample;
         let time = octasine.processing.global_time;
+        let time_advancement = time_per_sample.0 * (SAMPLE_PASS_SIZE as f64);
 
         // FIXME: needs to use get_value_with_lfo_addition, requiring doing
         // per-voice master volume application
         let master_volume_factor = VOICE_VOLUME_FACTOR * octasine.processing.parameters.master_volume.get_value(time);
 
         // Necessary for interpolation
-        octasine.processing.global_time.0 += time_per_sample.0 * (SAMPLE_PASS_SIZE as f64);
+        octasine.processing.global_time.0 += time_advancement;
 
         // --- Collect parameter data and do audio generation
 
@@ -210,7 +211,7 @@ mod gen {
                 &mut octasine.processing.parameters.lfos,
                 &mut voice.lfos,
                 time,
-                time_per_sample,
+                time_advancement,
                 bpm
             );
 

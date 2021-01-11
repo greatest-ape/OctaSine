@@ -73,7 +73,7 @@ fn plot_lfo_values(filename: &str){
 
     for i in 0..num_samples {
         let lfo_value = lfo.get_value(
-            time_per_sample,
+            time_per_sample.0,
             bpm,
             shape,
             mode,

@@ -117,7 +117,7 @@ pub fn generate_voice_samples(
         &mut parameters.lfos,
         &mut voice.lfos,
         time,
-        time_per_sample,
+        time_per_sample.0,
         bpm
     );
 
