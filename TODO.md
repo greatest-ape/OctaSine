@@ -2,19 +2,19 @@
 
 ## LFO
 
-* pan left in position after switching away from pan lfo
-* Check that LFO code makes no difference to audio output if LFOs are turned
-  off.
-  * Process benchmark could be adjusted to change envelope values too
-* Performance
-  * Cache sync value in interpolatable parameters too? Don't do this, it seems
-    to hurt performance.
+* pan "stuck" in last position after switching away from pan lfo
   * Think about doing panning left_and_right calculation differently, now that
     it is done for each sample if targeted by LFO
+* Consider updating envelope and lfo values in process benchmark too. This
+  would further improve usefulness of output hashing.
 * Sample and hold
 * Is it necessary to look at time signatures etc for bpm sync?
   https://rustaudio.github.io/vst-rs/vst/api/struct.TimeInfo.html
-* Don't interpolate for e.g. frequency?
+
+### Don't do
+
+* Cache sync value in interpolatable parameters too? Don't do this, it seems
+  to hurt performance.
 
 ## GUI
 
