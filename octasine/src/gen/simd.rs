@@ -160,6 +160,8 @@ mod gen {
         let zero_value_limit_splat = pd_set1(ZERO_VALUE_LIMIT);
 
         for voice in octasine.processing.voices.iter_mut().filter(|voice| voice.active){
+            // --- Get voice data
+
             let lfo_values = get_lfo_target_values(
                 &mut octasine.processing.parameters.lfos,
                 &mut voice.lfos,
@@ -168,7 +170,12 @@ mod gen {
                 bpm
             );
 
-            // --- Get operator data
+            let voice_base_frequency = voice.midi_pitch.get_frequency(
+                octasine.processing.parameters.master_frequency.get_value_with_lfo_addition(
+                    (),
+                    lfo_values.get(LfoTargetParameter::Master(LfoTargetMasterParameter::Frequency))
+                )
+            );
 
             // Interpolated
             let mut operator_volume: [f64; 4] = [0.0; 4];
@@ -179,8 +186,11 @@ mod gen {
             
             // Not interpolated
             let mut operator_wave_type = [WaveType::Sine; 4];
-            let mut operator_frequency_modifiers: [f64; 4] = [0.0; 4]; 
+            let mut operator_frequency: [f64; 4] = [voice_base_frequency; 4]; 
             let mut operator_modulation_targets = [0usize; 4];
+
+            let mut operator_envelope_volumes = [[0.0f64; SAMPLE_PASS_SIZE * 2]; 4];
+            let mut operator_phases = [[0.0f64; SAMPLE_PASS_SIZE * 2]; 4];
 
             for (index, operator) in operators.iter_mut().enumerate(){
                 operator_volume[index] = operator.volume.get_value_with_lfo_addition(
@@ -225,7 +235,7 @@ mod gen {
                     lfo_values.get(LfoTargetParameter::Operator(index, LfoTargetOperatorParameter::FrequencyFine))
                 );
 
-                operator_frequency_modifiers[index] = frequency_ratio *
+                operator_frequency[index] *= frequency_ratio *
                     frequency_free *
                     frequency_fine;
 
@@ -242,26 +252,6 @@ mod gen {
                     }
                 }
             }
-
-            let operator_generate_audio = get_operator_generate_audio(
-                operator_volume,
-                operator_additive,
-                operator_modulation_index,
-                operator_wave_type,
-                operator_modulation_targets,
-            );
-
-            // --- Get voice data
-
-            let mut operator_envelope_volumes = [[0.0f64; SAMPLE_PASS_SIZE * 2]; 4];
-            let mut operator_phases = [[0.0f64; SAMPLE_PASS_SIZE * 2]; 4];
-
-            let voice_base_frequency = voice.midi_pitch.get_frequency(
-                octasine.processing.parameters.master_frequency.get_value_with_lfo_addition(
-                    (),
-                    lfo_values.get(LfoTargetParameter::Master(LfoTargetMasterParameter::Frequency))
-                )
-            );
 
             // Envelope
             for i in 0..SAMPLE_PASS_SIZE {
@@ -285,7 +275,7 @@ mod gen {
             // Phase
             for operator_index in 0..4 {
                 let last_phase = voice.operators[operator_index].last_phase.0;
-                let frequency = voice_base_frequency * operator_frequency_modifiers[operator_index];
+                let frequency = operator_frequency[operator_index];
                 let phase_addition = frequency * time_per_sample.0;
 
                 let mut new_phase = 0.0;
@@ -303,6 +293,14 @@ mod gen {
                 // Save phase
                 voice.operators[operator_index].last_phase.0 = new_phase;
             }
+
+            let operator_generate_audio = get_operator_generate_audio(
+                operator_volume,
+                operator_additive,
+                operator_modulation_index,
+                operator_wave_type,
+                operator_modulation_targets,
+            );
 
             voice.deactivate_if_envelopes_ended();
 
