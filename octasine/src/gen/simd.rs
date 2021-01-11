@@ -22,7 +22,7 @@ pub trait AudioGen {
 }
 
 
-pub struct Portable;
+pub struct Fallback;
 pub struct Sse2;
 pub struct Avx;
 
@@ -42,14 +42,14 @@ pub fn process_f32_runtime_select(
         }
 
         #[cfg(not(target_arch = "x86_64"))]
-        Portable::process_f32(octasine, audio_buffer);
+        Fallback::process_f32(octasine, audio_buffer);
     }
 }
 
 
 #[duplicate(
     [
-        instruction_set [ Portable ]
+        instruction_set [ Fallback ]
         target_feature_enable [ cfg(not(feature = "fake-feature")) ]
         pd  [ [f64; 2] ]
         pd_width [ 2 ] 
