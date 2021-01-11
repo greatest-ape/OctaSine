@@ -6,7 +6,6 @@
 //! TODO:
 //!   - Interpolation for processing parameters every sample? Build long arrays here too?
 
-use arrayvec::ArrayVec;
 use duplicate::duplicate;
 use vst::buffer::AudioBuffer;
 
@@ -14,6 +13,8 @@ use crate::OctaSine;
 use crate::common::*;
 use crate::constants::*;
 use crate::parameters::processing::parameters::*;
+
+use super::common::*;
 
 /// Each SAMPLE_PASS_SIZE samples, load parameter changes and processing
 /// parameter values (interpolated values where applicable)
@@ -132,10 +133,15 @@ mod gen {
 
         // --- Set some generally useful variables
 
+        let bpm = octasine.get_bpm();
+
         let operators = &mut octasine.processing.parameters.operators;
 
         let time_per_sample = octasine.processing.time_per_sample;
         let time = octasine.processing.global_time;
+
+        // FIXME: needs to use get_value_with_lfo_addition, requiring doing
+        // per-voice master volume application
         let master_volume_factor = VOICE_VOLUME_FACTOR * octasine.processing.parameters.master_volume.get_value(time);
 
         // Necessary for interpolation
@@ -154,6 +160,14 @@ mod gen {
         let zero_value_limit_splat = pd_set1(ZERO_VALUE_LIMIT);
 
         for voice in octasine.processing.voices.iter_mut().filter(|voice| voice.active){
+            let lfo_values = get_lfo_target_values(
+                &mut octasine.processing.parameters.lfos,
+                &mut voice.lfos,
+                time,
+                time_per_sample,
+                bpm
+            );
+
             // --- Get operator data
 
             // Interpolated
@@ -169,22 +183,51 @@ mod gen {
             let mut operator_modulation_targets = [0usize; 4];
 
             for (index, operator) in operators.iter_mut().enumerate(){
-                operator_volume[index] = operator.volume.get_value(time);
-                operator_modulation_index[index] = operator.modulation_index.get_value(time);
-                operator_feedback[index] = operator.feedback.get_value(time);
-                operator_panning[index] = operator.panning.get_value(time);
+                operator_volume[index] = operator.volume.get_value_with_lfo_addition(
+                    time,
+                    lfo_values.get(LfoTargetParameter::Operator(index, LfoTargetOperatorParameter::Volume))
+                );
+                operator_modulation_index[index] = operator.modulation_index.get_value_with_lfo_addition(
+                    time,
+                    lfo_values.get(LfoTargetParameter::Operator(index, LfoTargetOperatorParameter::ModulationIndex))
+                );
+                operator_feedback[index] = operator.feedback.get_value_with_lfo_addition(
+                    time,
+                    lfo_values.get(LfoTargetParameter::Operator(index, LfoTargetOperatorParameter::Feedback))
+                );
+                operator_panning[index] = operator.panning.get_value_with_lfo_addition(
+                    time,
+                    lfo_values.get(LfoTargetParameter::Operator(index, LfoTargetOperatorParameter::Panning))
+                );
 
                 // Get additive factor; use 1.0 for operator 1
                 operator_additive[index] = if index == 0 {
                     1.0
                 } else {
-                    operator.additive_factor.get_value(time)
+                    operator.additive_factor.get_value_with_lfo_addition(
+                        time,
+                        lfo_values.get(LfoTargetParameter::Operator(index, LfoTargetOperatorParameter::Additive))
+                    )
                 };
 
                 operator_wave_type[index] = operator.wave_type.value;
 
-                operator_frequency_modifiers[index] = operator.frequency_ratio.value *
-                    operator.frequency_free.value * operator.frequency_fine.value;
+                let frequency_ratio = operator.frequency_ratio.get_value_with_lfo_addition(
+                    (),
+                    lfo_values.get(LfoTargetParameter::Operator(index, LfoTargetOperatorParameter::FrequencyRatio))
+                );
+                let frequency_free = operator.frequency_free.get_value_with_lfo_addition(
+                    (),
+                    lfo_values.get(LfoTargetParameter::Operator(index, LfoTargetOperatorParameter::FrequencyFree))
+                );
+                let frequency_fine = operator.frequency_fine.get_value_with_lfo_addition(
+                    (),
+                    lfo_values.get(LfoTargetParameter::Operator(index, LfoTargetOperatorParameter::FrequencyFine))
+                );
+
+                operator_frequency_modifiers[index] = frequency_ratio *
+                    frequency_free *
+                    frequency_fine;
 
                 if let Some(p) = &mut operator.output_operator {
                     use ProcessingParameterOperatorModulationTarget::*;
@@ -214,7 +257,10 @@ mod gen {
             let mut operator_phases = [[0.0f64; SAMPLE_PASS_SIZE * 2]; 4];
 
             let voice_base_frequency = voice.midi_pitch.get_frequency(
-                octasine.processing.parameters.master_frequency.value
+                octasine.processing.parameters.master_frequency.get_value_with_lfo_addition(
+                    (),
+                    lfo_values.get(LfoTargetParameter::Master(LfoTargetMasterParameter::Frequency))
+                )
             );
 
             // Envelope
