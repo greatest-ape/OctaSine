@@ -2,10 +2,12 @@
 
 ## LFO
 
+* Hard limit: make sure values are not too low either..
 * Implement lfos in simd gen
   * Actually run lfo on master volume: will change process bench output hash
 * Check that LFO code makes no difference to audio output if LFOs are turned
   off.
+  * Process benchmark could be adjusted to change envelope values too
 * Performance
   * Cache sync value in interpolatable parameters too? Don't do this, it seems
     to hurt performance.
