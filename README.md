@@ -85,7 +85,6 @@ refer to the contained directories and/or files for details.
 
 Depends on the following git repositories:
 
-  * https://github.com/greatest-ape/simdeez (__octasine__ branch for avx support and very fast sleef sines)
   * https://github.com/greatest-ape/sleef-sys (__octasine__ branch for static linking and avx instruction generation)
 
 ## Trivia
