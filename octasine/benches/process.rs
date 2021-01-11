@@ -64,6 +64,11 @@ fn main(){
     {
         use octasine::gen::simd::AudioGen;
 
+        {
+            let r = benchmark("portable", octasine::gen::simd::Portable::process_f32);
+            println!("Speed compared to fallback:   {}x", reference / r);
+        }
+
         if is_x86_feature_detected!("sse2") {
             let r = benchmark("sse2", octasine::gen::simd::Sse2::process_f32);
             println!("Speed compared to fallback:   {}x", reference / r);

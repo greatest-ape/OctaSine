@@ -29,6 +29,7 @@ pub trait AudioGen {
 }
 
 
+pub struct Portable;
 pub struct Sse2;
 pub struct Avx;
 
@@ -44,12 +45,46 @@ pub fn process_f32_runtime_select(
             Avx::process_f32(octasine, audio_buffer);
         } else if is_x86_feature_detected!("sse2") {
             Sse2::process_f32(octasine, audio_buffer);
+        } else {
+            Portable::process_f32(octasine, audio_buffer);
         }
     }
 }
 
 
 #[duplicate(
+    [
+        instruction_set [ Portable ]
+        target_feature_enable [ "sse2" ]
+        pd  [ [f64; 2] ]
+        pd_width [ 2 ] 
+        pd_set1 [ (|v| [v, v]) ]
+        pd_loadu [ (|source: *const f64| *(source as *const [f64; 2])) ]
+        pd_storeu [ (|target: *mut f64, v: [f64; 2]| {
+            ::std::ptr::write(target as *mut [f64; 2], v);
+        }) ]
+        pd_add [ (|[a1, a2]: [f64; 2], [b1, b2]: [f64; 2]|
+            [a1 + b1, a2 + b2]
+        ) ]
+        pd_sub [ (|[a1, a2]: [f64; 2], [b1, b2]: [f64; 2]|
+            [a1 - b1, a2 - b2]
+        ) ]
+        pd_mul [ (|[a1, a2]: [f64; 2], [b1, b2]: [f64; 2]|
+            [a1 * b1, a2 * b2]
+        ) ]
+        pd_min [ (|[a1, a2]: [f64; 2], [b1, b2]: [f64; 2]|
+            [a1.min(b1), a2.min(b2)]
+        ) ]
+        pd_fast_sin [ (|[a1, a2]: [f64; 2]| [
+            sleef_sys::Sleef_sin_u35(a1),
+            sleef_sys::Sleef_sin_u35(a2),
+        ]) ]
+        pd_gt [ (|[a1, a2]: [f64; 2], [b1, b2]: [f64; 2]| [
+            (a1 > b1) as u64 as f64,
+            (a2 > b2) as u64 as f64
+        ]) ]
+        pd_mod_input_panning [ (|[l, r]: [f64; 2]| [l + r, l + r]) ]
+    ]
     [
         instruction_set [ Sse2 ]
         target_feature_enable [ "sse2" ]
@@ -431,7 +466,7 @@ mod gen {
                         {
                             let volume_on = pd_gt(volume_product, zero_value_limit_splat);
 
-                            let mut volume_on_tmp = [0.0; pd_width];
+                            let mut volume_on_tmp = [0.0f64; pd_width];
                             pd_storeu(&mut volume_on_tmp[0], volume_on);
 
                             // Higher indeces don't really matter: if previous sample has zero
