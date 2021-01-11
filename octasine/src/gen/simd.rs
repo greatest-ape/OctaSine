@@ -484,7 +484,7 @@ mod gen {
                         let phase = pd_mul(pd_loadu(&operator_phases[operator_index][i]), tau_splat);
 
                         // Weird modulation input panning
-                        // Note: breaks without pd_width >= 2 (SSE2 or newer)
+                        // Note: breaks unless pd_width >= 2
                         let modulation_in_channel_sum = pd_mod_input_panning(
                             modulation_in_for_channel
                         );
