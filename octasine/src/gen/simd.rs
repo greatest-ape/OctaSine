@@ -39,15 +39,17 @@ pub fn process_f32_runtime_select(
     octasine: &mut OctaSine,
     audio_buffer: &mut AudioBuffer<f32>,
 ){
-    #[cfg(target_arch = "x86_64")]
     unsafe {
+        #[cfg(target_arch = "x86_64")]
         if is_x86_feature_detected!("avx") {
             Avx::process_f32(octasine, audio_buffer);
-        } else if is_x86_feature_detected!("sse2") {
-            Sse2::process_f32(octasine, audio_buffer);
         } else {
-            Portable::process_f32(octasine, audio_buffer);
+            // SSE2 is always supported on x86_64
+            Sse2::process_f32(octasine, audio_buffer);
         }
+
+        #[cfg(not(target_arch = "x86_64"))]
+        Portable::process_f32(octasine, audio_buffer);
     }
 }
 
