@@ -14,41 +14,41 @@ use octasine::OctaSine;
 /// --- Benchmarking OctaSine process_f32 variant: fallback ---
 /// Total number of samples:      12800000
 /// Equivalent to audio duration: 290.24942 seconds
-/// Processing time in total:     24786 milliseconds
-/// Processing time per sample:   1936.4103 nanoseconds
-/// Estimated CPU use:            8.539552%
+/// Processing time in total:     37735 milliseconds
+/// Processing time per sample:   2948.0542 nanoseconds
+/// Estimated CPU use:            13.000888%
 /// Output hash (first 16 bytes): ab db fa d4 4d bd 62 48 
 ///                               6f 75 2c 02 61 d7 ba a9 
+/// 
+/// --- Benchmarking OctaSine process_f32 variant: portable ---
+/// Total number of samples:      12800000
+/// Equivalent to audio duration: 290.24942 seconds
+/// Processing time in total:     26379 milliseconds
+/// Processing time per sample:   2060.911 nanoseconds
+/// Estimated CPU use:            9.08839%
+/// Output hash (first 16 bytes): ac fd ce 1e a2 7b 79 e1 
+///                               75 06 b6 94 fe be c9 5f 
+/// Speed compared to fallback:   1.4304618x
 /// 
 /// --- Benchmarking OctaSine process_f32 variant: sse2 ---
 /// Total number of samples:      12800000
 /// Equivalent to audio duration: 290.24942 seconds
-/// Processing time in total:     18771 milliseconds
-/// Processing time per sample:   1466.5243 nanoseconds
-/// Estimated CPU use:            6.4671965%
+/// Processing time in total:     17005 milliseconds
+/// Processing time per sample:   1328.5931 nanoseconds
+/// Estimated CPU use:            5.858754%
 /// Output hash (first 16 bytes): ac fd ce 1e a2 7b 79 e1 
 ///                               75 06 b6 94 fe be c9 5f 
-/// Speed compared to fallback:   1.3204079x
-/// 
-/// --- Benchmarking OctaSine process_f32 variant: sse41 ---
-/// Total number of samples:      12800000
-/// Equivalent to audio duration: 290.24942 seconds
-/// Processing time in total:     18857 milliseconds
-/// Processing time per sample:   1473.2283 nanoseconds
-/// Estimated CPU use:            6.496826%
-/// Output hash (first 16 bytes): ac fd ce 1e a2 7b 79 e1 
-///                               75 06 b6 94 fe be c9 5f 
-/// Speed compared to fallback:   1.3143994x
+/// Speed compared to fallback:   2.2189293x
 /// 
 /// --- Benchmarking OctaSine process_f32 variant: avx ---
 /// Total number of samples:      12800000
 /// Equivalent to audio duration: 290.24942 seconds
-/// Processing time in total:     12289 milliseconds
-/// Processing time per sample:   960.0951 nanoseconds
-/// Estimated CPU use:            4.233945%
+/// Processing time in total:     10833 milliseconds
+/// Processing time per sample:   846.33966 nanoseconds
+/// Estimated CPU use:            3.7323072%
 /// Output hash (first 16 bytes): ac fd ce 1e a2 7b 79 e1 
 ///                               75 06 b6 94 fe be c9 5f 
-/// Speed compared to fallback:   2.0168943x
+/// Speed compared to fallback:   3.483299x
 /// ```
 fn main(){
     // Unsafe because process_fn argument is unsafe, which is necessary for simd functions
@@ -73,18 +73,10 @@ fn main(){
             let r = benchmark("sse2", octasine::gen::simd::Sse2::process_f32);
             println!("Speed compared to fallback:   {}x", reference / r);
         }
-        // if is_x86_feature_detected!("sse4.1") {
-        //     let r = benchmark("sse41", octasine::gen::simd::process_f32_sse41);
-        //     println!("Speed compared to fallback:   {}x", reference / r);
-        // }
         if is_x86_feature_detected!("avx") {
             let r = benchmark("avx", octasine::gen::simd::Avx::process_f32);
             println!("Speed compared to fallback:   {}x", reference / r);
         }
-        // if is_x86_feature_detected!("avx2") {
-        //     let r = benchmark("avx2", octasine::gen::simd::process_f32_avx2);
-        //     println!("Speed compared to fallback:   {}x", reference / r);
-        // }
     }
 }
 

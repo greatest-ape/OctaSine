@@ -77,6 +77,9 @@ pub fn process_f32_runtime_select(
         pd_min [ (|[a1, a2]: [f64; 2], [b1, b2]: [f64; 2]|
             [a1.min(b1), a2.min(b2)]
         ) ]
+        pd_max [ (|[a1, a2]: [f64; 2], [b1, b2]: [f64; 2]|
+            [a1.max(b1), a2.max(b2)]
+        ) ]
         pd_fast_sin [ (|[a1, a2]: [f64; 2]| [
             sleef_sys::Sleef_sin_u35(a1),
             sleef_sys::Sleef_sin_u35(a2),
@@ -99,6 +102,7 @@ pub fn process_f32_runtime_select(
         pd_sub [ _mm_sub_pd ]
         pd_mul [ _mm_mul_pd ]
         pd_min [ _mm_min_pd ]
+        pd_max [ _mm_max_pd ]
         pd_fast_sin [ sleef_sys::Sleef_sind2_u35sse2 ]
         pd_gt [ (|a, b| _mm_cmpgt_pd(a, b))]
         pd_mod_input_panning [ (|mod_in| {
@@ -117,6 +121,7 @@ pub fn process_f32_runtime_select(
         pd_sub [ _mm256_sub_pd ]
         pd_mul [ _mm256_mul_pd ]
         pd_min [ _mm256_min_pd ]
+        pd_max [ _mm256_max_pd ]
         pd_fast_sin [ sleef_sys::Sleef_sind4_u35avx ]
         pd_gt [ (|a, b| _mm256_cmp_pd(a, b, _CMP_GT_OQ))]
         pd_mod_input_panning [ (|mod_in| {
@@ -184,10 +189,6 @@ mod gen {
         let time_per_sample = octasine.processing.time_per_sample;
         let time = octasine.processing.global_time;
         let time_advancement = time_per_sample.0 * (SAMPLE_PASS_SIZE as f64);
-
-        // FIXME: needs to use get_value_with_lfo_addition, requiring doing
-        // per-voice master volume application
-        let master_volume_factor = VOICE_VOLUME_FACTOR * octasine.processing.parameters.master_volume.get_value(time);
 
         // Necessary for interpolation
         octasine.processing.global_time.0 += time_advancement;
@@ -339,6 +340,22 @@ mod gen {
                 voice.operators[operator_index].last_phase.0 = new_phase;
             }
 
+            let voice_volume_factor_splat = {
+                let lfo_parameter = LfoTargetParameter::Master(
+                    LfoTargetMasterParameter::Volume
+                );
+                let lfo_addition = lfo_values.get(lfo_parameter);
+
+                let master_volume = octasine.processing
+                    .parameters
+                    .master_volume
+                    .get_value_with_lfo_addition(time, lfo_addition);
+
+                let key_velocity = voice.key_velocity.0;
+
+                pd_set1(VOICE_VOLUME_FACTOR * master_volume * key_velocity)
+            };
+
             let operator_generate_audio = get_operator_generate_audio(
                 operator_volume,
                 operator_additive,
@@ -353,8 +370,6 @@ mod gen {
 
             // Voice modulation input storage, indexed by operator
             let mut voice_modulation_inputs = [[0.0f64; SAMPLE_PASS_SIZE * 2]; 4];
-
-            let key_velocity_splat = pd_set1(voice.key_velocity.0);
 
             // Go through operators downwards, starting with operator 4
             for operator_index in 0..4 { // FIXME: better iterator with 3, 2, 1, 0 possible?
@@ -415,8 +430,14 @@ mod gen {
                         pd_storeu(&mut voice_modulation_inputs[modulation_target][i], modulation_sum);
 
                         // Add additive output to summed_additive_outputs
-                        let summed_plus_new = pd_add(pd_loadu(&summed_additive_outputs[i]), pd_mul(additive_out, key_velocity_splat));
-                        pd_storeu(&mut summed_additive_outputs[i], summed_plus_new);
+                        let summed_plus_new = pd_add(
+                            pd_loadu(&summed_additive_outputs[i]),
+                            pd_mul(additive_out, voice_volume_factor_splat)
+                        );
+                        pd_storeu(
+                            &mut summed_additive_outputs[i],
+                            summed_plus_new
+                        );
                     }
                 } else {
                     // --- Sine frequency modulation audio generation: setup operator SIMD vars
@@ -508,24 +529,31 @@ mod gen {
                         pd_storeu(&mut voice_modulation_inputs[modulation_target][i], modulation_sum);
 
                         // Add additive output to summed_additive_outputs
-                        let summed_plus_new = pd_add(pd_loadu(&summed_additive_outputs[i]), pd_mul(additive_out, key_velocity_splat));
-                        pd_storeu(&mut summed_additive_outputs[i], summed_plus_new);
+                        let summed_plus_new = pd_add(
+                            pd_loadu(&summed_additive_outputs[i]),
+                            pd_mul(additive_out, voice_volume_factor_splat)
+                        );
+                        pd_storeu(
+                            &mut summed_additive_outputs[i],
+                            summed_plus_new
+                        );
                     } // End of sample pass size *  2 iteration
                 }
             } // End of operator iteration
         } // End of voice iteration
 
-        // --- Summed additive outputs: apply master volume and hard limit.
+        // --- Summed additive outputs: apply hard limit.
 
-        let master_volume_factor_splat = pd_set1(master_volume_factor);
-        let max_volume_splat = pd_set1(5.0);
+        let max_value_splat = pd_set1(5.0);
+        let min_value_splat = pd_set1(-5.0);
 
         for i in (0..SAMPLE_PASS_SIZE * 2).step_by(pd_width) {
-            let additive_outputs = pd_loadu(&summed_additive_outputs[i]);
-            let additive_outputs = pd_mul(additive_outputs, master_volume_factor_splat);
-            let limited_outputs = pd_min(additive_outputs, max_volume_splat);
+            let additive = pd_loadu(&summed_additive_outputs[i]);
 
-            pd_storeu(&mut summed_additive_outputs[i], limited_outputs);
+            let additive = pd_min(additive, max_value_splat);
+            let additive = pd_max(additive, min_value_splat);
+
+            pd_storeu(&mut summed_additive_outputs[i], additive);
         }
 
         // --- Write additive outputs to audio buffer

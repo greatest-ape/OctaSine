@@ -2,9 +2,7 @@
 
 ## LFO
 
-* Hard limit: make sure values are not too low either..
-* Implement lfos in simd gen
-  * Actually run lfo on master volume: will change process bench output hash
+* pan left in position after switching away from pan lfo
 * Check that LFO code makes no difference to audio output if LFOs are turned
   off.
   * Process benchmark could be adjusted to change envelope values too
