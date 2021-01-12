@@ -646,13 +646,13 @@ mod gen {
         let max_value_splat = S::pd_set1(5.0);
         let min_value_splat = S::pd_set1(-5.0);
 
-        for i in (0..SAMPLE_PASS_SIZE * 2).step_by(S::PD_WIDTH) {
-            let additive = S::pd_loadu(&summed_additive_outputs[i]);
+        for chunk in summed_additive_outputs.chunks_exact_mut(S::PD_WIDTH){
+            let additive = S::pd_loadu(&chunk[0]);
 
             let additive = S::pd_min(additive, max_value_splat);
             let additive = S::pd_max(additive, min_value_splat);
 
-            S::pd_storeu(&mut summed_additive_outputs[i], additive);
+            S::pd_storeu(&mut chunk[0], additive);
         }
 
         // --- Write additive outputs to audio buffer
