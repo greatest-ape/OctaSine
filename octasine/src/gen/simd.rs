@@ -258,17 +258,19 @@ mod gen {
             let num_samples = audio_buffer.samples();
 
             let mut audio_buffer_outputs = audio_buffer.split().1;
-            let mut audio_buffer_lefts = audio_buffer_outputs.get_mut(0);
-            let mut audio_buffer_rights = audio_buffer_outputs.get_mut(1);
+            let audio_buffer_lefts = audio_buffer_outputs.get_mut(0);
+            let audio_buffer_rights = audio_buffer_outputs.get_mut(1);
     
             let num_passes = num_samples / SAMPLE_PASS_SIZE;
 
-            for pass_index in 0..num_passes { 
+            for i in 0..num_passes { 
+                let start = i * SAMPLE_PASS_SIZE;
+                let end = start + SAMPLE_PASS_SIZE;
+
                 run_pass(
                     octasine,
-                    &mut audio_buffer_lefts,
-                    &mut audio_buffer_rights,
-                    pass_index,
+                    &mut audio_buffer_lefts[start..end],
+                    &mut audio_buffer_rights[start..end],
                 )
             }
         }
@@ -279,7 +281,6 @@ mod gen {
         octasine: &mut OctaSine,
         audio_buffer_lefts: &mut [f32],
         audio_buffer_rights: &mut [f32],
-        pass_index: usize,
     ){
         // --- Update processing parameters from preset parameters
 
@@ -657,12 +658,10 @@ mod gen {
 
         // --- Write additive outputs to audio buffer
 
-        let sample_offset = pass_index * SAMPLE_PASS_SIZE;
-
         for i in 0..SAMPLE_PASS_SIZE {
             let j = i * 2;
-            audio_buffer_lefts[i + sample_offset] = summed_additive_outputs[j] as f32;
-            audio_buffer_rights[i + sample_offset] = summed_additive_outputs[j + 1] as f32;
+            audio_buffer_lefts[i] = summed_additive_outputs[j] as f32;
+            audio_buffer_rights[i] = summed_additive_outputs[j + 1] as f32;
         }
     }
 
