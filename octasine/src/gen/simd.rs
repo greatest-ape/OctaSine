@@ -56,7 +56,6 @@ pub trait Simd {
     unsafe fn pd_mul(a: Self::PackedDouble, b: Self::PackedDouble) -> Self::PackedDouble;
     unsafe fn pd_min(a: Self::PackedDouble, b: Self::PackedDouble) -> Self::PackedDouble;
     unsafe fn pd_max(a: Self::PackedDouble, b: Self::PackedDouble) -> Self::PackedDouble;
-    unsafe fn pd_gt(a: Self::PackedDouble, b: Self::PackedDouble) -> Self::PackedDouble;
     unsafe fn pd_fast_sin(a: Self::PackedDouble) -> Self::PackedDouble;
     unsafe fn pd_mod_input_panning(a: Self::PackedDouble) -> Self::PackedDouble;
     unsafe fn pd_distribute_left_right(l: f64, r: f64) -> Self::PackedDouble;
@@ -94,9 +93,6 @@ impl Simd for Fallback {
     }
     unsafe fn pd_max([a1, a2]: [f64; 2], [b1, b2]: [f64; 2]) -> [f64; 2] {
         [a1.max(b1), a2.max(b2)]
-    }
-    unsafe fn pd_gt([a1, a2]: [f64; 2], [b1, b2]: [f64; 2]) -> [f64; 2] {
-        [(a1 > b1) as u64 as f64, (a2 > b2) as u64 as f64]
     }
     unsafe fn pd_fast_sin([a1, a2]: [f64; 2]) -> [f64; 2] {
         [sleef_sys::Sleef_sin_u35(a1), sleef_sys::Sleef_sin_u35(a2)]
@@ -151,10 +147,6 @@ impl Simd for Sse2 {
     #[target_feature(enable = "sse2")]
     unsafe fn pd_max(a: __m128d, b: __m128d) -> __m128d {
         _mm_max_pd(a, b)
-    }
-    #[target_feature(enable = "sse2")]
-    unsafe fn pd_gt(a: __m128d, b: __m128d) -> __m128d {
-        _mm_cmpgt_pd(a, b)
     }
     #[target_feature(enable = "sse2")]
     unsafe fn pd_fast_sin(a: __m128d) -> __m128d {
@@ -219,10 +211,6 @@ impl Simd for Avx {
     #[target_feature(enable = "avx")]
     unsafe fn pd_max(a: __m256d, b: __m256d) -> __m256d {
         _mm256_max_pd(a, b)
-    }
-    #[target_feature(enable = "avx")]
-    unsafe fn pd_gt(a: __m256d, b: __m256d) -> __m256d {
-        _mm256_cmp_pd(a, b, _CMP_GT_OQ)
     }
     #[target_feature(enable = "avx")]
     unsafe fn pd_fast_sin(a: __m256d) -> __m256d {
