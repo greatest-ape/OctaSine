@@ -2,9 +2,8 @@
 
 ## LFO
 
-* pan "stuck" in last position after switching away from pan lfo
-  * Think about doing panning left_and_right calculation differently, now that
-    it is done for each sample if targeted by LFO
+* Think about doing panning left_and_right calculation differently, now that
+  it is done for each sample if targeted by LFO
 * Consider updating envelope and lfo values in process benchmark too. This
   would further improve usefulness of output hashing.
 * Sample and hold

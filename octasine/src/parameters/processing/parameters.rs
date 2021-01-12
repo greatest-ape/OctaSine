@@ -319,6 +319,7 @@ impl ProcessingParameterOperatorModulationTarget {
 pub struct ProcessingParameterOperatorPanning {
     value: InterpolatableProcessingValue,
     pub left_and_right: [f64; 2],
+    pub lfo_active: bool,
 }
 
 
@@ -345,7 +346,11 @@ impl ProcessingParameter for ProcessingParameterOperatorPanning {
 
         if let Some(new_left_and_right) = opt_new_left_and_right {
             self.left_and_right = new_left_and_right;
+        } else if self.lfo_active {
+            self.left_and_right = Self::calculate_left_and_right(value);
         }
+
+        self.lfo_active = false;
 
         value
     }
@@ -367,6 +372,7 @@ impl ProcessingParameter for ProcessingParameterOperatorPanning {
             ).get();
 
             self.left_and_right = Self::calculate_left_and_right(new_panning);
+            self.lfo_active = true;
 
             new_panning
         } else {
@@ -383,6 +389,7 @@ impl Default for ProcessingParameterOperatorPanning {
         Self {
             value: InterpolatableProcessingValue::new(default),
             left_and_right: Self::calculate_left_and_right(default),
+            lfo_active: false,
         }
     }
 }
