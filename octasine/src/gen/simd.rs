@@ -460,7 +460,8 @@ mod gen {
                 let mut new_phase = 0.0;
 
                 for i in 0..SAMPLE_PASS_SIZE {
-                    // Do multiplication instead of successive addition for less precision loss (hopefully)
+                    // Do multiplication instead of successive addition for
+                    // less precision loss (hopefully)
                     new_phase = last_phase + phase_addition * ((i + 1) as f64);
 
                     let j = i * 2;
@@ -538,22 +539,46 @@ mod gen {
                         S::pd_distribute_left_right(l, r)
                     };
 
-                    let operator_volume_splat = S::pd_set1(operator_volume[operator_index]);
-                    let operator_additive_splat = S::pd_set1(operator_additive[operator_index]);
+                    let operator_volume_splat = S::pd_set1(
+                        operator_volume[operator_index]
+                    );
+                    let operator_additive_splat = S::pd_set1(
+                        operator_additive[operator_index]
+                    );
 
                     for i in (0..SAMPLE_PASS_SIZE * 2).step_by(S::PD_WIDTH){
-                        let envelope_volume = S::pd_loadu(&operator_envelope_volumes[operator_index][i]);
-                        let volume_product = S::pd_mul(operator_volume_splat, envelope_volume);
+                        let envelope_volume = S::pd_loadu(
+                            &operator_envelope_volumes[operator_index][i]
+                        );
+                        let volume_product = S::pd_mul(
+                            operator_volume_splat,
+                            envelope_volume
+                        );
 
                         let sample = S::pd_loadu(&random_numbers[i]);
 
-                        let sample_adjusted = S::pd_mul(S::pd_mul(sample, volume_product), constant_power_panning);
-                        let additive_out = S::pd_mul(sample_adjusted, operator_additive_splat);
-                        let modulation_out = S::pd_sub(sample_adjusted, additive_out);
+                        let sample_adjusted = S::pd_mul(
+                            S::pd_mul(sample, volume_product),
+                            constant_power_panning
+                        );
+                        let additive_out = S::pd_mul(
+                            sample_adjusted,
+                            operator_additive_splat
+                        );
+                        let modulation_out = S::pd_sub(
+                            sample_adjusted,
+                            additive_out
+                        );
 
                         // Add modulation output to target operator's modulation inputs
-                        let modulation_sum = S::pd_add(S::pd_loadu(&voice_modulation_inputs[modulation_target][i]), modulation_out);
-                        S::pd_storeu(&mut voice_modulation_inputs[modulation_target][i], modulation_sum);
+                        let modulation_sum = S::pd_add(
+                            S::pd_loadu(&voice_modulation_inputs[modulation_target][i]),
+                            modulation_out
+                        );
+                        S::pd_storeu(
+                            &mut voice_modulation_inputs[modulation_target][i],
+                            modulation_sum
+                        );
 
                         // Add additive output to summed_additive_outputs
                         let summed_plus_new = S::pd_add(
@@ -568,20 +593,32 @@ mod gen {
                 } else {
                     // --- Setup operator SIMD vars
 
-                    let operator_volume_splat = S::pd_set1(operator_volume[operator_index]);
-                    let operator_feedback_splat = S::pd_set1(operator_feedback[operator_index]);
-                    let operator_additive_splat = S::pd_set1(operator_additive[operator_index]);
-                    let operator_modulation_index_splat = S::pd_set1(operator_modulation_index[operator_index]);
+                    let operator_volume_splat = S::pd_set1(
+                        operator_volume[operator_index]
+                    );
+                    let operator_feedback_splat = S::pd_set1(
+                        operator_feedback[operator_index]
+                    );
+                    let operator_additive_splat = S::pd_set1(
+                        operator_additive[operator_index]
+                    );
+                    let operator_modulation_index_splat = S::pd_set1(
+                        operator_modulation_index[operator_index]
+                    );
 
                     let (pan_tendency, one_minus_pan_tendency) = {
                         // Get panning as value between -1 and 1
-                        let pan_transformed = 2.0 * (operator_panning[operator_index] - 0.5);
+                        let pan_transformed = 2.0 *
+                            (operator_panning[operator_index] - 0.5);
 
                         let r = pan_transformed.max(0.0);
                         let l = (pan_transformed * -1.0).max(0.0);
 
                         let tendency = S::pd_distribute_left_right(l, r);
-                        let one_minus_tendency = S::pd_sub(S::pd_set1(1.0), tendency);
+                        let one_minus_tendency = S::pd_sub(
+                            S::pd_set1(1.0),
+                            tendency
+                        );
 
                         (tendency, one_minus_tendency)
                     };
@@ -600,21 +637,33 @@ mod gen {
                     let tau_splat = S::pd_set1(TAU);
 
                     for i in (0..SAMPLE_PASS_SIZE * 2).step_by(S::PD_WIDTH) {
-                        let envelope_volume = S::pd_loadu(&operator_envelope_volumes[operator_index][i]);
-                        let volume_product = S::pd_mul(operator_volume_splat, envelope_volume);
+                        let envelope_volume = S::pd_loadu(
+                            &operator_envelope_volumes[operator_index][i]
+                        );
+                        let volume_product = S::pd_mul(
+                            operator_volume_splat,
+                            envelope_volume
+                        );
 
-                        // Skip generation when envelope volume or operator volume is zero.
-                        // Helps performance when operator envelope lengths vary a lot.
-                        // Otherwise, the branching probably negatively impacts performance.
-                        // Higher indeces don't really matter: if previous sample has zero
-                        // envelope volume, next one probably does too. Worst case scenario
-                        // is that attacks are a tiny bit slower.
+                        // Skip generation when envelope volume or operator
+                        // volume is zero. Helps performance when operator
+                        // envelope lengths vary a lot. Otherwise, the
+                        // branching probably negatively impacts performance.
+                        // Higher indeces don't really matter: if previous
+                        // sample has zero envelope volume, next one probably
+                        // does too. The worst case scenario is that attacks
+                        // are a tiny bit slower.
                         if !S::pd_first_over_zero_limit(volume_product) {
                             continue;
                         }
 
-                        let modulation_in_for_channel = S::pd_loadu(&voice_modulation_inputs[operator_index][i]);
-                        let phase = S::pd_mul(S::pd_loadu(&operator_phases[operator_index][i]), tau_splat);
+                        let modulation_in_for_channel = S::pd_loadu(
+                            &voice_modulation_inputs[operator_index][i]
+                        );
+                        let phase = S::pd_mul(
+                            S::pd_loadu(&operator_phases[operator_index][i]),
+                            tau_splat
+                        );
 
                         // Weird modulation input panning
                         // Note: breaks unless S::PD_WIDTH >= 2
@@ -622,22 +671,48 @@ mod gen {
                             modulation_in_for_channel
                         );
 
-                        let modulation_in = S::pd_add(S::pd_mul(pan_tendency, modulation_in_channel_sum),
-                            S::pd_mul(one_minus_pan_tendency, modulation_in_for_channel));
+                        let modulation_in = S::pd_add(
+                            S::pd_mul(pan_tendency, modulation_in_channel_sum),
+                            S::pd_mul(one_minus_pan_tendency, modulation_in_for_channel)
+                        );
 
-                        let feedback = S::pd_mul(operator_feedback_splat, S::pd_fast_sin(phase));
+                        let feedback = S::pd_mul(
+                            operator_feedback_splat,
+                            S::pd_fast_sin(phase)
+                        );
 
-                        let sin_input = S::pd_add(S::pd_mul(operator_modulation_index_splat, S::pd_add(feedback, modulation_in)), phase);
+                        let sin_input = S::pd_add(
+                            S::pd_mul(
+                                operator_modulation_index_splat,
+                                S::pd_add(feedback, modulation_in)
+                            ),
+                            phase
+                        );
 
                         let sample = S::pd_fast_sin(sin_input);
 
-                        let sample_adjusted = S::pd_mul(S::pd_mul(sample, volume_product), constant_power_panning);
-                        let additive_out = S::pd_mul(sample_adjusted, operator_additive_splat);
-                        let modulation_out = S::pd_sub(sample_adjusted, additive_out);
+                        let sample_adjusted = S::pd_mul(
+                            S::pd_mul(sample, volume_product),
+                            constant_power_panning
+                        );
+                        let additive_out = S::pd_mul(
+                            sample_adjusted,
+                            operator_additive_splat
+                        );
+                        let modulation_out = S::pd_sub(
+                            sample_adjusted,
+                            additive_out
+                        );
 
                         // Add modulation output to target operator's modulation inputs
-                        let modulation_sum = S::pd_add(S::pd_loadu(&voice_modulation_inputs[modulation_target][i]), modulation_out);
-                        S::pd_storeu(&mut voice_modulation_inputs[modulation_target][i], modulation_sum);
+                        let modulation_sum = S::pd_add(
+                            S::pd_loadu(&voice_modulation_inputs[modulation_target][i]),
+                            modulation_out
+                        );
+                        S::pd_storeu(
+                            &mut voice_modulation_inputs[modulation_target][i],
+                            modulation_sum
+                        );
 
                         // Add additive output to summed_additive_outputs
                         let summed_plus_new = S::pd_add(
