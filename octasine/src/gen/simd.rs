@@ -59,6 +59,7 @@ pub trait Simd {
     unsafe fn pd_gt(a: Self::PackedDouble, b: Self::PackedDouble) -> Self::PackedDouble;
     unsafe fn pd_fast_sin(a: Self::PackedDouble) -> Self::PackedDouble;
     unsafe fn pd_mod_input_panning(a: Self::PackedDouble) -> Self::PackedDouble;
+    unsafe fn pd_distribute_left_right(l: f64, r: f64) -> Self::PackedDouble;
 }
 
 
@@ -101,6 +102,9 @@ impl Simd for Fallback {
     }
     unsafe fn pd_mod_input_panning([l, r]: [f64; 2]) -> [f64; 2] {
         [l + r, l + r]
+    }
+    unsafe fn pd_distribute_left_right(l: f64, r: f64) -> [f64; 2] {
+        [l, r]
     }
 }
 
@@ -156,6 +160,12 @@ impl Simd for Sse2 {
     unsafe fn pd_mod_input_panning(a: __m128d) -> __m128d {
         _mm_add_pd(a, _mm_shuffle_pd(a, a, 0b01))
     }
+    #[target_feature(enable = "sse2")]
+    unsafe fn pd_distribute_left_right(l: f64, r: f64) -> __m128d {
+        let lr = [l, r];
+
+        _mm_loadu_pd(&lr[0])
+    }
 }
 
 
@@ -209,6 +219,12 @@ impl Simd for Avx {
     #[target_feature(enable = "avx")]
     unsafe fn pd_mod_input_panning(a: __m256d) -> __m256d {
         _mm256_add_pd(a, _mm256_permute_pd(a, 0b0101))
+    }
+    #[target_feature(enable = "avx")]
+    unsafe fn pd_distribute_left_right(l: f64, r: f64) -> __m256d {
+        let lr = [l, r, l, r];
+
+        _mm256_loadu_pd(&lr[0])
     }
 }
 
@@ -495,17 +511,12 @@ mod gen {
                     };
 
                     let modulation_target = operator_modulation_targets[operator_index];
-
+                    
                     let constant_power_panning = {
-                        let mut data = [0.0f64; 8];
+                        let [l, r] = operators[operator_index].panning
+                            .left_and_right;
 
-                        let left_and_right = operators[operator_index].panning.left_and_right;
-                        
-                        for (i, v) in data.iter_mut().enumerate() {
-                            *v = left_and_right[i % 2];
-                        }
-
-                        S::pd_loadu(&data[0])
+                        S::pd_distribute_left_right(l, r)
                     };
 
                     let operator_volume_splat = S::pd_set1(operator_volume[operator_index]);
@@ -550,25 +561,17 @@ mod gen {
                         let r = pan_transformed.max(0.0);
                         let l = (pan_transformed * -1.0).max(0.0);
 
-                        // Width 8 in case of eventual avx512 support
-                        let data = [l, r, l, r, l, r, l, r];
-                        
-                        let tendency = S::pd_loadu(&data[0]);
+                        let tendency = S::pd_distribute_left_right(l, r);
                         let one_minus_tendency = S::pd_sub(S::pd_set1(1.0), tendency);
 
                         (tendency, one_minus_tendency)
                     };
-
+                    
                     let constant_power_panning = {
-                        let mut data = [0.0f64; 8];
+                        let [l, r] = operators[operator_index].panning
+                            .left_and_right;
 
-                        let left_and_right = operators[operator_index].panning.left_and_right;
-                        
-                        for (i, v) in data.iter_mut().enumerate() {
-                            *v = left_and_right[i % 2];
-                        }
-
-                        S::pd_loadu(&data[0])
+                        S::pd_distribute_left_right(l, r)
                     };
 
                     let modulation_target = operator_modulation_targets[operator_index];
