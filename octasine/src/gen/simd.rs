@@ -60,6 +60,7 @@ pub trait Simd {
     unsafe fn pd_fast_sin(a: Self::PackedDouble) -> Self::PackedDouble;
     unsafe fn pd_mod_input_panning(a: Self::PackedDouble) -> Self::PackedDouble;
     unsafe fn pd_distribute_left_right(l: f64, r: f64) -> Self::PackedDouble;
+    unsafe fn pd_first_over_zero_limit(volume: Self::PackedDouble) -> bool;
 }
 
 
@@ -105,6 +106,9 @@ impl Simd for Fallback {
     }
     unsafe fn pd_distribute_left_right(l: f64, r: f64) -> [f64; 2] {
         [l, r]
+    }
+    unsafe fn pd_first_over_zero_limit([first_volume, _]: [f64; 2]) -> bool {
+        first_volume > ZERO_VALUE_LIMIT
     }
 }
 
@@ -166,6 +170,14 @@ impl Simd for Sse2 {
 
         _mm_loadu_pd(&lr[0])
     }
+    #[target_feature(enable = "sse2")]
+    unsafe fn pd_first_over_zero_limit(volume: __m128d) -> bool {
+        let mut volume_tmp = [0.0f64; 2];
+
+        _mm_storeu_pd(&mut volume_tmp[0], volume);
+
+        volume_tmp[0] > ZERO_VALUE_LIMIT
+    }
 }
 
 
@@ -225,6 +237,14 @@ impl Simd for Avx {
         let lr = [l, r, l, r];
 
         _mm256_loadu_pd(&lr[0])
+    }
+    #[target_feature(enable = "avx")]
+    unsafe fn pd_first_over_zero_limit(volume: __m256d) -> bool {
+        let mut volume_tmp = [0.0f64; 4];
+
+        _mm256_storeu_pd(&mut volume_tmp[0], volume);
+
+        volume_tmp[0] > ZERO_VALUE_LIMIT
     }
 }
 
@@ -317,8 +337,6 @@ mod gen {
 
         // Sample pass size * 2 because of two channels. Even index = left channel
         let mut summed_additive_outputs = [0.0f64; SAMPLE_PASS_SIZE * 2];
-
-        let zero_value_limit_splat = S::pd_set1(ZERO_VALUE_LIMIT);
 
         for voice in octasine.processing.voices.iter_mut().filter(|voice| voice.active){
             // --- Get voice data
@@ -588,18 +606,11 @@ mod gen {
                         // Skip generation when envelope volume or operator volume is zero.
                         // Helps performance when operator envelope lengths vary a lot.
                         // Otherwise, the branching probably negatively impacts performance.
-                        {
-                            let volume_on = S::pd_gt(volume_product, zero_value_limit_splat);
-
-                            let mut volume_on_tmp = [0.0f64; S::PD_WIDTH];
-                            S::pd_storeu(&mut volume_on_tmp[0], volume_on);
-
-                            // Higher indeces don't really matter: if previous sample has zero
-                            // envelope volume, next one probably does too. Worst case scenario
-                            // is that attacks are a tiny bit slower.
-                            if volume_on_tmp[0].to_bits() == 0 {
-                                continue;
-                            }
+                        // Higher indeces don't really matter: if previous sample has zero
+                        // envelope volume, next one probably does too. Worst case scenario
+                        // is that attacks are a tiny bit slower.
+                        if !S::pd_first_over_zero_limit(volume_product) {
+                            continue;
                         }
 
                         let modulation_in_for_channel = S::pd_loadu(&voice_modulation_inputs[operator_index][i]);
