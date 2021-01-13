@@ -348,13 +348,14 @@ mod gen {
     ){
         // --- Update processing parameters from preset parameters
 
-        let changed_preset_parameters = octasine.sync.presets
+        let changed_sync_parameters = octasine.sync.presets
             .get_changed_parameters_from_processing();
 
-        if let Some(indeces) = changed_preset_parameters {
+        if let Some(indeces) = changed_sync_parameters {
             for (index, opt_new_value) in indeces.iter().enumerate(){
                 if let Some(new_value) = opt_new_value {
-                    octasine.processing.parameters.set_from_sync(index, *new_value);
+                    octasine.processing.parameters
+                        .set_from_sync(index, *new_value);
                 }
             }
         }
