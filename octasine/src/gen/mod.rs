@@ -96,7 +96,7 @@ pub trait Simd {
     unsafe fn pd_min(a: Self::PackedDouble, b: Self::PackedDouble) -> Self::PackedDouble;
     unsafe fn pd_max(a: Self::PackedDouble, b: Self::PackedDouble) -> Self::PackedDouble;
     unsafe fn pd_fast_sin(a: Self::PackedDouble) -> Self::PackedDouble;
-    unsafe fn pd_mod_input_panning(a: Self::PackedDouble) -> Self::PackedDouble;
+    unsafe fn pd_pairwise_horizontal_sum(a: Self::PackedDouble) -> Self::PackedDouble;
     unsafe fn pd_distribute_left_right(l: f64, r: f64) -> Self::PackedDouble;
     unsafe fn pd_first_over_zero_limit(volume: Self::PackedDouble) -> bool;
 }
@@ -138,7 +138,7 @@ impl<T: FallbackSine> Simd for Fallback<T> {
     unsafe fn pd_fast_sin(a: [f64; 2]) -> [f64; 2] {
         T::sin(a)
     }
-    unsafe fn pd_mod_input_panning([l, r]: [f64; 2]) -> [f64; 2] {
+    unsafe fn pd_pairwise_horizontal_sum([l, r]: [f64; 2]) -> [f64; 2] {
         [l + r, l + r]
     }
     unsafe fn pd_distribute_left_right(l: f64, r: f64) -> [f64; 2] {
@@ -195,7 +195,7 @@ impl Simd for Sse2 {
         sleef_sys::Sleef_sind2_u35sse2(a)
     }
     #[target_feature(enable = "sse2")]
-    unsafe fn pd_mod_input_panning(a: __m128d) -> __m128d {
+    unsafe fn pd_pairwise_horizontal_sum(a: __m128d) -> __m128d {
         _mm_add_pd(a, _mm_shuffle_pd(a, a, 0b01))
     }
     #[target_feature(enable = "sse2")]
@@ -260,7 +260,7 @@ impl Simd for Avx {
         sleef_sys::Sleef_sind4_u35avx(a)
     }
     #[target_feature(enable = "avx")]
-    unsafe fn pd_mod_input_panning(a: __m256d) -> __m256d {
+    unsafe fn pd_pairwise_horizontal_sum(a: __m256d) -> __m256d {
         _mm256_add_pd(a, _mm256_permute_pd(a, 0b0101))
     }
     #[target_feature(enable = "avx")]
@@ -717,7 +717,7 @@ mod gen {
                         // panned to any side, mix out the original stereo
                         // signals and mix in mono.
                         // Note: breaks unless S::PD_WIDTH >= 2
-                        let modulation_in_channel_sum = S::pd_mod_input_panning(
+                        let modulation_in_channel_sum = S::pd_pairwise_horizontal_sum(
                             modulation_in_for_channel
                         );
                         let modulation_in = S::pd_add(
