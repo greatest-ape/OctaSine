@@ -1,11 +1,6 @@
 use std::sync::Arc;
 
-use baseview::{Parent, Size, WindowOpenOptions, WindowScalePolicy};
-use iced_baseview::{Runner, Settings};
-use octasine::{GuiSyncHandle, built_in_preset_bank, SyncState};
-use octasine::constants::PLUGIN_NAME;
-use octasine::gui::{GUI_WIDTH, GUI_HEIGHT};
-use octasine::gui::interface::OctaSineIcedApplication;
+use octasine::{built_in_preset_bank, gui::Gui, GuiSyncHandle, SyncState};
 use simplelog::{ConfigBuilder, SimpleLogger, LevelFilter};
 
 
@@ -34,18 +29,7 @@ fn main(){
     GuiSyncHandle::set_parameter(&sync_state, 6, 1.0);
     GuiSyncHandle::set_parameter(&sync_state, 20, 0.9);
 
-    let settings = Settings {
-        window: WindowOpenOptions {
-            parent: Parent::None,
-            size: Size::new(GUI_WIDTH as f64, GUI_HEIGHT as f64),
-            scale: WindowScalePolicy::SystemScaleFactor,
-            title: PLUGIN_NAME.to_string(),
-        },
-        flags: sync_state.clone(),
-    };
-
-    Runner::<OctaSineIcedApplication<_>>::open(settings)
-        .1
+    Gui::open_app_window(None, sync_state.clone())
         .unwrap()
         .app_run_blocking();
 }

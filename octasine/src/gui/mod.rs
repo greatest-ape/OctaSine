@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use baseview::{Parent, Size, WindowOpenOptions, WindowScalePolicy};
+use baseview::{AppRunner, Parent, Size, WindowOpenOptions, WindowScalePolicy};
 use iced_baseview::{Runner, Settings};
 use vst::editor::Editor;
 use raw_window_handle::RawWindowHandle;
@@ -30,6 +30,29 @@ impl Gui {
             opened: false,
         }
     }
+
+    pub fn open_app_window(
+        parent: Option<*mut ::core::ffi::c_void>,
+        sync_state: Arc<SyncState>,
+    ) -> Option<AppRunner> {
+        let parent = if let Some(parent) = parent {
+            Parent::WithParent(raw_window_handle_from_parent(parent))
+        } else {
+            Parent::None
+        };
+
+        let settings = Settings {
+            window: WindowOpenOptions {
+                parent,
+                size: Size::new(GUI_WIDTH as f64, GUI_HEIGHT as f64),
+                scale: WindowScalePolicy::SystemScaleFactor,
+                title: PLUGIN_NAME.to_string(),
+            },
+            flags: sync_state,
+        };
+
+        Runner::<OctaSineIcedApplication<_>>::open(settings).1
+    }
 }
 
 
@@ -47,21 +70,7 @@ impl Editor for Gui {
             return false;
         }
 
-        let parent = Parent::WithParent(
-            raw_window_handle_from_parent(parent)
-        );
-
-        let settings = Settings {
-            window: WindowOpenOptions {
-                parent,
-                size: Size::new(GUI_WIDTH as f64, GUI_HEIGHT as f64),
-                scale: WindowScalePolicy::SystemScaleFactor,
-                title: PLUGIN_NAME.to_string(),
-            },
-            flags: self.sync_state.clone(),
-        };
-
-        Runner::<OctaSineIcedApplication<_>>::open(settings);
+        Self::open_app_window(Some(parent), self.sync_state.clone());
 
         true
     }

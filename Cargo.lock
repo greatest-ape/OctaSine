@@ -1819,8 +1819,6 @@ dependencies = [
 name = "run_gui"
 version = "0.1.0"
 dependencies = [
- "baseview",
- "iced_baseview",
  "octasine",
  "simplelog",
 ]

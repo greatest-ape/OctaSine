@@ -8,11 +8,3 @@ edition = "2018"
 [dependencies]
 octasine = { path = "../octasine", features = ["gui"] }
 simplelog = { version = "0.9", default-features = false }
-
-[dependencies.baseview]
-git = "https://github.com/rustaudio/baseview.git"
-branch = "master"
-
-[dependencies.iced_baseview]
-git = "https://github.com/BillyDM/iced_baseview.git"
-branch = "main"
