@@ -710,11 +710,15 @@ mod gen {
                         );
 
                         // Weird modulation input panning
+                        // Mix modulator into current operator depending on
+                        // panning of current operator. If panned to the
+                        // middle, just pass through the stereo signals. If
+                        // panned to any side, mix out the original stereo
+                        // signals and mix in mono.
                         // Note: breaks unless S::PD_WIDTH >= 2
                         let modulation_in_channel_sum = S::pd_mod_input_panning(
                             modulation_in_for_channel
                         );
-
                         let modulation_in = S::pd_add(
                             S::pd_mul(pan_tendency, modulation_in_channel_sum),
                             S::pd_mul(one_minus_pan_tendency, modulation_in_for_channel)
