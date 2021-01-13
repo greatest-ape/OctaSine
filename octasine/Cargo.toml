@@ -7,7 +7,7 @@ edition = "2018"
 
 [features]
 default = ["logging"]
-simd = ["sleef-sys", "duplicate"]
+simd = ["sleef-sys"]
 logging = ["dirs", "log", "log-panics", "simplelog"]
 gui = ["baseview", "iced_baseview", "iced_audio", "raw-window-handle"]
 
@@ -23,7 +23,7 @@ arc-swap = "1"
 arrayvec = "0.5"
 array-init = "1"
 cfg-if = "1"
-duplicate = { version = "0.2", optional = true }
+duplicate = "0.2"
 fastrand = "1"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"

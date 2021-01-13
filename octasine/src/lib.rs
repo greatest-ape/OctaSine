@@ -130,16 +130,8 @@ impl OctaSine {
 
 
 impl Plugin for OctaSine {
-    cfg_if::cfg_if! {
-        if #[cfg(feature = "simd")] {
-            fn process(&mut self, buffer: &mut vst::buffer::AudioBuffer<f32>){
-                gen::simd::process_f32_runtime_select(self, buffer);
-            }
-        } else {
-            fn process(&mut self, buffer: &mut vst::buffer::AudioBuffer<f32>){
-                gen::reference::process_f32(self, buffer);
-            }
-        }
+    fn process(&mut self, buffer: &mut vst::buffer::AudioBuffer<f32>){
+        gen::simd::process_f32_runtime_select(self, buffer);
     }
 
     fn new(host: HostCallback) -> Self {

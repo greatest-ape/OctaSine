@@ -5,6 +5,7 @@ use vst::plugin::PluginParameters;
 use sha2::{Digest, Sha256};
 
 use octasine::OctaSine;
+use octasine::gen::simd::AudioGen;
 
 
 /// Benchmark OctaSine process functions
@@ -57,15 +58,17 @@ fn main(){
         octasine::gen::reference::process_f32(octasine, audio_buffer);
     }
 
-    #[allow(unused_variables)]
     let reference = benchmark("reference", reference);
+
+    {
+        let r = benchmark("fallback (std)", octasine::gen::simd::FallbackStd::process_f32);
+        println!("Speed compared to reference:  {}x", reference / r);
+    }
 
     #[cfg(feature = "simd")]
     {
-        use octasine::gen::simd::AudioGen;
-
         {
-            let r = benchmark("fallback", octasine::gen::simd::Fallback::process_f32);
+            let r = benchmark("fallback (sleef)", octasine::gen::simd::FallbackSleef::process_f32);
             println!("Speed compared to reference:  {}x", reference / r);
         }
 

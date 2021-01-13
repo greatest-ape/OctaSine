@@ -1,3 +1,4 @@
+#[cfg(feature = "simd")]
 use core::arch::x86_64::*;
 
 use duplicate::duplicate;
@@ -22,16 +23,24 @@ pub fn process_f32_runtime_select(
     audio_buffer: &mut AudioBuffer<f32>,
 ){
     unsafe {
-        #[cfg(target_arch = "x86_64")]
-        if is_x86_feature_detected!("avx") {
-            Avx::process_f32(octasine, audio_buffer);
-        } else {
-            // SSE2 is always supported on x86_64
-            Sse2::process_f32(octasine, audio_buffer);
+        cfg_if::cfg_if! {
+            if #[cfg(feature = "simd")] {
+                cfg_if::cfg_if! {
+                    if #[cfg(target_arch = "x86_64")] {
+                        if is_x86_feature_detected!("avx") {
+                            Avx::process_f32(octasine, audio_buffer);
+                        } else {
+                            // SSE2 is always supported on x86_64
+                            Sse2::process_f32(octasine, audio_buffer);
+                        }
+                    } else {
+                        FallbackSleef::process_f32(octasine, audio_buffer);
+                    }
+                }
+            } else {
+                FallbackStd::process_f32(octasine, audio_buffer);
+            }
         }
-
-        #[cfg(not(target_arch = "x86_64"))]
-        Fallback::process_f32(octasine, audio_buffer);
     }
 }
 
@@ -41,6 +50,34 @@ pub trait AudioGen {
         octasine: &mut OctaSine,
         audio_buffer: &mut AudioBuffer<f32>,
     );
+}
+
+
+pub trait FallbackSine {
+    fn sin(a: [f64; 2]) -> [f64; 2];
+}
+
+
+pub struct FallbackSineStd;
+
+
+impl FallbackSine for FallbackSineStd {
+    fn sin([a1, a2]: [f64; 2]) -> [f64; 2] {
+        [a1.sin(), a2.sin()]
+    }
+}
+
+#[cfg(feature = "simd")]
+pub struct FallbackSineSleef;
+
+
+#[cfg(feature = "simd")]
+impl FallbackSine for FallbackSineSleef {
+    fn sin([a1, a2]: [f64; 2]) -> [f64; 2] {
+        unsafe {
+            [sleef_sys::Sleef_sin_u35(a1), sleef_sys::Sleef_sin_u35(a2)]
+        }
+    }
 }
 
 
@@ -63,10 +100,12 @@ pub trait Simd {
 }
 
 
-pub struct Fallback;
+pub struct Fallback<T>{
+    phantom_data: ::std::marker::PhantomData<T>,
+}
 
 
-impl Simd for Fallback {
+impl<T: FallbackSine> Simd for Fallback<T> {
     type PackedDouble = [f64; 2];
     const PD_WIDTH: usize = 2;
 
@@ -94,8 +133,8 @@ impl Simd for Fallback {
     unsafe fn pd_max([a1, a2]: [f64; 2], [b1, b2]: [f64; 2]) -> [f64; 2] {
         [a1.max(b1), a2.max(b2)]
     }
-    unsafe fn pd_fast_sin([a1, a2]: [f64; 2]) -> [f64; 2] {
-        [sleef_sys::Sleef_sin_u35(a1), sleef_sys::Sleef_sin_u35(a2)]
+    unsafe fn pd_fast_sin(a: [f64; 2]) -> [f64; 2] {
+        T::sin(a)
     }
     unsafe fn pd_mod_input_panning([l, r]: [f64; 2]) -> [f64; 2] {
         [l + r, l + r]
@@ -112,6 +151,7 @@ impl Simd for Fallback {
 pub struct Sse2;
 
 
+#[cfg(feature = "simd")]
 impl Simd for Sse2 {
     type PackedDouble = __m128d;
     const PD_WIDTH: usize = 2;
@@ -176,6 +216,7 @@ impl Simd for Sse2 {
 pub struct Avx;
 
 
+#[cfg(feature = "simd")]
 impl Simd for Avx {
     type PackedDouble = __m256d;
     const PD_WIDTH: usize = 4;
@@ -237,26 +278,38 @@ impl Simd for Avx {
 }
 
 
+pub type FallbackStd = Fallback<FallbackSineStd>;
+#[cfg(feature = "simd")]
+pub type FallbackSleef = Fallback<FallbackSineSleef>;
+
+
 #[duplicate(
     [
-        S [ Fallback ]
+        S [ FallbackStd ]
         target_feature_enable [ cfg(not(feature = "fake-feature")) ]
+        feature_gate [ cfg(not(feature = "fake-feature")) ]
+    ]
+    [
+        S [ FallbackSleef ]
+        target_feature_enable [ cfg(not(feature = "fake-feature")) ]
+        feature_gate [ cfg(feature = "simd") ]
     ]
     [
         S [ Sse2 ]
         target_feature_enable [ target_feature(enable = "sse2") ]
+        feature_gate [ cfg(feature = "simd") ]
     ]
     [
         S [ Avx ]
         target_feature_enable [ target_feature(enable = "avx") ]
+        feature_gate [ cfg(feature = "simd") ]
     ]
 )]
 mod gen {
     #[allow(unused_imports)]
-    use core::arch::x86_64::*;
-
     use super::*;
 
+    #[feature_gate]
     impl AudioGen for S {
         #[target_feature_enable]
         unsafe fn process_f32(
@@ -284,6 +337,7 @@ mod gen {
         }
     }
 
+    #[feature_gate]
     #[target_feature_enable]
     unsafe fn run_pass(
         octasine: &mut OctaSine,
@@ -740,6 +794,7 @@ mod gen {
     }
 
     /// Operator dependency analysis to allow skipping audio generation when possible
+    #[feature_gate]
     #[target_feature_enable]
     unsafe fn run_operator_dependency_analysis(
         operator_volume: [f64; 4],
