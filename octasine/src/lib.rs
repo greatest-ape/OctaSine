@@ -131,7 +131,7 @@ impl OctaSine {
 
 impl Plugin for OctaSine {
     fn process(&mut self, buffer: &mut vst::buffer::AudioBuffer<f32>){
-        gen::simd::process_f32_runtime_select(self, buffer);
+        gen::process_f32_runtime_select(self, buffer);
     }
 
     fn new(host: HostCallback) -> Self {

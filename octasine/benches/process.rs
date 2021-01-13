@@ -5,80 +5,70 @@ use vst::plugin::PluginParameters;
 use sha2::{Digest, Sha256};
 
 use octasine::OctaSine;
-use octasine::gen::simd::AudioGen;
+use octasine::gen::AudioGen;
 
 
 /// Benchmark OctaSine process functions
 /// 
 /// Example output:
 /// ```txt
-/// --- Benchmarking OctaSine process_f32 variant: reference ---
+/// --- Benchmarking OctaSine process_f32 variant: fallback (std) ---
 /// Total number of samples:      12800000
 /// Equivalent to audio duration: 290.24942 seconds
-/// Processing time in total:     34110 milliseconds
-/// Processing time per sample:   2664.8982 nanoseconds
-/// Estimated CPU use:            11.751962%
-/// Output hash (first 16 bytes): ab db fa d4 4d bd 62 48 
-///                               6f 75 2c 02 61 d7 ba a9 
+/// Processing time in total:     27099 milliseconds
+/// Processing time per sample:   2117.1865 nanoseconds
+/// Estimated CPU use:            9.3364525%
+/// Output hash (first 16 bytes): ad 0d 1d 04 5e 38 95 7f 
+///                               6b dc 96 33 94 3e 15 72 
 /// 
-/// --- Benchmarking OctaSine process_f32 variant: fallback ---
+/// --- Benchmarking OctaSine process_f32 variant: fallback (sleef) ---
 /// Total number of samples:      12800000
 /// Equivalent to audio duration: 290.24942 seconds
-/// Processing time in total:     26353 milliseconds
-/// Processing time per sample:   2058.8918 nanoseconds
-/// Estimated CPU use:            9.0794325%
+/// Processing time in total:     26339 milliseconds
+/// Processing time per sample:   2057.746 nanoseconds
+/// Estimated CPU use:            9.074609%
 /// Output hash (first 16 bytes): ac fd ce 1e a2 7b 79 e1 
 ///                               75 06 b6 94 fe be c9 5f 
-/// Speed compared to reference:  1.2943362x
+/// Speed compared to std fallback:  1.0288862x
 /// 
 /// --- Benchmarking OctaSine process_f32 variant: sse2 ---
 /// Total number of samples:      12800000
 /// Equivalent to audio duration: 290.24942 seconds
-/// Processing time in total:     18694 milliseconds
-/// Processing time per sample:   1460.5168 nanoseconds
-/// Estimated CPU use:            6.4406676%
+/// Processing time in total:     17407 milliseconds
+/// Processing time per sample:   1359.9438 nanoseconds
+/// Estimated CPU use:            5.997256%
 /// Output hash (first 16 bytes): ac fd ce 1e a2 7b 79 e1 
 ///                               75 06 b6 94 fe be c9 5f 
-/// Speed compared to reference:  1.8246268x
+/// Speed compared to std fallback:  1.5568191x
 /// 
 /// --- Benchmarking OctaSine process_f32 variant: avx ---
 /// Total number of samples:      12800000
 /// Equivalent to audio duration: 290.24942 seconds
-/// Processing time in total:     10612 milliseconds
-/// Processing time per sample:   829.1055 nanoseconds
-/// Estimated CPU use:            3.6561658%
+/// Processing time in total:     10654 milliseconds
+/// Processing time per sample:   832.36273 nanoseconds
+/// Estimated CPU use:            3.6706362%
 /// Output hash (first 16 bytes): ac fd ce 1e a2 7b 79 e1 
 ///                               75 06 b6 94 fe be c9 5f 
-/// Speed compared to reference:  3.2141845x
+/// Speed compared to std fallback:  2.5435865x
 /// ```
 fn main(){
-    // Unsafe because process_fn argument is unsafe, which is necessary for simd functions
-    #[inline]
-    unsafe fn reference(octasine: &mut OctaSine, audio_buffer: &mut AudioBuffer<f32>){
-        octasine::gen::reference::process_f32(octasine, audio_buffer);
-    }
-
-    let reference = benchmark("reference", reference);
-
-    {
-        let r = benchmark("fallback (std)", octasine::gen::simd::FallbackStd::process_f32);
-        println!("Speed compared to reference:  {}x", reference / r);
-    }
+    #[allow(unused_variables)]
+    let fallback_std = benchmark("fallback (std)", octasine::gen::FallbackStd::process_f32);
 
     #[cfg(feature = "simd")]
     {
         {
-            let r = benchmark("fallback (sleef)", octasine::gen::simd::FallbackSleef::process_f32);
-            println!("Speed compared to reference:  {}x", reference / r);
+            let r = benchmark("fallback (sleef)", octasine::gen::FallbackSleef::process_f32);
+            println!("Speed compared to std fallback:  {}x", fallback_std / r);
         }
 
         if is_x86_feature_detected!("sse2") {
-            let r = benchmark("sse2", octasine::gen::simd::Sse2::process_f32);
-            println!("Speed compared to reference:  {}x", reference / r);
+            let r = benchmark("sse2", octasine::gen::Sse2::process_f32);
+            println!("Speed compared to std fallback:  {}x", fallback_std / r);
         }
         if is_x86_feature_detected!("avx") {
-            let r = benchmark("avx", octasine::gen::simd::Avx::process_f32);
-            println!("Speed compared to reference:  {}x", reference / r);
+            let r = benchmark("avx", octasine::gen::Avx::process_f32);
+            println!("Speed compared to std fallback:  {}x", fallback_std / r);
         }
     }
 }
