@@ -4,18 +4,19 @@ use iced_baseview::{
 
 
 use crate::GuiSyncHandle;
+use crate::common::WaveType;
 
 use super::{FONT_SIZE, FONT_VERY_BOLD, LINE_HEIGHT, Message};
 use super::envelope::Envelope;
 use super::knob::OctaSineKnob;
-use super::wave_picker::WaveTypePicker;
+use super::boolean_picker::{self, BooleanPicker};
 
 
 pub struct OperatorWidgets {
     index: usize,
     pub volume: OctaSineKnob,
     pub panning: OctaSineKnob,
-    pub wave_type: WaveTypePicker,
+    pub wave_type: BooleanPicker<WaveType>,
     pub mod_index: OctaSineKnob,
     pub feedback: OctaSineKnob,
     pub frequency_ratio: OctaSineKnob,
@@ -49,7 +50,7 @@ impl OperatorWidgets {
             index: operator_index,
             volume: OctaSineKnob::operator_volume(sync_handle, volume),
             panning: OctaSineKnob::operator_panning(sync_handle, panning),
-            wave_type: WaveTypePicker::new(sync_handle, wave),
+            wave_type: boolean_picker::wave_type(sync_handle, wave),
             mod_index: OctaSineKnob::operator_mod_index(sync_handle, mod_index),
             feedback: OctaSineKnob::operator_feedback(sync_handle, feedback),
             frequency_ratio: OctaSineKnob::operator_frequency_ratio(sync_handle, ratio),

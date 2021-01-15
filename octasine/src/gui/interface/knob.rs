@@ -244,6 +244,62 @@ impl OctaSineKnob {
         )
     }
 
+    pub fn lfo_frequency_ratio<H: GuiSyncHandle>(
+        sync_handle: &H,
+        lfo_index: usize,
+        parameter_index: usize,
+    ) -> Self {
+        Self::new_with_steps(
+            sync_handle,
+            parameter_index,
+            &format!("LFO {}\nRATIO", lfo_index + 1),
+            &LFO_FREQUENCY_RATIO_STEPS,
+            1.0
+        )
+    }
+
+    pub fn lfo_frequency_free<H: GuiSyncHandle>(
+        sync_handle: &H,
+        lfo_index: usize,
+        parameter_index: usize,
+    ) -> Self {
+        Self::new_with_steps(
+            sync_handle,
+            parameter_index,
+            &format!("LFO {}\nFREE", lfo_index + 1),
+            &LFO_FREQUENCY_FREE_STEPS,
+            1.0
+        )
+    }
+
+    pub fn lfo_magnitude<H: GuiSyncHandle>(
+        sync_handle: &H,
+        lfo_index: usize,
+        parameter_index: usize,
+    ) -> Self {
+        Self::new_min_max_center(
+            sync_handle,
+            parameter_index,
+            &format!("LFO {}\nAMOUNT", lfo_index + 1),
+        )
+    }
+
+    pub fn lfo_other<H: GuiSyncHandle>(
+        sync_handle: &H,
+        lfo_index: usize,
+        parameter_index: usize,
+        title: &str
+    ) -> Self {
+        Self::new(
+            sync_handle,
+            format!("LFO {}\n{}", lfo_index + 1, title),
+            parameter_index,
+            None,
+            None,
+            0.5,
+        )
+    }
+
     pub fn set_value<H: GuiSyncHandle>(&mut self, sync_handle: &H, value: f64){
         if !self.knob_state.is_dragging() {
             self.knob_state.set_normal(Normal::new(value as f32));

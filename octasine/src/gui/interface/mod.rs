@@ -7,11 +7,13 @@ use crate::GuiSyncHandle;
 
 mod envelope;
 mod knob;
+mod lfo;
 mod mod_matrix;
 mod operator;
 mod preset_picker;
-mod wave_picker;
+mod boolean_picker;
 
+use lfo::LfoWidgets;
 use operator::OperatorWidgets;
 use knob::OctaSineKnob;
 use mod_matrix::ModulationMatrix;
@@ -78,6 +80,10 @@ pub struct OctaSineIcedApplication<H: GuiSyncHandle> {
     operator_2: OperatorWidgets,
     operator_3: OperatorWidgets,
     operator_4: OperatorWidgets,
+    lfo_1: LfoWidgets,
+    lfo_2: LfoWidgets,
+    lfo_3: LfoWidgets,
+    lfo_4: LfoWidgets,
 }
 
 
@@ -226,6 +232,11 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
         let operator_3 = OperatorWidgets::new(&sync_handle, 2);
         let operator_4 = OperatorWidgets::new(&sync_handle, 3);
 
+        let lfo_1 = LfoWidgets::new(&sync_handle, 0);
+        let lfo_2 = LfoWidgets::new(&sync_handle, 1);
+        let lfo_3 = LfoWidgets::new(&sync_handle, 2);
+        let lfo_4 = LfoWidgets::new(&sync_handle, 3);
+
         let app = Self {
             sync_handle,
             host_display_needs_update: false,
@@ -238,6 +249,10 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
             operator_2,
             operator_3,
             operator_4,
+            lfo_1,
+            lfo_2,
+            lfo_3,
+            lfo_4,
         };
 
         (app, Command::none())
@@ -305,6 +320,10 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
         let operator_2 = self.operator_2.view();
         let operator_3 = self.operator_3.view();
         let operator_4 = self.operator_4.view();
+        let lfo_1 = self.lfo_1.view();
+        let lfo_2 = self.lfo_2.view();
+        let lfo_3 = self.lfo_3.view();
+        let lfo_4 = self.lfo_4.view();
 
         let all = Column::new()
             .push(Space::with_height(Length::Units(LINE_HEIGHT * 2)))
@@ -339,6 +358,30 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
             .push(operator_2)
             .push(Space::with_height(Length::Units(LINE_HEIGHT * 2)))
             .push(operator_1)
+            .push(Space::with_height(Length::Units(LINE_HEIGHT * 2)))
+            .push(
+                Row::new()
+                    .push(lfo_1)
+                    .push(
+                        Container::new(
+                            Rule::vertical(LINE_HEIGHT)
+                        )
+                            .height(Length::Units(LINE_HEIGHT * 6))
+                    )
+                    .push(lfo_2)
+            )
+            .push(Space::with_height(Length::Units(LINE_HEIGHT * 2)))
+            .push(
+                Row::new()
+                    .push(lfo_3)
+                    .push(
+                        Container::new(
+                            Rule::vertical(LINE_HEIGHT)
+                        )
+                            .height(Length::Units(LINE_HEIGHT * 6))
+                    )
+                    .push(lfo_4)
+            )
             .push(Space::with_height(Length::Units(LINE_HEIGHT * 2)))
             .push(
                 Row::new()
