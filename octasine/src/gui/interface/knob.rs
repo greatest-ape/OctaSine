@@ -115,7 +115,7 @@ impl OctaSineKnob {
         Self::new_min_max_center(
             sync_handle,
             0,
-            "MASTER\nVOLUME"
+            "VOLUME"
         )
     }
 
@@ -125,7 +125,7 @@ impl OctaSineKnob {
         Self::new_with_steps(
             sync_handle,
             1,
-            "MASTER\nFREQ",
+            "FREQ",
             &MASTER_FREQUENCY_STEPS,
             DEFAULT_MASTER_FREQUENCY
         )

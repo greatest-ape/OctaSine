@@ -13,8 +13,8 @@ pub mod interface;
 use interface::OctaSineIcedApplication;
 
 
-pub const GUI_WIDTH: usize = 14 * 70;
-pub const GUI_HEIGHT: usize = 14 * 65;
+pub const GUI_WIDTH: usize = 14 * 66;
+pub const GUI_HEIGHT: usize = 14 * 60;
 
 
 pub struct Gui {

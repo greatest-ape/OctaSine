@@ -1,39 +1,48 @@
 use iced_baseview::{Element, Text, Column, Align, HorizontalAlignment, Length, Space};
 use iced_baseview::widget::{pick_list, PickList};
 
+use crate::constants::LFO_TARGET_CONTEXT_STEPS;
+
 use super::{FONT_BOLD, LINE_HEIGHT, FONT_SIZE, Message, GuiSyncHandle};
 
 
 #[derive(Clone, PartialEq, Eq)]
-struct Preset {
+struct LfoTarget {
     index: usize,
     title: String,
 }
 
 
-impl ToString for Preset {
+impl ToString for LfoTarget {
     fn to_string(&self) -> String {
         self.title.clone()
     }
 }
 
 
-pub struct PresetPicker {
-    state: pick_list::State<Preset>,
-    options: Vec<Preset>,
+pub struct LfoTargetPicker {
+    state: pick_list::State<LfoTarget>,
+    options: Vec<LfoTarget>,
     selected: usize,
+    lfo_index: usize,
+    parameter_index: usize,
 }
 
 
-impl PresetPicker {
-    pub fn new<H: GuiSyncHandle>(sync_handle: &H) -> Self {
-        let (selected, names) = sync_handle.get_presets();
+impl LfoTargetPicker {
+    pub fn new<H: GuiSyncHandle>(
+        sync_handle: &H,
+        lfo_index: usize,
+        parameter_index: usize,
+    ) -> Self {
+        let selected = 0;
+        let names = LFO_TARGET_CONTEXT_STEPS.to_vec();
 
         let options = names.into_iter()
             .enumerate()
-            .map(|(index, title)| Preset {
+            .map(|(index, target)| LfoTarget {
                 index,
-                title
+                title: target.to_string().to_uppercase(),
             })
             .collect();
 
@@ -41,11 +50,13 @@ impl PresetPicker {
             state: pick_list::State::default(),
             options,
             selected,
+            lfo_index,
+            parameter_index
         }
     }
 
     pub fn view(&mut self) -> Element<Message> {
-        let title = Text::new("PRESET")
+        let title = Text::new("TARGET")
             .horizontal_alignment(HorizontalAlignment::Center)
             .font(FONT_BOLD);
         
@@ -53,20 +64,14 @@ impl PresetPicker {
             &mut self.state,
             &self.options[..],
             Some(self.options[self.selected].clone()),
-            |option| Message::PresetChange(option.index)
+            |option| Message::ParameterChange(option.index, 0.0) // FIXME
         )
             .text_size(FONT_SIZE)
-            .width(Length::Units(LINE_HEIGHT * 8 - 3));
+            .width(Length::Units(LINE_HEIGHT * 12 - 3));
         
         Column::new()
-            .width(Length::Units(LINE_HEIGHT * 8))
+            .width(Length::Units(LINE_HEIGHT * 12))
             .align_items(Align::Center)
-            /*
-            .push(title)
-            .push(
-                Space::with_height(Length::Units(LINE_HEIGHT / 2))
-            )
-            */
             .push(list)
             .into()
     }

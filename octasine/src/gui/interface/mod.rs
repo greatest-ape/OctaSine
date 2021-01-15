@@ -330,10 +330,6 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
             .size((FONT_SIZE * 3) / 2)
             .font(FONT_VERY_BOLD)
             .horizontal_alignment(HorizontalAlignment::Center);
-        let modulation_title = Text::new("MODULATION")
-            .size((FONT_SIZE * 3) / 2)
-            .font(FONT_VERY_BOLD)
-            .horizontal_alignment(HorizontalAlignment::Center);
 
         let all = Column::new()
             .push(Space::with_height(Length::Units(LINE_HEIGHT * 2)))
@@ -358,6 +354,13 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
                         Column::new()
                             .width(Length::FillPortion(1))
                             .align_items(Align::End)
+                            .push(
+                                Row::new()
+                                    .push(preset_picker)
+                                    .push(
+                                        Space::with_width(Length::Units(LINE_HEIGHT))
+                                    )
+                            )
                     )
             )
             .push(Space::with_height(Length::Units(LINE_HEIGHT * 2)))
@@ -404,12 +407,12 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
                     )
                     .push(
                         Column::new()
-                            .width(Length::Units(LINE_HEIGHT * 12))
+                            .width(Length::Units(LINE_HEIGHT * 8))
                             .push(
                                 Row::new()
                                     .push(
                                         Container::new(master_title)
-                                            .width(Length::Units(LINE_HEIGHT * 12))
+                                            .width(Length::Units(LINE_HEIGHT * 8))
                                             .height(Length::Units((LINE_HEIGHT * 3) / 2))
                                             .align_x(Align::Center)
                                             .align_y(Align::Center)
@@ -418,51 +421,16 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
                             .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
                             .push(
                                 Row::new()
-                                    .align_items(Align::Center)
                                     .push(master_volume)
                                     .push(master_frequency)
                             )
-                            .push(Space::with_height(Length::Units(LINE_HEIGHT * 2)))
+                            .push(Space::with_height(Length::Units(LINE_HEIGHT * 4)))
                             .push(
                                 Row::new()
-                                    .push(
-                                        Container::new(modulation_title)
-                                            .width(Length::Units(LINE_HEIGHT * 12))
-                                            .height(Length::Units((LINE_HEIGHT * 3) / 2))
-                                            .align_x(Align::Center)
-                                            .align_y(Align::Center)
-                                    )
-                            )
-                            .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
-                            .push(
-                                Row::new()
-                                    .align_items(Align::Center)
                                     .push(modulation_matrix)
                             )
-                            /*
-                            .push(
-                                Row::new()
-                                    .align_items(Align::Center)
-                                    .push(preset_picker)
-                            )
-                            */
                     )
-            )
-            .push(Space::with_height(Length::Units(LINE_HEIGHT * 2)))
-            .push(
-                Row::new()
-                    .height(Length::Units(mod_matrix::HEIGHT))
-                    .push(
-                        Column::new()
-                            .width(Length::FillPortion(1))
-                    )
-                    .push(
-                        Column::new()
-                            .width(Length::FillPortion(1))
-                            .align_items(Align::End)
-                    )
-            )
-            ;
+            );
 
         Container::new(all)
             .into()
