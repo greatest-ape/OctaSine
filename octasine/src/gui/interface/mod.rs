@@ -8,6 +8,7 @@ use crate::GuiSyncHandle;
 mod envelope;
 mod knob;
 mod lfo;
+mod lfo_target_picker;
 mod mod_matrix;
 mod operator;
 mod preset_picker;
@@ -361,15 +362,30 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
             .push(Space::with_height(Length::Units(LINE_HEIGHT * 2)))
             .push(
                 Row::new()
+                    .push(
+                        Space::with_width(Length::Units(LINE_HEIGHT))
+                    )
                     .push(lfo_1)
-                    .push(Space::with_width(Length::Units(LINE_HEIGHT * 4)))
+                    .push(
+                        Container::new(
+                            Rule::vertical(LINE_HEIGHT * 2)
+                        )
+                            .height(Length::Units(LINE_HEIGHT * 21))
+                    )
                     .push(lfo_2)
-            )
-            .push(Space::with_height(Length::Units(LINE_HEIGHT * 2)))
-            .push(
-                Row::new()
+                    .push(
+                        Container::new(
+                            Rule::vertical(LINE_HEIGHT * 2)
+                        )
+                            .height(Length::Units(LINE_HEIGHT * 21))
+                    )
                     .push(lfo_3)
-                    .push(Space::with_width(Length::Units(LINE_HEIGHT * 4)))
+                    .push(
+                        Container::new(
+                            Rule::vertical(LINE_HEIGHT * 2)
+                        )
+                            .height(Length::Units(LINE_HEIGHT * 21))
+                    )
                     .push(lfo_4)
             )
             .push(Space::with_height(Length::Units(LINE_HEIGHT * 2)))

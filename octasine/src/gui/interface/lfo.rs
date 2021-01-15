@@ -7,12 +7,13 @@ use crate::GuiSyncHandle;
 
 use super::{FONT_SIZE, FONT_VERY_BOLD, LINE_HEIGHT, Message};
 use super::knob::OctaSineKnob;
+use super::lfo_target_picker::LfoTargetPicker;
 use super::boolean_picker::{self, BooleanPicker};
 
 
 pub struct LfoWidgets {
     index: usize,
-    pub target: OctaSineKnob,
+    pub target: LfoTargetPicker,
     pub shape: OctaSineKnob,
     pub mode: OctaSineKnob,
     pub bpm_sync: BooleanPicker<bool>,
@@ -38,7 +39,7 @@ impl LfoWidgets {
 
         Self {
             index: lfo_index,
-            target: OctaSineKnob::lfo_target(sync_handle, lfo_index, target),
+            target: LfoTargetPicker::new(sync_handle, lfo_index, target),
             shape: OctaSineKnob::lfo_shape(sync_handle, lfo_index, shape),
             mode: OctaSineKnob::lfo_mode(sync_handle, lfo_index, mode),
             bpm_sync: boolean_picker::bpm_sync(sync_handle, lfo_index, bpm_sync),
@@ -54,21 +55,36 @@ impl LfoWidgets {
             .font(FONT_VERY_BOLD)
             .horizontal_alignment(HorizontalAlignment::Center);
 
-        Row::new()
+        Column::new()
             .push(
-                Container::new(operator_number)
-                    .width(Length::Units(LINE_HEIGHT * 4))
-                    .height(Length::Units(LINE_HEIGHT * 6))
-                    .align_x(Align::Center)
-                    .align_y(Align::Center)
+                Row::new()
+                    .push(
+                        Container::new(operator_number)
+                            .width(Length::Units(LINE_HEIGHT * 12))
+                            .height(Length::Units((LINE_HEIGHT * 3) / 2))
+                            .align_x(Align::Center)
+                            .align_y(Align::Center)
+                    )
             )
-            .push(self.bpm_sync.view())
-            .push(self.target.view())
-            .push(self.shape.view())
-            .push(self.mode.view())
-            .push(self.frequency_ratio.view())
-            .push(self.frequency_free.view())
-            .push(self.magnitude.view())
+            .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
+            .push(
+                Row::new()
+                    .push(self.target.view())
+            )
+            .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
+            .push(
+                Row::new()
+                    .push(self.mode.view())
+                    .push(self.shape.view())
+                    .push(self.bpm_sync.view())
+            )
+            .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
+            .push(
+                Row::new()
+                    .push(self.frequency_ratio.view())
+                    .push(self.frequency_free.view())
+                    .push(self.magnitude.view())
+            )
             .into()
     }
 }
