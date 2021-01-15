@@ -31,7 +31,7 @@ pub const ENVELOPE_MIN_DURATION: f64 = 0.004;
 pub const ENVELOPE_CURVE_TAKEOVER: f64 = 0.01;
 pub const ENVELOPE_CURVE_TAKEOVER_RECIP: f64 = 1.0 / ENVELOPE_CURVE_TAKEOVER;
 
-// When adjusting this, remember to also modify LfoTargetParameterValues
+// When adjusting this, remember to also modify get_lfo_target_parameters
 pub const LFO_TARGET_CONTEXT_STEPS: [LfoTargetParameter; 45] = [ 
     LfoTargetParameter::Master(LfoTargetMasterParameter::Frequency),
     LfoTargetParameter::Master(LfoTargetMasterParameter::Volume),

@@ -704,12 +704,12 @@ impl ParameterValue for Lfo1TargetParameterValue {
     }
     fn from_sync(sync: f64) -> Self {
         Self(map_parameter_value_to_step(
-            &LFO_TARGET_CONTEXT_STEPS[..33],
+            get_lfo_target_parameters(0),
             sync
         ))
     }
     fn to_sync(self) -> f64 {
-        map_step_to_parameter_value(&LFO_TARGET_CONTEXT_STEPS[..33], self.0)
+        map_step_to_parameter_value(get_lfo_target_parameters(0), self.0)
     }
     fn format(self) -> String {
         self.0.to_string()
@@ -742,12 +742,12 @@ impl ParameterValue for Lfo2TargetParameterValue {
     }
     fn from_sync(sync: f64) -> Self {
         Self(map_parameter_value_to_step(
-            &LFO_TARGET_CONTEXT_STEPS[..37],
+            get_lfo_target_parameters(1),
             sync
         ))
     }
     fn to_sync(self) -> f64 {
-        map_step_to_parameter_value(&LFO_TARGET_CONTEXT_STEPS[..37], self.0)
+        map_step_to_parameter_value(get_lfo_target_parameters(1), self.0)
     }
     fn format(self) -> String {
         self.0.to_string()
@@ -780,12 +780,12 @@ impl ParameterValue for Lfo3TargetParameterValue {
     }
     fn from_sync(sync: f64) -> Self {
         Self(map_parameter_value_to_step(
-            &LFO_TARGET_CONTEXT_STEPS[..41],
+            get_lfo_target_parameters(2),
             sync
         ))
     }
     fn to_sync(self) -> f64 {
-        map_step_to_parameter_value(&LFO_TARGET_CONTEXT_STEPS[..41], self.0)
+        map_step_to_parameter_value(get_lfo_target_parameters(2), self.0)
     }
     fn format(self) -> String {
         self.0.to_string()
@@ -818,12 +818,12 @@ impl ParameterValue for Lfo4TargetParameterValue {
     }
     fn from_sync(sync: f64) -> Self {
         Self(map_parameter_value_to_step(
-            &LFO_TARGET_CONTEXT_STEPS[..45],
+            get_lfo_target_parameters(3),
             sync
         ))
     }
     fn to_sync(self) -> f64 {
-        map_step_to_parameter_value(&LFO_TARGET_CONTEXT_STEPS[..45], self.0)
+        map_step_to_parameter_value(get_lfo_target_parameters(3), self.0)
     }
     fn format(self) -> String {
         self.0.to_string()

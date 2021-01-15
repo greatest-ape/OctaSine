@@ -1,3 +1,5 @@
+use crate::constants::LFO_TARGET_CONTEXT_STEPS;
+
 /// Number that gets incremented with 1.0 every second
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct TimeCounter(pub f64);
@@ -120,4 +122,17 @@ pub enum LfoShape {
 pub enum LfoMode {
     Once,
     Forever
+}
+
+
+pub fn get_lfo_target_parameters(lfo_index: usize) -> &'static [LfoTargetParameter] {
+    let end = match lfo_index {
+        0 => 33,
+        1 => 37,
+        2 => 41,
+        3 => 45,
+        _ => unreachable!(),
+    };
+
+    &LFO_TARGET_CONTEXT_STEPS[..end]
 }

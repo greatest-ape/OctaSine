@@ -1,14 +1,21 @@
 use iced_baseview::{Element, Text, Column, Align, HorizontalAlignment, Length, Space};
 use iced_baseview::widget::{pick_list, PickList};
 
-use crate::constants::LFO_TARGET_CONTEXT_STEPS;
+use crate::common::*;
+use crate::parameters::values::{
+    ParameterValue,
+    Lfo1TargetParameterValue,
+    Lfo2TargetParameterValue,
+    Lfo3TargetParameterValue,
+    Lfo4TargetParameterValue,
+};
 
 use super::{FONT_BOLD, LINE_HEIGHT, FONT_SIZE, Message, GuiSyncHandle};
 
 
 #[derive(Clone, PartialEq, Eq)]
 struct LfoTarget {
-    index: usize,
+    value: LfoTargetParameter,
     title: String,
 }
 
@@ -35,13 +42,14 @@ impl LfoTargetPicker {
         lfo_index: usize,
         parameter_index: usize,
     ) -> Self {
-        let selected = 0;
-        let names = LFO_TARGET_CONTEXT_STEPS.to_vec();
+        let sync_value = sync_handle.get_parameter(parameter_index);
+        let selected = Self::get_index_from_sync(lfo_index, sync_value);
+        let target_parameters = get_lfo_target_parameters(lfo_index);
 
-        let options = names.into_iter()
+        let options = target_parameters.into_iter()
             .enumerate()
             .map(|(index, target)| LfoTarget {
-                index,
+                value: *target,
                 title: target.to_string().to_uppercase(),
             })
             .collect();
@@ -55,24 +63,53 @@ impl LfoTargetPicker {
         }
     }
 
+    fn get_index_from_sync(lfo_index: usize, sync_value: f64) -> usize {
+        let target = match lfo_index {
+            0 => Lfo1TargetParameterValue::from_sync(sync_value).0,
+            1 => Lfo2TargetParameterValue::from_sync(sync_value).0,
+            2 => Lfo3TargetParameterValue::from_sync(sync_value).0,
+            3 => Lfo4TargetParameterValue::from_sync(sync_value).0,
+            _ => unreachable!(),
+        };
+
+        let target_parameters = get_lfo_target_parameters(lfo_index);
+
+        for (i, t) in target_parameters.iter().enumerate(){
+            if *t == target {
+                return i
+            }
+        }
+
+        unreachable!()
+    }
+
     pub fn set_value<H: GuiSyncHandle>(
         &mut self,
         sync_handle: &H,
-        value: f64,
+        sync_value: f64,
     ){
-        // FIXME
+        self.selected = Self::get_index_from_sync(self.lfo_index, sync_value);
     }
 
     pub fn view(&mut self) -> Element<Message> {
-        let title = Text::new("TARGET")
-            .horizontal_alignment(HorizontalAlignment::Center)
-            .font(FONT_BOLD);
-        
+        let lfo_index = self.lfo_index;
+        let parameter_index = self.parameter_index;
+
         let list = PickList::new(
             &mut self.state,
             &self.options[..],
             Some(self.options[self.selected].clone()),
-            |option| Message::ParameterChange(option.index, 0.0) // FIXME
+            move |option| {
+                let sync = match lfo_index {
+                    0 => Lfo1TargetParameterValue::from_processing(option.value).to_sync(),
+                    1 => Lfo2TargetParameterValue::from_processing(option.value).to_sync(),
+                    2 => Lfo3TargetParameterValue::from_processing(option.value).to_sync(),
+                    3 => Lfo4TargetParameterValue::from_processing(option.value).to_sync(),
+                    _ => unreachable!(),
+                };
+
+                Message::ParameterChange(parameter_index, sync)
+            }
         )
             .text_size(FONT_SIZE)
             .width(Length::Units(LINE_HEIGHT * 12 - 3));
