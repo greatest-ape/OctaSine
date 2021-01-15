@@ -26,6 +26,11 @@
     `ERROR] thread 'unnamed' panicked at 'Tessellate path: UnsupportedParamater': /[..]/github.com-1ecc6299db9ec823/iced_graphics-0.1.0/src/widget/canvas/frame.rs:100`
     * Probably also related to zero envelope section length
 
+### Normal
+
+* Parameterise lfo target picker, knobs etc over ParameterValue for value
+  conversions
+
 ### Not important
 
 * Maybe use ParameterValue when creating knobs and other values (envelope)
