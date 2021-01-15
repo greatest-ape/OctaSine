@@ -406,7 +406,7 @@ fn format_value<H: GuiSyncHandle>(
     parameter_index: usize,
     value: f64
 ) -> String {
-    sync_handle.format_parameter_value(parameter_index, value)
+    sync_handle.format_parameter_value(parameter_index, value).to_uppercase()
 }
 
 
