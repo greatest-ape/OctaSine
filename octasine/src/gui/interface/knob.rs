@@ -8,6 +8,7 @@ use iced_audio::{
 use crate::parameters::utils::map_value_to_parameter_value_with_steps;
 use crate::GuiSyncHandle;
 use crate::constants::*;
+use crate::common::*;
 
 use super::{FONT_BOLD, LINE_HEIGHT, Message};
 
@@ -244,6 +245,61 @@ impl OctaSineKnob {
         )
     }
 
+    pub fn lfo_target<H: GuiSyncHandle>(
+        sync_handle: &H,
+        lfo_index: usize,
+        parameter_index: usize,
+    ) -> Self {
+        Self::new(
+            sync_handle,
+            "TARGET".to_string(),
+            parameter_index,
+            None,
+            None, // FIXME
+            0.0 // FIXME
+        )
+    }
+
+    pub fn lfo_shape<H: GuiSyncHandle>(
+        sync_handle: &H,
+        lfo_index: usize,
+        parameter_index: usize,
+    ) -> Self {
+        let tick_marks = tick_marks::Group::evenly_spaced(
+            LFO_SHAPE_STEPS.len(),
+            tick_marks::Tier::Two
+        );
+
+        Self::new(
+            sync_handle,
+            "SHAPE".to_string(),
+            parameter_index,
+            None,
+            Some(tick_marks),
+            0.0 // FIXME
+        )
+    }
+
+    pub fn lfo_mode<H: GuiSyncHandle>(
+        sync_handle: &H,
+        lfo_index: usize,
+        parameter_index: usize,
+    ) -> Self {
+        let tick_marks = tick_marks::Group::evenly_spaced(
+            LFO_MODE_STEPS.len(),
+            tick_marks::Tier::Two
+        );
+
+        Self::new(
+            sync_handle,
+            "MODE".to_string(),
+            parameter_index,
+            None,
+            Some(tick_marks),
+            0.0 // FIXME
+        )
+    }
+
     pub fn lfo_frequency_ratio<H: GuiSyncHandle>(
         sync_handle: &H,
         lfo_index: usize,
@@ -281,22 +337,6 @@ impl OctaSineKnob {
             sync_handle,
             parameter_index,
             "AMOUNT"
-        )
-    }
-
-    pub fn lfo_other<H: GuiSyncHandle>(
-        sync_handle: &H,
-        lfo_index: usize,
-        parameter_index: usize,
-        title: &str
-    ) -> Self {
-        Self::new(
-            sync_handle,
-            title.to_string(),
-            parameter_index,
-            None,
-            None,
-            0.5,
         )
     }
 

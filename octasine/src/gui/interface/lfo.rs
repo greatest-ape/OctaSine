@@ -38,9 +38,9 @@ impl LfoWidgets {
 
         Self {
             index: lfo_index,
-            target: OctaSineKnob::lfo_other(sync_handle, lfo_index, target, "TARGET"),
-            shape: OctaSineKnob::lfo_other(sync_handle, lfo_index, shape, "SHAPE"),
-            mode: OctaSineKnob::lfo_other(sync_handle, lfo_index, mode, "MODE"),
+            target: OctaSineKnob::lfo_target(sync_handle, lfo_index, target),
+            shape: OctaSineKnob::lfo_shape(sync_handle, lfo_index, shape),
+            mode: OctaSineKnob::lfo_mode(sync_handle, lfo_index, mode),
             bpm_sync: boolean_picker::bpm_sync(sync_handle, lfo_index, bpm_sync),
             frequency_ratio: OctaSineKnob::lfo_frequency_ratio(sync_handle, lfo_index, ratio),
             frequency_free: OctaSineKnob::lfo_frequency_free(sync_handle, lfo_index, free),
