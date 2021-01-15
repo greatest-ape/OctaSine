@@ -55,6 +55,14 @@ impl LfoTargetPicker {
         }
     }
 
+    pub fn set_value<H: GuiSyncHandle>(
+        &mut self,
+        sync_handle: &H,
+        value: f64,
+    ){
+        // FIXME
+    }
+
     pub fn view(&mut self) -> Element<Message> {
         let title = Text::new("TARGET")
             .horizontal_alignment(HorizontalAlignment::Center)
