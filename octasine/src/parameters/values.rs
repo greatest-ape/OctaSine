@@ -862,9 +862,9 @@ impl ParameterValue for LfoShapeValue {
     }
     fn format(self) -> String {
         match self.0 {
-            LfoShape::LinearUp => "Linear up".to_string(),
-            LfoShape::LinearDown => "Linear down".to_string(),
-            LfoShape::Triangle => "Triangle".to_string(),
+            LfoShape::LinearUp => "LIN. UP".to_string(),
+            LfoShape::LinearDown => "LIN. DOWN".to_string(),
+            LfoShape::Triangle => "TRIANGLE".to_string(),
         }
     }
     fn format_sync(value: f64) -> String {
@@ -909,8 +909,8 @@ impl ParameterValue for LfoModeValue {
     }
     fn format(self) -> String {
         match self.0 {
-            LfoMode::Once => "Once".to_string(),
-            LfoMode::Forever => "Forever".to_string(),
+            LfoMode::Once => "ONCE".to_string(),
+            LfoMode::Forever => "FOREVER".to_string(),
         }
     }
     fn format_sync(value: f64) -> String {
