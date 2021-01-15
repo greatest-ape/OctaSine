@@ -326,6 +326,15 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
         let lfo_3 = self.lfo_3.view();
         let lfo_4 = self.lfo_4.view();
 
+        let master_title = Text::new("MASTER")
+            .size((FONT_SIZE * 3) / 2)
+            .font(FONT_VERY_BOLD)
+            .horizontal_alignment(HorizontalAlignment::Center);
+        let modulation_title = Text::new("MODULATION")
+            .size((FONT_SIZE * 3) / 2)
+            .font(FONT_VERY_BOLD)
+            .horizontal_alignment(HorizontalAlignment::Center);
+
         let all = Column::new()
             .push(Space::with_height(Length::Units(LINE_HEIGHT * 2)))
             .push(
@@ -387,6 +396,57 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
                             .height(Length::Units(LINE_HEIGHT * 21))
                     )
                     .push(lfo_4)
+                    .push(
+                        Container::new(
+                            Rule::vertical(LINE_HEIGHT * 2)
+                        )
+                            .height(Length::Units(LINE_HEIGHT * 21))
+                    )
+                    .push(
+                        Column::new()
+                            .width(Length::Units(LINE_HEIGHT * 12))
+                            .push(
+                                Row::new()
+                                    .push(
+                                        Container::new(master_title)
+                                            .width(Length::Units(LINE_HEIGHT * 12))
+                                            .height(Length::Units((LINE_HEIGHT * 3) / 2))
+                                            .align_x(Align::Center)
+                                            .align_y(Align::Center)
+                                    )
+                            )
+                            .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
+                            .push(
+                                Row::new()
+                                    .align_items(Align::Center)
+                                    .push(master_volume)
+                                    .push(master_frequency)
+                            )
+                            .push(Space::with_height(Length::Units(LINE_HEIGHT * 2)))
+                            .push(
+                                Row::new()
+                                    .push(
+                                        Container::new(modulation_title)
+                                            .width(Length::Units(LINE_HEIGHT * 12))
+                                            .height(Length::Units((LINE_HEIGHT * 3) / 2))
+                                            .align_x(Align::Center)
+                                            .align_y(Align::Center)
+                                    )
+                            )
+                            .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
+                            .push(
+                                Row::new()
+                                    .align_items(Align::Center)
+                                    .push(modulation_matrix)
+                            )
+                            /*
+                            .push(
+                                Row::new()
+                                    .align_items(Align::Center)
+                                    .push(preset_picker)
+                            )
+                            */
+                    )
             )
             .push(Space::with_height(Length::Units(LINE_HEIGHT * 2)))
             .push(
@@ -395,35 +455,11 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
                     .push(
                         Column::new()
                             .width(Length::FillPortion(1))
-                            .push(
-                                Row::new()
-                                    .push(Space::with_width(Length::Units(LINE_HEIGHT)))
-                                    .push(preset_picker)
-                            )
                     )
                     .push(
                         Column::new()
                             .width(Length::FillPortion(1))
                             .align_items(Align::End)
-                            .push(
-                                Row::new()
-                                    .align_items(Align::Center)
-                                    .push(
-                                        Space::with_width(Length::Units(LINE_HEIGHT))
-                                    )
-                                    .push(modulation_matrix)
-                                    .push(
-                                        Space::with_width(Length::Units(LINE_HEIGHT))
-                                    )
-                                    .push(
-                                        Container::new(
-                                            Rule::vertical(LINE_HEIGHT)
-                                        )
-                                            .height(Length::Units(mod_matrix::HEIGHT)))
-                                    .push(master_volume)
-                                    .push(master_frequency)
-                                    .push(Space::with_width(Length::Units(LINE_HEIGHT)))
-                            )
                     )
             )
             ;
