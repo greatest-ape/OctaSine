@@ -362,24 +362,14 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
             .push(
                 Row::new()
                     .push(lfo_1)
-                    .push(
-                        Container::new(
-                            Rule::vertical(LINE_HEIGHT)
-                        )
-                            .height(Length::Units(LINE_HEIGHT * 6))
-                    )
+                    .push(Space::with_width(Length::Units(LINE_HEIGHT * 4)))
                     .push(lfo_2)
             )
             .push(Space::with_height(Length::Units(LINE_HEIGHT * 2)))
             .push(
                 Row::new()
                     .push(lfo_3)
-                    .push(
-                        Container::new(
-                            Rule::vertical(LINE_HEIGHT)
-                        )
-                            .height(Length::Units(LINE_HEIGHT * 6))
-                    )
+                    .push(Space::with_width(Length::Units(LINE_HEIGHT * 4)))
                     .push(lfo_4)
             )
             .push(Space::with_height(Length::Units(LINE_HEIGHT * 2)))

@@ -52,7 +52,7 @@ pub fn bpm_sync<H: GuiSyncHandle>(
     }
     
     BooleanPicker {
-        title: format!("LFO {}\nBPM SYNC", lfo_index + 1),
+        title: "BPM SYNC".to_string(),
         parameter_index,
         choices,
         selected,

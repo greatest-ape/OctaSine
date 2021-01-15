@@ -5,7 +5,7 @@ use iced_baseview::{
 
 use crate::GuiSyncHandle;
 
-use super::Message;
+use super::{FONT_SIZE, FONT_VERY_BOLD, LINE_HEIGHT, Message};
 use super::knob::OctaSineKnob;
 use super::boolean_picker::{self, BooleanPicker};
 
@@ -49,11 +49,23 @@ impl LfoWidgets {
     }
 
     pub fn view(&mut self) -> Element<Message> {
+        let operator_number = Text::new(format!("LFO{}", self.index + 1))
+            .size((FONT_SIZE * 3) / 2)
+            .font(FONT_VERY_BOLD)
+            .horizontal_alignment(HorizontalAlignment::Center);
+
         Row::new()
+            .push(
+                Container::new(operator_number)
+                    .width(Length::Units(LINE_HEIGHT * 4))
+                    .height(Length::Units(LINE_HEIGHT * 6))
+                    .align_x(Align::Center)
+                    .align_y(Align::Center)
+            )
+            .push(self.bpm_sync.view())
             .push(self.target.view())
             .push(self.shape.view())
             .push(self.mode.view())
-            .push(self.bpm_sync.view())
             .push(self.frequency_ratio.view())
             .push(self.frequency_free.view())
             .push(self.magnitude.view())

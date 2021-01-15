@@ -252,7 +252,7 @@ impl OctaSineKnob {
         Self::new_with_steps(
             sync_handle,
             parameter_index,
-            &format!("LFO {}\nRATIO", lfo_index + 1),
+            "RATIO",
             &LFO_FREQUENCY_RATIO_STEPS,
             1.0
         )
@@ -266,7 +266,7 @@ impl OctaSineKnob {
         Self::new_with_steps(
             sync_handle,
             parameter_index,
-            &format!("LFO {}\nFREE", lfo_index + 1),
+            "FREE",
             &LFO_FREQUENCY_FREE_STEPS,
             1.0
         )
@@ -280,7 +280,7 @@ impl OctaSineKnob {
         Self::new_min_max_center(
             sync_handle,
             parameter_index,
-            &format!("LFO {}\nAMOUNT", lfo_index + 1),
+            "AMOUNT"
         )
     }
 
@@ -292,7 +292,7 @@ impl OctaSineKnob {
     ) -> Self {
         Self::new(
             sync_handle,
-            format!("LFO {}\n{}", lfo_index + 1, title),
+            title.to_string(),
             parameter_index,
             None,
             None,
