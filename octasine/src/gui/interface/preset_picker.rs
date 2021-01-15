@@ -1,7 +1,7 @@
-use iced_baseview::{Element, Text, Column, Align, HorizontalAlignment, Length, Space};
+use iced_baseview::{Element, Text, Column, Align, HorizontalAlignment, Length, Space, Row, VerticalAlignment};
 use iced_baseview::widget::{pick_list, PickList};
 
-use super::{FONT_BOLD, LINE_HEIGHT, FONT_SIZE, Message, GuiSyncHandle};
+use super::{FONT_BOLD, FONT_SIZE, FONT_VERY_BOLD, GuiSyncHandle, LINE_HEIGHT, Message};
 
 
 #[derive(Clone, PartialEq, Eq)]
@@ -47,7 +47,8 @@ impl PresetPicker {
     pub fn view(&mut self) -> Element<Message> {
         let title = Text::new("PRESET")
             .horizontal_alignment(HorizontalAlignment::Center)
-            .font(FONT_BOLD);
+            .vertical_alignment(VerticalAlignment::Center)
+            .font(FONT_VERY_BOLD);
         
         let list = PickList::new(
             &mut self.state,
@@ -61,13 +62,13 @@ impl PresetPicker {
         Column::new()
             .width(Length::Units(LINE_HEIGHT * 8))
             .align_items(Align::Center)
-            /*
-            .push(title)
             .push(
-                Space::with_height(Length::Units(LINE_HEIGHT / 2))
+                Row::new()
+                    .align_items(Align::Center)
+                    .push(title)
+                    .push(Space::with_width(Length::Units(LINE_HEIGHT / 2)))
+                    .push(list)
             )
-            */
-            .push(list)
             .into()
     }
 }
