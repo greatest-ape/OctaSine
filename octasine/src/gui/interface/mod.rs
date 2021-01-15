@@ -410,28 +410,28 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
                         Container::new(
                             Rule::vertical(LINE_HEIGHT * 2)
                         )
-                            .height(Length::Units(LINE_HEIGHT * 21))
+                            .height(Length::Units(LINE_HEIGHT * 19)) // FIXME: height
                     )
                     .push(lfo_2)
                     .push(
                         Container::new(
                             Rule::vertical(LINE_HEIGHT * 2)
                         )
-                            .height(Length::Units(LINE_HEIGHT * 21))
+                            .height(Length::Units(LINE_HEIGHT * 19))
                     )
                     .push(lfo_3)
                     .push(
                         Container::new(
                             Rule::vertical(LINE_HEIGHT * 2)
                         )
-                            .height(Length::Units(LINE_HEIGHT * 21))
+                            .height(Length::Units(LINE_HEIGHT * 19))
                     )
                     .push(lfo_4)
                     .push(
                         Container::new(
                             Rule::vertical(LINE_HEIGHT * 2)
                         )
-                            .height(Length::Units(LINE_HEIGHT * 21))
+                            .height(Length::Units(LINE_HEIGHT * 19))
                     )
                     .push(
                         Column::new()
@@ -452,7 +452,7 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
                                     .push(master_volume)
                                     .push(master_frequency)
                             )
-                            .push(Space::with_height(Length::Units(LINE_HEIGHT * 4)))
+                            .push(Space::with_height(Length::Units(LINE_HEIGHT * 3)))
                             .push(
                                 Row::new()
                                     .push(modulation_matrix)
