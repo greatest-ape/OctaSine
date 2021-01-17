@@ -46,6 +46,9 @@ const OPEN_SANS_SEMI_BOLD: &[u8] = include_bytes!(
 const OPEN_SANS_BOLD: &[u8] = include_bytes!(
     "../../../../contrib/open-sans/OpenSans-Bold.ttf"
 );
+const OPEN_SANS_EXTRA_BOLD: &[u8] = include_bytes!(
+    "../../../../contrib/open-sans/OpenSans-ExtraBold.ttf"
+);
 
 
 pub trait SnapPoint {
@@ -373,14 +376,16 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
         let lfo_4 = self.lfo_4.view();
 
         let master_title = Text::new("MASTER")
-            .size((FONT_SIZE * 3) / 2)
+            .size(FONT_SIZE * 3 / 2)
             .font(FONT_VERY_BOLD)
             .horizontal_alignment(HorizontalAlignment::Center);
 
         let all = Column::new()
-            .push(Space::with_height(Length::Units(LINE_HEIGHT * 2)))
+            .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
             .push(
                 Row::new()
+                    .align_items(Align::Center)
+                    .height(Length::Units(LINE_HEIGHT * 4))
                     .push(
                         Column::new()
                             .width(Length::FillPortion(1))
@@ -389,17 +394,17 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
                         Container::new(
                             Text::new("OctaSine")
                                 .font(FONT_VERY_BOLD)
-                                .size(FONT_SIZE * 2)
+                                .size(FONT_SIZE * 2 + FONT_SIZE / 2)
                                 .horizontal_alignment(HorizontalAlignment::Center)
                         )
                             .width(Length::FillPortion(1))
-                            .align_y(Align::Center)
                             .align_x(Align::Center)
                     )
                     .push(
                         Column::new()
                             .width(Length::FillPortion(1))
                             .align_items(Align::End)
+                            .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
                             .push(
                                 Row::new()
                                     .push(preset_picker)
@@ -409,7 +414,7 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
                             )
                     )
             )
-            .push(Space::with_height(Length::Units(LINE_HEIGHT * 2)))
+            .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
             .push(operator_4)
             .push(Space::with_height(Length::Units(LINE_HEIGHT * 2)))
             .push(operator_3)
