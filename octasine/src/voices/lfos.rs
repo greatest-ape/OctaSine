@@ -65,19 +65,11 @@ impl VoiceLfo {
 
         self.phase.0 = new_phase.fract();
 
-        let mut value = match self.shape {
-            LfoShape::LinearUp => {
-                magnitude * triangle(self.phase, Phase(0.9))
-            },
-            LfoShape::LinearDown => {
-                magnitude * triangle(self.phase, Phase(0.1))
-            },
-            LfoShape::Triangle => {
-                magnitude * triangle(self.phase, Phase(0.5))
-            },
-            LfoShape::Square => {
-                magnitude * square(self.phase)
-            },
+        let mut value = magnitude * match self.shape {
+            LfoShape::LinearUp => triangle(self.phase, Phase(0.9)),
+            LfoShape::LinearDown => triangle(self.phase, Phase(0.1)),
+            LfoShape::Triangle => triangle(self.phase, Phase(0.5)),
+            LfoShape::Square => square(self.phase),
         };
 
         if let Some(interpolate) = self.interpolate {
