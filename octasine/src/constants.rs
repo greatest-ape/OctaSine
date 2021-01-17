@@ -80,11 +80,12 @@ pub const LFO_TARGET_CONTEXT_STEPS: [LfoTargetParameter; 45] = [
     LfoTargetParameter::Lfo(2, LfoTargetLfoParameter::Magnitude),
 ];
 
-pub const LFO_SHAPE_STEPS: [LfoShape; 4] = [ 
+pub const LFO_SHAPE_STEPS: [LfoShape; 5] = [ 
     LfoShape::LinearUp,
     LfoShape::LinearDown,
     LfoShape::Triangle,
     LfoShape::Square,
+    LfoShape::ReverseSquare,
 ];
 pub const LFO_MODE_STEPS: [LfoMode; 2] = [ 
     LfoMode::Once,

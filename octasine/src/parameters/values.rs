@@ -866,6 +866,7 @@ impl ParameterValue for LfoShapeValue {
             LfoShape::LinearDown => "LIN. DOWN".to_string(),
             LfoShape::Triangle => "TRIANGLE".to_string(),
             LfoShape::Square => "SQUARE".to_string(),
+            LfoShape::ReverseSquare => "REV SQUARE".to_string(),
         }
     }
     fn format_sync(value: f64) -> String {
@@ -876,7 +877,8 @@ impl ParameterValue for LfoShapeValue {
             "linear up" => Some(Self(LfoShape::LinearUp)),
             "linear down" => Some(Self(LfoShape::LinearDown)),
             "triangle" => Some(Self(LfoShape::Triangle)),
-            "square" => Some(Self(LfoShape::Triangle)),
+            "square" => Some(Self(LfoShape::Square)),
+            "reverse square" => Some(Self(LfoShape::ReverseSquare)),
             _ => None,
         }
     }

@@ -70,6 +70,7 @@ impl VoiceLfo {
             LfoShape::LinearDown => triangle(self.phase, Phase(0.1)),
             LfoShape::Triangle => triangle(self.phase, Phase(0.5)),
             LfoShape::Square => square(self.phase),
+            LfoShape::ReverseSquare => rev_square(self.phase),
         };
 
         if let Some(interpolate) = self.interpolate {
@@ -121,5 +122,22 @@ fn square(phase: Phase) -> f64 {
         1.0 - (phase.0 - peak_end) / (base_start - peak_end)
     } else {
         0.0
+    }
+}
+
+
+fn rev_square(phase: Phase) -> f64 {
+    let base_end = 0.4;
+    let peak_start = 0.5;
+    let peak_end = 0.9;
+
+    if phase.0 <= base_end {
+        0.0
+    } else if phase.0 <= peak_start {
+        (phase.0 - base_end) / (peak_start - base_end)
+    } else if phase.0 <= peak_end {
+        1.0
+    } else {
+        1.0 - (phase.0 - peak_end) / (1.0 - peak_end)
     }
 }
