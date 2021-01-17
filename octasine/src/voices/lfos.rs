@@ -75,6 +75,9 @@ impl VoiceLfo {
             LfoShape::Triangle => {
                 magnitude * triangle(self.phase, Phase(0.5))
             },
+            LfoShape::Square => {
+                magnitude * square(self.phase)
+            },
         };
 
         if let Some(interpolate) = self.interpolate {
@@ -109,5 +112,22 @@ fn triangle(phase: Phase, peak: Phase) -> f64 {
         phase.0 / peak.0
     } else {
         1.0 - (phase.0 - peak.0) / (1.0 - peak.0)
+    }
+}
+
+
+fn square(phase: Phase) -> f64 {
+    let peak_start = 0.1;
+    let peak_end = 0.5;
+    let base_start = 0.6;
+
+    if phase.0 <= peak_start {
+        phase.0 / peak_start
+    } else if phase.0 <= peak_end {
+        1.0
+    } else if phase.0 <= base_start {
+        1.0 - (phase.0 - peak_end) / (base_start - peak_end)
+    } else {
+        0.0
     }
 }
