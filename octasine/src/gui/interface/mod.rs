@@ -427,32 +427,32 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
                     .push(
                         Column::new()
                             .push(Space::with_height(Length::Units(
-                                LINE_HEIGHT + (LINE_HEIGHT * 3) / 2))
-                            )
+                                LINE_HEIGHT * 3
+                            )))
                             .push(self.lfo_vr_1.view())
                     )
                     .push(lfo_2)
                     .push(
                         Column::new()
                             .push(Space::with_height(Length::Units(
-                                LINE_HEIGHT + (LINE_HEIGHT * 3) / 2))
-                            )
+                                LINE_HEIGHT * 3
+                            )))
                             .push(self.lfo_vr_2.view())
                     )
                     .push(lfo_3)
                     .push(
                         Column::new()
                             .push(Space::with_height(Length::Units(
-                                LINE_HEIGHT + (LINE_HEIGHT * 3) / 2))
-                            )
+                                LINE_HEIGHT * 3
+                            )))
                             .push(self.lfo_vr_3.view())
                     )
                     .push(lfo_4)
                     .push(
                         Column::new()
                             .push(Space::with_height(Length::Units(
-                                LINE_HEIGHT + (LINE_HEIGHT * 3) / 2))
-                            )
+                                LINE_HEIGHT * 3
+                            )))
                             .push(self.lfo_vr_4.view())
                     )
                     .push(
@@ -463,7 +463,7 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
                                     .push(
                                         Container::new(master_title)
                                             .width(Length::Units(LINE_HEIGHT * 8))
-                                            .height(Length::Units((LINE_HEIGHT * 3) / 2))
+                                            .height(Length::Units(LINE_HEIGHT * 2))
                                             .align_x(Align::Center)
                                             .align_y(Align::Center)
                                     )

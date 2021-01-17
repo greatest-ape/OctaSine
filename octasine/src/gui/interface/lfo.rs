@@ -61,7 +61,7 @@ impl LfoWidgets {
                     .push(
                         Container::new(operator_number)
                             .width(Length::Units(LINE_HEIGHT * 12))
-                            .height(Length::Units((LINE_HEIGHT * 3) / 2))
+                            .height(Length::Units(LINE_HEIGHT * 2))
                             .align_x(Align::Center)
                             .align_y(Align::Center)
                     )
