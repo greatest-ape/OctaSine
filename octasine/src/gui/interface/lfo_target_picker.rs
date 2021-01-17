@@ -1,4 +1,4 @@
-use iced_baseview::{Element, Text, Column, Align, HorizontalAlignment, Length, Space};
+use iced_baseview::{Element, Column, Align, Length};
 use iced_baseview::widget::{pick_list, PickList};
 
 use crate::common::*;
@@ -10,7 +10,7 @@ use crate::parameters::values::{
     Lfo4TargetParameterValue,
 };
 
-use super::{FONT_BOLD, LINE_HEIGHT, FONT_SIZE, Message, GuiSyncHandle};
+use super::{LINE_HEIGHT, FONT_SIZE, Message, GuiSyncHandle};
 
 
 #[derive(Clone, PartialEq, Eq)]
@@ -47,8 +47,7 @@ impl LfoTargetPicker {
         let target_parameters = get_lfo_target_parameters(lfo_index);
 
         let options = target_parameters.into_iter()
-            .enumerate()
-            .map(|(index, target)| LfoTarget {
+            .map(|target| LfoTarget {
                 value: *target,
                 title: target.to_string().to_uppercase(),
             })
@@ -83,11 +82,7 @@ impl LfoTargetPicker {
         unreachable!()
     }
 
-    pub fn set_value<H: GuiSyncHandle>(
-        &mut self,
-        sync_handle: &H,
-        sync_value: f64,
-    ){
+    pub fn set_value(&mut self, sync_value: f64){
         self.selected = Self::get_index_from_sync(self.lfo_index, sync_value);
     }
 

@@ -1,5 +1,5 @@
 use iced_baseview::{
-    Container, Element, Text, Length, Align, Row, Rule, Space, HorizontalAlignment, Column
+    Container, Element, Text, Length, Align, Row, Space, HorizontalAlignment, Column
 };
 
 
@@ -40,12 +40,12 @@ impl LfoWidgets {
         Self {
             index: lfo_index,
             target: LfoTargetPicker::new(sync_handle, lfo_index, target),
-            shape: OctaSineKnob::lfo_shape(sync_handle, lfo_index, shape),
-            mode: OctaSineKnob::lfo_mode(sync_handle, lfo_index, mode),
-            bpm_sync: boolean_picker::bpm_sync(sync_handle, lfo_index, bpm_sync),
-            frequency_ratio: OctaSineKnob::lfo_frequency_ratio(sync_handle, lfo_index, ratio),
-            frequency_free: OctaSineKnob::lfo_frequency_free(sync_handle, lfo_index, free),
-            magnitude: OctaSineKnob::lfo_magnitude(sync_handle, lfo_index, magnitude),
+            shape: OctaSineKnob::lfo_shape(sync_handle, shape),
+            mode: OctaSineKnob::lfo_mode(sync_handle, mode),
+            bpm_sync: boolean_picker::bpm_sync(sync_handle, bpm_sync),
+            frequency_ratio: OctaSineKnob::lfo_frequency_ratio(sync_handle, ratio),
+            frequency_free: OctaSineKnob::lfo_frequency_free(sync_handle, free),
+            magnitude: OctaSineKnob::lfo_magnitude(sync_handle, magnitude),
         }
     }
 

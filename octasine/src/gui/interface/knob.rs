@@ -8,7 +8,6 @@ use iced_audio::{
 use crate::parameters::utils::map_value_to_parameter_value_with_steps;
 use crate::GuiSyncHandle;
 use crate::constants::*;
-use crate::common::*;
 
 use super::{FONT_BOLD, LINE_HEIGHT, Message};
 
@@ -245,24 +244,8 @@ impl OctaSineKnob {
         )
     }
 
-    pub fn lfo_target<H: GuiSyncHandle>(
-        sync_handle: &H,
-        lfo_index: usize,
-        parameter_index: usize,
-    ) -> Self {
-        Self::new(
-            sync_handle,
-            "TARGET".to_string(),
-            parameter_index,
-            None,
-            None, // FIXME
-            0.0 // FIXME
-        )
-    }
-
     pub fn lfo_shape<H: GuiSyncHandle>(
         sync_handle: &H,
-        lfo_index: usize,
         parameter_index: usize,
     ) -> Self {
         let tick_marks = tick_marks::Group::evenly_spaced(
@@ -282,7 +265,6 @@ impl OctaSineKnob {
 
     pub fn lfo_mode<H: GuiSyncHandle>(
         sync_handle: &H,
-        lfo_index: usize,
         parameter_index: usize,
     ) -> Self {
         let tick_marks = tick_marks::Group::evenly_spaced(
@@ -302,7 +284,6 @@ impl OctaSineKnob {
 
     pub fn lfo_frequency_ratio<H: GuiSyncHandle>(
         sync_handle: &H,
-        lfo_index: usize,
         parameter_index: usize,
     ) -> Self {
         Self::new_with_steps(
@@ -316,7 +297,6 @@ impl OctaSineKnob {
 
     pub fn lfo_frequency_free<H: GuiSyncHandle>(
         sync_handle: &H,
-        lfo_index: usize,
         parameter_index: usize,
     ) -> Self {
         Self::new_with_steps(
@@ -330,7 +310,6 @@ impl OctaSineKnob {
 
     pub fn lfo_magnitude<H: GuiSyncHandle>(
         sync_handle: &H,
-        lfo_index: usize,
         parameter_index: usize,
     ) -> Self {
         Self::new_min_max_center(

@@ -9,7 +9,6 @@ use crate::parameters::utils::{
 
 use crate::GuiSyncHandle;
 use crate::common::*;
-use crate::constants::*;
 
 use super::{FONT_BOLD, FONT_SIZE, LINE_HEIGHT, Message};
 
@@ -35,7 +34,6 @@ pub fn wave_type<H: GuiSyncHandle>(
 
 pub fn bpm_sync<H: GuiSyncHandle>(
     sync_handle: &H,
-    lfo_index: usize,
     parameter_index: usize,
 ) -> BooleanPicker<bool> {
     let value = sync_handle.get_parameter(parameter_index);
