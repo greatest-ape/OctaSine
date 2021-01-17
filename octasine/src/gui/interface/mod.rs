@@ -1,6 +1,6 @@
 use iced_baseview::{Align, Application, Color, Command, Subscription, WindowSubs, executor};
 use iced_baseview::{
-    Column, Element, Row, Container, Rule, Length, Space, renderer, Font, Point, Text, HorizontalAlignment
+    Column, Element, Row, Container, Rule, Length, Space, renderer, Font, Point, Text, HorizontalAlignment, VerticalAlignment
 };
 
 use crate::GuiSyncHandle;
@@ -45,9 +45,6 @@ const OPEN_SANS_SEMI_BOLD: &[u8] = include_bytes!(
 );
 const OPEN_SANS_BOLD: &[u8] = include_bytes!(
     "../../../../contrib/open-sans/OpenSans-Bold.ttf"
-);
-const OPEN_SANS_EXTRA_BOLD: &[u8] = include_bytes!(
-    "../../../../contrib/open-sans/OpenSans-ExtraBold.ttf"
 );
 
 
@@ -375,10 +372,13 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
         let lfo_3 = self.lfo_3.view();
         let lfo_4 = self.lfo_4.view();
 
-        let master_title = Text::new("MASTER")
+        let master_title = Text::new("Master")
             .size(FONT_SIZE * 3 / 2)
+            .height(Length::Units(LINE_HEIGHT * 2))
+            .width(Length::Units(LINE_HEIGHT * 8))
             .font(FONT_VERY_BOLD)
-            .horizontal_alignment(HorizontalAlignment::Center);
+            .horizontal_alignment(HorizontalAlignment::Center)
+            .vertical_alignment(VerticalAlignment::Center);
 
         let all = Column::new()
             .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))

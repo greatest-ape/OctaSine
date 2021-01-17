@@ -1,6 +1,4 @@
-use iced_baseview::{
-    Container, Element, Text, Length, Align, Row, Space, HorizontalAlignment, Column
-};
+use iced_baseview::{Align, Column, Container, Element, HorizontalAlignment, Length, Row, Space, Text, VerticalAlignment};
 
 
 use crate::GuiSyncHandle;
@@ -50,21 +48,18 @@ impl LfoWidgets {
     }
 
     pub fn view(&mut self) -> Element<Message> {
-        let operator_number = Text::new(format!("LFO{}", self.index + 1))
+        let title = Text::new(format!("LFO {}", self.index + 1))
             .size((FONT_SIZE * 3) / 2)
+            .height(Length::Units(LINE_HEIGHT * 2))
+            .width(Length::Units(LINE_HEIGHT * 12))
             .font(FONT_VERY_BOLD)
-            .horizontal_alignment(HorizontalAlignment::Center);
+            .horizontal_alignment(HorizontalAlignment::Center)
+            .vertical_alignment(VerticalAlignment::Center);
 
         Column::new()
             .push(
                 Row::new()
-                    .push(
-                        Container::new(operator_number)
-                            .width(Length::Units(LINE_HEIGHT * 12))
-                            .height(Length::Units(LINE_HEIGHT * 2))
-                            .align_x(Align::Center)
-                            .align_y(Align::Center)
-                    )
+                    .push(title)
             )
             .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
             .push(
