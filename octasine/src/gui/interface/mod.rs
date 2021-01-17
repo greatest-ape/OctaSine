@@ -1,10 +1,11 @@
-use iced_baseview::{executor, Align, Application, Command, Subscription, WindowSubs};
+use iced_baseview::{Align, Application, Color, Command, Subscription, WindowSubs, executor};
 use iced_baseview::{
     Column, Element, Row, Container, Rule, Length, Space, renderer, Font, Point, Text, HorizontalAlignment
 };
 
 use crate::GuiSyncHandle;
 
+mod divider;
 mod envelope;
 mod knob;
 mod lfo;
@@ -14,6 +15,7 @@ mod operator;
 mod preset_picker;
 mod boolean_picker;
 
+use divider::VerticalRule;
 use lfo::LfoWidgets;
 use operator::OperatorWidgets;
 use knob::OctaSineKnob;
@@ -85,6 +87,10 @@ pub struct OctaSineIcedApplication<H: GuiSyncHandle> {
     lfo_2: LfoWidgets,
     lfo_3: LfoWidgets,
     lfo_4: LfoWidgets,
+    lfo_vr_1: divider::VerticalRule,
+    lfo_vr_2: divider::VerticalRule,
+    lfo_vr_3: divider::VerticalRule,
+    lfo_vr_4: divider::VerticalRule,
 }
 
 
@@ -266,6 +272,14 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
         let lfo_3 = LfoWidgets::new(&sync_handle, 2);
         let lfo_4 = LfoWidgets::new(&sync_handle, 3);
 
+        let lfo_vr_1 = VerticalRule::new(
+            Length::Units(LINE_HEIGHT * 2),
+            Length::Units(LINE_HEIGHT * 17 + (LINE_HEIGHT * 3) / 2)
+        );
+        let lfo_vr_2 = lfo_vr_1.clone();
+        let lfo_vr_3 = lfo_vr_1.clone();
+        let lfo_vr_4 = lfo_vr_1.clone();
+
         let app = Self {
             sync_handle,
             host_display_needs_update: false,
@@ -282,6 +296,10 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
             lfo_2,
             lfo_3,
             lfo_4,
+            lfo_vr_1,
+            lfo_vr_2,
+            lfo_vr_3,
+            lfo_vr_4,
         };
 
         (app, Command::none())
@@ -406,33 +424,13 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
                         Space::with_width(Length::Units(LINE_HEIGHT))
                     )
                     .push(lfo_1)
-                    .push(
-                        Container::new(
-                            Rule::vertical(LINE_HEIGHT * 2)
-                        )
-                            .height(Length::Units(LINE_HEIGHT * 19)) // FIXME: height
-                    )
+                    .push(self.lfo_vr_1.view())
                     .push(lfo_2)
-                    .push(
-                        Container::new(
-                            Rule::vertical(LINE_HEIGHT * 2)
-                        )
-                            .height(Length::Units(LINE_HEIGHT * 19))
-                    )
+                    .push(self.lfo_vr_2.view())
                     .push(lfo_3)
-                    .push(
-                        Container::new(
-                            Rule::vertical(LINE_HEIGHT * 2)
-                        )
-                            .height(Length::Units(LINE_HEIGHT * 19))
-                    )
+                    .push(self.lfo_vr_3.view())
                     .push(lfo_4)
-                    .push(
-                        Container::new(
-                            Rule::vertical(LINE_HEIGHT * 2)
-                        )
-                            .height(Length::Units(LINE_HEIGHT * 19))
-                    )
+                    .push(self.lfo_vr_4.view())
                     .push(
                         Column::new()
                             .width(Length::Units(LINE_HEIGHT * 8))
