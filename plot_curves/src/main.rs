@@ -54,7 +54,7 @@ fn plot_lfo_values(filename: &str){
 
     let time_per_sample = TimePerSample(1.0 / 44100.0);
     let bpm = BeatsPerMinute(120.0);
-    let shape = LfoShape::LinearUp;
+    let shape = LfoShape::Saw;
     let mode = LfoMode::Forever;
     let speed = 2.0;
     let magnitude = 1.0;

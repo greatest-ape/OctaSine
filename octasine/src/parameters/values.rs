@@ -840,7 +840,7 @@ pub struct LfoShapeValue(pub LfoShape);
 
 impl Default for LfoShapeValue {
     fn default() -> Self {
-        Self(LfoShape::LinearDown)
+        Self(LfoShape::ReverseSaw)
     }
 }
 
@@ -862,11 +862,11 @@ impl ParameterValue for LfoShapeValue {
     }
     fn format(self) -> String {
         match self.0 {
-            LfoShape::LinearUp => "LIN. UP".to_string(),
-            LfoShape::LinearDown => "LIN. DOWN".to_string(),
             LfoShape::Triangle => "TRIANGLE".to_string(),
+            LfoShape::Saw => "SAW".to_string(),
+            LfoShape::ReverseSaw => "REV SAW".to_string(),
             LfoShape::Square => "SQUARE".to_string(),
-            LfoShape::ReverseSquare => "REV SQUARE".to_string(),
+            LfoShape::ReverseSquare => "REV SQR".to_string(),
         }
     }
     fn format_sync(value: f64) -> String {
@@ -874,9 +874,9 @@ impl ParameterValue for LfoShapeValue {
     }
     fn from_text(text: String) -> Option<Self> {
         match text.to_lowercase().as_ref(){
-            "linear up" => Some(Self(LfoShape::LinearUp)),
-            "linear down" => Some(Self(LfoShape::LinearDown)),
             "triangle" => Some(Self(LfoShape::Triangle)),
+            "saw" => Some(Self(LfoShape::Saw)),
+            "reverse saw" => Some(Self(LfoShape::ReverseSaw)),
             "square" => Some(Self(LfoShape::Square)),
             "reverse square" => Some(Self(LfoShape::ReverseSquare)),
             _ => None,

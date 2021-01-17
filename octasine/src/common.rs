@@ -113,8 +113,8 @@ impl LfoTargetParameter {
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum LfoShape {
-    LinearUp,
-    LinearDown,
+    Saw,
+    ReverseSaw,
     Triangle,
     Square,
     ReverseSquare

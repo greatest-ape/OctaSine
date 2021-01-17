@@ -16,7 +16,7 @@ impl Default for VoiceLfo {
     fn default() -> Self {
         Self {
             phase: Phase(0.0),
-            shape: LfoShape::LinearDown,
+            shape: LfoShape::ReverseSaw,
             active: false,
             first_cycle: true,
             last_value: 0.0,
@@ -66,8 +66,8 @@ impl VoiceLfo {
         self.phase.0 = new_phase.fract();
 
         let mut value = magnitude * match self.shape {
-            LfoShape::LinearUp => triangle(self.phase, Phase(0.9)),
-            LfoShape::LinearDown => triangle(self.phase, Phase(0.1)),
+            LfoShape::Saw => triangle(self.phase, Phase(0.9)),
+            LfoShape::ReverseSaw => triangle(self.phase, Phase(0.1)),
             LfoShape::Triangle => triangle(self.phase, Phase(0.5)),
             LfoShape::Square => square(self.phase),
             LfoShape::ReverseSquare => rev_square(self.phase),

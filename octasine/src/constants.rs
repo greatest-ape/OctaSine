@@ -81,9 +81,9 @@ pub const LFO_TARGET_CONTEXT_STEPS: [LfoTargetParameter; 45] = [
 ];
 
 pub const LFO_SHAPE_STEPS: [LfoShape; 5] = [ 
-    LfoShape::LinearUp,
-    LfoShape::LinearDown,
     LfoShape::Triangle,
+    LfoShape::Saw,
+    LfoShape::ReverseSaw,
     LfoShape::Square,
     LfoShape::ReverseSquare,
 ];
