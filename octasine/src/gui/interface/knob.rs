@@ -296,7 +296,7 @@ impl OctaSineKnob {
             parameter_index,
             None,
             Some(tick_marks),
-            0.0 // FIXME
+            0.0
         )
     }
 

@@ -88,8 +88,8 @@ pub const LFO_SHAPE_STEPS: [LfoShape; 5] = [
     LfoShape::ReverseSquare,
 ];
 pub const LFO_MODE_STEPS: [LfoMode; 2] = [ 
-    LfoMode::Once,
     LfoMode::Forever,
+    LfoMode::Once,
 ];
 pub const LFO_FREQUENCY_RATIO_STEPS: [f64; 9] = [1.0/16.0, 1.0/8.0, 1.0/4.0, 1.0/2.0, 1.0, 2.0, 4.0, 8.0, 16.0];
 pub const LFO_FREQUENCY_FREE_STEPS: [f64; 7] = [1.0/16.0, 0.5, 0.9, 1.0, 1.1, 2.0, 16.0];
@@ -119,3 +119,6 @@ pub const DEFAULT_ENVELOPE_ATTACK_VOLUME: f64 = 1.0;
 pub const DEFAULT_ENVELOPE_DECAY_DURATION: f64 = ENVELOPE_MIN_DURATION;
 pub const DEFAULT_ENVELOPE_DECAY_VOLUME: f64 = 1.0;
 pub const DEFAULT_ENVELOPE_RELEASE_DURATION: f64 = 0.25;
+
+pub const DEFAULT_LFO_SHAPE: LfoShape = LfoShape::Triangle;
+pub const DEFAULT_LFO_MODE: LfoMode = LfoMode::Forever;

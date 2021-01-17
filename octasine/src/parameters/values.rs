@@ -840,7 +840,7 @@ pub struct LfoShapeValue(pub LfoShape);
 
 impl Default for LfoShapeValue {
     fn default() -> Self {
-        Self(LfoShape::ReverseSaw)
+        Self(DEFAULT_LFO_SHAPE)
     }
 }
 
@@ -891,7 +891,7 @@ pub struct LfoModeValue(pub LfoMode);
 
 impl Default for LfoModeValue {
     fn default() -> Self {
-        Self(LfoMode::Forever)
+        Self(DEFAULT_LFO_MODE)
     }
 }
 
