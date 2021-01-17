@@ -274,7 +274,7 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
 
         let lfo_vr_1 = VerticalRule::new(
             Length::Units(LINE_HEIGHT * 2),
-            Length::Units(LINE_HEIGHT * 17 + (LINE_HEIGHT * 3) / 2)
+            Length::Units(LINE_HEIGHT * 16)
         );
         let lfo_vr_2 = lfo_vr_1.clone();
         let lfo_vr_3 = lfo_vr_1.clone();
@@ -424,13 +424,37 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
                         Space::with_width(Length::Units(LINE_HEIGHT))
                     )
                     .push(lfo_1)
-                    .push(self.lfo_vr_1.view())
+                    .push(
+                        Column::new()
+                            .push(Space::with_height(Length::Units(
+                                LINE_HEIGHT + (LINE_HEIGHT * 3) / 2))
+                            )
+                            .push(self.lfo_vr_1.view())
+                    )
                     .push(lfo_2)
-                    .push(self.lfo_vr_2.view())
+                    .push(
+                        Column::new()
+                            .push(Space::with_height(Length::Units(
+                                LINE_HEIGHT + (LINE_HEIGHT * 3) / 2))
+                            )
+                            .push(self.lfo_vr_2.view())
+                    )
                     .push(lfo_3)
-                    .push(self.lfo_vr_3.view())
+                    .push(
+                        Column::new()
+                            .push(Space::with_height(Length::Units(
+                                LINE_HEIGHT + (LINE_HEIGHT * 3) / 2))
+                            )
+                            .push(self.lfo_vr_3.view())
+                    )
                     .push(lfo_4)
-                    .push(self.lfo_vr_4.view())
+                    .push(
+                        Column::new()
+                            .push(Space::with_height(Length::Units(
+                                LINE_HEIGHT + (LINE_HEIGHT * 3) / 2))
+                            )
+                            .push(self.lfo_vr_4.view())
+                    )
                     .push(
                         Column::new()
                             .width(Length::Units(LINE_HEIGHT * 8))
