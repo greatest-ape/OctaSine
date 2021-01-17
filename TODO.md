@@ -2,7 +2,8 @@
 
 ## LFO
 
-* Sample and hold, square shape
+* GUI: proper defaults
+* Sample and hold?
 * Consider updating envelope and lfo values in process benchmark too. This
   would further improve usefulness of output hashing.
 * Is it necessary to look at time signatures etc for bpm sync?
