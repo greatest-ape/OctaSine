@@ -1,7 +1,7 @@
 use iced_baseview::{Align, Column, Container, Element, HorizontalAlignment, Length, Row, Space, Text, VerticalAlignment};
 
 
-use crate::GuiSyncHandle;
+use crate::{GuiSyncHandle, parameters::values::LfoBpmSyncValue};
 
 use super::{FONT_SIZE, FONT_VERY_BOLD, LINE_HEIGHT, Message};
 use super::knob::OctaSineKnob;
@@ -14,7 +14,7 @@ pub struct LfoWidgets {
     pub target: LfoTargetPicker,
     pub shape: OctaSineKnob,
     pub mode: OctaSineKnob,
-    pub bpm_sync: BooleanPicker<bool>,
+    pub bpm_sync: BooleanPicker<LfoBpmSyncValue>,
     pub frequency_ratio: OctaSineKnob,
     pub frequency_free: OctaSineKnob,
     pub magnitude: OctaSineKnob,

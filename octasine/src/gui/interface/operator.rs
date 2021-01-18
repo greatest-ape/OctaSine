@@ -3,7 +3,7 @@ use iced_baseview::{
 };
 
 
-use crate::GuiSyncHandle;
+use crate::{GuiSyncHandle, parameters::values::OperatorWaveType};
 use crate::common::WaveType;
 
 use super::{FONT_SIZE, FONT_VERY_BOLD, LINE_HEIGHT, Message};
@@ -16,7 +16,7 @@ pub struct OperatorWidgets {
     index: usize,
     pub volume: OctaSineKnob,
     pub panning: OctaSineKnob,
-    pub wave_type: BooleanPicker<WaveType>,
+    pub wave_type: BooleanPicker<OperatorWaveType>,
     pub mod_index: OctaSineKnob,
     pub feedback: OctaSineKnob,
     pub frequency_ratio: OctaSineKnob,
