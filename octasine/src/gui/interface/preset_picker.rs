@@ -1,7 +1,7 @@
 use iced_baseview::{Element, Text, Column, Align, HorizontalAlignment, Length, Space, Row, VerticalAlignment};
 use iced_baseview::widget::{pick_list, PickList};
 
-use super::{FONT_BOLD, FONT_SIZE, FONT_VERY_BOLD, GuiSyncHandle, LINE_HEIGHT, Message};
+use super::{FONT_SIZE, FONT_VERY_BOLD, GuiSyncHandle, LINE_HEIGHT, Message};
 
 
 #[derive(Clone, PartialEq, Eq)]

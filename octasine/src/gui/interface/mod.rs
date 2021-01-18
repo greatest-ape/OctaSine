@@ -1,6 +1,6 @@
-use iced_baseview::{Align, Application, Color, Command, Subscription, WindowSubs, executor};
+use iced_baseview::{Align, Application, Command, Subscription, WindowSubs, executor};
 use iced_baseview::{
-    Column, Element, Row, Container, Rule, Length, Space, renderer, Font, Point, Text, HorizontalAlignment, VerticalAlignment
+    Column, Element, Row, Container, Length, Space, renderer, Font, Point, Text, HorizontalAlignment, VerticalAlignment
 };
 
 use crate::GuiSyncHandle;

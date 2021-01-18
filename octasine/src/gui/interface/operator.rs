@@ -4,7 +4,6 @@ use iced_baseview::{
 
 
 use crate::{GuiSyncHandle, parameters::values::OperatorWaveType};
-use crate::common::WaveType;
 
 use super::{FONT_SIZE, FONT_VERY_BOLD, LINE_HEIGHT, Message};
 use super::envelope::Envelope;

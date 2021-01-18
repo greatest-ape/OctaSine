@@ -1,4 +1,4 @@
-use iced_baseview::{Align, Column, Container, Element, HorizontalAlignment, Length, Row, Space, Text, VerticalAlignment};
+use iced_baseview::{Column, Element, HorizontalAlignment, Length, Row, Space, Text, VerticalAlignment};
 
 
 use crate::{GuiSyncHandle, parameters::values::LfoBpmSyncValue};
