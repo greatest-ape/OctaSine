@@ -14,10 +14,12 @@ Audio examples are available at [soundcloud.com/octasine](https://soundcloud.com
   limitations) as well as the percentage of signal that is simply added to the
   final output, enabling additive synthesis. By default, operator 4 is routed
   to operator 3, operator 3 to operator 2 and operator 2 to operator 1.
+* Master volume and master frequency parameters
+* Four LFOs capable of targeting most operator parameters as well as
+  most parameters of lower index LFOs.
 * 128 voices (using them all simultaneously might consume quite a bit
   of CPU time though)
 * Fully automatable
-* Master volume and master frequency parameters
 * Work-in-progress graphical user interface. To use, compile OctaSine with
   `gui` feature.
 
@@ -27,9 +29,9 @@ Audio examples are available at [soundcloud.com/octasine](https://soundcloud.com
 
 If you have already any of the software mentioned below, that step can be skipped.
 
-[Install the rust compiler](https://rustup.rs/). Requires the XCode build tools from Apple, you will probably be prompted to install those.
+[Install the nightly version of the Rust compiler](https://rustup.rs/). Requires the XCode build tools from Apple, you will probably be prompted to install those.
 
-Install nightly Rust toolchain:
+If you didn't install the nightly Rust toolchain in the last step, do it now:
 
 ```sh
 rustup toolchain install nightly
