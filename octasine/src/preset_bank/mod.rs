@@ -188,6 +188,7 @@ impl PresetBank {
 
         self.preset_index.store(index, Ordering::SeqCst);
         self.presets_changed.store(true, Ordering::SeqCst);
+        self.mark_parameters_as_changed();
     }
 
     pub fn get_preset_name(&self, index: usize) -> Option<String> {

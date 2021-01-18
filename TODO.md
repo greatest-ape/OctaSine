@@ -2,10 +2,8 @@
 
 ## Important
 
-* Changing preset doesn't seem to work
 * Scrolling in dropdowns
 * Dropdown color
-* BPM sync doesn't work
 * Check for any audio issues
 * Consider updating envelope and lfo values in process benchmark too. This
   would further improve usefulness of output hashing.
