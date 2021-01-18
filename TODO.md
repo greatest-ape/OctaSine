@@ -7,9 +7,7 @@
 * Check for any audio issues
 * Consider updating envelope and lfo values in process benchmark too. This
   would further improve usefulness of output hashing.
-* Automations in live. Do I have to call HostCallback::automate?
-
-* Modulation matrix: make adjusting operator volume possible
+* Automations in Live. Do I have to call HostCallback::automate?
 * Envelopes
   * Maybe draw lines indicating top and bottom of draggable range
   * Interaction with draggers
@@ -18,10 +16,11 @@
   * Fix ANOTHER envelope error:
     `ERROR] thread 'unnamed' panicked at 'Tessellate path: UnsupportedParamater': /[..]/github.com-1ecc6299db9ec823/iced_graphics-0.1.0/src/widget/canvas/frame.rs:100`
     * Probably also related to zero envelope section length
-* Reset knobs to default with backspace
 
 ## Less important
 
+* Modulation matrix: make adjusting operator volume possible
+* Reset knobs to default with backspace or maybe right click
 * Parameterise lfo target picker, knobs etc over ParameterValue for value
   conversions
 * update_host_display stuff
