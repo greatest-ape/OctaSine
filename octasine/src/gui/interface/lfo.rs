@@ -1,7 +1,8 @@
 use iced_baseview::{Column, Element, HorizontalAlignment, Length, Row, Space, Text, VerticalAlignment};
 
 
-use crate::{GuiSyncHandle, parameters::values::LfoBpmSyncValue};
+use crate::GuiSyncHandle;
+use crate::parameters::values::{LfoBpmSyncValue, LfoModeValue};
 
 use super::{FONT_SIZE, FONT_VERY_BOLD, LINE_HEIGHT, Message};
 use super::knob::OctaSineKnob;
@@ -13,7 +14,7 @@ pub struct LfoWidgets {
     index: usize,
     pub target: LfoTargetPicker,
     pub shape: OctaSineKnob,
-    pub mode: OctaSineKnob,
+    pub mode: BooleanPicker<LfoModeValue>,
     pub bpm_sync: BooleanPicker<LfoBpmSyncValue>,
     pub frequency_ratio: OctaSineKnob,
     pub frequency_free: OctaSineKnob,
@@ -39,7 +40,7 @@ impl LfoWidgets {
             index: lfo_index,
             target: LfoTargetPicker::new(sync_handle, lfo_index, target),
             shape: OctaSineKnob::lfo_shape(sync_handle, shape),
-            mode: OctaSineKnob::lfo_mode(sync_handle, mode),
+            mode: boolean_picker::lfo_mode(sync_handle, mode),
             bpm_sync: boolean_picker::bpm_sync(sync_handle, bpm_sync),
             frequency_ratio: OctaSineKnob::lfo_frequency_ratio(sync_handle, ratio),
             frequency_free: OctaSineKnob::lfo_frequency_free(sync_handle, free),
@@ -76,8 +77,8 @@ impl LfoWidgets {
             .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
             .push(
                 Row::new()
-                    .push(self.shape.view())
                     .push(self.mode.view())
+                    .push(self.shape.view())
                     .push(self.magnitude.view())
             )
             .into()

@@ -914,7 +914,7 @@ impl ParameterValue for LfoModeValue {
     fn format(self) -> String {
         match self.0 {
             LfoMode::Once => "ONCE".to_string(),
-            LfoMode::Forever => "FOREVER".to_string(),
+            LfoMode::Forever => "LOOP".to_string(),
         }
     }
     fn format_sync(value: f64) -> String {

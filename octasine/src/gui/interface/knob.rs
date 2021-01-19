@@ -263,25 +263,6 @@ impl OctaSineKnob {
         )
     }
 
-    pub fn lfo_mode<H: GuiSyncHandle>(
-        sync_handle: &H,
-        parameter_index: usize,
-    ) -> Self {
-        let tick_marks = tick_marks::Group::evenly_spaced(
-            LFO_MODE_STEPS.len(),
-            tick_marks::Tier::Two
-        );
-
-        Self::new(
-            sync_handle,
-            "MODE".to_string(),
-            parameter_index,
-            None,
-            Some(tick_marks),
-            0.0
-        )
-    }
-
     pub fn lfo_frequency_ratio<H: GuiSyncHandle>(
         sync_handle: &H,
         parameter_index: usize,

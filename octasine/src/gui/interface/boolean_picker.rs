@@ -7,6 +7,7 @@ use crate::GuiSyncHandle;
 use crate::parameters::values::{
     ParameterValue,
     LfoBpmSyncValue,
+    LfoModeValue,
     OperatorWaveType
 };
 
@@ -35,6 +36,19 @@ pub fn bpm_sync<H: GuiSyncHandle>(
         parameter_index,
         "BPM SYNC",
         vec![true, false]
+    )
+}
+
+
+pub fn lfo_mode<H: GuiSyncHandle>(
+    sync_handle: &H,
+    parameter_index: usize,
+) -> BooleanPicker<LfoModeValue> {
+    BooleanPicker::new(
+        sync_handle,
+        parameter_index,
+        "MODE",
+        vec![LfoMode::Forever, LfoMode::Once]
     )
 }
 
