@@ -498,6 +498,6 @@ create_simple_processing_parameter!(
 // LFO magnitude
 
 create_interpolatable_processing_parameter!(
-    ProcessingParameterLfoMagnitude,
-    LfoMagnitudeValue
+    ProcessingParameterLfoAmount,
+    LfoAmountValue
 );

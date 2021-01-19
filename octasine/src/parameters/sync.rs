@@ -82,7 +82,7 @@ pub fn create_parameters() -> Vec<SyncParameter> {
             lfo_bpm_sync(lfo_index),
             lfo_frequency_ratio(lfo_index),
             lfo_frequency_free(lfo_index),
-            lfo_magnitude(lfo_index),
+            lfo_amount(lfo_index),
         ])
     }
 
@@ -263,10 +263,10 @@ fn lfo_frequency_free(index: usize) -> SyncParameter {
     )
 }
 
-fn lfo_magnitude(index: usize) -> SyncParameter {
+fn lfo_amount(index: usize) -> SyncParameter {
     SyncParameter::new(
-        &format!("LFO {} magnitude", index + 1),
-        LfoMagnitudeValue::default()
+        &format!("LFO {} amount", index + 1),
+        LfoAmountValue::default()
     )
 }
 

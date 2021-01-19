@@ -1059,17 +1059,17 @@ impl ParameterValue for LfoFrequencyFreeValue {
 
 
 #[derive(Debug, Clone, Copy)]
-pub struct LfoMagnitudeValue(pub f64);
+pub struct LfoAmountValue(pub f64);
 
 
-impl Default for LfoMagnitudeValue {
+impl Default for LfoAmountValue {
     fn default() -> Self {
         Self(0.0)
     }
 }
 
 
-impl ParameterValue for LfoMagnitudeValue {
+impl ParameterValue for LfoAmountValue {
     type Value = f64;
 
     fn from_processing(value: Self::Value) -> Self {
@@ -1079,10 +1079,10 @@ impl ParameterValue for LfoMagnitudeValue {
         self.0
     }
     fn from_sync(sync: f64) -> Self {
-        Self(map_parameter_value_to_value_with_steps(&LFO_MAGNITUDE_STEPS[..], sync))
+        Self(map_parameter_value_to_value_with_steps(&LFO_AMOUNT_STEPS[..], sync))
     }
     fn to_sync(self) -> f64 {
-        map_value_to_parameter_value_with_steps(&LFO_MAGNITUDE_STEPS[..], self.0)
+        map_value_to_parameter_value_with_steps(&LFO_AMOUNT_STEPS[..], self.0)
     }
     fn format(self) -> String {
         format!("{:.04}", self.0)

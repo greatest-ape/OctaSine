@@ -74,7 +74,7 @@ pub struct ProcessingParameterLfo {
     pub bpm_sync: ProcessingParameterLfoBpmSync,
     pub frequency_ratio: ProcessingParameterLfoFrequencyRatio,
     pub frequency_free: ProcessingParameterLfoFrequencyFree,
-    pub magnitude: ProcessingParameterLfoMagnitude,
+    pub amount: ProcessingParameterLfoAmount,
 }
 
 impl ProcessingParameterLfo {
@@ -86,7 +86,7 @@ impl ProcessingParameterLfo {
             bpm_sync: ProcessingParameterLfoBpmSync::default(),
             frequency_ratio: ProcessingParameterLfoFrequencyRatio::default(),
             frequency_free: ProcessingParameterLfoFrequencyFree::default(),
-            magnitude: ProcessingParameterLfoMagnitude::default(),
+            amount: ProcessingParameterLfoAmount::default(),
         }
     }
 }
@@ -197,28 +197,28 @@ impl ProcessingParameters {
             62 => self.lfos[0].bpm_sync.set_from_sync(value),
             63 => self.lfos[0].frequency_ratio.set_from_sync(value),
             64 => self.lfos[0].frequency_free.set_from_sync(value),
-            65 => self.lfos[0].magnitude.set_from_sync(value),
+            65 => self.lfos[0].amount.set_from_sync(value),
             66 => self.lfos[1].target_parameter.set_from_sync(value),
             67 => self.lfos[1].shape.set_from_sync(value),
             68 => self.lfos[1].mode.set_from_sync(value),
             69 => self.lfos[1].bpm_sync.set_from_sync(value),
             70 => self.lfos[1].frequency_ratio.set_from_sync(value),
             71 => self.lfos[1].frequency_free.set_from_sync(value),
-            72 => self.lfos[1].magnitude.set_from_sync(value),
+            72 => self.lfos[1].amount.set_from_sync(value),
             73 => self.lfos[2].target_parameter.set_from_sync(value),
             74 => self.lfos[2].shape.set_from_sync(value),
             75 => self.lfos[2].mode.set_from_sync(value),
             76 => self.lfos[2].bpm_sync.set_from_sync(value),
             77 => self.lfos[2].frequency_ratio.set_from_sync(value),
             78 => self.lfos[2].frequency_free.set_from_sync(value),
-            79 => self.lfos[2].magnitude.set_from_sync(value),
+            79 => self.lfos[2].amount.set_from_sync(value),
             80 => self.lfos[3].target_parameter.set_from_sync(value),
             81 => self.lfos[3].shape.set_from_sync(value),
             82 => self.lfos[3].mode.set_from_sync(value),
             83 => self.lfos[3].bpm_sync.set_from_sync(value),
             84 => self.lfos[3].frequency_ratio.set_from_sync(value),
             85 => self.lfos[3].frequency_free.set_from_sync(value),
-            86 => self.lfos[3].magnitude.set_from_sync(value),
+            86 => self.lfos[3].amount.set_from_sync(value),
             _  => ()
         }
     }

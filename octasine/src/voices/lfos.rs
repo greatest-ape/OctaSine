@@ -34,7 +34,7 @@ impl VoiceLfo {
         shape: LfoShape,
         mode: LfoMode,
         frequency: f64,
-        magnitude: f64,
+        amount: f64,
     ) -> f64 {
         if !self.active {
             self.last_value = 0.0;
@@ -65,7 +65,7 @@ impl VoiceLfo {
 
         self.phase.0 = new_phase.fract();
 
-        let mut value = magnitude * match self.shape {
+        let mut value = amount * match self.shape {
             LfoShape::Saw => triangle(self.phase, Phase(0.9)),
             LfoShape::ReverseSaw => triangle(self.phase, Phase(0.1)),
             LfoShape::Triangle => triangle(self.phase, Phase(0.5)),

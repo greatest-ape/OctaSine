@@ -62,7 +62,7 @@ pub enum LfoTargetLfoParameter {
     Shape,
     FrequencyRatio,
     FrequencyFree,
-    Magnitude,
+    Amount,
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
@@ -102,7 +102,7 @@ impl LfoTargetParameter {
                     Shape => "shape",
                     FrequencyRatio => "freq ratio",
                     FrequencyFree => "freq free",
-                    Magnitude => "magnitude",
+                    Amount => "amount",
                 };
 
                 format!("LFO {} {}", n + 1, p)

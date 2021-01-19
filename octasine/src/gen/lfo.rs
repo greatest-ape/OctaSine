@@ -51,12 +51,12 @@ pub fn get_lfo_target_values(
     for (lfo_index, (voice_lfo, lfo_parameter)) in voice_lfos.iter_mut()
         .zip(lfo_parameters.iter_mut()).enumerate().rev()
     {
-        let magnitude = lfo_parameter.magnitude.get_value_with_lfo_addition(
+        let amount = lfo_parameter.amount.get_value_with_lfo_addition(
             time,
-            lfo_values.get(LfoTargetParameter::Lfo(lfo_index, LfoTargetLfoParameter::Magnitude))
+            lfo_values.get(LfoTargetParameter::Lfo(lfo_index, LfoTargetLfoParameter::Amount))
         );
 
-        if magnitude.abs() < ZERO_VALUE_LIMIT {
+        if amount.abs() < ZERO_VALUE_LIMIT {
             continue;
         }
 
@@ -88,7 +88,7 @@ pub fn get_lfo_target_values(
             shape,
             mode,
             frequency_ratio * frequency_free,
-            magnitude,
+            amount,
         );
 
         let target = lfo_parameter.target_parameter.get_value();
