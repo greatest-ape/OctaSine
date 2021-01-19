@@ -423,7 +423,7 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
             .push(operator_2)
             .push(Space::with_height(Length::Units(LINE_HEIGHT * 2)))
             .push(operator_1)
-            .push(Space::with_height(Length::Units(LINE_HEIGHT * 2)))
+            .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
             .push(
                 Row::new()
                     .push(

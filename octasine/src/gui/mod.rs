@@ -12,7 +12,7 @@ use interface::OctaSineIcedApplication;
 
 
 pub const GUI_WIDTH: usize = 14 * 66;
-pub const GUI_HEIGHT: usize = 14 * 59;
+pub const GUI_HEIGHT: usize = 14 * 58;
 
 
 pub struct Gui<H: GuiSyncHandle> {
