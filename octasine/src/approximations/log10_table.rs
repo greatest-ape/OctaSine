@@ -58,7 +58,7 @@ mod tests {
     #[test]
     fn test_table_calculate(){
         fn prop(value: f64) -> TestResult {
-            if value > 1.0 || value < 0.0 {
+            if value > 1.0 || value < 0.0 || value.is_nan(){
                 return TestResult::discard();
             }
 

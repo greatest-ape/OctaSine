@@ -250,7 +250,7 @@ mod tests {
     #[test]
     fn test_smooth_step_mapping(){
         fn prop(parameter_value: f64) -> TestResult {
-            if parameter_value < 0.0 || parameter_value > 1.0 {
+            if parameter_value < 0.0 || parameter_value > 1.0 || parameter_value.is_nan() {
                 return TestResult::discard();
             }
 

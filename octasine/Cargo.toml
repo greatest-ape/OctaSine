@@ -66,5 +66,5 @@ optional = true
 
 [dev-dependencies]
 assert_approx_eq = "1"
-quickcheck = { version = "0.9", default-features = false }
+quickcheck = { version = "1", default-features = false }
 sha2 = "0.9"
