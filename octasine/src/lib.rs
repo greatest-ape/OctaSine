@@ -56,7 +56,7 @@ pub struct OctaSine {
     processing: ProcessingState,
     pub sync: Arc<SyncState>,
     #[cfg(feature = "gui")]
-    editor: Option<crate::gui::Gui>,
+    editor: Option<crate::gui::Gui<Arc<SyncState>>>,
 }
 
 impl Default for OctaSine {
@@ -315,7 +315,7 @@ impl vst::plugin::PluginParameters for SyncState {
 cfg_if::cfg_if! {
     if #[cfg(feature = "gui")] {
         /// Trait passed to GUI code for encapsulation
-        pub trait GuiSyncHandle: Send + Sync + 'static {
+        pub trait GuiSyncHandle: Clone + Send + Sync + 'static {
             fn get_bank(&self) -> &PresetBank;
             fn set_parameter(&self, index: usize, value: f64);
             fn get_parameter(&self, index: usize) -> f64;

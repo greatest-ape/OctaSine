@@ -1,11 +1,9 @@
-use std::sync::Arc;
-
-use baseview::{AppRunner, Parent, Size, WindowOpenOptions, WindowScalePolicy};
-use iced_baseview::{Runner, Settings};
+use baseview::{Size, WindowOpenOptions, WindowScalePolicy};
+use iced_baseview::{IcedWindow, Settings};
 use vst::editor::Editor;
-use raw_window_handle::RawWindowHandle;
+use raw_window_handle::{HasRawWindowHandle, RawWindowHandle};
 
-use super::SyncState;
+use super::GuiSyncHandle;
 use crate::constants::PLUGIN_NAME;
 
 pub mod interface;
@@ -17,46 +15,49 @@ pub const GUI_WIDTH: usize = 14 * 66;
 pub const GUI_HEIGHT: usize = 14 * 59;
 
 
-pub struct Gui {
-    sync_state: Arc<SyncState>,
+pub struct Gui<H: GuiSyncHandle> {
+    sync_state: H,
     opened: bool,
 }
 
 
-impl Gui {
-    pub fn new(sync_state: Arc<SyncState>) -> Self {
+impl <H: GuiSyncHandle> Gui<H> {
+    pub fn new(sync_state: H) -> Self {
         Self {
             sync_state,
             opened: false,
         }
     }
 
-    pub fn open_app_window(
-        parent: Option<*mut ::core::ffi::c_void>,
-        sync_state: Arc<SyncState>,
-    ) -> Option<AppRunner> {
-        let parent = if let Some(parent) = parent {
-            Parent::WithParent(raw_window_handle_from_parent(parent))
-        } else {
-            Parent::None
-        };
-
-        let settings = Settings {
+    fn get_iced_baseview_settings(
+        sync_handle: H,
+    ) -> Settings<H> {
+        Settings {
             window: WindowOpenOptions {
-                parent,
                 size: Size::new(GUI_WIDTH as f64, GUI_HEIGHT as f64),
                 scale: WindowScalePolicy::SystemScaleFactor,
                 title: PLUGIN_NAME.to_string(),
             },
-            flags: sync_state,
-        };
+            flags: sync_handle
+        }
+    }
 
-        Runner::<OctaSineIcedApplication<_>>::open(settings).1
+    pub fn open_parented(parent: ParentWindow, sync_handle: H){
+        IcedWindow::<OctaSineIcedApplication<_>>::open_parented(
+            &parent,
+            Self::get_iced_baseview_settings(sync_handle)
+        );
+    }
+
+    pub fn open_blocking(sync_handle: H){
+        let settings = Self::get_iced_baseview_settings(sync_handle);
+
+        IcedWindow::<OctaSineIcedApplication<_>>::open_blocking(settings);
     }
 }
 
 
-impl Editor for Gui {
+impl <H: GuiSyncHandle>Editor for Gui<H> {
     fn size(&self) -> (i32, i32) {
         (GUI_WIDTH as i32, GUI_HEIGHT as i32)
     }
@@ -70,7 +71,7 @@ impl Editor for Gui {
             return false;
         }
 
-        Self::open_app_window(Some(parent), self.sync_state.clone());
+        Self::open_parented(ParentWindow(parent), self.sync_state.clone());
 
         true
     }
@@ -85,40 +86,37 @@ impl Editor for Gui {
 }
 
 
-#[cfg(target_os = "macos")]
-fn raw_window_handle_from_parent(
-    parent: *mut ::std::ffi::c_void
-) -> RawWindowHandle {
-    use raw_window_handle::macos::MacOSHandle;
-
-    RawWindowHandle::MacOS(MacOSHandle {
-        ns_view: parent,
-        ..MacOSHandle::empty()
-    })
-}
+pub struct ParentWindow(pub *mut ::core::ffi::c_void);
 
 
-#[cfg(target_os = "windows")]
-fn raw_window_handle_from_parent(
-    parent: *mut ::std::ffi::c_void
-) -> RawWindowHandle {
-    use raw_window_handle::windows::WindowsHandle;
+unsafe impl HasRawWindowHandle for ParentWindow {
+    #[cfg(target_os = "macos")]
+    fn raw_window_handle(&self) -> RawWindowHandle {
+        use raw_window_handle::macos::MacOSHandle;
 
-    RawWindowHandle::Windows(WindowsHandle {
-        hwnd: parent,
-        ..WindowsHandle::empty()
-    })
-}
+        RawWindowHandle::MacOS(MacOSHandle {
+            ns_view: self.0,
+            ..MacOSHandle::empty()
+        })
+    }
 
+    #[cfg(target_os = "windows")]
+    fn raw_window_handle(&self) -> RawWindowHandle {
+        use raw_window_handle::windows::WindowsHandle;
 
-#[cfg(target_os = "linux")]
-fn raw_window_handle_from_parent(
-    parent: *mut ::std::ffi::c_void
-) -> RawWindowHandle {
-    use raw_window_handle::unix::XcbHandle;
+        RawWindowHandle::Windows(WindowsHandle {
+            hwnd: self.0,
+            ..WindowsHandle::empty()
+        })
+    }
 
-    RawWindowHandle::Xcb(XcbHandle {
-        window: parent as u32,
-        ..XcbHandle::empty()
-    })
+    #[cfg(target_os = "linux")]
+    fn raw_window_handle(&self) -> RawWindowHandle {
+        use raw_window_handle::unix::XcbHandle;
+
+        RawWindowHandle::Xcb(XcbHandle {
+            window: self.0 as u32,
+            ..XcbHandle::empty()
+        })
+    }
 }

@@ -29,7 +29,5 @@ fn main(){
     GuiSyncHandle::set_parameter(&sync_state, 6, 1.0);
     GuiSyncHandle::set_parameter(&sync_state, 20, 0.9);
 
-    Gui::open_app_window(None, sync_state.clone())
-        .unwrap()
-        .app_run_blocking();
+    Gui::open_blocking(sync_state);
 }
