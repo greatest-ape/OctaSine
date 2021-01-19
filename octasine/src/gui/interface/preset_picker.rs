@@ -58,10 +58,12 @@ impl PresetPicker {
         )
             .text_size(FONT_SIZE)
             .style(OctaSineStyle)
-            .width(Length::Units(LINE_HEIGHT * 8 - 3));
+            // Will be limited by parent, but setting a size here ensures that
+            // it doesn't shrink too much when choice strings are short.
+            .width(Length::Units(LINE_HEIGHT * 12 - 3));
         
         Column::new()
-            .width(Length::Units(LINE_HEIGHT * 8))
+            .width(Length::Units(LINE_HEIGHT * 12))
             .align_items(Align::Center)
             .push(
                 Row::new()

@@ -19,7 +19,6 @@
 
 ## Less important
 
-* GUI: size of preset picker is probably limited by container, fix that
 * Consider displaying LfoMode::Forever as infinity symbol (∞). The problem is
   that the symbol is so small.
 * Modulation matrix: make adjusting operator volume possible
