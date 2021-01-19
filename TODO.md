@@ -19,6 +19,10 @@
 
 ## Less important
 
+* GUI: size of preset picker is probably limited by container, fix that
+* Rename LfoMode:Forever to Loop so it takes up less room in GUI.
+  Alternatively, show Forever as infinity symbol and Once as a one,
+  and use a BooleanPicker instead
 * Modulation matrix: make adjusting operator volume possible
 * Reset knobs to default with backspace or maybe right click
 * Parameterise lfo target picker, knobs etc over ParameterValue for value
