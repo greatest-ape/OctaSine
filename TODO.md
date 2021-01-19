@@ -8,7 +8,6 @@
 * Consider updating envelope and lfo values in process benchmark too. This
   would further improve usefulness of output hashing.
 * Automations in Live. Do I have to call HostCallback::automate?
-* LFO: same order of target parameters as in GUI
 * Envelopes
   * Maybe draw lines indicating top and bottom of draggable range
   * Interaction with draggers
