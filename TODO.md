@@ -3,7 +3,7 @@
 ## Important
 
 * Scrolling in dropdowns
-* Dropdown color
+  * Needs to be added to baseview macOS code
 * Check for any audio issues
 * Consider updating envelope and lfo values in process benchmark too. This
   would further improve usefulness of output hashing.

@@ -13,6 +13,7 @@ mod lfo_target_picker;
 mod mod_matrix;
 mod operator;
 mod preset_picker;
+mod style;
 mod boolean_picker;
 
 use divider::VerticalRule;

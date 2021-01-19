@@ -1491,6 +1491,7 @@ dependencies = [
  "fastrand",
  "iced_audio",
  "iced_baseview",
+ "iced_style",
  "log",
  "log-panics",
  "quickcheck",

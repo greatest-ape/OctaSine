@@ -1,7 +1,7 @@
 use iced_baseview::{Element, Text, Column, Align, HorizontalAlignment, Length, Space, Row, VerticalAlignment};
 use iced_baseview::widget::{pick_list, PickList};
 
-use super::{FONT_SIZE, FONT_VERY_BOLD, GuiSyncHandle, LINE_HEIGHT, Message};
+use super::{FONT_SIZE, FONT_VERY_BOLD, GuiSyncHandle, LINE_HEIGHT, Message, style::OctaSineStyle};
 
 
 #[derive(Clone, PartialEq, Eq)]
@@ -57,6 +57,7 @@ impl PresetPicker {
             |option| Message::PresetChange(option.index)
         )
             .text_size(FONT_SIZE)
+            .style(OctaSineStyle)
             .width(Length::Units(LINE_HEIGHT * 8 - 3));
         
         Column::new()

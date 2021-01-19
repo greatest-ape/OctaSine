@@ -1,4 +1,4 @@
-use iced_baseview::{Element, Column, Align, Length};
+use iced_baseview::{Align, Column, Element, Length};
 use iced_baseview::widget::{pick_list, PickList};
 
 use crate::common::*;
@@ -10,7 +10,7 @@ use crate::parameters::values::{
     Lfo4TargetParameterValue,
 };
 
-use super::{LINE_HEIGHT, FONT_SIZE, Message, GuiSyncHandle};
+use super::{LINE_HEIGHT, FONT_SIZE, Message, GuiSyncHandle, style::OctaSineStyle};
 
 
 #[derive(Clone, PartialEq, Eq)]
@@ -107,6 +107,7 @@ impl LfoTargetPicker {
             }
         )
             .text_size(FONT_SIZE)
+            .style(OctaSineStyle)
             .width(Length::Units(LINE_HEIGHT * 12 - 3));
         
         Column::new()
