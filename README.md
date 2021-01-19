@@ -29,7 +29,7 @@ Audio examples are available at [soundcloud.com/octasine](https://soundcloud.com
 
 If you have already any of the software mentioned below, that step can be skipped.
 
-[Install the nightly version of the Rust compiler](https://rustup.rs/). Requires the XCode build tools from Apple, you will probably be prompted to install those.
+[Install the Rust compiler](https://rustup.rs/). Choose the nightly toolchain when prompted. Requires the XCode build tools from Apple, you will probably be prompted to install those.
 
 If you didn't install the nightly Rust toolchain in the last step, do it now:
 
