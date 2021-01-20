@@ -2,6 +2,8 @@
 
 ## Pre-merge
 
+* Reorder LFO parameters to match GUI. Do the same in LFO
+  target parameters.
 * Test that parameters work
 * Check for any audio issues
 
