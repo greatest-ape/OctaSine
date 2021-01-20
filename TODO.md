@@ -19,11 +19,11 @@
 
 ## Less important
 
-* Consider displaying LfoMode::Forever as infinity symbol (∞). The problem is
-  that the symbol is so small.
 * Modulation matrix: make adjusting operator volume possible
 * Reset knobs to default with backspace or maybe right click
+  * Need to check if this is already supported in iced_audio
 * Parameterise lfo target picker over ParameterValue?
+* Nicer knob marks
 * update_host_display stuff
   * Running update_host_display all the time tanks performance. Maybe only run
     it on knob release, or stillstand (very little movement since last event.)
