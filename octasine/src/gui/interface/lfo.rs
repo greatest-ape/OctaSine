@@ -2,10 +2,10 @@ use iced_baseview::{Column, Element, HorizontalAlignment, Length, Row, Space, Te
 
 
 use crate::GuiSyncHandle;
-use crate::parameters::values::{LfoBpmSyncValue, LfoModeValue};
+use crate::parameters::values::{LfoBpmSyncValue, LfoModeValue, LfoAmountValue, LfoFrequencyRatioValue, LfoFrequencyFreeValue, LfoShapeValue};
 
 use super::{FONT_SIZE, FONT_VERY_BOLD, LINE_HEIGHT, Message};
-use super::knob::OctaSineKnob;
+use super::knob::{self, OctaSineKnob};
 use super::lfo_target_picker::LfoTargetPicker;
 use super::boolean_picker::{self, BooleanPicker};
 
@@ -13,12 +13,12 @@ use super::boolean_picker::{self, BooleanPicker};
 pub struct LfoWidgets {
     index: usize,
     pub target: LfoTargetPicker,
-    pub shape: OctaSineKnob,
+    pub shape: OctaSineKnob<LfoShapeValue>,
     pub mode: BooleanPicker<LfoModeValue>,
     pub bpm_sync: BooleanPicker<LfoBpmSyncValue>,
-    pub frequency_ratio: OctaSineKnob,
-    pub frequency_free: OctaSineKnob,
-    pub magnitude: OctaSineKnob,
+    pub frequency_ratio: OctaSineKnob<LfoFrequencyRatioValue>,
+    pub frequency_free: OctaSineKnob<LfoFrequencyFreeValue>,
+    pub amount: OctaSineKnob<LfoAmountValue>,
 }
 
 
@@ -39,12 +39,12 @@ impl LfoWidgets {
         Self {
             index: lfo_index,
             target: LfoTargetPicker::new(sync_handle, lfo_index, target),
-            shape: OctaSineKnob::lfo_shape(sync_handle, shape),
+            shape: knob::lfo_shape(sync_handle, shape),
             mode: boolean_picker::lfo_mode(sync_handle, mode),
             bpm_sync: boolean_picker::bpm_sync(sync_handle, bpm_sync),
-            frequency_ratio: OctaSineKnob::lfo_frequency_ratio(sync_handle, ratio),
-            frequency_free: OctaSineKnob::lfo_frequency_free(sync_handle, free),
-            magnitude: OctaSineKnob::lfo_magnitude(sync_handle, magnitude),
+            frequency_ratio: knob::lfo_frequency_ratio(sync_handle, ratio),
+            frequency_free: knob::lfo_frequency_free(sync_handle, free),
+            amount: knob::lfo_amount(sync_handle, magnitude),
         }
     }
 
@@ -79,7 +79,7 @@ impl LfoWidgets {
                 Row::new()
                     .push(self.mode.view())
                     .push(self.shape.view())
-                    .push(self.magnitude.view())
+                    .push(self.amount.view())
             )
             .into()
     }

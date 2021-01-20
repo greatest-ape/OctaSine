@@ -23,8 +23,7 @@
   that the symbol is so small.
 * Modulation matrix: make adjusting operator volume possible
 * Reset knobs to default with backspace or maybe right click
-* Parameterise lfo target picker, knobs etc over ParameterValue for value
-  conversions
+* Parameterise lfo target picker over ParameterValue?
 * update_host_display stuff
   * Running update_host_display all the time tanks performance. Maybe only run
     it on knob release, or stillstand (very little movement since last event.)

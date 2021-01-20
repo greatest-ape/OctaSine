@@ -4,6 +4,7 @@ use iced_baseview::{
 };
 
 use crate::GuiSyncHandle;
+use crate::parameters::values::{MasterVolume, MasterFrequency};
 
 mod divider;
 mod envelope;
@@ -76,8 +77,8 @@ pub struct OctaSineIcedApplication<H: GuiSyncHandle> {
     sync_handle: H,
     host_display_needs_update: bool,
     frame_counter: usize,
-    master_volume: OctaSineKnob,
-    master_frequency: OctaSineKnob,
+    master_volume: OctaSineKnob<MasterVolume>,
+    master_frequency: OctaSineKnob<MasterFrequency>,
     modulation_matrix: ModulationMatrix,
     preset_picker: PresetPicker,
     operator_1: OperatorWidgets,
@@ -102,50 +103,49 @@ impl <H: GuiSyncHandle> OctaSineIcedApplication<H> {
         value: f64,
     ){
         let v = value;
-        let h = &self.sync_handle;
 
         match parameter_index {
-            0 => self.master_volume.set_value(h, v),
-            1 => self.master_frequency.set_value(h, v),
+            0 => self.master_volume.set_value(v),
+            1 => self.master_frequency.set_value(v),
             2 => {
-                self.operator_1.volume.set_value(h, v);
+                self.operator_1.volume.set_value(v);
                 self.modulation_matrix.set_operator_1_volume(value);
             },
-            3 => self.operator_1.panning.set_value(h, v),
+            3 => self.operator_1.panning.set_value(v),
             4 => self.operator_1.wave_type.set_value(v),
-            5 => self.operator_1.mod_index.set_value(h, v),
+            5 => self.operator_1.mod_index.set_value(v),
             6 => {
-                self.operator_1.feedback.set_value(h, v);
+                self.operator_1.feedback.set_value(v);
                 self.modulation_matrix.set_operator_1_feedback(value);
             },
-            7 => self.operator_1.frequency_ratio.set_value(h, v),
-            8 => self.operator_1.frequency_free.set_value(h, v),
-            9 => self.operator_1.frequency_fine.set_value(h, v),
+            7 => self.operator_1.frequency_ratio.set_value(v),
+            8 => self.operator_1.frequency_free.set_value(v),
+            9 => self.operator_1.frequency_fine.set_value(v),
             10 => self.operator_1.envelope.set_attack_duration(v),
             11 => self.operator_1.envelope.set_attack_end_value(v),
             12 => self.operator_1.envelope.set_decay_duration(v),
             13 => self.operator_1.envelope.set_decay_end_value(v),
             14 => self.operator_1.envelope.set_release_duration(v),
             15 => {
-                self.operator_2.volume.set_value(h, v);
+                self.operator_2.volume.set_value(v);
                     self.modulation_matrix.set_operator_2_volume(value);
             },
-            16 => self.operator_2.panning.set_value(h, v),
+            16 => self.operator_2.panning.set_value(v),
             17 => self.operator_2.wave_type.set_value(v),
             18 => {
                 self.operator_2.additive.as_mut()
                     .unwrap()
-                    .set_value(h, v);
+                    .set_value(v);
                 self.modulation_matrix.set_operator_2_additive(v);
             },
-            19 => self.operator_2.mod_index.set_value(h, v),
+            19 => self.operator_2.mod_index.set_value(v),
             20 => {
-                self.operator_2.feedback.set_value(h, v);
+                self.operator_2.feedback.set_value(v);
                 self.modulation_matrix.set_operator_2_feedback(value);
             },
-            21 => self.operator_2.frequency_ratio.set_value(h, v),
-            22 => self.operator_2.frequency_free.set_value(h, v),
-            23 => self.operator_2.frequency_fine.set_value(h, v),
+            21 => self.operator_2.frequency_ratio.set_value(v),
+            22 => self.operator_2.frequency_free.set_value(v),
+            23 => self.operator_2.frequency_fine.set_value(v),
             24 => self.operator_2.envelope.set_attack_duration(v),
             25 => self.operator_2.envelope.set_attack_end_value(v),
             26 => self.operator_2.envelope.set_decay_duration(v),
@@ -153,84 +153,84 @@ impl <H: GuiSyncHandle> OctaSineIcedApplication<H> {
             28 => self.operator_2.envelope.set_release_duration(v),
             29 => {
                 self.modulation_matrix.set_operator_3_volume(value);
-                self.operator_3.volume.set_value(h, v);
+                self.operator_3.volume.set_value(v);
             },
-            30 => self.operator_3.panning.set_value(h, v),
+            30 => self.operator_3.panning.set_value(v),
             31 => self.operator_3.wave_type.set_value(v),
             32 => {
                 self.operator_3.additive.as_mut()
                     .unwrap()
-                    .set_value(h, v);
+                    .set_value(v);
                 self.modulation_matrix.set_operator_3_additive(v);
             },
             33 => self.modulation_matrix.set_operator_3_target(v),
-            34 => self.operator_3.mod_index.set_value(h, v),
+            34 => self.operator_3.mod_index.set_value(v),
             35 => {
-                self.operator_3.feedback.set_value(h, v);
+                self.operator_3.feedback.set_value(v);
                 self.modulation_matrix.set_operator_3_feedback(value)
             },
-            36 => self.operator_3.frequency_ratio.set_value(h, v),
-            37 => self.operator_3.frequency_free.set_value(h, v),
-            38 => self.operator_3.frequency_fine.set_value(h, v),
+            36 => self.operator_3.frequency_ratio.set_value(v),
+            37 => self.operator_3.frequency_free.set_value(v),
+            38 => self.operator_3.frequency_fine.set_value(v),
             39 => self.operator_3.envelope.set_attack_duration(v),
             40 => self.operator_3.envelope.set_attack_end_value(v),
             41 => self.operator_3.envelope.set_decay_duration(v),
             42 => self.operator_3.envelope.set_decay_end_value(v),
             43 => self.operator_3.envelope.set_release_duration(v),
             44 => {
-                self.operator_4.volume.set_value(h, v);
+                self.operator_4.volume.set_value(v);
                 self.modulation_matrix.set_operator_4_volume(value);
             },
-            45 => self.operator_4.panning.set_value(h, v),
+            45 => self.operator_4.panning.set_value(v),
             46 => self.operator_4.wave_type.set_value(v),
             47 => {
                 self.operator_4.additive.as_mut()
                     .unwrap()
-                    .set_value(h, v);
+                    .set_value(v);
                 self.modulation_matrix.set_operator_4_additive(v);
             },
             48 => self.modulation_matrix.set_operator_4_target(v),
-            49 => self.operator_4.mod_index.set_value(h, v),
+            49 => self.operator_4.mod_index.set_value(v),
             50 => {
-                self.operator_4.feedback.set_value(h, v);
+                self.operator_4.feedback.set_value(v);
                 self.modulation_matrix.set_operator_4_feedback(value);
             },
-            51 => self.operator_4.frequency_ratio.set_value(h, v),
-            52 => self.operator_4.frequency_free.set_value(h, v),
-            53 => self.operator_4.frequency_fine.set_value(h, v),
+            51 => self.operator_4.frequency_ratio.set_value(v),
+            52 => self.operator_4.frequency_free.set_value(v),
+            53 => self.operator_4.frequency_fine.set_value(v),
             54 => self.operator_4.envelope.set_attack_duration(v),
             55 => self.operator_4.envelope.set_attack_end_value(v),
             56 => self.operator_4.envelope.set_decay_duration(v),
             57 => self.operator_4.envelope.set_decay_end_value(v),
             58 => self.operator_4.envelope.set_release_duration(v),
             59 => self.lfo_1.target.set_value(v),
-            60 => self.lfo_1.shape.set_value(h, v),
+            60 => self.lfo_1.shape.set_value(v),
             61 => self.lfo_1.mode.set_value(v),
             62 => self.lfo_1.bpm_sync.set_value(v),
-            63 => self.lfo_1.frequency_ratio.set_value(h, v),
-            64 => self.lfo_1.frequency_free.set_value(h, v),
-            65 => self.lfo_1.magnitude.set_value(h, v),
+            63 => self.lfo_1.frequency_ratio.set_value(v),
+            64 => self.lfo_1.frequency_free.set_value(v),
+            65 => self.lfo_1.amount.set_value(v),
             66 => self.lfo_2.target.set_value(v),
-            67 => self.lfo_2.shape.set_value(h, v),
+            67 => self.lfo_2.shape.set_value(v),
             68 => self.lfo_2.mode.set_value(v),
             69 => self.lfo_2.bpm_sync.set_value(v),
-            70 => self.lfo_2.frequency_ratio.set_value(h, v),
-            71 => self.lfo_2.frequency_free.set_value(h, v),
-            72 => self.lfo_2.magnitude.set_value(h, v),
+            70 => self.lfo_2.frequency_ratio.set_value(v),
+            71 => self.lfo_2.frequency_free.set_value(v),
+            72 => self.lfo_2.amount.set_value(v),
             73 => self.lfo_3.target.set_value(v),
-            74 => self.lfo_3.shape.set_value(h, v),
+            74 => self.lfo_3.shape.set_value(v),
             75 => self.lfo_3.mode.set_value(v),
             76 => self.lfo_3.bpm_sync.set_value(v),
-            77 => self.lfo_3.frequency_ratio.set_value(h, v),
-            78 => self.lfo_3.frequency_free.set_value(h, v),
-            79 => self.lfo_3.magnitude.set_value(h, v),
+            77 => self.lfo_3.frequency_ratio.set_value(v),
+            78 => self.lfo_3.frequency_free.set_value(v),
+            79 => self.lfo_3.amount.set_value(v),
             80 => self.lfo_4.target.set_value(v),
-            81 => self.lfo_4.shape.set_value(h, v),
+            81 => self.lfo_4.shape.set_value(v),
             82 => self.lfo_4.mode.set_value(v),
             83 => self.lfo_4.bpm_sync.set_value(v),
-            84 => self.lfo_4.frequency_ratio.set_value(h, v),
-            85 => self.lfo_4.frequency_free.set_value(h, v),
-            86 => self.lfo_4.magnitude.set_value(h, v),
+            84 => self.lfo_4.frequency_ratio.set_value(v),
+            85 => self.lfo_4.frequency_free.set_value(v),
+            86 => self.lfo_4.amount.set_value(v),
             _ => (),
         }
     }
@@ -258,8 +258,8 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
     fn new(
         sync_handle: Self::Flags,
     ) -> (Self, Command<Self::Message>) {
-        let master_volume = OctaSineKnob::master_volume(&sync_handle);
-        let master_frequency = OctaSineKnob::master_frequency(&sync_handle);
+        let master_volume = knob::master_volume(&sync_handle);
+        let master_frequency = knob::master_frequency(&sync_handle);
         let modulation_matrix = ModulationMatrix::new(&sync_handle);
         let preset_picker = PresetPicker::new(&sync_handle);
 

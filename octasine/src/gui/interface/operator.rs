@@ -3,25 +3,26 @@ use iced_baseview::{
 };
 
 
-use crate::{GuiSyncHandle, parameters::values::OperatorWaveType};
+use crate::GuiSyncHandle;
+use crate::parameters::values::{OperatorAdditive, OperatorFeedback, OperatorFrequencyFine, OperatorFrequencyFree, OperatorFrequencyRatio, OperatorModulationIndex, OperatorPanning, OperatorVolume, OperatorWaveType};
 
 use super::{FONT_SIZE, FONT_VERY_BOLD, LINE_HEIGHT, Message};
 use super::envelope::Envelope;
-use super::knob::OctaSineKnob;
+use super::knob::{self, OctaSineKnob};
 use super::boolean_picker::{self, BooleanPicker};
 
 
 pub struct OperatorWidgets {
     index: usize,
-    pub volume: OctaSineKnob,
-    pub panning: OctaSineKnob,
+    pub volume: OctaSineKnob<OperatorVolume>,
+    pub panning: OctaSineKnob<OperatorPanning>,
     pub wave_type: BooleanPicker<OperatorWaveType>,
-    pub mod_index: OctaSineKnob,
-    pub feedback: OctaSineKnob,
-    pub frequency_ratio: OctaSineKnob,
-    pub frequency_free: OctaSineKnob,
-    pub frequency_fine: OctaSineKnob,
-    pub additive: Option<OctaSineKnob>,
+    pub mod_index: OctaSineKnob<OperatorModulationIndex>,
+    pub feedback: OctaSineKnob<OperatorFeedback>,
+    pub frequency_ratio: OctaSineKnob<OperatorFrequencyRatio>,
+    pub frequency_free: OctaSineKnob<OperatorFrequencyFree>,
+    pub frequency_fine: OctaSineKnob<OperatorFrequencyFine>,
+    pub additive: Option<OctaSineKnob<OperatorAdditive>>,
     pub envelope: Envelope,
 }
 
@@ -42,19 +43,19 @@ impl OperatorWidgets {
         let additive_knob = if operator_index == 0 {
             None
         } else {
-            Some(OctaSineKnob::operator_additive(sync_handle, additive))
+            Some(knob::operator_additive(sync_handle, additive))
         };
 
         Self {
             index: operator_index,
-            volume: OctaSineKnob::operator_volume(sync_handle, volume),
-            panning: OctaSineKnob::operator_panning(sync_handle, panning),
+            volume: knob::operator_volume(sync_handle, volume, operator_index),
+            panning: knob::operator_panning(sync_handle, panning),
             wave_type: boolean_picker::wave_type(sync_handle, wave),
-            mod_index: OctaSineKnob::operator_mod_index(sync_handle, mod_index),
-            feedback: OctaSineKnob::operator_feedback(sync_handle, feedback),
-            frequency_ratio: OctaSineKnob::operator_frequency_ratio(sync_handle, ratio),
-            frequency_free: OctaSineKnob::operator_frequency_free(sync_handle, free),
-            frequency_fine: OctaSineKnob::operator_frequency_fine(sync_handle, fine),
+            mod_index: knob::operator_mod_index(sync_handle, mod_index),
+            feedback: knob::operator_feedback(sync_handle, feedback),
+            frequency_ratio: knob::operator_frequency_ratio(sync_handle, ratio),
+            frequency_free: knob::operator_frequency_free(sync_handle, free),
+            frequency_fine: knob::operator_frequency_fine(sync_handle, fine),
             additive: additive_knob,
             envelope: Envelope::new(sync_handle, operator_index),
         }

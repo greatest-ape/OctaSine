@@ -5,7 +5,7 @@ use iced_audio::{
     knob, Normal, NormalParam, text_marks, tick_marks
 };
 
-use crate::parameters::utils::map_value_to_parameter_value_with_steps;
+use crate::parameters::values::{LfoAmountValue, LfoFrequencyFreeValue, LfoFrequencyRatioValue, LfoShapeValue, MasterFrequency, MasterVolume, OperatorAdditive, OperatorFeedback, OperatorFrequencyFine, OperatorFrequencyFree, OperatorFrequencyRatio, OperatorModulationIndex, OperatorPanning, OperatorVolume, ParameterValue};
 use crate::GuiSyncHandle;
 use crate::constants::*;
 
@@ -15,301 +15,281 @@ use super::{FONT_BOLD, LINE_HEIGHT, Message};
 const KNOB_SIZE: Length = Length::Units(LINE_HEIGHT * 2);
 
 
+enum TickMarkType {
+    MinMaxAndDefault,
+    MinMax,
+    Other(tick_marks::Group),
+}
+
+
+pub fn master_volume<H: GuiSyncHandle>(
+    sync_handle: &H,
+) -> OctaSineKnob<MasterVolume> {
+    let parameter_index = 0;
+
+    OctaSineKnob::new(
+        sync_handle,
+        parameter_index,
+        "VOLUME",
+        TickMarkType::MinMaxAndDefault
+    )
+}
+
+
+pub fn master_frequency<H: GuiSyncHandle>(
+    sync_handle: &H,
+) -> OctaSineKnob<MasterFrequency> {
+    let parameter_index = 1;
+
+    OctaSineKnob::new(
+        sync_handle,
+        parameter_index,
+        "FREQ",
+        TickMarkType::MinMaxAndDefault
+    )
+}
+
+
+pub fn operator_volume<H: GuiSyncHandle>(
+    sync_handle: &H,
+    parameter_index: usize,
+    operator_index: usize,
+) -> OctaSineKnob<OperatorVolume> {
+    OctaSineKnob::new_with_default_sync_value(
+        sync_handle,
+        parameter_index,
+        "VOLUME",
+        TickMarkType::MinMaxAndDefault,
+        OperatorVolume::new(operator_index).to_sync(),
+    )
+}
+
+
+pub fn operator_panning<H: GuiSyncHandle>(
+    sync_handle: &H,
+    parameter_index: usize
+) -> OctaSineKnob<OperatorPanning> {
+    OctaSineKnob::new(
+        sync_handle,
+        parameter_index,
+        "PAN",
+        TickMarkType::MinMaxAndDefault
+    )
+}
+
+
+pub fn operator_additive<H: GuiSyncHandle>(
+    sync_handle: &H,
+    parameter_index: usize
+) -> OctaSineKnob<OperatorAdditive> {
+    OctaSineKnob::new(
+        sync_handle,
+        parameter_index,
+        "ADDITIVE",
+        TickMarkType::MinMax
+    )
+}
+
+
+pub fn operator_mod_index<H: GuiSyncHandle>(
+    sync_handle: &H,
+    parameter_index: usize
+) -> OctaSineKnob<OperatorModulationIndex> {
+    OctaSineKnob::new(
+        sync_handle,
+        parameter_index,
+        "MOD",
+        TickMarkType::MinMaxAndDefault
+    )
+}
+
+
+pub fn operator_feedback<H: GuiSyncHandle>(
+    sync_handle: &H,
+    parameter_index: usize
+) -> OctaSineKnob<OperatorFeedback> {
+    OctaSineKnob::new(
+        sync_handle,
+        parameter_index,
+        "FEEDBACK",
+        TickMarkType::MinMaxAndDefault
+    )
+}
+
+
+pub fn operator_frequency_ratio<H: GuiSyncHandle>(
+    sync_handle: &H,
+    parameter_index: usize
+) -> OctaSineKnob<OperatorFrequencyRatio> {
+    OctaSineKnob::new(
+        sync_handle,
+        parameter_index,
+        "RATIO",
+        TickMarkType::MinMaxAndDefault
+    )
+}
+
+
+pub fn operator_frequency_free<H: GuiSyncHandle>(
+    sync_handle: &H,
+    parameter_index: usize
+) -> OctaSineKnob<OperatorFrequencyFree> {
+    OctaSineKnob::new(
+        sync_handle,
+        parameter_index,
+        "FREE",
+        TickMarkType::MinMaxAndDefault
+    )
+}
+
+
+pub fn operator_frequency_fine<H: GuiSyncHandle>(
+    sync_handle: &H,
+    parameter_index: usize
+) -> OctaSineKnob<OperatorFrequencyFine> {
+    OctaSineKnob::new(
+        sync_handle,
+        parameter_index,
+        "FINE",
+        TickMarkType::MinMaxAndDefault
+    )
+}
+
+
+pub fn lfo_shape<H: GuiSyncHandle>(
+    sync_handle: &H,
+    parameter_index: usize,
+) -> OctaSineKnob<LfoShapeValue> {
+    let tick_marks = tick_marks::Group::evenly_spaced(
+        LFO_SHAPE_STEPS.len(),
+        tick_marks::Tier::Two
+    );
+
+    OctaSineKnob::new(
+        sync_handle,
+        parameter_index,
+        "SHAPE",
+        TickMarkType::Other(tick_marks)
+    )
+}
+
+
+pub fn lfo_frequency_ratio<H: GuiSyncHandle>(
+    sync_handle: &H,
+    parameter_index: usize
+) -> OctaSineKnob<LfoFrequencyRatioValue> {
+    OctaSineKnob::new(
+        sync_handle,
+        parameter_index,
+        "RATIO",
+        TickMarkType::MinMaxAndDefault
+    )
+}
+
+
+pub fn lfo_frequency_free<H: GuiSyncHandle>(
+    sync_handle: &H,
+    parameter_index: usize
+) -> OctaSineKnob<LfoFrequencyFreeValue> {
+    OctaSineKnob::new(
+        sync_handle,
+        parameter_index,
+        "FREE",
+        TickMarkType::MinMaxAndDefault
+    )
+}
+
+
+pub fn lfo_amount<H: GuiSyncHandle>(
+    sync_handle: &H,
+    parameter_index: usize
+) -> OctaSineKnob<LfoAmountValue> {
+    OctaSineKnob::new(
+        sync_handle,
+        parameter_index,
+        "AMOUNT",
+        TickMarkType::MinMaxAndDefault
+    )
+}
+
+
 #[derive(Debug, Clone)]
-pub struct OctaSineKnob {
+pub struct OctaSineKnob<P: ParameterValue> {
     knob_state: knob::State,
     text_marks: Option<text_marks::Group>,
     tick_marks: Option<tick_marks::Group>,
     title: String,
     value_text: String,
     parameter_index: usize,
+    phantom_data: ::std::marker::PhantomData<P>,
 }
 
 
-impl OctaSineKnob {
+impl <P: ParameterValue + Default>OctaSineKnob<P> {
     fn new<H: GuiSyncHandle>(
-        sync_handle: &H,
-        title: String,
-        parameter_index: usize,
-        text_marks: Option<text_marks::Group>,
-        tick_marks: Option<tick_marks::Group>,
-        default: f64,
-    ) -> Self {
-        let value = Normal::new(sync_handle.get_parameter(
-            parameter_index
-        ) as f32);
-
-        let normal_param = NormalParam {
-            value,
-            default: Normal::new(default as f32),
-        };
-
-        let value_text = format_value(
-            sync_handle,
-            parameter_index,
-            normal_param.value.as_f32() as f64
-        );
-        
-        Self {
-            knob_state: knob::State::new(normal_param),
-            text_marks,
-            tick_marks,
-            title,
-            value_text,
-            parameter_index
-        }
-    }
-
-    pub fn new_min_max_center<H: GuiSyncHandle>(
-        sync_handle: &H,
-        parameter_index: usize,
-        title: &str
-    ) -> Self {
-        let default_sync_value = 0.5;
-
-        let tick_marks = tick_marks::Group::min_max_and_center(
-            tick_marks::Tier::Two,
-            tick_marks::Tier::Two,
-        );
-
-        Self::new(
-            sync_handle,
-            title.to_string(),
-            parameter_index,
-            None,
-            Some(tick_marks),
-            default_sync_value
-        )
-    }
-
-    pub fn new_with_steps<H: GuiSyncHandle>(
         sync_handle: &H,
         parameter_index: usize,
         title: &str,
-        steps: &[f64],
-        default_value: f64,
+        tick_mark_type: TickMarkType,
     ) -> Self {
-        let default_value_sync = map_value_to_parameter_value_with_steps(
-            steps,
-            default_value
+        Self::new_with_default_sync_value(
+            sync_handle,
+            parameter_index,
+            title,
+            tick_mark_type,
+            P::default().to_sync()
+        )
+    }
+}
+
+
+impl <P: ParameterValue>OctaSineKnob<P> {
+    fn new_with_default_sync_value<H: GuiSyncHandle>(
+        sync_handle: &H,
+        parameter_index: usize,
+        title: &str,
+        tick_mark_type: TickMarkType,
+        default_sync_value: f64,
+    ) -> Self {
+        let sync_value = sync_handle.get_parameter(parameter_index);
+        let value_text = P::from_sync(sync_value).format();
+
+        let knob_state = knob::State::new(
+            NormalParam {
+                value: Normal::new(sync_value as f32),
+                default: Normal::new(default_sync_value as f32),
+            }
         );
 
-        let tick_marks = tick_marks_from_min_max_and_value(
-            default_value_sync,
-        );
+        let tick_marks = match tick_mark_type {
+            TickMarkType::MinMaxAndDefault => {
+                tick_marks_from_min_max_and_value(default_sync_value)
+            },
+            TickMarkType::MinMax => {
+                tick_marks::Group::min_max(
+                    tick_marks::Tier::Two,
+                )
+            },
+            TickMarkType::Other(tick_marks) => tick_marks,
+        };
 
-        Self::new(
-            sync_handle,
-            title.to_string(),
+        Self {
+            knob_state,
+            text_marks: None,
+            tick_marks: Some(tick_marks),
+            title: title.to_string(),
+            value_text,
             parameter_index,
-            None,
-            Some(tick_marks),
-            default_value_sync
-        )
+            phantom_data: ::std::marker::PhantomData::default(),
+        }
     }
 
-    pub fn master_volume<H: GuiSyncHandle>(
-        sync_handle: &H,
-    ) -> Self {
-        Self::new_min_max_center(
-            sync_handle,
-            0,
-            "VOLUME"
-        )
-    }
-
-    pub fn master_frequency<H: GuiSyncHandle>(
-        sync_handle: &H,
-    ) -> Self {
-        Self::new_with_steps(
-            sync_handle,
-            1,
-            "FREQ",
-            &MASTER_FREQUENCY_STEPS,
-            DEFAULT_MASTER_FREQUENCY
-        )
-    }
-
-    pub fn operator_volume<H: GuiSyncHandle>(
-        sync_handle: &H,
-        parameter_index: usize,
-    ) -> Self {
-        Self::new_min_max_center(
-            sync_handle,
-            parameter_index,
-            "VOLUME"
-        )
-    }
-
-    pub fn operator_panning<H: GuiSyncHandle>(
-        sync_handle: &H,
-        parameter_index: usize,
-    ) -> Self {
-        Self::new_min_max_center(
-            sync_handle,
-            parameter_index,
-            "PAN"
-        )
-    }
-
-    pub fn operator_mod_index<H: GuiSyncHandle>(
-        sync_handle: &H,
-        parameter_index: usize,
-    ) -> Self {
-        Self::new_with_steps(
-            sync_handle,
-            parameter_index,
-            "MOD",
-            &OPERATOR_BETA_STEPS,
-            DEFAULT_OPERATOR_MODULATION_INDEX,
-        )
-    }
-
-    pub fn operator_feedback<H: GuiSyncHandle>(
-        sync_handle: &H,
-        parameter_index: usize,
-    ) -> Self {
-        let default_sync_value = 0.5;
-
-        let tick_marks = tick_marks::Group::min_max(
-            tick_marks::Tier::Two,
-        );
-
-        Self::new(
-            sync_handle,
-            "FEEDBACK".to_string(),
-            parameter_index,
-            None,
-            Some(tick_marks),
-            default_sync_value
-        )
-    }
-
-    pub fn operator_frequency_ratio<H: GuiSyncHandle>(
-        sync_handle: &H,
-        parameter_index: usize,
-    ) -> Self {
-        Self::new_with_steps(
-            sync_handle,
-            parameter_index,
-            "RATIO",
-            &OPERATOR_RATIO_STEPS,
-            DEFAULT_OPERATOR_FREQUENCY_RATIO
-        )
-    }
-
-    pub fn operator_frequency_free<H: GuiSyncHandle>(
-        sync_handle: &H,
-        parameter_index: usize,
-    ) -> Self {
-        Self::new_with_steps(
-            sync_handle,
-            parameter_index,
-            "FREE",
-            &OPERATOR_FREE_STEPS,
-            DEFAULT_OPERATOR_FREQUENCY_FREE
-        )
-    }
-
-    pub fn operator_frequency_fine<H: GuiSyncHandle>(
-        sync_handle: &H,
-        parameter_index: usize,
-    ) -> Self {
-        Self::new_with_steps(
-            sync_handle,
-            parameter_index,
-            "FINE",
-            &OPERATOR_FINE_STEPS,
-            DEFAULT_OPERATOR_FREQUENCY_FINE
-        )
-    }
-
-    pub fn operator_additive<H: GuiSyncHandle>(
-        sync_handle: &H,
-        parameter_index: usize,
-    ) -> Self {
-        let default_sync_value = 0.0;
-
-        let tick_marks = tick_marks::Group::min_max(
-            tick_marks::Tier::Two,
-        );
-
-        Self::new(
-            sync_handle,
-            "ADDITIVE".to_string(),
-            parameter_index,
-            None,
-            Some(tick_marks),
-            default_sync_value
-        )
-    }
-
-    pub fn lfo_shape<H: GuiSyncHandle>(
-        sync_handle: &H,
-        parameter_index: usize,
-    ) -> Self {
-        let tick_marks = tick_marks::Group::evenly_spaced(
-            LFO_SHAPE_STEPS.len(),
-            tick_marks::Tier::Two
-        );
-
-        Self::new(
-            sync_handle,
-            "SHAPE".to_string(),
-            parameter_index,
-            None,
-            Some(tick_marks),
-            0.0 // FIXME
-        )
-    }
-
-    pub fn lfo_frequency_ratio<H: GuiSyncHandle>(
-        sync_handle: &H,
-        parameter_index: usize,
-    ) -> Self {
-        Self::new_with_steps(
-            sync_handle,
-            parameter_index,
-            "RATIO",
-            &LFO_FREQUENCY_RATIO_STEPS,
-            1.0
-        )
-    }
-
-    pub fn lfo_frequency_free<H: GuiSyncHandle>(
-        sync_handle: &H,
-        parameter_index: usize,
-    ) -> Self {
-        Self::new_with_steps(
-            sync_handle,
-            parameter_index,
-            "FREE",
-            &LFO_FREQUENCY_FREE_STEPS,
-            1.0
-        )
-    }
-
-    pub fn lfo_magnitude<H: GuiSyncHandle>(
-        sync_handle: &H,
-        parameter_index: usize,
-    ) -> Self {
-        Self::new_min_max_center(
-            sync_handle,
-            parameter_index,
-            "AMOUNT"
-        )
-    }
-
-    pub fn set_value<H: GuiSyncHandle>(&mut self, sync_handle: &H, value: f64){
+    pub fn set_value(&mut self, value: f64){
         if !self.knob_state.is_dragging() {
             self.knob_state.set_normal(Normal::new(value as f32));
         }
 
-        self.value_text = format_value(
-            sync_handle,
-            self.parameter_index,
-            self.knob_state.normal_param.value.as_f32() as f64
-        );
+        self.value_text = P::from_sync(value).format();
     }
 
     pub fn view(&mut self) -> Element<Message> {
@@ -358,15 +338,6 @@ impl OctaSineKnob {
             .push(value)
             .into()
     }
-}
-
-
-fn format_value<H: GuiSyncHandle>(
-    sync_handle: &H,
-    parameter_index: usize,
-    value: f64
-) -> String {
-    sync_handle.format_parameter_value(parameter_index, value)
 }
 
 
