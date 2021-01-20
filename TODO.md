@@ -1,10 +1,14 @@
 # TODO
 
+## Pre-merge
+
+* Test that parameters work
+* Check for any audio issues
+
 ## Important
 
 * Scrolling in dropdowns
   * Needs to be added to baseview macOS code
-* Check for any audio issues
 * Consider updating envelope and lfo values in process benchmark too. This
   would further improve usefulness of output hashing.
 * Automations in Live. Do I have to call HostCallback::automate?
