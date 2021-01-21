@@ -70,9 +70,9 @@ impl LfoWidgets {
             .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
             .push(
                 Row::new()
+                    .push(self.bpm_sync.view())
                     .push(self.frequency_ratio.view())
                     .push(self.frequency_free.view())
-                    .push(self.bpm_sync.view())
             )
             .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
             .push(
