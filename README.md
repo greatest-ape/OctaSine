@@ -75,7 +75,7 @@ should work fine.
 
 Copyright (C) 2019-2021 Joakim Frostegård
 
-OctaSine is licensed under the GNU General Public License, Version 3, as
+OctaSine is licensed under the GNU Affero General Public License, Version 3, as
 published by the Free Software Foundation. See [LICENSE](LICENSE) for details.
 
 Contents of the `contrib` directory are licensed under other terms. Please
