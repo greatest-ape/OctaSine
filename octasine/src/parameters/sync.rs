@@ -77,11 +77,11 @@ pub fn create_parameters() -> Vec<SyncParameter> {
     for lfo_index in 0..NUM_LFOS {
         parameters.extend(vec![
             lfo_target_parameter(lfo_index),
-            lfo_shape(lfo_index),
-            lfo_mode(lfo_index),
             lfo_bpm_sync(lfo_index),
             lfo_frequency_ratio(lfo_index),
             lfo_frequency_free(lfo_index),
+            lfo_mode(lfo_index),
+            lfo_shape(lfo_index),
             lfo_amount(lfo_index),
         ])
     }

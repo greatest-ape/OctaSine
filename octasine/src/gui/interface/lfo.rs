@@ -29,12 +29,12 @@ impl LfoWidgets {
     ) -> Self {
         let offset = 59 + lfo_index * 7;
         let target = offset + 0;
-        let shape = offset + 1;
-        let mode = offset + 2;
-        let bpm_sync = offset + 3;
-        let ratio = offset + 4;
-        let free = offset + 5;
-        let magnitude = offset + 6;
+        let bpm_sync = offset + 1;
+        let ratio = offset + 2;
+        let free = offset + 3;
+        let mode = offset + 4;
+        let shape = offset + 5;
+        let amount = offset + 6;
 
         Self {
             index: lfo_index,
@@ -44,7 +44,7 @@ impl LfoWidgets {
             bpm_sync: boolean_picker::bpm_sync(sync_handle, bpm_sync),
             frequency_ratio: knob::lfo_frequency_ratio(sync_handle, ratio),
             frequency_free: knob::lfo_frequency_free(sync_handle, free),
-            amount: knob::lfo_amount(sync_handle, magnitude),
+            amount: knob::lfo_amount(sync_handle, amount),
         }
     }
 
