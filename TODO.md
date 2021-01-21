@@ -2,13 +2,12 @@
 
 ## Pre-merge
 
-* Reorder LFO parameters to match GUI. Do the same in LFO
-  target parameters.
-* Test that parameters work
 * Check for any audio issues
 
 ## Important
 
+* Master frequency text becomes two rows when value is high, so mod
+  matrix skips down
 * Scrolling in dropdowns
   * Needs to be added to baseview macOS code
 * Consider updating envelope and lfo values in process benchmark too. This
