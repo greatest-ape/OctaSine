@@ -208,6 +208,10 @@ mod tests {
             let time_so_far_this_stage = values.2;
             let stage_length = values.3;
 
+            if values.0.is_nan() || values.1.is_nan() || values.2.is_nan() || values.3.is_nan(){
+                return TestResult::discard();
+            }
+
             if !valid_volume(start_volume) || !valid_volume(end_volume) {
                 return TestResult::discard();
             }
