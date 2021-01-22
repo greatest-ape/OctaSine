@@ -20,6 +20,7 @@
 
 ## Less important
 
+* Use Value suffix in all names for ParameterValues
 * Modulation matrix: make adjusting operator volume possible
 * Reset knobs to default with backspace or maybe right click
   * Need to check if this is already supported in iced_audio
