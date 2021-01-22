@@ -1,9 +1,5 @@
 # TODO
 
-## Pre-merge
-
-* Check for any audio issues
-
 ## Important
 
 * Master frequency text becomes two rows when value is high, so mod
