@@ -54,6 +54,8 @@ impl VoiceLfo {
             if mode == LfoMode::Once {
                 self.stop();
 
+                self.last_value = 0.0;
+
                 return 0.0;
             }
             if shape != self.shape {
