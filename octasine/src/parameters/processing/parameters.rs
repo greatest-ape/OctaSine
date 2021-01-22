@@ -121,7 +121,7 @@ macro_rules! create_simple_processing_parameter {
 
 create_interpolatable_processing_parameter!(
     ProcessingParameterMasterVolume,
-    MasterVolume
+    MasterVolumeValue
 );
 
 
@@ -129,7 +129,7 @@ create_interpolatable_processing_parameter!(
 
 create_simple_processing_parameter!(
     ProcessingParameterMasterFrequency,
-    MasterFrequency
+    MasterFrequencyValue
 );
 
 
@@ -143,7 +143,7 @@ pub struct ProcessingParameterOperatorVolume {
 
 impl ProcessingParameterOperatorVolume {
     pub fn new(operator_index: usize) -> Self {
-        let value = OperatorVolume::new(operator_index).get();
+        let value = OperatorVolumeValue::new(operator_index).get();
 
         Self {
             value: InterpolatableProcessingValue::new(value)
@@ -159,7 +159,7 @@ impl ProcessingParameter for ProcessingParameterOperatorVolume {
         self.value.get_value(extra_data, &mut |_| ())
     }
     fn set_from_sync(&mut self, value: f64){
-        self.value.set_value(OperatorVolume::from_sync(value).get())
+        self.value.set_value(OperatorVolumeValue::from_sync(value).get())
     }
     fn get_value_with_lfo_addition(
         &mut self,
@@ -167,11 +167,11 @@ impl ProcessingParameter for ProcessingParameterOperatorVolume {
         lfo_addition: Option<f64>
     ) -> Self::Value {
         if let Some(lfo_addition) = lfo_addition {
-            let sync_value = OperatorVolume::from_processing(
+            let sync_value = OperatorVolumeValue::from_processing(
                 self.get_value(extra_data)
             ).to_sync();
 
-            OperatorVolume::from_sync(
+            OperatorVolumeValue::from_sync(
                 (sync_value + lfo_addition).min(1.0).max(0.0)
             ).get()
         } else {
@@ -185,7 +185,7 @@ impl ProcessingParameter for ProcessingParameterOperatorVolume {
 
 create_interpolatable_processing_parameter!(
     ProcessingParameterOperatorAdditiveFactor,
-    OperatorAdditive
+    OperatorAdditiveValue
 );
 
 
@@ -193,7 +193,7 @@ create_interpolatable_processing_parameter!(
 
 create_simple_processing_parameter!(
     ProcessingParameterOperatorFrequencyRatio,
-    OperatorFrequencyRatio
+    OperatorFrequencyRatioValue
 );
 
 
@@ -201,7 +201,7 @@ create_simple_processing_parameter!(
 
 create_simple_processing_parameter!(
     ProcessingParameterOperatorFrequencyFree,
-    OperatorFrequencyFree
+    OperatorFrequencyFreeValue
 );
 
 
@@ -209,7 +209,7 @@ create_simple_processing_parameter!(
 
 create_simple_processing_parameter!(
     ProcessingParameterOperatorFrequencyFine,
-    OperatorFrequencyFine
+    OperatorFrequencyFineValue
 );
 
 
@@ -217,7 +217,7 @@ create_simple_processing_parameter!(
 
 create_interpolatable_processing_parameter!(
     ProcessingParameterOperatorFeedback,
-    OperatorFeedback
+    OperatorFeedbackValue
 );
 
 
@@ -225,7 +225,7 @@ create_interpolatable_processing_parameter!(
 
 create_interpolatable_processing_parameter!(
     ProcessingParameterOperatorModulationIndex,
-    OperatorModulationIndex
+    OperatorModulationIndexValue
 );
 
 
@@ -233,7 +233,7 @@ create_interpolatable_processing_parameter!(
 
 create_simple_processing_parameter!(
     ProcessingParameterOperatorWaveType,
-    OperatorWaveType
+    OperatorWaveTypeValue
 );
 
 
@@ -241,7 +241,7 @@ create_simple_processing_parameter!(
 
 create_simple_processing_parameter!(
     ProcessingParameterOperatorAttackDuration,
-    OperatorAttackDuration
+    OperatorAttackDurationValue
 );
 
 
@@ -257,7 +257,7 @@ create_simple_processing_parameter!(
 
 create_simple_processing_parameter!(
     ProcessingParameterOperatorDecayDuration,
-    OperatorDecayDuration
+    OperatorDecayDurationValue
 );
 
 
@@ -265,7 +265,7 @@ create_simple_processing_parameter!(
 
 create_simple_processing_parameter!(
     ProcessingParameterOperatorDecayVolume,
-    OperatorDecayVolume
+    OperatorDecayVolumeValue
 );
 
 
@@ -273,7 +273,7 @@ create_simple_processing_parameter!(
 
 create_simple_processing_parameter!(
     ProcessingParameterOperatorReleaseDuration,
-    OperatorReleaseDuration
+    OperatorReleaseDurationValue
 );
 
 
@@ -281,13 +281,13 @@ create_simple_processing_parameter!(
 
 create_simple_processing_parameter!(
     ProcessingParameterOperatorModulationTarget2,
-    OperatorModulationTarget2
+    OperatorModulationTarget2Value
 );
 
 
 create_simple_processing_parameter!(
     ProcessingParameterOperatorModulationTarget3,
-    OperatorModulationTarget3
+    OperatorModulationTarget3Value
 );
 
 
@@ -355,7 +355,7 @@ impl ProcessingParameter for ProcessingParameterOperatorPanning {
         value
     }
     fn set_from_sync(&mut self, value: f64) {
-        self.value.set_value(OperatorPanning::from_sync(value).get())
+        self.value.set_value(OperatorPanningValue::from_sync(value).get())
     }
     fn get_value_with_lfo_addition(
         &mut self,
@@ -363,11 +363,11 @@ impl ProcessingParameter for ProcessingParameterOperatorPanning {
         lfo_addition: Option<f64>
     ) -> Self::Value {
         if let Some(lfo_addition) = lfo_addition {
-            let sync_value = OperatorPanning::from_processing(
+            let sync_value = OperatorPanningValue::from_processing(
                 self.get_value(extra_data)
             ).to_sync();
 
-            let new_panning = OperatorPanning::from_sync(
+            let new_panning = OperatorPanningValue::from_sync(
                 (sync_value + lfo_addition).min(1.0).max(0.0)
             ).get();
 

@@ -93,84 +93,84 @@ pub fn create_parameters() -> Vec<SyncParameter> {
 fn master_volume() -> SyncParameter {
     SyncParameter::new(
         "Master volume",
-        MasterVolume::default()
+        MasterVolumeValue::default()
     )
 }
 
 fn master_frequency() -> SyncParameter {
     SyncParameter::new(
         "Master frequency",
-        MasterFrequency::default()
+        MasterFrequencyValue::default()
     )
 }
 
 fn operator_volume(index: usize) -> SyncParameter {
     SyncParameter::new(
         &format!("Op. {} volume", index + 1),
-        OperatorVolume::new(index)
+        OperatorVolumeValue::new(index)
     )
 }
 
 fn operator_panning(index: usize) -> SyncParameter {
     SyncParameter::new(
         &format!("Op. {} pan", index + 1),
-        OperatorPanning::default()
+        OperatorPanningValue::default()
     )
 }
 
 fn operator_additive(index: usize) -> SyncParameter {
     SyncParameter::new(
         &format!("Op. {} additive", index + 1),
-        OperatorAdditive::default()
+        OperatorAdditiveValue::default()
     )
 }
 
 fn operator_frequency_ratio(index: usize) -> SyncParameter {
     SyncParameter::new(
         &format!("Op. {} freq ratio", index + 1),
-        OperatorFrequencyRatio::default()
+        OperatorFrequencyRatioValue::default()
     )
 }
 
 fn operator_frequency_free(index: usize) -> SyncParameter {
     SyncParameter::new(
         &format!("Op. {} freq free", index + 1),
-        OperatorFrequencyFree::default()
+        OperatorFrequencyFreeValue::default()
     )
 }
 
 fn operator_frequency_fine(index: usize) -> SyncParameter {
     SyncParameter::new(
         &format!("Op. {} freq fine", index + 1),
-        OperatorFrequencyFine::default()
+        OperatorFrequencyFineValue::default()
     )
 }
 
 fn operator_feedback(index: usize) -> SyncParameter {
     SyncParameter::new(
         &format!("Op. {} feedback", index + 1),
-        OperatorFeedback::default()
+        OperatorFeedbackValue::default()
     )
 }
 
 fn operator_modulation_index(index: usize) -> SyncParameter {
     SyncParameter::new(
         &format!("Op. {} mod index", index + 1),
-        OperatorModulationIndex::default()
+        OperatorModulationIndexValue::default()
     )
 }
 
 fn operator_wave_type(index: usize) -> SyncParameter {
     SyncParameter::new(
         &format!("Op. {} wave", index + 1),
-        OperatorWaveType::default()
+        OperatorWaveTypeValue::default()
     )
 }
 
 fn operator_attack_duration(index: usize) -> SyncParameter {
     SyncParameter::new(
         &format!("Op. {} attack time", index + 1),
-        OperatorAttackDuration::default()
+        OperatorAttackDurationValue::default()
     )
 }
 
@@ -184,35 +184,35 @@ fn operator_attack_volume(index: usize) -> SyncParameter {
 fn operator_decay_duration(index: usize) -> SyncParameter {
     SyncParameter::new(
         &format!("Op. {} decay time", index + 1),
-        OperatorDecayDuration::default()
+        OperatorDecayDurationValue::default()
     )
 }
 
 fn operator_decay_volume(index: usize) -> SyncParameter {
     SyncParameter::new(
         &format!("Op. {} decay vol", index + 1),
-        OperatorDecayVolume::default()
+        OperatorDecayVolumeValue::default()
     )
 }
 
 fn operator_release_duration(index: usize) -> SyncParameter {
     SyncParameter::new(
         &format!("Op. {} release time", index + 1),
-        OperatorReleaseDuration::default()
+        OperatorReleaseDurationValue::default()
     )
 }
 
 fn operator_modulation_target_2() -> SyncParameter {
     SyncParameter::new(
         "Op. 2 mod out",
-        OperatorModulationTarget2::default()
+        OperatorModulationTarget2Value::default()
     )
 }
 
 fn operator_modulation_target_3() -> SyncParameter {
     SyncParameter::new(
         "Op. 3 mod out",
-        OperatorModulationTarget3::default()
+        OperatorModulationTarget3Value::default()
     )
 }
 
@@ -291,25 +291,25 @@ mod tests {
         let p = operator_volume(3);
 
         assert!(p.set_from_text("-1.0".to_string()));
-        assert_eq!(OperatorVolume::from_sync(p.get_value()).get(), 0.0);
+        assert_eq!(OperatorVolumeValue::from_sync(p.get_value()).get(), 0.0);
 
         assert!(p.set_from_text("0".to_string()));
-        assert_eq!(OperatorVolume::from_sync(p.get_value()).get(), 0.0);
+        assert_eq!(OperatorVolumeValue::from_sync(p.get_value()).get(), 0.0);
 
         assert!(p.set_from_text("0.0".to_string()));
-        assert_eq!(OperatorVolume::from_sync(p.get_value()).get(), 0.0);
+        assert_eq!(OperatorVolumeValue::from_sync(p.get_value()).get(), 0.0);
 
         assert!(p.set_from_text("1.0".to_string()));
-        assert_eq!(OperatorVolume::from_sync(p.get_value()).get(), 1.0);
+        assert_eq!(OperatorVolumeValue::from_sync(p.get_value()).get(), 1.0);
 
         assert!(p.set_from_text("1.2".to_string()));
-        assert_eq!(OperatorVolume::from_sync(p.get_value()).get(), 1.2);
+        assert_eq!(OperatorVolumeValue::from_sync(p.get_value()).get(), 1.2);
 
         assert!(p.set_from_text("2.0".to_string()));
-        assert_eq!(OperatorVolume::from_sync(p.get_value()).get(), 2.0);
+        assert_eq!(OperatorVolumeValue::from_sync(p.get_value()).get(), 2.0);
 
         assert!(p.set_from_text("3.0".to_string()));
-        assert_eq!(OperatorVolume::from_sync(p.get_value()).get(), 2.0);
+        assert_eq!(OperatorVolumeValue::from_sync(p.get_value()).get(), 2.0);
     }
 
     #[test]
@@ -322,13 +322,13 @@ mod tests {
         assert!(!p.set_from_text("4".to_string()));
 
         assert!(p.set_from_text("1".to_string()));
-        assert_eq!(OperatorModulationTarget3::from_sync(p.get_value()).get(), 0);
+        assert_eq!(OperatorModulationTarget3Value::from_sync(p.get_value()).get(), 0);
 
         assert!(p.set_from_text("2".to_string()));
-        assert_eq!(OperatorModulationTarget3::from_sync(p.get_value()).get(), 1);
+        assert_eq!(OperatorModulationTarget3Value::from_sync(p.get_value()).get(), 1);
 
         assert!(p.set_from_text("3".to_string()));
-        assert_eq!(OperatorModulationTarget3::from_sync(p.get_value()).get(), 2);
+        assert_eq!(OperatorModulationTarget3Value::from_sync(p.get_value()).get(), 2);
     }
 
     #[test]
@@ -336,22 +336,22 @@ mod tests {
         let p = operator_frequency_ratio(3);
 
         assert!(p.set_from_text("0.0".to_string()));
-        assert_eq!(OperatorFrequencyRatio::from_sync(p.get_value()).get(), OPERATOR_RATIO_STEPS[0]);
+        assert_eq!(OperatorFrequencyRatioValue::from_sync(p.get_value()).get(), OPERATOR_RATIO_STEPS[0]);
 
         assert!(p.set_from_text("10000000.0".to_string()));
-        assert_eq!(OperatorFrequencyRatio::from_sync(p.get_value()).get(), *OPERATOR_RATIO_STEPS.last().unwrap());
+        assert_eq!(OperatorFrequencyRatioValue::from_sync(p.get_value()).get(), *OPERATOR_RATIO_STEPS.last().unwrap());
 
         assert!(p.set_from_text("1.0".to_string()));
-        assert_eq!(OperatorFrequencyRatio::from_sync(p.get_value()).get(), 1.0);
+        assert_eq!(OperatorFrequencyRatioValue::from_sync(p.get_value()).get(), 1.0);
 
         assert!(p.set_from_text("0.99".to_string()));
-        assert_eq!(OperatorFrequencyRatio::from_sync(p.get_value()).get(), 1.0);
+        assert_eq!(OperatorFrequencyRatioValue::from_sync(p.get_value()).get(), 1.0);
 
         assert!(p.set_from_text("0.5".to_string()));
-        assert_eq!(OperatorFrequencyRatio::from_sync(p.get_value()).get(), 0.5);
+        assert_eq!(OperatorFrequencyRatioValue::from_sync(p.get_value()).get(), 0.5);
 
         assert!(p.set_from_text("0.51".to_string()));
-        assert_eq!(OperatorFrequencyRatio::from_sync(p.get_value()).get(), 0.5);
+        assert_eq!(OperatorFrequencyRatioValue::from_sync(p.get_value()).get(), 0.5);
 
         for step in OPERATOR_RATIO_STEPS.iter() {
             let s = format!("{:.04}", step);
@@ -393,10 +393,10 @@ mod tests {
         let p = operator_wave_type(3);
 
         assert!(p.set_from_text("sine".to_string()));
-        assert_eq!(OperatorWaveType::from_sync(p.get_value()).get(), WaveType::Sine);
+        assert_eq!(OperatorWaveTypeValue::from_sync(p.get_value()).get(), WaveType::Sine);
 
         assert!(p.set_from_text("noise".to_string()));
-        assert_eq!(OperatorWaveType::from_sync(p.get_value()).get(), WaveType::WhiteNoise);
+        assert_eq!(OperatorWaveTypeValue::from_sync(p.get_value()).get(), WaveType::WhiteNoise);
     }
 
     #[test]
@@ -404,13 +404,13 @@ mod tests {
         let p = operator_attack_duration(3);
 
         assert!(p.set_from_text("0.0".to_string()));
-        assert_eq!(OperatorAttackDuration::from_sync(p.get_value()).get(), ENVELOPE_MIN_DURATION);
+        assert_eq!(OperatorAttackDurationValue::from_sync(p.get_value()).get(), ENVELOPE_MIN_DURATION);
 
         assert!(p.set_from_text("1.0".to_string()));
-        assert_eq!(OperatorAttackDuration::from_sync(p.get_value()).get(), 1.0);
+        assert_eq!(OperatorAttackDurationValue::from_sync(p.get_value()).get(), 1.0);
 
         assert!(p.set_from_text("10".to_string()));
-        assert_eq!(OperatorAttackDuration::from_sync(p.get_value()).get(),
+        assert_eq!(OperatorAttackDurationValue::from_sync(p.get_value()).get(),
             ENVELOPE_MAX_DURATION);
     }
 }

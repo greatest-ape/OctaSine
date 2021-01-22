@@ -8,8 +8,8 @@ use iced_baseview::{
 use crate::GuiSyncHandle;
 use crate::parameters::values::{
     ParameterValue,
-    OperatorModulationTarget2,
-    OperatorModulationTarget3,
+    OperatorModulationTarget2Value,
+    OperatorModulationTarget3Value,
 };
 
 use super::{FONT_BOLD, FONT_SIZE, LINE_HEIGHT, Message, SnapPoint};
@@ -420,11 +420,11 @@ impl ModulationMatrixParameters {
     }
 
     fn convert_operator_3_target(value: f64) -> usize {
-        OperatorModulationTarget2::from_sync(value).0
+        OperatorModulationTarget2Value::from_sync(value).0
     }
 
     fn convert_operator_4_target(value: f64) -> usize {
-        OperatorModulationTarget3::from_sync(value).get()
+        OperatorModulationTarget3Value::from_sync(value).get()
     }
 
     fn convert_volume(value: f64) -> f64 {

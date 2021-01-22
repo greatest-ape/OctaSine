@@ -4,7 +4,7 @@ use iced_baseview::{
 };
 
 use crate::GuiSyncHandle;
-use crate::parameters::values::{MasterVolume, MasterFrequency};
+use crate::parameters::values::{MasterVolumeValue, MasterFrequencyValue};
 
 mod divider;
 mod envelope;
@@ -77,8 +77,8 @@ pub struct OctaSineIcedApplication<H: GuiSyncHandle> {
     sync_handle: H,
     host_display_needs_update: bool,
     frame_counter: usize,
-    master_volume: OctaSineKnob<MasterVolume>,
-    master_frequency: OctaSineKnob<MasterFrequency>,
+    master_volume: OctaSineKnob<MasterVolumeValue>,
+    master_frequency: OctaSineKnob<MasterFrequencyValue>,
     modulation_matrix: ModulationMatrix,
     preset_picker: PresetPicker,
     operator_1: OperatorWidgets,

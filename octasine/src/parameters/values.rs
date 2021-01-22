@@ -94,17 +94,17 @@ pub trait ParameterValue: Sized {
 
 
 #[derive(Debug, Clone, Copy)]
-pub struct MasterVolume(f64);
+pub struct MasterVolumeValue(f64);
 
 
-impl Default for MasterVolume {
+impl Default for MasterVolumeValue {
     fn default() -> Self {
         Self(DEFAULT_MASTER_VOLUME)
     }
 }
 
 
-impl ParameterValue for MasterVolume {
+impl ParameterValue for MasterVolumeValue {
     type Value = f64;
 
     fn from_processing(value: Self::Value) -> Self {
@@ -129,17 +129,17 @@ impl ParameterValue for MasterVolume {
 
 
 #[derive(Debug, Clone, Copy)]
-pub struct MasterFrequency(f64);
+pub struct MasterFrequencyValue(f64);
 
 
-impl Default for MasterFrequency {
+impl Default for MasterFrequencyValue {
     fn default() -> Self {
         Self(DEFAULT_MASTER_FREQUENCY)
     }
 }
 
 
-impl ParameterValue for MasterFrequency {
+impl ParameterValue for MasterFrequencyValue {
     type Value = f64;
 
     fn from_processing(value: Self::Value) -> Self {
@@ -167,10 +167,10 @@ impl ParameterValue for MasterFrequency {
 
 
 #[derive(Debug, Clone, Copy)]
-pub struct OperatorVolume(f64);
+pub struct OperatorVolumeValue(f64);
 
 
-impl OperatorVolume {
+impl OperatorVolumeValue {
     pub fn new(index: usize) -> Self {
         if index == 0 {
             Self(DEFAULT_OPERATOR_VOLUME)
@@ -181,7 +181,7 @@ impl OperatorVolume {
 }
 
 
-impl ParameterValue for OperatorVolume {
+impl ParameterValue for OperatorVolumeValue {
     type Value = f64;
 
     fn from_processing(value: Self::Value) -> Self {
@@ -211,17 +211,17 @@ impl ParameterValue for OperatorVolume {
 
 
 #[derive(Debug, Clone, Copy)]
-pub struct OperatorAdditive(f64);
+pub struct OperatorAdditiveValue(f64);
 
 
-impl Default for OperatorAdditive {
+impl Default for OperatorAdditiveValue {
     fn default() -> Self {
         Self(DEFAULT_OPERATOR_ADDITIVE_FACTOR)
     }
 }
 
 
-impl ParameterValue for OperatorAdditive {
+impl ParameterValue for OperatorAdditiveValue {
     type Value = f64;
 
     fn from_processing(value: Self::Value) -> Self {
@@ -246,17 +246,17 @@ impl ParameterValue for OperatorAdditive {
 
 
 #[derive(Debug, Clone, Copy)]
-pub struct OperatorFrequencyRatio(f64);
+pub struct OperatorFrequencyRatioValue(f64);
 
 
-impl Default for OperatorFrequencyRatio {
+impl Default for OperatorFrequencyRatioValue {
     fn default() -> Self {
         Self(DEFAULT_OPERATOR_FREQUENCY_RATIO)
     }
 }
 
 
-impl ParameterValue for OperatorFrequencyRatio {
+impl ParameterValue for OperatorFrequencyRatioValue {
     type Value = f64;
 
     fn from_processing(value: Self::Value) -> Self {
@@ -286,17 +286,17 @@ impl ParameterValue for OperatorFrequencyRatio {
 
 
 #[derive(Debug, Clone, Copy)]
-pub struct OperatorFrequencyFree(f64);
+pub struct OperatorFrequencyFreeValue(f64);
 
 
-impl Default for OperatorFrequencyFree {
+impl Default for OperatorFrequencyFreeValue {
     fn default() -> Self {
         Self(DEFAULT_OPERATOR_FREQUENCY_FREE)
     }
 }
 
 
-impl ParameterValue for OperatorFrequencyFree {
+impl ParameterValue for OperatorFrequencyFreeValue {
     type Value = f64;
 
     fn from_processing(value: Self::Value) -> Self {
@@ -321,17 +321,17 @@ impl ParameterValue for OperatorFrequencyFree {
 
 
 #[derive(Debug, Clone, Copy)]
-pub struct OperatorFrequencyFine(f64);
+pub struct OperatorFrequencyFineValue(f64);
 
 
-impl Default for OperatorFrequencyFine {
+impl Default for OperatorFrequencyFineValue {
     fn default() -> Self {
         Self(DEFAULT_OPERATOR_FREQUENCY_FINE)
     }
 }
 
 
-impl ParameterValue for OperatorFrequencyFine {
+impl ParameterValue for OperatorFrequencyFineValue {
     type Value = f64;
 
     fn from_processing(value: Self::Value) -> Self {
@@ -356,17 +356,17 @@ impl ParameterValue for OperatorFrequencyFine {
 
 
 #[derive(Debug, Clone, Copy)]
-pub struct OperatorFeedback(f64);
+pub struct OperatorFeedbackValue(f64);
 
 
-impl Default for OperatorFeedback {
+impl Default for OperatorFeedbackValue {
     fn default() -> Self {
         Self(DEFAULT_OPERATOR_FEEDBACK)
     }
 }
 
 
-impl ParameterValue for OperatorFeedback {
+impl ParameterValue for OperatorFeedbackValue {
     type Value = f64;
 
     fn from_processing(value: Self::Value) -> Self {
@@ -391,17 +391,17 @@ impl ParameterValue for OperatorFeedback {
 
 
 #[derive(Debug, Clone, Copy)]
-pub struct OperatorModulationIndex(f64);
+pub struct OperatorModulationIndexValue(f64);
 
 
-impl Default for OperatorModulationIndex {
+impl Default for OperatorModulationIndexValue {
     fn default() -> Self {
         Self(DEFAULT_OPERATOR_MODULATION_INDEX)
     }
 }
 
 
-impl ParameterValue for OperatorModulationIndex {
+impl ParameterValue for OperatorModulationIndexValue {
     type Value = f64;
 
     fn from_processing(value: Self::Value) -> Self {
@@ -426,17 +426,17 @@ impl ParameterValue for OperatorModulationIndex {
 
 
 #[derive(Debug, Clone, Copy)]
-pub struct OperatorWaveType(pub WaveType);
+pub struct OperatorWaveTypeValue(pub WaveType);
 
 
-impl Default for OperatorWaveType {
+impl Default for OperatorWaveTypeValue {
     fn default() -> Self {
         Self(DEFAULT_OPERATOR_WAVE_TYPE)
     }
 }
 
 
-impl ParameterValue for OperatorWaveType {
+impl ParameterValue for OperatorWaveTypeValue {
     type Value = WaveType;
 
     fn from_processing(value: Self::Value) -> Self {
@@ -471,9 +471,9 @@ impl ParameterValue for OperatorWaveType {
         let value = text.to_lowercase();
 
         if value.contains("sin"){
-            Some(OperatorWaveType(WaveType::Sine))
+            Some(OperatorWaveTypeValue(WaveType::Sine))
         } else if value.contains("noise") {
-            Some(OperatorWaveType(WaveType::WhiteNoise))
+            Some(OperatorWaveTypeValue(WaveType::WhiteNoise))
         } else {
             None
         }
@@ -482,45 +482,45 @@ impl ParameterValue for OperatorWaveType {
 
 
 #[derive(Debug, Clone, Copy)]
-pub struct OperatorAttackDuration(f64);
+pub struct OperatorAttackDurationValue(f64);
 
 
-impl Default for OperatorAttackDuration {
+impl Default for OperatorAttackDurationValue {
     fn default() -> Self {
         Self(DEFAULT_ENVELOPE_ATTACK_DURATION)
     }
 }
 
 
-impl_envelope_duration_value_conversion!(OperatorAttackDuration);
+impl_envelope_duration_value_conversion!(OperatorAttackDurationValue);
 
 
 #[derive(Debug, Clone, Copy)]
-pub struct OperatorDecayDuration(f64);
+pub struct OperatorDecayDurationValue(f64);
 
 
-impl Default for OperatorDecayDuration {
+impl Default for OperatorDecayDurationValue {
     fn default() -> Self {
         Self(DEFAULT_ENVELOPE_DECAY_DURATION)
     }
 }
 
 
-impl_envelope_duration_value_conversion!(OperatorDecayDuration);
+impl_envelope_duration_value_conversion!(OperatorDecayDurationValue);
 
 
 #[derive(Debug, Clone, Copy)]
-pub struct OperatorReleaseDuration(f64);
+pub struct OperatorReleaseDurationValue(f64);
 
 
-impl Default for OperatorReleaseDuration {
+impl Default for OperatorReleaseDurationValue {
     fn default() -> Self {
         Self(DEFAULT_ENVELOPE_RELEASE_DURATION)
     }
 }
 
 
-impl_envelope_duration_value_conversion!(OperatorReleaseDuration);
+impl_envelope_duration_value_conversion!(OperatorReleaseDurationValue);
 
 
 #[derive(Debug, Clone, Copy)]
@@ -538,31 +538,31 @@ impl_identity_value_conversion!(OperatorAttackVolume);
 
 
 #[derive(Debug, Clone, Copy)]
-pub struct OperatorDecayVolume(f64);
+pub struct OperatorDecayVolumeValue(f64);
 
 
-impl Default for OperatorDecayVolume {
+impl Default for OperatorDecayVolumeValue {
     fn default() -> Self {
         Self(DEFAULT_ENVELOPE_DECAY_VOLUME)
     }
 }
 
 
-impl_identity_value_conversion!(OperatorDecayVolume);
+impl_identity_value_conversion!(OperatorDecayVolumeValue);
 
 
 #[derive(Debug, Clone, Copy)]
-pub struct OperatorPanning(f64);
+pub struct OperatorPanningValue(f64);
 
 
-impl Default for OperatorPanning {
+impl Default for OperatorPanningValue {
     fn default() -> Self {
         Self(DEFAULT_OPERATOR_PANNING)
     }
 }
 
 
-impl ParameterValue for OperatorPanning {
+impl ParameterValue for OperatorPanningValue {
     type Value = f64;
 
     fn from_processing(value: Self::Value) -> Self {
@@ -595,17 +595,17 @@ impl ParameterValue for OperatorPanning {
 
 
 #[derive(Debug, Clone, Copy)]
-pub struct OperatorModulationTarget2(pub usize);
+pub struct OperatorModulationTarget2Value(pub usize);
 
 
-impl Default for OperatorModulationTarget2 {
+impl Default for OperatorModulationTarget2Value {
     fn default() -> Self {
         Self(DEFAULT_OPERATOR_3_MOD_TARGET)
     }
 }
 
 
-impl ParameterValue for OperatorModulationTarget2 {
+impl ParameterValue for OperatorModulationTarget2Value {
     type Value = usize;
 
     fn from_processing(value: Self::Value) -> Self {
@@ -639,17 +639,17 @@ impl ParameterValue for OperatorModulationTarget2 {
 
 
 #[derive(Debug, Clone, Copy)]
-pub struct OperatorModulationTarget3(usize);
+pub struct OperatorModulationTarget3Value(usize);
 
 
-impl Default for OperatorModulationTarget3 {
+impl Default for OperatorModulationTarget3Value {
     fn default() -> Self {
         Self(DEFAULT_OPERATOR_4_MOD_TARGET)
     }
 }
 
 
-impl ParameterValue for OperatorModulationTarget3 {
+impl ParameterValue for OperatorModulationTarget3Value {
     type Value = usize;
 
     fn from_processing(value: Self::Value) -> Self {

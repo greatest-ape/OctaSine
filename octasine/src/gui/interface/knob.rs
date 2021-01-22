@@ -7,10 +7,11 @@ use iced_audio::{
 
 use crate::parameters::values::{
     LfoAmountValue, LfoFrequencyFreeValue, LfoFrequencyRatioValue,
-    LfoShapeValue, MasterFrequency, MasterVolume, OperatorAdditive,
-    OperatorFeedback, OperatorFrequencyFine, OperatorFrequencyFree,
-    OperatorFrequencyRatio, OperatorModulationIndex, OperatorPanning,
-    OperatorVolume, ParameterValue
+    LfoShapeValue, MasterFrequencyValue, MasterVolumeValue,
+    OperatorAdditiveValue, OperatorFeedbackValue, OperatorFrequencyFineValue,
+    OperatorFrequencyFreeValue, OperatorFrequencyRatioValue,
+    OperatorModulationIndexValue, OperatorPanningValue, OperatorVolumeValue,
+    ParameterValue
 };
 use crate::GuiSyncHandle;
 use crate::constants::*;
@@ -30,7 +31,7 @@ enum TickMarkType {
 
 pub fn master_volume<H: GuiSyncHandle>(
     sync_handle: &H,
-) -> OctaSineKnob<MasterVolume> {
+) -> OctaSineKnob<MasterVolumeValue> {
     let parameter_index = 0;
 
     OctaSineKnob::new(
@@ -44,7 +45,7 @@ pub fn master_volume<H: GuiSyncHandle>(
 
 pub fn master_frequency<H: GuiSyncHandle>(
     sync_handle: &H,
-) -> OctaSineKnob<MasterFrequency> {
+) -> OctaSineKnob<MasterFrequencyValue> {
     let parameter_index = 1;
 
     OctaSineKnob::new(
@@ -60,13 +61,13 @@ pub fn operator_volume<H: GuiSyncHandle>(
     sync_handle: &H,
     parameter_index: usize,
     operator_index: usize,
-) -> OctaSineKnob<OperatorVolume> {
+) -> OctaSineKnob<OperatorVolumeValue> {
     OctaSineKnob::new_with_default_sync_value(
         sync_handle,
         parameter_index,
         "VOLUME",
         TickMarkType::MinMaxAndDefault,
-        OperatorVolume::new(operator_index).to_sync(),
+        OperatorVolumeValue::new(operator_index).to_sync(),
     )
 }
 
@@ -74,7 +75,7 @@ pub fn operator_volume<H: GuiSyncHandle>(
 pub fn operator_panning<H: GuiSyncHandle>(
     sync_handle: &H,
     parameter_index: usize
-) -> OctaSineKnob<OperatorPanning> {
+) -> OctaSineKnob<OperatorPanningValue> {
     OctaSineKnob::new(
         sync_handle,
         parameter_index,
@@ -87,7 +88,7 @@ pub fn operator_panning<H: GuiSyncHandle>(
 pub fn operator_additive<H: GuiSyncHandle>(
     sync_handle: &H,
     parameter_index: usize
-) -> OctaSineKnob<OperatorAdditive> {
+) -> OctaSineKnob<OperatorAdditiveValue> {
     OctaSineKnob::new(
         sync_handle,
         parameter_index,
@@ -100,7 +101,7 @@ pub fn operator_additive<H: GuiSyncHandle>(
 pub fn operator_mod_index<H: GuiSyncHandle>(
     sync_handle: &H,
     parameter_index: usize
-) -> OctaSineKnob<OperatorModulationIndex> {
+) -> OctaSineKnob<OperatorModulationIndexValue> {
     OctaSineKnob::new(
         sync_handle,
         parameter_index,
@@ -113,7 +114,7 @@ pub fn operator_mod_index<H: GuiSyncHandle>(
 pub fn operator_feedback<H: GuiSyncHandle>(
     sync_handle: &H,
     parameter_index: usize
-) -> OctaSineKnob<OperatorFeedback> {
+) -> OctaSineKnob<OperatorFeedbackValue> {
     OctaSineKnob::new(
         sync_handle,
         parameter_index,
@@ -126,7 +127,7 @@ pub fn operator_feedback<H: GuiSyncHandle>(
 pub fn operator_frequency_ratio<H: GuiSyncHandle>(
     sync_handle: &H,
     parameter_index: usize
-) -> OctaSineKnob<OperatorFrequencyRatio> {
+) -> OctaSineKnob<OperatorFrequencyRatioValue> {
     OctaSineKnob::new(
         sync_handle,
         parameter_index,
@@ -139,7 +140,7 @@ pub fn operator_frequency_ratio<H: GuiSyncHandle>(
 pub fn operator_frequency_free<H: GuiSyncHandle>(
     sync_handle: &H,
     parameter_index: usize
-) -> OctaSineKnob<OperatorFrequencyFree> {
+) -> OctaSineKnob<OperatorFrequencyFreeValue> {
     OctaSineKnob::new(
         sync_handle,
         parameter_index,
@@ -152,7 +153,7 @@ pub fn operator_frequency_free<H: GuiSyncHandle>(
 pub fn operator_frequency_fine<H: GuiSyncHandle>(
     sync_handle: &H,
     parameter_index: usize
-) -> OctaSineKnob<OperatorFrequencyFine> {
+) -> OctaSineKnob<OperatorFrequencyFineValue> {
     OctaSineKnob::new(
         sync_handle,
         parameter_index,

@@ -8,7 +8,7 @@ use crate::parameters::values::{
     ParameterValue,
     LfoBpmSyncValue,
     LfoModeValue,
-    OperatorWaveType
+    OperatorWaveTypeValue
 };
 
 use super::{FONT_BOLD, FONT_SIZE, LINE_HEIGHT, Message};
@@ -17,7 +17,7 @@ use super::{FONT_BOLD, FONT_SIZE, LINE_HEIGHT, Message};
 pub fn wave_type<H: GuiSyncHandle>(
     sync_handle: &H,
     parameter_index: usize,
-) -> BooleanPicker<OperatorWaveType> {
+) -> BooleanPicker<OperatorWaveTypeValue> {
     BooleanPicker::new(
         sync_handle,
         parameter_index,

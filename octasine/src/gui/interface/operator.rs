@@ -5,9 +5,10 @@ use iced_baseview::{
 
 use crate::GuiSyncHandle;
 use crate::parameters::values::{
-    OperatorAdditive, OperatorFeedback, OperatorFrequencyFine,
-    OperatorFrequencyFree, OperatorFrequencyRatio, OperatorModulationIndex,
-    OperatorPanning, OperatorVolume, OperatorWaveType
+    OperatorAdditiveValue, OperatorFeedbackValue, OperatorFrequencyFineValue,
+    OperatorFrequencyFreeValue, OperatorFrequencyRatioValue,
+    OperatorModulationIndexValue, OperatorPanningValue, OperatorVolumeValue,
+    OperatorWaveTypeValue
 };
 
 use super::{FONT_SIZE, FONT_VERY_BOLD, LINE_HEIGHT, Message};
@@ -18,15 +19,15 @@ use super::boolean_picker::{self, BooleanPicker};
 
 pub struct OperatorWidgets {
     index: usize,
-    pub volume: OctaSineKnob<OperatorVolume>,
-    pub panning: OctaSineKnob<OperatorPanning>,
-    pub wave_type: BooleanPicker<OperatorWaveType>,
-    pub mod_index: OctaSineKnob<OperatorModulationIndex>,
-    pub feedback: OctaSineKnob<OperatorFeedback>,
-    pub frequency_ratio: OctaSineKnob<OperatorFrequencyRatio>,
-    pub frequency_free: OctaSineKnob<OperatorFrequencyFree>,
-    pub frequency_fine: OctaSineKnob<OperatorFrequencyFine>,
-    pub additive: Option<OctaSineKnob<OperatorAdditive>>,
+    pub volume: OctaSineKnob<OperatorVolumeValue>,
+    pub panning: OctaSineKnob<OperatorPanningValue>,
+    pub wave_type: BooleanPicker<OperatorWaveTypeValue>,
+    pub mod_index: OctaSineKnob<OperatorModulationIndexValue>,
+    pub feedback: OctaSineKnob<OperatorFeedbackValue>,
+    pub frequency_ratio: OctaSineKnob<OperatorFrequencyRatioValue>,
+    pub frequency_free: OctaSineKnob<OperatorFrequencyFreeValue>,
+    pub frequency_fine: OctaSineKnob<OperatorFrequencyFineValue>,
+    pub additive: Option<OctaSineKnob<OperatorAdditiveValue>>,
     pub envelope: Envelope,
 }
 
