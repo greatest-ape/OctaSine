@@ -4,7 +4,11 @@ use iced_baseview::{
 
 
 use crate::GuiSyncHandle;
-use crate::parameters::values::{OperatorAdditive, OperatorFeedback, OperatorFrequencyFine, OperatorFrequencyFree, OperatorFrequencyRatio, OperatorModulationIndex, OperatorPanning, OperatorVolume, OperatorWaveType};
+use crate::parameters::values::{
+    OperatorAdditive, OperatorFeedback, OperatorFrequencyFine,
+    OperatorFrequencyFree, OperatorFrequencyRatio, OperatorModulationIndex,
+    OperatorPanning, OperatorVolume, OperatorWaveType
+};
 
 use super::{FONT_SIZE, FONT_VERY_BOLD, LINE_HEIGHT, Message};
 use super::envelope::Envelope;
