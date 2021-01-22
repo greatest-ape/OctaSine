@@ -5,7 +5,13 @@ use iced_audio::{
     knob, Normal, NormalParam, text_marks, tick_marks
 };
 
-use crate::parameters::values::{LfoAmountValue, LfoFrequencyFreeValue, LfoFrequencyRatioValue, LfoShapeValue, MasterFrequency, MasterVolume, OperatorAdditive, OperatorFeedback, OperatorFrequencyFine, OperatorFrequencyFree, OperatorFrequencyRatio, OperatorModulationIndex, OperatorPanning, OperatorVolume, ParameterValue};
+use crate::parameters::values::{
+    LfoAmountValue, LfoFrequencyFreeValue, LfoFrequencyRatioValue,
+    LfoShapeValue, MasterFrequency, MasterVolume, OperatorAdditive,
+    OperatorFeedback, OperatorFrequencyFine, OperatorFrequencyFree,
+    OperatorFrequencyRatio, OperatorModulationIndex, OperatorPanning,
+    OperatorVolume, ParameterValue
+};
 use crate::GuiSyncHandle;
 use crate::constants::*;
 
