@@ -14,7 +14,7 @@ use crate::constants::{ENVELOPE_MIN_DURATION, ENVELOPE_MAX_DURATION};
 use super::{FONT_SIZE, LINE_HEIGHT, Message, SnapPoint};
 
 
-const WIDTH: u16 = LINE_HEIGHT * 20;
+const WIDTH: u16 = LINE_HEIGHT * 16;
 const HEIGHT: u16 = LINE_HEIGHT * 5;
 const SIZE: Size = Size { width: WIDTH as f32, height: HEIGHT as f32 };
 
@@ -38,6 +38,7 @@ impl EnvelopeStagePath {
         log10_table: &Log10Table,
         size: Size,
         total_duration: f32,
+        x_offset: f32,
         start_duration: f32,
         start_value: f32,
         stage_duration: f32,
@@ -49,6 +50,7 @@ impl EnvelopeStagePath {
             log10_table,
             size,
             total_duration,
+            x_offset,
             start_duration,
             start_value,
             stage_duration,
@@ -59,6 +61,7 @@ impl EnvelopeStagePath {
             log10_table,
             size,
             total_duration,
+            x_offset,
             start_duration,
             start_value,
             stage_duration,
@@ -69,6 +72,7 @@ impl EnvelopeStagePath {
             log10_table,
             size,
             total_duration,
+            x_offset,
             start_duration,
             start_value,
             stage_duration,
@@ -79,6 +83,7 @@ impl EnvelopeStagePath {
             log10_table,
             size,
             total_duration,
+            x_offset,
             start_duration,
             start_value,
             stage_duration,
@@ -99,6 +104,7 @@ impl EnvelopeStagePath {
         log10_table: &Log10Table,
         size: Size,
         total_duration: f32,
+        x_offset: f32,
         start_duration: f32,
         start_value: f32,
         stage_duration: f32,
@@ -117,7 +123,7 @@ impl EnvelopeStagePath {
 
         // Watch out for point.y.is_nan() when duration = 0.0 here
         let point = Point::new(
-            ((start_duration + duration) / total_duration) * size.width,
+            (x_offset + (start_duration + duration) / total_duration) * size.width,
             size.height * (1.0 - value)
         );
 
@@ -201,6 +207,7 @@ pub struct Envelope {
     release_duration: f32,
     size: Size,
     viewport_factor: f32,
+    x_offset: f32,
     attack_stage_path: EnvelopeStagePath,
     decay_stage_path: EnvelopeStagePath,
     sustain_stage_path: EnvelopeStagePath,
@@ -244,6 +251,7 @@ impl Envelope {
             release_duration,
             size: SIZE,
             viewport_factor: 1.0 / 2.0,
+            x_offset: 0.0,
             attack_stage_path: EnvelopeStagePath::default(),
             decay_stage_path: EnvelopeStagePath::default(),
             sustain_stage_path: EnvelopeStagePath::default(),
@@ -260,6 +268,30 @@ impl Envelope {
 
     fn process_envelope_duration(sync_value: f64) -> f32 {
         sync_value.max(ENVELOPE_MIN_DURATION / ENVELOPE_MAX_DURATION) as f32
+    }
+
+    pub fn zoom_in(&mut self){
+        self.viewport_factor = (self.viewport_factor * 0.5).max(1.0 / 128.0);
+
+        self.update_data();
+    }
+
+    pub fn zoom_out(&mut self){
+        self.viewport_factor = (self.viewport_factor * 2.0).min(1.0);
+
+        self.update_data();
+    }
+
+    pub fn move_left(&mut self){
+        self.x_offset = self.x_offset + 0.1;
+
+        self.update_data();
+    }
+
+    pub fn move_right(&mut self){
+        self.x_offset = self.x_offset - 0.1;
+
+        self.update_data();
     }
 
     pub fn set_attack_duration(&mut self, value: f64){
@@ -314,6 +346,7 @@ impl Envelope {
             &self.log10_table,
             self.size,
             total_duration,
+            self.x_offset,
             0.0,
             0.0,
             self.attack_duration as f32,
@@ -324,6 +357,7 @@ impl Envelope {
             &self.log10_table,
             self.size,
             total_duration,
+            self.x_offset,
             self.attack_duration,
             self.attack_end_value,
             self.decay_duration as f32,
@@ -334,6 +368,7 @@ impl Envelope {
             &self.log10_table,
             self.size,
             total_duration,
+            self.x_offset,
             self.attack_duration + self.decay_duration,
             self.decay_end_value,
             sustain_duration as f32,
@@ -344,6 +379,7 @@ impl Envelope {
             &self.log10_table,
             self.size,
             total_duration,
+            self.x_offset,
             self.attack_duration + self.decay_duration + sustain_duration,
             self.decay_end_value,
             self.release_duration as f32,

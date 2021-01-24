@@ -1,5 +1,5 @@
 use iced_baseview::{
-    Container, Element, Text, Length, Align, Row, Rule, Space, HorizontalAlignment, Column
+    Container, Element, Text, Length, Align, Row, Rule, Space, HorizontalAlignment, Column, button, Button,
 };
 
 
@@ -29,6 +29,10 @@ pub struct OperatorWidgets {
     pub frequency_fine: OctaSineKnob<OperatorFrequencyFineValue>,
     pub additive: Option<OctaSineKnob<OperatorAdditiveValue>>,
     pub envelope: Envelope,
+    pub zoom_in: button::State,
+    pub zoom_out: button::State,
+    pub move_left: button::State,
+    pub move_right: button::State,
 }
 
 
@@ -63,6 +67,10 @@ impl OperatorWidgets {
             frequency_fine: knob::operator_frequency_fine(sync_handle, fine),
             additive: additive_knob,
             envelope: Envelope::new(sync_handle, operator_index),
+            zoom_in: button::State::default(),
+            zoom_out: button::State::default(),
+            move_left: button::State::default(),
+            move_right: button::State::default(),
         }
     }
 
@@ -120,12 +128,41 @@ impl OperatorWidgets {
             )
             .push(
                 Column::new()
-                    // .push(
-                    //     Space::with_height(Length::Units(14))
-                    // )
+                    .push(self.envelope.view())
+            )
+            .push(
+                Space::with_width(Length::Units(LINE_HEIGHT))
+            )
+            .push(
+                Column::new()
                     .push(
-                        Container::new(self.envelope.view())
-                            .width(Length::Fill)
+                        Row::new()
+                            .push(
+                                Button::new(&mut self.zoom_in, Text::new("+").font(FONT_VERY_BOLD))
+                                    .on_press(Message::EnvelopeZoomIn(self.index))
+                            )
+                            .push(
+                                Space::with_width(Length::Units(LINE_HEIGHT / 2))
+                            )
+                            .push(
+                                Button::new(&mut self.zoom_out, Text::new("−").font(FONT_VERY_BOLD))
+                                    .on_press(Message::EnvelopeZoomOut(self.index))
+                            )
+                    )
+                    .push(Space::with_height(Length::Units(LINE_HEIGHT * 2)))
+                    .push(
+                        Row::new()
+                            .push(
+                                Button::new(&mut self.move_left, Text::new("<").font(FONT_VERY_BOLD))
+                                    .on_press(Message::EnvelopeMoveLeft(self.index))
+                            )
+                            .push(
+                                Space::with_width(Length::Units(LINE_HEIGHT / 2))
+                            )
+                            .push(
+                                Button::new(&mut self.move_right, Text::new(">").font(FONT_VERY_BOLD))
+                                    .on_press(Message::EnvelopeMoveRight(self.index))
+                            )
                     )
             );
 

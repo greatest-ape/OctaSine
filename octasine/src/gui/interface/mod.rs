@@ -70,6 +70,10 @@ pub enum Message {
     Frame,
     ParameterChange(usize, f64),
     PresetChange(usize),
+    EnvelopeZoomIn(usize),
+    EnvelopeZoomOut(usize),
+    EnvelopeMoveLeft(usize),
+    EnvelopeMoveRight(usize),
 }
 
 
@@ -343,6 +347,42 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
                 }
 
                 self.frame_counter = self.frame_counter.wrapping_add(1);
+            },
+            Message::EnvelopeZoomIn(operator_index) => {
+                match operator_index {
+                    0 => self.operator_1.envelope.zoom_in(),
+                    1 => self.operator_2.envelope.zoom_in(),
+                    2 => self.operator_3.envelope.zoom_in(),
+                    3 => self.operator_4.envelope.zoom_in(),
+                    _ => unreachable!(),
+                }
+            },
+            Message::EnvelopeZoomOut(operator_index) => {
+                match operator_index {
+                    0 => self.operator_1.envelope.zoom_out(),
+                    1 => self.operator_2.envelope.zoom_out(),
+                    2 => self.operator_3.envelope.zoom_out(),
+                    3 => self.operator_4.envelope.zoom_out(),
+                    _ => unreachable!(),
+                }
+            },
+            Message::EnvelopeMoveLeft(operator_index) => {
+                match operator_index {
+                    0 => self.operator_1.envelope.move_left(),
+                    1 => self.operator_2.envelope.move_left(),
+                    2 => self.operator_3.envelope.move_left(),
+                    3 => self.operator_4.envelope.move_left(),
+                    _ => unreachable!(),
+                }
+            },
+            Message::EnvelopeMoveRight(operator_index) => {
+                match operator_index {
+                    0 => self.operator_1.envelope.move_right(),
+                    1 => self.operator_2.envelope.move_right(),
+                    2 => self.operator_3.envelope.move_right(),
+                    3 => self.operator_4.envelope.move_right(),
+                    _ => unreachable!(),
+                }
             },
             Message::ParameterChange(index, value) => {
                 self.set_value(index, value);
