@@ -152,21 +152,28 @@ impl ProcessingParameter for OperatorVolumeProcessingParameter {
 // Modulation target
 
 pub enum OperatorModulationTargetProcessingParameter {
-    OperatorIndex2(SimpleProcessingParameter<OperatorModulationTarget2Value>),
-    OperatorIndex3(SimpleProcessingParameter<OperatorModulationTarget3Value>),
+    Three(SimpleProcessingParameter<Operator3ModulationTargetValue>),
+    Four(SimpleProcessingParameter<Operator4ModulationTargetValue>),
 }
 
 
 impl OperatorModulationTargetProcessingParameter {
     pub fn opt_new(operator_index: usize) -> Option<Self> {
         match operator_index {
-            2 => Some(OperatorModulationTargetProcessingParameter::OperatorIndex2(
+            2 => Some(OperatorModulationTargetProcessingParameter::Three(
                 Default::default()
             )),
-            3 => Some(OperatorModulationTargetProcessingParameter::OperatorIndex3(
+            3 => Some(OperatorModulationTargetProcessingParameter::Four(
                 Default::default()
             )),
             _ => None
+        }
+    }
+
+    pub fn get_value(&mut self) -> usize {
+        match self {
+            Self::Three(p) => p.get_value(()),
+            Self::Four(p) => p.get_value(()),
         }
     }
 }

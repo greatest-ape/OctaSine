@@ -595,17 +595,17 @@ impl ParameterValue for OperatorPanningValue {
 
 
 #[derive(Debug, Clone, Copy)]
-pub struct OperatorModulationTarget2Value(pub usize);
+pub struct Operator3ModulationTargetValue(pub usize);
 
 
-impl Default for OperatorModulationTarget2Value {
+impl Default for Operator3ModulationTargetValue {
     fn default() -> Self {
         Self(DEFAULT_OPERATOR_3_MOD_TARGET)
     }
 }
 
 
-impl ParameterValue for OperatorModulationTarget2Value {
+impl ParameterValue for Operator3ModulationTargetValue {
     type Value = usize;
 
     fn from_processing(value: Self::Value) -> Self {
@@ -639,17 +639,17 @@ impl ParameterValue for OperatorModulationTarget2Value {
 
 
 #[derive(Debug, Clone, Copy)]
-pub struct OperatorModulationTarget3Value(usize);
+pub struct Operator4ModulationTargetValue(usize);
 
 
-impl Default for OperatorModulationTarget3Value {
+impl Default for Operator4ModulationTargetValue {
     fn default() -> Self {
         Self(DEFAULT_OPERATOR_4_MOD_TARGET)
     }
 }
 
 
-impl ParameterValue for OperatorModulationTarget3Value {
+impl ParameterValue for Operator4ModulationTargetValue {
     type Value = usize;
 
     fn from_processing(value: Self::Value) -> Self {

@@ -9,10 +9,7 @@ use vst::buffer::AudioBuffer;
 use crate::OctaSine;
 use crate::common::*;
 use crate::constants::*;
-use crate::parameters::processing::{
-    ProcessingParameter,
-    parameters::OperatorModulationTargetProcessingParameter
-};
+use crate::parameters::processing::ProcessingParameter;
 
 use lfo::*;
 
@@ -467,16 +464,7 @@ mod gen {
                     frequency_fine;
 
                 if let Some(p) = &mut operator.output_operator {
-                    use OperatorModulationTargetProcessingParameter::*;
-
-                    let opt_value = match p {
-                        OperatorIndex2(p) => Some(p.get_value(())),
-                        OperatorIndex3(p) => Some(p.get_value(())),
-                    };
-
-                    if let Some(value) = opt_value {
-                        operator_modulation_targets[index] = value;
-                    }
+                    operator_modulation_targets[index] = p.get_value();
                 }
             }
 

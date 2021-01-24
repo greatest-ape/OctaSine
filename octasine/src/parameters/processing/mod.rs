@@ -83,9 +83,10 @@ impl ProcessingParameters {
 
                 let opt_p = self.operators[2].output_operator.as_mut();
 
-                if let Some(OperatorIndex2(p)) = opt_p {
+                if let Some(Three(p)) = opt_p {
                     p.set_from_sync(value)
-                }            },
+                }
+            },
             34 => self.operators[2].modulation_index.set_from_sync(value),
             35 => self.operators[2].feedback.set_from_sync(value),
             36 => self.operators[2].frequency_ratio.set_from_sync(value),
@@ -105,7 +106,7 @@ impl ProcessingParameters {
 
                 let opt_p = self.operators[3].output_operator.as_mut();
 
-                if let Some(OperatorIndex3(p)) = opt_p {
+                if let Some(Four(p)) = opt_p {
                     p.set_from_sync(value)
                 }
             },

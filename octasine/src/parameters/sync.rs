@@ -205,14 +205,14 @@ fn operator_release_duration(index: usize) -> SyncParameter {
 fn operator_modulation_target_2() -> SyncParameter {
     SyncParameter::new(
         "Op. 3 mod out",
-        OperatorModulationTarget2Value::default()
+        Operator3ModulationTargetValue::default()
     )
 }
 
 fn operator_modulation_target_3() -> SyncParameter {
     SyncParameter::new(
         "Op. 4 mod out",
-        OperatorModulationTarget3Value::default()
+        Operator4ModulationTargetValue::default()
     )
 }
 
@@ -322,13 +322,13 @@ mod tests {
         assert!(!p.set_from_text("4".to_string()));
 
         assert!(p.set_from_text("1".to_string()));
-        assert_eq!(OperatorModulationTarget3Value::from_sync(p.get_value()).get(), 0);
+        assert_eq!(Operator4ModulationTargetValue::from_sync(p.get_value()).get(), 0);
 
         assert!(p.set_from_text("2".to_string()));
-        assert_eq!(OperatorModulationTarget3Value::from_sync(p.get_value()).get(), 1);
+        assert_eq!(Operator4ModulationTargetValue::from_sync(p.get_value()).get(), 1);
 
         assert!(p.set_from_text("3".to_string()));
-        assert_eq!(OperatorModulationTarget3Value::from_sync(p.get_value()).get(), 2);
+        assert_eq!(Operator4ModulationTargetValue::from_sync(p.get_value()).get(), 2);
     }
 
     #[test]
