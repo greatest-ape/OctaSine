@@ -1,4 +1,4 @@
-use std::f64::consts::FRAC_PI_2;
+use std::{f64::consts::FRAC_PI_2, marker::PhantomData};
 
 use crate::common::*;
 use crate::constants::*;
@@ -21,127 +21,108 @@ pub trait ProcessingParameter {
 }
 
 
-macro_rules! create_interpolatable_processing_parameter {
-    ($name:ident, $value_struct:ident) => {
-        #[derive(Debug, Clone)]
-        pub struct $name {
-            value: InterpolatableProcessingValue,
-        }
+#[derive(Debug, Clone)]
+pub struct InterpolatableProcessingParameter<P: ParameterValue> {
+    value: InterpolatableProcessingValue,
+    phantom_data: PhantomData<P>,
+}
 
-        impl Default for $name {
-            fn default() -> Self {
-                let default = $value_struct::default().get();
+impl <P> Default for InterpolatableProcessingParameter<P>
+    where P: ParameterValue<Value=f64> + Default
+{
+    fn default() -> Self {
+        let default = P::default().get();
 
-                Self {
-                    value: InterpolatableProcessingValue::new(default),
-                }
-            }
-        }
-
-        impl ProcessingParameter for $name {
-            type Value = f64;
-            type ExtraData = TimeCounter;
-
-            fn get_value(&mut self, extra_data: Self::ExtraData) -> Self::Value {
-                self.value.get_value(extra_data, &mut |_| ())
-            }
-            fn set_from_sync(&mut self, value: f64){
-                self.value.set_value($value_struct::from_sync(value).get())
-            }
-            fn get_value_with_lfo_addition(
-                &mut self,
-                extra_data: Self::ExtraData,
-                lfo_addition: Option<f64>
-            ) -> Self::Value {
-                if let Some(lfo_addition) = lfo_addition {
-                    let sync_value = $value_struct::from_processing(
-                        self.get_value(extra_data)
-                    ).to_sync();
-
-                    $value_struct::from_sync(
-                        (sync_value + lfo_addition).min(1.0).max(0.0)
-                    ).get()
-                } else {
-                    self.get_value(extra_data)
-                }   
-            }   
+        Self {
+            value: InterpolatableProcessingValue::new(default),
+            phantom_data: PhantomData::default(),
         }
     }
 }
 
+impl <P>ProcessingParameter for InterpolatableProcessingParameter<P>
+    where P: ParameterValue<Value=f64>
+{
+    type Value = f64;
+    type ExtraData = TimeCounter;
 
-macro_rules! create_simple_processing_parameter {
-    ($name:ident, $value_struct:ident) => {
-        #[derive(Debug, Clone)]
-        pub struct $name {
-            pub value: <$value_struct as ParameterValue>::Value,
-            sync_cache: f64,
-        }
+    fn get_value(&mut self, extra_data: Self::ExtraData) -> Self::Value {
+        self.value.get_value(extra_data, &mut |_| ())
+    }
+    fn set_from_sync(&mut self, value: f64){
+        self.value.set_value(P::from_sync(value).get())
+    }
+    fn get_value_with_lfo_addition(
+        &mut self,
+        extra_data: Self::ExtraData,
+        lfo_addition: Option<f64>
+    ) -> Self::Value {
+        if let Some(lfo_addition) = lfo_addition {
+            let sync_value = P::from_processing(
+                self.get_value(extra_data)
+            ).to_sync();
 
-        impl Default for $name {
-            fn default() -> Self {
-                let default = $value_struct::default();
-                Self {
-                    value: default.get(),
-                    sync_cache: default.to_sync(),
-                }
-            }
-        }
-
-        impl ProcessingParameter for $name {
-            type Value = <$value_struct as ParameterValue>::Value;
-            type ExtraData = ();
-
-            fn get_value(&mut self, _: Self::ExtraData) -> Self::Value {
-                self.value
-            }
-            fn set_from_sync(&mut self, value: f64){
-                self.sync_cache = value;
-                self.value = $value_struct::from_sync(value).get();
-            }
-            fn get_value_with_lfo_addition(
-                &mut self,
-                extra_data: Self::ExtraData,
-                lfo_addition: Option<f64>
-            ) -> Self::Value {
-                if let Some(lfo_addition) = lfo_addition {
-                    $value_struct::from_sync(
-                        (self.sync_cache + lfo_addition).min(1.0).max(0.0)
-                    ).get()
-                } else {
-                    self.get_value(extra_data)
-                }   
-            }   
-        }
-    };
+            P::from_sync(
+                (sync_value + lfo_addition).min(1.0).max(0.0)
+            ).get()
+        } else {
+            self.get_value(extra_data)
+        }   
+    }   
 }
 
 
-// Master volume
+pub struct SimpleProcessingParameter<P: ParameterValue> {
+    pub value: <P as ParameterValue>::Value,
+    sync_cache: f64,
+}
 
-create_interpolatable_processing_parameter!(
-    ProcessingParameterMasterVolume,
-    MasterVolumeValue
-);
+impl <P: ParameterValue + Default>Default for SimpleProcessingParameter<P> {
+    fn default() -> Self {
+        Self {
+            value: P::default().get(),
+            sync_cache: P::default().to_sync(),
+        }
+    }
+}
 
+impl <P>ProcessingParameter for SimpleProcessingParameter<P>
+    where P: ParameterValue
+{
+    type Value = <P as ParameterValue>::Value;
+    type ExtraData = ();
 
-// Master frequency
-
-create_simple_processing_parameter!(
-    ProcessingParameterMasterFrequency,
-    MasterFrequencyValue
-);
-
+    fn get_value(&mut self, _: Self::ExtraData) -> Self::Value {
+        self.value
+    }
+    fn set_from_sync(&mut self, value: f64){
+        self.sync_cache = value;
+        self.value = P::from_sync(value).get();
+    }
+    fn get_value_with_lfo_addition(
+        &mut self,
+        extra_data: Self::ExtraData,
+        lfo_addition: Option<f64>
+    ) -> Self::Value {
+        if let Some(lfo_addition) = lfo_addition {
+            P::from_sync(
+                (self.sync_cache + lfo_addition).min(1.0).max(0.0)
+            ).get()
+        } else {
+            self.get_value(extra_data)
+        }   
+    }   
+}
 
 
 // Operator volume
 
 #[derive(Debug, Clone)]
-pub struct ProcessingParameterOperatorVolume {
+pub struct OperatorVolumeProcessingParameter {
     value: InterpolatableProcessingValue,
 }
 
-impl ProcessingParameterOperatorVolume {
+impl OperatorVolumeProcessingParameter {
     pub fn new(operator_index: usize) -> Self {
         let value = OperatorVolumeValue::new(operator_index).get();
 
@@ -151,7 +132,7 @@ impl ProcessingParameterOperatorVolume {
     }
 }
 
-impl ProcessingParameter for ProcessingParameterOperatorVolume {
+impl ProcessingParameter for OperatorVolumeProcessingParameter {
     type Value = f64;
     type ExtraData = TimeCounter;
 
@@ -181,131 +162,22 @@ impl ProcessingParameter for ProcessingParameterOperatorVolume {
 }
 
 
-// Additive factor
-
-create_interpolatable_processing_parameter!(
-    ProcessingParameterOperatorAdditiveFactor,
-    OperatorAdditiveValue
-);
-
-
-// Frequency - ratio
-
-create_simple_processing_parameter!(
-    ProcessingParameterOperatorFrequencyRatio,
-    OperatorFrequencyRatioValue
-);
-
-
-// Frequency - free
-
-create_simple_processing_parameter!(
-    ProcessingParameterOperatorFrequencyFree,
-    OperatorFrequencyFreeValue
-);
-
-
-// Frequency - fine
-
-create_simple_processing_parameter!(
-    ProcessingParameterOperatorFrequencyFine,
-    OperatorFrequencyFineValue
-);
-
-
-// Feedback
-
-create_interpolatable_processing_parameter!(
-    ProcessingParameterOperatorFeedback,
-    OperatorFeedbackValue
-);
-
-
-// Modulation index
-
-create_interpolatable_processing_parameter!(
-    ProcessingParameterOperatorModulationIndex,
-    OperatorModulationIndexValue
-);
-
-
-// Wave type
-
-create_simple_processing_parameter!(
-    ProcessingParameterOperatorWaveType,
-    OperatorWaveTypeValue
-);
-
-
-// Attack duration
-
-create_simple_processing_parameter!(
-    ProcessingParameterOperatorAttackDuration,
-    OperatorAttackDurationValue
-);
-
-
-// Attack volume
-
-create_simple_processing_parameter!(
-    ProcessingParameterOperatorAttackVolume,
-    OperatorAttackVolume
-);
-
-
-// Decay duration
-
-create_simple_processing_parameter!(
-    ProcessingParameterOperatorDecayDuration,
-    OperatorDecayDurationValue
-);
-
-
-// Decay volume
-
-create_simple_processing_parameter!(
-    ProcessingParameterOperatorDecayVolume,
-    OperatorDecayVolumeValue
-);
-
-
-// Release duration
-
-create_simple_processing_parameter!(
-    ProcessingParameterOperatorReleaseDuration,
-    OperatorReleaseDurationValue
-);
-
-
 // Modulation target
 
-create_simple_processing_parameter!(
-    ProcessingParameterOperatorModulationTarget2,
-    OperatorModulationTarget2Value
-);
-
-
-create_simple_processing_parameter!(
-    ProcessingParameterOperatorModulationTarget3,
-    OperatorModulationTarget3Value
-);
-
-
-#[derive(Debug)]
-pub enum ProcessingParameterOperatorModulationTarget {
-    OperatorIndex2(ProcessingParameterOperatorModulationTarget2),
-    OperatorIndex3(ProcessingParameterOperatorModulationTarget3),
+pub enum OperatorModulationTargetProcessingParameter {
+    OperatorIndex2(SimpleProcessingParameter<OperatorModulationTarget2Value>),
+    OperatorIndex3(SimpleProcessingParameter<OperatorModulationTarget3Value>),
 }
 
 
-impl ProcessingParameterOperatorModulationTarget {
+impl OperatorModulationTargetProcessingParameter {
     pub fn opt_new(operator_index: usize) -> Option<Self> {
         match operator_index {
-            2 => Some(ProcessingParameterOperatorModulationTarget::OperatorIndex2(
-                ProcessingParameterOperatorModulationTarget2::default()
+            2 => Some(OperatorModulationTargetProcessingParameter::OperatorIndex2(
+                Default::default()
             )),
-            3 => Some(ProcessingParameterOperatorModulationTarget::OperatorIndex3(
-                ProcessingParameterOperatorModulationTarget3::default()
+            3 => Some(OperatorModulationTargetProcessingParameter::OperatorIndex3(
+                Default::default()
             )),
             _ => None
         }
@@ -316,14 +188,14 @@ impl ProcessingParameterOperatorModulationTarget {
 // Panning
 
 #[derive(Debug, Clone)]
-pub struct ProcessingParameterOperatorPanning {
+pub struct OperatorPanningProcessingParameter {
     value: InterpolatableProcessingValue,
     pub left_and_right: [f64; 2],
     pub lfo_active: bool,
 }
 
 
-impl ProcessingParameterOperatorPanning {
+impl OperatorPanningProcessingParameter {
     pub fn calculate_left_and_right(panning: f64) -> [f64; 2] {
         let pan_phase = panning * FRAC_PI_2;
 
@@ -332,7 +204,7 @@ impl ProcessingParameterOperatorPanning {
 }
 
 
-impl ProcessingParameter for ProcessingParameterOperatorPanning {
+impl ProcessingParameter for OperatorPanningProcessingParameter {
     type Value = f64;
     type ExtraData = TimeCounter;
 
@@ -382,7 +254,7 @@ impl ProcessingParameter for ProcessingParameterOperatorPanning {
 }
 
 
-impl Default for ProcessingParameterOperatorPanning {
+impl Default for OperatorPanningProcessingParameter {
     fn default() -> Self {
         let default = DEFAULT_OPERATOR_PANNING;
 
@@ -397,38 +269,20 @@ impl Default for ProcessingParameterOperatorPanning {
 
 // LFO target parameter
 
-create_simple_processing_parameter!(
-    ProcessingParameterLfo1TargetParameter,
-    Lfo1TargetParameterValue
-);
-create_simple_processing_parameter!(
-    ProcessingParameterLfo2TargetParameter,
-    Lfo2TargetParameterValue
-);
-create_simple_processing_parameter!(
-    ProcessingParameterLfo3TargetParameter,
-    Lfo3TargetParameterValue
-);
-create_simple_processing_parameter!(
-    ProcessingParameterLfo4TargetParameter,
-    Lfo4TargetParameterValue
-);
-
-
-pub enum ProcessingParameterLfoTargetParameter {
-    One(ProcessingParameterLfo1TargetParameter),
-    Two(ProcessingParameterLfo2TargetParameter),
-    Three(ProcessingParameterLfo3TargetParameter),
-    Four(ProcessingParameterLfo4TargetParameter),
+pub enum LfoTargetProcessingParameter {
+    One(SimpleProcessingParameter<Lfo1TargetParameterValue>),
+    Two(SimpleProcessingParameter<Lfo1TargetParameterValue>),
+    Three(SimpleProcessingParameter<Lfo1TargetParameterValue>),
+    Four(SimpleProcessingParameter<Lfo1TargetParameterValue>),
 }
 
-impl ProcessingParameterLfoTargetParameter {
+impl LfoTargetProcessingParameter {
     pub fn new(lfo_index: usize) -> Self {
         match lfo_index {
-            0 => Self::One(ProcessingParameterLfo1TargetParameter::default()),
-            1 => Self::Two(ProcessingParameterLfo2TargetParameter::default()),
-            2 => Self::Three(ProcessingParameterLfo3TargetParameter::default()),
-            3 => Self::Four(ProcessingParameterLfo4TargetParameter::default()),
+            0 => Self::One(Default::default()),
+            1 => Self::Two(Default::default()),
+            2 => Self::Three(Default::default()),
+            3 => Self::Four(Default::default()),
             _ => unreachable!(),
         }
     }
@@ -451,53 +305,3 @@ impl ProcessingParameterLfoTargetParameter {
         }
     }
 }
-
-
-// LFO shape
-
-create_simple_processing_parameter!(
-    ProcessingParameterLfoShape,
-    LfoShapeValue
-);
-
-
-
-// LFO mode
-
-create_simple_processing_parameter!(
-    ProcessingParameterLfoMode,
-    LfoModeValue
-);
-
-
-
-// LFO bpm sync
-
-create_simple_processing_parameter!(
-    ProcessingParameterLfoBpmSync,
-    LfoBpmSyncValue
-);
-
-
-// LFO frequency - ratio
-
-create_simple_processing_parameter!(
-    ProcessingParameterLfoFrequencyRatio,
-    LfoFrequencyRatioValue
-);
-
-
-// LFO frequency - free
-
-create_simple_processing_parameter!(
-    ProcessingParameterLfoFrequencyFree,
-    LfoFrequencyFreeValue
-);
-
-
-// LFO magnitude
-
-create_interpolatable_processing_parameter!(
-    ProcessingParameterLfoAmount,
-    LfoAmountValue
-);

@@ -5,61 +5,60 @@ pub mod parameters;
 pub use parameters::*;
 
 use crate::constants::*;
+use super::values::*;
 
 
-#[derive(Debug, Clone)]
-pub struct ProcessingParameterOperatorEnvelope {
-    pub attack_duration: ProcessingParameterOperatorAttackDuration,
-    pub attack_end_value: ProcessingParameterOperatorAttackVolume,
-    pub decay_duration: ProcessingParameterOperatorDecayDuration,
-    pub decay_end_value: ProcessingParameterOperatorDecayVolume,
-    pub release_duration: ProcessingParameterOperatorReleaseDuration,
+pub struct OperatorEnvelopeProcessingParameter {
+    pub attack_duration: SimpleProcessingParameter<OperatorAttackDurationValue>,
+    pub attack_end_value: SimpleProcessingParameter<OperatorAttackVolume>,
+    pub decay_duration: SimpleProcessingParameter<OperatorDecayDurationValue>,
+    pub decay_end_value: SimpleProcessingParameter<OperatorDecayVolumeValue>,
+    pub release_duration: SimpleProcessingParameter<OperatorReleaseDurationValue>,
 }
 
 
-impl ProcessingParameterOperatorEnvelope {
+impl OperatorEnvelopeProcessingParameter {
     pub fn new() -> Self {
         Self {
-            attack_duration: ProcessingParameterOperatorAttackDuration::default(),
-            attack_end_value: ProcessingParameterOperatorAttackVolume::default(),
-            decay_duration: ProcessingParameterOperatorDecayDuration::default(),
-            decay_end_value: ProcessingParameterOperatorDecayVolume::default(),
-            release_duration: ProcessingParameterOperatorReleaseDuration::default(),
+            attack_duration: Default::default(),
+            attack_end_value: Default::default(),
+            decay_duration: Default::default(),
+            decay_end_value: Default::default(),
+            release_duration: Default::default(),
         }
     }
 }
 
 
-#[derive(Debug)]
 pub struct ProcessingParameterOperator {
-    pub volume: ProcessingParameterOperatorVolume,
-    pub wave_type: ProcessingParameterOperatorWaveType,
-    pub panning: ProcessingParameterOperatorPanning,
-    pub additive_factor: ProcessingParameterOperatorAdditiveFactor,
-    pub output_operator: Option<ProcessingParameterOperatorModulationTarget>,
-    pub frequency_ratio: ProcessingParameterOperatorFrequencyRatio,
-    pub frequency_free: ProcessingParameterOperatorFrequencyFree,
-    pub frequency_fine: ProcessingParameterOperatorFrequencyFine,
-    pub feedback: ProcessingParameterOperatorFeedback,
-    pub modulation_index: ProcessingParameterOperatorModulationIndex,
-    pub volume_envelope: ProcessingParameterOperatorEnvelope,
+    pub volume: OperatorVolumeProcessingParameter,
+    pub wave_type: SimpleProcessingParameter<OperatorWaveTypeValue>,
+    pub panning: OperatorPanningProcessingParameter,
+    pub additive_factor: InterpolatableProcessingParameter<OperatorAdditiveValue>,
+    pub output_operator: Option<OperatorModulationTargetProcessingParameter>,
+    pub frequency_ratio: SimpleProcessingParameter<OperatorFrequencyRatioValue>,
+    pub frequency_free: SimpleProcessingParameter<OperatorFrequencyFreeValue>,
+    pub frequency_fine: SimpleProcessingParameter<OperatorFrequencyFineValue>,
+    pub feedback: InterpolatableProcessingParameter<OperatorFeedbackValue>,
+    pub modulation_index: InterpolatableProcessingParameter<OperatorModulationIndexValue>,
+    pub volume_envelope: OperatorEnvelopeProcessingParameter,
 }
 
 
 impl ProcessingParameterOperator {
     pub fn new(operator_index: usize) -> Self {
         Self {
-            volume: ProcessingParameterOperatorVolume::new(operator_index),
-            wave_type: ProcessingParameterOperatorWaveType::default(),
-            panning: ProcessingParameterOperatorPanning::default(),
-            additive_factor: ProcessingParameterOperatorAdditiveFactor::default(),
-            output_operator: ProcessingParameterOperatorModulationTarget::opt_new(operator_index),
-            frequency_ratio: ProcessingParameterOperatorFrequencyRatio::default(),
-            frequency_free: ProcessingParameterOperatorFrequencyFree::default(),
-            frequency_fine: ProcessingParameterOperatorFrequencyFine::default(),
-            feedback: ProcessingParameterOperatorFeedback::default(),
-            modulation_index: ProcessingParameterOperatorModulationIndex::default(),
-            volume_envelope: ProcessingParameterOperatorEnvelope::new(),
+            volume: OperatorVolumeProcessingParameter::new(operator_index),
+            wave_type: Default::default(),
+            panning: OperatorPanningProcessingParameter::default(),
+            additive_factor: Default::default(),
+            output_operator: OperatorModulationTargetProcessingParameter::opt_new(operator_index),
+            frequency_ratio: Default::default(),
+            frequency_free: Default::default(),
+            frequency_fine: Default::default(),
+            feedback: Default::default(),
+            modulation_index: Default::default(),
+            volume_envelope: OperatorEnvelopeProcessingParameter::new(),
         }
     }
 }
@@ -68,25 +67,25 @@ impl ProcessingParameterOperator {
 pub type ProcessingParameterOperators = [ProcessingParameterOperator; NUM_OPERATORS];
 
 pub struct ProcessingParameterLfo {
-    pub target_parameter: ProcessingParameterLfoTargetParameter,
-    pub bpm_sync: ProcessingParameterLfoBpmSync,
-    pub frequency_ratio: ProcessingParameterLfoFrequencyRatio,
-    pub frequency_free: ProcessingParameterLfoFrequencyFree,
-    pub mode: ProcessingParameterLfoMode,
-    pub shape: ProcessingParameterLfoShape,
-    pub amount: ProcessingParameterLfoAmount,
+    pub target_parameter: LfoTargetProcessingParameter,
+    pub bpm_sync: SimpleProcessingParameter<LfoBpmSyncValue>,
+    pub frequency_ratio: SimpleProcessingParameter<LfoFrequencyRatioValue>,
+    pub frequency_free: SimpleProcessingParameter<LfoFrequencyFreeValue>,
+    pub mode: SimpleProcessingParameter<LfoModeValue>,
+    pub shape: SimpleProcessingParameter<LfoShapeValue>,
+    pub amount: InterpolatableProcessingParameter<LfoAmountValue>,
 }
 
 impl ProcessingParameterLfo {
     fn new(lfo_index: usize) -> Self {
         Self {
-            target_parameter: ProcessingParameterLfoTargetParameter::new(lfo_index),
-            bpm_sync: ProcessingParameterLfoBpmSync::default(),
-            frequency_ratio: ProcessingParameterLfoFrequencyRatio::default(),
-            frequency_free: ProcessingParameterLfoFrequencyFree::default(),
-            mode: ProcessingParameterLfoMode::default(),
-            shape: ProcessingParameterLfoShape::default(),
-            amount: ProcessingParameterLfoAmount::default(),
+            target_parameter: LfoTargetProcessingParameter::new(lfo_index),
+            bpm_sync: Default::default(),
+            frequency_ratio: Default::default(),
+            frequency_free: Default::default(),
+            mode: Default::default(),
+            shape: Default::default(),
+            amount: Default::default(),
         }
     }
 }
@@ -94,8 +93,8 @@ impl ProcessingParameterLfo {
 pub type ProcessingParameterLfos = [ProcessingParameterLfo; NUM_LFOS];
 
 pub struct ProcessingParameters {
-    pub master_volume: ProcessingParameterMasterVolume,
-    pub master_frequency: ProcessingParameterMasterFrequency,
+    pub master_volume: InterpolatableProcessingParameter<MasterVolumeValue>,
+    pub master_frequency: SimpleProcessingParameter<MasterFrequencyValue>,
     pub operators: ProcessingParameterOperators,
     pub lfos: ProcessingParameterLfos,
 }
@@ -104,8 +103,8 @@ pub struct ProcessingParameters {
 impl Default for ProcessingParameters {
     fn default() -> Self {
         Self {
-            master_volume: ProcessingParameterMasterVolume::default(),
-            master_frequency: ProcessingParameterMasterFrequency::default(),
+            master_volume: Default::default(),
+            master_frequency: Default::default(),
             operators: array_init(ProcessingParameterOperator::new),
             lfos: array_init(|lfo_index| ProcessingParameterLfo::new(lfo_index)),
         }
@@ -151,7 +150,7 @@ impl ProcessingParameters {
             31 => self.operators[2].wave_type.set_from_sync(value),
             32 => self.operators[2].additive_factor.set_from_sync(value),
             33 => {
-                use ProcessingParameterOperatorModulationTarget::*;
+                use OperatorModulationTargetProcessingParameter::*;
 
                 let opt_p = self.operators[2].output_operator.as_mut();
 
@@ -173,7 +172,7 @@ impl ProcessingParameters {
             46 => self.operators[3].wave_type.set_from_sync(value),
             47 => self.operators[3].additive_factor.set_from_sync(value),
             48 => {
-                use ProcessingParameterOperatorModulationTarget::*;
+                use OperatorModulationTargetProcessingParameter::*;
 
                 let opt_p = self.operators[3].output_operator.as_mut();
 
@@ -239,7 +238,7 @@ mod tests {
         use super::interpolatable_value::*;
         use super::*;
 
-        let mut operator = ProcessingParameterOperatorPanning::default();
+        let mut operator = OperatorPanningProcessingParameter::default();
 
         let mut time = TimeCounter(0.0);
         let mut value = operator.get_value(time);

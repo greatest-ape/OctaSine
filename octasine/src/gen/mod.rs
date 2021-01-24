@@ -464,7 +464,7 @@ mod gen {
                     frequency_fine;
 
                 if let Some(p) = &mut operator.output_operator {
-                    use ProcessingParameterOperatorModulationTarget::*;
+                    use OperatorModulationTargetProcessingParameter::*;
 
                     let opt_value = match p {
                         OperatorIndex2(p) => Some(p.get_value(())),

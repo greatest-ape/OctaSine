@@ -78,7 +78,7 @@ macro_rules! impl_identity_value_conversion {
 
 
 pub trait ParameterValue: Sized {
-    type Value;
+    type Value: Copy;
 
     fn from_processing(value: Self::Value) -> Self;
     /// Get inner (processing) value

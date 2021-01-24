@@ -1,7 +1,7 @@
 use crate::approximations::Log10Table;
 use crate::common::*;
 use crate::constants::*;
-use crate::parameters::processing::ProcessingParameterOperatorEnvelope;
+use crate::parameters::processing::OperatorEnvelopeProcessingParameter;
 
 use super::VoiceDuration;
 
@@ -39,7 +39,7 @@ impl VoiceOperatorVolumeEnvelope {
     #[inline]
     fn advance_if_stage_time_up(
         &mut self,
-        operator_envelope: &ProcessingParameterOperatorEnvelope,
+        operator_envelope: &OperatorEnvelopeProcessingParameter,
         voice_duration: VoiceDuration,
     ) {
         use EnvelopeStage::*;
@@ -77,7 +77,7 @@ impl VoiceOperatorVolumeEnvelope {
     fn calculate_volume(
         &self,
         log10_table: &Log10Table,
-        operator_envelope: &ProcessingParameterOperatorEnvelope,
+        operator_envelope: &OperatorEnvelopeProcessingParameter,
         voice_duration: VoiceDuration,
     ) -> f64 {
         use EnvelopeStage::*;
@@ -146,7 +146,7 @@ impl VoiceOperatorVolumeEnvelope {
     pub fn get_volume(
         &mut self,
         log10_table: &Log10Table,
-        operator_envelope: &ProcessingParameterOperatorEnvelope,
+        operator_envelope: &OperatorEnvelopeProcessingParameter,
         key_pressed: bool,
         voice_duration: VoiceDuration,
     ) -> f64 {
