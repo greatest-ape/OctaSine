@@ -10,10 +10,12 @@
   would further improve usefulness of output hashing.
 * Automations in Live. Do I have to call HostCallback::automate?
 * Envelopes
+  * Horizontal scroll by "grabbing" background. Remove buttons
   * Maybe draw lines indicating top and bottom of draggable range
   * Interaction with draggers
-  * Possibly button for snapping viewport etc
-  * Horizontal scrolling?
+  * Possibly button for fitting viewport
+  * Possibly button for synchronizing all envelope viewports to zoom and
+    position of current
   * Fix ANOTHER envelope error:
     `ERROR] thread 'unnamed' panicked at 'Tessellate path: UnsupportedParamater': /[..]/github.com-1ecc6299db9ec823/iced_graphics-0.1.0/src/widget/canvas/frame.rs:100`
     * Probably also related to zero envelope section length
