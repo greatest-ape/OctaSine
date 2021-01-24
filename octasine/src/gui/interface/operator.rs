@@ -149,7 +149,7 @@ impl OperatorWidgets {
                                     .on_press(Message::EnvelopeZoomOut(self.index))
                             )
                     )
-                    .push(Space::with_height(Length::Units(LINE_HEIGHT * 2)))
+                    .push(Space::with_height(Length::Units(LINE_HEIGHT / 2)))
                     .push(
                         Row::new()
                             .push(

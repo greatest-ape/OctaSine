@@ -413,7 +413,7 @@ impl Envelope {
         num_markers += 1;
 
         for i in 0..num_markers {
-            let x = ((time_marker_interval * i as f32) / total_duration) * self.size.width;
+            let x = (self.x_offset + (time_marker_interval * i as f32) / total_duration) * self.size.width;
 
             let top_point = Point::new(x, 0.0);
             let bottom_point = Point::new(x, self.size.height);
