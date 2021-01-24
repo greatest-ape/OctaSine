@@ -628,11 +628,11 @@ impl Program<Message> for Envelope {
                         self.last_cursor_position.y - bounds.y,
                     );
 
-                    if self.release_dragger.hitbox.contains(relative_position) {
-                        self.release_dragger.status = EnvelopeDraggerStatus::Dragging(self.last_cursor_position, self.attack_duration);
-                    } else if self.decay_dragger.hitbox.contains(relative_position) {
-                        self.decay_dragger.status = EnvelopeDraggerStatus::Dragging(self.last_cursor_position, self.attack_duration);
-                    } else if self.attack_dragger.hitbox.contains(relative_position) {
+                    if self.release_dragger.hitbox.contains(relative_position) && !matches!(self.release_dragger.status, EnvelopeDraggerStatus::Dragging(_, _)){
+                        self.release_dragger.status = EnvelopeDraggerStatus::Dragging(self.last_cursor_position, self.release_duration);
+                    } else if self.decay_dragger.hitbox.contains(relative_position) && !matches!(self.decay_dragger.status, EnvelopeDraggerStatus::Dragging(_, _)) {
+                        self.decay_dragger.status = EnvelopeDraggerStatus::Dragging(self.last_cursor_position, self.decay_duration);
+                    } else if self.attack_dragger.hitbox.contains(relative_position) && !matches!(self.attack_dragger.status, EnvelopeDraggerStatus::Dragging(_, _)) {
                         self.attack_dragger.status = EnvelopeDraggerStatus::Dragging(self.last_cursor_position, self.attack_duration);
                     } else {
                         self.dragging_background_from = Some((self.last_cursor_position, self.x_offset));
