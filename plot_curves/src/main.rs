@@ -61,7 +61,7 @@ fn plot_lfo_values(filename: &str){
 
     let mut lfo = VoiceLfo::default();
     let mut envelope = VoiceOperatorVolumeEnvelope::default();
-    let mut processing_parameter_envelope = OperatorEnvelopeProcessingParameter::new();
+    let mut processing_parameter_envelope = OperatorEnvelopeProcessingParameter::default();
     let mut voice_duration = VoiceDuration(0.0);
     let mut key_pressed = false;
 
