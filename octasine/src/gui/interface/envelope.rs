@@ -146,7 +146,11 @@ impl Default for EnvelopeStagePath {
 enum EnvelopeDraggerStatus {
     Normal,
     Hover,
-    Dragging(Point, f32),
+    Dragging {
+        from: Point,
+        original_duration: f32,
+        original_end_value: f32,
+    },
 }
 
 
@@ -169,7 +173,7 @@ impl EnvelopeDragger {
     }
 
     fn is_dragging(&self) -> bool {
-        matches!(self.status, EnvelopeDraggerStatus::Dragging(_, _))
+        matches!(self.status, EnvelopeDraggerStatus::Dragging {..})
     }
 }
 
@@ -475,7 +479,7 @@ impl Envelope {
         let fill_color = match dragger.status {
             EnvelopeDraggerStatus::Normal => Color::from_rgb(1.0, 1.0, 1.0),
             EnvelopeDraggerStatus::Hover => Color::from_rgb(0.0, 0.0, 0.0),
-            EnvelopeDraggerStatus::Dragging(..) => Color::from_rgb(0.0, 0.0, 0.0),
+            EnvelopeDraggerStatus::Dragging {..} => Color::from_rgb(0.0, 0.0, 0.0),
         };
 
         frame.fill(&circle_path, fill_color);
@@ -534,13 +538,14 @@ impl Program<Message> for Envelope {
                                 self.cache.clear();
                             }
                         },
-                        EnvelopeDraggerStatus::Dragging(from, original_value) => {
+                        EnvelopeDraggerStatus::Dragging { from, original_duration, original_end_value} => {
                             self.attack_duration = dragging_to_duration(
                                 self.viewport_factor,
                                 x,
                                 from,
-                                original_value
+                                original_duration
                             );
+                            self.attack_end_value = dragging_to_end_value(y, from, original_end_value);
 
                             self.update_data();
 
@@ -571,13 +576,14 @@ impl Program<Message> for Envelope {
                                 self.cache.clear();
                             }
                         },
-                        EnvelopeDraggerStatus::Dragging(from, original_value) => {
+                        EnvelopeDraggerStatus::Dragging { from, original_duration, original_end_value} => {
                             self.decay_duration = dragging_to_duration(
                                 self.viewport_factor,
                                 x,
                                 from,
-                                original_value
+                                original_duration
                             );
+                            self.decay_end_value = dragging_to_end_value(y, from, original_end_value);
 
                             self.update_data();
 
@@ -608,12 +614,12 @@ impl Program<Message> for Envelope {
                                 self.cache.clear();
                             }
                         },
-                        EnvelopeDraggerStatus::Dragging(from, original_value) => {
+                        EnvelopeDraggerStatus::Dragging { from, original_duration, original_end_value } => {
                             self.release_duration = dragging_to_duration(
                                 self.viewport_factor,
                                 x,
                                 from,
-                                original_value
+                                original_duration
                             );
 
                             self.update_data();
@@ -646,12 +652,24 @@ impl Program<Message> for Envelope {
                         self.last_cursor_position.y - bounds.y,
                     );
 
-                    if self.release_dragger.hitbox.contains(relative_position) && !matches!(self.release_dragger.status, EnvelopeDraggerStatus::Dragging(_, _)){
-                        self.release_dragger.status = EnvelopeDraggerStatus::Dragging(self.last_cursor_position, self.release_duration);
-                    } else if self.decay_dragger.hitbox.contains(relative_position) && !matches!(self.decay_dragger.status, EnvelopeDraggerStatus::Dragging(_, _)) {
-                        self.decay_dragger.status = EnvelopeDraggerStatus::Dragging(self.last_cursor_position, self.decay_duration);
-                    } else if self.attack_dragger.hitbox.contains(relative_position) && !matches!(self.attack_dragger.status, EnvelopeDraggerStatus::Dragging(_, _)) {
-                        self.attack_dragger.status = EnvelopeDraggerStatus::Dragging(self.last_cursor_position, self.attack_duration);
+                    if self.release_dragger.hitbox.contains(relative_position) && !self.release_dragger.is_dragging(){
+                        self.release_dragger.status = EnvelopeDraggerStatus::Dragging {
+                            from: self.last_cursor_position,
+                            original_duration: self.release_duration,
+                            original_end_value: 0.0
+                        };
+                    } else if self.decay_dragger.hitbox.contains(relative_position) && !self.decay_dragger.is_dragging() {
+                        self.decay_dragger.status = EnvelopeDraggerStatus::Dragging {
+                            from: self.last_cursor_position,
+                            original_duration: self.decay_duration,
+                            original_end_value: self.decay_end_value
+                        };
+                    } else if self.attack_dragger.hitbox.contains(relative_position) && !self.attack_dragger.is_dragging() {
+                        self.attack_dragger.status = EnvelopeDraggerStatus::Dragging {
+                            from: self.last_cursor_position,
+                            original_duration: self.attack_duration,
+                            original_end_value: self.attack_end_value
+                        };
                     } else {
                         self.dragging_background_from = Some((self.last_cursor_position, self.x_offset));
                     }
@@ -660,17 +678,17 @@ impl Program<Message> for Envelope {
                 }
             },
             event::Event::Mouse(iced_baseview::mouse::Event::ButtonReleased(iced_baseview::mouse::Button::Left)) => {
-                if let EnvelopeDraggerStatus::Dragging(_, _) = self.release_dragger.status {
+                if self.release_dragger.is_dragging() {
                     self.release_dragger.status = EnvelopeDraggerStatus::Normal;
 
                     return (event::Status::Captured, None);
                 }
-                if let EnvelopeDraggerStatus::Dragging(_, _) = self.decay_dragger.status {
+                if self.decay_dragger.is_dragging() {
                     self.decay_dragger.status = EnvelopeDraggerStatus::Normal;
 
                     return (event::Status::Captured, None);
                 }
-                if let EnvelopeDraggerStatus::Dragging(_, _) = self.attack_dragger.status {
+                if self.attack_dragger.is_dragging() {
                     self.attack_dragger.status = EnvelopeDraggerStatus::Normal;
 
                     return (event::Status::Captured, None);
@@ -732,4 +750,18 @@ fn dragging_to_duration(
     (original_value + change)
         .min(1.0)
         .max(ENVELOPE_MIN_DURATION as f32)
+}
+
+
+fn dragging_to_end_value(
+    cursor_y: f32,
+    from: Point,
+    original_value: f32
+) -> f32 {
+    let change = -(cursor_y - from.y) / HEIGHT as f32;
+    let change = change / ENVELOPE_PATH_SCALE_Y;
+
+    (original_value + change)
+        .min(1.0)
+        .max(0.0)
 }
