@@ -215,6 +215,8 @@ pub struct Envelope {
     attack_dragger: EnvelopeDragger,
     decay_dragger: EnvelopeDragger,
     release_dragger: EnvelopeDragger,
+    last_cursor_position: Point,
+    dragging_background_from: Option<(Point, f32)>,
 }
 
 
@@ -259,6 +261,8 @@ impl Envelope {
             attack_dragger: EnvelopeDragger::default(),
             decay_dragger: EnvelopeDragger::default(),
             release_dragger: EnvelopeDragger::default(),
+            last_cursor_position: Point::new(-1.0, -1.0),
+            dragging_background_from: None,
         };
 
         envelope.update_data();
@@ -278,18 +282,6 @@ impl Envelope {
 
     pub fn zoom_out(&mut self){
         self.viewport_factor = (self.viewport_factor * 2.0).min(1.0);
-
-        self.update_data();
-    }
-
-    pub fn move_left(&mut self){
-        self.x_offset = self.x_offset + 0.1;
-
-        self.update_data();
-    }
-
-    pub fn move_right(&mut self){
-        self.x_offset = self.x_offset - 0.1;
 
         self.update_data();
     }
@@ -515,6 +507,8 @@ impl Program<Message> for Envelope {
     ) -> (event::Status, Option<Message>) {
         match event {
             event::Event::Mouse(iced_baseview::mouse::Event::CursorMoved {x, y}) => {
+                self.last_cursor_position = Point::new(x, y);
+
                 if bounds.contains(Point::new(x, y)){
                     let relative_position = Point::new(
                         x - bounds.x,
@@ -527,9 +521,27 @@ impl Program<Message> for Envelope {
                     changed |= self.decay_dragger.update(relative_position);
                     changed |= self.release_dragger.update(relative_position);
 
-                    if changed {
+                    if let Some((from, original_offset)) = self.dragging_background_from {
+                        self.x_offset = original_offset + (x - from.x) / WIDTH as f32;
+
+                        self.update_data();
+                    } else if changed {
                         self.cache.clear();
                     }
+
+                    return (event::Status::Captured, None);
+                }
+            },
+            event::Event::Mouse(iced_baseview::mouse::Event::ButtonPressed(iced_baseview::mouse::Button::Left)) => {
+                if bounds.contains(self.last_cursor_position){
+                    self.dragging_background_from = Some((self.last_cursor_position, self.x_offset));
+
+                    return (event::Status::Captured, None);
+                }
+            },
+            event::Event::Mouse(iced_baseview::mouse::Event::ButtonReleased(iced_baseview::mouse::Button::Left)) => {
+                if self.dragging_background_from.is_some(){
+                    self.dragging_background_from = None;
 
                     return (event::Status::Captured, None);
                 }

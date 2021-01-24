@@ -72,8 +72,6 @@ pub enum Message {
     PresetChange(usize),
     EnvelopeZoomIn(usize),
     EnvelopeZoomOut(usize),
-    EnvelopeMoveLeft(usize),
-    EnvelopeMoveRight(usize),
 }
 
 
@@ -363,24 +361,6 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
                     1 => self.operator_2.envelope.zoom_out(),
                     2 => self.operator_3.envelope.zoom_out(),
                     3 => self.operator_4.envelope.zoom_out(),
-                    _ => unreachable!(),
-                }
-            },
-            Message::EnvelopeMoveLeft(operator_index) => {
-                match operator_index {
-                    0 => self.operator_1.envelope.move_left(),
-                    1 => self.operator_2.envelope.move_left(),
-                    2 => self.operator_3.envelope.move_left(),
-                    3 => self.operator_4.envelope.move_left(),
-                    _ => unreachable!(),
-                }
-            },
-            Message::EnvelopeMoveRight(operator_index) => {
-                match operator_index {
-                    0 => self.operator_1.envelope.move_right(),
-                    1 => self.operator_2.envelope.move_right(),
-                    2 => self.operator_3.envelope.move_right(),
-                    3 => self.operator_4.envelope.move_right(),
                     _ => unreachable!(),
                 }
             },

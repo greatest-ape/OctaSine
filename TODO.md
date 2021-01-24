@@ -10,7 +10,6 @@
   would further improve usefulness of output hashing.
 * Automations in Live. Do I have to call HostCallback::automate?
 * Envelopes
-  * Horizontal scroll by "grabbing" background. Remove buttons
   * Maybe draw lines indicating top and bottom of draggable range
   * Interaction with draggers
   * Possibly button for fitting viewport

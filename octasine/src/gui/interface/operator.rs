@@ -149,21 +149,6 @@ impl OperatorWidgets {
                                     .on_press(Message::EnvelopeZoomIn(self.index))
                             )
                     )
-                    .push(Space::with_height(Length::Units(LINE_HEIGHT / 2)))
-                    .push(
-                        Row::new()
-                            .push(
-                                Button::new(&mut self.move_left, Text::new("<").font(FONT_VERY_BOLD))
-                                    .on_press(Message::EnvelopeMoveLeft(self.index))
-                            )
-                            .push(
-                                Space::with_width(Length::Units(LINE_HEIGHT / 2))
-                            )
-                            .push(
-                                Button::new(&mut self.move_right, Text::new(">").font(FONT_VERY_BOLD))
-                                    .on_press(Message::EnvelopeMoveRight(self.index))
-                            )
-                    )
             );
 
         row.into()
