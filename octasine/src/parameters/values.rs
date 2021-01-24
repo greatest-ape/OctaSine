@@ -524,17 +524,17 @@ impl_envelope_duration_value_conversion!(OperatorReleaseDurationValue);
 
 
 #[derive(Debug, Clone, Copy)]
-pub struct OperatorAttackVolume(f64);
+pub struct OperatorAttackVolumeValue(f64);
 
 
-impl Default for OperatorAttackVolume {
+impl Default for OperatorAttackVolumeValue {
     fn default() -> Self {
         Self(DEFAULT_ENVELOPE_ATTACK_VOLUME)
     }
 }
 
 
-impl_identity_value_conversion!(OperatorAttackVolume);
+impl_identity_value_conversion!(OperatorAttackVolumeValue);
 
 
 #[derive(Debug, Clone, Copy)]

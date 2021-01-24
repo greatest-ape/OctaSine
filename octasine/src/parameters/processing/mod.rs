@@ -194,7 +194,7 @@ impl ProcessingParameterOperator {
 #[derive(Default)]
 pub struct OperatorEnvelopeProcessingParameter {
     pub attack_duration: SimpleProcessingParameter<OperatorAttackDurationValue>,
-    pub attack_end_value: SimpleProcessingParameter<OperatorAttackVolume>,
+    pub attack_end_value: SimpleProcessingParameter<OperatorAttackVolumeValue>,
     pub decay_duration: SimpleProcessingParameter<OperatorDecayDurationValue>,
     pub decay_end_value: SimpleProcessingParameter<OperatorDecayVolumeValue>,
     pub release_duration: SimpleProcessingParameter<OperatorReleaseDurationValue>,

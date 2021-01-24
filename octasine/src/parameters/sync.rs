@@ -177,7 +177,7 @@ fn operator_attack_duration(index: usize) -> SyncParameter {
 fn operator_attack_volume(index: usize) -> SyncParameter {
     SyncParameter::new(
         &format!("Op. {} attack vol", index + 1),
-        OperatorAttackVolume::default()
+        OperatorAttackVolumeValue::default()
     )
 }
 
