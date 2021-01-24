@@ -10,6 +10,7 @@
   would further improve usefulness of output hashing.
 * Automations in Live. Do I have to call HostCallback::automate?
 * Envelopes
+  * Adjust viewport offset when zooming
   * Maybe draw lines indicating top and bottom of draggable range
   * Interaction with draggers
   * Possibly button for fitting viewport

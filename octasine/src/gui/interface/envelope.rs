@@ -252,7 +252,7 @@ impl Envelope {
             decay_end_value: sync_handle.get_parameter(decay_val) as f32,
             release_duration,
             size: SIZE,
-            viewport_factor: 1.0 / 2.0,
+            viewport_factor: 1.0,
             x_offset: 0.0,
             attack_stage_path: EnvelopeStagePath::default(),
             decay_stage_path: EnvelopeStagePath::default(),
@@ -275,13 +275,23 @@ impl Envelope {
     }
 
     pub fn zoom_in(&mut self){
-        self.viewport_factor = (self.viewport_factor * 0.5).max(1.0 / 128.0);
+        const MIN: f32 = 1.0 / 128.0;
+
+        if self.viewport_factor > MIN {
+            self.viewport_factor = (self.viewport_factor * 0.5).max(MIN);
+
+            // FIXME: update offset
+        }
 
         self.update_data();
     }
 
     pub fn zoom_out(&mut self){
-        self.viewport_factor = (self.viewport_factor * 2.0).min(1.0);
+        if self.viewport_factor < 1.0 {
+            self.viewport_factor = (self.viewport_factor * 2.0).min(1.0);
+
+            // FIXME: update offset
+        }
 
         self.update_data();
     }
