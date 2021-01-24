@@ -18,9 +18,9 @@ fn main(){
     });
 
     // Set envelope data for easier testing
-    GuiSyncHandle::set_parameter(&sync_state, 10, 1.0 / 16.0);
-    GuiSyncHandle::set_parameter(&sync_state, 12, 1.0 / 64.0);
-    GuiSyncHandle::set_parameter(&sync_state, 13, 0.7);
+    GuiSyncHandle::set_parameter(&sync_state, 10, 1.0);
+    GuiSyncHandle::set_parameter(&sync_state, 12, 1.0);
+    GuiSyncHandle::set_parameter(&sync_state, 14, 1.0);
 
     // Operator 4 additive
     GuiSyncHandle::set_parameter(&sync_state, 47, 0.7);

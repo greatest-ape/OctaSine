@@ -24,6 +24,8 @@ const DRAGGER_RADIUS: f32 = 5.0;
 const ENVELOPE_PATH_SCALE_X: f32 = 1.0 - (1.0 / 16.0);
 const ENVELOPE_PATH_SCALE_Y: f32 = 1.0 - (1.0 / 8.0) - (1.0 / 16.0);
 
+const TOTAL_DURATION: f32 = 3.0 + SUSTAIN_DURATION;
+
 
 struct EnvelopeStagePath {
     path: Path,
@@ -198,6 +200,7 @@ pub struct Envelope {
     decay_end_value: f32,
     release_duration: f32,
     size: Size,
+    viewport_factor: f32,
     attack_stage_path: EnvelopeStagePath,
     decay_stage_path: EnvelopeStagePath,
     sustain_stage_path: EnvelopeStagePath,
@@ -240,6 +243,7 @@ impl Envelope {
             decay_end_value: sync_handle.get_parameter(decay_val) as f32,
             release_duration,
             size: SIZE,
+            viewport_factor: 1.0 / 2.0,
             attack_stage_path: EnvelopeStagePath::default(),
             decay_stage_path: EnvelopeStagePath::default(),
             sustain_stage_path: EnvelopeStagePath::default(),
@@ -303,8 +307,8 @@ impl Envelope {
     }
 
     fn update_stage_paths(&mut self){
-        let total_duration = self.get_total_duration();
         let sustain_duration = SUSTAIN_DURATION;
+        let total_duration = self.viewport_factor * TOTAL_DURATION;
 
         self.attack_stage_path = EnvelopeStagePath::new(
             &self.log10_table,
@@ -355,7 +359,7 @@ impl Envelope {
     }
 
     fn draw_time_markers(&self, frame: &mut Frame){
-        let total_duration = self.get_total_duration();
+        let total_duration = self.viewport_factor * TOTAL_DURATION;
 
         let mut time_marker_interval = 0.01 / 4.0;
 
