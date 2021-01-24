@@ -6,7 +6,7 @@ use raw_window_handle::{HasRawWindowHandle, RawWindowHandle};
 use super::GuiSyncHandle;
 use crate::constants::PLUGIN_NAME;
 
-pub mod interface;
+mod interface;
 
 use interface::OctaSineIcedApplication;
 
