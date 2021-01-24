@@ -5,20 +5,7 @@ use crate::constants::*;
 use crate::parameters::values::*;
 
 use super::interpolatable_value::*;
-
-
-pub trait ProcessingParameter {
-    type Value;
-    type ExtraData;
-
-    fn get_value(&mut self, extra_data: Self::ExtraData) -> Self::Value;
-    fn set_from_sync(&mut self, value: f64);
-    fn get_value_with_lfo_addition(
-        &mut self,
-        extra_data: Self::ExtraData,
-        lfo_addition: Option<f64>
-    ) -> Self::Value;
-}
+use super::ProcessingParameter;
 
 
 #[derive(Debug, Clone)]

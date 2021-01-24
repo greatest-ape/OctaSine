@@ -1,11 +1,25 @@
 use array_init::array_init;
 
-pub mod interpolatable_value;
+mod interpolatable_value;
 pub mod parameters;
-pub use parameters::*;
 
 use crate::constants::*;
 use super::values::*;
+use parameters::*;
+
+
+pub trait ProcessingParameter {
+    type Value;
+    type ExtraData;
+
+    fn get_value(&mut self, extra_data: Self::ExtraData) -> Self::Value;
+    fn set_from_sync(&mut self, value: f64);
+    fn get_value_with_lfo_addition(
+        &mut self,
+        extra_data: Self::ExtraData,
+        lfo_addition: Option<f64>
+    ) -> Self::Value;
+}
 
 
 pub struct OperatorEnvelopeProcessingParameter {

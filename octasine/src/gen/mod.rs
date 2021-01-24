@@ -9,7 +9,10 @@ use vst::buffer::AudioBuffer;
 use crate::OctaSine;
 use crate::common::*;
 use crate::constants::*;
-use crate::parameters::processing::parameters::*;
+use crate::parameters::processing::{
+    ProcessingParameter,
+    parameters::OperatorModulationTargetProcessingParameter
+};
 
 use lfo::*;
 
