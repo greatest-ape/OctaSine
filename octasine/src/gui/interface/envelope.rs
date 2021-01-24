@@ -145,15 +145,16 @@ impl Default for EnvelopeStagePath {
 #[derive(Clone, Copy, Debug, PartialEq)]
 enum EnvelopeDraggerStatus {
     Normal,
-    Hover
+    Hover,
+    Dragging(Point, f32),
 }
 
 
 struct EnvelopeDragger {
     center: Point,
     radius: f32,
-    hitbox: Rectangle,
-    status: EnvelopeDraggerStatus,
+    pub hitbox: Rectangle,
+    pub status: EnvelopeDraggerStatus,
 }
 
 
@@ -200,6 +201,7 @@ impl Default for EnvelopeDragger {
 pub struct Envelope {
     log10_table: Log10Table,
     cache: Cache,
+    operator_index: usize,
     attack_duration: f32,
     attack_end_value: f32,
     decay_duration: f32,
@@ -246,6 +248,7 @@ impl Envelope {
         let mut envelope = Self {
             log10_table: Log10Table::default(),
             cache: Cache::default(),
+            operator_index,
             attack_duration,
             attack_end_value: sync_handle.get_parameter(attack_val) as f32,
             decay_duration,
@@ -482,6 +485,7 @@ impl Envelope {
         let fill_color = match dragger.status {
             EnvelopeDraggerStatus::Normal => Color::from_rgb(1.0, 1.0, 1.0),
             EnvelopeDraggerStatus::Hover => Color::from_rgb(0.0, 0.0, 0.0),
+            EnvelopeDraggerStatus::Dragging(..) => Color::from_rgb(0.0, 0.0, 0.0),
         };
 
         frame.fill(&circle_path, fill_color);
@@ -527,15 +531,140 @@ impl Program<Message> for Envelope {
 
                     let mut changed = false;
 
-                    changed |= self.attack_dragger.update(relative_position);
-                    changed |= self.decay_dragger.update(relative_position);
-                    changed |= self.release_dragger.update(relative_position);
+                    // Almost-correct reverse transformation..
+                    fn dragging_to_duration(
+                        viewport_factor: f32,
+                        cursor_x: f32,
+                        from: Point,
+                        original_value: f32
+                    ) -> f32 {
+                        let change = (cursor_x - from.x) / WIDTH as f32;
+                        let change = change / ENVELOPE_PATH_SCALE_X;
+                        let change = change * viewport_factor * TOTAL_DURATION;
+
+                        (original_value + change)
+                            .min(1.0)
+                            .max(ENVELOPE_MIN_DURATION as f32)
+                    }
+
+                    match self.attack_dragger.status {
+                        EnvelopeDraggerStatus::Normal => {
+                            if self.attack_dragger.hitbox.contains(relative_position){
+                                self.attack_dragger.status = EnvelopeDraggerStatus::Hover;
+
+                                changed = true;
+                            }
+                        },
+                        EnvelopeDraggerStatus::Hover => {
+                            if !self.attack_dragger.hitbox.contains(relative_position){
+                                self.attack_dragger.status = EnvelopeDraggerStatus::Normal;
+
+                                changed = true;
+                            }
+                        },
+                        EnvelopeDraggerStatus::Dragging(from, original_value) => {
+                            self.attack_duration = dragging_to_duration(
+                                self.viewport_factor,
+                                x,
+                                from,
+                                original_value
+                            );
+
+                            self.update_data();
+
+                            let parameter_index = match self.operator_index {
+                                0 => 10,
+                                1 => 24,
+                                2 => 39,
+                                3 => 54,
+                                _ => unreachable!()
+                            };
+
+                            return (event::Status::Captured, Some(Message::ParameterChange(parameter_index, self.attack_duration as f64)));
+                        },
+                    }
+
+                    match self.decay_dragger.status {
+                        EnvelopeDraggerStatus::Normal => {
+                            if self.decay_dragger.hitbox.contains(relative_position){
+                                self.decay_dragger.status = EnvelopeDraggerStatus::Hover;
+
+                                changed = true;
+                            }
+                        },
+                        EnvelopeDraggerStatus::Hover => {
+                            if !self.decay_dragger.hitbox.contains(relative_position){
+                                self.decay_dragger.status = EnvelopeDraggerStatus::Normal;
+
+                                changed = true;
+                            }
+                        },
+                        EnvelopeDraggerStatus::Dragging(from, original_value) => {
+                            self.decay_duration = dragging_to_duration(
+                                self.viewport_factor,
+                                x,
+                                from,
+                                original_value
+                            );
+
+                            self.update_data();
+
+                            let parameter_index = match self.operator_index {
+                                0 => 12,
+                                1 => 26,
+                                2 => 41,
+                                3 => 56,
+                                _ => unreachable!()
+                            };
+
+                            return (event::Status::Captured, Some(Message::ParameterChange(parameter_index, self.decay_duration as f64)));
+                        },
+                    }
+
+                    match self.release_dragger.status {
+                        EnvelopeDraggerStatus::Normal => {
+                            if self.release_dragger.hitbox.contains(relative_position){
+                                self.release_dragger.status = EnvelopeDraggerStatus::Hover;
+
+                                changed = true;
+                            }
+                        },
+                        EnvelopeDraggerStatus::Hover => {
+                            if !self.release_dragger.hitbox.contains(relative_position){
+                                self.release_dragger.status = EnvelopeDraggerStatus::Normal;
+
+                                changed = true;
+                            }
+                        },
+                        EnvelopeDraggerStatus::Dragging(from, original_value) => {
+                            self.release_duration = dragging_to_duration(
+                                self.viewport_factor,
+                                x,
+                                from,
+                                original_value
+                            );
+
+                            self.update_data();
+
+                            let parameter_index = match self.operator_index {
+                                0 => 14,
+                                1 => 28,
+                                2 => 43,
+                                3 => 58,
+                                _ => unreachable!()
+                            };
+
+                            return (event::Status::Captured, Some(Message::ParameterChange(parameter_index, self.release_duration as f64)));
+                        },
+                    }
 
                     if let Some((from, original_offset)) = self.dragging_background_from {
                         self.x_offset = original_offset + (x - from.x) / WIDTH as f32;
 
                         self.update_data();
-                    } else if changed {
+                    }
+                    
+                    if changed {
                         self.cache.clear();
                     }
 
@@ -544,16 +673,43 @@ impl Program<Message> for Envelope {
             },
             event::Event::Mouse(iced_baseview::mouse::Event::ButtonPressed(iced_baseview::mouse::Button::Left)) => {
                 if bounds.contains(self.last_cursor_position){
-                    self.dragging_background_from = Some((self.last_cursor_position, self.x_offset));
+                    let relative_position = Point::new(
+                        self.last_cursor_position.x - bounds.x,
+                        self.last_cursor_position.y - bounds.y,
+                    );
+
+                    if self.release_dragger.hitbox.contains(relative_position) {
+                        self.release_dragger.status = EnvelopeDraggerStatus::Dragging(self.last_cursor_position, self.attack_duration);
+                    } else if self.decay_dragger.hitbox.contains(relative_position) {
+                        self.decay_dragger.status = EnvelopeDraggerStatus::Dragging(self.last_cursor_position, self.attack_duration);
+                    } else if self.attack_dragger.hitbox.contains(relative_position) {
+                        self.attack_dragger.status = EnvelopeDraggerStatus::Dragging(self.last_cursor_position, self.attack_duration);
+                    } else {
+                        self.dragging_background_from = Some((self.last_cursor_position, self.x_offset));
+                    }
 
                     return (event::Status::Captured, None);
                 }
             },
             event::Event::Mouse(iced_baseview::mouse::Event::ButtonReleased(iced_baseview::mouse::Button::Left)) => {
-                if self.dragging_background_from.is_some(){
-                    self.dragging_background_from = None;
+                if let EnvelopeDraggerStatus::Dragging(_, _) = self.release_dragger.status {
+                    self.release_dragger.status = EnvelopeDraggerStatus::Normal;
 
                     return (event::Status::Captured, None);
+                }
+                if let EnvelopeDraggerStatus::Dragging(_, _) = self.decay_dragger.status {
+                    self.decay_dragger.status = EnvelopeDraggerStatus::Normal;
+
+                    return (event::Status::Captured, None);
+                }
+                if let EnvelopeDraggerStatus::Dragging(_, _) = self.attack_dragger.status {
+                    self.attack_dragger.status = EnvelopeDraggerStatus::Normal;
+
+                    return (event::Status::Captured, None);
+                }
+
+                if self.dragging_background_from.is_some(){
+                    self.dragging_background_from = None;
                 }
             },
             _ => (),
