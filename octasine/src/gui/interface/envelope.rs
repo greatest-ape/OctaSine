@@ -531,22 +531,6 @@ impl Program<Message> for Envelope {
 
                     let mut changed = false;
 
-                    // Almost-correct reverse transformation..
-                    fn dragging_to_duration(
-                        viewport_factor: f32,
-                        cursor_x: f32,
-                        from: Point,
-                        original_value: f32
-                    ) -> f32 {
-                        let change = (cursor_x - from.x) / WIDTH as f32;
-                        let change = change / ENVELOPE_PATH_SCALE_X;
-                        let change = change * viewport_factor * TOTAL_DURATION;
-
-                        (original_value + change)
-                            .min(1.0)
-                            .max(ENVELOPE_MIN_DURATION as f32)
-                    }
-
                     match self.attack_dragger.status {
                         EnvelopeDraggerStatus::Normal => {
                             if self.attack_dragger.hitbox.contains(relative_position){
@@ -563,24 +547,12 @@ impl Program<Message> for Envelope {
                             }
                         },
                         EnvelopeDraggerStatus::Dragging(from, original_value) => {
-                            self.attack_duration = dragging_to_duration(
+                            self.set_attack_duration(dragging_to_duration(
                                 self.viewport_factor,
                                 x,
                                 from,
                                 original_value
-                            );
-
-                            self.update_data();
-
-                            let parameter_index = match self.operator_index {
-                                0 => 10,
-                                1 => 24,
-                                2 => 39,
-                                3 => 54,
-                                _ => unreachable!()
-                            };
-
-                            return (event::Status::Captured, Some(Message::ParameterChange(parameter_index, self.attack_duration as f64)));
+                            ) as f64);
                         },
                     }
 
@@ -600,24 +572,12 @@ impl Program<Message> for Envelope {
                             }
                         },
                         EnvelopeDraggerStatus::Dragging(from, original_value) => {
-                            self.decay_duration = dragging_to_duration(
+                            self.set_decay_duration(dragging_to_duration(
                                 self.viewport_factor,
                                 x,
                                 from,
                                 original_value
-                            );
-
-                            self.update_data();
-
-                            let parameter_index = match self.operator_index {
-                                0 => 12,
-                                1 => 26,
-                                2 => 41,
-                                3 => 56,
-                                _ => unreachable!()
-                            };
-
-                            return (event::Status::Captured, Some(Message::ParameterChange(parameter_index, self.decay_duration as f64)));
+                            ) as f64);
                         },
                     }
 
@@ -637,24 +597,14 @@ impl Program<Message> for Envelope {
                             }
                         },
                         EnvelopeDraggerStatus::Dragging(from, original_value) => {
-                            self.release_duration = dragging_to_duration(
+                            self.set_release_duration(dragging_to_duration(
                                 self.viewport_factor,
                                 x,
                                 from,
                                 original_value
-                            );
+                            ) as f64);
 
-                            self.update_data();
-
-                            let parameter_index = match self.operator_index {
-                                0 => 14,
-                                1 => 28,
-                                2 => 43,
-                                3 => 58,
-                                _ => unreachable!()
-                            };
-
-                            return (event::Status::Captured, Some(Message::ParameterChange(parameter_index, self.release_duration as f64)));
+                            return (event::Status::Captured, None);
                         },
                     }
 
@@ -692,20 +642,65 @@ impl Program<Message> for Envelope {
                 }
             },
             event::Event::Mouse(iced_baseview::mouse::Event::ButtonReleased(iced_baseview::mouse::Button::Left)) => {
-                if let EnvelopeDraggerStatus::Dragging(_, _) = self.release_dragger.status {
+                if let EnvelopeDraggerStatus::Dragging(from, original_value) = self.release_dragger.status {
+                    self.set_release_duration(dragging_to_duration(
+                        self.viewport_factor,
+                        self.last_cursor_position.x,
+                        from,
+                        original_value
+                    ) as f64);
+
+                    let parameter_index = match self.operator_index {
+                        0 => 14,
+                        1 => 28,
+                        2 => 43,
+                        3 => 58,
+                        _ => unreachable!()
+                    };
+
                     self.release_dragger.status = EnvelopeDraggerStatus::Normal;
 
-                    return (event::Status::Captured, None);
+                    return (event::Status::Captured, Some(Message::ParameterChange(parameter_index, self.release_duration as f64)));
                 }
-                if let EnvelopeDraggerStatus::Dragging(_, _) = self.decay_dragger.status {
+                if let EnvelopeDraggerStatus::Dragging(from, original_value) = self.decay_dragger.status {
+                    self.set_decay_duration(dragging_to_duration(
+                        self.viewport_factor,
+                        self.last_cursor_position.x,
+                        from,
+                        original_value
+                    ) as f64);
+
+                    let parameter_index = match self.operator_index {
+                        0 => 12,
+                        1 => 26,
+                        2 => 41,
+                        3 => 56,
+                        _ => unreachable!()
+                    };
+
                     self.decay_dragger.status = EnvelopeDraggerStatus::Normal;
 
-                    return (event::Status::Captured, None);
+                    return (event::Status::Captured, Some(Message::ParameterChange(parameter_index, self.decay_duration as f64)));
                 }
-                if let EnvelopeDraggerStatus::Dragging(_, _) = self.attack_dragger.status {
+                if let EnvelopeDraggerStatus::Dragging(from, original_value) = self.attack_dragger.status {
+                    self.set_attack_duration(dragging_to_duration(
+                        self.viewport_factor,
+                        self.last_cursor_position.x,
+                        from,
+                        original_value
+                    ) as f64);
+
+                    let parameter_index = match self.operator_index {
+                        0 => 10,
+                        1 => 24,
+                        2 => 39,
+                        3 => 54,
+                        _ => unreachable!()
+                    };
+
                     self.attack_dragger.status = EnvelopeDraggerStatus::Normal;
 
-                    return (event::Status::Captured, None);
+                    return (event::Status::Captured, Some(Message::ParameterChange(parameter_index, self.attack_duration as f64)));
                 }
 
                 if self.dragging_background_from.is_some(){
@@ -747,4 +742,21 @@ fn scale_point_x(size: Size, point: Point) -> Point {
     };
 
     scaled + translation
+}
+
+
+// Almost-correct reverse transformation for envelope dragger to duration
+fn dragging_to_duration(
+    viewport_factor: f32,
+    cursor_x: f32,
+    from: Point,
+    original_value: f32
+) -> f32 {
+    let change = (cursor_x - from.x) / WIDTH as f32;
+    let change = change / ENVELOPE_PATH_SCALE_X;
+    let change = change * viewport_factor * TOTAL_DURATION;
+
+    (original_value + change)
+        .min(1.0)
+        .max(ENVELOPE_MIN_DURATION as f32)
 }
