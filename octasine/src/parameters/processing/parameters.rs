@@ -258,9 +258,9 @@ impl Default for OperatorPanningProcessingParameter {
 
 pub enum LfoTargetProcessingParameter {
     One(SimpleProcessingParameter<Lfo1TargetParameterValue>),
-    Two(SimpleProcessingParameter<Lfo1TargetParameterValue>),
-    Three(SimpleProcessingParameter<Lfo1TargetParameterValue>),
-    Four(SimpleProcessingParameter<Lfo1TargetParameterValue>),
+    Two(SimpleProcessingParameter<Lfo2TargetParameterValue>),
+    Three(SimpleProcessingParameter<Lfo3TargetParameterValue>),
+    Four(SimpleProcessingParameter<Lfo4TargetParameterValue>),
 }
 
 impl LfoTargetProcessingParameter {
