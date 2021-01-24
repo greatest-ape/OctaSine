@@ -399,21 +399,24 @@ impl Envelope {
 
         let mut time_marker_interval = 0.01 / 4.0;
 
-        let mut num_markers = loop {
+        loop {
             let num_markers = (total_duration / time_marker_interval) as usize;
 
             if num_markers <= 110 {
-                break num_markers;
+                break;
             } else {
                 time_marker_interval *= 10.0;
             }
         };
 
-        // End marker
-        num_markers += 1;
+        let iterations = (TOTAL_DURATION / time_marker_interval) as usize + 1;
 
-        for i in 0..num_markers {
+        for i in 0..iterations {
             let x = (self.x_offset + (time_marker_interval * i as f32) / total_duration) * self.size.width;
+
+            if x < 0.0 || x > self.size.width {
+                continue;
+            }
 
             let top_point = Point::new(x, 0.0);
             let bottom_point = Point::new(x, self.size.height);

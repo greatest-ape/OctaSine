@@ -138,15 +138,15 @@ impl OperatorWidgets {
                     .push(
                         Row::new()
                             .push(
-                                Button::new(&mut self.zoom_in, Text::new("+").font(FONT_VERY_BOLD))
-                                    .on_press(Message::EnvelopeZoomIn(self.index))
+                                Button::new(&mut self.zoom_out, Text::new("−").font(FONT_VERY_BOLD))
+                                    .on_press(Message::EnvelopeZoomOut(self.index))
                             )
                             .push(
                                 Space::with_width(Length::Units(LINE_HEIGHT / 2))
                             )
                             .push(
-                                Button::new(&mut self.zoom_out, Text::new("−").font(FONT_VERY_BOLD))
-                                    .on_press(Message::EnvelopeZoomOut(self.index))
+                                Button::new(&mut self.zoom_in, Text::new("+").font(FONT_VERY_BOLD))
+                                    .on_press(Message::EnvelopeZoomIn(self.index))
                             )
                     )
                     .push(Space::with_height(Length::Units(LINE_HEIGHT / 2)))
