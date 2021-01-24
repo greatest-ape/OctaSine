@@ -16,9 +16,6 @@
   * Possibly button for fitting viewport
   * Possibly button for synchronizing all envelope viewports to zoom and
     position of current
-  * Fix ANOTHER envelope error:
-    `ERROR] thread 'unnamed' panicked at 'Tessellate path: UnsupportedParamater': /[..]/github.com-1ecc6299db9ec823/iced_graphics-0.1.0/src/widget/canvas/frame.rs:100`
-    * Probably also related to zero envelope section length
 
 ## Less important
 
