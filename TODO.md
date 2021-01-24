@@ -12,7 +12,7 @@
 * Envelopes
   * Adjust viewport offset when zooming
   * Maybe draw lines indicating top and bottom of draggable range
-  * Interaction with draggers
+  * Test dragger interaction
   * Possibly button for fitting viewport
   * Possibly button for synchronizing all envelope viewports to zoom and
     position of current

@@ -69,6 +69,7 @@ impl SnapPoint for Point {
 pub enum Message {
     Frame,
     ParameterChange(usize, f64),
+    ParameterChanges(Vec<(usize, f64)>),
     PresetChange(usize),
     EnvelopeZoomIn(usize),
     EnvelopeZoomOut(usize),
@@ -368,6 +369,14 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
                 self.set_value(index, value);
 
                 self.sync_handle.set_parameter(index, value);
+                self.host_display_needs_update = true;
+            },
+            Message::ParameterChanges(changes) => {
+                for (index, value) in changes {
+                    self.set_value(index, value);
+                    self.sync_handle.set_parameter(index, value);
+                }
+
                 self.host_display_needs_update = true;
             },
             Message::PresetChange(index) => {

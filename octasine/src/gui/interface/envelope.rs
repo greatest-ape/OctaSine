@@ -549,15 +549,20 @@ impl Program<Message> for Envelope {
 
                             self.update_data();
 
-                            let parameter_index = match self.operator_index {
-                                0 => 10,
-                                1 => 24,
-                                2 => 39,
-                                3 => 54,
+                            let (dur, val) = match self.operator_index {
+                                0 => (10, 11),
+                                1 => (24, 25),
+                                2 => (39, 40),
+                                3 => (54, 55),
                                 _ => unreachable!()
                             };
 
-                            return (event::Status::Captured, Some(Message::ParameterChange(parameter_index, self.attack_duration as f64)));
+                            let changes = vec![
+                                (dur, self.attack_duration as f64),
+                                (val, self.attack_end_value as f64),
+                            ];
+
+                            return (event::Status::Captured, Some(Message::ParameterChanges(changes)));
                         },
                     }
 
@@ -587,15 +592,20 @@ impl Program<Message> for Envelope {
 
                             self.update_data();
 
-                            let parameter_index = match self.operator_index {
-                                0 => 12,
-                                1 => 26,
-                                2 => 41,
-                                3 => 56,
+                            let (dur, val) = match self.operator_index {
+                                0 => (12, 13),
+                                1 => (26, 27),
+                                2 => (41, 42),
+                                3 => (56, 57),
                                 _ => unreachable!()
                             };
 
-                            return (event::Status::Captured, Some(Message::ParameterChange(parameter_index, self.decay_duration as f64)));
+                            let changes = vec![
+                                (dur, self.decay_duration as f64),
+                                (val, self.decay_end_value as f64),
+                            ];
+
+                            return (event::Status::Captured, Some(Message::ParameterChanges(changes)));
                         },
                     }
 
@@ -614,7 +624,7 @@ impl Program<Message> for Envelope {
                                 self.cache.clear();
                             }
                         },
-                        EnvelopeDraggerStatus::Dragging { from, original_duration, original_end_value } => {
+                        EnvelopeDraggerStatus::Dragging { from, original_duration, .. } => {
                             self.release_duration = dragging_to_duration(
                                 self.viewport_factor,
                                 x,
