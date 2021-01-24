@@ -204,14 +204,14 @@ fn operator_release_duration(index: usize) -> SyncParameter {
 
 fn operator_modulation_target_2() -> SyncParameter {
     SyncParameter::new(
-        "Op. 2 mod out",
+        "Op. 3 mod out",
         OperatorModulationTarget2Value::default()
     )
 }
 
 fn operator_modulation_target_3() -> SyncParameter {
     SyncParameter::new(
-        "Op. 3 mod out",
+        "Op. 4 mod out",
         OperatorModulationTarget3Value::default()
     )
 }
