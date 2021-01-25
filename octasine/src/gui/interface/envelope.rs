@@ -273,13 +273,28 @@ impl Envelope {
         sync_value.max(ENVELOPE_MIN_DURATION / ENVELOPE_MAX_DURATION) as f32
     }
 
+    fn get_current_duration(&self) -> f32 {
+        self.attack_duration + self.decay_duration + SUSTAIN_DURATION + self.release_duration
+    }
+
     pub fn zoom_in(&mut self){
         const MIN: f32 = 1.0 / 128.0;
 
         if self.viewport_factor > MIN {
             self.viewport_factor = (self.viewport_factor * 0.5).max(MIN);
 
-            self.x_offset = Self::process_x_offset(self.x_offset, self.viewport_factor);
+            let duration = self.get_current_duration();
+
+            // Zoom towards center of viewport unless envelope is really short
+            // compared to it (in which case, implicitly zoom towards the left)
+            if duration / TOTAL_DURATION >= self.viewport_factor {
+                self.x_offset -= self.viewport_factor / 2.0;
+            }
+
+            self.x_offset = Self::process_x_offset(
+                self.x_offset,
+                self.viewport_factor
+            );
         }
 
         self.update_data();
@@ -287,9 +302,14 @@ impl Envelope {
 
     pub fn zoom_out(&mut self){
         if self.viewport_factor < 1.0 {
+            self.x_offset += self.viewport_factor / 2.0;
+
             self.viewport_factor = (self.viewport_factor * 2.0).min(1.0);
 
-            self.x_offset = Self::process_x_offset(self.x_offset, self.viewport_factor);
+            self.x_offset = Self::process_x_offset(
+                self.x_offset,
+                self.viewport_factor
+            );
         }
 
         self.update_data();
