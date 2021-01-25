@@ -829,7 +829,7 @@ fn dragging_to_duration(
 
     (original_value + change)
         .min(1.0)
-        .max(ENVELOPE_MIN_DURATION as f32)
+        .max(ENVELOPE_MIN_DURATION as f32 / ENVELOPE_MAX_DURATION as f32)
 }
 
 
