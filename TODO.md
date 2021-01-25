@@ -15,6 +15,8 @@
   * Possibly button for fitting viewport
   * Zoom in on load
   * Make buttons look nicer
+    * Consider moving up ALL button 5 pixels to compensate for padding and
+      border
 
 ## Less important
 
