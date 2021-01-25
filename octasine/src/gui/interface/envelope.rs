@@ -543,146 +543,146 @@ impl Program<Message> for Envelope {
             event::Event::Mouse(iced_baseview::mouse::Event::CursorMoved {x, y}) => {
                 self.last_cursor_position = Point::new(x, y);
 
-                if bounds.contains(Point::new(x, y)){
-                    let relative_position = Point::new(
-                        x - bounds.x,
-                        y - bounds.y,
-                    );
+                let relative_position = Point::new(
+                    x - bounds.x,
+                    y - bounds.y,
+                );
 
-                    match self.attack_dragger.status {
-                        EnvelopeDraggerStatus::Normal => {
-                            if self.attack_dragger.hitbox.contains(relative_position){
-                                self.attack_dragger.status = EnvelopeDraggerStatus::Hover;
+                match self.attack_dragger.status {
+                    EnvelopeDraggerStatus::Normal => {
+                        if self.attack_dragger.hitbox.contains(relative_position){
+                            self.attack_dragger.status = EnvelopeDraggerStatus::Hover;
 
-                                self.cache.clear();
-                            }
-                        },
-                        EnvelopeDraggerStatus::Hover => {
-                            if !self.attack_dragger.hitbox.contains(relative_position){
-                                self.attack_dragger.status = EnvelopeDraggerStatus::Normal;
+                            self.cache.clear();
+                        }
+                    },
+                    EnvelopeDraggerStatus::Hover => {
+                        if !self.attack_dragger.hitbox.contains(relative_position){
+                            self.attack_dragger.status = EnvelopeDraggerStatus::Normal;
 
-                                self.cache.clear();
-                            }
-                        },
-                        EnvelopeDraggerStatus::Dragging { from, original_duration, original_end_value} => {
-                            self.attack_duration = dragging_to_duration(
-                                self.viewport_factor,
-                                x,
-                                from,
-                                original_duration
-                            );
-                            self.attack_end_value = dragging_to_end_value(y, from, original_end_value);
+                            self.cache.clear();
+                        }
+                    },
+                    EnvelopeDraggerStatus::Dragging { from, original_duration, original_end_value} => {
+                        self.attack_duration = dragging_to_duration(
+                            self.viewport_factor,
+                            x,
+                            from,
+                            original_duration
+                        );
+                        self.attack_end_value = dragging_to_end_value(y, from, original_end_value);
 
-                            self.update_data();
+                        self.update_data();
 
-                            let (dur, val) = match self.operator_index {
-                                0 => (10, 11),
-                                1 => (24, 25),
-                                2 => (39, 40),
-                                3 => (54, 55),
-                                _ => unreachable!()
-                            };
+                        let (dur, val) = match self.operator_index {
+                            0 => (10, 11),
+                            1 => (24, 25),
+                            2 => (39, 40),
+                            3 => (54, 55),
+                            _ => unreachable!()
+                        };
 
-                            let changes = vec![
-                                (dur, self.attack_duration as f64),
-                                (val, self.attack_end_value as f64),
-                            ];
+                        let changes = vec![
+                            (dur, self.attack_duration as f64),
+                            (val, self.attack_end_value as f64),
+                        ];
 
-                            return (event::Status::Captured, Some(Message::ParameterChanges(changes)));
-                        },
-                    }
+                        return (event::Status::Captured, Some(Message::ParameterChanges(changes)));
+                    },
+                }
 
-                    match self.decay_dragger.status {
-                        EnvelopeDraggerStatus::Normal => {
-                            if self.decay_dragger.hitbox.contains(relative_position){
-                                self.decay_dragger.status = EnvelopeDraggerStatus::Hover;
+                match self.decay_dragger.status {
+                    EnvelopeDraggerStatus::Normal => {
+                        if self.decay_dragger.hitbox.contains(relative_position){
+                            self.decay_dragger.status = EnvelopeDraggerStatus::Hover;
 
-                                self.cache.clear();
-                            }
-                        },
-                        EnvelopeDraggerStatus::Hover => {
-                            if !self.decay_dragger.hitbox.contains(relative_position){
-                                self.decay_dragger.status = EnvelopeDraggerStatus::Normal;
+                            self.cache.clear();
+                        }
+                    },
+                    EnvelopeDraggerStatus::Hover => {
+                        if !self.decay_dragger.hitbox.contains(relative_position){
+                            self.decay_dragger.status = EnvelopeDraggerStatus::Normal;
 
-                                self.cache.clear();
-                            }
-                        },
-                        EnvelopeDraggerStatus::Dragging { from, original_duration, original_end_value} => {
-                            self.decay_duration = dragging_to_duration(
-                                self.viewport_factor,
-                                x,
-                                from,
-                                original_duration
-                            );
-                            self.decay_end_value = dragging_to_end_value(y, from, original_end_value);
+                            self.cache.clear();
+                        }
+                    },
+                    EnvelopeDraggerStatus::Dragging { from, original_duration, original_end_value} => {
+                        self.decay_duration = dragging_to_duration(
+                            self.viewport_factor,
+                            x,
+                            from,
+                            original_duration
+                        );
+                        self.decay_end_value = dragging_to_end_value(y, from, original_end_value);
 
-                            self.update_data();
+                        self.update_data();
 
-                            let (dur, val) = match self.operator_index {
-                                0 => (12, 13),
-                                1 => (26, 27),
-                                2 => (41, 42),
-                                3 => (56, 57),
-                                _ => unreachable!()
-                            };
+                        let (dur, val) = match self.operator_index {
+                            0 => (12, 13),
+                            1 => (26, 27),
+                            2 => (41, 42),
+                            3 => (56, 57),
+                            _ => unreachable!()
+                        };
 
-                            let changes = vec![
-                                (dur, self.decay_duration as f64),
-                                (val, self.decay_end_value as f64),
-                            ];
+                        let changes = vec![
+                            (dur, self.decay_duration as f64),
+                            (val, self.decay_end_value as f64),
+                        ];
 
-                            return (event::Status::Captured, Some(Message::ParameterChanges(changes)));
-                        },
-                    }
+                        return (event::Status::Captured, Some(Message::ParameterChanges(changes)));
+                    },
+                }
 
-                    match self.release_dragger.status {
-                        EnvelopeDraggerStatus::Normal => {
-                            if self.release_dragger.hitbox.contains(relative_position){
-                                self.release_dragger.status = EnvelopeDraggerStatus::Hover;
+                match self.release_dragger.status {
+                    EnvelopeDraggerStatus::Normal => {
+                        if self.release_dragger.hitbox.contains(relative_position){
+                            self.release_dragger.status = EnvelopeDraggerStatus::Hover;
 
-                                self.cache.clear();
-                            }
-                        },
-                        EnvelopeDraggerStatus::Hover => {
-                            if !self.release_dragger.hitbox.contains(relative_position){
-                                self.release_dragger.status = EnvelopeDraggerStatus::Normal;
+                            self.cache.clear();
+                        }
+                    },
+                    EnvelopeDraggerStatus::Hover => {
+                        if !self.release_dragger.hitbox.contains(relative_position){
+                            self.release_dragger.status = EnvelopeDraggerStatus::Normal;
 
-                                self.cache.clear();
-                            }
-                        },
-                        EnvelopeDraggerStatus::Dragging { from, original_duration, .. } => {
-                            self.release_duration = dragging_to_duration(
-                                self.viewport_factor,
-                                x,
-                                from,
-                                original_duration
-                            );
-
-                            self.update_data();
-
-                            let parameter_index = match self.operator_index {
-                                0 => 14,
-                                1 => 28,
-                                2 => 43,
-                                3 => 58,
-                                _ => unreachable!()
-                            };
-
-                            return (event::Status::Captured, Some(Message::ParameterChange(parameter_index, self.release_duration as f64)));
-                        },
-                    }
-
-                    if let Some((from, original_offset)) = self.dragging_background_from {
-                        let change = (x - from.x) / WIDTH as f32 * self.viewport_factor;
-
-                        self.x_offset = Self::process_x_offset(
-                            original_offset + change,
-                            self.viewport_factor
+                            self.cache.clear();
+                        }
+                    },
+                    EnvelopeDraggerStatus::Dragging { from, original_duration, .. } => {
+                        self.release_duration = dragging_to_duration(
+                            self.viewport_factor,
+                            x,
+                            from,
+                            original_duration
                         );
 
                         self.update_data();
-                    }
+
+                        let parameter_index = match self.operator_index {
+                            0 => 14,
+                            1 => 28,
+                            2 => 43,
+                            3 => 58,
+                            _ => unreachable!()
+                        };
+
+                        return (event::Status::Captured, Some(Message::ParameterChange(parameter_index, self.release_duration as f64)));
+                    },
+                }
+
+                if let Some((from, original_offset)) = self.dragging_background_from {
+                    let change = (x - from.x) / WIDTH as f32 * self.viewport_factor;
+
+                    self.x_offset = Self::process_x_offset(
+                        original_offset + change,
+                        self.viewport_factor
+                    );
+
+                    self.update_data();
+                }
                     
+                if bounds.contains(Point::new(x, y)){
                     return (event::Status::Captured, None);
                 }
             },
@@ -715,28 +715,40 @@ impl Program<Message> for Envelope {
                         self.dragging_background_from = Some((self.last_cursor_position, self.x_offset));
                     }
 
+                    self.cache.clear();
+
                     return (event::Status::Captured, None);
                 }
             },
             event::Event::Mouse(iced_baseview::mouse::Event::ButtonReleased(iced_baseview::mouse::Button::Left)) => {
+                let mut captured = false;
+
                 if self.release_dragger.is_dragging() {
                     self.release_dragger.status = EnvelopeDraggerStatus::Normal;
 
-                    return (event::Status::Captured, None);
+                    captured = true;
                 }
                 if self.decay_dragger.is_dragging() {
                     self.decay_dragger.status = EnvelopeDraggerStatus::Normal;
 
-                    return (event::Status::Captured, None);
+                    captured = true;
                 }
                 if self.attack_dragger.is_dragging() {
                     self.attack_dragger.status = EnvelopeDraggerStatus::Normal;
 
-                    return (event::Status::Captured, None);
+                    captured = true;
                 }
 
                 if self.dragging_background_from.is_some(){
                     self.dragging_background_from = None;
+
+                    captured = true;
+                }
+                
+                if captured {
+                    self.cache.clear();
+
+                    return (event::Status::Captured, None);
                 }
             },
             _ => (),
