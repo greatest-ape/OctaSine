@@ -13,8 +13,8 @@
   * Maybe draw lines indicating top and bottom of draggable range
   * Test dragger interaction
   * Possibly button for fitting viewport
-  * Possibly button for synchronizing all envelope viewports to zoom and
-    position of current
+  * Zoom in on load
+  * Make buttons look nicer
 
 ## Less important
 
