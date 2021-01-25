@@ -138,6 +138,8 @@ impl OperatorWidgets {
             )
             .push(
                 Column::new()
+                    .width(Length::Units(LINE_HEIGHT * 3))
+                    .align_items(Align::End)
                     .push(
                         Row::new()
                             .push(
@@ -145,14 +147,14 @@ impl OperatorWidgets {
                                     .on_press(Message::EnvelopeZoomOut(self.index))
                             )
                             .push(
-                                Space::with_width(Length::Units(LINE_HEIGHT / 2))
+                                Space::with_width(Length::Units(3))
                             )
                             .push(
                                 Button::new(&mut self.zoom_in, Text::new("+").font(FONT_VERY_BOLD))
                                     .on_press(Message::EnvelopeZoomIn(self.index))
                             )
                     )
-                    .push(Space::with_height(Length::Units(LINE_HEIGHT + LINE_HEIGHT / 2)))
+                    .push(Space::with_height(Length::Units(LINE_HEIGHT * 2 - 10)))
                     .push(
                         Row::new()
                             .push(
