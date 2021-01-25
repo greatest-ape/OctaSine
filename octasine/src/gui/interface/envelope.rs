@@ -271,6 +271,21 @@ impl Envelope {
         envelope
     }
 
+    pub fn get_viewport_factor(&self) -> f32 {
+        self.viewport_factor
+    }
+
+    pub fn get_x_offset(&self) -> f32 {
+        self.x_offset
+    }
+
+    pub fn set_viewport(&mut self, viewport_factor: f32, x_offset: f32){
+        self.viewport_factor = viewport_factor;
+        self.x_offset = Self::process_x_offset(x_offset, viewport_factor);
+
+        self.update_data();
+    }
+
     fn process_x_offset(x_offset: f32, viewport_factor: f32) -> f32 {
         x_offset.min(0.0).max(-1.0 + viewport_factor)
     }

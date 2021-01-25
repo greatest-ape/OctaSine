@@ -1,5 +1,5 @@
 use iced_baseview::{
-    Container, Element, Text, Length, Align, Row, Rule, Space, HorizontalAlignment, Column, button, Button,
+    Container, Element, Text, Length, Align, Row, Rule, Space, HorizontalAlignment, Column, button, Button
 };
 
 
@@ -11,7 +11,7 @@ use crate::parameters::values::{
     OperatorWaveTypeValue
 };
 
-use super::{FONT_SIZE, FONT_VERY_BOLD, LINE_HEIGHT, Message};
+use super::{FONT_SIZE, FONT_BOLD, FONT_VERY_BOLD, LINE_HEIGHT, Message};
 use super::envelope::Envelope;
 use super::knob::{self, OctaSineKnob};
 use super::boolean_picker::{self, BooleanPicker};
@@ -31,8 +31,7 @@ pub struct OperatorWidgets {
     pub envelope: Envelope,
     pub zoom_in: button::State,
     pub zoom_out: button::State,
-    pub move_left: button::State,
-    pub move_right: button::State,
+    pub sync_viewport: button::State,
 }
 
 
@@ -69,8 +68,7 @@ impl OperatorWidgets {
             envelope: Envelope::new(sync_handle, operator_index),
             zoom_in: button::State::default(),
             zoom_out: button::State::default(),
-            move_left: button::State::default(),
-            move_right: button::State::default(),
+            sync_viewport: button::State::default(),
         }
     }
 
@@ -119,6 +117,11 @@ impl OperatorWidgets {
             .push(self.frequency_free.view())
             .push(self.frequency_fine.view());
         
+        let sync_viewports_message = Message::EnvelopeSyncViewports {
+            viewport_factor: self.envelope.get_viewport_factor(),
+            x_offset: self.envelope.get_x_offset(),
+        };
+        
         row = row
             .push(
                 Container::new(
@@ -147,6 +150,14 @@ impl OperatorWidgets {
                             .push(
                                 Button::new(&mut self.zoom_in, Text::new("+").font(FONT_VERY_BOLD))
                                     .on_press(Message::EnvelopeZoomIn(self.index))
+                            )
+                    )
+                    .push(Space::with_height(Length::Units(LINE_HEIGHT + LINE_HEIGHT / 2)))
+                    .push(
+                        Row::new()
+                            .push(
+                                Button::new(&mut self.sync_viewport, Text::new("ALL"))
+                                    .on_press(sync_viewports_message)
                             )
                     )
             );
