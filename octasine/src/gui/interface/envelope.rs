@@ -265,6 +265,10 @@ impl Envelope {
         envelope
     }
 
+    fn process_x_offset(x_offset: f32, viewport_factor: f32) -> f32 {
+        x_offset.min(0.0).max(-1.0 + viewport_factor)
+    }
+
     fn process_envelope_duration(sync_value: f64) -> f32 {
         sync_value.max(ENVELOPE_MIN_DURATION / ENVELOPE_MAX_DURATION) as f32
     }
@@ -275,7 +279,7 @@ impl Envelope {
         if self.viewport_factor > MIN {
             self.viewport_factor = (self.viewport_factor * 0.5).max(MIN);
 
-            // FIXME: update offset
+            self.x_offset = Self::process_x_offset(self.x_offset, self.viewport_factor);
         }
 
         self.update_data();
@@ -285,7 +289,7 @@ impl Envelope {
         if self.viewport_factor < 1.0 {
             self.viewport_factor = (self.viewport_factor * 2.0).min(1.0);
 
-            // FIXME: update offset
+            self.x_offset = Self::process_x_offset(self.x_offset, self.viewport_factor);
         }
 
         self.update_data();
@@ -340,12 +344,13 @@ impl Envelope {
     fn update_stage_paths(&mut self){
         let sustain_duration = SUSTAIN_DURATION;
         let total_duration = self.viewport_factor * TOTAL_DURATION;
+        let x_offset = self.x_offset / self.viewport_factor;
 
         self.attack_stage_path = EnvelopeStagePath::new(
             &self.log10_table,
             self.size,
             total_duration,
-            self.x_offset,
+            x_offset,
             0.0,
             0.0,
             self.attack_duration as f32,
@@ -356,7 +361,7 @@ impl Envelope {
             &self.log10_table,
             self.size,
             total_duration,
-            self.x_offset,
+            x_offset,
             self.attack_duration,
             self.attack_end_value,
             self.decay_duration as f32,
@@ -367,7 +372,7 @@ impl Envelope {
             &self.log10_table,
             self.size,
             total_duration,
-            self.x_offset,
+            x_offset,
             self.attack_duration + self.decay_duration,
             self.decay_end_value,
             sustain_duration as f32,
@@ -378,7 +383,7 @@ impl Envelope {
             &self.log10_table,
             self.size,
             total_duration,
-            self.x_offset,
+            x_offset,
             self.attack_duration + self.decay_duration + sustain_duration,
             self.decay_end_value,
             self.release_duration as f32,
@@ -395,6 +400,7 @@ impl Envelope {
 
     fn draw_time_markers(&self, frame: &mut Frame){
         let total_duration = self.viewport_factor * TOTAL_DURATION;
+        let x_offset = self.x_offset / self.viewport_factor;
 
         let mut time_marker_interval = 0.01 / 4.0;
 
@@ -411,7 +417,7 @@ impl Envelope {
         let iterations = (TOTAL_DURATION / time_marker_interval) as usize + 1;
 
         for i in 0..iterations {
-            let x = (self.x_offset + (time_marker_interval * i as f32) / total_duration) * self.size.width;
+            let x = (x_offset + (time_marker_interval * i as f32) / total_duration) * self.size.width;
 
             if x < 0.0 || x > self.size.width {
                 continue;
@@ -647,7 +653,12 @@ impl Program<Message> for Envelope {
                     }
 
                     if let Some((from, original_offset)) = self.dragging_background_from {
-                        self.x_offset = original_offset + (x - from.x) / WIDTH as f32;
+                        let change = (x - from.x) / WIDTH as f32 * self.viewport_factor;
+
+                        self.x_offset = Self::process_x_offset(
+                            original_offset + change,
+                            self.viewport_factor
+                        );
 
                         self.update_data();
                     }
