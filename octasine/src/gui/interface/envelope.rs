@@ -175,6 +175,12 @@ impl EnvelopeDragger {
     fn is_dragging(&self) -> bool {
         matches!(self.status, EnvelopeDraggerStatus::Dragging {..})
     }
+
+    fn set_to_normal_if_in_hover_state(&mut self){
+        if let EnvelopeDraggerStatus::Hover = self.status {
+            self.status = EnvelopeDraggerStatus::Normal;
+        }
+    }
 }
 
 
@@ -548,16 +554,19 @@ impl Program<Message> for Envelope {
                     y - bounds.y,
                 );
 
+                let attack_hitbox_hit = self.attack_dragger.hitbox
+                    .contains(relative_position);
+
                 match self.attack_dragger.status {
                     EnvelopeDraggerStatus::Normal => {
-                        if self.attack_dragger.hitbox.contains(relative_position){
+                        if attack_hitbox_hit {
                             self.attack_dragger.status = EnvelopeDraggerStatus::Hover;
 
                             self.cache.clear();
                         }
                     },
                     EnvelopeDraggerStatus::Hover => {
-                        if !self.attack_dragger.hitbox.contains(relative_position){
+                        if !attack_hitbox_hit{
                             self.attack_dragger.status = EnvelopeDraggerStatus::Normal;
 
                             self.cache.clear();
@@ -591,16 +600,23 @@ impl Program<Message> for Envelope {
                     },
                 }
 
+                let decay_hitbox_hit = self.decay_dragger.hitbox
+                    .contains(relative_position);
+
+                if decay_hitbox_hit {
+                    self.attack_dragger.set_to_normal_if_in_hover_state();
+                }
+
                 match self.decay_dragger.status {
                     EnvelopeDraggerStatus::Normal => {
-                        if self.decay_dragger.hitbox.contains(relative_position){
+                        if decay_hitbox_hit{
                             self.decay_dragger.status = EnvelopeDraggerStatus::Hover;
 
                             self.cache.clear();
                         }
                     },
                     EnvelopeDraggerStatus::Hover => {
-                        if !self.decay_dragger.hitbox.contains(relative_position){
+                        if !decay_hitbox_hit{
                             self.decay_dragger.status = EnvelopeDraggerStatus::Normal;
 
                             self.cache.clear();
@@ -634,16 +650,27 @@ impl Program<Message> for Envelope {
                     },
                 }
 
+                let release_hitbox_hit = self.release_dragger.hitbox
+                    .contains(relative_position);
+
+                if release_hitbox_hit {
+                    self.attack_dragger.set_to_normal_if_in_hover_state();
+                    self.decay_dragger.set_to_normal_if_in_hover_state();
+                }
+
                 match self.release_dragger.status {
                     EnvelopeDraggerStatus::Normal => {
-                        if self.release_dragger.hitbox.contains(relative_position){
+                        if release_hitbox_hit {
                             self.release_dragger.status = EnvelopeDraggerStatus::Hover;
+
+                            self.attack_dragger.set_to_normal_if_in_hover_state();
+                            self.decay_dragger.set_to_normal_if_in_hover_state();
 
                             self.cache.clear();
                         }
                     },
                     EnvelopeDraggerStatus::Hover => {
-                        if !self.release_dragger.hitbox.contains(relative_position){
+                        if !release_hitbox_hit {
                             self.release_dragger.status = EnvelopeDraggerStatus::Normal;
 
                             self.cache.clear();
