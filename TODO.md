@@ -20,7 +20,8 @@
   * Modulation matrix: make adjusting operator volume possible
   * Operator audio output indicator, either binary or volume
   * Master audio output indicator
-  * Zoom in towards left if offset_x is zero?
+  * Zoom towards center of envelope duration instead of viewport if
+    envelope doesn't cover viewport? (Or maybe always)
   * Master volume knob to the right of master frequency?
   * Reset knobs to default with backspace or maybe right click
     * Need to check if this is already supported in iced_audio
