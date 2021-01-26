@@ -468,8 +468,8 @@ impl Envelope {
             let bottom_point = Point::new(x, self.size.height);
 
             let path = Path::line(
-                scale_point(self.size, top_point).snap(),
-                scale_point(self.size, bottom_point).snap(),
+                scale_point_x(self.size, top_point).snap(),
+                scale_point_x(self.size, bottom_point).snap(),
             );
 
             if i % 10 == 0 && i != 0 {
@@ -501,21 +501,22 @@ impl Envelope {
 
     fn draw_stage_paths(&self, frame: &mut Frame){
         let size = frame.size();
-        let border_stroke = Stroke::default()
-            .with_width(1.0)
-            .with_color(Color::from_rgb(0.7, 0.7, 0.7));
 
-        let top_border = Path::line(
+        let top_drag_border = Path::line(
             scale_point(size, Point::ORIGIN).snap(),
             scale_point(size, Point::new(size.width, 0.0)).snap()
         );
-        let bottom_border = Path::line(
+        let bottom_drag_border = Path::line(
             scale_point(size, Point::new(0.0, size.height)).snap(),
             scale_point(size, Point::new(size.width, size.height)).snap()
         );
 
-        frame.stroke(&top_border, border_stroke);
-        frame.stroke(&bottom_border, border_stroke);
+        let drag_border_stroke = Stroke::default()
+            .with_width(1.0)
+            .with_color(Color::from_rgb(0.7, 0.7, 0.7));
+
+        frame.stroke(&top_drag_border, drag_border_stroke);
+        frame.stroke(&bottom_drag_border, drag_border_stroke);
 
         let stage_path_stroke = Stroke::default()
             .with_width(1.0)
@@ -525,7 +526,7 @@ impl Envelope {
         frame.stroke(&self.decay_stage_path.path, stage_path_stroke);
         frame.stroke(&self.release_stage_path.path, stage_path_stroke);
 
-        // Hide stage path parts that extend beyond scaled bounds
+        // Hide stage path parts that extend beyond scaled bounds, draw borders
 
         let left_bg_x = scale_point_x(size, Point::ORIGIN).snap().x - 1.0;
         let left_bg = Path::rectangle(Point::ORIGIN, Size::new(left_bg_x, size.height));
@@ -537,18 +538,33 @@ impl Envelope {
         frame.fill(&right_bg, Color::WHITE);
         frame.stroke(&right_bg, Stroke::default().with_color(Color::WHITE));
 
+        let top_border = Path::line(
+            scale_point_x(size, Point::ORIGIN).snap(),
+            scale_point_x(size, Point::new(size.width, 0.0)).snap()
+        );
+        let bottom_border = {
+            let left = scale_point_x(size, Point::new(0.0, size.height)).snap().x;
+            let right = scale_point_x(size, Point::new(size.width, size.height)).snap().x;
+
+            Path::line(
+                Point::new(left, size.height - 1.0).snap(),
+                Point::new(right, size.height - 1.0).snap(),
+            )
+        };
         let left_border = Path::line(
-            scale_point(size, Point::new(0.0, 0.0)).snap(),
-            scale_point(size, Point::new(0.0, size.height)).snap()
+            scale_point_x(size, Point::new(0.0, 0.0)).snap(),
+            scale_point_x(size, Point::new(0.0, size.height)).snap()
         );
         let right_border = Path::line(
-            scale_point(size, Point::new(size.width, 0.0)).snap(),
-            scale_point(size, Point::new(size.width, size.height)).snap()
+            scale_point_x(size, Point::new(size.width, 0.0)).snap(),
+            scale_point_x(size, Point::new(size.width, size.height)).snap()
         );
         let border_stroke = Stroke::default()
             .with_width(1.0)
-            .with_color(Color::from_rgb(0.7, 0.7, 0.7));
+            .with_color(Color::from_rgb(0.3, 0.3, 0.3));
 
+        frame.stroke(&top_border, border_stroke);
+        frame.stroke(&bottom_border, border_stroke);
         frame.stroke(&left_border, border_stroke);
         frame.stroke(&right_border, border_stroke);
     }
