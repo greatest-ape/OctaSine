@@ -499,43 +499,58 @@ impl Envelope {
         }
     }
 
-    fn draw_bounds(&self, frame: &mut Frame){
+    fn draw_stage_paths(&self, frame: &mut Frame){
         let size = frame.size();
-
-        let top = Path::line(
-            scale_point(size, Point::ORIGIN).snap(),
-            scale_point(size, Point::new(size.width, 0.0)).snap()
-        );
-        let bottom = Path::line(
-            scale_point(size, Point::new(0.0, size.height)).snap(),
-            scale_point(size, Point::new(size.width, size.height)).snap()
-        );
-        let left = Path::line(
-            scale_point(size, Point::new(0.0, 0.0)).snap(),
-            scale_point(size, Point::new(0.0, size.height)).snap()
-        );
-        let right = Path::line(
-            scale_point(size, Point::new(size.width, 0.0)).snap(),
-            scale_point(size, Point::new(size.width, size.height)).snap()
-        );
-        let stroke = Stroke::default()
+        let border_stroke = Stroke::default()
             .with_width(1.0)
             .with_color(Color::from_rgb(0.7, 0.7, 0.7));
 
-        frame.stroke(&top, stroke);
-        frame.stroke(&bottom, stroke);
-        frame.stroke(&left, stroke);
-        frame.stroke(&right, stroke);
-    }
+        let top_border = Path::line(
+            scale_point(size, Point::ORIGIN).snap(),
+            scale_point(size, Point::new(size.width, 0.0)).snap()
+        );
+        let bottom_border = Path::line(
+            scale_point(size, Point::new(0.0, size.height)).snap(),
+            scale_point(size, Point::new(size.width, size.height)).snap()
+        );
 
-    fn draw_stage_paths(&self, frame: &mut Frame){
-        let stroke = Stroke::default()
+        frame.stroke(&top_border, border_stroke);
+        frame.stroke(&bottom_border, border_stroke);
+
+        let stage_path_stroke = Stroke::default()
             .with_width(1.0)
             .with_color(Color::BLACK);
 
-        frame.stroke(&self.attack_stage_path.path, stroke);
-        frame.stroke(&self.decay_stage_path.path, stroke);
-        frame.stroke(&self.release_stage_path.path, stroke);
+        frame.stroke(&self.attack_stage_path.path, stage_path_stroke);
+        frame.stroke(&self.decay_stage_path.path, stage_path_stroke);
+        frame.stroke(&self.release_stage_path.path, stage_path_stroke);
+
+        // Hide stage path parts that extend beyond scaled bounds
+
+        let left_bg_x = scale_point_x(size, Point::ORIGIN).snap().x - 1.0;
+        let left_bg = Path::rectangle(Point::ORIGIN, Size::new(left_bg_x, size.height));
+        frame.fill(&left_bg, Color::WHITE);
+        frame.stroke(&left_bg, Stroke::default().with_color(Color::WHITE));
+
+        let right_bg_x = scale_point_x(size, Point::new(size.width, 0.0)).snap().x + 1.0;
+        let right_bg = Path::rectangle(Point::new(right_bg_x, 0.0), Size::new(size.width, size.height));
+        frame.fill(&right_bg, Color::WHITE);
+        frame.stroke(&right_bg, Stroke::default().with_color(Color::WHITE));
+
+        let left_border = Path::line(
+            scale_point(size, Point::new(0.0, 0.0)).snap(),
+            scale_point(size, Point::new(0.0, size.height)).snap()
+        );
+        let right_border = Path::line(
+            scale_point(size, Point::new(size.width, 0.0)).snap(),
+            scale_point(size, Point::new(size.width, size.height)).snap()
+        );
+        let border_stroke = Stroke::default()
+            .with_width(1.0)
+            .with_color(Color::from_rgb(0.7, 0.7, 0.7));
+
+        frame.stroke(&left_border, border_stroke);
+        frame.stroke(&right_border, border_stroke);
     }
 
     fn draw_dragger(frame: &mut Frame, dragger: &EnvelopeDragger){
@@ -569,7 +584,6 @@ impl Program<Message> for Envelope {
     fn draw(&self, bounds: Rectangle, _cursor: Cursor) -> Vec<Geometry>{
         let geometry = self.cache.draw(bounds.size(), |frame| {
             self.draw_time_markers(frame);
-            self.draw_bounds(frame);
             self.draw_stage_paths(frame);
 
             Self::draw_dragger(frame, &self.attack_dragger);
