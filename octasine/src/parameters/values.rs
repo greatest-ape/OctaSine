@@ -158,7 +158,11 @@ impl ParameterValue for MasterFrequencyValue {
         map_value_to_parameter_value_with_steps(&MASTER_FREQUENCY_STEPS, self.0)
     }
     fn format(self) -> String {
-        format!("{:.02} Hz", self.0)
+        if self.0 < 10000.0 {
+            format!("{:.02} Hz", self.0)
+        } else {
+            format!("{:.02}", self.0)
+        }
     }
     fn format_sync(value: f64) -> String {
         Self::from_sync(value).format()
