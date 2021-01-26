@@ -10,7 +10,7 @@
 * Automations in Live. Do I have to call HostCallback::automate to make
   parameters show up when clicking on them?
 * Envelopes
-  * Maybe draw lines indicating top and bottom of draggable range
+  * Cover draggers with white when they extend too far beyond scaled bounds
   * Possibly button for fitting viewport
 
 ## Less important
