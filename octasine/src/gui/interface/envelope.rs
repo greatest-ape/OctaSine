@@ -468,8 +468,8 @@ impl Envelope {
             let bottom_point = Point::new(x, self.size.height);
 
             let path = Path::line(
-                scale_point_x(self.size, top_point).snap(),
-                scale_point_x(self.size, bottom_point).snap(),
+                scale_point(self.size, top_point).snap(),
+                scale_point(self.size, bottom_point).snap(),
             );
 
             if i % 10 == 0 && i != 0 {
@@ -497,6 +497,35 @@ impl Envelope {
                 frame.stroke(&path, stroke);
             }
         }
+    }
+
+    fn draw_bounds(&self, frame: &mut Frame){
+        let size = frame.size();
+
+        let top = Path::line(
+            scale_point(size, Point::ORIGIN).snap(),
+            scale_point(size, Point::new(size.width, 0.0)).snap()
+        );
+        let bottom = Path::line(
+            scale_point(size, Point::new(0.0, size.height)).snap(),
+            scale_point(size, Point::new(size.width, size.height)).snap()
+        );
+        let left = Path::line(
+            scale_point(size, Point::new(0.0, 0.0)).snap(),
+            scale_point(size, Point::new(0.0, size.height)).snap()
+        );
+        let right = Path::line(
+            scale_point(size, Point::new(size.width, 0.0)).snap(),
+            scale_point(size, Point::new(size.width, size.height)).snap()
+        );
+        let stroke = Stroke::default()
+            .with_width(1.0)
+            .with_color(Color::from_rgb(0.7, 0.7, 0.7));
+
+        frame.stroke(&top, stroke);
+        frame.stroke(&bottom, stroke);
+        frame.stroke(&left, stroke);
+        frame.stroke(&right, stroke);
     }
 
     fn draw_stage_paths(&self, frame: &mut Frame){
@@ -540,6 +569,7 @@ impl Program<Message> for Envelope {
     fn draw(&self, bounds: Rectangle, _cursor: Cursor) -> Vec<Geometry>{
         let geometry = self.cache.draw(bounds.size(), |frame| {
             self.draw_time_markers(frame);
+            self.draw_bounds(frame);
             self.draw_stage_paths(frame);
 
             Self::draw_dragger(frame, &self.attack_dragger);
