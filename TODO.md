@@ -12,7 +12,6 @@
 * Envelopes
   * Maybe draw lines indicating top and bottom of draggable range
   * Possibly button for fitting viewport
-  * Zoom in on load
 
 ## Less important
 

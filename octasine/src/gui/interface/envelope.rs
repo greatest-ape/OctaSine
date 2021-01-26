@@ -24,6 +24,8 @@ const ENVELOPE_PATH_SCALE_X: f32 = 1.0 - (1.0 / 16.0);
 const ENVELOPE_PATH_SCALE_Y: f32 = 1.0 - (1.0 / 8.0) - (1.0 / 16.0);
 
 const TOTAL_DURATION: f32 = 3.0;
+const MIN_VIEWPORT_FACTOR: f32 = 1.0 / 128.0;
+
 
 
 struct EnvelopeStagePath {
@@ -263,9 +265,24 @@ impl Envelope {
             dragging_background_from: None,
         };
 
+        envelope.zoom_to_fit();
         envelope.update_data();
 
         envelope
+    }
+
+    fn zoom_to_fit(&mut self){
+        let duration_ratio = self.get_current_duration() / TOTAL_DURATION;
+
+        loop {
+            let next_viewport_factor = self.viewport_factor / 2.0;
+
+            if duration_ratio > next_viewport_factor || next_viewport_factor <= MIN_VIEWPORT_FACTOR {
+                break
+            }
+
+            self.viewport_factor = next_viewport_factor;
+        }
     }
 
     pub fn get_viewport_factor(&self) -> f32 {
@@ -296,10 +313,8 @@ impl Envelope {
     }
 
     pub fn zoom_in(&mut self){
-        const MIN: f32 = 1.0 / 128.0;
-
-        if self.viewport_factor > MIN {
-            self.viewport_factor = (self.viewport_factor * 0.5).max(MIN);
+        if self.viewport_factor > MIN_VIEWPORT_FACTOR {
+            self.viewport_factor = (self.viewport_factor * 0.5).max(MIN_VIEWPORT_FACTOR);
 
             let duration = self.get_current_duration();
 
