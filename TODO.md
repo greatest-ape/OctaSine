@@ -2,7 +2,6 @@
 
 ## Important
 
-* Get rid of sustain line in GUI
 * Pass through keyboard to DAW
 * Master frequency text becomes two rows when value is high, so mod
   matrix skips down

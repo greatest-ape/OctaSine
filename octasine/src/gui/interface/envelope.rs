@@ -18,13 +18,12 @@ const WIDTH: u16 = LINE_HEIGHT * 18;
 const HEIGHT: u16 = LINE_HEIGHT * 5;
 const SIZE: Size = Size { width: WIDTH as f32, height: HEIGHT as f32 };
 
-const SUSTAIN_DURATION: f32 = 0.1 / 4.0;
 const DRAGGER_RADIUS: f32 = 5.0;
 
 const ENVELOPE_PATH_SCALE_X: f32 = 1.0 - (1.0 / 16.0);
 const ENVELOPE_PATH_SCALE_Y: f32 = 1.0 - (1.0 / 8.0) - (1.0 / 16.0);
 
-const TOTAL_DURATION: f32 = 3.0 + SUSTAIN_DURATION;
+const TOTAL_DURATION: f32 = 3.0;
 
 
 struct EnvelopeStagePath {
@@ -210,7 +209,6 @@ pub struct Envelope {
     x_offset: f32,
     attack_stage_path: EnvelopeStagePath,
     decay_stage_path: EnvelopeStagePath,
-    sustain_stage_path: EnvelopeStagePath,
     release_stage_path: EnvelopeStagePath,
     attack_dragger: EnvelopeDragger,
     decay_dragger: EnvelopeDragger,
@@ -257,7 +255,6 @@ impl Envelope {
             x_offset: 0.0,
             attack_stage_path: EnvelopeStagePath::default(),
             decay_stage_path: EnvelopeStagePath::default(),
-            sustain_stage_path: EnvelopeStagePath::default(),
             release_stage_path: EnvelopeStagePath::default(),
             attack_dragger: EnvelopeDragger::default(),
             decay_dragger: EnvelopeDragger::default(),
@@ -295,7 +292,7 @@ impl Envelope {
     }
 
     fn get_current_duration(&self) -> f32 {
-        self.attack_duration + self.decay_duration + SUSTAIN_DURATION + self.release_duration
+        self.attack_duration + self.decay_duration + self.release_duration
     }
 
     pub fn zoom_in(&mut self){
@@ -383,7 +380,6 @@ impl Envelope {
     }
 
     fn update_stage_paths(&mut self){
-        let sustain_duration = SUSTAIN_DURATION;
         let total_duration = self.viewport_factor * TOTAL_DURATION;
         let x_offset = self.x_offset / self.viewport_factor;
 
@@ -409,23 +405,12 @@ impl Envelope {
             self.decay_end_value as f32,
         );
 
-        self.sustain_stage_path = EnvelopeStagePath::new(
-            &self.log10_table,
-            self.size,
-            total_duration,
-            x_offset,
-            self.attack_duration + self.decay_duration,
-            self.decay_end_value,
-            sustain_duration as f32,
-            self.decay_end_value,
-        );
-
         self.release_stage_path = EnvelopeStagePath::new(
             &self.log10_table,
             self.size,
             total_duration,
             x_offset,
-            self.attack_duration + self.decay_duration + sustain_duration,
+            self.attack_duration + self.decay_duration,
             self.decay_end_value,
             self.release_duration as f32,
             0.0
@@ -503,13 +488,9 @@ impl Envelope {
         let stroke = Stroke::default()
             .with_width(1.0)
             .with_color(Color::BLACK);
-        let sustain_stroke = Stroke::default()
-            .with_width(1.0)
-            .with_color(Color::from_rgb(0.5, 0.5, 0.5));
 
         frame.stroke(&self.attack_stage_path.path, stroke);
         frame.stroke(&self.decay_stage_path.path, stroke);
-        frame.stroke(&self.sustain_stage_path.path, sustain_stroke);
         frame.stroke(&self.release_stage_path.path, stroke);
     }
 
