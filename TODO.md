@@ -5,18 +5,14 @@
 * Pass through keyboard to DAW
 * Scrolling in dropdowns
   * Needs to be added to baseview macOS code
-* Consider updating envelope and lfo values in process benchmark too. This
-  would further improve usefulness of output hashing.
 * Automations in Live. Do I have to call HostCallback::automate to make
   parameters show up when clicking on them?
-* Envelopes
-  * Cover parts of draggers that extend beyond drag bounds instead of hiding
-    them once they move past?
-  * Possibly button for fitting viewport
 
 ## Less important
 
 * Wider master volume spread?
+* Consider updating envelope and lfo values in process benchmark too. This
+  would further improve usefulness of output hashing.
 * GUI
   * Modulation matrix: make adjusting operator volume possible
   * Operator audio output indicator, either binary or volume
@@ -26,7 +22,6 @@
   * Master volume knob to the right of master frequency?
   * Reset knobs to default with backspace or maybe right click
     * Need to check if this is already supported in iced_audio
-  * Parameterise lfo target picker over ParameterValue?
   * Nicer knob marks
     * Operator 2-4 middle marker
   * update_host_display stuff
@@ -41,6 +36,7 @@
 ## Not important
 
 * Test that number of sync and processing parameters is equal
+* Parameterise lfo target picker over ParameterValue?
 * proper beta scaling - double with doubling modulator frequency
 * suspend mode and so on, maybe just reset time, note time, envelopes etc on resume
 * Fuzz Log10Table (cargo-fuzz?)
