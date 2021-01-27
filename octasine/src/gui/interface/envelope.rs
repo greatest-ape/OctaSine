@@ -14,13 +14,13 @@ use crate::constants::{ENVELOPE_MIN_DURATION, ENVELOPE_MAX_DURATION};
 use super::{FONT_SIZE, LINE_HEIGHT, Message, SnapPoint};
 
 
-const WIDTH: u16 = LINE_HEIGHT * 18;
+const WIDTH: u16 = LINE_HEIGHT * 19;
 const HEIGHT: u16 = LINE_HEIGHT * 5;
 const SIZE: Size = Size { width: WIDTH as f32, height: HEIGHT as f32 };
 
 const DRAGGER_RADIUS: f32 = 5.0;
 
-const ENVELOPE_PATH_SCALE_X: f32 = 1.0 - (1.0 / 16.0);
+const ENVELOPE_PATH_SCALE_X: f32 = (WIDTH as f32 - 2.0 * LINE_HEIGHT as f32) / WIDTH as f32;
 const ENVELOPE_PATH_SCALE_Y: f32 = 1.0 - (1.0 / 8.0) - (1.0 / 16.0);
 
 const TOTAL_DURATION: f32 = 3.0;

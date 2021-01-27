@@ -134,9 +134,6 @@ impl OperatorWidgets {
                     .push(self.envelope.view())
             )
             .push(
-                Space::with_width(Length::Units(LINE_HEIGHT))
-            )
-            .push(
                 Column::new()
                     .width(Length::Units(LINE_HEIGHT * 3))
                     .align_items(Align::End)
