@@ -31,6 +31,8 @@ pub struct OperatorWidgets {
     pub envelope: Envelope,
     pub zoom_in: button::State,
     pub zoom_out: button::State,
+    pub envelope_go_to_start: button::State,
+    pub envelope_go_to_end: button::State,
     pub sync_viewport: button::State,
 }
 
@@ -68,6 +70,8 @@ impl OperatorWidgets {
             envelope: Envelope::new(sync_handle, operator_index),
             zoom_in: button::State::default(),
             zoom_out: button::State::default(),
+            envelope_go_to_start: button::State::default(),
+            envelope_go_to_end: button::State::default(),
             sync_viewport: button::State::default(),
         }
     }
@@ -151,7 +155,22 @@ impl OperatorWidgets {
                                     .on_press(Message::EnvelopeZoomIn(self.index))
                             )
                     )
-                    .push(Space::with_height(Length::Units(LINE_HEIGHT * 2 - 10)))
+                    .push(Space::with_height(Length::Units(LINE_HEIGHT * 1 - 10)))
+                    .push(
+                        Row::new()
+                            .push(
+                                Button::new(&mut self.envelope_go_to_start, Text::new("<"))
+                                    .on_press(Message::EnvelopeGoToStart(self.index))
+                            )
+                            .push(
+                                Space::with_width(Length::Units(3))
+                            )
+                            .push(
+                                Button::new(&mut self.envelope_go_to_end, Text::new(">"))
+                                    .on_press(Message::EnvelopeGoToEnd(self.index))
+                            )
+                    )
+                    .push(Space::with_height(Length::Units(LINE_HEIGHT * 1 - 10)))
                     .push(
                         Row::new()
                             .push(

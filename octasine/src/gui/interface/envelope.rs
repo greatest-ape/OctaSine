@@ -348,6 +348,20 @@ impl Envelope {
         self.update_data();
     }
 
+    pub fn go_to_start(&mut self){
+        self.x_offset = 0.0;
+
+        self.update_data();
+    }
+
+    pub fn go_to_end(&mut self){
+        let duration_ratio = self.get_current_duration() / TOTAL_DURATION;
+        let offset = -duration_ratio + self.viewport_factor;
+        self.x_offset = Self::process_x_offset(offset, self.viewport_factor);
+
+        self.update_data();
+    }
+
     pub fn set_attack_duration(&mut self, value: f64){
         if !self.attack_dragger.is_dragging(){
             self.attack_duration = Self::process_envelope_duration(value);

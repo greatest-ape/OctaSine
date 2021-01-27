@@ -73,6 +73,8 @@ pub enum Message {
     PresetChange(usize),
     EnvelopeZoomIn(usize),
     EnvelopeZoomOut(usize),
+    EnvelopeGoToStart(usize),
+    EnvelopeGoToEnd(usize),
     EnvelopeSyncViewports {
         viewport_factor: f32,
         x_offset: f32,
@@ -366,6 +368,24 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
                     1 => self.operator_2.envelope.zoom_out(),
                     2 => self.operator_3.envelope.zoom_out(),
                     3 => self.operator_4.envelope.zoom_out(),
+                    _ => unreachable!(),
+                }
+            },
+            Message::EnvelopeGoToStart(operator_index) => {
+                match operator_index {
+                    0 => self.operator_1.envelope.go_to_start(),
+                    1 => self.operator_2.envelope.go_to_start(),
+                    2 => self.operator_3.envelope.go_to_start(),
+                    3 => self.operator_4.envelope.go_to_start(),
+                    _ => unreachable!(),
+                }
+            },
+            Message::EnvelopeGoToEnd(operator_index) => {
+                match operator_index {
+                    0 => self.operator_1.envelope.go_to_end(),
+                    1 => self.operator_2.envelope.go_to_end(),
+                    2 => self.operator_3.envelope.go_to_end(),
+                    3 => self.operator_4.envelope.go_to_end(),
                     _ => unreachable!(),
                 }
             },
