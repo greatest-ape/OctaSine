@@ -589,7 +589,7 @@ impl Envelope {
         let left_end_x = scale_point(size, Point::ORIGIN).snap().x;
         let right_end_x = scale_point(size, Point::new(size.width, 0.0)).snap().x;
 
-        if dragger.center.x < left_end_x || dragger.center.x >= right_end_x {
+        if dragger.center.x < left_end_x || dragger.center.x > right_end_x {
             return;
         }
 
