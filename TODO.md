@@ -10,7 +10,8 @@
 * Automations in Live. Do I have to call HostCallback::automate to make
   parameters show up when clicking on them?
 * Envelopes
-  * Cover draggers with white when they extend too far beyond scaled bounds
+  * Cover parts of draggers that extend beyond drag bounds instead of hiding
+    them once they move past?
   * Possibly button for fitting viewport
 
 ## Less important
