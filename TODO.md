@@ -13,6 +13,8 @@
   would further improve usefulness of output hashing.
 * GUI
   * Modulation matrix: make adjusting operator volume possible
+    * Use red color when volume exceeds 1.0?
+    * Improve general structure and component updates
   * Operator audio output indicator, either binary or volume
   * Master audio output indicator
   * Zoom towards center of envelope duration instead of viewport if
