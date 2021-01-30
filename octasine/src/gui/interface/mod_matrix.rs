@@ -52,7 +52,6 @@ struct OperatorBox {
     text: Text,
     path: Path,
     center: Point,
-    feedback_center: Point,
     status: BoxStatus,
     last_cursor_position: Point,
     hitbox: Rectangle,
@@ -92,13 +91,6 @@ impl OperatorBox {
         let rect = Rectangle::new(top_left, size);
         let center = rect.center();
 
-        let half_box_size = (BIG_BOX_SIZE as f32) / 2.0;
-
-        let feedback_center = Point {
-            x: center.x + half_box_size - 1.0,
-            y: center.y - half_box_size,
-        };
-
         let text_position = Point {
             x: base_top_left.x,
             y: base_top_left.y,
@@ -124,7 +116,6 @@ impl OperatorBox {
             text,
             path,
             center,
-            feedback_center,
             status: BoxStatus::Normal,
             last_cursor_position: Point::new(-1.0, -1.0),
             hitbox: rect,
@@ -396,34 +387,57 @@ impl OutputBox {
 }
 
 
-struct OperatorLine {
+struct AdditiveLine {
     path: Path,
     stroke: Stroke,
 }
 
 
-impl OperatorLine {
-    fn additive(from: Point, to_y: f32, opacity: f32) -> Self {
+impl AdditiveLine {
+    fn new(from: Point, to_y: f32, additive: f64, volume: f64) -> Self {
         let mut to = from;
 
         to.y = to_y;
 
         let path = Path::line(from.snap(), to.snap());
-        let stroke = Stroke::default()
-            .with_width(3.0)
-            .with_color(Color::from_rgba(0.0, 0.0, 0.0, opacity));
 
-        Self {
+        let mut line = Self {
             path,
-            stroke,
-        }
+            stroke: Stroke::default(),
+        };
+
+        line.update(additive, volume);
+
+        line
     }
 
-    fn modulation(
+    fn update(&mut self, additive: f64, volume: f64){
+        let opacity = (additive * volume) as f32;
+
+        self.stroke = Stroke::default()
+            .with_width(3.0)
+            .with_color(Color::from_rgba(0.0, 0.0, 0.0, opacity));
+    }
+
+    fn draw(&self, frame: &mut Frame){
+        frame.stroke(&self.path, self.stroke);
+    }
+}
+
+
+struct ModulationLine {
+    path: Path,
+    stroke: Stroke,
+}
+
+
+impl ModulationLine {
+    fn new(
         from: Point,
         through: Point,
         to: Point,
-        opacity: f32,
+        additive: f64,
+        volume: f64,
     ) -> Self {
         let mut builder = path::Builder::new();
 
@@ -432,23 +446,11 @@ impl OperatorLine {
         builder.line_to(to.snap());
 
         let path = builder.build();
+
+        let opacity = ((1.0 - additive) * volume) as f32;
+
         let stroke = Stroke::default()
             .with_width(3.0)
-            .with_color(Color::from_rgba(0.0, 0.0, 0.0, opacity));
-
-        Self {
-            path,
-            stroke,
-        }
-    }
-
-    fn feedback(
-        center: Point,
-        opacity: f32
-    ) -> Self {
-        let path = Path::circle(center, 4.0);
-        let stroke = Stroke::default()
-            .with_width(1.0)
             .with_color(Color::from_rgba(0.0, 0.0, 0.0, opacity));
 
         Self {
@@ -545,17 +547,13 @@ struct ModulationMatrixComponents {
     operator_3_mod_1_box: ModulationBox,
     operator_2_mod_1_box: ModulationBox,
     output_box: OutputBox,
-    operator_4_additive_line: OperatorLine,
-    operator_3_additive_line: OperatorLine,
-    operator_2_additive_line: OperatorLine,
-    operator_1_additive_line: OperatorLine,
-    operator_4_modulation_line: OperatorLine,
-    operator_3_modulation_line: OperatorLine,
-    operator_2_modulation_line: OperatorLine,
-    operator_1_feedback_line: OperatorLine,
-    operator_2_feedback_line: OperatorLine,
-    operator_3_feedback_line: OperatorLine,
-    operator_4_feedback_line: OperatorLine,
+    operator_4_additive_line: AdditiveLine,
+    operator_3_additive_line: AdditiveLine,
+    operator_2_additive_line: AdditiveLine,
+    operator_1_additive_line: AdditiveLine,
+    operator_4_modulation_line: ModulationLine,
+    operator_3_modulation_line: ModulationLine,
+    operator_2_modulation_line: ModulationLine,
 }
 
 
@@ -614,25 +612,29 @@ impl ModulationMatrixComponents {
 
         let output_box = OutputBox::new(bounds);
 
-        let operator_4_additive_line = OperatorLine::additive(
+        let operator_4_additive_line = AdditiveLine::new(
             operator_4_box.center,
             output_box.y,
-            (parameters.operator_4_additive * parameters.operator_4_volume) as f32,
+            parameters.operator_4_additive,
+            parameters.operator_4_volume,
         );
-        let operator_3_additive_line = OperatorLine::additive(
+        let operator_3_additive_line = AdditiveLine::new(
             operator_3_box.center,
             output_box.y,
-            (parameters.operator_3_additive * parameters.operator_3_volume) as f32,
+            parameters.operator_3_additive,
+            parameters.operator_3_volume,
         );
-        let operator_2_additive_line = OperatorLine::additive(
+        let operator_2_additive_line = AdditiveLine::new(
             operator_2_box.center,
             output_box.y,
-            (parameters.operator_2_additive * parameters.operator_2_volume) as f32,
+            parameters.operator_2_additive,
+            parameters.operator_2_volume,
         );
-        let operator_1_additive_line = OperatorLine::additive(
+        let operator_1_additive_line = AdditiveLine::new(
             operator_1_box.center,
             output_box.y,
-            (1.0 * parameters.operator_1_volume) as f32
+            1.0,
+            parameters.operator_1_volume,
         );
 
         let operator_4_modulation_line = {
@@ -643,11 +645,12 @@ impl ModulationMatrixComponents {
                 _ => unreachable!(),
             };
     
-            OperatorLine::modulation(
+            ModulationLine::new(
                 operator_4_box.center,
                 through,
                 to,
-                ((1.0 - parameters.operator_4_additive) * parameters.operator_4_volume) as f32
+                parameters.operator_4_additive,
+                parameters.operator_4_volume,
             )
         };
 
@@ -658,36 +661,21 @@ impl ModulationMatrixComponents {
                 _ => unreachable!(),
             };
     
-            OperatorLine::modulation(
+            ModulationLine::new(
                 operator_3_box.center,
                 through,
                 to,
-                ((1.0 - parameters.operator_3_additive) * parameters.operator_3_volume) as f32
+                parameters.operator_3_additive,
+                parameters.operator_3_volume,
             )
         };
 
-        let operator_2_modulation_line = OperatorLine::modulation(
+        let operator_2_modulation_line = ModulationLine::new(
             operator_2_box.center,
             operator_2_mod_1_box.center,
             operator_1_box.center,
-            ((1.0 - parameters.operator_2_additive) * parameters.operator_2_volume) as f32
-        );
-
-        let operator_4_feedback_line = OperatorLine::feedback(
-            operator_4_box.feedback_center,
-            parameters.operator_4_feedback as f32,
-        );
-        let operator_3_feedback_line = OperatorLine::feedback(
-            operator_3_box.feedback_center,
-            parameters.operator_3_feedback as f32,
-        );
-        let operator_2_feedback_line = OperatorLine::feedback(
-            operator_2_box.feedback_center,
-            parameters.operator_2_feedback as f32,
-        );
-        let operator_1_feedback_line = OperatorLine::feedback(
-            operator_1_box.feedback_center,
-            parameters.operator_1_feedback as f32,
+            parameters.operator_2_additive,
+            parameters.operator_2_volume,
         );
 
         Self {
@@ -709,43 +697,32 @@ impl ModulationMatrixComponents {
             operator_4_modulation_line,
             operator_3_modulation_line,
             operator_2_modulation_line,
-            operator_4_feedback_line,
-            operator_3_feedback_line,
-            operator_2_feedback_line,
-            operator_1_feedback_line,
         }
     }
 
-    fn update(
-        &mut self,
-        parameters: &ModulationMatrixParameters,
-        bounds: Size
-    ){
+    fn update(&mut self, parameters: &ModulationMatrixParameters){
         self.operator_4_mod_3_box.active = parameters.operator_4_target == 2;
         self.operator_4_mod_2_box.active = parameters.operator_4_target == 1;
         self.operator_4_mod_1_box.active = parameters.operator_4_target == 0;
         self.operator_3_mod_2_box.active = parameters.operator_3_target == 1;
         self.operator_3_mod_1_box.active = parameters.operator_3_target == 0;
 
-        self.operator_4_additive_line = OperatorLine::additive(
-            self.operator_4_box.center,
-            self.output_box.y,
-            (parameters.operator_4_additive * parameters.operator_4_volume) as f32,
+        self.operator_4_additive_line.update(
+            parameters.operator_4_additive,
+            parameters.operator_4_volume,
         );
-        self.operator_3_additive_line = OperatorLine::additive(
-            self.operator_3_box.center,
-            self.output_box.y,
-            (parameters.operator_3_additive * parameters.operator_3_volume) as f32,
+
+        self.operator_3_additive_line.update(
+            parameters.operator_3_additive,
+            parameters.operator_3_volume,
         );
-        self.operator_2_additive_line = OperatorLine::additive(
-            self.operator_2_box.center,
-            self.output_box.y,
-            (parameters.operator_2_additive * parameters.operator_2_volume) as f32,
+        self.operator_2_additive_line.update(
+            parameters.operator_2_additive,
+            parameters.operator_2_volume,
         );
-        self.operator_1_additive_line = OperatorLine::additive(
-            self.operator_1_box.center,
-            self.output_box.y,
-            (1.0 * parameters.operator_1_volume) as f32
+        self.operator_1_additive_line.update(
+            1.0,
+            parameters.operator_1_volume
         );
 
         self.operator_4_modulation_line = {
@@ -756,11 +733,12 @@ impl ModulationMatrixComponents {
                 _ => unreachable!(),
             };
     
-            OperatorLine::modulation(
+            ModulationLine::new(
                 self.operator_4_box.center,
                 through,
                 to,
-                ((1.0 - parameters.operator_4_additive) * parameters.operator_4_volume) as f32
+                parameters.operator_4_additive,
+                parameters.operator_4_volume,
             )
         };
 
@@ -771,19 +749,21 @@ impl ModulationMatrixComponents {
                 _ => unreachable!(),
             };
     
-            OperatorLine::modulation(
+            ModulationLine::new(
                 self.operator_3_box.center,
                 through,
                 to,
-                ((1.0 - parameters.operator_3_additive) * parameters.operator_3_volume) as f32
+                parameters.operator_3_additive,
+                parameters.operator_3_volume,
             )
         };
 
-        self.operator_2_modulation_line = OperatorLine::modulation(
+        self.operator_2_modulation_line = ModulationLine::new(
             self.operator_2_box.center,
             self.operator_2_mod_1_box.center,
             self.operator_1_box.center,
-            ((1.0 - parameters.operator_2_additive) * parameters.operator_2_volume) as f32
+            parameters.operator_2_additive,
+            parameters.operator_2_volume
         ); 
     }
 
@@ -796,11 +776,6 @@ impl ModulationMatrixComponents {
         self.operator_4_modulation_line.draw(frame);
         self.operator_3_modulation_line.draw(frame);
         self.operator_2_modulation_line.draw(frame);
-
-        // self.operator_4_feedback_line.draw(frame);
-        // self.operator_3_feedback_line.draw(frame);
-        // self.operator_2_feedback_line.draw(frame);
-        // self.operator_1_feedback_line.draw(frame);
     }
 
     fn draw_boxes(&self, frame: &mut Frame){
@@ -823,7 +798,6 @@ impl ModulationMatrixComponents {
 
 pub struct ModulationMatrix {
     cache: Cache,
-    size: Size,
     parameters: ModulationMatrixParameters,
     components: ModulationMatrixComponents,
 }
@@ -836,7 +810,6 @@ impl ModulationMatrix {
 
         Self {
             cache: Cache::default(),
-            size: SIZE,
             parameters,
             components,
         }
@@ -931,7 +904,7 @@ impl ModulationMatrix {
     }
 
     fn update_components(&mut self){
-        self.components.update(&self.parameters, self.size);
+        self.components.update(&self.parameters);
 
         self.cache.clear();
     }
