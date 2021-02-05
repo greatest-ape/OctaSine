@@ -9,7 +9,7 @@ edition = "2018"
 default = ["logging", "gui"]
 simd = ["sleef-sys"]
 logging = ["dirs", "log", "log-panics", "simplelog"]
-gui = ["baseview", "iced_baseview", "iced_style", "iced_audio", "raw-window-handle"]
+gui = ["baseview", "iced_baseview", "iced_style", "iced_audio", "palette", "raw-window-handle"]
 
 [lib]
 name = "octasine"
@@ -48,7 +48,7 @@ optional = true
 [dependencies.iced_baseview]
 git = "https://github.com/BillyDM/iced_baseview.git"
 branch = "main"
-features = ["canvas"]
+features = ["canvas", "palette"]
 optional = true
 
 [dependencies.iced_style]
@@ -58,6 +58,10 @@ optional = true
 [dependencies.iced_audio]
 git = "https://github.com/BillyDM/iced_audio.git"
 branch = "main"
+optional = true
+
+[dependencies.palette]
+version = "0.5"
 optional = true
 
 # SIMD

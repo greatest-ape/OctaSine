@@ -4,6 +4,7 @@ use iced_baseview::canvas::{
 use iced_baseview::{
     Element, Color, Rectangle, Point, Length, Vector, Size, mouse
 };
+use palette::{gradient::Gradient, LinSrgba};
 
 use crate::GuiSyncHandle;
 use crate::parameters::values::{
@@ -412,11 +413,16 @@ impl AdditiveLine {
     }
 
     fn update(&mut self, additive: f64, volume: f64){
-        let opacity = (additive * volume) as f32;
+        let opacity = (additive * volume.min(0.5) * 2.0) as f32;
+        let green = LinSrgba::new(0.0, 0.25, 0.0, opacity);
+        let orange = LinSrgba::new(0.5, 0.25, 0.0, opacity);
+        let gradient = Gradient::new(vec![green, orange]);
+        let mix_factor = (volume as f32 - 0.5).max(0.0) * 2.0;
+        let color = gradient.get(mix_factor);
 
         self.stroke = Stroke::default()
             .with_width(3.0)
-            .with_color(Color::from_rgba(0.0, 0.0, 0.0, opacity));
+            .with_color(Color::from(palette::Srgba::from_linear(color)));
     }
 
     fn draw(&self, frame: &mut Frame){
@@ -447,11 +453,16 @@ impl ModulationLine {
 
         let path = builder.build();
 
-        let opacity = ((1.0 - additive) * volume) as f32;
+        let opacity = ((1.0 - additive) * volume.min(0.5) * 2.0) as f32;
+        let green = LinSrgba::new(0.0, 0.25, 0.0, opacity);
+        let orange = LinSrgba::new(0.5, 0.25, 0.0, opacity);
+        let gradient = Gradient::new(vec![green, orange]);
+        let mix_factor = (volume as f32 - 0.5).max(0.0) * 2.0;
+        let color = gradient.get(mix_factor);
 
         let stroke = Stroke::default()
             .with_width(3.0)
-            .with_color(Color::from_rgba(0.0, 0.0, 0.0, opacity));
+            .with_color(Color::from(palette::Srgba::from_linear(color)));
 
         Self {
             path,
@@ -499,10 +510,10 @@ impl ModulationMatrixParameters {
         let operator_3_feedback = sync_handle.get_parameter(35);
         let operator_4_feedback = sync_handle.get_parameter(50);
 
-        let operator_1_volume = Self::convert_volume(sync_handle.get_parameter(2));
-        let operator_2_volume = Self::convert_volume(sync_handle.get_parameter(15));
-        let operator_3_volume = Self::convert_volume(sync_handle.get_parameter(29));
-        let operator_4_volume = Self::convert_volume(sync_handle.get_parameter(44));
+        let operator_1_volume = sync_handle.get_parameter(2);
+        let operator_2_volume = sync_handle.get_parameter(15);
+        let operator_3_volume = sync_handle.get_parameter(29);
+        let operator_4_volume = sync_handle.get_parameter(44);
 
         Self {
             operator_3_target,
@@ -527,10 +538,6 @@ impl ModulationMatrixParameters {
 
     fn convert_operator_4_target(value: f64) -> usize {
         Operator4ModulationTargetValue::from_sync(value).get()
-    }
-
-    fn convert_volume(value: f64) -> f64 {
-        value.min(0.5) * 2.0
     }
 }
 
@@ -872,33 +879,25 @@ impl ModulationMatrix {
     }
 
     pub fn set_operator_4_volume(&mut self, value: f64){
-        let converted = ModulationMatrixParameters::convert_volume(value);
-
-        self.parameters.operator_4_volume = converted;
+        self.parameters.operator_4_volume = value;
 
         self.update_components();
     }
 
     pub fn set_operator_3_volume(&mut self, value: f64){
-        let converted = ModulationMatrixParameters::convert_volume(value);
-
-        self.parameters.operator_3_volume = converted;
+        self.parameters.operator_3_volume = value;
 
         self.update_components();
     }
 
     pub fn set_operator_2_volume(&mut self, value: f64){
-        let converted = ModulationMatrixParameters::convert_volume(value);
-
-        self.parameters.operator_2_volume = converted;
+        self.parameters.operator_2_volume = value;
 
         self.update_components();
     }
 
     pub fn set_operator_1_volume(&mut self, value: f64){
-        let converted = ModulationMatrixParameters::convert_volume(value);
-
-        self.parameters.operator_1_volume = converted;
+        self.parameters.operator_1_volume = value;
 
         self.update_components();
     }
