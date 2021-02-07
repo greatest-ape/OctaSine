@@ -5,8 +5,6 @@
 * Pass through keyboard to DAW
 * Scrolling in dropdowns
   * Needs to be added to baseview macOS code
-* Automations in Live. Do I have to call HostCallback::automate to make
-  parameters show up when clicking on them?
 
 ## Less important
 
