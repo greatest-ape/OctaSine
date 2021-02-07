@@ -6,7 +6,7 @@ license = "AGPL-3.0"
 edition = "2018"
 
 [features]
-default = ["logging"]
+default = ["logging", "gui"]
 simd = ["sleef-sys"]
 logging = ["dirs", "log", "log-panics", "simplelog"]
 gui = ["baseview", "iced_baseview", "iced_style", "iced_audio", "raw-window-handle"]

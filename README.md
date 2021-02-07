@@ -20,8 +20,7 @@ Audio examples are available at [soundcloud.com/octasine](https://soundcloud.com
 * 128 voices (using them all simultaneously might consume quite a bit
   of CPU time though)
 * Fully automatable
-* Work-in-progress graphical user interface. To use, compile OctaSine with
-  `gui` feature.
+* Work-in-progress graphical user interface
 
 ## Installation
 
