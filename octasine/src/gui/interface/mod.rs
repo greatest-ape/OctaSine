@@ -84,8 +84,6 @@ pub enum Message {
 
 pub struct OctaSineIcedApplication<H: GuiSyncHandle> {
     sync_handle: H,
-    host_display_needs_update: bool,
-    frame_counter: usize,
     master_volume: OctaSineKnob<MasterVolumeValue>,
     master_frequency: OctaSineKnob<MasterFrequencyValue>,
     modulation_matrix: ModulationMatrix,
@@ -292,8 +290,6 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
 
         let app = Self {
             sync_handle,
-            host_display_needs_update: false,
-            frame_counter: 0,
             master_volume,
             master_frequency,
             modulation_matrix,
@@ -340,18 +336,6 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
                     self.preset_picker = PresetPicker::new(&self.sync_handle);
                 }
                 self.update_widgets_from_parameters();
-
-                // Update host display less often for better performance.
-                // This is not a good solution, but it is OK for now.
-                if self.frame_counter % 8 == 0 {
-                    if self.host_display_needs_update {
-                        self.sync_handle.update_host_display();
-
-                        self.host_display_needs_update = false;
-                    }
-                }
-
-                self.frame_counter = self.frame_counter.wrapping_add(1);
             },
             Message::EnvelopeZoomIn(operator_index) => {
                 match operator_index {
@@ -399,19 +383,15 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
                 self.set_value(index, value);
 
                 self.sync_handle.set_parameter(index, value);
-                self.host_display_needs_update = true;
             },
             Message::ParameterChanges(changes) => {
                 for (index, value) in changes {
                     self.set_value(index, value);
                     self.sync_handle.set_parameter(index, value);
                 }
-
-                self.host_display_needs_update = true;
             },
             Message::PresetChange(index) => {
                 self.sync_handle.set_preset_index(index);
-                self.host_display_needs_update = true;
             }
         }
 

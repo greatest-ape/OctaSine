@@ -322,7 +322,6 @@ cfg_if::cfg_if! {
             fn format_parameter_value(&self, index: usize, value: f64) -> String;
             fn get_presets(&self) -> (usize, Vec<String>);
             fn set_preset_index(&self, index: usize);
-            fn update_host_display(&self);
         }
 
         impl GuiSyncHandle for Arc<SyncState> {
@@ -330,6 +329,12 @@ cfg_if::cfg_if! {
                 &self.presets
             }
             fn set_parameter(&self, index: usize, value: f64){
+                if let Some(host) = self.host {
+                    // Host will occasionally set the value again, but that's
+                    // ok
+                    host.automate(index as i32, value as f32);
+                }
+
                 self.presets.set_parameter_from_gui(index, value);
             }
             fn get_parameter(&self, index: usize) -> f64 {
@@ -346,11 +351,6 @@ cfg_if::cfg_if! {
             }
             fn set_preset_index(&self, index: usize){
                 self.presets.set_preset_index(index);
-            }
-            fn update_host_display(&self){
-                if let Some(host) = self.host {
-                    host.update_display();
-                }
             }
         }
     }
