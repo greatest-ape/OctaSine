@@ -174,7 +174,7 @@ impl OperatorWidgets {
                     .push(
                         Row::new()
                             .push(
-                                Button::new(&mut self.sync_viewport, Text::new("ALL"))
+                                Button::new(&mut self.sync_viewport, Text::new("SYNC"))
                                     .on_press(sync_viewports_message)
                             )
                     )
