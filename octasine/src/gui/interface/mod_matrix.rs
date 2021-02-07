@@ -414,9 +414,10 @@ impl AdditiveLine {
 
     fn update(&mut self, additive: f64, volume: f64){
         let opacity = (additive * volume.min(0.5) * 2.0) as f32;
-        let green = LinSrgba::new(0.0, 0.25, 0.0, opacity);
-        let orange = LinSrgba::new(0.5, 0.25, 0.0, opacity);
-        let gradient = Gradient::new(vec![green, orange]);
+        let gradient = Gradient::new(vec![
+            LinSrgba::new(0.0, 0.25, 0.0, opacity),
+            LinSrgba::new(0.0, 0.0, 0.0, opacity),
+        ]);
         let mix_factor = (volume as f32 - 0.5).max(0.0) * 2.0;
         let color = gradient.get(mix_factor);
 
@@ -454,9 +455,10 @@ impl ModulationLine {
         let path = builder.build();
 
         let opacity = ((1.0 - additive) * volume.min(0.5) * 2.0) as f32;
-        let green = LinSrgba::new(0.0, 0.25, 0.0, opacity);
-        let orange = LinSrgba::new(0.5, 0.25, 0.0, opacity);
-        let gradient = Gradient::new(vec![green, orange]);
+        let gradient = Gradient::new(vec![
+            LinSrgba::new(0.0, 0.25, 0.0, opacity),
+            LinSrgba::new(0.0, 0.0, 0.0, opacity),
+        ]);
         let mix_factor = (volume as f32 - 0.5).max(0.0) * 2.0;
         let color = gradient.get(mix_factor);
 
