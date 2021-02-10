@@ -11,7 +11,7 @@ use crate::parameters::values::{
     OperatorWaveTypeValue
 };
 
-use super::{FONT_SIZE, FONT_BOLD, FONT_VERY_BOLD, LINE_HEIGHT, Message};
+use super::{FONT_SIZE, FONT_VERY_BOLD, LINE_HEIGHT, Message};
 use super::envelope::Envelope;
 use super::knob::{self, OctaSineKnob};
 use super::boolean_picker::{self, BooleanPicker};

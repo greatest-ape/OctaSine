@@ -15,7 +15,6 @@
   * Modulation matrix: improve general structure?
   * Operator audio output indicator, either binary or volume
   * Master audio output indicator
-  * Envelope zoom to fit button instead of arrows?
   * Zoom towards center of envelope duration instead of viewport if
     envelope doesn't cover viewport? (Or maybe always)
   * Master volume knob to the right of master frequency?
