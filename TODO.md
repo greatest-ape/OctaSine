@@ -7,6 +7,8 @@
 
 ## Less important
 
+* calculate_curve_volume_output_in_range fails on (0.0, -0.0, -0.0, -0.0),
+  so likely negative zero
 * Scrolling in dropdowns
   * Needs to be added to baseview macOS code
 * Consider updating envelope and lfo values in process benchmark too. This
