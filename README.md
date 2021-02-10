@@ -29,23 +29,23 @@ Audio examples are available at [soundcloud.com/octasine](https://soundcloud.com
 
 If you have already any of the software mentioned below, that step can be skipped.
 
-[Install the Rust compiler](https://rustup.rs/). Choose the nightly toolchain when prompted. Requires the XCode build tools from Apple, you will probably be prompted to install those.
+1. [Install the Rust compiler](https://rustup.rs/). Choose the nightly toolchain when prompted. Requires the XCode build tools from Apple, you will probably be prompted to install those.
 
-If you didn't install the nightly Rust toolchain in the last step, do it now:
+2. If you didn't install the nightly Rust toolchain in the last step, do it now:
 
 ```sh
 rustup toolchain install nightly
 ```
 
-[Install homebrew](https://brew.sh).
+3. [Install homebrew](https://brew.sh).
 
-Install git and cmake with homebrew:
+4. Install git and cmake with homebrew:
 
 ```sh
 brew install git cmake
 ```
 
-Clone this repository to a folder on your computer:
+5. Clone this repository to a folder on your computer:
 
 ```sh
 mkdir -p "$HOME/Downloads"
@@ -54,17 +54,13 @@ git clone https://github.com/greatest-ape/OctaSine.git
 cd OctaSine
 ```
 
-Build and install:
+6. Build and install:
 
 ```sh
 ./scripts/macos/build-simd-and-install.sh
 ```
 
-__Advanced:__ If you don't want SIMD support and/or prefer the stable toolchain, instead run:
-
-```sh
-./scripts/macos/build-and-install.sh
-```
+Finished!
 
 Binary (pre-built) releases might be uploaded eventually.
 
