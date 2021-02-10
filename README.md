@@ -2,9 +2,11 @@
 
 VST2 frequency modulation synthesizer written in Rust.
 
-![Screenshot of OctaSine](screenshots/screenshot-1.png)
-
 Audio examples are available at [soundcloud.com/octasine](https://soundcloud.com/octasine).
+
+## Screenshot
+
+![Screenshot of OctaSine](screenshots/screenshot-1.png)
 
 ## About
 
