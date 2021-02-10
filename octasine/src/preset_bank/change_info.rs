@@ -216,7 +216,7 @@ mod tests {
             let preset_parameters = create_parameters();
 
             for (i, v) in data.iter(){
-                if *i > 63 || *v < 0.0 {
+                if *i > 63 || *v < 0.0  || v.is_nan() {
                     return TestResult::discard();
                 }
             }
