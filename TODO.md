@@ -12,7 +12,8 @@
 * Consider updating envelope and lfo values in process benchmark too. This
   would further improve usefulness of output hashing.
 * GUI
-  * Modulation matrix: improve general structure?
+  * Improve macOS Retina support
+  * Modulation matrix: improve creation/update logic?
   * Operator audio output indicator, either binary or volume
   * Master audio output indicator
   * Zoom towards center of envelope duration instead of viewport if
@@ -31,7 +32,6 @@
 
 * Test that number of sync and processing parameters is equal
 * Parameterise lfo target picker over ParameterValue?
-* proper beta scaling - double with doubling modulator frequency
 * suspend mode and so on, maybe just reset time, note time, envelopes etc on resume
 * Fuzz Log10Table (cargo-fuzz?)
 * Is it necessary to look at time signatures etc for bpm sync?
@@ -46,3 +46,4 @@
 
 * Cache sync value in interpolatable parameters too? Don't do this, it seems
   to hurt performance.
+* proper beta scaling - double with doubling modulator frequency: too late now
