@@ -2,6 +2,8 @@
 
 VST2 frequency modulation synthesizer written in Rust.
 
+![Screenshot of OctaSine](screenshots/screenshot-1.png)
+
 Audio examples are available at [soundcloud.com/octasine](https://soundcloud.com/octasine).
 
 ## About
@@ -20,7 +22,6 @@ Audio examples are available at [soundcloud.com/octasine](https://soundcloud.com
 * 128 voices (using them all simultaneously might consume quite a bit
   of CPU time though)
 * Fully automatable
-* Work-in-progress graphical user interface
 
 ## Installation
 
