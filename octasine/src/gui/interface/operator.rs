@@ -31,9 +31,8 @@ pub struct OperatorWidgets {
     pub envelope: Envelope,
     pub zoom_in: button::State,
     pub zoom_out: button::State,
-    pub envelope_go_to_start: button::State,
-    pub envelope_go_to_end: button::State,
     pub sync_viewport: button::State,
+    pub zoom_to_fit: button::State,
 }
 
 
@@ -70,9 +69,8 @@ impl OperatorWidgets {
             envelope: Envelope::new(sync_handle, operator_index),
             zoom_in: button::State::default(),
             zoom_out: button::State::default(),
-            envelope_go_to_start: button::State::default(),
-            envelope_go_to_end: button::State::default(),
             sync_viewport: button::State::default(),
+            zoom_to_fit: button::State::default(),
         }
     }
 
@@ -125,6 +123,7 @@ impl OperatorWidgets {
             viewport_factor: self.envelope.get_viewport_factor(),
             x_offset: self.envelope.get_x_offset(),
         };
+        let zoom_to_fit_message = Message::EnvelopeZoomToFit(self.index);
         
         row = row
             .push(
@@ -159,22 +158,15 @@ impl OperatorWidgets {
                     .push(
                         Row::new()
                             .push(
-                                Button::new(&mut self.envelope_go_to_start, Text::new("<"))
-                                    .on_press(Message::EnvelopeGoToStart(self.index))
-                            )
-                            .push(
-                                Space::with_width(Length::Units(3))
-                            )
-                            .push(
-                                Button::new(&mut self.envelope_go_to_end, Text::new(">"))
-                                    .on_press(Message::EnvelopeGoToEnd(self.index))
+                                Button::new(&mut self.zoom_to_fit, Text::new("FIT"))
+                                    .on_press(zoom_to_fit_message)
                             )
                     )
                     .push(Space::with_height(Length::Units(LINE_HEIGHT * 1 - 10)))
                     .push(
                         Row::new()
                             .push(
-                                Button::new(&mut self.sync_viewport, Text::new("SYNC"))
+                                Button::new(&mut self.sync_viewport, Text::new("DIST"))
                                     .on_press(sync_viewports_message)
                             )
                     )

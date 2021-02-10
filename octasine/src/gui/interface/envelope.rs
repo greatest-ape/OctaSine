@@ -265,13 +265,13 @@ impl Envelope {
             dragging_background_from: None,
         };
 
-        envelope.zoom_to_fit();
+        envelope.zoom_in_to_fit();
         envelope.update_data();
 
         envelope
     }
 
-    fn zoom_to_fit(&mut self){
+    fn zoom_in_to_fit(&mut self){
         let duration_ratio = self.get_current_duration() / TOTAL_DURATION;
 
         loop {
@@ -348,17 +348,11 @@ impl Envelope {
         self.update_data();
     }
 
-    pub fn go_to_start(&mut self){
+    pub fn zoom_to_fit(&mut self){
+        self.viewport_factor = 1.0;
         self.x_offset = 0.0;
 
-        self.update_data();
-    }
-
-    pub fn go_to_end(&mut self){
-        let duration_ratio = self.get_current_duration() / TOTAL_DURATION;
-        let offset = -duration_ratio + self.viewport_factor;
-        self.x_offset = Self::process_x_offset(offset, self.viewport_factor);
-
+        self.zoom_in_to_fit();
         self.update_data();
     }
 
