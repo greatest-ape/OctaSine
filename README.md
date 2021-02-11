@@ -81,12 +81,6 @@ published by the Free Software Foundation. See [LICENSE](LICENSE) for details.
 Contents of the `contrib` directory are licensed under other terms. Please
 refer to the contained directories and/or files for details.
 
-## Notes
-
-Depends on the following git repositories:
-
-  * https://github.com/greatest-ape/sleef-sys (__octasine__ branch for static linking and avx instruction generation)
-
 ## Trivia
 
 * The name OctaSine comes from the four stereo sine-wave operators

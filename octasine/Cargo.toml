@@ -66,6 +66,7 @@ optional = true
 
 # SIMD
 
+# Fork with static linking and avx instruction generation
 [dependencies.sleef-sys]
 git = 'https://github.com/greatest-ape/sleef-sys.git'
 branch = "octasine"
