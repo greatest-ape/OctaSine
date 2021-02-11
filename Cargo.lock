@@ -137,7 +137,7 @@ checksum = "904dfeac50f3cdaba28fc6f57fdcddb75f49ed61346676a78c4ffe55877802fd"
 [[package]]
 name = "baseview"
 version = "0.1.0"
-source = "git+https://github.com/rustaudio/baseview.git#68a5c4a19fa2d2bce9a9b5c7a009624a6ff2bac0"
+source = "git+https://github.com/greatest-ape/baseview.git?branch=octasine#5cb0dd241ddba17339f150f3b58b1228841ab982"
 dependencies = [
  "cocoa",
  "core-foundation 0.9.1",

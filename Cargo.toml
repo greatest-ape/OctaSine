@@ -13,6 +13,12 @@ members = [
 # [patch.'https://github.com/BillyDM/iced_baseview']
 # iced_baseview = { path = "../iced_baseview" }
 
+# Don't take keyboard input. Ignoring keyboard input will hopefully
+# work with future releases of baseview/iced_baseview/iced, but until
+# then, use this fork.
+[patch.'https://github.com/RustAudio/baseview']
+baseview = { git = "https://github.com/greatest-ape/baseview.git", branch = "octasine" }
+
 [profile.release]
 debug = true
 lto = true
