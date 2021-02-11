@@ -1,6 +1,7 @@
+use git_testament::{git_testament, CommitKind};
 use iced_baseview::{Align, Application, Command, Subscription, WindowSubs, executor};
 use iced_baseview::{
-    Column, Element, Row, Container, Length, Space, renderer, Font, Point, Text, HorizontalAlignment, VerticalAlignment
+    Column, Button, button, Color, Element, Row, Container, Length, Space, renderer, Font, Point, Text, HorizontalAlignment, VerticalAlignment
 };
 
 use crate::GuiSyncHandle;
@@ -50,6 +51,30 @@ const OPEN_SANS_BOLD: &[u8] = include_bytes!(
 );
 
 
+fn get_info_text() -> String {
+    git_testament!(GIT_TESTAMENT);
+
+    let version = match GIT_TESTAMENT.commit {
+        CommitKind::NoRepository(crate_version, _date) =>
+            crate_version.into(),
+        CommitKind::NoCommit(crate_version, _date) =>
+            crate_version.into(),
+        CommitKind::NoTags(commit, _date) => 
+            commit.chars().take(7).collect::<String>(),
+        CommitKind::FromTag(tag, commit, _date, _distance) =>
+            format!("{} ({})", tag, commit.chars().take(7).collect::<String>()),
+    };
+
+    let dirty = if GIT_TESTAMENT.modifications.is_empty(){
+        ""
+    } else {
+        " (dirty)"
+    };
+
+    format!("Copyright © 2019-2021 Joakim Frostegård\nVersion: {}{}", version, dirty)
+}
+
+
 pub trait SnapPoint {
     fn snap(self) -> Self;
 }
@@ -70,6 +95,7 @@ pub enum Message {
     Frame,
     ParameterChange(usize, f64),
     ParameterChanges(Vec<(usize, f64)>),
+    ToggleInfo,
     PresetChange(usize),
     EnvelopeZoomIn(usize),
     EnvelopeZoomOut(usize),
@@ -83,6 +109,8 @@ pub enum Message {
 
 pub struct OctaSineIcedApplication<H: GuiSyncHandle> {
     sync_handle: H,
+    toggle_info_state: button::State,
+    show_version: bool,
     master_volume: OctaSineKnob<MasterVolumeValue>,
     master_frequency: OctaSineKnob<MasterFrequencyValue>,
     modulation_matrix: ModulationMatrix,
@@ -289,6 +317,8 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
 
         let app = Self {
             sync_handle,
+            toggle_info_state: button::State::default(),
+            show_version: false,
             master_volume,
             master_frequency,
             modulation_matrix,
@@ -335,6 +365,9 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
                     self.preset_picker = PresetPicker::new(&self.sync_handle);
                 }
                 self.update_widgets_from_parameters();
+            },
+            Message::ToggleInfo => {
+                self.show_version = !self.show_version;
             },
             Message::EnvelopeZoomIn(operator_index) => {
                 match operator_index {
@@ -409,6 +442,12 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
             .font(FONT_VERY_BOLD)
             .horizontal_alignment(HorizontalAlignment::Center)
             .vertical_alignment(VerticalAlignment::Center);
+        
+        let info_opacity = if self.show_version {
+            1.0
+        } else {
+            0.0
+        };
 
         let all = Column::new()
             .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
@@ -419,6 +458,28 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
                     .push(
                         Column::new()
                             .width(Length::FillPortion(1))
+                            .push(
+                                Container::new(
+                                    Row::new()
+                                        .push(
+                                            Button::new(
+                                                &mut self.toggle_info_state,
+                                                Text::new("INFO")
+                                            )
+                                                .on_press(Message::ToggleInfo)
+                                        )
+                                        .push(Space::with_width(Length::Units(LINE_HEIGHT)))
+                                        .push(
+                                            Text::new(get_info_text())
+                                                .size(LINE_HEIGHT)
+                                                .color(Color::from_rgba(0.0, 0.0, 0.0, info_opacity))
+                                                .vertical_alignment(VerticalAlignment::Center)
+                                        )
+                                )
+                                    .height(Length::Units(LINE_HEIGHT * 4))
+                                    .padding(LINE_HEIGHT)
+                                    .align_y(Align::Center)
+                            )
                     )
                     .push(
                         Container::new(

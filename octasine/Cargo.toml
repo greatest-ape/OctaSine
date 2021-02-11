@@ -9,7 +9,7 @@ edition = "2018"
 default = ["logging", "gui"]
 simd = ["sleef-sys"]
 logging = ["dirs", "log", "log-panics", "simplelog"]
-gui = ["baseview", "iced_baseview", "iced_style", "iced_audio", "palette", "raw-window-handle"]
+gui = ["baseview", "iced_baseview", "iced_style", "iced_audio", "palette", "raw-window-handle", "git-testament"]
 
 [lib]
 name = "octasine"
@@ -39,6 +39,7 @@ simplelog = { version = "0.9", optional = true, default-features = false }
 # GUI
 
 raw-window-handle = { version = "0.3", optional = true }
+git-testament = { version = "0.1", optional = true }
 
 [dependencies.baseview]
 git = "https://github.com/rustaudio/baseview.git"
