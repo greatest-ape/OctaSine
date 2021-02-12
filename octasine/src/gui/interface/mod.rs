@@ -55,13 +55,13 @@ fn get_info_text() -> String {
     git_testament!(GIT_TESTAMENT);
 
     let version = match GIT_TESTAMENT.commit {
-        CommitKind::NoRepository(crate_version, _date) =>
+        CommitKind::NoRepository(crate_version, _build_date) =>
             crate_version.into(),
-        CommitKind::NoCommit(crate_version, _date) =>
+        CommitKind::NoCommit(crate_version, _build_date) =>
             crate_version.into(),
-        CommitKind::NoTags(commit, _date) => 
+        CommitKind::NoTags(commit, _commit_date) => 
             commit.chars().take(7).collect::<String>(),
-        CommitKind::FromTag(tag, commit, _date, _distance) =>
+        CommitKind::FromTag(tag, commit, _commit_date, _distance) =>
             format!("{} ({})", tag, commit.chars().take(7).collect::<String>()),
     };
 
