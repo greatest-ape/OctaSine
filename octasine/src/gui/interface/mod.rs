@@ -71,7 +71,7 @@ fn get_info_text() -> String {
         " (dirty)"
     };
 
-    format!("Copyright © 2019-2021 Joakim Frostegård\nVersion: {}{}", version, dirty)
+    format!("Copyright © 2019-2021 Joakim Frostegård\nBuild: {}{}", version, dirty)
 }
 
 
