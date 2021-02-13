@@ -1,12 +1,8 @@
 # TODO
 
-## Important
-
-* Pass through keyboard to DAW
-  * Needs to be done in baseview and iced_baseview
-
 ## Less important
 
+* Pass through keyboard to DAW without using forked baseview
 * calculate_curve_volume_output_in_range fails on (0.0, -0.0, -0.0, -0.0),
   so likely negative zero
 * Scrolling in dropdowns
