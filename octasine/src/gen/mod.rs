@@ -77,7 +77,7 @@ pub struct FallbackSineSleef;
 impl FallbackSine for FallbackSineSleef {
     fn sin([a1, a2]: [f64; 2]) -> [f64; 2] {
         unsafe {
-            [sleef_sys::Sleef_sin_u35(a1), sleef_sys::Sleef_sin_u35(a2)]
+            [sleef_sys::Sleef_cinz_sind1_u35purec(a1), sleef_sys::Sleef_cinz_sind1_u35purec(a2)]
         }
     }
 }
@@ -192,7 +192,7 @@ impl Simd for Sse2 {
     }
     #[target_feature(enable = "sse2")]
     unsafe fn pd_fast_sin(a: __m128d) -> __m128d {
-        sleef_sys::Sleef_sind2_u35sse2(a)
+        sleef_sys::Sleef_cinz_sind2_u35sse2(a)
     }
     #[target_feature(enable = "sse2")]
     unsafe fn pd_pairwise_horizontal_sum(a: __m128d) -> __m128d {
@@ -257,7 +257,7 @@ impl Simd for Avx {
     }
     #[target_feature(enable = "avx")]
     unsafe fn pd_fast_sin(a: __m256d) -> __m256d {
-        sleef_sys::Sleef_sind4_u35avx(a)
+        sleef_sys::Sleef_cinz_sind4_u35avx(a)
     }
     #[target_feature(enable = "avx")]
     unsafe fn pd_pairwise_horizontal_sum(a: __m256d) -> __m256d {
