@@ -2130,7 +2130,7 @@ checksum = "c111b5bd5695e56cffe5129854aa230b39c93a305372fdbb2668ca2394eea9f8"
 [[package]]
 name = "sleef-sys"
 version = "0.1.2"
-source = "git+https://github.com/greatest-ape/sleef-sys.git?branch=octasine#f92d87921fe90fd7acfda55f33d98d1d69100d56"
+source = "git+https://github.com/greatest-ape/sleef-sys.git?branch=octasine#f183defc9329ffe80a9f68e73a535dfaa552f22b"
 dependencies = [
  "bindgen",
  "cfg-if 0.1.10",
