@@ -97,15 +97,15 @@ If you already have any of the software mentioned below, that step can be skippe
 
 1. Install [Microsoft C++ Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/). Make sure that the Windows 10 SDK and the English language pack components are included during installation.
 2. [Install the Rust compiler](https://rustup.rs/). When prompted, choose to modify the path variable.
-4. Install [git](https://git-scm.com/downloads).
-5. Clone this repository to a folder on your computer.
-6. Build the OctaSine plugin:
+3. Install [git](https://git-scm.com/downloads).
+4. Clone this repository to a folder on your computer.
+5. Build the OctaSine plugin:
 
 ```sh
 cargo build --release -p octasine_vst2_plugin
 ```
 
-7. Copy `target\release\octasine.dll` to your VST plugin folder.
+6. Copy `target\release\octasine.dll` to your VST plugin folder.
 
 #### SIMD support
 
