@@ -37,7 +37,7 @@ Audio examples are available at [soundcloud.com/octasine](https://soundcloud.com
 
 1. Download the latest version from [the release page](https://github.com/greatest-ape/OctaSine/releases).
 2. Unzip the file.
-3. Move OctaSine.dll to your plugin folder.
+3. Move OctaSine.dll to your plugin folder. You may be promted to enter your administrative password.
 
 ### Linux
 
@@ -86,8 +86,8 @@ If you already have any of the software mentioned below, that step can be skippe
 
 1. Install [Microsoft C++ Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/). Make sure that the Windows 10 SDK and the English language pack components are included during installation.
 2. [Install the Rust compiler](https://rustup.rs/). When prompted, choose to modify the path variable.
-4. Install [git](https://git-scm.com/downloads)
-5. Clone this repository to a folder on your computer
+4. Install [git](https://git-scm.com/downloads).
+5. Clone this repository to a folder on your computer.
 6. Build the OctaSine plugin:
 
 ```sh
@@ -99,8 +99,8 @@ cargo build --release -p octasine_vst2_plugin
 #### SIMD support
 
 If you want SIMD support for better performance, before compiling OctaSine, you need to:
-* Install the nightly Rust toolchain instead
-* Install the prerequisites for a non-simd install outlined above
+* Install the nightly Rust toolchain instead.
+* Install the prerequisites for a non-simd install outlined above.
 * Install [cmake](https://cmake.org/download/). When prompted, choose the option to add cmake to the system executable path.
 * Build and install [LLVM](https://github.com/llvm/llvm-project/) __from source__.
 
@@ -136,8 +136,6 @@ cargo +nightly build --release --features "simd" -p octasine_vst2_plugin
 ```
 
 5. Copy `target/release/liboctasine.so` to your VST plugin folder 
-
-Finished!
 
 ## Copyright and license
 
