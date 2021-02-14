@@ -121,7 +121,8 @@ If you already have any of the software mentioned below, that step can be skippe
 sudo apt-get install cmake git build-essential libx11-dev libxcursor-dev libxcb-dri2-0-dev libxcb-icccm4-dev libx11-xcb-dev
 ```
 
-3. Clone this repository to a folder on your computer, e.g.,
+3. You might need to install llvm/clang dependencies too.
+4. Clone this repository to a folder on your computer, e.g.,
 
 ```sh
 mkdir -p "$HOME/Downloads"
@@ -129,13 +130,13 @@ cd "$HOME/Downloads"
 git clone https://github.com/greatest-ape/OctaSine.git
 cd OctaSine
 ```
-4. Build the OctaSine plugin:
+5. Build the OctaSine plugin:
 
 ```sh
 cargo +nightly build --release --features "simd" -p octasine_vst2_plugin
 ```
 
-5. Copy `target/release/liboctasine.so` to your VST plugin folder 
+6. Copy `target/release/liboctasine.so` to your VST plugin folder 
 
 ## Copyright and license
 
