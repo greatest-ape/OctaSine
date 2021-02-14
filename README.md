@@ -1,8 +1,19 @@
-# OctaSine
+<h1 align="center">OctaSine</h1>
 
+<p align="center">
 VST2 frequency modulation synthesizer written in Rust.
+</p>
 
-Audio examples are available at [soundcloud.com/octasine](https://soundcloud.com/octasine).
+<p align="center">
+  <strong>Downloads</strong><br>
+  <a href="https://github.com/greatest-ape/OctaSine/releases/download/v0.5.0/OctaSine-v0.5.0-macOS-Intel.zip">macOS (Intel)</a> • 
+  <a href="https://github.com/greatest-ape/OctaSine/releases/download/v0.5.0/OctaSine-v0.5.0-Windows-NoSimd.zip">Windows</a>
+</p>
+
+<p align="center">
+  <strong>Audio examples</strong><br>
+  <a href="https://soundcloud.com/octasine">SoundCloud</a>
+</p>
 
 ## Screenshot
 
