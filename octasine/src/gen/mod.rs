@@ -35,6 +35,8 @@ pub fn process_f32_runtime_select(
                             // SSE2 is always supported on x86_64
                             Sse2::process_f32(octasine, audio_buffer);
                         }
+                    } else if #[cfg(all(target_arch = "aarch64", target_feature = "neon"))] {
+                        Aarch64::process_f32(octasine, audio_buffer)
                     } else {
                         FallbackSleef::process_f32(octasine, audio_buffer);
                     }
@@ -280,6 +282,76 @@ impl Simd for Avx {
 }
 
 
+pub struct Aarch64;
+
+
+#[cfg(target_arch = "aarch64")]
+use core::arch::aarch64::*;
+
+
+// Info: https://codesuppository.blogspot.com/2015/02/sse2neonh-porting-guide-and-header-file.html
+#[cfg(all(target_arch = "aarch64", feature = "simd"))]
+impl Simd for Aarch64 {
+    type PackedDouble = float64x2_t;
+    const PD_WIDTH: usize = 2;
+
+    #[target_feature(enable = "neon")]
+    unsafe fn pd_set1(value: f64) -> float64x2_t {
+        vdupq_n_f64(value)
+    }
+    #[target_feature(enable = "neon")]
+    unsafe fn pd_loadu(source: *const f64) -> float64x2_t {
+        vld1q_f64(source)
+    }
+    #[target_feature(enable = "neon")]
+    unsafe fn pd_storeu(target: *mut f64, a: float64x2_t){
+        vst1q_f64(target, a)
+    }
+    #[target_feature(enable = "neon")]
+    unsafe fn pd_add(a: float64x2_t, b: float64x2_t) -> float64x2_t {
+        vaddq_f64(a, b)
+    }
+    #[target_feature(enable = "neon")]
+    unsafe fn pd_sub(a: float64x2_t, b: float64x2_t) -> float64x2_t {
+        vsubq_f64(a, b)
+    }
+    #[target_feature(enable = "neon")]
+    unsafe fn pd_mul(a: float64x2_t, b: float64x2_t) -> float64x2_t {
+        vmulq_f64(a, b)
+    }
+    #[target_feature(enable = "neon")]
+    unsafe fn pd_min(a: float64x2_t, b: float64x2_t) -> float64x2_t {
+        vminq_f64(a, b)
+    }
+    #[target_feature(enable = "neon")]
+    unsafe fn pd_max(a: float64x2_t, b: float64x2_t) -> float64x2_t {
+        vmaxq_f64(a, b)
+    }
+    #[target_feature(enable = "neon")]
+    unsafe fn pd_fast_sin(a: float64x2_t) -> float64x2_t {
+        sleef_sys::Sleef_finz_sind2_u35advsimd(a)
+    }
+    #[target_feature(enable = "neon")]
+    unsafe fn pd_pairwise_horizontal_sum(a: float64x2_t) -> float64x2_t {
+        vdupq_n_f64(vaddvq_f64(a)) // Needs better implementation
+    }
+    #[target_feature(enable = "neon")]
+    unsafe fn pd_distribute_left_right(l: f64, r: f64) -> float64x2_t {
+        let lr = [l, r];
+
+        vld1q_f64(&lr[0])
+    }
+    #[target_feature(enable = "neon")]
+    unsafe fn pd_first_over_zero_limit(volume: float64x2_t) -> bool {
+        let mut volume_tmp = [0.0f64; 2];
+
+        vst1q_f64(&mut volume_tmp[0], volume);
+
+        volume_tmp[0] > ZERO_VALUE_LIMIT
+    }
+}
+
+
 pub type FallbackStd = Fallback<FallbackSineStd>;
 #[cfg(feature = "simd")]
 pub type FallbackSleef = Fallback<FallbackSineSleef>;
@@ -299,12 +371,17 @@ pub type FallbackSleef = Fallback<FallbackSineSleef>;
     [
         S [ Sse2 ]
         target_feature_enable [ target_feature(enable = "sse2") ]
-        feature_gate [ cfg(feature = "simd") ]
+        feature_gate [ cfg(all(feature = "simd", target_arch = "x86_64")) ]
     ]
     [
         S [ Avx ]
         target_feature_enable [ target_feature(enable = "avx") ]
-        feature_gate [ cfg(feature = "simd") ]
+        feature_gate [ cfg(all(feature = "simd", target_arch = "x86_64")) ]
+    ]
+    [
+        S [ Aarch64 ]
+        target_feature_enable [ target_feature(enable = "neon") ]
+        feature_gate [ cfg(all(feature = "simd", target_arch = "aarch64")) ]
     ]
 )]
 mod gen {
