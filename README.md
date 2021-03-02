@@ -109,17 +109,18 @@ cargo build --release -p octasine_vst2_plugin
 
 #### SIMD support
 
-If you want SIMD support for better performance, before compiling OctaSine, you need to:
+Windows SIMD support (for better performance) is experimental. To enable it, you need to:
 * Install the nightly Rust toolchain instead.
 * Install the prerequisites for a non-simd install outlined above.
 * Install [cmake](https://cmake.org/download/). When prompted, choose the option to add cmake to the system executable path.
-* Build and install [LLVM](https://github.com/llvm/llvm-project/) __from source__.
 
 Then, build OctaSine with:
 
 ```sh
 cargo +nightly build --release --features "simd" -p octasine_vst2_plugin
 ```
+
+Afterwards, copy `target\release\octasine.dll` to your VST plugin folder.
 
 ### Linux
 
