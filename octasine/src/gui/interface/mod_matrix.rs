@@ -125,7 +125,7 @@ impl OperatorBox {
 
     fn update(&mut self, bounds: Rectangle, event: event::Event, value: f64) -> ModulationBoxChange {
         match event {
-            event::Event::Mouse(mouse::Event::CursorMoved {x, y}) => {
+            event::Event::Mouse(mouse::Event::CursorMoved { position: Point { x, y}}) => {
                 let cursor = Point::new(
                     x - bounds.x,
                     y - bounds.y,
@@ -278,7 +278,7 @@ impl ModulationBox {
     ) -> ModulationBoxChange {
         if let Some(message) = self.message.as_ref() {
             match event {
-                event::Event::Mouse(mouse::Event::CursorMoved {x, y}) => {
+                event::Event::Mouse(mouse::Event::CursorMoved { position: Point {x, y}}) => {
                     let cursor = Point::new(
                         x - bounds.x,
                         y - bounds.y,
