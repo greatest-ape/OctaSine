@@ -634,7 +634,7 @@ impl Program<Message> for Envelope {
         _cursor: Cursor,
     ) -> (event::Status, Option<Message>) {
         match event {
-            event::Event::Mouse(iced_baseview::mouse::Event::CursorMoved {x, y}) => {
+            event::Event::Mouse(iced_baseview::mouse::Event::CursorMoved { position: Point { x, y } }) => {
                 self.last_cursor_position = Point::new(x, y);
 
                 let relative_position = Point::new(
