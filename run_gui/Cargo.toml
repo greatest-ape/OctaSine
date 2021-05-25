@@ -7,4 +7,4 @@ edition = "2018"
 
 [dependencies]
 octasine = { path = "../octasine", features = ["gui"] }
-simplelog = { version = "0.9", default-features = false }
+simplelog = { version = "0.10", default-features = false }
