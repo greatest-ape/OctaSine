@@ -7,7 +7,7 @@ use crate::parameters::processing::*;
 
 
 #[derive(Default)]
-pub struct LfoTargetValues(ArrayVec<[(LfoTargetParameter, f64); NUM_LFOS]>);
+pub struct LfoTargetValues(ArrayVec<(LfoTargetParameter, f64), NUM_LFOS>);
 
 
 impl LfoTargetValues {

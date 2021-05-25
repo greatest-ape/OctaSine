@@ -20,8 +20,8 @@ harness = false
 
 [dependencies]
 arc-swap = "1"
-arrayvec = "0.5"
-array-init = "1"
+arrayvec = "0.7"
+array-init = "2"
 cfg-if = "1"
 duplicate = "0.2"
 fastrand = "1"
@@ -34,7 +34,7 @@ vst = "0.2"
 dirs = { version = "3", optional = true}
 log = { version = "0.4", optional = true, default-features = false }
 log-panics = { version = "2", optional = true }
-simplelog = { version = "0.9", optional = true, default-features = false }
+simplelog = { version = "0.10", optional = true, default-features = false }
 
 # GUI
 
