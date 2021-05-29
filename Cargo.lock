@@ -1570,7 +1570,7 @@ checksum = "1a5b3dd1c072ee7963717671d1ca129f1048fda25edea6b752bfc71ac8854170"
 
 [[package]]
 name = "octasine"
-version = "0.5.0"
+version = "0.5.1"
 dependencies = [
  "arc-swap",
  "array-init",
@@ -1600,7 +1600,7 @@ dependencies = [
 
 [[package]]
 name = "octasine_vst2_plugin"
-version = "0.5.0"
+version = "0.5.1"
 dependencies = [
  "octasine",
  "vst",
