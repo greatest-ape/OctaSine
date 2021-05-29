@@ -96,31 +96,17 @@ cd OctaSine
 If you already have any of the software mentioned below, that step can be skipped.
 
 1. Install [Microsoft C++ Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/). Make sure that the Windows 10 SDK and the English language pack components are included during installation.
-2. [Install the Rust compiler](https://rustup.rs/). When prompted, choose to modify the path variable.
-3. Install [git](https://git-scm.com/downloads).
-4. Clone this repository to a folder on your computer.
-5. Build the OctaSine plugin:
+2. [Install the Rust compiler](https://rustup.rs/). When prompted, choose the nightly toolchain and to modify the path variable.
+3. Install [cmake](https://cmake.org/download/). When prompted, choose the option to add cmake to the system executable path.
+4. Install [git](https://git-scm.com/downloads).
+5. Clone this repository to a folder on your computer.
+6. Build OctaSine:
 
-```sh
-cargo build --release -p octasine_vst2_plugin
-```
-
-6. Copy `target\release\octasine.dll` to your VST plugin folder.
-
-#### SIMD support
-
-Windows SIMD support (for better performance) is experimental. To enable it, you need to:
-* Install the nightly Rust toolchain instead.
-* Install the prerequisites for a non-simd install outlined above.
-* Install [cmake](https://cmake.org/download/). When prompted, choose the option to add cmake to the system executable path.
-
-Then, build OctaSine with:
-
-```sh
+```cmd
 cargo +nightly build --release --features "simd" -p octasine_vst2_plugin
 ```
 
-Afterwards, copy `target\release\octasine.dll` to your VST plugin folder.
+7. Copy `target\release\octasine.dll` to your VST plugin folder.
 
 ### Linux
 
