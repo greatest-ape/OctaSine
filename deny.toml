@@ -79,6 +79,7 @@ allow = [
     "CC0-1.0",
     "FTL",
     "OFL-1.1",
+    "Zlib",
     #"Apache-2.0 WITH LLVM-exception",
 ]
 # List of explictly disallowed licenses
