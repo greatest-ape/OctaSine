@@ -1,16 +1,23 @@
 # TODO
 
+## Important
+
+* GUI
+  * Dark mode
+  * Improve macOS Retina support
+  * Scrolling in dropdowns
+    * Needs to be added to baseview macOS code
+    * Other platforms?
+
 ## Less important
 
+* Record video of workflow, upload to YouTube
 * Pass through keyboard to DAW without using forked baseview
 * calculate_curve_volume_output_in_range fails on (0.0, -0.0, -0.0, -0.0),
   so likely negative zero
-* Scrolling in dropdowns
-  * Needs to be added to baseview macOS code
 * Consider updating envelope and lfo values in process benchmark too. This
   would further improve usefulness of output hashing.
 * GUI
-  * Improve macOS Retina support
   * Modulation matrix: improve creation/update logic?
   * Operator audio output indicator, either binary or volume
   * Master audio output indicator
