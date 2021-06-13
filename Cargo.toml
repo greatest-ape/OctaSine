@@ -20,7 +20,7 @@ members = [
 baseview = { git = "https://github.com/greatest-ape/baseview.git", branch = "octasine" }
 
 [profile.release]
-debug = true
+debug = false
 lto = true
 opt-level = 3
 
@@ -28,6 +28,6 @@ opt-level = 3
 opt-level = 3
 
 [profile.bench]
-debug = true
+debug = false
 lto = true
 opt-level = 3
