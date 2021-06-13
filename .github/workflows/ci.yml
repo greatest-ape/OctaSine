@@ -25,6 +25,18 @@ jobs:
         sudo apt update
         sudo apt install libx11-xcb-dev libxcb-dri2-0-dev libgl1-mesa-dev libxcb-icccm4-dev libxcursor-dev
       if: contains(matrix.os, 'ubuntu')
+
+    # Required for bindgen on Windows, see https://github.com/rust-lang/rust-bindgen/issues/1797
+    - name: Install LLVM and Clang
+      uses: KyleMayes/install-llvm-action@v1
+      if: contains(matrix.os, 'windows')
+      with:
+        version: "11.0"
+        directory: ${{ runner.temp }}/llvm
+    - name: Set LIBCLANG_PATH
+      run: echo "LIBCLANG_PATH=$((gcm clang).source -replace "clang.exe")" >> $env:GITHUB_ENV
+      if: contains(matrix.os, 'windows')
+
     - name: Install latest nightly Rust
       uses: actions-rs/toolchain@v1
       with:
