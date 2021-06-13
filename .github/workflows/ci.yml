@@ -48,4 +48,4 @@ jobs:
     - name: Run tests
       run: cargo +nightly test --workspace --features "simd" --verbose
     - name: Build plugin in release mode
-      run: cargo +nightly build --release --features "simd" -p octasine_vst2_plugin --verbose
+      run: cargo +nightly build --release --features "simd" -p octasine_vst2_plugin --verbose && du -hs target/release/*
