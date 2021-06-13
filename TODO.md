@@ -14,8 +14,6 @@
 
 * Record video of workflow, upload to YouTube
 * Pass through keyboard to DAW without using forked baseview
-* calculate_curve_volume_output_in_range fails on (0.0, -0.0, -0.0, -0.0),
-  so likely negative zero
 * Consider updating envelope and lfo values in process benchmark too. This
   would further improve usefulness of output hashing.
 * GUI
