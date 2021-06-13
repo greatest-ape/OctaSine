@@ -139,6 +139,12 @@ cd OctaSine
 cargo +nightly build --release --features "simd" -p octasine_vst2_plugin
 ```
 
+If unsuccessful, please try building without sleef SIMD acceleration:
+
+```sh
+cargo +nightly build --release -p octasine_vst2_plugin
+```
+
 6. Copy `target/release/liboctasine.so` to your VST plugin folder 
 
 ## Copyright and license
