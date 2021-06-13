@@ -211,6 +211,9 @@ mod tests {
             if values.0.is_nan() || values.1.is_nan() || values.2.is_nan() || values.3.is_nan(){
                 return TestResult::discard();
             }
+            if values.0.is_sign_negative() || values.1.is_sign_negative() || values.2.is_sign_negative() || values.3.is_sign_negative(){
+                return TestResult::discard();
+            }
 
             if !valid_volume(start_volume) || !valid_volume(end_volume) {
                 return TestResult::discard();
