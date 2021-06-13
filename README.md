@@ -5,6 +5,11 @@ VST2 frequency modulation synthesizer written in Rust.
 </p>
 
 <p align="center">
+  <strong>Official website</strong><br>
+  <a href="https://octasine.com">octasine.com</a>
+</p>
+
+<p align="center">
   <strong>Download latest</strong><br>
   <a href="https://github.com/greatest-ape/OctaSine/releases/download/v0.5.1/OctaSine-v0.5.1-macOS-Intel.zip">macOS (Intel)</a> • 
   <a href="https://github.com/greatest-ape/OctaSine/releases/download/v0.5.1/OctaSine-v0.5.1-Windows.zip">Windows</a>
