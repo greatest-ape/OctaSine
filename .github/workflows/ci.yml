@@ -20,6 +20,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+
     - name: Install baseview dependencies
       run: |
         sudo apt update
@@ -43,9 +44,19 @@ jobs:
           toolchain: nightly
           override: true
           components: clippy
-    - name: Deactivate lto and debug symbols in workspace
-      run: sed -i '' -E -e 's/^(lto|debug) = true$//g' Cargo.toml
+
+    - name: Deactivate lto and debug symbols (Unix)
+      run: sed -E -i '.backup' -e 's/^(lto|debug) = true$//g' Cargo.toml
+      if: contains(matrix.os, 'ubuntu') || contains(matrix.os, 'macos')
+    - name: Deactivate lto and debug symbols (Windows)
+      run: (Get-Content Cargo.toml) -replace '(lto|debug) = true', '' | Out-File -encoding ASCII Cargo.toml
+      if: contains(matrix.os, 'windows')
+
     - name: Run tests
       run: cargo +nightly test --workspace --features "simd" --verbose
     - name: Build plugin in release mode
-      run: cargo +nightly build --release --features "simd" -p octasine_vst2_plugin --verbose && du -hs target/release/*
+      run: cargo +nightly build --release --features "simd" -p octasine_vst2_plugin --verbose
+
+    - name: Display size of build artifacts
+      run: du -hs target/release/*
+      if: contains(matrix.os, 'ubuntu') || contains(matrix.os, 'macos')
