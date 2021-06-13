@@ -43,7 +43,9 @@ jobs:
           toolchain: nightly
           override: true
           components: clippy
-    - name: Build plugin in debug mode
-      run: cargo +nightly build --features "simd" -p octasine_vst2_plugin --verbose
+    - name: Deactivate lto and debug symbols in workspace
+      run: sed -i '' -E 's/^(lto|debug) = true$//g' Cargo.toml
     - name: Run tests
       run: cargo +nightly test --workspace --features "simd" --verbose
+    - name: Build plugin in release mode
+      run: cargo +nightly build --release --features "simd" -p octasine_vst2_plugin --verbose
