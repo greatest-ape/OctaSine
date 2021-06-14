@@ -147,6 +147,10 @@ cargo +nightly build --release -p octasine_vst2_plugin
 
 6. Copy `target/release/liboctasine.so` to your VST plugin folder 
 
+## Architecture
+
+See [ARCHITECTURE.md](ARCHITECTURE.md).
+
 ## Copyright and license
 
 Copyright (C) 2019-2021 Joakim Frostegård
