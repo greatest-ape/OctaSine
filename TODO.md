@@ -13,6 +13,7 @@
 
 ## Less important
 
+* Debian 10 / other Linux distros CI
 * Record video of workflow, upload to YouTube
 * Pass through keyboard to DAW without using forked baseview
 * Consider updating envelope and lfo values in process benchmark too. This
