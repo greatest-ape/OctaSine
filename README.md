@@ -22,7 +22,7 @@ VST2 frequency modulation synthesizer written in Rust.
 
 ## Screenshot
 
-![Screenshot of OctaSine](screenshots/screenshot-1.png)
+![Screenshot of OctaSine](images/screenshot-1.png)
 
 ## About
 
