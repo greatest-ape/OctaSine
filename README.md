@@ -121,10 +121,21 @@ If you already have any of the software mentioned below, that step can be skippe
 2. Install dependencies, e.g.,
 
 ```sh
-sudo apt-get install cmake git build-essential libx11-dev libxcursor-dev libxcb-dri2-0-dev libxcb-icccm4-dev libx11-xcb-dev
+sudo apt-get install cmake git build-essential libx11-dev libxcursor-dev libxcb-dri2-0-dev libxcb-icccm4-dev libx11-xcb-dev 
 ```
 
-3. You might need to install llvm/clang dependencies too.
+On Debian 10, you might need to install some more dependencies:
+
+```sh
+sudo apt-get install pkg-config libfreetype6-dev libexpat1-dev
+```
+
+3. You might need to install llvm/clang dependencies too, e.g.,
+
+```sh
+sudo apt-get install llvm clang
+```
+
 4. Clone this repository to a folder on your computer, e.g.,
 
 ```sh
@@ -139,7 +150,7 @@ cd OctaSine
 cargo +nightly build --release --features "simd" -p octasine_vst2_plugin
 ```
 
-If unsuccessful, please try building without sleef SIMD acceleration:
+If build fails, please try building without sleef SIMD acceleration:
 
 ```sh
 cargo +nightly build --release -p octasine_vst2_plugin
