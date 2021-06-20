@@ -171,6 +171,8 @@ impl Plugin for OctaSine {
         log_panics::init();
 
         info!("init");
+
+        info!("os info: {}", ::os_info::get());
     }
 
     fn process_events(&mut self, events: &Events) {
