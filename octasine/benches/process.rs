@@ -1,5 +1,6 @@
 use std::time::Instant;
 
+use colored::*;
 use vst::buffer::AudioBuffer;
 use vst::plugin::PluginParameters;
 use sha2::{Digest, Sha256};
@@ -47,33 +48,76 @@ use octasine::gen::AudioGen;
 /// Output hash (first 8 bytes):    ac fd ce 1e a2 7b 79 e1 
 /// Speed compared to std fallback: 2.3127007x
 /// ```
-fn main(){
+fn main() -> Result<(), ()> {
+    let mut all_hashes_match = true;
+
     #[allow(unused_variables)]
-    let fallback_std = benchmark("fallback (std)", octasine::gen::FallbackStd::process_f32);
+    let (success, fallback_std) = benchmark(
+        "fallback (std)",
+        "ad 0d 1d 04 5e 38 95 7f ",
+        octasine::gen::FallbackStd::process_f32
+    );
+
+    all_hashes_match &= success;
 
     #[cfg(feature = "simd")]
     {
+        // Don't forget trailing space
+        let hash = "ac fd ce 1e a2 7b 79 e1 ";
+
         {
-            let r = benchmark("fallback (sleef)", octasine::gen::FallbackSleef::process_f32);
+            let (success, r) = benchmark(
+                "fallback (sleef)",
+                hash,
+                octasine::gen::FallbackSleef::process_f32
+            );
+
+            all_hashes_match &= success;
+
             println!("Speed compared to std fallback: {}x", fallback_std / r);
         }
 
         if is_x86_feature_detected!("sse2") {
-            let r = benchmark("sse2", octasine::gen::Sse2::process_f32);
+            let (success, r) = benchmark(
+                "sse2",
+                hash,
+                octasine::gen::Sse2::process_f32
+            );
+
+            all_hashes_match &= success;
+
             println!("Speed compared to std fallback: {}x", fallback_std / r);
         }
         if is_x86_feature_detected!("avx") {
-            let r = benchmark("avx", octasine::gen::Avx::process_f32);
+            let (success, r) = benchmark(
+                "avx",
+                hash,
+                octasine::gen::Avx::process_f32
+            );
+
+            all_hashes_match &= success;
+
             println!("Speed compared to std fallback: {}x", fallback_std / r);
         }
+    }
+
+    if all_hashes_match {
+        println!("\n{}", "All output hashes matched".green());
+
+        Ok(())
+    } else {
+        println!("\n{}", "Output hashes didn't match".red());
+
+        Err(())
     }
 }
 
 
 fn benchmark(
     name: &str,
+    expected_hash: &str,
     process_fn: unsafe fn(&mut OctaSine, &mut AudioBuffer<f32>)
-) -> f32 {
+) -> (bool, f32) {
     let mut octasine = OctaSine::default();
 
     let envelope_duration_parameters =
@@ -168,19 +212,20 @@ fn benchmark(
 
     let result_hash: String = results.finalize().iter()
         .take(8)
-        .enumerate()
-        .map(|(i, byte)| {
-            if i == 0 {
-                format!("Output hash (first 8 bytes):    {:02x} ", byte)
-            } else if i % 8 == 0 {
-                format!("\n                              {:02x} ", byte)
-            } else {
-                format!("{:02x} ", byte)
-            }
-        })
+        .map(|byte| format!("{:02x} ", byte))
         .collect();
 
-    println!("{}", result_hash);
+    println!("Output hash (first 8 bytes):    {}", result_hash);
 
-    processing_time_per_sample
+    let success = result_hash == expected_hash;
+
+    let hash_match = if success {
+        "yes".green()
+    } else {
+        "no".red()
+    };
+
+    println!("Hash match:                     {}", hash_match);
+
+    (success, processing_time_per_sample)
 }
