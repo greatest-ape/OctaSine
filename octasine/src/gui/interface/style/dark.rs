@@ -3,21 +3,21 @@ use iced_baseview::{
 };
 
 const SURFACE: Color = Color::from_rgb(
-    0x40 as f32 / 255.0,
-    0x40 as f32 / 255.0,
-    0x40 as f32 / 255.0,
+    0x20 as f32 / 255.0,
+    0x20 as f32 / 255.0,
+    0x20 as f32 / 255.0,
 );
 
 const ACTIVE: Color = Color::from_rgb(
-    0x80 as f32 / 255.0,
-    0x80 as f32 / 255.0,
-    0x80 as f32 / 255.0,
+    0x90 as f32 / 255.0,
+    0x90 as f32 / 255.0,
+    0x90 as f32 / 255.0,
 );
 
 const HOVERED: Color = Color::from_rgb(
-    0x70 as f32 / 255.0,
-    0x70 as f32 / 255.0,
-    0x70 as f32 / 255.0,
+    0x80 as f32 / 255.0,
+    0x80 as f32 / 255.0,
+    0x80 as f32 / 255.0,
 );
 
 pub struct Container;
@@ -25,8 +25,8 @@ pub struct Container;
 impl container::StyleSheet for Container {
     fn style(&self) -> container::Style {
         container::Style {
-            background: Color::from_rgb8(0x36, 0x39, 0x3F).into(),
-            text_color: Color::from_rgb8(0xAA, 0xAA, 0xAA).into(),
+            background: Color::from_rgb8(0x0, 0x0, 0x0).into(),
+            text_color: Color::from_rgb8(0x90, 0x90, 0x90).into(),
             ..container::Style::default()
         }
     }
@@ -86,26 +86,32 @@ pub struct PickList;
 impl pick_list::StyleSheet for PickList {
     fn menu(&self) -> iced_style::menu::Style {
         iced_style::menu::Style {
+	    background: Background::from(ACTIVE),
             selected_background: Background::from(SURFACE),
             ..Default::default()
         }
     }
     fn active(&self) -> pick_list::Style {
 	pick_list::Style {
+	    background: Background::from(ACTIVE),
+	    border_color: ACTIVE,
             ..Default::default()
 	}
     }
     fn hovered(&self) -> pick_list::Style {
-        Default::default()
+	pick_list::Style {
+	    background: Background::from(HOVERED),
+	    border_color: ACTIVE,
+            ..Default::default()
+	}
     }
 }
 
 pub(super) mod knob {
     use iced_audio::knob::*;
-    use iced_baseview::Color;
+    use super::*;
 
     pub const BORDER: Color = Color::from_rgb(0.315, 0.315, 0.315);
-    pub const LIGHT_BACK: Color = Color::from_rgb(0.97, 0.97, 0.97);
 
     pub const TICK_TIER_1: Color = Color {
         r: 0.56,
@@ -129,7 +135,7 @@ pub(super) mod knob {
     pub const KNOB_BACK_HOVER: Color = Color::from_rgb(0.96, 0.96, 0.96);
 
     const ACTIVE_CIRCLE_STYLE: CircleStyle = CircleStyle {
-        color: LIGHT_BACK,
+        color: ACTIVE,
         border_width: 1.0,
         border_color: BORDER,
         notch: NotchShape::Circle(CircleNotch {
