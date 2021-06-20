@@ -12,6 +12,7 @@ use crate::parameters::values::{
 };
 use crate::GuiSyncHandle;
 
+use super::style::Theme;
 use super::{Message, FONT_BOLD, LINE_HEIGHT};
 
 const KNOB_SIZE: Length = Length::Units(LINE_HEIGHT * 2);
@@ -194,6 +195,7 @@ pub fn lfo_amount<H: GuiSyncHandle>(
 
 #[derive(Debug, Clone)]
 pub struct OctaSineKnob<P: ParameterValue> {
+    theme: Theme,
     knob_state: knob::State,
     text_marks: Option<text_marks::Group>,
     tick_marks: Option<tick_marks::Group>,
@@ -243,6 +245,7 @@ impl<P: ParameterValue> OctaSineKnob<P> {
         };
 
         Self {
+            theme: Theme::default(),
             knob_state,
             text_marks: None,
             tick_marks: Some(tick_marks),
@@ -280,7 +283,8 @@ impl<P: ParameterValue> OctaSineKnob<P> {
             Message::ParameterChange(parameter_index, value.as_f32() as f64)
         })
         .size(Length::from(KNOB_SIZE))
-        .modifier_keys(modifier_keys);
+        .modifier_keys(modifier_keys)
+        .style(self.theme);
 
         if let Some(text_marks) = self.text_marks.as_ref() {
             knob = knob.text_marks(text_marks);

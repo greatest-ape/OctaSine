@@ -13,10 +13,12 @@ use crate::GuiSyncHandle;
 use super::boolean_picker::{self, BooleanPicker};
 use super::envelope::Envelope;
 use super::knob::{self, OctaSineKnob};
+use super::style::Theme;
 use super::{Message, FONT_SIZE, FONT_VERY_BOLD, LINE_HEIGHT};
 
 pub struct OperatorWidgets {
     index: usize,
+    theme: Theme,
     pub volume: OctaSineKnob<OperatorVolumeValue>,
     pub panning: OctaSineKnob<OperatorPanningValue>,
     pub wave_type: BooleanPicker<OperatorWaveTypeValue>,
@@ -52,6 +54,7 @@ impl OperatorWidgets {
 
         Self {
             index: operator_index,
+            theme: Theme::default(),
             volume: knob::operator_volume(sync_handle, volume, operator_index),
             panning: knob::operator_panning(sync_handle, panning),
             wave_type: boolean_picker::wave_type(sync_handle, wave),
@@ -131,26 +134,30 @@ impl OperatorWidgets {
                                     &mut self.zoom_out,
                                     Text::new("−").font(FONT_VERY_BOLD),
                                 )
-                                .on_press(Message::EnvelopeZoomOut(self.index)),
+                                .on_press(Message::EnvelopeZoomOut(self.index))
+                                .style(self.theme),
                             )
                             .push(Space::with_width(Length::Units(3)))
                             .push(
                                 Button::new(&mut self.zoom_in, Text::new("+").font(FONT_VERY_BOLD))
-                                    .on_press(Message::EnvelopeZoomIn(self.index)),
+                                    .on_press(Message::EnvelopeZoomIn(self.index))
+                                    .style(self.theme),
                             ),
                     )
                     .push(Space::with_height(Length::Units(LINE_HEIGHT * 1 - 10)))
                     .push(
                         Row::new().push(
                             Button::new(&mut self.zoom_to_fit, Text::new("FIT"))
-                                .on_press(zoom_to_fit_message),
+                                .on_press(zoom_to_fit_message)
+                                .style(self.theme),
                         ),
                     )
                     .push(Space::with_height(Length::Units(LINE_HEIGHT * 1 - 10)))
                     .push(
                         Row::new().push(
                             Button::new(&mut self.sync_viewport, Text::new("DIST"))
-                                .on_press(sync_viewports_message),
+                                .on_press(sync_viewports_message)
+                                .style(self.theme),
                         ),
                     ),
             );

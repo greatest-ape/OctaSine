@@ -3,7 +3,7 @@ use iced_baseview::{
     Align, Column, Element, HorizontalAlignment, Length, Row, Space, Text, VerticalAlignment,
 };
 
-use super::{style::OctaSineStyle, GuiSyncHandle, Message, FONT_SIZE, FONT_VERY_BOLD, LINE_HEIGHT};
+use super::{style::Theme, GuiSyncHandle, Message, FONT_SIZE, FONT_VERY_BOLD, LINE_HEIGHT};
 
 #[derive(Clone, PartialEq, Eq)]
 struct Preset {
@@ -21,6 +21,7 @@ pub struct PresetPicker {
     state: pick_list::State<Preset>,
     options: Vec<Preset>,
     selected: usize,
+    theme: Theme,
 }
 
 impl PresetPicker {
@@ -37,6 +38,7 @@ impl PresetPicker {
             state: pick_list::State::default(),
             options,
             selected,
+            theme: Theme::default(),
         }
     }
 
@@ -53,7 +55,7 @@ impl PresetPicker {
             |option| Message::PresetChange(option.index),
         )
         .text_size(FONT_SIZE)
-        .style(OctaSineStyle)
+        .style(self.theme)
         // Will be limited by parent, but setting a size here ensures that
         // it doesn't shrink too much when choice strings are short.
         .width(Length::Units(LINE_HEIGHT * 12 - 3));

@@ -76,10 +76,12 @@ pub enum Message {
     EnvelopeZoomOut(usize),
     EnvelopeZoomToFit(usize),
     EnvelopeSyncViewports { viewport_factor: f32, x_offset: f32 },
+    StyleChange(style::Theme),
 }
 
 pub struct OctaSineIcedApplication<H: GuiSyncHandle> {
     sync_handle: H,
+    theme: style::Theme,
     toggle_info_state: button::State,
     show_version: bool,
     master_volume: OctaSineKnob<MasterVolumeValue>,
@@ -239,6 +241,8 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
     type Flags = H;
 
     fn new(sync_handle: Self::Flags) -> (Self, Command<Self::Message>) {
+        let theme = style::Theme::default();
+
         let master_volume = knob::master_volume(&sync_handle);
         let master_frequency = knob::master_frequency(&sync_handle);
         let modulation_matrix = ModulationMatrix::new(&sync_handle);
@@ -264,6 +268,7 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
 
         let app = Self {
             sync_handle,
+            theme,
             toggle_info_state: button::State::default(),
             show_version: false,
             master_volume,
@@ -368,6 +373,9 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
             Message::PresetChange(index) => {
                 self.sync_handle.set_preset_index(index);
             }
+            Message::StyleChange(theme) => {
+                self.theme = theme;
+            }
         }
 
         Command::none()
@@ -409,7 +417,8 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                                 Row::new()
                                     .push(
                                         Button::new(&mut self.toggle_info_state, Text::new("INFO"))
-                                            .on_press(Message::ToggleInfo),
+                                            .on_press(Message::ToggleInfo)
+                                            .style(self.theme),
                                     )
                                     .push(Space::with_width(Length::Units(LINE_HEIGHT)))
                                     .push(
@@ -501,6 +510,9 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                     ),
             );
 
-        Container::new(all).into()
+        Container::new(all)
+            .height(Length::Fill)
+            .style(self.theme)
+            .into()
     }
 }

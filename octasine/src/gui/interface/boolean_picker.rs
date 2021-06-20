@@ -6,6 +6,7 @@ use crate::parameters::values::{
 };
 use crate::GuiSyncHandle;
 
+use super::style::Theme;
 use super::{Message, FONT_BOLD, FONT_SIZE, LINE_HEIGHT};
 
 pub fn wave_type<H: GuiSyncHandle>(
@@ -43,6 +44,7 @@ pub fn lfo_mode<H: GuiSyncHandle>(
 pub struct BooleanPicker<P: ParameterValue> {
     title: String,
     parameter_index: usize,
+    theme: Theme,
     selected: P::Value,
     choices: Vec<P::Value>,
 }
@@ -63,6 +65,7 @@ where
         Self {
             title: title.into(),
             parameter_index,
+            theme: Theme::default(),
             choices,
             selected,
         }
@@ -92,7 +95,8 @@ where
             )
             .size(FONT_SIZE)
             .text_size(FONT_SIZE)
-            .spacing(4);
+            .spacing(4)
+            .style(self.theme);
 
             radios = radios.push(radio);
         }
