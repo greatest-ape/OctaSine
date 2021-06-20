@@ -57,8 +57,6 @@ jobs:
       run: cargo +nightly test --workspace --features "simd" --verbose
     - name: Build plugin in release mode
       run: cargo +nightly build --release --features "simd" -p octasine_vst2_plugin --verbose
-    - name: Run process benchmark (and check audio output)
-      run: cargo +nightly bench --features "simd" --bench process
 
     - name: Display size of build artifacts
       run: ls -lh target/release

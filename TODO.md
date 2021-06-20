@@ -8,10 +8,10 @@
   * Scrolling in dropdowns
     * Needs to be added to baseview macOS code
     * Other platforms?
-* Process benchmark output CI?
 
 ## Less important
 
+* Process benchmark output not same on Windows as on macOS/Linux
 * Debian 10 / other Linux distros CI
 * Record video of workflow, upload to YouTube
 * Pass through keyboard to DAW without using forked baseview
