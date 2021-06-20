@@ -1,4 +1,3 @@
-use git_testament::{git_testament, CommitKind};
 use iced_baseview::{
     button, renderer, Button, Color, Column, Container, Element, Font, HorizontalAlignment, Length,
     Point, Row, Space, Text, VerticalAlignment,
@@ -6,7 +5,7 @@ use iced_baseview::{
 use iced_baseview::{executor, Align, Application, Command, Subscription, WindowSubs};
 
 use crate::parameters::values::{MasterFrequencyValue, MasterVolumeValue};
-use crate::GuiSyncHandle;
+use crate::{get_git_info, GuiSyncHandle};
 
 mod boolean_picker;
 mod divider;
@@ -47,26 +46,9 @@ const OPEN_SANS_SEMI_BOLD: &[u8] =
 const OPEN_SANS_BOLD: &[u8] = include_bytes!("../../../../contrib/open-sans/OpenSans-Bold.ttf");
 
 fn get_info_text() -> String {
-    git_testament!(GIT_TESTAMENT);
-
-    let version = match GIT_TESTAMENT.commit {
-        CommitKind::NoRepository(crate_version, _build_date) => crate_version.into(),
-        CommitKind::NoCommit(crate_version, _build_date) => crate_version.into(),
-        CommitKind::NoTags(commit, _commit_date) => commit.chars().take(7).collect::<String>(),
-        CommitKind::FromTag(tag, commit, _commit_date, _distance) => {
-            format!("{} ({})", tag, commit.chars().take(7).collect::<String>())
-        }
-    };
-
-    let dirty = if GIT_TESTAMENT.modifications.is_empty() {
-        ""
-    } else {
-        " (dirty)"
-    };
-
     format!(
-        "Copyright © 2019-2021 Joakim Frostegård\nBuild: {}{}",
-        version, dirty
+        "Copyright © 2019-2021 Joakim Frostegård\nBuild: {}",
+        get_git_info()
     )
 }
 

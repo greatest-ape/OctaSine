@@ -8,7 +8,7 @@ edition = "2018"
 [features]
 default = ["logging", "gui"]
 simd = ["sleef-sys"]
-logging = ["dirs", "log", "log-panics", "os_info", "simplelog"]
+logging = ["dirs", "git-testament", "log", "log-panics", "os_info", "simplelog"]
 gui = ["baseview", "iced_baseview", "iced_style", "iced_audio", "palette", "raw-window-handle", "git-testament"]
 
 [lib]

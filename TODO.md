@@ -2,7 +2,6 @@
 
 ## Important
 
-* Write build version and OS info to log file
 * GUI
   * Dark mode
   * Improve macOS Retina support

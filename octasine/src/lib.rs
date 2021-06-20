@@ -172,7 +172,8 @@ impl Plugin for OctaSine {
 
         info!("init");
 
-        info!("os info: {}", ::os_info::get());
+        info!("OS: {}", ::os_info::get());
+        info!("OctaSine build: {}", get_git_info());
     }
 
     fn process_events(&mut self, events: &Events) {
@@ -371,6 +372,30 @@ fn crate_version_to_vst_format(crate_version: String) -> i32 {
     format!("{:0<4}", crate_version.replace(".", ""))
         .parse()
         .expect("convert crate version to i32")
+}
+
+#[cfg(any(feature = "gui", feature = "logging"))]
+fn get_git_info() -> String {
+    use git_testament::{git_testament, CommitKind};
+
+    git_testament!(GIT_TESTAMENT);
+
+    let version = match GIT_TESTAMENT.commit {
+        CommitKind::NoRepository(crate_version, _build_date) => crate_version.into(),
+        CommitKind::NoCommit(crate_version, _build_date) => crate_version.into(),
+        CommitKind::NoTags(commit, _commit_date) => commit.chars().take(7).collect::<String>(),
+        CommitKind::FromTag(tag, commit, _commit_date, _distance) => {
+            format!("{} ({})", tag, commit.chars().take(7).collect::<String>())
+        }
+    };
+
+    let dirty = if GIT_TESTAMENT.modifications.is_empty() {
+        ""
+    } else {
+        " (dirty)"
+    };
+
+    format!("{}{}", version, dirty)
 }
 
 #[cfg(test)]
