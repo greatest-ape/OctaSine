@@ -148,10 +148,7 @@ impl <H: GuiSyncHandle> OctaSineIcedApplication<H> {
             3 => self.operator_1.panning.set_value(v),
             4 => self.operator_1.wave_type.set_value(v),
             5 => self.operator_1.mod_index.set_value(v),
-            6 => {
-                self.operator_1.feedback.set_value(v);
-                self.modulation_matrix.set_operator_1_feedback(value);
-            },
+            6 => self.operator_1.feedback.set_value(v),
             7 => self.operator_1.frequency_ratio.set_value(v),
             8 => self.operator_1.frequency_free.set_value(v),
             9 => self.operator_1.frequency_fine.set_value(v),
@@ -162,7 +159,7 @@ impl <H: GuiSyncHandle> OctaSineIcedApplication<H> {
             14 => self.operator_1.envelope.set_release_duration(v),
             15 => {
                 self.operator_2.volume.set_value(v);
-                    self.modulation_matrix.set_operator_2_volume(value);
+                self.modulation_matrix.set_operator_2_volume(value);
             },
             16 => self.operator_2.panning.set_value(v),
             17 => self.operator_2.wave_type.set_value(v),
@@ -173,10 +170,7 @@ impl <H: GuiSyncHandle> OctaSineIcedApplication<H> {
                 self.modulation_matrix.set_operator_2_additive(v);
             },
             19 => self.operator_2.mod_index.set_value(v),
-            20 => {
-                self.operator_2.feedback.set_value(v);
-                self.modulation_matrix.set_operator_2_feedback(value);
-            },
+            20 => self.operator_2.feedback.set_value(v),
             21 => self.operator_2.frequency_ratio.set_value(v),
             22 => self.operator_2.frequency_free.set_value(v),
             23 => self.operator_2.frequency_fine.set_value(v),
@@ -199,10 +193,7 @@ impl <H: GuiSyncHandle> OctaSineIcedApplication<H> {
             },
             33 => self.modulation_matrix.set_operator_3_target(v),
             34 => self.operator_3.mod_index.set_value(v),
-            35 => {
-                self.operator_3.feedback.set_value(v);
-                self.modulation_matrix.set_operator_3_feedback(value)
-            },
+            35 => self.operator_3.feedback.set_value(v),
             36 => self.operator_3.frequency_ratio.set_value(v),
             37 => self.operator_3.frequency_free.set_value(v),
             38 => self.operator_3.frequency_fine.set_value(v),
@@ -225,10 +216,7 @@ impl <H: GuiSyncHandle> OctaSineIcedApplication<H> {
             },
             48 => self.modulation_matrix.set_operator_4_target(v),
             49 => self.operator_4.mod_index.set_value(v),
-            50 => {
-                self.operator_4.feedback.set_value(v);
-                self.modulation_matrix.set_operator_4_feedback(value);
-            },
+            50 => self.operator_4.feedback.set_value(v),
             51 => self.operator_4.frequency_ratio.set_value(v),
             52 => self.operator_4.frequency_free.set_value(v),
             53 => self.operator_4.frequency_fine.set_value(v),

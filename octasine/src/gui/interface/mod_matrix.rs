@@ -484,10 +484,6 @@ struct ModulationMatrixParameters {
     operator_2_additive: f64,
     operator_3_additive: f64,
     operator_4_additive: f64,
-    operator_1_feedback: f64,
-    operator_2_feedback: f64,
-    operator_3_feedback: f64,
-    operator_4_feedback: f64,
     operator_1_volume: f64,
     operator_2_volume: f64,
     operator_3_volume: f64,
@@ -507,11 +503,6 @@ impl ModulationMatrixParameters {
         let operator_3_additive = sync_handle.get_parameter(32);
         let operator_4_additive = sync_handle.get_parameter(47);
 
-        let operator_1_feedback = sync_handle.get_parameter(6);
-        let operator_2_feedback = sync_handle.get_parameter(20);
-        let operator_3_feedback = sync_handle.get_parameter(35);
-        let operator_4_feedback = sync_handle.get_parameter(50);
-
         let operator_1_volume = sync_handle.get_parameter(2);
         let operator_2_volume = sync_handle.get_parameter(15);
         let operator_3_volume = sync_handle.get_parameter(29);
@@ -523,10 +514,6 @@ impl ModulationMatrixParameters {
             operator_2_additive,
             operator_3_additive,
             operator_4_additive,
-            operator_1_feedback,
-            operator_2_feedback,
-            operator_3_feedback,
-            operator_4_feedback,
             operator_1_volume,
             operator_2_volume,
             operator_3_volume,
@@ -852,30 +839,6 @@ impl ModulationMatrix {
 
     pub fn set_operator_2_additive(&mut self, value: f64){
         self.parameters.operator_2_additive = value;
-
-        self.update_components();
-    }
-
-    pub fn set_operator_4_feedback(&mut self, value: f64){
-        self.parameters.operator_4_feedback = value;
-
-        self.update_components();
-    }
-
-    pub fn set_operator_3_feedback(&mut self, value: f64){
-        self.parameters.operator_3_feedback = value;
-
-        self.update_components();
-    }
-
-    pub fn set_operator_2_feedback(&mut self, value: f64){
-        self.parameters.operator_2_feedback = value;
-
-        self.update_components();
-    }
-
-    pub fn set_operator_1_feedback(&mut self, value: f64){
-        self.parameters.operator_1_feedback = value;
 
         self.update_components();
     }
