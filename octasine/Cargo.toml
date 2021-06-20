@@ -23,7 +23,7 @@ arc-swap = "1"
 arrayvec = "0.7"
 array-init = "2"
 cfg-if = "1"
-duplicate = "0.2"
+duplicate = "0.3"
 fastrand = "1"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
