@@ -2,9 +2,7 @@ pub const INTERPOLATION_SAMPLES_PER_STEP: u8 = 4;
 pub const INTERPOLATION_STEPS: u8 = 8;
 pub const INTERPOLATION_STEPS_FLOAT: f64 = INTERPOLATION_STEPS as f64;
 
-
 use crate::common::TimeCounter;
-
 
 #[derive(Debug, Copy, Clone)]
 pub struct InterpolatableProcessingValue {
@@ -14,7 +12,6 @@ pub struct InterpolatableProcessingValue {
     samples_remaining: u8,
     last_time: TimeCounter,
 }
-
 
 impl InterpolatableProcessingValue {
     pub fn new(value: f64) -> Self {
@@ -32,7 +29,7 @@ impl InterpolatableProcessingValue {
     pub fn get_value<F: FnMut(f64)>(
         &mut self,
         time: TimeCounter,
-        callback_on_advance: &mut F
+        callback_on_advance: &mut F,
     ) -> f64 {
         if self.steps_remaining == 0 || INTERPOLATION_STEPS == 0 {
             return self.current_value;
@@ -57,10 +54,12 @@ impl InterpolatableProcessingValue {
     }
 
     #[allow(clippy::float_cmp)]
-    pub fn set_value(&mut self, value: f64){
+    pub fn set_value(&mut self, value: f64) {
         if INTERPOLATION_STEPS == 0 {
             self.current_value = value;
-        } else if value == self.current_value || (value - self.current_value).abs() <= ::std::f64::EPSILON {
+        } else if value == self.current_value
+            || (value - self.current_value).abs() <= ::std::f64::EPSILON
+        {
             self.steps_remaining = 0;
         } else {
             // Restart stepping process

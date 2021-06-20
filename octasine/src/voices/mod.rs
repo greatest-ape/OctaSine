@@ -9,14 +9,11 @@ pub mod lfos;
 use envelopes::*;
 use lfos::*;
 
-
 #[derive(Debug, Copy, Clone)]
 pub struct VoiceDuration(pub f64);
 
-
 #[derive(Debug, Copy, Clone)]
 pub struct KeyVelocity(pub f64);
-
 
 impl Default for KeyVelocity {
     fn default() -> Self {
@@ -24,24 +21,20 @@ impl Default for KeyVelocity {
     }
 }
 
-
 impl KeyVelocity {
     pub fn from_midi_velocity(midi_velocity: u8) -> Self {
         if midi_velocity == 0 {
             Self::default()
-        }
-        else {
+        } else {
             Self(f64::from(midi_velocity) / 127.0)
         }
     }
 }
 
-
 #[derive(Debug, Copy, Clone)]
 pub struct MidiPitch {
     frequency_factor: f64,
 }
-
 
 impl MidiPitch {
     pub fn new(midi_pitch: u8) -> Self {
@@ -61,13 +54,11 @@ impl MidiPitch {
     }
 }
 
-
 #[derive(Debug, Copy, Clone)]
 pub struct VoiceOperator {
     pub last_phase: Phase,
     pub volume_envelope: VoiceOperatorVolumeEnvelope,
 }
-
 
 impl Default for VoiceOperator {
     fn default() -> Self {
@@ -77,7 +68,6 @@ impl Default for VoiceOperator {
         }
     }
 }
-
 
 #[derive(Debug, Clone)]
 pub struct Voice {
@@ -89,7 +79,6 @@ pub struct Voice {
     pub operators: [VoiceOperator; NUM_OPERATORS],
     pub lfos: [VoiceLfo; NUM_LFOS],
 }
-
 
 impl Voice {
     pub fn new(midi_pitch: MidiPitch) -> Self {
@@ -107,16 +96,16 @@ impl Voice {
     }
 
     #[inline]
-    pub fn press_key(&mut self, velocity: u8){
+    pub fn press_key(&mut self, velocity: u8) {
         self.key_velocity = KeyVelocity::from_midi_velocity(velocity);
         self.key_pressed = true;
         self.duration = VoiceDuration(0.0);
 
-        for operator in self.operators.iter_mut(){
+        for operator in self.operators.iter_mut() {
             operator.volume_envelope.restart();
         }
 
-        for lfo in self.lfos.iter_mut(){
+        for lfo in self.lfos.iter_mut() {
             lfo.restart();
         }
 
@@ -124,18 +113,19 @@ impl Voice {
     }
 
     #[inline]
-    pub fn release_key(&mut self){
+    pub fn release_key(&mut self) {
         self.key_pressed = false;
     }
 
     #[inline]
     pub fn deactivate_if_envelopes_ended(&mut self) {
-        let all_envelopes_ended = self.operators.iter().all(|voice_operator|
-            voice_operator.volume_envelope.is_ended()
-        );
+        let all_envelopes_ended = self
+            .operators
+            .iter()
+            .all(|voice_operator| voice_operator.volume_envelope.is_ended());
 
         if all_envelopes_ended {
-            for lfo in self.lfos.iter_mut(){
+            for lfo in self.lfos.iter_mut() {
                 lfo.stop();
             }
 

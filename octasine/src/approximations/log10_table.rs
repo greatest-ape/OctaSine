@@ -1,14 +1,12 @@
 const TABLE_SIZE: usize = 1 << 5;
 const TABLE_SIZE_MINUS_ONE_FLOAT: f64 = (TABLE_SIZE - 1) as f64;
 
-
 /// Log10 based lookup table for envelope curve, with linear interpolation
-/// 
+///
 /// Maps inputs 0.0-1.0 to output 0.0-1.0
 pub struct Log10Table {
     table: [f64; TABLE_SIZE],
 }
-
 
 impl Log10Table {
     #[inline]
@@ -28,8 +26,7 @@ impl Log10Table {
         let approximation_low = self.table[index_floor];
         let approximation_high = self.table[index_ceil.min(TABLE_SIZE - 1)];
 
-        approximation_low + index_fract *
-            (approximation_high - approximation_low)
+        approximation_low + index_fract * (approximation_high - approximation_low)
     }
 }
 
@@ -39,26 +36,24 @@ impl Default for Log10Table {
 
         let increment = 1.0 / TABLE_SIZE_MINUS_ONE_FLOAT;
 
-        for (i, v) in table.iter_mut().enumerate(){
+        for (i, v) in table.iter_mut().enumerate() {
             *v = Self::reference(i as f64 * increment);
         }
 
-        Self {
-            table
-        }
+        Self { table }
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use quickcheck::{TestResult, quickcheck};
+    use quickcheck::{quickcheck, TestResult};
 
     use super::*;
 
     #[test]
-    fn test_table_calculate(){
+    fn test_table_calculate() {
         fn prop(value: f64) -> TestResult {
-            if value > 1.0 || value < 0.0 || value.is_nan(){
+            if value > 1.0 || value < 0.0 || value.is_nan() {
                 return TestResult::discard();
             }
 

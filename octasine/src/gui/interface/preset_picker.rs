@@ -1,8 +1,9 @@
-use iced_baseview::{Element, Text, Column, Align, HorizontalAlignment, Length, Space, Row, VerticalAlignment};
 use iced_baseview::widget::{pick_list, PickList};
+use iced_baseview::{
+    Align, Column, Element, HorizontalAlignment, Length, Row, Space, Text, VerticalAlignment,
+};
 
-use super::{FONT_SIZE, FONT_VERY_BOLD, GuiSyncHandle, LINE_HEIGHT, Message, style::OctaSineStyle};
-
+use super::{style::OctaSineStyle, GuiSyncHandle, Message, FONT_SIZE, FONT_VERY_BOLD, LINE_HEIGHT};
 
 #[derive(Clone, PartialEq, Eq)]
 struct Preset {
@@ -10,13 +11,11 @@ struct Preset {
     title: String,
 }
 
-
 impl ToString for Preset {
     fn to_string(&self) -> String {
         self.title.clone()
     }
 }
-
 
 pub struct PresetPicker {
     state: pick_list::State<Preset>,
@@ -24,17 +23,14 @@ pub struct PresetPicker {
     selected: usize,
 }
 
-
 impl PresetPicker {
     pub fn new<H: GuiSyncHandle>(sync_handle: &H) -> Self {
         let (selected, names) = sync_handle.get_presets();
 
-        let options = names.into_iter()
+        let options = names
+            .into_iter()
             .enumerate()
-            .map(|(index, title)| Preset {
-                index,
-                title
-            })
+            .map(|(index, title)| Preset { index, title })
             .collect();
 
         Self {
@@ -49,19 +45,19 @@ impl PresetPicker {
             .horizontal_alignment(HorizontalAlignment::Center)
             .vertical_alignment(VerticalAlignment::Center)
             .font(FONT_VERY_BOLD);
-        
+
         let list = PickList::new(
             &mut self.state,
             &self.options[..],
             Some(self.options[self.selected].clone()),
-            |option| Message::PresetChange(option.index)
+            |option| Message::PresetChange(option.index),
         )
-            .text_size(FONT_SIZE)
-            .style(OctaSineStyle)
-            // Will be limited by parent, but setting a size here ensures that
-            // it doesn't shrink too much when choice strings are short.
-            .width(Length::Units(LINE_HEIGHT * 12 - 3));
-        
+        .text_size(FONT_SIZE)
+        .style(OctaSineStyle)
+        // Will be limited by parent, but setting a size here ensures that
+        // it doesn't shrink too much when choice strings are short.
+        .width(Length::Units(LINE_HEIGHT * 12 - 3));
+
         Column::new()
             .width(Length::Units(LINE_HEIGHT * 12))
             .align_items(Align::Center)
@@ -70,7 +66,7 @@ impl PresetPicker {
                     .align_items(Align::Center)
                     .push(title)
                     .push(Space::with_width(Length::Units(LINE_HEIGHT / 2)))
-                    .push(list)
+                    .push(list),
             )
             .into()
     }

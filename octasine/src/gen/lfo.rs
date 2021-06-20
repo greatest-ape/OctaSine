@@ -2,21 +2,15 @@ use arrayvec::ArrayVec;
 
 use crate::common::*;
 use crate::constants::*;
-use crate::voices::lfos::VoiceLfo;
 use crate::parameters::processing::*;
-
+use crate::voices::lfos::VoiceLfo;
 
 #[derive(Default)]
 pub struct LfoTargetValues(ArrayVec<(LfoTargetParameter, f64), NUM_LFOS>);
 
-
 impl LfoTargetValues {
-    fn set_or_add(
-        &mut self,
-        target: LfoTargetParameter,
-        value: f64
-    ){
-        for (t, v) in self.0.iter_mut(){
+    fn set_or_add(&mut self, target: LfoTargetParameter, value: f64) {
+        for (t, v) in self.0.iter_mut() {
             if *t == target {
                 *v += value;
 
@@ -30,14 +24,13 @@ impl LfoTargetValues {
     pub fn get(&self, target: LfoTargetParameter) -> Option<f64> {
         for (t, v) in self.0.iter() {
             if *t == target {
-                return Some(*v)
+                return Some(*v);
             }
         }
 
         None
     }
 }
-
 
 pub fn get_lfo_target_values(
     lfo_parameters: &mut [ProcessingParameterLfo; NUM_LFOS],
@@ -48,12 +41,18 @@ pub fn get_lfo_target_values(
 ) -> LfoTargetValues {
     let mut lfo_values = LfoTargetValues::default();
 
-    for (lfo_index, (voice_lfo, lfo_parameter)) in voice_lfos.iter_mut()
-        .zip(lfo_parameters.iter_mut()).enumerate().rev()
+    for (lfo_index, (voice_lfo, lfo_parameter)) in voice_lfos
+        .iter_mut()
+        .zip(lfo_parameters.iter_mut())
+        .enumerate()
+        .rev()
     {
         let amount = lfo_parameter.amount.get_value_with_lfo_addition(
             time,
-            lfo_values.get(LfoTargetParameter::Lfo(lfo_index, LfoTargetLfoParameter::Amount))
+            lfo_values.get(LfoTargetParameter::Lfo(
+                lfo_index,
+                LfoTargetLfoParameter::Amount,
+            )),
         );
 
         if amount.abs() < ZERO_VALUE_LIMIT {
@@ -65,15 +64,24 @@ pub fn get_lfo_target_values(
 
         let shape = lfo_parameter.shape.get_value_with_lfo_addition(
             (),
-            lfo_values.get(LfoTargetParameter::Lfo(lfo_index, LfoTargetLfoParameter::Shape))
+            lfo_values.get(LfoTargetParameter::Lfo(
+                lfo_index,
+                LfoTargetLfoParameter::Shape,
+            )),
         );
         let frequency_ratio = lfo_parameter.frequency_ratio.get_value_with_lfo_addition(
             (),
-            lfo_values.get(LfoTargetParameter::Lfo(lfo_index, LfoTargetLfoParameter::FrequencyRatio))
+            lfo_values.get(LfoTargetParameter::Lfo(
+                lfo_index,
+                LfoTargetLfoParameter::FrequencyRatio,
+            )),
         );
         let frequency_free = lfo_parameter.frequency_free.get_value_with_lfo_addition(
             (),
-            lfo_values.get(LfoTargetParameter::Lfo(lfo_index, LfoTargetLfoParameter::FrequencyFree))
+            lfo_values.get(LfoTargetParameter::Lfo(
+                lfo_index,
+                LfoTargetLfoParameter::FrequencyFree,
+            )),
         );
 
         let bpm = if bpm_sync {

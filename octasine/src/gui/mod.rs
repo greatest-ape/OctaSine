@@ -1,7 +1,7 @@
 use baseview::{Size, WindowOpenOptions, WindowScalePolicy};
 use iced_baseview::{IcedWindow, Settings};
-use vst::editor::Editor;
 use raw_window_handle::{HasRawWindowHandle, RawWindowHandle};
+use vst::editor::Editor;
 
 use super::GuiSyncHandle;
 use crate::constants::PLUGIN_NAME;
@@ -10,18 +10,15 @@ mod interface;
 
 use interface::OctaSineIcedApplication;
 
-
 pub const GUI_WIDTH: usize = 14 * 66;
 pub const GUI_HEIGHT: usize = 14 * 58;
-
 
 pub struct Gui<H: GuiSyncHandle> {
     sync_state: H,
     opened: bool,
 }
 
-
-impl <H: GuiSyncHandle> Gui<H> {
+impl<H: GuiSyncHandle> Gui<H> {
     pub fn new(sync_state: H) -> Self {
         Self {
             sync_state,
@@ -29,35 +26,32 @@ impl <H: GuiSyncHandle> Gui<H> {
         }
     }
 
-    fn get_iced_baseview_settings(
-        sync_handle: H,
-    ) -> Settings<H> {
+    fn get_iced_baseview_settings(sync_handle: H) -> Settings<H> {
         Settings {
             window: WindowOpenOptions {
                 size: Size::new(GUI_WIDTH as f64, GUI_HEIGHT as f64),
                 scale: WindowScalePolicy::SystemScaleFactor,
                 title: PLUGIN_NAME.to_string(),
             },
-            flags: sync_handle
+            flags: sync_handle,
         }
     }
 
-    pub fn open_parented(parent: ParentWindow, sync_handle: H){
+    pub fn open_parented(parent: ParentWindow, sync_handle: H) {
         IcedWindow::<OctaSineIcedApplication<_>>::open_parented(
             &parent,
-            Self::get_iced_baseview_settings(sync_handle)
+            Self::get_iced_baseview_settings(sync_handle),
         );
     }
 
-    pub fn open_blocking(sync_handle: H){
+    pub fn open_blocking(sync_handle: H) {
         let settings = Self::get_iced_baseview_settings(sync_handle);
 
         IcedWindow::<OctaSineIcedApplication<_>>::open_blocking(settings);
     }
 }
 
-
-impl <H: GuiSyncHandle>Editor for Gui<H> {
+impl<H: GuiSyncHandle> Editor for Gui<H> {
     fn size(&self) -> (i32, i32) {
         (GUI_WIDTH as i32, GUI_HEIGHT as i32)
     }
@@ -85,9 +79,7 @@ impl <H: GuiSyncHandle>Editor for Gui<H> {
     }
 }
 
-
 pub struct ParentWindow(pub *mut ::core::ffi::c_void);
-
 
 unsafe impl HasRawWindowHandle for ParentWindow {
     #[cfg(target_os = "macos")]

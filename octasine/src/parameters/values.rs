@@ -3,7 +3,6 @@ use crate::constants::*;
 
 use crate::parameters::utils::*;
 
-
 macro_rules! impl_envelope_duration_value_conversion {
     ($struct_name:ident) => {
         impl ParameterValue for $struct_name {
@@ -18,8 +17,7 @@ macro_rules! impl_envelope_duration_value_conversion {
             }
             fn from_sync(value: f64) -> Self {
                 // Force some decay to avoid clicks
-                Self((value * ENVELOPE_MAX_DURATION)
-                    .max(ENVELOPE_MIN_DURATION))
+                Self((value * ENVELOPE_MAX_DURATION).max(ENVELOPE_MIN_DURATION))
             }
             fn to_sync(self) -> f64 {
                 self.0 / ENVELOPE_MAX_DURATION
@@ -35,9 +33,7 @@ macro_rules! impl_envelope_duration_value_conversion {
             fn from_text(text: String) -> Option<Self> {
                 text.parse::<f64>()
                     .map(|v| {
-                        let v = v
-                            .min(ENVELOPE_MAX_DURATION)
-                            .max(ENVELOPE_MIN_DURATION);
+                        let v = v.min(ENVELOPE_MAX_DURATION).max(ENVELOPE_MIN_DURATION);
 
                         Self(v)
                     })
@@ -46,7 +42,6 @@ macro_rules! impl_envelope_duration_value_conversion {
         }
     };
 }
-
 
 macro_rules! impl_identity_value_conversion {
     ($struct_name:ident) => {
@@ -76,7 +71,6 @@ macro_rules! impl_identity_value_conversion {
     };
 }
 
-
 pub trait ParameterValue: Sized {
     type Value: Copy;
 
@@ -92,17 +86,14 @@ pub trait ParameterValue: Sized {
     }
 }
 
-
 #[derive(Debug, Clone, Copy)]
 pub struct MasterVolumeValue(f64);
-
 
 impl Default for MasterVolumeValue {
     fn default() -> Self {
         Self(DEFAULT_MASTER_VOLUME)
     }
 }
-
 
 impl ParameterValue for MasterVolumeValue {
     type Value = f64;
@@ -127,17 +118,14 @@ impl ParameterValue for MasterVolumeValue {
     }
 }
 
-
 #[derive(Debug, Clone, Copy)]
 pub struct MasterFrequencyValue(f64);
-
 
 impl Default for MasterFrequencyValue {
     fn default() -> Self {
         Self(DEFAULT_MASTER_FREQUENCY)
     }
 }
-
 
 impl ParameterValue for MasterFrequencyValue {
     type Value = f64;
@@ -151,7 +139,7 @@ impl ParameterValue for MasterFrequencyValue {
     fn from_sync(sync: f64) -> Self {
         Self(map_parameter_value_to_value_with_steps(
             &MASTER_FREQUENCY_STEPS,
-            sync
+            sync,
         ))
     }
     fn to_sync(self) -> f64 {
@@ -169,10 +157,8 @@ impl ParameterValue for MasterFrequencyValue {
     }
 }
 
-
 #[derive(Debug, Clone, Copy)]
 pub struct OperatorVolumeValue(f64);
-
 
 impl OperatorVolumeValue {
     pub fn new(index: usize) -> Self {
@@ -183,7 +169,6 @@ impl OperatorVolumeValue {
         }
     }
 }
-
 
 impl ParameterValue for OperatorVolumeValue {
     type Value = f64;
@@ -207,23 +192,18 @@ impl ParameterValue for OperatorVolumeValue {
         Self::from_sync(value).format()
     }
     fn from_text(text: String) -> Option<Self> {
-        text.parse::<f64>()
-            .map(|v| Self(v.max(0.0).min(2.0)))
-            .ok()
+        text.parse::<f64>().map(|v| Self(v.max(0.0).min(2.0))).ok()
     }
 }
 
-
 #[derive(Debug, Clone, Copy)]
 pub struct OperatorAdditiveValue(f64);
-
 
 impl Default for OperatorAdditiveValue {
     fn default() -> Self {
         Self(DEFAULT_OPERATOR_ADDITIVE_FACTOR)
     }
 }
-
 
 impl ParameterValue for OperatorAdditiveValue {
     type Value = f64;
@@ -248,17 +228,14 @@ impl ParameterValue for OperatorAdditiveValue {
     }
 }
 
-
 #[derive(Debug, Clone, Copy)]
 pub struct OperatorFrequencyRatioValue(f64);
-
 
 impl Default for OperatorFrequencyRatioValue {
     fn default() -> Self {
         Self(DEFAULT_OPERATOR_FREQUENCY_RATIO)
     }
 }
-
 
 impl ParameterValue for OperatorFrequencyRatioValue {
     type Value = f64;
@@ -282,23 +259,20 @@ impl ParameterValue for OperatorFrequencyRatioValue {
         Self::from_sync(value).format()
     }
     fn from_text(text: String) -> Option<Self> {
-        text.parse::<f64>().ok().map(|value|
-            Self(round_to_step(&OPERATOR_RATIO_STEPS[..], value))
-        )
+        text.parse::<f64>()
+            .ok()
+            .map(|value| Self(round_to_step(&OPERATOR_RATIO_STEPS[..], value)))
     }
 }
 
-
 #[derive(Debug, Clone, Copy)]
 pub struct OperatorFrequencyFreeValue(f64);
-
 
 impl Default for OperatorFrequencyFreeValue {
     fn default() -> Self {
         Self(DEFAULT_OPERATOR_FREQUENCY_FREE)
     }
 }
-
 
 impl ParameterValue for OperatorFrequencyFreeValue {
     type Value = f64;
@@ -310,7 +284,10 @@ impl ParameterValue for OperatorFrequencyFreeValue {
         self.0
     }
     fn from_sync(sync: f64) -> Self {
-        Self(map_parameter_value_to_value_with_steps(&OPERATOR_FREE_STEPS, sync))
+        Self(map_parameter_value_to_value_with_steps(
+            &OPERATOR_FREE_STEPS,
+            sync,
+        ))
     }
     fn to_sync(self) -> f64 {
         map_value_to_parameter_value_with_steps(&OPERATOR_FREE_STEPS, self.0)
@@ -323,17 +300,14 @@ impl ParameterValue for OperatorFrequencyFreeValue {
     }
 }
 
-
 #[derive(Debug, Clone, Copy)]
 pub struct OperatorFrequencyFineValue(f64);
-
 
 impl Default for OperatorFrequencyFineValue {
     fn default() -> Self {
         Self(DEFAULT_OPERATOR_FREQUENCY_FINE)
     }
 }
-
 
 impl ParameterValue for OperatorFrequencyFineValue {
     type Value = f64;
@@ -345,7 +319,10 @@ impl ParameterValue for OperatorFrequencyFineValue {
         self.0
     }
     fn from_sync(sync: f64) -> Self {
-        Self(map_parameter_value_to_value_with_steps(&OPERATOR_FINE_STEPS, sync))
+        Self(map_parameter_value_to_value_with_steps(
+            &OPERATOR_FINE_STEPS,
+            sync,
+        ))
     }
     fn to_sync(self) -> f64 {
         map_value_to_parameter_value_with_steps(&OPERATOR_FINE_STEPS, self.0)
@@ -358,17 +335,14 @@ impl ParameterValue for OperatorFrequencyFineValue {
     }
 }
 
-
 #[derive(Debug, Clone, Copy)]
 pub struct OperatorFeedbackValue(f64);
-
 
 impl Default for OperatorFeedbackValue {
     fn default() -> Self {
         Self(DEFAULT_OPERATOR_FEEDBACK)
     }
 }
-
 
 impl ParameterValue for OperatorFeedbackValue {
     type Value = f64;
@@ -393,17 +367,14 @@ impl ParameterValue for OperatorFeedbackValue {
     }
 }
 
-
 #[derive(Debug, Clone, Copy)]
 pub struct OperatorModulationIndexValue(f64);
-
 
 impl Default for OperatorModulationIndexValue {
     fn default() -> Self {
         Self(DEFAULT_OPERATOR_MODULATION_INDEX)
     }
 }
-
 
 impl ParameterValue for OperatorModulationIndexValue {
     type Value = f64;
@@ -415,7 +386,10 @@ impl ParameterValue for OperatorModulationIndexValue {
         self.0
     }
     fn from_sync(sync: f64) -> Self {
-        Self(map_parameter_value_to_value_with_steps(&OPERATOR_BETA_STEPS[..], sync))
+        Self(map_parameter_value_to_value_with_steps(
+            &OPERATOR_BETA_STEPS[..],
+            sync,
+        ))
     }
     fn to_sync(self) -> f64 {
         map_value_to_parameter_value_with_steps(&OPERATOR_BETA_STEPS[..], self.0)
@@ -428,17 +402,14 @@ impl ParameterValue for OperatorModulationIndexValue {
     }
 }
 
-
 #[derive(Debug, Clone, Copy)]
 pub struct OperatorWaveTypeValue(pub WaveType);
-
 
 impl Default for OperatorWaveTypeValue {
     fn default() -> Self {
         Self(DEFAULT_OPERATOR_WAVE_TYPE)
     }
 }
-
 
 impl ParameterValue for OperatorWaveTypeValue {
     type Value = WaveType;
@@ -474,7 +445,7 @@ impl ParameterValue for OperatorWaveTypeValue {
     fn from_text(text: String) -> Option<Self> {
         let value = text.to_lowercase();
 
-        if value.contains("sin"){
+        if value.contains("sin") {
             Some(OperatorWaveTypeValue(WaveType::Sine))
         } else if value.contains("noise") {
             Some(OperatorWaveTypeValue(WaveType::WhiteNoise))
@@ -484,10 +455,8 @@ impl ParameterValue for OperatorWaveTypeValue {
     }
 }
 
-
 #[derive(Debug, Clone, Copy)]
 pub struct OperatorAttackDurationValue(f64);
-
 
 impl Default for OperatorAttackDurationValue {
     fn default() -> Self {
@@ -495,13 +464,10 @@ impl Default for OperatorAttackDurationValue {
     }
 }
 
-
 impl_envelope_duration_value_conversion!(OperatorAttackDurationValue);
-
 
 #[derive(Debug, Clone, Copy)]
 pub struct OperatorDecayDurationValue(f64);
-
 
 impl Default for OperatorDecayDurationValue {
     fn default() -> Self {
@@ -509,13 +475,10 @@ impl Default for OperatorDecayDurationValue {
     }
 }
 
-
 impl_envelope_duration_value_conversion!(OperatorDecayDurationValue);
-
 
 #[derive(Debug, Clone, Copy)]
 pub struct OperatorReleaseDurationValue(f64);
-
 
 impl Default for OperatorReleaseDurationValue {
     fn default() -> Self {
@@ -523,13 +486,10 @@ impl Default for OperatorReleaseDurationValue {
     }
 }
 
-
 impl_envelope_duration_value_conversion!(OperatorReleaseDurationValue);
-
 
 #[derive(Debug, Clone, Copy)]
 pub struct OperatorAttackVolumeValue(f64);
-
 
 impl Default for OperatorAttackVolumeValue {
     fn default() -> Self {
@@ -537,13 +497,10 @@ impl Default for OperatorAttackVolumeValue {
     }
 }
 
-
 impl_identity_value_conversion!(OperatorAttackVolumeValue);
-
 
 #[derive(Debug, Clone, Copy)]
 pub struct OperatorDecayVolumeValue(f64);
-
 
 impl Default for OperatorDecayVolumeValue {
     fn default() -> Self {
@@ -551,20 +508,16 @@ impl Default for OperatorDecayVolumeValue {
     }
 }
 
-
 impl_identity_value_conversion!(OperatorDecayVolumeValue);
-
 
 #[derive(Debug, Clone, Copy)]
 pub struct OperatorPanningValue(f64);
-
 
 impl Default for OperatorPanningValue {
     fn default() -> Self {
         Self(DEFAULT_OPERATOR_PANNING)
     }
 }
-
 
 impl ParameterValue for OperatorPanningValue {
     type Value = f64;
@@ -597,17 +550,14 @@ impl ParameterValue for OperatorPanningValue {
     }
 }
 
-
 #[derive(Debug, Clone, Copy)]
 pub struct Operator3ModulationTargetValue(pub usize);
-
 
 impl Default for Operator3ModulationTargetValue {
     fn default() -> Self {
         Self(DEFAULT_OPERATOR_3_MOD_TARGET)
     }
 }
-
 
 impl ParameterValue for Operator3ModulationTargetValue {
     type Value = usize;
@@ -631,7 +581,7 @@ impl ParameterValue for Operator3ModulationTargetValue {
         Self::from_sync(value).format()
     }
     fn from_text(text: String) -> Option<Self> {
-        if let Ok(value) = text.parse::<usize>(){
+        if let Ok(value) = text.parse::<usize>() {
             if value == 1 || value == 2 {
                 return Some(Self(value - 1));
             }
@@ -641,17 +591,14 @@ impl ParameterValue for Operator3ModulationTargetValue {
     }
 }
 
-
 #[derive(Debug, Clone, Copy)]
 pub struct Operator4ModulationTargetValue(usize);
-
 
 impl Default for Operator4ModulationTargetValue {
     fn default() -> Self {
         Self(DEFAULT_OPERATOR_4_MOD_TARGET)
     }
 }
-
 
 impl ParameterValue for Operator4ModulationTargetValue {
     type Value = usize;
@@ -675,7 +622,7 @@ impl ParameterValue for Operator4ModulationTargetValue {
         Self::from_sync(value).format()
     }
     fn from_text(text: String) -> Option<Self> {
-        if let Ok(value) = text.parse::<usize>(){
+        if let Ok(value) = text.parse::<usize>() {
             if value == 1 || value == 2 || value == 3 {
                 return Some(Self(value - 1));
             }
@@ -685,17 +632,14 @@ impl ParameterValue for Operator4ModulationTargetValue {
     }
 }
 
-
 #[derive(Debug, Clone, Copy)]
 pub struct Lfo1TargetParameterValue(pub LfoTargetParameter);
-
 
 impl Default for Lfo1TargetParameterValue {
     fn default() -> Self {
         Self(LfoTargetParameter::Master(LfoTargetMasterParameter::Volume))
     }
 }
-
 
 impl ParameterValue for Lfo1TargetParameterValue {
     type Value = LfoTargetParameter;
@@ -709,7 +653,7 @@ impl ParameterValue for Lfo1TargetParameterValue {
     fn from_sync(sync: f64) -> Self {
         Self(map_parameter_value_to_step(
             get_lfo_target_parameters(0),
-            sync
+            sync,
         ))
     }
     fn to_sync(self) -> f64 {
@@ -723,17 +667,14 @@ impl ParameterValue for Lfo1TargetParameterValue {
     }
 }
 
-
 #[derive(Debug, Clone, Copy)]
 pub struct Lfo2TargetParameterValue(pub LfoTargetParameter);
-
 
 impl Default for Lfo2TargetParameterValue {
     fn default() -> Self {
         Self(LfoTargetParameter::Master(LfoTargetMasterParameter::Volume))
     }
 }
-
 
 impl ParameterValue for Lfo2TargetParameterValue {
     type Value = LfoTargetParameter;
@@ -747,7 +688,7 @@ impl ParameterValue for Lfo2TargetParameterValue {
     fn from_sync(sync: f64) -> Self {
         Self(map_parameter_value_to_step(
             get_lfo_target_parameters(1),
-            sync
+            sync,
         ))
     }
     fn to_sync(self) -> f64 {
@@ -761,17 +702,14 @@ impl ParameterValue for Lfo2TargetParameterValue {
     }
 }
 
-
 #[derive(Debug, Clone, Copy)]
 pub struct Lfo3TargetParameterValue(pub LfoTargetParameter);
-
 
 impl Default for Lfo3TargetParameterValue {
     fn default() -> Self {
         Self(LfoTargetParameter::Master(LfoTargetMasterParameter::Volume))
     }
 }
-
 
 impl ParameterValue for Lfo3TargetParameterValue {
     type Value = LfoTargetParameter;
@@ -785,7 +723,7 @@ impl ParameterValue for Lfo3TargetParameterValue {
     fn from_sync(sync: f64) -> Self {
         Self(map_parameter_value_to_step(
             get_lfo_target_parameters(2),
-            sync
+            sync,
         ))
     }
     fn to_sync(self) -> f64 {
@@ -799,17 +737,14 @@ impl ParameterValue for Lfo3TargetParameterValue {
     }
 }
 
-
 #[derive(Debug, Clone, Copy)]
 pub struct Lfo4TargetParameterValue(pub LfoTargetParameter);
-
 
 impl Default for Lfo4TargetParameterValue {
     fn default() -> Self {
         Self(LfoTargetParameter::Master(LfoTargetMasterParameter::Volume))
     }
 }
-
 
 impl ParameterValue for Lfo4TargetParameterValue {
     type Value = LfoTargetParameter;
@@ -823,7 +758,7 @@ impl ParameterValue for Lfo4TargetParameterValue {
     fn from_sync(sync: f64) -> Self {
         Self(map_parameter_value_to_step(
             get_lfo_target_parameters(3),
-            sync
+            sync,
         ))
     }
     fn to_sync(self) -> f64 {
@@ -837,17 +772,14 @@ impl ParameterValue for Lfo4TargetParameterValue {
     }
 }
 
-
 #[derive(Debug, Clone, Copy)]
 pub struct LfoShapeValue(pub LfoShape);
-
 
 impl Default for LfoShapeValue {
     fn default() -> Self {
         Self(DEFAULT_LFO_SHAPE)
     }
 }
-
 
 impl ParameterValue for LfoShapeValue {
     type Value = LfoShape;
@@ -877,7 +809,7 @@ impl ParameterValue for LfoShapeValue {
         Self::from_sync(value).format()
     }
     fn from_text(text: String) -> Option<Self> {
-        match text.to_lowercase().as_ref(){
+        match text.to_lowercase().as_ref() {
             "triangle" => Some(Self(LfoShape::Triangle)),
             "saw" => Some(Self(LfoShape::Saw)),
             "reverse saw" => Some(Self(LfoShape::ReverseSaw)),
@@ -888,17 +820,14 @@ impl ParameterValue for LfoShapeValue {
     }
 }
 
-
 #[derive(Debug, Clone, Copy)]
 pub struct LfoModeValue(pub LfoMode);
-
 
 impl Default for LfoModeValue {
     fn default() -> Self {
         Self(DEFAULT_LFO_MODE)
     }
 }
-
 
 impl ParameterValue for LfoModeValue {
     type Value = LfoMode;
@@ -925,7 +854,7 @@ impl ParameterValue for LfoModeValue {
         Self::from_sync(value).format()
     }
     fn from_text(text: String) -> Option<Self> {
-        match text.to_lowercase().as_ref(){
+        match text.to_lowercase().as_ref() {
             "once" => Some(Self(LfoMode::Once)),
             "forever" => Some(Self(LfoMode::Forever)),
             _ => None,
@@ -933,18 +862,14 @@ impl ParameterValue for LfoModeValue {
     }
 }
 
-
-
 #[derive(Debug, Clone, Copy)]
 pub struct LfoBpmSyncValue(pub bool);
-
 
 impl Default for LfoBpmSyncValue {
     fn default() -> Self {
         Self(true)
     }
 }
-
 
 impl ParameterValue for LfoBpmSyncValue {
     type Value = bool;
@@ -976,25 +901,22 @@ impl ParameterValue for LfoBpmSyncValue {
         Self::from_sync(value).format()
     }
     fn from_text(text: String) -> Option<Self> {
-        match text.to_lowercase().as_ref(){
+        match text.to_lowercase().as_ref() {
             "true" | "on" => Some(Self(true)),
             "false" | "off" => Some(Self(false)),
-            _ => None
+            _ => None,
         }
     }
 }
 
-
 #[derive(Debug, Clone, Copy)]
 pub struct LfoFrequencyRatioValue(pub f64);
-
 
 impl Default for LfoFrequencyRatioValue {
     fn default() -> Self {
         Self(1.0)
     }
 }
-
 
 impl ParameterValue for LfoFrequencyRatioValue {
     type Value = f64;
@@ -1006,7 +928,10 @@ impl ParameterValue for LfoFrequencyRatioValue {
         self.0
     }
     fn from_sync(sync: f64) -> Self {
-        Self(map_parameter_value_to_step(&LFO_FREQUENCY_RATIO_STEPS, sync))
+        Self(map_parameter_value_to_step(
+            &LFO_FREQUENCY_RATIO_STEPS,
+            sync,
+        ))
     }
     fn to_sync(self) -> f64 {
         map_step_to_parameter_value(&LFO_FREQUENCY_RATIO_STEPS, self.0)
@@ -1022,17 +947,14 @@ impl ParameterValue for LfoFrequencyRatioValue {
     }
 }
 
-
 #[derive(Debug, Clone, Copy)]
 pub struct LfoFrequencyFreeValue(pub f64);
-
 
 impl Default for LfoFrequencyFreeValue {
     fn default() -> Self {
         Self(1.0)
     }
 }
-
 
 impl ParameterValue for LfoFrequencyFreeValue {
     type Value = f64;
@@ -1044,7 +966,10 @@ impl ParameterValue for LfoFrequencyFreeValue {
         self.0
     }
     fn from_sync(sync: f64) -> Self {
-        Self(map_parameter_value_to_value_with_steps(&LFO_FREQUENCY_FREE_STEPS, sync))
+        Self(map_parameter_value_to_value_with_steps(
+            &LFO_FREQUENCY_FREE_STEPS,
+            sync,
+        ))
     }
     fn to_sync(self) -> f64 {
         map_value_to_parameter_value_with_steps(&LFO_FREQUENCY_FREE_STEPS, self.0)
@@ -1060,18 +985,14 @@ impl ParameterValue for LfoFrequencyFreeValue {
     }
 }
 
-
-
 #[derive(Debug, Clone, Copy)]
 pub struct LfoAmountValue(pub f64);
-
 
 impl Default for LfoAmountValue {
     fn default() -> Self {
         Self(0.0)
     }
 }
-
 
 impl ParameterValue for LfoAmountValue {
     type Value = f64;
@@ -1083,7 +1004,10 @@ impl ParameterValue for LfoAmountValue {
         self.0
     }
     fn from_sync(sync: f64) -> Self {
-        Self(map_parameter_value_to_value_with_steps(&LFO_AMOUNT_STEPS[..], sync))
+        Self(map_parameter_value_to_value_with_steps(
+            &LFO_AMOUNT_STEPS[..],
+            sync,
+        ))
     }
     fn to_sync(self) -> f64 {
         map_value_to_parameter_value_with_steps(&LFO_AMOUNT_STEPS[..], self.0)

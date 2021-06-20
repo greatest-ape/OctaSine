@@ -1,8 +1,7 @@
-use iced_baseview::{Background, Color};
 use iced_baseview::widget::pick_list;
+use iced_baseview::{Background, Color};
 
 pub struct OctaSineStyle;
-
 
 impl pick_list::StyleSheet for OctaSineStyle {
     fn menu(&self) -> iced_style::menu::Style {

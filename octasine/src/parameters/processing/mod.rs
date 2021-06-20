@@ -3,10 +3,9 @@ use array_init::array_init;
 mod interpolatable_value;
 pub mod parameters;
 
-use crate::constants::*;
 use super::values::*;
+use crate::constants::*;
 use parameters::*;
-
 
 pub trait ProcessingParameter {
     type Value;
@@ -17,7 +16,7 @@ pub trait ProcessingParameter {
     fn get_value_with_lfo_addition(
         &mut self,
         extra_data: Self::ExtraData,
-        lfo_addition: Option<f64>
+        lfo_addition: Option<f64>,
     ) -> Self::Value;
 }
 
@@ -27,7 +26,6 @@ pub struct ProcessingParameters {
     pub operators: [ProcessingParameterOperator; NUM_OPERATORS],
     pub lfos: [ProcessingParameterLfo; NUM_LFOS],
 }
-
 
 impl Default for ProcessingParameters {
     fn default() -> Self {
@@ -40,10 +38,9 @@ impl Default for ProcessingParameters {
     }
 }
 
-
 #[allow(clippy::len_without_is_empty)]
 impl ProcessingParameters {
-    pub fn set_from_sync(&mut self, index: usize, value: f64){
+    pub fn set_from_sync(&mut self, index: usize, value: f64) {
         match index {
             0 => self.master_volume.set_from_sync(value),
             1 => self.master_frequency.set_from_sync(value),
@@ -55,11 +52,26 @@ impl ProcessingParameters {
             7 => self.operators[0].frequency_ratio.set_from_sync(value),
             8 => self.operators[0].frequency_free.set_from_sync(value),
             9 => self.operators[0].frequency_fine.set_from_sync(value),
-            10 => self.operators[0].volume_envelope.attack_duration.set_from_sync(value),
-            11 => self.operators[0].volume_envelope.attack_end_value.set_from_sync(value),
-            12 => self.operators[0].volume_envelope.decay_duration.set_from_sync(value),
-            13 => self.operators[0].volume_envelope.decay_end_value.set_from_sync(value),
-            14 => self.operators[0].volume_envelope.release_duration.set_from_sync(value),
+            10 => self.operators[0]
+                .volume_envelope
+                .attack_duration
+                .set_from_sync(value),
+            11 => self.operators[0]
+                .volume_envelope
+                .attack_end_value
+                .set_from_sync(value),
+            12 => self.operators[0]
+                .volume_envelope
+                .decay_duration
+                .set_from_sync(value),
+            13 => self.operators[0]
+                .volume_envelope
+                .decay_end_value
+                .set_from_sync(value),
+            14 => self.operators[0]
+                .volume_envelope
+                .release_duration
+                .set_from_sync(value),
             15 => self.operators[1].volume.set_from_sync(value),
             16 => self.operators[1].panning.set_from_sync(value),
             17 => self.operators[1].wave_type.set_from_sync(value),
@@ -69,11 +81,26 @@ impl ProcessingParameters {
             21 => self.operators[1].frequency_ratio.set_from_sync(value),
             22 => self.operators[1].frequency_free.set_from_sync(value),
             23 => self.operators[1].frequency_fine.set_from_sync(value),
-            24 => self.operators[1].volume_envelope.attack_duration.set_from_sync(value),
-            25 => self.operators[1].volume_envelope.attack_end_value.set_from_sync(value),
-            26 => self.operators[1].volume_envelope.decay_duration.set_from_sync(value),
-            27 => self.operators[1].volume_envelope.decay_end_value.set_from_sync(value),
-            28 => self.operators[1].volume_envelope.release_duration.set_from_sync(value),
+            24 => self.operators[1]
+                .volume_envelope
+                .attack_duration
+                .set_from_sync(value),
+            25 => self.operators[1]
+                .volume_envelope
+                .attack_end_value
+                .set_from_sync(value),
+            26 => self.operators[1]
+                .volume_envelope
+                .decay_duration
+                .set_from_sync(value),
+            27 => self.operators[1]
+                .volume_envelope
+                .decay_end_value
+                .set_from_sync(value),
+            28 => self.operators[1]
+                .volume_envelope
+                .release_duration
+                .set_from_sync(value),
             29 => self.operators[2].volume.set_from_sync(value),
             30 => self.operators[2].panning.set_from_sync(value),
             31 => self.operators[2].wave_type.set_from_sync(value),
@@ -86,17 +113,32 @@ impl ProcessingParameters {
                 if let Some(Three(p)) = opt_p {
                     p.set_from_sync(value)
                 }
-            },
+            }
             34 => self.operators[2].modulation_index.set_from_sync(value),
             35 => self.operators[2].feedback.set_from_sync(value),
             36 => self.operators[2].frequency_ratio.set_from_sync(value),
             37 => self.operators[2].frequency_free.set_from_sync(value),
             38 => self.operators[2].frequency_fine.set_from_sync(value),
-            39 => self.operators[2].volume_envelope.attack_duration.set_from_sync(value),
-            40 => self.operators[2].volume_envelope.attack_end_value.set_from_sync(value),
-            41 => self.operators[2].volume_envelope.decay_duration.set_from_sync(value),
-            42 => self.operators[2].volume_envelope.decay_end_value.set_from_sync(value),
-            43 => self.operators[2].volume_envelope.release_duration.set_from_sync(value),
+            39 => self.operators[2]
+                .volume_envelope
+                .attack_duration
+                .set_from_sync(value),
+            40 => self.operators[2]
+                .volume_envelope
+                .attack_end_value
+                .set_from_sync(value),
+            41 => self.operators[2]
+                .volume_envelope
+                .decay_duration
+                .set_from_sync(value),
+            42 => self.operators[2]
+                .volume_envelope
+                .decay_end_value
+                .set_from_sync(value),
+            43 => self.operators[2]
+                .volume_envelope
+                .release_duration
+                .set_from_sync(value),
             44 => self.operators[3].volume.set_from_sync(value),
             45 => self.operators[3].panning.set_from_sync(value),
             46 => self.operators[3].wave_type.set_from_sync(value),
@@ -109,17 +151,32 @@ impl ProcessingParameters {
                 if let Some(Four(p)) = opt_p {
                     p.set_from_sync(value)
                 }
-            },
+            }
             49 => self.operators[3].modulation_index.set_from_sync(value),
             50 => self.operators[3].feedback.set_from_sync(value),
             51 => self.operators[3].frequency_ratio.set_from_sync(value),
             52 => self.operators[3].frequency_free.set_from_sync(value),
             53 => self.operators[3].frequency_fine.set_from_sync(value),
-            54 => self.operators[3].volume_envelope.attack_duration.set_from_sync(value),
-            55 => self.operators[3].volume_envelope.attack_end_value.set_from_sync(value),
-            56 => self.operators[3].volume_envelope.decay_duration.set_from_sync(value),
-            57 => self.operators[3].volume_envelope.decay_end_value.set_from_sync(value),
-            58 => self.operators[3].volume_envelope.release_duration.set_from_sync(value),
+            54 => self.operators[3]
+                .volume_envelope
+                .attack_duration
+                .set_from_sync(value),
+            55 => self.operators[3]
+                .volume_envelope
+                .attack_end_value
+                .set_from_sync(value),
+            56 => self.operators[3]
+                .volume_envelope
+                .decay_duration
+                .set_from_sync(value),
+            57 => self.operators[3]
+                .volume_envelope
+                .decay_end_value
+                .set_from_sync(value),
+            58 => self.operators[3]
+                .volume_envelope
+                .release_duration
+                .set_from_sync(value),
             59 => self.lfos[0].target_parameter.set_from_sync(value),
             60 => self.lfos[0].bpm_sync.set_from_sync(value),
             61 => self.lfos[0].frequency_ratio.set_from_sync(value),
@@ -148,7 +205,7 @@ impl ProcessingParameters {
             84 => self.lfos[3].mode.set_from_sync(value),
             85 => self.lfos[3].shape.set_from_sync(value),
             86 => self.lfos[3].amount.set_from_sync(value),
-            _  => ()
+            _ => (),
         }
     }
 
@@ -156,7 +213,6 @@ impl ProcessingParameters {
         87
     }
 }
-
 
 pub struct ProcessingParameterOperator {
     pub volume: OperatorVolumeProcessingParameter,
@@ -171,7 +227,6 @@ pub struct ProcessingParameterOperator {
     pub modulation_index: InterpolatableProcessingParameter<OperatorModulationIndexValue>,
     pub volume_envelope: OperatorEnvelopeProcessingParameter,
 }
-
 
 impl ProcessingParameterOperator {
     pub fn new(operator_index: usize) -> Self {
@@ -191,7 +246,6 @@ impl ProcessingParameterOperator {
     }
 }
 
-
 #[derive(Default)]
 pub struct OperatorEnvelopeProcessingParameter {
     pub attack_duration: SimpleProcessingParameter<OperatorAttackDurationValue>,
@@ -200,7 +254,6 @@ pub struct OperatorEnvelopeProcessingParameter {
     pub decay_end_value: SimpleProcessingParameter<OperatorDecayVolumeValue>,
     pub release_duration: SimpleProcessingParameter<OperatorReleaseDurationValue>,
 }
-
 
 pub struct ProcessingParameterLfo {
     pub target_parameter: LfoTargetProcessingParameter,
@@ -211,7 +264,6 @@ pub struct ProcessingParameterLfo {
     pub shape: SimpleProcessingParameter<LfoShapeValue>,
     pub amount: InterpolatableProcessingParameter<LfoAmountValue>,
 }
-
 
 impl ProcessingParameterLfo {
     fn new(lfo_index: usize) -> Self {
@@ -227,16 +279,15 @@ impl ProcessingParameterLfo {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
     use assert_approx_eq::assert_approx_eq;
 
     #[test]
-    fn test_operator_panning_left_and_right(){
-        use crate::common::*;
+    fn test_operator_panning_left_and_right() {
         use super::interpolatable_value::*;
         use super::*;
+        use crate::common::*;
 
         let mut operator = OperatorPanningProcessingParameter::default();
 
@@ -253,8 +304,7 @@ mod tests {
             let new_left_and_right = operator.left_and_right;
 
             #[allow(clippy::float_cmp)]
-            if i >= INTERPOLATION_SAMPLES_PER_STEP &&
-                i % INTERPOLATION_SAMPLES_PER_STEP == 0 {
+            if i >= INTERPOLATION_SAMPLES_PER_STEP && i % INTERPOLATION_SAMPLES_PER_STEP == 0 {
                 assert_ne!(value, new_value);
                 assert_ne!(left_and_right, new_left_and_right);
             }

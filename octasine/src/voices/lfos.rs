@@ -1,6 +1,5 @@
 use crate::common::*;
 
-
 #[derive(Debug, Clone)]
 pub struct VoiceLfo {
     phase: Phase,
@@ -10,7 +9,6 @@ pub struct VoiceLfo {
     last_value: f64,
     interpolate: Option<f64>,
 }
-
 
 impl Default for VoiceLfo {
     fn default() -> Self {
@@ -24,7 +22,6 @@ impl Default for VoiceLfo {
         }
     }
 }
-
 
 impl VoiceLfo {
     pub fn get_value(
@@ -47,8 +44,7 @@ impl VoiceLfo {
 
         let bpm_ratio = bpm.0 / 120.0;
 
-        let new_phase = self.phase.0 +
-            frequency * bpm_ratio * time_advancement;
+        let new_phase = self.phase.0 + frequency * bpm_ratio * time_advancement;
 
         if new_phase >= 1.0 {
             if mode == LfoMode::Once {
@@ -67,13 +63,14 @@ impl VoiceLfo {
 
         self.phase.0 = new_phase.fract();
 
-        let mut value = amount * match self.shape {
-            LfoShape::Saw => triangle(self.phase, Phase(0.9)),
-            LfoShape::ReverseSaw => triangle(self.phase, Phase(0.1)),
-            LfoShape::Triangle => triangle(self.phase, Phase(0.5)),
-            LfoShape::Square => square(self.phase),
-            LfoShape::ReverseSquare => rev_square(self.phase),
-        };
+        let mut value = amount
+            * match self.shape {
+                LfoShape::Saw => triangle(self.phase, Phase(0.9)),
+                LfoShape::ReverseSaw => triangle(self.phase, Phase(0.1)),
+                LfoShape::Triangle => triangle(self.phase, Phase(0.5)),
+                LfoShape::Square => square(self.phase),
+                LfoShape::ReverseSquare => rev_square(self.phase),
+            };
 
         if let Some(interpolate) = self.interpolate {
             value = interpolate * (1.0 - self.phase.0) + value * self.phase.0;
@@ -84,7 +81,7 @@ impl VoiceLfo {
         value
     }
 
-    pub fn restart(&mut self){
+    pub fn restart(&mut self) {
         if self.active {
             self.interpolate = Some(self.last_value);
         } else {
@@ -96,11 +93,10 @@ impl VoiceLfo {
         self.phase = Phase(0.0);
     }
 
-    pub fn stop(&mut self){
+    pub fn stop(&mut self) {
         self.active = false;
     }
 }
-
 
 fn triangle(phase: Phase, peak: Phase) -> f64 {
     if phase.0 <= peak.0 {
@@ -109,7 +105,6 @@ fn triangle(phase: Phase, peak: Phase) -> f64 {
         1.0 - (phase.0 - peak.0) / (1.0 - peak.0)
     }
 }
-
 
 fn square(phase: Phase) -> f64 {
     let peak_start = 0.1;
@@ -126,7 +121,6 @@ fn square(phase: Phase) -> f64 {
         0.0
     }
 }
-
 
 fn rev_square(phase: Phase) -> f64 {
     let base_end = 0.4;

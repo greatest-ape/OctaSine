@@ -1,14 +1,17 @@
-use iced_baseview::{Column, Element, HorizontalAlignment, Length, Row, Space, Text, VerticalAlignment};
+use iced_baseview::{
+    Column, Element, HorizontalAlignment, Length, Row, Space, Text, VerticalAlignment,
+};
 
-
+use crate::parameters::values::{
+    LfoAmountValue, LfoBpmSyncValue, LfoFrequencyFreeValue, LfoFrequencyRatioValue, LfoModeValue,
+    LfoShapeValue,
+};
 use crate::GuiSyncHandle;
-use crate::parameters::values::{LfoBpmSyncValue, LfoModeValue, LfoAmountValue, LfoFrequencyRatioValue, LfoFrequencyFreeValue, LfoShapeValue};
 
-use super::{FONT_SIZE, FONT_VERY_BOLD, LINE_HEIGHT, Message};
+use super::boolean_picker::{self, BooleanPicker};
 use super::knob::{self, OctaSineKnob};
 use super::lfo_target_picker::LfoTargetPicker;
-use super::boolean_picker::{self, BooleanPicker};
-
+use super::{Message, FONT_SIZE, FONT_VERY_BOLD, LINE_HEIGHT};
 
 pub struct LfoWidgets {
     index: usize,
@@ -21,12 +24,8 @@ pub struct LfoWidgets {
     pub amount: OctaSineKnob<LfoAmountValue>,
 }
 
-
 impl LfoWidgets {
-    pub fn new<H: GuiSyncHandle>(
-        sync_handle: &H,
-        lfo_index: usize,
-    ) -> Self {
+    pub fn new<H: GuiSyncHandle>(sync_handle: &H, lfo_index: usize) -> Self {
         let offset = 59 + lfo_index * 7;
         let target = offset + 0;
         let bpm_sync = offset + 1;
@@ -58,28 +57,22 @@ impl LfoWidgets {
             .vertical_alignment(VerticalAlignment::Center);
 
         Column::new()
-            .push(
-                Row::new()
-                    .push(title)
-            )
+            .push(Row::new().push(title))
             .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
-            .push(
-                Row::new()
-                    .push(self.target.view())
-            )
+            .push(Row::new().push(self.target.view()))
             .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
             .push(
                 Row::new()
                     .push(self.bpm_sync.view())
                     .push(self.frequency_ratio.view())
-                    .push(self.frequency_free.view())
+                    .push(self.frequency_free.view()),
             )
             .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
             .push(
                 Row::new()
                     .push(self.mode.view())
                     .push(self.shape.view())
-                    .push(self.amount.view())
+                    .push(self.amount.view()),
             )
             .into()
     }

@@ -1,12 +1,7 @@
-use iced_baseview::canvas::{
-    Canvas, Cursor, Geometry, Program, Frame
-};
-use iced_baseview::{
-    Element, Color, Rectangle, Point, Length, Container, Align
-};
+use iced_baseview::canvas::{Canvas, Cursor, Frame, Geometry, Program};
+use iced_baseview::{Align, Color, Container, Element, Length, Point, Rectangle};
 
 use super::Message;
-
 
 /// Vertical rule that fills whole height
 #[derive(Clone)]
@@ -15,7 +10,6 @@ pub struct VerticalRule {
     height: Length,
     color: Color,
 }
-
 
 impl VerticalRule {
     pub fn new(width: Length, height: Length) -> Self {
@@ -32,9 +26,7 @@ impl VerticalRule {
         let width = self.width;
         let height = self.height;
 
-        let canvas = Canvas::new(self)
-            .width(Length::Units(1))
-            .height(height);
+        let canvas = Canvas::new(self).width(Length::Units(1)).height(height);
 
         Container::new(canvas)
             .width(width)
@@ -43,9 +35,8 @@ impl VerticalRule {
     }
 }
 
-
 impl Program<Message> for VerticalRule {
-    fn draw(&self, bounds: Rectangle, _cursor: Cursor) -> Vec<Geometry>{
+    fn draw(&self, bounds: Rectangle, _cursor: Cursor) -> Vec<Geometry> {
         let mut frame = Frame::new(bounds.size());
 
         frame.fill_rectangle(Point::ORIGIN, frame.size(), self.color);

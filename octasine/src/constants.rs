@@ -16,12 +16,24 @@ pub const NUM_LFOS: usize = 4;
 /// Multiply the volume of each voice with this factor
 pub const VOICE_VOLUME_FACTOR: f64 = 0.1;
 
-pub const MASTER_FREQUENCY_STEPS: [f64; 12] = [20.0, 110.0, 220.0, 400.0, 435.0, 438.0, 440.0, 442.0, 445.0, 480.0, 880.0, 20_000.0];
+pub const MASTER_FREQUENCY_STEPS: [f64; 12] = [
+    20.0, 110.0, 220.0, 400.0, 435.0, 438.0, 440.0, 442.0, 445.0, 480.0, 880.0, 20_000.0,
+];
 
-pub const OPERATOR_RATIO_STEPS: [f64; 28] = [0.0625, 0.125, 0.2, 0.25, 0.33, 0.5, 0.55, 0.66, 0.6896, 0.8, 0.8333, 1.0, 1.2, 1.25, 1.33, 1.45, 1.5, 1.8, 1.875, 2.0, 2.5, 3.0, 3.5, 4.0, 8.0, 16.0, 32.0, 64.0];
-pub const OPERATOR_FREE_STEPS: [f64; 14] = [0.001, 0.0625, 0.125, 0.25, 0.5, 0.75, 1.0, 1.5, 2.0, 3.0, 4.0, 16.0, 64.0, 256.0];
-pub const OPERATOR_FINE_STEPS: [f64; 17] = [0.8, 0.85, 0.9, 0.95, 0.97, 0.98, 0.99, 0.995, 1.0, 1.005, 1.01, 1.02, 1.03, 1.05, 1.1, 1.15, 1.2];
-pub const OPERATOR_BETA_STEPS: [f64; 16] = [0.0, 0.01, 0.1, 0.2, 0.5, 1.0, 2.0, 3.0, 5.0, 10.0, 20.0, 35.0, 50.0, 75.0, 100.0, 1000.0];
+pub const OPERATOR_RATIO_STEPS: [f64; 28] = [
+    0.0625, 0.125, 0.2, 0.25, 0.33, 0.5, 0.55, 0.66, 0.6896, 0.8, 0.8333, 1.0, 1.2, 1.25, 1.33,
+    1.45, 1.5, 1.8, 1.875, 2.0, 2.5, 3.0, 3.5, 4.0, 8.0, 16.0, 32.0, 64.0,
+];
+pub const OPERATOR_FREE_STEPS: [f64; 14] = [
+    0.001, 0.0625, 0.125, 0.25, 0.5, 0.75, 1.0, 1.5, 2.0, 3.0, 4.0, 16.0, 64.0, 256.0,
+];
+pub const OPERATOR_FINE_STEPS: [f64; 17] = [
+    0.8, 0.85, 0.9, 0.95, 0.97, 0.98, 0.99, 0.995, 1.0, 1.005, 1.01, 1.02, 1.03, 1.05, 1.1, 1.15,
+    1.2,
+];
+pub const OPERATOR_BETA_STEPS: [f64; 16] = [
+    0.0, 0.01, 0.1, 0.2, 0.5, 1.0, 2.0, 3.0, 5.0, 10.0, 20.0, 35.0, 50.0, 75.0, 100.0, 1000.0,
+];
 
 pub const ENVELOPE_MAX_DURATION: f64 = 4.0;
 pub const ENVELOPE_MIN_DURATION: f64 = 0.004;
@@ -32,7 +44,7 @@ pub const ENVELOPE_CURVE_TAKEOVER: f64 = 0.01;
 pub const ENVELOPE_CURVE_TAKEOVER_RECIP: f64 = 1.0 / ENVELOPE_CURVE_TAKEOVER;
 
 // When adjusting this, remember to also modify get_lfo_target_parameters
-pub const LFO_TARGET_CONTEXT_STEPS: [LfoTargetParameter; 45] = [ 
+pub const LFO_TARGET_CONTEXT_STEPS: [LfoTargetParameter; 45] = [
     LfoTargetParameter::Master(LfoTargetMasterParameter::Volume),
     LfoTargetParameter::Master(LfoTargetMasterParameter::Frequency),
     LfoTargetParameter::Operator(0, LfoTargetOperatorParameter::Volume),
@@ -80,19 +92,26 @@ pub const LFO_TARGET_CONTEXT_STEPS: [LfoTargetParameter; 45] = [
     LfoTargetParameter::Lfo(2, LfoTargetLfoParameter::Amount),
 ];
 
-pub const LFO_SHAPE_STEPS: [LfoShape; 5] = [ 
+pub const LFO_SHAPE_STEPS: [LfoShape; 5] = [
     LfoShape::Triangle,
     LfoShape::Saw,
     LfoShape::ReverseSaw,
     LfoShape::Square,
     LfoShape::ReverseSquare,
 ];
-pub const LFO_MODE_STEPS: [LfoMode; 2] = [ 
-    LfoMode::Forever,
-    LfoMode::Once,
+pub const LFO_MODE_STEPS: [LfoMode; 2] = [LfoMode::Forever, LfoMode::Once];
+pub const LFO_FREQUENCY_RATIO_STEPS: [f64; 9] = [
+    1.0 / 16.0,
+    1.0 / 8.0,
+    1.0 / 4.0,
+    1.0 / 2.0,
+    1.0,
+    2.0,
+    4.0,
+    8.0,
+    16.0,
 ];
-pub const LFO_FREQUENCY_RATIO_STEPS: [f64; 9] = [1.0/16.0, 1.0/8.0, 1.0/4.0, 1.0/2.0, 1.0, 2.0, 4.0, 8.0, 16.0];
-pub const LFO_FREQUENCY_FREE_STEPS: [f64; 7] = [1.0/16.0, 0.5, 0.9, 1.0, 1.1, 2.0, 16.0];
+pub const LFO_FREQUENCY_FREE_STEPS: [f64; 7] = [1.0 / 16.0, 0.5, 0.9, 1.0, 1.1, 2.0, 16.0];
 pub const LFO_AMOUNT_STEPS: [f64; 2] = [-2.0, 2.0];
 
 // Default values

@@ -4,10 +4,8 @@ use array_init::array_init;
 
 use super::SyncParameter;
 
-
 const NUM_ATOMIC_U64S: usize = 2;
 pub const MAX_NUM_PARAMETERS: usize = NUM_ATOMIC_U64S * 64;
-
 
 /// Cache for marking parameters as changed and listing them.
 pub struct ParameterChangeInfo {
@@ -15,9 +13,8 @@ pub struct ParameterChangeInfo {
     index_masks: [u64; 64],
 }
 
-
 impl ParameterChangeInfo {
-    pub fn mark_as_changed(&self, parameter_index: usize){
+    pub fn mark_as_changed(&self, parameter_index: usize) {
         if parameter_index > MAX_NUM_PARAMETERS - 1 {
             return;
         }
@@ -29,7 +26,7 @@ impl ParameterChangeInfo {
             .fetch_or(self.index_masks[atomic_u64_bit], Ordering::SeqCst);
     }
 
-    pub fn mark_all_as_changed(&self){
+    pub fn mark_all_as_changed(&self) {
         for atomic_u64 in self.atomic_u64s.iter() {
             atomic_u64.store(!0u64, Ordering::SeqCst);
         }
@@ -37,7 +34,7 @@ impl ParameterChangeInfo {
 
     #[cfg(test)]
     pub fn changes_exist(&self) -> bool {
-        for atomic_u64 in self.atomic_u64s.iter(){
+        for atomic_u64 in self.atomic_u64s.iter() {
             if atomic_u64.load(Ordering::SeqCst) != 0 {
                 return true;
             }
@@ -51,12 +48,12 @@ impl ParameterChangeInfo {
     /// PresetParameters, mark them as changed in Self.changed
     pub fn get_changed_parameters(
         &self,
-        parameters: &Vec<SyncParameter>
+        parameters: &Vec<SyncParameter>,
     ) -> Option<[Option<f64>; MAX_NUM_PARAMETERS]> {
         let mut no_changes = true;
         let mut changed = [0u64; NUM_ATOMIC_U64S];
 
-        for (c, atomic_u64) in changed.iter_mut().zip(self.atomic_u64s.iter()){
+        for (c, atomic_u64) in changed.iter_mut().zip(self.atomic_u64s.iter()) {
             let changed = atomic_u64.fetch_and(0, Ordering::SeqCst);
 
             no_changes &= changed == 0;
@@ -70,15 +67,15 @@ impl ParameterChangeInfo {
 
         let mut changes = [None; MAX_NUM_PARAMETERS];
 
-        for (parameter_index, c) in changes.iter_mut().enumerate(){
+        for (parameter_index, c) in changes.iter_mut().enumerate() {
             let u64_index = parameter_index / 64;
             let u64_bit = parameter_index % 64;
 
             let changed = changed[u64_index];
 
             if (changed >> u64_bit) & 1 == 1 {
-                if let Some(p) = parameters.get(parameter_index){
-                    if let Some(value) = p.value.get_if_changed(){
+                if let Some(p) = parameters.get(parameter_index) {
+                    if let Some(value) = p.value.get_if_changed() {
                         *c = Some(value);
                     } else {
                         self.mark_as_changed(parameter_index);
@@ -94,12 +91,12 @@ impl ParameterChangeInfo {
     /// in the AtomicPositiveDouble
     pub fn get_changed_parameters_transient(
         &self,
-        parameters: &Vec<SyncParameter>
+        parameters: &Vec<SyncParameter>,
     ) -> Option<[Option<f64>; MAX_NUM_PARAMETERS]> {
         let mut no_changes = true;
         let mut changed = [0u64; NUM_ATOMIC_U64S];
 
-        for (c, atomic_u64) in changed.iter_mut().zip(self.atomic_u64s.iter()){
+        for (c, atomic_u64) in changed.iter_mut().zip(self.atomic_u64s.iter()) {
             let changed = atomic_u64.fetch_and(0, Ordering::SeqCst);
 
             no_changes &= changed == 0;
@@ -113,14 +110,14 @@ impl ParameterChangeInfo {
 
         let mut changes = [None; MAX_NUM_PARAMETERS];
 
-        for (parameter_index, c) in changes.iter_mut().enumerate(){
+        for (parameter_index, c) in changes.iter_mut().enumerate() {
             let u64_index = parameter_index / 64;
             let u64_bit = parameter_index % 64;
 
             let changed = changed[u64_index];
 
             if (changed >> u64_bit) & 1 == 1 {
-                if let Some(p) = parameters.get(parameter_index){
+                if let Some(p) = parameters.get(parameter_index) {
                     *c = Some(p.get_value());
                 }
             }
@@ -130,29 +127,27 @@ impl ParameterChangeInfo {
     }
 }
 
-
 impl Default for ParameterChangeInfo {
     fn default() -> Self {
         Self {
             atomic_u64s: array_init(|_| AtomicU64::new(0)),
-            index_masks: array_init(|i| 2u64.pow(i as u32))
+            index_masks: array_init(|i| 2u64.pow(i as u32)),
         }
     }
 }
-
 
 #[cfg(test)]
 mod tests {
     use std::collections::HashMap;
 
-    use quickcheck::{TestResult, quickcheck};
+    use quickcheck::{quickcheck, TestResult};
 
     use crate::parameters::sync::create_parameters;
 
     use super::*;
 
     #[test]
-    fn test_changed_parameters(){
+    fn test_changed_parameters() {
         let c = ParameterChangeInfo::default();
 
         // Not checked
@@ -165,17 +160,20 @@ mod tests {
         c.mark_as_changed(0);
         c.mark_as_changed(10);
 
-        let indeces: Vec<usize> = c.get_changed_parameters(&preset_parameters)
+        let indeces: Vec<usize> = c
+            .get_changed_parameters(&preset_parameters)
             .unwrap()
             .iter()
             .enumerate()
-            .filter_map(|(index, changed)| {
-                if changed.is_some() {
-                    Some(index)
-                } else {
-                    None
-                }
-            })
+            .filter_map(
+                |(index, changed)| {
+                    if changed.is_some() {
+                        Some(index)
+                    } else {
+                        None
+                    }
+                },
+            )
             .collect();
 
         println!("{:?}", indeces);
@@ -190,17 +188,20 @@ mod tests {
         c.mark_as_changed(4);
         c.mark_as_changed(5);
 
-        let indeces: Vec<usize> = c.get_changed_parameters(&preset_parameters)
+        let indeces: Vec<usize> = c
+            .get_changed_parameters(&preset_parameters)
             .unwrap()
             .iter()
             .enumerate()
-            .filter_map(|(index, changed)| {
-                if changed.is_some() {
-                    Some(index)
-                } else {
-                    None
-                }
-            })
+            .filter_map(
+                |(index, changed)| {
+                    if changed.is_some() {
+                        Some(index)
+                    } else {
+                        None
+                    }
+                },
+            )
             .collect();
 
         println!("{:?}", indeces);
@@ -211,12 +212,12 @@ mod tests {
     }
 
     #[test]
-    fn test_changed_parameters_quickcheck(){
+    fn test_changed_parameters_quickcheck() {
         fn prop(data: Vec<(usize, f64)>) -> TestResult {
             let preset_parameters = create_parameters();
 
-            for (i, v) in data.iter(){
-                if *i > 63 || *v < 0.0  || v.is_nan() {
+            for (i, v) in data.iter() {
+                if *i > 63 || *v < 0.0 || v.is_nan() {
                     return TestResult::discard();
                 }
             }
@@ -224,23 +225,23 @@ mod tests {
             fn f(
                 c: &ParameterChangeInfo,
                 preset_parameters: &Vec<SyncParameter>,
-                data: &[(usize, f64)]
+                data: &[(usize, f64)],
             ) -> bool {
                 let mut set_parameters = HashMap::new();
 
-                for (index, value) in data.iter(){
-                    if let Some(p) = preset_parameters.get(*index){
+                for (index, value) in data.iter() {
+                    if let Some(p) = preset_parameters.get(*index) {
                         p.value.set(*value + 1.43432);
                         p.value.set(*value + 5.55);
                         p.value.set(*value);
-                        
+
                         set_parameters.insert(*index, *value);
                     }
 
                     c.mark_as_changed(*index);
                 }
 
-                if let Some(changed_parameters) = c.get_changed_parameters(preset_parameters){
+                if let Some(changed_parameters) = c.get_changed_parameters(preset_parameters) {
                     let results: HashMap<usize, f64> = changed_parameters
                         .iter()
                         .enumerate()
@@ -250,7 +251,8 @@ mod tests {
                             } else {
                                 None
                             }
-                        }).collect();
+                        })
+                        .collect();
 
                     let success = results == set_parameters;
 

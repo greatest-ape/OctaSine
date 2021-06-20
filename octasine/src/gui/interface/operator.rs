@@ -1,21 +1,19 @@
 use iced_baseview::{
-    Container, Element, Text, Length, Align, Row, Rule, Space, HorizontalAlignment, Column, button, Button
+    button, Align, Button, Column, Container, Element, HorizontalAlignment, Length, Row, Rule,
+    Space, Text,
 };
 
-
-use crate::GuiSyncHandle;
 use crate::parameters::values::{
     OperatorAdditiveValue, OperatorFeedbackValue, OperatorFrequencyFineValue,
-    OperatorFrequencyFreeValue, OperatorFrequencyRatioValue,
-    OperatorModulationIndexValue, OperatorPanningValue, OperatorVolumeValue,
-    OperatorWaveTypeValue
+    OperatorFrequencyFreeValue, OperatorFrequencyRatioValue, OperatorModulationIndexValue,
+    OperatorPanningValue, OperatorVolumeValue, OperatorWaveTypeValue,
 };
+use crate::GuiSyncHandle;
 
-use super::{FONT_SIZE, FONT_VERY_BOLD, LINE_HEIGHT, Message};
+use super::boolean_picker::{self, BooleanPicker};
 use super::envelope::Envelope;
 use super::knob::{self, OctaSineKnob};
-use super::boolean_picker::{self, BooleanPicker};
-
+use super::{Message, FONT_SIZE, FONT_VERY_BOLD, LINE_HEIGHT};
 
 pub struct OperatorWidgets {
     index: usize,
@@ -35,19 +33,16 @@ pub struct OperatorWidgets {
     pub zoom_to_fit: button::State,
 }
 
-
 impl OperatorWidgets {
-    pub fn new<H: GuiSyncHandle>(
-        sync_handle: &H,
-        operator_index: usize,
-    ) -> Self {
-        let (volume, panning, wave, additive, mod_index, feedback, ratio, free, fine) = match operator_index {
-            0 => ( 2,  3,  4,  0,  5,  6,  7,  8,  9),
-            1 => (15, 16, 17, 18, 19, 20, 21, 22, 23),
-            2 => (29, 30, 31, 32, 34, 35, 36, 37, 38),
-            3 => (44, 45, 46, 47, 49, 50, 51, 52, 53),
-            _ => unreachable!(),
-        };
+    pub fn new<H: GuiSyncHandle>(sync_handle: &H, operator_index: usize) -> Self {
+        let (volume, panning, wave, additive, mod_index, feedback, ratio, free, fine) =
+            match operator_index {
+                0 => (2, 3, 4, 0, 5, 6, 7, 8, 9),
+                1 => (15, 16, 17, 18, 19, 20, 21, 22, 23),
+                2 => (29, 30, 31, 32, 34, 35, 36, 37, 38),
+                3 => (44, 45, 46, 47, 49, 50, 51, 52, 53),
+                _ => unreachable!(),
+            };
 
         let additive_knob = if operator_index == 0 {
             None
@@ -86,13 +81,13 @@ impl OperatorWidgets {
                     .width(Length::Units(LINE_HEIGHT * 4))
                     .height(Length::Units(LINE_HEIGHT * 6))
                     .align_x(Align::Center)
-                    .align_y(Align::Center)
+                    .align_y(Align::Center),
             )
             // .push(Space::with_width(Length::Units(LINE_HEIGHT)))
             .push(self.wave_type.view())
             .push(self.volume.view())
             .push(self.panning.view());
-        
+
         if let Some(additive) = self.additive.as_mut() {
             row = row.push(additive.view())
         } else {
@@ -101,41 +96,30 @@ impl OperatorWidgets {
 
         row = row
             .push(
-                Container::new(
-                    Rule::vertical(LINE_HEIGHT)
-                )
-                    .height(Length::Units(LINE_HEIGHT * 6))
+                Container::new(Rule::vertical(LINE_HEIGHT)).height(Length::Units(LINE_HEIGHT * 6)),
             )
             .push(self.mod_index.view())
             .push(self.feedback.view());
-        
+
         row = row
             .push(
-                Container::new(
-                    Rule::vertical(LINE_HEIGHT)
-                )
-                    .height(Length::Units(LINE_HEIGHT * 6)))
+                Container::new(Rule::vertical(LINE_HEIGHT)).height(Length::Units(LINE_HEIGHT * 6)),
+            )
             .push(self.frequency_ratio.view())
             .push(self.frequency_free.view())
             .push(self.frequency_fine.view());
-        
+
         let sync_viewports_message = Message::EnvelopeSyncViewports {
             viewport_factor: self.envelope.get_viewport_factor(),
             x_offset: self.envelope.get_x_offset(),
         };
         let zoom_to_fit_message = Message::EnvelopeZoomToFit(self.index);
-        
+
         row = row
             .push(
-                Container::new(
-                    Rule::vertical(LINE_HEIGHT)
-                )
-                    .height(Length::Units(LINE_HEIGHT * 6))
+                Container::new(Rule::vertical(LINE_HEIGHT)).height(Length::Units(LINE_HEIGHT * 6)),
             )
-            .push(
-                Column::new()
-                    .push(self.envelope.view())
-            )
+            .push(Column::new().push(self.envelope.view()))
             .push(
                 Column::new()
                     .width(Length::Units(LINE_HEIGHT * 3))
@@ -143,33 +127,32 @@ impl OperatorWidgets {
                     .push(
                         Row::new()
                             .push(
-                                Button::new(&mut self.zoom_out, Text::new("−").font(FONT_VERY_BOLD))
-                                    .on_press(Message::EnvelopeZoomOut(self.index))
+                                Button::new(
+                                    &mut self.zoom_out,
+                                    Text::new("−").font(FONT_VERY_BOLD),
+                                )
+                                .on_press(Message::EnvelopeZoomOut(self.index)),
                             )
-                            .push(
-                                Space::with_width(Length::Units(3))
-                            )
+                            .push(Space::with_width(Length::Units(3)))
                             .push(
                                 Button::new(&mut self.zoom_in, Text::new("+").font(FONT_VERY_BOLD))
-                                    .on_press(Message::EnvelopeZoomIn(self.index))
-                            )
+                                    .on_press(Message::EnvelopeZoomIn(self.index)),
+                            ),
                     )
                     .push(Space::with_height(Length::Units(LINE_HEIGHT * 1 - 10)))
                     .push(
-                        Row::new()
-                            .push(
-                                Button::new(&mut self.zoom_to_fit, Text::new("FIT"))
-                                    .on_press(zoom_to_fit_message)
-                            )
+                        Row::new().push(
+                            Button::new(&mut self.zoom_to_fit, Text::new("FIT"))
+                                .on_press(zoom_to_fit_message),
+                        ),
                     )
                     .push(Space::with_height(Length::Units(LINE_HEIGHT * 1 - 10)))
                     .push(
-                        Row::new()
-                            .push(
-                                Button::new(&mut self.sync_viewport, Text::new("DIST"))
-                                    .on_press(sync_viewports_message)
-                            )
-                    )
+                        Row::new().push(
+                            Button::new(&mut self.sync_viewport, Text::new("DIST"))
+                                .on_press(sync_viewports_message),
+                        ),
+                    ),
             );
 
         row.into()

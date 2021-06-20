@@ -1,5 +1,3 @@
-
-
 pub fn map_parameter_value_to_step<T: Copy>(steps: &[T], value: f64) -> T {
     let value = value.max(0.0).min(1.0);
     let len = steps.len();
@@ -7,12 +5,8 @@ pub fn map_parameter_value_to_step<T: Copy>(steps: &[T], value: f64) -> T {
     steps[((value * len as f64) as usize).min(len - 1)]
 }
 
-
-pub fn map_step_to_parameter_value<T: Copy + PartialEq>(
-    steps: &[T],
-    step_value: T,
-) -> f64 {
-    for (index, step) in steps.iter().enumerate(){
+pub fn map_step_to_parameter_value<T: Copy + PartialEq>(steps: &[T], step_value: T) -> f64 {
+    for (index, step) in steps.iter().enumerate() {
         if *step == step_value {
             let fraction = 1.0 / (steps.len() - 1) as f64;
 
@@ -23,11 +17,7 @@ pub fn map_step_to_parameter_value<T: Copy + PartialEq>(
     0.5 // Default if step_value is not in steps
 }
 
-
-pub fn map_parameter_value_to_value_with_steps(
-    steps: &[f64],
-    parameter_value: f64
-) -> f64 {
+pub fn map_parameter_value_to_value_with_steps(steps: &[f64], parameter_value: f64) -> f64 {
     let max_index = steps.len() - 1;
 
     let index_float = parameter_value.max(0.0).min(1.0) * max_index as f64;
@@ -45,11 +35,7 @@ pub fn map_parameter_value_to_value_with_steps(
     }
 }
 
-
-pub fn map_value_to_parameter_value_with_steps(
-    steps: &[f64],
-    internal_value: f64,
-) -> f64 {
+pub fn map_value_to_parameter_value_with_steps(steps: &[f64], internal_value: f64) -> f64 {
     let mut prev_step = *steps.first().expect("steps are empty");
 
     for (index, step) in steps[1..].iter().enumerate() {
@@ -68,7 +54,6 @@ pub fn map_value_to_parameter_value_with_steps(
     1.0
 }
 
-
 pub fn round_to_step(steps: &[f64], value: f64) -> f64 {
     let mut prev_step = *steps.first().expect("steps are empty");
 
@@ -79,8 +64,7 @@ pub fn round_to_step(steps: &[f64], value: f64) -> f64 {
 
             if prev_diff < current_diff {
                 return prev_step;
-            }
-            else {
+            } else {
                 return *step;
             }
         }
@@ -91,11 +75,10 @@ pub fn round_to_step(steps: &[f64], value: f64) -> f64 {
     *steps.last().expect("steps are empty")
 }
 
-
 #[cfg(test)]
 mod tests {
-    use quickcheck::{TestResult, quickcheck};
     use assert_approx_eq::assert_approx_eq;
+    use quickcheck::{quickcheck, TestResult};
 
     use super::*;
 
@@ -116,7 +99,7 @@ mod tests {
     }
 
     #[test]
-    fn test_map_step_to_parameter_value_valid_number(){
+    fn test_map_step_to_parameter_value_valid_number() {
         fn prop(index: usize) -> TestResult {
             let steps = get_all_steps();
 
@@ -155,7 +138,7 @@ mod tests {
     }
 
     #[test]
-    fn test_step_mapping(){
+    fn test_step_mapping() {
         fn prop(value: f64) -> TestResult {
             if value < 0.0 || value > 1.0 {
                 return TestResult::discard();
@@ -163,20 +146,11 @@ mod tests {
 
             let steps = get_all_steps();
 
-            let inner = map_parameter_value_to_step(
-                &steps[..],
-                value
-            );
-            let new_value = map_step_to_parameter_value(
-                &steps[..],
-                inner
-            );
+            let inner = map_parameter_value_to_step(&steps[..], value);
+            let new_value = map_step_to_parameter_value(&steps[..], inner);
             // Simulate the VST sending back the recieved parameter value.
             // Result must be identical to last result.
-            let new_inner = map_parameter_value_to_step(
-                &steps[..],
-                new_value
-            );
+            let new_inner = map_parameter_value_to_step(&steps[..], new_value);
 
             #[allow(clippy::float_cmp)]
             TestResult::from_bool(inner == new_inner)
@@ -186,16 +160,13 @@ mod tests {
     }
 
     #[test]
-    fn test_map_value_to_parameter_value_with_steps_valid_number(){
+    fn test_map_value_to_parameter_value_with_steps_valid_number() {
         fn prop(value: f64) -> TestResult {
             if value < 0.0 {
                 return TestResult::discard();
             }
 
-            let value = map_value_to_parameter_value_with_steps(
-                &get_all_steps()[..],
-                value
-            );
+            let value = map_value_to_parameter_value_with_steps(&get_all_steps()[..], value);
 
             TestResult::from_bool(valid_parameter_value(value))
         }
@@ -204,7 +175,7 @@ mod tests {
     }
 
     #[test]
-    fn test_map_parameter_value_to_value_with_steps(){
+    fn test_map_parameter_value_to_value_with_steps() {
         let steps = [1.0, 2.0, 3.0];
 
         assert_approx_eq!(
@@ -226,7 +197,7 @@ mod tests {
     }
 
     #[test]
-    fn test_map_value_to_parameter_value_with_steps(){
+    fn test_map_value_to_parameter_value_with_steps() {
         let steps = [1.0, 2.0, 3.0];
 
         assert_approx_eq!(
@@ -248,7 +219,7 @@ mod tests {
     }
 
     #[test]
-    fn test_smooth_step_mapping(){
+    fn test_smooth_step_mapping() {
         fn prop(parameter_value: f64) -> TestResult {
             if parameter_value < 0.0 || parameter_value > 1.0 || parameter_value.is_nan() {
                 return TestResult::discard();
@@ -256,14 +227,10 @@ mod tests {
 
             let steps = get_all_steps();
 
-            let internal_value = map_parameter_value_to_value_with_steps(
-                &steps[..],
-                parameter_value
-            );
-            let new_parameter_value = map_value_to_parameter_value_with_steps(
-                &steps[..],
-                internal_value
-            );
+            let internal_value =
+                map_parameter_value_to_value_with_steps(&steps[..], parameter_value);
+            let new_parameter_value =
+                map_value_to_parameter_value_with_steps(&steps[..], internal_value);
 
             let diff = (parameter_value - new_parameter_value).abs();
             let success = diff < 0.0001;
@@ -283,7 +250,7 @@ mod tests {
 
     #[allow(clippy::float_cmp)]
     #[test]
-    fn test_round_to_step(){
+    fn test_round_to_step() {
         let steps = [1.0, 2.0, 4.0];
 
         assert_eq!(round_to_step(&steps, -10.0), 1.0);

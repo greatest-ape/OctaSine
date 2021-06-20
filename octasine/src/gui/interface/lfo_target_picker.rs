@@ -1,17 +1,13 @@
-use iced_baseview::{Align, Column, Element, Length};
 use iced_baseview::widget::{pick_list, PickList};
+use iced_baseview::{Align, Column, Element, Length};
 
 use crate::common::*;
 use crate::parameters::values::{
-    ParameterValue,
-    Lfo1TargetParameterValue,
-    Lfo2TargetParameterValue,
-    Lfo3TargetParameterValue,
-    Lfo4TargetParameterValue,
+    Lfo1TargetParameterValue, Lfo2TargetParameterValue, Lfo3TargetParameterValue,
+    Lfo4TargetParameterValue, ParameterValue,
 };
 
-use super::{LINE_HEIGHT, FONT_SIZE, Message, GuiSyncHandle, style::OctaSineStyle};
-
+use super::{style::OctaSineStyle, GuiSyncHandle, Message, FONT_SIZE, LINE_HEIGHT};
 
 #[derive(Clone, PartialEq, Eq)]
 struct LfoTarget {
@@ -19,13 +15,11 @@ struct LfoTarget {
     title: String,
 }
 
-
 impl ToString for LfoTarget {
     fn to_string(&self) -> String {
         self.title.clone()
     }
 }
-
 
 pub struct LfoTargetPicker {
     state: pick_list::State<LfoTarget>,
@@ -34,7 +28,6 @@ pub struct LfoTargetPicker {
     lfo_index: usize,
     parameter_index: usize,
 }
-
 
 impl LfoTargetPicker {
     pub fn new<H: GuiSyncHandle>(
@@ -46,7 +39,8 @@ impl LfoTargetPicker {
         let selected = Self::get_index_from_sync(lfo_index, sync_value);
         let target_parameters = get_lfo_target_parameters(lfo_index);
 
-        let options = target_parameters.into_iter()
+        let options = target_parameters
+            .into_iter()
             .map(|target| LfoTarget {
                 value: *target,
                 title: target.to_string().to_uppercase(),
@@ -58,7 +52,7 @@ impl LfoTargetPicker {
             options,
             selected,
             lfo_index,
-            parameter_index
+            parameter_index,
         }
     }
 
@@ -73,16 +67,16 @@ impl LfoTargetPicker {
 
         let target_parameters = get_lfo_target_parameters(lfo_index);
 
-        for (i, t) in target_parameters.iter().enumerate(){
+        for (i, t) in target_parameters.iter().enumerate() {
             if *t == target {
-                return i
+                return i;
             }
         }
 
         unreachable!()
     }
 
-    pub fn set_value(&mut self, sync_value: f64){
+    pub fn set_value(&mut self, sync_value: f64) {
         self.selected = Self::get_index_from_sync(self.lfo_index, sync_value);
     }
 
@@ -104,12 +98,12 @@ impl LfoTargetPicker {
                 };
 
                 Message::ParameterChange(parameter_index, sync)
-            }
+            },
         )
-            .text_size(FONT_SIZE)
-            .style(OctaSineStyle)
-            .width(Length::Units(LINE_HEIGHT * 12 - 3));
-        
+        .text_size(FONT_SIZE)
+        .style(OctaSineStyle)
+        .width(Length::Units(LINE_HEIGHT * 12 - 3));
+
         Column::new()
             .width(Length::Units(LINE_HEIGHT * 12))
             .align_items(Align::Center)

@@ -1,12 +1,14 @@
 use git_testament::{git_testament, CommitKind};
-use iced_baseview::{Align, Application, Command, Subscription, WindowSubs, executor};
 use iced_baseview::{
-    Column, Button, button, Color, Element, Row, Container, Length, Space, renderer, Font, Point, Text, HorizontalAlignment, VerticalAlignment
+    button, renderer, Button, Color, Column, Container, Element, Font, HorizontalAlignment, Length,
+    Point, Row, Space, Text, VerticalAlignment,
 };
+use iced_baseview::{executor, Align, Application, Command, Subscription, WindowSubs};
 
+use crate::parameters::values::{MasterFrequencyValue, MasterVolumeValue};
 use crate::GuiSyncHandle;
-use crate::parameters::values::{MasterVolumeValue, MasterFrequencyValue};
 
+mod boolean_picker;
 mod divider;
 mod envelope;
 mod knob;
@@ -16,15 +18,13 @@ mod mod_matrix;
 mod operator;
 mod preset_picker;
 mod style;
-mod boolean_picker;
 
 use divider::VerticalRule;
-use lfo::LfoWidgets;
-use operator::OperatorWidgets;
 use knob::OctaSineKnob;
+use lfo::LfoWidgets;
 use mod_matrix::ModulationMatrix;
+use operator::OperatorWidgets;
 use preset_picker::PresetPicker;
-
 
 pub const FONT_SIZE: u16 = 14;
 pub const LINE_HEIGHT: u16 = 14;
@@ -40,45 +40,39 @@ const FONT_VERY_BOLD: Font = Font::External {
     bytes: OPEN_SANS_BOLD,
 };
 
-const OPEN_SANS_REGULAR: &[u8] = include_bytes!(
-    "../../../../contrib/open-sans/OpenSans-Regular.ttf"
-);
-const OPEN_SANS_SEMI_BOLD: &[u8] = include_bytes!(
-    "../../../../contrib/open-sans/OpenSans-SemiBold.ttf"
-);
-const OPEN_SANS_BOLD: &[u8] = include_bytes!(
-    "../../../../contrib/open-sans/OpenSans-Bold.ttf"
-);
-
+const OPEN_SANS_REGULAR: &[u8] =
+    include_bytes!("../../../../contrib/open-sans/OpenSans-Regular.ttf");
+const OPEN_SANS_SEMI_BOLD: &[u8] =
+    include_bytes!("../../../../contrib/open-sans/OpenSans-SemiBold.ttf");
+const OPEN_SANS_BOLD: &[u8] = include_bytes!("../../../../contrib/open-sans/OpenSans-Bold.ttf");
 
 fn get_info_text() -> String {
     git_testament!(GIT_TESTAMENT);
 
     let version = match GIT_TESTAMENT.commit {
-        CommitKind::NoRepository(crate_version, _build_date) =>
-            crate_version.into(),
-        CommitKind::NoCommit(crate_version, _build_date) =>
-            crate_version.into(),
-        CommitKind::NoTags(commit, _commit_date) => 
-            commit.chars().take(7).collect::<String>(),
-        CommitKind::FromTag(tag, commit, _commit_date, _distance) =>
-            format!("{} ({})", tag, commit.chars().take(7).collect::<String>()),
+        CommitKind::NoRepository(crate_version, _build_date) => crate_version.into(),
+        CommitKind::NoCommit(crate_version, _build_date) => crate_version.into(),
+        CommitKind::NoTags(commit, _commit_date) => commit.chars().take(7).collect::<String>(),
+        CommitKind::FromTag(tag, commit, _commit_date, _distance) => {
+            format!("{} ({})", tag, commit.chars().take(7).collect::<String>())
+        }
     };
 
-    let dirty = if GIT_TESTAMENT.modifications.is_empty(){
+    let dirty = if GIT_TESTAMENT.modifications.is_empty() {
         ""
     } else {
         " (dirty)"
     };
 
-    format!("Copyright © 2019-2021 Joakim Frostegård\nBuild: {}{}", version, dirty)
+    format!(
+        "Copyright © 2019-2021 Joakim Frostegård\nBuild: {}{}",
+        version, dirty
+    )
 }
-
 
 pub trait SnapPoint {
     fn snap(self) -> Self;
 }
-
 
 impl SnapPoint for Point {
     fn snap(self) -> Self {
@@ -88,7 +82,6 @@ impl SnapPoint for Point {
         }
     }
 }
-
 
 #[derive(Debug, Clone)]
 pub enum Message {
@@ -100,12 +93,8 @@ pub enum Message {
     EnvelopeZoomIn(usize),
     EnvelopeZoomOut(usize),
     EnvelopeZoomToFit(usize),
-    EnvelopeSyncViewports {
-        viewport_factor: f32,
-        x_offset: f32,
-    },
+    EnvelopeSyncViewports { viewport_factor: f32, x_offset: f32 },
 }
-
 
 pub struct OctaSineIcedApplication<H: GuiSyncHandle> {
     sync_handle: H,
@@ -129,13 +118,8 @@ pub struct OctaSineIcedApplication<H: GuiSyncHandle> {
     lfo_vr_4: divider::VerticalRule,
 }
 
-
-impl <H: GuiSyncHandle> OctaSineIcedApplication<H> {
-    fn set_value(
-        &mut self,
-        parameter_index: usize,
-        value: f64,
-    ){
+impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {
+    fn set_value(&mut self, parameter_index: usize, value: f64) {
         let v = value;
 
         match parameter_index {
@@ -144,7 +128,7 @@ impl <H: GuiSyncHandle> OctaSineIcedApplication<H> {
             2 => {
                 self.operator_1.volume.set_value(v);
                 self.modulation_matrix.set_operator_1_volume(value);
-            },
+            }
             3 => self.operator_1.panning.set_value(v),
             4 => self.operator_1.wave_type.set_value(v),
             5 => self.operator_1.mod_index.set_value(v),
@@ -160,15 +144,13 @@ impl <H: GuiSyncHandle> OctaSineIcedApplication<H> {
             15 => {
                 self.operator_2.volume.set_value(v);
                 self.modulation_matrix.set_operator_2_volume(value);
-            },
+            }
             16 => self.operator_2.panning.set_value(v),
             17 => self.operator_2.wave_type.set_value(v),
             18 => {
-                self.operator_2.additive.as_mut()
-                    .unwrap()
-                    .set_value(v);
+                self.operator_2.additive.as_mut().unwrap().set_value(v);
                 self.modulation_matrix.set_operator_2_additive(v);
-            },
+            }
             19 => self.operator_2.mod_index.set_value(v),
             20 => self.operator_2.feedback.set_value(v),
             21 => self.operator_2.frequency_ratio.set_value(v),
@@ -182,15 +164,13 @@ impl <H: GuiSyncHandle> OctaSineIcedApplication<H> {
             29 => {
                 self.modulation_matrix.set_operator_3_volume(value);
                 self.operator_3.volume.set_value(v);
-            },
+            }
             30 => self.operator_3.panning.set_value(v),
             31 => self.operator_3.wave_type.set_value(v),
             32 => {
-                self.operator_3.additive.as_mut()
-                    .unwrap()
-                    .set_value(v);
+                self.operator_3.additive.as_mut().unwrap().set_value(v);
                 self.modulation_matrix.set_operator_3_additive(v);
-            },
+            }
             33 => self.modulation_matrix.set_operator_3_target(v),
             34 => self.operator_3.mod_index.set_value(v),
             35 => self.operator_3.feedback.set_value(v),
@@ -205,15 +185,13 @@ impl <H: GuiSyncHandle> OctaSineIcedApplication<H> {
             44 => {
                 self.operator_4.volume.set_value(v);
                 self.modulation_matrix.set_operator_4_volume(value);
-            },
+            }
             45 => self.operator_4.panning.set_value(v),
             46 => self.operator_4.wave_type.set_value(v),
             47 => {
-                self.operator_4.additive.as_mut()
-                    .unwrap()
-                    .set_value(v);
+                self.operator_4.additive.as_mut().unwrap().set_value(v);
                 self.modulation_matrix.set_operator_4_additive(v);
-            },
+            }
             48 => self.modulation_matrix.set_operator_4_target(v),
             49 => self.operator_4.mod_index.set_value(v),
             50 => self.operator_4.feedback.set_value(v),
@@ -257,12 +235,14 @@ impl <H: GuiSyncHandle> OctaSineIcedApplication<H> {
         }
     }
 
-    fn update_widgets_from_parameters(&mut self){
-        let opt_changes = self.sync_handle.get_bank()
+    fn update_widgets_from_parameters(&mut self) {
+        let opt_changes = self
+            .sync_handle
+            .get_bank()
             .get_changed_parameters_from_gui();
-        
+
         if let Some(changes) = opt_changes {
-            for (index, opt_new_value) in changes.iter().enumerate(){
+            for (index, opt_new_value) in changes.iter().enumerate() {
                 if let Some(new_value) = opt_new_value {
                     self.set_value(index, *new_value);
                 }
@@ -271,15 +251,12 @@ impl <H: GuiSyncHandle> OctaSineIcedApplication<H> {
     }
 }
 
-
-impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
+impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
     type Executor = executor::Default;
     type Message = Message;
     type Flags = H;
 
-    fn new(
-        sync_handle: Self::Flags,
-    ) -> (Self, Command<Self::Message>) {
+    fn new(sync_handle: Self::Flags) -> (Self, Command<Self::Message>) {
         let master_volume = knob::master_volume(&sync_handle);
         let master_frequency = knob::master_frequency(&sync_handle);
         let modulation_matrix = ModulationMatrix::new(&sync_handle);
@@ -297,7 +274,7 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
 
         let lfo_vr_1 = VerticalRule::new(
             Length::Units(LINE_HEIGHT * 2),
-            Length::Units(LINE_HEIGHT * 16)
+            Length::Units(LINE_HEIGHT * 16),
         );
         let lfo_vr_2 = lfo_vr_1.clone();
         let lfo_vr_3 = lfo_vr_1.clone();
@@ -330,13 +307,13 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
 
     fn subscription(
         &self,
-        window_subs: &mut WindowSubs<Self::Message>
+        window_subs: &mut WindowSubs<Self::Message>,
     ) -> Subscription<Self::Message> {
         window_subs.on_frame = Some(Message::Frame);
 
         Subscription::none()
     }
-    
+
     fn renderer_settings() -> renderer::Settings {
         renderer::Settings {
             default_font: Some(FONT_REGULAR),
@@ -349,58 +326,63 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
     fn update(&mut self, message: Self::Message) -> Command<Self::Message> {
         match message {
             Message::Frame => {
-                if self.sync_handle.get_bank().get_presets_changed(){
+                if self.sync_handle.get_bank().get_presets_changed() {
                     self.preset_picker = PresetPicker::new(&self.sync_handle);
                 }
                 self.update_widgets_from_parameters();
-            },
+            }
             Message::ToggleInfo => {
                 self.show_version = !self.show_version;
+            }
+            Message::EnvelopeZoomIn(operator_index) => match operator_index {
+                0 => self.operator_1.envelope.zoom_in(),
+                1 => self.operator_2.envelope.zoom_in(),
+                2 => self.operator_3.envelope.zoom_in(),
+                3 => self.operator_4.envelope.zoom_in(),
+                _ => unreachable!(),
             },
-            Message::EnvelopeZoomIn(operator_index) => {
-                match operator_index {
-                    0 => self.operator_1.envelope.zoom_in(),
-                    1 => self.operator_2.envelope.zoom_in(),
-                    2 => self.operator_3.envelope.zoom_in(),
-                    3 => self.operator_4.envelope.zoom_in(),
-                    _ => unreachable!(),
-                }
+            Message::EnvelopeZoomOut(operator_index) => match operator_index {
+                0 => self.operator_1.envelope.zoom_out(),
+                1 => self.operator_2.envelope.zoom_out(),
+                2 => self.operator_3.envelope.zoom_out(),
+                3 => self.operator_4.envelope.zoom_out(),
+                _ => unreachable!(),
             },
-            Message::EnvelopeZoomOut(operator_index) => {
-                match operator_index {
-                    0 => self.operator_1.envelope.zoom_out(),
-                    1 => self.operator_2.envelope.zoom_out(),
-                    2 => self.operator_3.envelope.zoom_out(),
-                    3 => self.operator_4.envelope.zoom_out(),
-                    _ => unreachable!(),
-                }
+            Message::EnvelopeZoomToFit(operator_index) => match operator_index {
+                0 => self.operator_1.envelope.zoom_to_fit(),
+                1 => self.operator_2.envelope.zoom_to_fit(),
+                2 => self.operator_3.envelope.zoom_to_fit(),
+                3 => self.operator_4.envelope.zoom_to_fit(),
+                _ => unreachable!(),
             },
-            Message::EnvelopeZoomToFit(operator_index) => {
-                match operator_index {
-                    0 => self.operator_1.envelope.zoom_to_fit(),
-                    1 => self.operator_2.envelope.zoom_to_fit(),
-                    2 => self.operator_3.envelope.zoom_to_fit(),
-                    3 => self.operator_4.envelope.zoom_to_fit(),
-                    _ => unreachable!(),
-                }
-            },
-            Message::EnvelopeSyncViewports { viewport_factor, x_offset } => {
-                self.operator_1.envelope.set_viewport(viewport_factor, x_offset);
-                self.operator_2.envelope.set_viewport(viewport_factor, x_offset);
-                self.operator_3.envelope.set_viewport(viewport_factor, x_offset);
-                self.operator_4.envelope.set_viewport(viewport_factor, x_offset);
-            },
+            Message::EnvelopeSyncViewports {
+                viewport_factor,
+                x_offset,
+            } => {
+                self.operator_1
+                    .envelope
+                    .set_viewport(viewport_factor, x_offset);
+                self.operator_2
+                    .envelope
+                    .set_viewport(viewport_factor, x_offset);
+                self.operator_3
+                    .envelope
+                    .set_viewport(viewport_factor, x_offset);
+                self.operator_4
+                    .envelope
+                    .set_viewport(viewport_factor, x_offset);
+            }
             Message::ParameterChange(index, value) => {
                 self.set_value(index, value);
 
                 self.sync_handle.set_parameter(index, value);
-            },
+            }
             Message::ParameterChanges(changes) => {
                 for (index, value) in changes {
                     self.set_value(index, value);
                     self.sync_handle.set_parameter(index, value);
                 }
-            },
+            }
             Message::PresetChange(index) => {
                 self.sync_handle.set_preset_index(index);
             }
@@ -430,12 +412,8 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
             .font(FONT_VERY_BOLD)
             .horizontal_alignment(HorizontalAlignment::Center)
             .vertical_alignment(VerticalAlignment::Center);
-        
-        let info_opacity = if self.show_version {
-            1.0
-        } else {
-            0.0
-        };
+
+        let info_opacity = if self.show_version { 1.0 } else { 0.0 };
 
         let all = Column::new()
             .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
@@ -444,40 +422,35 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
                     .align_items(Align::Center)
                     .height(Length::Units(LINE_HEIGHT * 4))
                     .push(
-                        Column::new()
-                            .width(Length::FillPortion(1))
-                            .push(
-                                Container::new(
-                                    Row::new()
-                                        .push(
-                                            Button::new(
-                                                &mut self.toggle_info_state,
-                                                Text::new("INFO")
-                                            )
-                                                .on_press(Message::ToggleInfo)
-                                        )
-                                        .push(Space::with_width(Length::Units(LINE_HEIGHT)))
-                                        .push(
-                                            Text::new(get_info_text())
-                                                .size(LINE_HEIGHT)
-                                                .color(Color::from_rgba(0.0, 0.0, 0.0, info_opacity))
-                                                .vertical_alignment(VerticalAlignment::Center)
-                                        )
-                                )
-                                    .height(Length::Units(LINE_HEIGHT * 4))
-                                    .padding(LINE_HEIGHT)
-                                    .align_y(Align::Center)
+                        Column::new().width(Length::FillPortion(1)).push(
+                            Container::new(
+                                Row::new()
+                                    .push(
+                                        Button::new(&mut self.toggle_info_state, Text::new("INFO"))
+                                            .on_press(Message::ToggleInfo),
+                                    )
+                                    .push(Space::with_width(Length::Units(LINE_HEIGHT)))
+                                    .push(
+                                        Text::new(get_info_text())
+                                            .size(LINE_HEIGHT)
+                                            .color(Color::from_rgba(0.0, 0.0, 0.0, info_opacity))
+                                            .vertical_alignment(VerticalAlignment::Center),
+                                    ),
                             )
+                            .height(Length::Units(LINE_HEIGHT * 4))
+                            .padding(LINE_HEIGHT)
+                            .align_y(Align::Center),
+                        ),
                     )
                     .push(
                         Container::new(
                             Text::new("OctaSine")
                                 .font(FONT_VERY_BOLD)
                                 .size(FONT_SIZE * 2 + FONT_SIZE / 2)
-                                .horizontal_alignment(HorizontalAlignment::Center)
+                                .horizontal_alignment(HorizontalAlignment::Center),
                         )
-                            .width(Length::FillPortion(1))
-                            .align_x(Align::Center)
+                        .width(Length::FillPortion(1))
+                        .align_x(Align::Center),
                     )
                     .push(
                         Column::new()
@@ -487,11 +460,9 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
                             .push(
                                 Row::new()
                                     .push(preset_picker)
-                                    .push(
-                                        Space::with_width(Length::Units(LINE_HEIGHT))
-                                    )
-                            )
-                    )
+                                    .push(Space::with_width(Length::Units(LINE_HEIGHT))),
+                            ),
+                    ),
             )
             .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
             .push(operator_4)
@@ -504,69 +475,50 @@ impl <H: GuiSyncHandle>Application for OctaSineIcedApplication<H> {
             .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
             .push(
                 Row::new()
-                    .push(
-                        Space::with_width(Length::Units(LINE_HEIGHT))
-                    )
+                    .push(Space::with_width(Length::Units(LINE_HEIGHT)))
                     .push(lfo_1)
                     .push(
                         Column::new()
-                            .push(Space::with_height(Length::Units(
-                                LINE_HEIGHT * 3
-                            )))
-                            .push(self.lfo_vr_1.view())
+                            .push(Space::with_height(Length::Units(LINE_HEIGHT * 3)))
+                            .push(self.lfo_vr_1.view()),
                     )
                     .push(lfo_2)
                     .push(
                         Column::new()
-                            .push(Space::with_height(Length::Units(
-                                LINE_HEIGHT * 3
-                            )))
-                            .push(self.lfo_vr_2.view())
+                            .push(Space::with_height(Length::Units(LINE_HEIGHT * 3)))
+                            .push(self.lfo_vr_2.view()),
                     )
                     .push(lfo_3)
                     .push(
                         Column::new()
-                            .push(Space::with_height(Length::Units(
-                                LINE_HEIGHT * 3
-                            )))
-                            .push(self.lfo_vr_3.view())
+                            .push(Space::with_height(Length::Units(LINE_HEIGHT * 3)))
+                            .push(self.lfo_vr_3.view()),
                     )
                     .push(lfo_4)
                     .push(
                         Column::new()
-                            .push(Space::with_height(Length::Units(
-                                LINE_HEIGHT * 3
-                            )))
-                            .push(self.lfo_vr_4.view())
+                            .push(Space::with_height(Length::Units(LINE_HEIGHT * 3)))
+                            .push(self.lfo_vr_4.view()),
                     )
                     .push(
                         Column::new()
                             .width(Length::Units(LINE_HEIGHT * 8))
                             .push(
-                                Row::new()
-                                    .push(
-                                        Container::new(master_title)
-                                            .width(Length::Units(LINE_HEIGHT * 8))
-                                            .height(Length::Units(LINE_HEIGHT * 2))
-                                            .align_x(Align::Center)
-                                            .align_y(Align::Center)
-                                    )
+                                Row::new().push(
+                                    Container::new(master_title)
+                                        .width(Length::Units(LINE_HEIGHT * 8))
+                                        .height(Length::Units(LINE_HEIGHT * 2))
+                                        .align_x(Align::Center)
+                                        .align_y(Align::Center),
+                                ),
                             )
                             .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
-                            .push(
-                                Row::new()
-                                    .push(master_volume)
-                                    .push(master_frequency)
-                            )
+                            .push(Row::new().push(master_volume).push(master_frequency))
                             .push(Space::with_height(Length::Units(LINE_HEIGHT * 3)))
-                            .push(
-                                Row::new()
-                                    .push(modulation_matrix)
-                            )
-                    )
+                            .push(Row::new().push(modulation_matrix)),
+                    ),
             );
 
-        Container::new(all)
-            .into()
+        Container::new(all).into()
     }
 }

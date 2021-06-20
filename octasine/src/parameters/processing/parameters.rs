@@ -7,15 +7,15 @@ use crate::parameters::values::*;
 use super::interpolatable_value::*;
 use super::ProcessingParameter;
 
-
 #[derive(Debug, Clone)]
 pub struct InterpolatableProcessingParameter<P: ParameterValue> {
     value: InterpolatableProcessingValue,
     phantom_data: PhantomData<P>,
 }
 
-impl <P> Default for InterpolatableProcessingParameter<P>
-    where P: ParameterValue<Value=f64> + Default
+impl<P> Default for InterpolatableProcessingParameter<P>
+where
+    P: ParameterValue<Value = f64> + Default,
 {
     fn default() -> Self {
         let default = P::default().get();
@@ -27,8 +27,9 @@ impl <P> Default for InterpolatableProcessingParameter<P>
     }
 }
 
-impl <P>ProcessingParameter for InterpolatableProcessingParameter<P>
-    where P: ParameterValue<Value=f64>
+impl<P> ProcessingParameter for InterpolatableProcessingParameter<P>
+where
+    P: ParameterValue<Value = f64>,
 {
     type Value = f64;
     type ExtraData = TimeCounter;
@@ -36,35 +37,30 @@ impl <P>ProcessingParameter for InterpolatableProcessingParameter<P>
     fn get_value(&mut self, extra_data: Self::ExtraData) -> Self::Value {
         self.value.get_value(extra_data, &mut |_| ())
     }
-    fn set_from_sync(&mut self, value: f64){
+    fn set_from_sync(&mut self, value: f64) {
         self.value.set_value(P::from_sync(value).get())
     }
     fn get_value_with_lfo_addition(
         &mut self,
         extra_data: Self::ExtraData,
-        lfo_addition: Option<f64>
+        lfo_addition: Option<f64>,
     ) -> Self::Value {
         if let Some(lfo_addition) = lfo_addition {
-            let sync_value = P::from_processing(
-                self.get_value(extra_data)
-            ).to_sync();
+            let sync_value = P::from_processing(self.get_value(extra_data)).to_sync();
 
-            P::from_sync(
-                (sync_value + lfo_addition).min(1.0).max(0.0)
-            ).get()
+            P::from_sync((sync_value + lfo_addition).min(1.0).max(0.0)).get()
         } else {
             self.get_value(extra_data)
-        }   
-    }   
+        }
+    }
 }
-
 
 pub struct SimpleProcessingParameter<P: ParameterValue> {
     pub value: <P as ParameterValue>::Value,
     sync_cache: f64,
 }
 
-impl <P: ParameterValue + Default>Default for SimpleProcessingParameter<P> {
+impl<P: ParameterValue + Default> Default for SimpleProcessingParameter<P> {
     fn default() -> Self {
         Self {
             value: P::default().get(),
@@ -73,8 +69,9 @@ impl <P: ParameterValue + Default>Default for SimpleProcessingParameter<P> {
     }
 }
 
-impl <P>ProcessingParameter for SimpleProcessingParameter<P>
-    where P: ParameterValue
+impl<P> ProcessingParameter for SimpleProcessingParameter<P>
+where
+    P: ParameterValue,
 {
     type Value = <P as ParameterValue>::Value;
     type ExtraData = ();
@@ -82,25 +79,22 @@ impl <P>ProcessingParameter for SimpleProcessingParameter<P>
     fn get_value(&mut self, _: Self::ExtraData) -> Self::Value {
         self.value
     }
-    fn set_from_sync(&mut self, value: f64){
+    fn set_from_sync(&mut self, value: f64) {
         self.sync_cache = value;
         self.value = P::from_sync(value).get();
     }
     fn get_value_with_lfo_addition(
         &mut self,
         extra_data: Self::ExtraData,
-        lfo_addition: Option<f64>
+        lfo_addition: Option<f64>,
     ) -> Self::Value {
         if let Some(lfo_addition) = lfo_addition {
-            P::from_sync(
-                (self.sync_cache + lfo_addition).min(1.0).max(0.0)
-            ).get()
+            P::from_sync((self.sync_cache + lfo_addition).min(1.0).max(0.0)).get()
         } else {
             self.get_value(extra_data)
-        }   
-    }   
+        }
+    }
 }
-
 
 // Operator volume
 
@@ -114,7 +108,7 @@ impl OperatorVolumeProcessingParameter {
         let value = OperatorVolumeValue::new(operator_index).get();
 
         Self {
-            value: InterpolatableProcessingValue::new(value)
+            value: InterpolatableProcessingValue::new(value),
         }
     }
 }
@@ -126,28 +120,25 @@ impl ProcessingParameter for OperatorVolumeProcessingParameter {
     fn get_value(&mut self, extra_data: Self::ExtraData) -> Self::Value {
         self.value.get_value(extra_data, &mut |_| ())
     }
-    fn set_from_sync(&mut self, value: f64){
-        self.value.set_value(OperatorVolumeValue::from_sync(value).get())
+    fn set_from_sync(&mut self, value: f64) {
+        self.value
+            .set_value(OperatorVolumeValue::from_sync(value).get())
     }
     fn get_value_with_lfo_addition(
         &mut self,
         extra_data: Self::ExtraData,
-        lfo_addition: Option<f64>
+        lfo_addition: Option<f64>,
     ) -> Self::Value {
         if let Some(lfo_addition) = lfo_addition {
-            let sync_value = OperatorVolumeValue::from_processing(
-                self.get_value(extra_data)
-            ).to_sync();
+            let sync_value =
+                OperatorVolumeValue::from_processing(self.get_value(extra_data)).to_sync();
 
-            OperatorVolumeValue::from_sync(
-                (sync_value + lfo_addition).min(1.0).max(0.0)
-            ).get()
+            OperatorVolumeValue::from_sync((sync_value + lfo_addition).min(1.0).max(0.0)).get()
         } else {
             self.get_value(extra_data)
-        }   
-    }   
+        }
+    }
 }
-
 
 // Modulation target
 
@@ -156,17 +147,16 @@ pub enum OperatorModulationTargetProcessingParameter {
     Four(SimpleProcessingParameter<Operator4ModulationTargetValue>),
 }
 
-
 impl OperatorModulationTargetProcessingParameter {
     pub fn opt_new(operator_index: usize) -> Option<Self> {
         match operator_index {
             2 => Some(OperatorModulationTargetProcessingParameter::Three(
-                Default::default()
+                Default::default(),
             )),
             3 => Some(OperatorModulationTargetProcessingParameter::Four(
-                Default::default()
+                Default::default(),
             )),
-            _ => None
+            _ => None,
         }
     }
 
@@ -178,7 +168,6 @@ impl OperatorModulationTargetProcessingParameter {
     }
 }
 
-
 // Panning
 
 #[derive(Debug, Clone)]
@@ -188,7 +177,6 @@ pub struct OperatorPanningProcessingParameter {
     pub lfo_active: bool,
 }
 
-
 impl OperatorPanningProcessingParameter {
     pub fn calculate_left_and_right(panning: f64) -> [f64; 2] {
         let pan_phase = panning * FRAC_PI_2;
@@ -196,7 +184,6 @@ impl OperatorPanningProcessingParameter {
         [pan_phase.cos(), pan_phase.sin()]
     }
 }
-
 
 impl ProcessingParameter for OperatorPanningProcessingParameter {
     type Value = f64;
@@ -206,8 +193,7 @@ impl ProcessingParameter for OperatorPanningProcessingParameter {
         let mut opt_new_left_and_right = None;
 
         let value = self.value.get_value(time, &mut |new_panning| {
-            opt_new_left_and_right =
-                Some(Self::calculate_left_and_right(new_panning));
+            opt_new_left_and_right = Some(Self::calculate_left_and_right(new_panning));
         });
 
         if let Some(new_left_and_right) = opt_new_left_and_right {
@@ -221,21 +207,21 @@ impl ProcessingParameter for OperatorPanningProcessingParameter {
         value
     }
     fn set_from_sync(&mut self, value: f64) {
-        self.value.set_value(OperatorPanningValue::from_sync(value).get())
+        self.value
+            .set_value(OperatorPanningValue::from_sync(value).get())
     }
     fn get_value_with_lfo_addition(
         &mut self,
         extra_data: Self::ExtraData,
-        lfo_addition: Option<f64>
+        lfo_addition: Option<f64>,
     ) -> Self::Value {
         if let Some(lfo_addition) = lfo_addition {
-            let sync_value = OperatorPanningValue::from_processing(
-                self.get_value(extra_data)
-            ).to_sync();
+            let sync_value =
+                OperatorPanningValue::from_processing(self.get_value(extra_data)).to_sync();
 
-            let new_panning = OperatorPanningValue::from_sync(
-                (sync_value + lfo_addition).min(1.0).max(0.0)
-            ).get();
+            let new_panning =
+                OperatorPanningValue::from_sync((sync_value + lfo_addition).min(1.0).max(0.0))
+                    .get();
 
             self.left_and_right = Self::calculate_left_and_right(new_panning);
             self.lfo_active = true;
@@ -243,10 +229,9 @@ impl ProcessingParameter for OperatorPanningProcessingParameter {
             new_panning
         } else {
             self.get_value(extra_data)
-        }   
-    }   
+        }
+    }
 }
-
 
 impl Default for OperatorPanningProcessingParameter {
     fn default() -> Self {
@@ -259,7 +244,6 @@ impl Default for OperatorPanningProcessingParameter {
         }
     }
 }
-
 
 // LFO target parameter
 
@@ -281,7 +265,7 @@ impl LfoTargetProcessingParameter {
         }
     }
 
-    pub fn set_from_sync(&mut self, value: f64){
+    pub fn set_from_sync(&mut self, value: f64) {
         match self {
             Self::One(p) => p.set_from_sync(value),
             Self::Two(p) => p.set_from_sync(value),

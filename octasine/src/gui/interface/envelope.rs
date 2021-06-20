@@ -1,22 +1,22 @@
 use iced_baseview::canvas::{
-    Cache, Canvas, Cursor, Frame, Geometry, Path, Program, Stroke, Text, path, event
+    event, path, Cache, Canvas, Cursor, Frame, Geometry, Path, Program, Stroke, Text,
 };
-use iced_baseview::{
-    Element, Color, Rectangle, Point, Length, Vector, Size
-};
+use iced_baseview::{Color, Element, Length, Point, Rectangle, Size, Vector};
 
 use crate::approximations::Log10Table;
 
-use crate::GuiSyncHandle;
+use crate::constants::{ENVELOPE_MAX_DURATION, ENVELOPE_MIN_DURATION};
 use crate::voices::envelopes::VoiceOperatorVolumeEnvelope;
-use crate::constants::{ENVELOPE_MIN_DURATION, ENVELOPE_MAX_DURATION};
+use crate::GuiSyncHandle;
 
-use super::{FONT_SIZE, LINE_HEIGHT, Message, SnapPoint};
-
+use super::{Message, SnapPoint, FONT_SIZE, LINE_HEIGHT};
 
 const WIDTH: u16 = LINE_HEIGHT * 19;
 const HEIGHT: u16 = LINE_HEIGHT * 5;
-const SIZE: Size = Size { width: WIDTH as f32, height: HEIGHT as f32 };
+const SIZE: Size = Size {
+    width: WIDTH as f32,
+    height: HEIGHT as f32,
+};
 
 const DRAGGER_RADIUS: f32 = 5.0;
 
@@ -26,13 +26,10 @@ const ENVELOPE_PATH_SCALE_Y: f32 = 1.0 - (1.0 / 8.0) - (1.0 / 16.0);
 const TOTAL_DURATION: f32 = 3.0;
 const MIN_VIEWPORT_FACTOR: f32 = 1.0 / 128.0;
 
-
-
 struct EnvelopeStagePath {
     path: Path,
     end_point: Point,
 }
-
 
 impl EnvelopeStagePath {
     fn new(
@@ -56,7 +53,7 @@ impl EnvelopeStagePath {
             start_value,
             stage_duration,
             stage_end_value,
-            0.0
+            0.0,
         );
         let control_a = Self::calculate_stage_progress_point(
             log10_table,
@@ -67,7 +64,7 @@ impl EnvelopeStagePath {
             start_value,
             stage_duration,
             stage_end_value,
-            1.0 / 3.0
+            1.0 / 3.0,
         );
         let control_b = Self::calculate_stage_progress_point(
             log10_table,
@@ -78,7 +75,7 @@ impl EnvelopeStagePath {
             start_value,
             stage_duration,
             stage_end_value,
-            2.0 / 3.0
+            2.0 / 3.0,
         );
         let to = Self::calculate_stage_progress_point(
             log10_table,
@@ -89,7 +86,7 @@ impl EnvelopeStagePath {
             start_value,
             stage_duration,
             stage_end_value,
-            1.0
+            1.0,
         );
 
         path.move_to(start);
@@ -125,13 +122,12 @@ impl EnvelopeStagePath {
         // Watch out for point.y.is_nan() when duration = 0.0 here
         let point = Point::new(
             (x_offset + (start_duration + duration) / total_duration) * size.width,
-            size.height * (1.0 - value)
+            size.height * (1.0 - value),
         );
 
         scale_point(size, point).snap()
     }
 }
-
 
 impl Default for EnvelopeStagePath {
     fn default() -> Self {
@@ -141,7 +137,6 @@ impl Default for EnvelopeStagePath {
         }
     }
 }
-
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 enum EnvelopeDraggerStatus {
@@ -154,7 +149,6 @@ enum EnvelopeDraggerStatus {
     },
 }
 
-
 struct EnvelopeDragger {
     center: Point,
     radius: f32,
@@ -162,9 +156,8 @@ struct EnvelopeDragger {
     pub status: EnvelopeDraggerStatus,
 }
 
-
 impl EnvelopeDragger {
-    fn set_center(&mut self, center: Point){
+    fn set_center(&mut self, center: Point) {
         self.center = center;
 
         self.hitbox.width = self.radius * 2.0;
@@ -174,16 +167,15 @@ impl EnvelopeDragger {
     }
 
     fn is_dragging(&self) -> bool {
-        matches!(self.status, EnvelopeDraggerStatus::Dragging {..})
+        matches!(self.status, EnvelopeDraggerStatus::Dragging { .. })
     }
 
-    fn set_to_normal_if_in_hover_state(&mut self){
+    fn set_to_normal_if_in_hover_state(&mut self) {
         if let EnvelopeDraggerStatus::Hover = self.status {
             self.status = EnvelopeDraggerStatus::Normal;
         }
     }
 }
-
 
 impl Default for EnvelopeDragger {
     fn default() -> Self {
@@ -195,7 +187,6 @@ impl Default for EnvelopeDragger {
         }
     }
 }
-
 
 pub struct Envelope {
     log10_table: Log10Table,
@@ -219,12 +210,8 @@ pub struct Envelope {
     dragging_background_from: Option<(Point, f32)>,
 }
 
-
 impl Envelope {
-    pub fn new<H: GuiSyncHandle>(
-        sync_handle: &H,
-        operator_index: usize,
-    ) -> Self {
+    pub fn new<H: GuiSyncHandle>(sync_handle: &H, operator_index: usize) -> Self {
         let (attack_dur, attack_val, decay_dur, decay_val, release_dur) = match operator_index {
             0 => (10, 11, 12, 13, 14),
             1 => (24, 25, 26, 27, 28),
@@ -233,15 +220,11 @@ impl Envelope {
             _ => unreachable!(),
         };
 
-        let attack_duration = Self::process_envelope_duration(
-            sync_handle.get_parameter(attack_dur)
-        );
-        let decay_duration = Self::process_envelope_duration(
-            sync_handle.get_parameter(decay_dur)
-        );
-        let release_duration = Self::process_envelope_duration(
-            sync_handle.get_parameter(release_dur)
-        );
+        let attack_duration =
+            Self::process_envelope_duration(sync_handle.get_parameter(attack_dur));
+        let decay_duration = Self::process_envelope_duration(sync_handle.get_parameter(decay_dur));
+        let release_duration =
+            Self::process_envelope_duration(sync_handle.get_parameter(release_dur));
 
         let mut envelope = Self {
             log10_table: Log10Table::default(),
@@ -271,14 +254,15 @@ impl Envelope {
         envelope
     }
 
-    fn zoom_in_to_fit(&mut self){
+    fn zoom_in_to_fit(&mut self) {
         let duration_ratio = self.get_current_duration() / TOTAL_DURATION;
 
         loop {
             let next_viewport_factor = self.viewport_factor / 2.0;
 
-            if duration_ratio > next_viewport_factor || next_viewport_factor <= MIN_VIEWPORT_FACTOR {
-                break
+            if duration_ratio > next_viewport_factor || next_viewport_factor <= MIN_VIEWPORT_FACTOR
+            {
+                break;
             }
 
             self.viewport_factor = next_viewport_factor;
@@ -293,7 +277,7 @@ impl Envelope {
         self.x_offset
     }
 
-    pub fn set_viewport(&mut self, viewport_factor: f32, x_offset: f32){
+    pub fn set_viewport(&mut self, viewport_factor: f32, x_offset: f32) {
         self.viewport_factor = viewport_factor;
         self.x_offset = Self::process_x_offset(x_offset, viewport_factor);
 
@@ -312,7 +296,7 @@ impl Envelope {
         self.attack_duration + self.decay_duration + self.release_duration
     }
 
-    pub fn zoom_in(&mut self){
+    pub fn zoom_in(&mut self) {
         if self.viewport_factor > MIN_VIEWPORT_FACTOR {
             self.viewport_factor = (self.viewport_factor * 0.5).max(MIN_VIEWPORT_FACTOR);
 
@@ -324,31 +308,25 @@ impl Envelope {
                 self.x_offset -= self.viewport_factor / 2.0;
             }
 
-            self.x_offset = Self::process_x_offset(
-                self.x_offset,
-                self.viewport_factor
-            );
+            self.x_offset = Self::process_x_offset(self.x_offset, self.viewport_factor);
         }
 
         self.update_data();
     }
 
-    pub fn zoom_out(&mut self){
+    pub fn zoom_out(&mut self) {
         if self.viewport_factor < 1.0 {
             self.x_offset += self.viewport_factor / 2.0;
 
             self.viewport_factor = (self.viewport_factor * 2.0).min(1.0);
 
-            self.x_offset = Self::process_x_offset(
-                self.x_offset,
-                self.viewport_factor
-            );
+            self.x_offset = Self::process_x_offset(self.x_offset, self.viewport_factor);
         }
 
         self.update_data();
     }
 
-    pub fn zoom_to_fit(&mut self){
+    pub fn zoom_to_fit(&mut self) {
         self.viewport_factor = 1.0;
         self.x_offset = 0.0;
 
@@ -356,53 +334,56 @@ impl Envelope {
         self.update_data();
     }
 
-    pub fn set_attack_duration(&mut self, value: f64){
-        if !self.attack_dragger.is_dragging(){
+    pub fn set_attack_duration(&mut self, value: f64) {
+        if !self.attack_dragger.is_dragging() {
             self.attack_duration = Self::process_envelope_duration(value);
 
             self.update_data();
         }
     }
 
-    pub fn set_attack_end_value(&mut self, value: f64){
+    pub fn set_attack_end_value(&mut self, value: f64) {
         self.attack_end_value = value as f32;
 
         self.update_data();
     }
 
-    pub fn set_decay_duration(&mut self, value: f64){
-        if !self.decay_dragger.is_dragging(){
+    pub fn set_decay_duration(&mut self, value: f64) {
+        if !self.decay_dragger.is_dragging() {
             self.decay_duration = Self::process_envelope_duration(value);
 
             self.update_data();
         }
     }
 
-    pub fn set_decay_end_value(&mut self, value: f64){
+    pub fn set_decay_end_value(&mut self, value: f64) {
         self.decay_end_value = value as f32;
 
         self.update_data();
     }
 
-    pub fn set_release_duration(&mut self, value: f64){
-        if !self.release_dragger.is_dragging(){
+    pub fn set_release_duration(&mut self, value: f64) {
+        if !self.release_dragger.is_dragging() {
             self.release_duration = Self::process_envelope_duration(value);
 
             self.update_data();
         }
     }
 
-    fn update_data(&mut self){
+    fn update_data(&mut self) {
         self.update_stage_paths();
 
-        self.attack_dragger.set_center(self.attack_stage_path.end_point);
-        self.decay_dragger.set_center(self.decay_stage_path.end_point);
-        self.release_dragger.set_center(self.release_stage_path.end_point);
+        self.attack_dragger
+            .set_center(self.attack_stage_path.end_point);
+        self.decay_dragger
+            .set_center(self.decay_stage_path.end_point);
+        self.release_dragger
+            .set_center(self.release_stage_path.end_point);
 
         self.cache.clear();
     }
 
-    fn update_stage_paths(&mut self){
+    fn update_stage_paths(&mut self) {
         let total_duration = self.viewport_factor * TOTAL_DURATION;
         let x_offset = self.x_offset / self.viewport_factor;
 
@@ -436,7 +417,7 @@ impl Envelope {
             self.attack_duration + self.decay_duration,
             self.decay_end_value,
             self.release_duration as f32,
-            0.0
+            0.0,
         );
     }
 
@@ -447,7 +428,7 @@ impl Envelope {
             .into()
     }
 
-    fn draw_time_markers(&self, frame: &mut Frame){
+    fn draw_time_markers(&self, frame: &mut Frame) {
         let total_duration = self.viewport_factor * TOTAL_DURATION;
         let x_offset = self.x_offset / self.viewport_factor;
 
@@ -461,12 +442,13 @@ impl Envelope {
             } else {
                 time_marker_interval *= 10.0;
             }
-        };
+        }
 
         let iterations = (TOTAL_DURATION / time_marker_interval) as usize + 1;
 
         for i in 0..iterations {
-            let x = (x_offset + (time_marker_interval * i as f32) / total_duration) * self.size.width;
+            let x =
+                (x_offset + (time_marker_interval * i as f32) / total_duration) * self.size.width;
 
             if x < 0.0 || x > self.size.width {
                 continue;
@@ -489,7 +471,7 @@ impl Envelope {
                     size: FONT_SIZE as f32,
                     ..Default::default()
                 };
-        
+
                 frame.fill_text(text);
 
                 let stroke = Stroke::default()
@@ -507,16 +489,16 @@ impl Envelope {
         }
     }
 
-    fn draw_stage_paths(&self, frame: &mut Frame){
+    fn draw_stage_paths(&self, frame: &mut Frame) {
         let size = frame.size();
 
         let top_drag_border = Path::line(
             scale_point(size, Point::ORIGIN).snap(),
-            scale_point(size, Point::new(size.width, 0.0)).snap()
+            scale_point(size, Point::new(size.width, 0.0)).snap(),
         );
         let bottom_drag_border = Path::line(
             scale_point(size, Point::new(0.0, size.height)).snap(),
-            scale_point(size, Point::new(size.width, size.height)).snap()
+            scale_point(size, Point::new(size.width, size.height)).snap(),
         );
 
         let drag_border_stroke = Stroke::default()
@@ -526,9 +508,7 @@ impl Envelope {
         frame.stroke(&top_drag_border, drag_border_stroke);
         frame.stroke(&bottom_drag_border, drag_border_stroke);
 
-        let stage_path_stroke = Stroke::default()
-            .with_width(1.0)
-            .with_color(Color::BLACK);
+        let stage_path_stroke = Stroke::default().with_width(1.0).with_color(Color::BLACK);
 
         frame.stroke(&self.attack_stage_path.path, stage_path_stroke);
         frame.stroke(&self.decay_stage_path.path, stage_path_stroke);
@@ -542,17 +522,22 @@ impl Envelope {
         frame.stroke(&left_bg, Stroke::default().with_color(Color::WHITE));
 
         let right_bg_x = scale_point_x(size, Point::new(size.width, 0.0)).snap().x + 1.0;
-        let right_bg = Path::rectangle(Point::new(right_bg_x, 0.0), Size::new(size.width, size.height));
+        let right_bg = Path::rectangle(
+            Point::new(right_bg_x, 0.0),
+            Size::new(size.width, size.height),
+        );
         frame.fill(&right_bg, Color::WHITE);
         frame.stroke(&right_bg, Stroke::default().with_color(Color::WHITE));
 
         let top_border = Path::line(
             scale_point_x(size, Point::ORIGIN).snap(),
-            scale_point_x(size, Point::new(size.width, 0.0)).snap()
+            scale_point_x(size, Point::new(size.width, 0.0)).snap(),
         );
         let bottom_border = {
             let left = scale_point_x(size, Point::new(0.0, size.height)).snap().x;
-            let right = scale_point_x(size, Point::new(size.width, size.height)).snap().x;
+            let right = scale_point_x(size, Point::new(size.width, size.height))
+                .snap()
+                .x;
 
             Path::line(
                 Point::new(left, size.height - 1.0).snap(),
@@ -561,11 +546,11 @@ impl Envelope {
         };
         let left_border = Path::line(
             scale_point_x(size, Point::new(0.0, 0.0)).snap(),
-            scale_point_x(size, Point::new(0.0, size.height)).snap()
+            scale_point_x(size, Point::new(0.0, size.height)).snap(),
         );
         let right_border = Path::line(
             scale_point_x(size, Point::new(size.width, 0.0)).snap(),
-            scale_point_x(size, Point::new(size.width, size.height)).snap()
+            scale_point_x(size, Point::new(size.width, size.height)).snap(),
         );
         let border_stroke = Stroke::default()
             .with_width(1.0)
@@ -577,7 +562,7 @@ impl Envelope {
         frame.stroke(&right_border, border_stroke);
     }
 
-    fn draw_dragger(frame: &mut Frame, dragger: &EnvelopeDragger){
+    fn draw_dragger(frame: &mut Frame, dragger: &EnvelopeDragger) {
         let size = frame.size();
 
         let left_end_x = scale_point(size, Point::ORIGIN).snap().x;
@@ -599,7 +584,7 @@ impl Envelope {
         let fill_color = match dragger.status {
             EnvelopeDraggerStatus::Normal => Color::from_rgb(1.0, 1.0, 1.0),
             EnvelopeDraggerStatus::Hover => Color::from_rgb(0.0, 0.0, 0.0),
-            EnvelopeDraggerStatus::Dragging {..} => Color::from_rgb(0.0, 0.0, 0.0),
+            EnvelopeDraggerStatus::Dragging { .. } => Color::from_rgb(0.0, 0.0, 0.0),
         };
 
         frame.fill(&circle_path, fill_color);
@@ -612,9 +597,8 @@ impl Envelope {
     }
 }
 
-
 impl Program<Message> for Envelope {
-    fn draw(&self, bounds: Rectangle, _cursor: Cursor) -> Vec<Geometry>{
+    fn draw(&self, bounds: Rectangle, _cursor: Cursor) -> Vec<Geometry> {
         let geometry = self.cache.draw(bounds.size(), |frame| {
             self.draw_time_markers(frame);
             self.draw_stage_paths(frame);
@@ -634,16 +618,14 @@ impl Program<Message> for Envelope {
         _cursor: Cursor,
     ) -> (event::Status, Option<Message>) {
         match event {
-            event::Event::Mouse(iced_baseview::mouse::Event::CursorMoved { position: Point { x, y } }) => {
+            event::Event::Mouse(iced_baseview::mouse::Event::CursorMoved {
+                position: Point { x, y },
+            }) => {
                 self.last_cursor_position = Point::new(x, y);
 
-                let relative_position = Point::new(
-                    x - bounds.x,
-                    y - bounds.y,
-                );
+                let relative_position = Point::new(x - bounds.x, y - bounds.y);
 
-                let attack_hitbox_hit = self.attack_dragger.hitbox
-                    .contains(relative_position);
+                let attack_hitbox_hit = self.attack_dragger.hitbox.contains(relative_position);
 
                 match self.attack_dragger.status {
                     EnvelopeDraggerStatus::Normal => {
@@ -652,21 +634,21 @@ impl Program<Message> for Envelope {
 
                             self.cache.clear();
                         }
-                    },
+                    }
                     EnvelopeDraggerStatus::Hover => {
-                        if !attack_hitbox_hit{
+                        if !attack_hitbox_hit {
                             self.attack_dragger.status = EnvelopeDraggerStatus::Normal;
 
                             self.cache.clear();
                         }
-                    },
-                    EnvelopeDraggerStatus::Dragging { from, original_duration, original_end_value} => {
-                        self.attack_duration = dragging_to_duration(
-                            self.viewport_factor,
-                            x,
-                            from,
-                            original_duration
-                        );
+                    }
+                    EnvelopeDraggerStatus::Dragging {
+                        from,
+                        original_duration,
+                        original_end_value,
+                    } => {
+                        self.attack_duration =
+                            dragging_to_duration(self.viewport_factor, x, from, original_duration);
                         self.attack_end_value = dragging_to_end_value(y, from, original_end_value);
 
                         self.update_data();
@@ -676,7 +658,7 @@ impl Program<Message> for Envelope {
                             1 => (24, 25),
                             2 => (39, 40),
                             3 => (54, 55),
-                            _ => unreachable!()
+                            _ => unreachable!(),
                         };
 
                         let changes = vec![
@@ -684,12 +666,14 @@ impl Program<Message> for Envelope {
                             (val, self.attack_end_value as f64),
                         ];
 
-                        return (event::Status::Captured, Some(Message::ParameterChanges(changes)));
-                    },
+                        return (
+                            event::Status::Captured,
+                            Some(Message::ParameterChanges(changes)),
+                        );
+                    }
                 }
 
-                let decay_hitbox_hit = self.decay_dragger.hitbox
-                    .contains(relative_position);
+                let decay_hitbox_hit = self.decay_dragger.hitbox.contains(relative_position);
 
                 if decay_hitbox_hit {
                     self.attack_dragger.set_to_normal_if_in_hover_state();
@@ -697,26 +681,26 @@ impl Program<Message> for Envelope {
 
                 match self.decay_dragger.status {
                     EnvelopeDraggerStatus::Normal => {
-                        if decay_hitbox_hit{
+                        if decay_hitbox_hit {
                             self.decay_dragger.status = EnvelopeDraggerStatus::Hover;
 
                             self.cache.clear();
                         }
-                    },
+                    }
                     EnvelopeDraggerStatus::Hover => {
-                        if !decay_hitbox_hit{
+                        if !decay_hitbox_hit {
                             self.decay_dragger.status = EnvelopeDraggerStatus::Normal;
 
                             self.cache.clear();
                         }
-                    },
-                    EnvelopeDraggerStatus::Dragging { from, original_duration, original_end_value} => {
-                        self.decay_duration = dragging_to_duration(
-                            self.viewport_factor,
-                            x,
-                            from,
-                            original_duration
-                        );
+                    }
+                    EnvelopeDraggerStatus::Dragging {
+                        from,
+                        original_duration,
+                        original_end_value,
+                    } => {
+                        self.decay_duration =
+                            dragging_to_duration(self.viewport_factor, x, from, original_duration);
                         self.decay_end_value = dragging_to_end_value(y, from, original_end_value);
 
                         self.update_data();
@@ -726,7 +710,7 @@ impl Program<Message> for Envelope {
                             1 => (26, 27),
                             2 => (41, 42),
                             3 => (56, 57),
-                            _ => unreachable!()
+                            _ => unreachable!(),
                         };
 
                         let changes = vec![
@@ -734,12 +718,14 @@ impl Program<Message> for Envelope {
                             (val, self.decay_end_value as f64),
                         ];
 
-                        return (event::Status::Captured, Some(Message::ParameterChanges(changes)));
-                    },
+                        return (
+                            event::Status::Captured,
+                            Some(Message::ParameterChanges(changes)),
+                        );
+                    }
                 }
 
-                let release_hitbox_hit = self.release_dragger.hitbox
-                    .contains(relative_position);
+                let release_hitbox_hit = self.release_dragger.hitbox.contains(relative_position);
 
                 if release_hitbox_hit {
                     self.attack_dragger.set_to_normal_if_in_hover_state();
@@ -756,21 +742,21 @@ impl Program<Message> for Envelope {
 
                             self.cache.clear();
                         }
-                    },
+                    }
                     EnvelopeDraggerStatus::Hover => {
                         if !release_hitbox_hit {
                             self.release_dragger.status = EnvelopeDraggerStatus::Normal;
 
                             self.cache.clear();
                         }
-                    },
-                    EnvelopeDraggerStatus::Dragging { from, original_duration, .. } => {
-                        self.release_duration = dragging_to_duration(
-                            self.viewport_factor,
-                            x,
-                            from,
-                            original_duration
-                        );
+                    }
+                    EnvelopeDraggerStatus::Dragging {
+                        from,
+                        original_duration,
+                        ..
+                    } => {
+                        self.release_duration =
+                            dragging_to_duration(self.viewport_factor, x, from, original_duration);
 
                         self.update_data();
 
@@ -779,63 +765,78 @@ impl Program<Message> for Envelope {
                             1 => 28,
                             2 => 43,
                             3 => 58,
-                            _ => unreachable!()
+                            _ => unreachable!(),
                         };
 
-                        return (event::Status::Captured, Some(Message::ParameterChange(parameter_index, self.release_duration as f64)));
-                    },
+                        return (
+                            event::Status::Captured,
+                            Some(Message::ParameterChange(
+                                parameter_index,
+                                self.release_duration as f64,
+                            )),
+                        );
+                    }
                 }
 
                 if let Some((from, original_offset)) = self.dragging_background_from {
                     let change = (x - from.x) / WIDTH as f32 * self.viewport_factor;
 
-                    self.x_offset = Self::process_x_offset(
-                        original_offset + change,
-                        self.viewport_factor
-                    );
+                    self.x_offset =
+                        Self::process_x_offset(original_offset + change, self.viewport_factor);
 
                     self.update_data();
                 }
-                    
-                if bounds.contains(Point::new(x, y)){
+
+                if bounds.contains(Point::new(x, y)) {
                     return (event::Status::Captured, None);
                 }
-            },
-            event::Event::Mouse(iced_baseview::mouse::Event::ButtonPressed(iced_baseview::mouse::Button::Left)) => {
-                if bounds.contains(self.last_cursor_position){
+            }
+            event::Event::Mouse(iced_baseview::mouse::Event::ButtonPressed(
+                iced_baseview::mouse::Button::Left,
+            )) => {
+                if bounds.contains(self.last_cursor_position) {
                     let relative_position = Point::new(
                         self.last_cursor_position.x - bounds.x,
                         self.last_cursor_position.y - bounds.y,
                     );
 
-                    if self.release_dragger.hitbox.contains(relative_position) && !self.release_dragger.is_dragging(){
+                    if self.release_dragger.hitbox.contains(relative_position)
+                        && !self.release_dragger.is_dragging()
+                    {
                         self.release_dragger.status = EnvelopeDraggerStatus::Dragging {
                             from: self.last_cursor_position,
                             original_duration: self.release_duration,
-                            original_end_value: 0.0
+                            original_end_value: 0.0,
                         };
-                    } else if self.decay_dragger.hitbox.contains(relative_position) && !self.decay_dragger.is_dragging() {
+                    } else if self.decay_dragger.hitbox.contains(relative_position)
+                        && !self.decay_dragger.is_dragging()
+                    {
                         self.decay_dragger.status = EnvelopeDraggerStatus::Dragging {
                             from: self.last_cursor_position,
                             original_duration: self.decay_duration,
-                            original_end_value: self.decay_end_value
+                            original_end_value: self.decay_end_value,
                         };
-                    } else if self.attack_dragger.hitbox.contains(relative_position) && !self.attack_dragger.is_dragging() {
+                    } else if self.attack_dragger.hitbox.contains(relative_position)
+                        && !self.attack_dragger.is_dragging()
+                    {
                         self.attack_dragger.status = EnvelopeDraggerStatus::Dragging {
                             from: self.last_cursor_position,
                             original_duration: self.attack_duration,
-                            original_end_value: self.attack_end_value
+                            original_end_value: self.attack_end_value,
                         };
                     } else {
-                        self.dragging_background_from = Some((self.last_cursor_position, self.x_offset));
+                        self.dragging_background_from =
+                            Some((self.last_cursor_position, self.x_offset));
                     }
 
                     self.cache.clear();
 
                     return (event::Status::Captured, None);
                 }
-            },
-            event::Event::Mouse(iced_baseview::mouse::Event::ButtonReleased(iced_baseview::mouse::Button::Left)) => {
+            }
+            event::Event::Mouse(iced_baseview::mouse::Event::ButtonReleased(
+                iced_baseview::mouse::Button::Left,
+            )) => {
                 let mut captured = false;
 
                 if self.release_dragger.is_dragging() {
@@ -854,18 +855,18 @@ impl Program<Message> for Envelope {
                     captured = true;
                 }
 
-                if self.dragging_background_from.is_some(){
+                if self.dragging_background_from.is_some() {
                     self.dragging_background_from = None;
 
                     captured = true;
                 }
-                
+
                 if captured {
                     self.cache.clear();
 
                     return (event::Status::Captured, None);
                 }
-            },
+            }
             _ => (),
         };
 
@@ -873,11 +874,10 @@ impl Program<Message> for Envelope {
     }
 }
 
-
 fn scale_point(size: Size, point: Point) -> Point {
     let translation = Vector {
         x: (1.0 - ENVELOPE_PATH_SCALE_X) * size.width / 2.0,
-        y: (1.0 - ENVELOPE_PATH_SCALE_Y) * size.height / 2.0
+        y: (1.0 - ENVELOPE_PATH_SCALE_Y) * size.height / 2.0,
     };
 
     let scaled = Point {
@@ -887,7 +887,6 @@ fn scale_point(size: Size, point: Point) -> Point {
 
     scaled + translation
 }
-
 
 fn scale_point_x(size: Size, point: Point) -> Point {
     let translation = Vector {
@@ -903,13 +902,12 @@ fn scale_point_x(size: Size, point: Point) -> Point {
     scaled + translation
 }
 
-
 // Almost-correct reverse transformation for envelope dragger to duration
 fn dragging_to_duration(
     viewport_factor: f32,
     cursor_x: f32,
     from: Point,
-    original_value: f32
+    original_value: f32,
 ) -> f32 {
     let change = (cursor_x - from.x) / WIDTH as f32;
     let change = change / ENVELOPE_PATH_SCALE_X;
@@ -920,16 +918,9 @@ fn dragging_to_duration(
         .max(ENVELOPE_MIN_DURATION as f32 / ENVELOPE_MAX_DURATION as f32)
 }
 
-
-fn dragging_to_end_value(
-    cursor_y: f32,
-    from: Point,
-    original_value: f32
-) -> f32 {
+fn dragging_to_end_value(cursor_y: f32, from: Point, original_value: f32) -> f32 {
     let change = -(cursor_y - from.y) / HEIGHT as f32;
     let change = change / ENVELOPE_PATH_SCALE_Y;
 
-    (original_value + change)
-        .min(1.0)
-        .max(0.0)
+    (original_value + change).min(1.0).max(0.0)
 }

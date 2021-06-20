@@ -1,26 +1,20 @@
+use iced_audio::{knob, text_marks, tick_marks, Normal, NormalParam};
 use iced_baseview::{
-    Column, Element, keyboard::Modifiers, Text, Length, HorizontalAlignment, Align, Space
-};
-use iced_audio::{
-    knob, Normal, NormalParam, text_marks, tick_marks
+    keyboard::Modifiers, Align, Column, Element, HorizontalAlignment, Length, Space, Text,
 };
 
+use crate::constants::*;
 use crate::parameters::values::{
-    LfoAmountValue, LfoFrequencyFreeValue, LfoFrequencyRatioValue,
-    LfoShapeValue, MasterFrequencyValue, MasterVolumeValue,
-    OperatorAdditiveValue, OperatorFeedbackValue, OperatorFrequencyFineValue,
-    OperatorFrequencyFreeValue, OperatorFrequencyRatioValue,
-    OperatorModulationIndexValue, OperatorPanningValue, OperatorVolumeValue,
-    ParameterValue
+    LfoAmountValue, LfoFrequencyFreeValue, LfoFrequencyRatioValue, LfoShapeValue,
+    MasterFrequencyValue, MasterVolumeValue, OperatorAdditiveValue, OperatorFeedbackValue,
+    OperatorFrequencyFineValue, OperatorFrequencyFreeValue, OperatorFrequencyRatioValue,
+    OperatorModulationIndexValue, OperatorPanningValue, OperatorVolumeValue, ParameterValue,
 };
 use crate::GuiSyncHandle;
-use crate::constants::*;
 
-use super::{FONT_BOLD, LINE_HEIGHT, Message};
-
+use super::{Message, FONT_BOLD, LINE_HEIGHT};
 
 const KNOB_SIZE: Length = Length::Units(LINE_HEIGHT * 2);
-
 
 enum TickMarkType {
     MinMaxAndDefault,
@@ -28,34 +22,27 @@ enum TickMarkType {
     Other(tick_marks::Group),
 }
 
-
-pub fn master_volume<H: GuiSyncHandle>(
-    sync_handle: &H,
-) -> OctaSineKnob<MasterVolumeValue> {
+pub fn master_volume<H: GuiSyncHandle>(sync_handle: &H) -> OctaSineKnob<MasterVolumeValue> {
     let parameter_index = 0;
 
     OctaSineKnob::new(
         sync_handle,
         parameter_index,
         "VOLUME",
-        TickMarkType::MinMaxAndDefault
+        TickMarkType::MinMaxAndDefault,
     )
 }
 
-
-pub fn master_frequency<H: GuiSyncHandle>(
-    sync_handle: &H,
-) -> OctaSineKnob<MasterFrequencyValue> {
+pub fn master_frequency<H: GuiSyncHandle>(sync_handle: &H) -> OctaSineKnob<MasterFrequencyValue> {
     let parameter_index = 1;
 
     OctaSineKnob::new(
         sync_handle,
         parameter_index,
         "FREQ",
-        TickMarkType::MinMaxAndDefault
+        TickMarkType::MinMaxAndDefault,
     )
 }
-
 
 pub fn operator_volume<H: GuiSyncHandle>(
     sync_handle: &H,
@@ -71,154 +58,139 @@ pub fn operator_volume<H: GuiSyncHandle>(
     )
 }
 
-
 pub fn operator_panning<H: GuiSyncHandle>(
     sync_handle: &H,
-    parameter_index: usize
+    parameter_index: usize,
 ) -> OctaSineKnob<OperatorPanningValue> {
     OctaSineKnob::new(
         sync_handle,
         parameter_index,
         "PAN",
-        TickMarkType::MinMaxAndDefault
+        TickMarkType::MinMaxAndDefault,
     )
 }
 
-
 pub fn operator_additive<H: GuiSyncHandle>(
     sync_handle: &H,
-    parameter_index: usize
+    parameter_index: usize,
 ) -> OctaSineKnob<OperatorAdditiveValue> {
     OctaSineKnob::new(
         sync_handle,
         parameter_index,
         "ADDITIVE",
-        TickMarkType::MinMax
+        TickMarkType::MinMax,
     )
 }
 
-
 pub fn operator_mod_index<H: GuiSyncHandle>(
     sync_handle: &H,
-    parameter_index: usize
+    parameter_index: usize,
 ) -> OctaSineKnob<OperatorModulationIndexValue> {
     OctaSineKnob::new(
         sync_handle,
         parameter_index,
         "MOD",
-        TickMarkType::MinMaxAndDefault
+        TickMarkType::MinMaxAndDefault,
     )
 }
 
-
 pub fn operator_feedback<H: GuiSyncHandle>(
     sync_handle: &H,
-    parameter_index: usize
+    parameter_index: usize,
 ) -> OctaSineKnob<OperatorFeedbackValue> {
     OctaSineKnob::new(
         sync_handle,
         parameter_index,
         "FEEDBACK",
-        TickMarkType::MinMaxAndDefault
+        TickMarkType::MinMaxAndDefault,
     )
 }
 
-
 pub fn operator_frequency_ratio<H: GuiSyncHandle>(
     sync_handle: &H,
-    parameter_index: usize
+    parameter_index: usize,
 ) -> OctaSineKnob<OperatorFrequencyRatioValue> {
     OctaSineKnob::new(
         sync_handle,
         parameter_index,
         "RATIO",
-        TickMarkType::MinMaxAndDefault
+        TickMarkType::MinMaxAndDefault,
     )
 }
 
-
 pub fn operator_frequency_free<H: GuiSyncHandle>(
     sync_handle: &H,
-    parameter_index: usize
+    parameter_index: usize,
 ) -> OctaSineKnob<OperatorFrequencyFreeValue> {
     OctaSineKnob::new(
         sync_handle,
         parameter_index,
         "FREE",
-        TickMarkType::MinMaxAndDefault
+        TickMarkType::MinMaxAndDefault,
     )
 }
 
-
 pub fn operator_frequency_fine<H: GuiSyncHandle>(
     sync_handle: &H,
-    parameter_index: usize
+    parameter_index: usize,
 ) -> OctaSineKnob<OperatorFrequencyFineValue> {
     OctaSineKnob::new(
         sync_handle,
         parameter_index,
         "FINE",
-        TickMarkType::MinMaxAndDefault
+        TickMarkType::MinMaxAndDefault,
     )
 }
-
 
 pub fn lfo_shape<H: GuiSyncHandle>(
     sync_handle: &H,
     parameter_index: usize,
 ) -> OctaSineKnob<LfoShapeValue> {
-    let tick_marks = tick_marks::Group::evenly_spaced(
-        LFO_SHAPE_STEPS.len(),
-        tick_marks::Tier::Two
-    );
+    let tick_marks = tick_marks::Group::evenly_spaced(LFO_SHAPE_STEPS.len(), tick_marks::Tier::Two);
 
     OctaSineKnob::new(
         sync_handle,
         parameter_index,
         "SHAPE",
-        TickMarkType::Other(tick_marks)
+        TickMarkType::Other(tick_marks),
     )
 }
 
-
 pub fn lfo_frequency_ratio<H: GuiSyncHandle>(
     sync_handle: &H,
-    parameter_index: usize
+    parameter_index: usize,
 ) -> OctaSineKnob<LfoFrequencyRatioValue> {
     OctaSineKnob::new(
         sync_handle,
         parameter_index,
         "RATIO",
-        TickMarkType::MinMaxAndDefault
+        TickMarkType::MinMaxAndDefault,
     )
 }
 
-
 pub fn lfo_frequency_free<H: GuiSyncHandle>(
     sync_handle: &H,
-    parameter_index: usize
+    parameter_index: usize,
 ) -> OctaSineKnob<LfoFrequencyFreeValue> {
     OctaSineKnob::new(
         sync_handle,
         parameter_index,
         "FREE",
-        TickMarkType::MinMaxAndDefault
+        TickMarkType::MinMaxAndDefault,
     )
 }
 
-
 pub fn lfo_amount<H: GuiSyncHandle>(
     sync_handle: &H,
-    parameter_index: usize
+    parameter_index: usize,
 ) -> OctaSineKnob<LfoAmountValue> {
     OctaSineKnob::new(
         sync_handle,
         parameter_index,
         "AMOUNT",
-        TickMarkType::MinMaxAndDefault
+        TickMarkType::MinMaxAndDefault,
     )
 }
-
 
 #[derive(Debug, Clone)]
 pub struct OctaSineKnob<P: ParameterValue> {
@@ -231,8 +203,7 @@ pub struct OctaSineKnob<P: ParameterValue> {
     phantom_data: ::std::marker::PhantomData<P>,
 }
 
-
-impl <P: ParameterValue + Default>OctaSineKnob<P> {
+impl<P: ParameterValue + Default> OctaSineKnob<P> {
     fn new<H: GuiSyncHandle>(
         sync_handle: &H,
         parameter_index: usize,
@@ -244,13 +215,12 @@ impl <P: ParameterValue + Default>OctaSineKnob<P> {
             parameter_index,
             title,
             tick_mark_type,
-            P::default().to_sync()
+            P::default().to_sync(),
         )
     }
 }
 
-
-impl <P: ParameterValue>OctaSineKnob<P> {
+impl<P: ParameterValue> OctaSineKnob<P> {
     fn new_with_default_sync_value<H: GuiSyncHandle>(
         sync_handle: &H,
         parameter_index: usize,
@@ -261,22 +231,14 @@ impl <P: ParameterValue>OctaSineKnob<P> {
         let sync_value = sync_handle.get_parameter(parameter_index);
         let value_text = P::from_sync(sync_value).format();
 
-        let knob_state = knob::State::new(
-            NormalParam {
-                value: Normal::new(sync_value as f32),
-                default: Normal::new(default_sync_value as f32),
-            }
-        );
+        let knob_state = knob::State::new(NormalParam {
+            value: Normal::new(sync_value as f32),
+            default: Normal::new(default_sync_value as f32),
+        });
 
         let tick_marks = match tick_mark_type {
-            TickMarkType::MinMaxAndDefault => {
-                tick_marks_from_min_max_and_value(default_sync_value)
-            },
-            TickMarkType::MinMax => {
-                tick_marks::Group::min_max(
-                    tick_marks::Tier::Two,
-                )
-            },
+            TickMarkType::MinMaxAndDefault => tick_marks_from_min_max_and_value(default_sync_value),
+            TickMarkType::MinMax => tick_marks::Group::min_max(tick_marks::Tier::Two),
             TickMarkType::Other(tick_marks) => tick_marks,
         };
 
@@ -291,7 +253,7 @@ impl <P: ParameterValue>OctaSineKnob<P> {
         }
     }
 
-    pub fn set_value(&mut self, value: f64){
+    pub fn set_value(&mut self, value: f64) {
         if !self.knob_state.is_dragging() {
             self.knob_state.set_normal(Normal::new(value as f32));
         }
@@ -304,8 +266,8 @@ impl <P: ParameterValue>OctaSineKnob<P> {
             .horizontal_alignment(HorizontalAlignment::Center)
             .font(FONT_BOLD);
 
-        let value = Text::new(self.value_text.clone())
-            .horizontal_alignment(HorizontalAlignment::Center);
+        let value =
+            Text::new(self.value_text.clone()).horizontal_alignment(HorizontalAlignment::Center);
 
         let parameter_index = self.parameter_index;
 
@@ -314,16 +276,12 @@ impl <P: ParameterValue>OctaSineKnob<P> {
             ..Default::default()
         };
 
-        let mut knob = knob::Knob::new(
-            &mut self.knob_state,
-            move |value| Message::ParameterChange(
-                parameter_index,
-                value.as_f32() as f64
-            ),
-        )
-            .size(Length::from(KNOB_SIZE))
-            .modifier_keys(modifier_keys);
-        
+        let mut knob = knob::Knob::new(&mut self.knob_state, move |value| {
+            Message::ParameterChange(parameter_index, value.as_f32() as f64)
+        })
+        .size(Length::from(KNOB_SIZE))
+        .modifier_keys(modifier_keys);
+
         if let Some(text_marks) = self.text_marks.as_ref() {
             knob = knob.text_marks(text_marks);
         }
@@ -335,22 +293,15 @@ impl <P: ParameterValue>OctaSineKnob<P> {
             .width(Length::Units(LINE_HEIGHT * 4))
             .align_items(Align::Center)
             .push(title)
-            .push(
-                Space::with_height(Length::Units(LINE_HEIGHT))
-            )
+            .push(Space::with_height(Length::Units(LINE_HEIGHT)))
             .push(knob)
-            .push(
-                Space::with_height(Length::Units(LINE_HEIGHT))
-            )
+            .push(Space::with_height(Length::Units(LINE_HEIGHT)))
             .push(value)
             .into()
     }
 }
 
-
-fn tick_marks_from_min_max_and_value(
-    sync_value: f64,
-) -> tick_marks::Group {
+fn tick_marks_from_min_max_and_value(sync_value: f64) -> tick_marks::Group {
     let marks = vec![
         (Normal::new(0.0), tick_marks::Tier::Two),
         (Normal::new(sync_value as f32), tick_marks::Tier::Two),

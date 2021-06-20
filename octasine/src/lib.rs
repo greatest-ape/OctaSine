@@ -6,9 +6,9 @@ pub mod approximations;
 pub mod common;
 pub mod constants;
 pub mod gen;
-pub mod voices;
 pub mod parameters;
 pub mod preset_bank;
+pub mod voices;
 
 #[cfg(feature = "gui")]
 pub mod gui;
@@ -18,18 +18,17 @@ use std::sync::Arc;
 use array_init::array_init;
 use fastrand::Rng;
 
-use vst::api::{Supported, Events};
+use vst::api::{Events, Supported};
 use vst::event::Event;
 use vst::host::Host;
-use vst::plugin::{Category, Plugin, Info, CanDo, HostCallback, PluginParameters};
+use vst::plugin::{CanDo, Category, HostCallback, Info, Plugin, PluginParameters};
 
 use approximations::*;
 use common::*;
 use constants::*;
-use voices::*;
 use parameters::processing::*;
 use preset_bank::PresetBank;
-
+use voices::*;
 
 /// State used for processing
 pub struct ProcessingState {
@@ -41,7 +40,6 @@ pub struct ProcessingState {
     pub voices: [Voice; 128],
     pub parameters: ProcessingParameters,
 }
-
 
 /// Thread-safe state used for parameter and preset calls
 pub struct SyncState {
@@ -65,7 +63,6 @@ impl Default for OctaSine {
     }
 }
 
-
 impl OctaSine {
     fn create(host: Option<HostCallback>) -> Self {
         let sample_rate = SampleRate(44100.0);
@@ -80,9 +77,9 @@ impl OctaSine {
             parameters: ProcessingParameters::default(),
         };
 
-        let sync= Arc::new(SyncState {
+        let sync = Arc::new(SyncState {
             host,
-            presets: built_in_preset_bank()
+            presets: built_in_preset_bank(),
         });
 
         #[cfg(feature = "gui")]
@@ -103,11 +100,12 @@ impl OctaSine {
     fn get_bpm(&self) -> BeatsPerMinute {
         // Use TEMPO_VALID constant content as mask directly because
         // of problems with using TimeInfoFlags
-        self.sync.host
+        self.sync
+            .host
             .and_then(|host| host.get_time_info(1 << 10))
             .map(|time_info| BeatsPerMinute(time_info.tempo as f64))
             .unwrap_or_default()
-    }  
+    }
 
     /// MIDI keyboard support
 
@@ -115,7 +113,7 @@ impl OctaSine {
         match data[0] {
             128 => self.key_off(data[1]),
             144 => self.key_on(data[1], data[2]),
-            _   => ()
+            _ => (),
         }
     }
 
@@ -128,9 +126,8 @@ impl OctaSine {
     }
 }
 
-
 impl Plugin for OctaSine {
-    fn process(&mut self, buffer: &mut vst::buffer::AudioBuffer<f32>){
+    fn process(&mut self, buffer: &mut vst::buffer::AudioBuffer<f32>) {
         gen::process_f32_runtime_select(self, buffer);
     }
 
@@ -157,35 +154,30 @@ impl Plugin for OctaSine {
     }
 
     #[cfg(feature = "logging")]
-	fn init(&mut self) {
+    fn init(&mut self) {
         let log_folder = dirs::home_dir().unwrap().join("tmp");
 
         let _ = ::std::fs::create_dir(log_folder.clone());
 
-		let log_file = ::std::fs::File::create(
-            log_folder.join(format!("{}.log", PLUGIN_NAME))
-        ).unwrap();
+        let log_file =
+            ::std::fs::File::create(log_folder.join(format!("{}.log", PLUGIN_NAME))).unwrap();
 
         let log_config = simplelog::ConfigBuilder::new()
             .set_time_to_local(true)
             .build();
 
-		let _ = simplelog::WriteLogger::init(
-            simplelog::LevelFilter::Info,
-            log_config,
-            log_file
-        );
+        let _ = simplelog::WriteLogger::init(simplelog::LevelFilter::Info, log_config, log_file);
 
         log_panics::init();
 
-		info!("init");
-	}
+        info!("init");
+    }
 
     fn process_events(&mut self, events: &Events) {
         for event in events.events() {
             if let Event::Midi(ev) = event {
                 self.process_midi_event(ev.data);
-            } 
+            }
         }
     }
 
@@ -198,8 +190,10 @@ impl Plugin for OctaSine {
 
     fn can_do(&self, can_do: CanDo) -> Supported {
         match can_do {
-            CanDo::ReceiveMidiEvent | CanDo::ReceiveTimeInfo
-            | CanDo::SendEvents | CanDo::ReceiveEvents => Supported::Yes,
+            CanDo::ReceiveMidiEvent
+            | CanDo::ReceiveTimeInfo
+            | CanDo::SendEvents
+            | CanDo::ReceiveEvents => Supported::Yes,
             _ => Supported::Maybe,
         }
     }
@@ -210,14 +204,13 @@ impl Plugin for OctaSine {
 
     #[cfg(feature = "gui")]
     fn get_editor(&mut self) -> Option<Box<dyn ::vst::editor::Editor>> {
-        if let Some(editor) = self.editor.take(){
+        if let Some(editor) = self.editor.take() {
             Some(Box::new(editor) as Box<dyn ::vst::editor::Editor>)
         } else {
             None
         }
     }
 }
-
 
 impl vst::plugin::PluginParameters for SyncState {
     /// Get parameter label for parameter at `index` (e.g. "db", "sec", "ms", "%").
@@ -227,32 +220,37 @@ impl vst::plugin::PluginParameters for SyncState {
 
     /// Get the parameter value for parameter at `index` (e.g. "1.0", "150", "Plate", "Off").
     fn get_parameter_text(&self, index: i32) -> String {
-        self.presets.get_parameter_value_text(index as usize)
+        self.presets
+            .get_parameter_value_text(index as usize)
             .unwrap_or_else(|| "".to_string())
     }
 
     /// Get the name of parameter at `index`.
     fn get_parameter_name(&self, index: i32) -> String {
-        self.presets.get_parameter_name(index as usize)
+        self.presets
+            .get_parameter_name(index as usize)
             .unwrap_or_else(|| "".to_string())
     }
 
     /// Get the value of paramater at `index`. Should be value between 0.0 and 1.0.
     fn get_parameter(&self, index: i32) -> f32 {
-        self.presets.get_parameter_value(index as usize)
+        self.presets
+            .get_parameter_value(index as usize)
             .unwrap_or(0.0) as f32
     }
 
     /// Set the value of parameter at `index`. `value` is between 0.0 and 1.0.
     fn set_parameter(&self, index: i32, value: f32) {
-        self.presets.set_parameter_from_host(index as usize, value as f64);
+        self.presets
+            .set_parameter_from_host(index as usize, value as f64);
     }
 
     /// Use String as input for parameter value. Used by host to provide an editable field to
     /// adjust a parameter value. E.g. "100" may be interpreted as 100hz for parameter. Returns if
     /// the input string was used.
     fn string_to_parameter(&self, index: i32, text: String) -> bool {
-        self.presets.set_parameter_text_from_host(index as usize, text)
+        self.presets
+            .set_parameter_text_from_host(index as usize, text)
     }
 
     /// Return whether parameter at `index` can be automated.
@@ -279,7 +277,8 @@ impl vst::plugin::PluginParameters for SyncState {
 
     /// Get the name of the preset at the index specified by `preset`.
     fn get_preset_name(&self, index: i32) -> String {
-        self.presets.get_preset_name(index as usize)
+        self.presets
+            .get_preset_name(index as usize)
             .unwrap_or_else(|| "".to_string())
     }
 
@@ -304,13 +303,12 @@ impl vst::plugin::PluginParameters for SyncState {
     /// If `preset_chunks` is set to true in plugin info, this should load a preset bank from the
     /// given chunk data.
     fn load_bank_data(&self, data: &[u8]) {
-        if let Err(err) = self.presets.import_bank_from_bytes(data){
+        if let Err(err) = self.presets.import_bank_from_bytes(data) {
             #[cfg(feature = "logging")]
             ::log::error!("Couldn't load bank data: {}", err)
         }
     }
 }
-
 
 cfg_if::cfg_if! {
     if #[cfg(feature = "gui")] {
@@ -356,11 +354,9 @@ cfg_if::cfg_if! {
     }
 }
 
-
 pub fn built_in_preset_bank() -> PresetBank {
     PresetBank::new_from_bytes(include_bytes!("../presets/preset-bank.json"))
 }
-
 
 #[macro_export]
 macro_rules! crate_version {
@@ -369,13 +365,11 @@ macro_rules! crate_version {
     };
 }
 
-
 fn crate_version_to_vst_format(crate_version: String) -> i32 {
     format!("{:0<4}", crate_version.replace(".", ""))
         .parse()
         .expect("convert crate version to i32")
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -383,7 +377,7 @@ mod tests {
 
     #[allow(clippy::zero_prefixed_literal)]
     #[test]
-    fn test_crate_version_to_vst_format(){
+    fn test_crate_version_to_vst_format() {
         assert_eq!(crate_version_to_vst_format("1".to_string()), 1000);
         assert_eq!(crate_version_to_vst_format("0.1".to_string()), 0100);
         assert_eq!(crate_version_to_vst_format("0.0.2".to_string()), 0020);

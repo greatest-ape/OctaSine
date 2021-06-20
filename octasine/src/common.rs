@@ -29,20 +29,19 @@ pub enum EnvelopeStage {
     Decay,
     Sustain,
     Release,
-    Ended
+    Ended,
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum WaveType {
     Sine,
-    WhiteNoise
+    WhiteNoise,
 }
-
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub enum LfoTargetMasterParameter {
     Volume,
-    Frequency
+    Frequency,
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
@@ -54,7 +53,7 @@ pub enum LfoTargetOperatorParameter {
     Feedback,
     FrequencyRatio,
     FrequencyFree,
-    FrequencyFine
+    FrequencyFine,
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
@@ -72,13 +71,12 @@ pub enum LfoTargetParameter {
     Lfo(usize, LfoTargetLfoParameter),
 }
 
-
 impl LfoTargetParameter {
     pub fn to_string(&self) -> String {
         match self {
             LfoTargetParameter::Master(p) => {
                 format!("Master {}", format!("{:?}", p).to_lowercase())
-            },
+            }
             LfoTargetParameter::Operator(n, p) => {
                 use LfoTargetOperatorParameter::*;
 
@@ -94,7 +92,7 @@ impl LfoTargetParameter {
                 };
 
                 format!("Op. {} {}", n + 1, p)
-            },
+            }
             LfoTargetParameter::Lfo(n, p) => {
                 use LfoTargetLfoParameter::*;
 
@@ -106,7 +104,7 @@ impl LfoTargetParameter {
                 };
 
                 format!("LFO {} {}", n + 1, p)
-            },
+            }
         }
     }
 }
@@ -117,15 +115,14 @@ pub enum LfoShape {
     ReverseSaw,
     Triangle,
     Square,
-    ReverseSquare
+    ReverseSquare,
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum LfoMode {
     Once,
-    Forever
+    Forever,
 }
-
 
 pub fn get_lfo_target_parameters(lfo_index: usize) -> &'static [LfoTargetParameter] {
     let end = match lfo_index {
