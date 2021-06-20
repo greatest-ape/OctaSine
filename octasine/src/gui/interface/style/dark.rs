@@ -57,17 +57,21 @@ pub struct Button;
 impl button::StyleSheet for Button {
     fn active(&self) -> button::Style {
         button::Style {
-            background: ACTIVE.into(),
+            background: Color::BLACK.into(),
             border_radius: 3.0,
-            text_color: Color::BLACK.into(),
+	    border_width: 1.0,
+	    border_color: ACTIVE,
+            text_color: ACTIVE,
             ..button::Style::default()
         }
     }
 
     fn hovered(&self) -> button::Style {
         button::Style {
-            background: HOVERED.into(),
-            text_color: Color::BLACK.into(),
+            background: SURFACE.into(),
+	    border_width: 1.0,
+	    border_color: ACTIVE,
+            text_color: ACTIVE,
             ..self.active()
         }
     }
@@ -93,14 +97,16 @@ impl pick_list::StyleSheet for PickList {
     }
     fn active(&self) -> pick_list::Style {
 	pick_list::Style {
-	    background: Background::from(ACTIVE),
+	    background: Background::from(Color::BLACK),
+	    text_color: ACTIVE,
 	    border_color: ACTIVE,
             ..Default::default()
 	}
     }
     fn hovered(&self) -> pick_list::Style {
 	pick_list::Style {
-	    background: Background::from(HOVERED),
+	    background: Background::from(SURFACE),
+	    text_color: ACTIVE,
 	    border_color: ACTIVE,
             ..Default::default()
 	}
