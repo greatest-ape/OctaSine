@@ -4,20 +4,20 @@ use iced_baseview::{
 
 const SURFACE: Color = Color::from_rgb(
     0x40 as f32 / 255.0,
-    0x44 as f32 / 255.0,
-    0x4B as f32 / 255.0,
+    0x40 as f32 / 255.0,
+    0x40 as f32 / 255.0,
 );
 
 const ACTIVE: Color = Color::from_rgb(
-    0x72 as f32 / 255.0,
-    0x89 as f32 / 255.0,
-    0xDA as f32 / 255.0,
+    0x80 as f32 / 255.0,
+    0x80 as f32 / 255.0,
+    0x80 as f32 / 255.0,
 );
 
 const HOVERED: Color = Color::from_rgb(
-    0x67 as f32 / 255.0,
-    0x7B as f32 / 255.0,
-    0xC4 as f32 / 255.0,
+    0x70 as f32 / 255.0,
+    0x70 as f32 / 255.0,
+    0x70 as f32 / 255.0,
 );
 
 pub struct Container;
@@ -26,7 +26,7 @@ impl container::StyleSheet for Container {
     fn style(&self) -> container::Style {
         container::Style {
             background: Color::from_rgb8(0x36, 0x39, 0x3F).into(),
-            text_color: Color::WHITE.into(),
+            text_color: Color::from_rgb8(0xAA, 0xAA, 0xAA).into(),
             ..container::Style::default()
         }
     }
@@ -59,7 +59,7 @@ impl button::StyleSheet for Button {
         button::Style {
             background: ACTIVE.into(),
             border_radius: 3.0,
-            text_color: Color::WHITE,
+            text_color: Color::BLACK.into(),
             ..button::Style::default()
         }
     }
@@ -67,7 +67,7 @@ impl button::StyleSheet for Button {
     fn hovered(&self) -> button::Style {
         button::Style {
             background: HOVERED.into(),
-            text_color: Color::WHITE,
+            text_color: Color::BLACK.into(),
             ..self.active()
         }
     }
@@ -86,12 +86,14 @@ pub struct PickList;
 impl pick_list::StyleSheet for PickList {
     fn menu(&self) -> iced_style::menu::Style {
         iced_style::menu::Style {
-            selected_background: Background::from(Color::from_rgb(0.4, 0.4, 0.4)),
+            selected_background: Background::from(SURFACE),
             ..Default::default()
         }
     }
     fn active(&self) -> pick_list::Style {
-        Default::default()
+	pick_list::Style {
+            ..Default::default()
+	}
     }
     fn hovered(&self) -> pick_list::Style {
         Default::default()
