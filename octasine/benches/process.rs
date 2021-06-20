@@ -48,16 +48,17 @@ use octasine::OctaSine;
 /// Speed compared to std fallback: 2.3127007x
 /// ```
 fn main() -> Result<(), ()> {
-    let mut all_hashes_match = true;
-
+    // Ignore success status here, since output differs across platforms
+    // depending on std sine implementation
     #[allow(unused_variables)]
-    let (success, fallback_std) = benchmark(
+    let (_, fallback_std) = benchmark(
         "fallback (std)",
         "ad 0d 1d 04 5e 38 95 7f ",
         octasine::gen::FallbackStd::process_f32,
     );
 
-    all_hashes_match &= success;
+    #[allow(unused_variables, unused_mut)]
+    let mut all_hashes_match = true;
 
     #[cfg(feature = "simd")]
     {
@@ -93,11 +94,11 @@ fn main() -> Result<(), ()> {
     }
 
     if all_hashes_match {
-        println!("\n{}", "All output hashes matched".green());
+        println!("\n{}", "All sleef output hashes matched".green());
 
         Ok(())
     } else {
-        println!("\n{}", "Output hashes didn't match".red());
+        println!("\n{}", "Sleef output hashes didn't match".red());
 
         Err(())
     }
