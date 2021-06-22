@@ -1,5 +1,7 @@
 use iced_baseview::{button, pick_list, Background, Color, Vector};
 
+use super::envelope;
+
 pub struct Button;
 
 impl button::StyleSheet for Button {
@@ -36,5 +38,16 @@ impl pick_list::StyleSheet for PickList {
     }
     fn hovered(&self) -> pick_list::Style {
         Default::default()
+    }
+}
+
+pub struct Envelope;
+
+impl envelope::StyleSheet for Envelope {
+    fn active(&self) -> envelope::Style {
+        envelope::Style {
+            time_marker_minor_color: Color::from_rgb(0.9, 0.9, 0.9),
+            time_marker_color_major: Color::from_rgb(0.7, 0.7, 0.7),
+        }
     }
 }

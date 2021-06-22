@@ -2,6 +2,8 @@ use iced_baseview::{
     button, container, pick_list, radio, Background, Color,
 };
 
+use super::envelope;
+
 const SURFACE: Color = Color::from_rgb(
     0x20 as f32 / 255.0,
     0x20 as f32 / 255.0,
@@ -186,6 +188,17 @@ pub(super) mod knob {
                 },
                 offset: 3.5,
             })
+        }
+    }
+}
+
+pub struct Envelope;
+
+impl envelope::StyleSheet for Envelope {
+    fn active(&self) -> envelope::Style {
+        envelope::Style {
+            time_marker_minor_color: Color::from_rgb(0.3, 0.3, 0.3),
+            time_marker_color_major: Color::from_rgb(0.5, 0.5, 0.5),
         }
     }
 }

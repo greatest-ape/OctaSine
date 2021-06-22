@@ -9,6 +9,7 @@ use crate::constants::{ENVELOPE_MAX_DURATION, ENVELOPE_MIN_DURATION};
 use crate::voices::envelopes::VoiceOperatorVolumeEnvelope;
 use crate::GuiSyncHandle;
 
+use super::style::Theme;
 use super::{Message, SnapPoint, FONT_SIZE, LINE_HEIGHT};
 
 const WIDTH: u16 = LINE_HEIGHT * 19;
@@ -25,6 +26,16 @@ const ENVELOPE_PATH_SCALE_Y: f32 = 1.0 - (1.0 / 8.0) - (1.0 / 16.0);
 
 const TOTAL_DURATION: f32 = 3.0;
 const MIN_VIEWPORT_FACTOR: f32 = 1.0 / 128.0;
+
+#[derive(Debug, Clone)]
+pub struct Style {
+    pub time_marker_minor_color: Color,
+    pub time_marker_color_major: Color,
+}
+
+pub trait StyleSheet {
+    fn active(&self) -> Style;
+}
 
 struct EnvelopeStagePath {
     path: Path,
@@ -191,6 +202,7 @@ impl Default for EnvelopeDragger {
 pub struct Envelope {
     log10_table: Log10Table,
     cache: Cache,
+    style: Theme,
     operator_index: usize,
     attack_duration: f32,
     attack_end_value: f32,
@@ -229,6 +241,7 @@ impl Envelope {
         let mut envelope = Self {
             log10_table: Log10Table::default(),
             cache: Cache::default(),
+            style: Theme::default(),
             operator_index,
             attack_duration,
             attack_end_value: sync_handle.get_parameter(attack_val) as f32,
@@ -428,7 +441,9 @@ impl Envelope {
             .into()
     }
 
-    fn draw_time_markers(&self, frame: &mut Frame) {
+    fn draw_time_markers(&self, frame: &mut Frame, style_sheet: Box<dyn StyleSheet>) {
+        let style = style_sheet.active();
+
         let total_duration = self.viewport_factor * TOTAL_DURATION;
         let x_offset = self.x_offset / self.viewport_factor;
 
@@ -476,20 +491,20 @@ impl Envelope {
 
                 let stroke = Stroke::default()
                     .with_width(1.0)
-                    .with_color(Color::from_rgb(0.7, 0.7, 0.7));
+                    .with_color(style.time_marker_color_major);
 
                 frame.stroke(&path, stroke);
             } else {
                 let stroke = Stroke::default()
                     .with_width(1.0)
-                    .with_color(Color::from_rgb(0.9, 0.9, 0.9));
+                    .with_color(style.time_marker_minor_color);
 
                 frame.stroke(&path, stroke);
             }
         }
     }
 
-    fn draw_stage_paths(&self, frame: &mut Frame) {
+    fn draw_stage_paths(&self, frame: &mut Frame, style_sheet: Box<dyn StyleSheet>) {
         let size = frame.size();
 
         let top_drag_border = Path::line(
@@ -600,8 +615,8 @@ impl Envelope {
 impl Program<Message> for Envelope {
     fn draw(&self, bounds: Rectangle, _cursor: Cursor) -> Vec<Geometry> {
         let geometry = self.cache.draw(bounds.size(), |frame| {
-            self.draw_time_markers(frame);
-            self.draw_stage_paths(frame);
+            self.draw_time_markers(frame, self.style.into());
+            self.draw_stage_paths(frame, self.style.into());
 
             Self::draw_dragger(frame, &self.attack_dragger);
             Self::draw_dragger(frame, &self.decay_dragger);

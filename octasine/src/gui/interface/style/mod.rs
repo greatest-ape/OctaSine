@@ -3,6 +3,8 @@ mod light;
 
 use iced_baseview::{button, container, pick_list, radio};
 
+use super::envelope;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Theme {
     Light,
@@ -60,6 +62,15 @@ impl From<Theme> for Box<dyn iced_audio::knob::StyleSheet> {
         match theme {
             Theme::Light => Default::default(),
             Theme::Dark => dark::knob::Knob.into(),
+        }
+    }
+}
+
+impl From<Theme> for Box<dyn envelope::StyleSheet> {
+    fn from(theme: Theme) -> Self {
+        match theme {
+            Theme::Light => Box::new(light::Envelope) as Box<dyn envelope::StyleSheet>,
+            Theme::Dark => Box::new(dark::Envelope) as Box<dyn envelope::StyleSheet>,
         }
     }
 }
