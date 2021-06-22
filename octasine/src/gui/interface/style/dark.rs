@@ -197,8 +197,11 @@ pub struct Envelope;
 impl envelope::StyleSheet for Envelope {
     fn active(&self) -> envelope::Style {
         envelope::Style {
+            background_color: Color::BLACK,
+            border_color: Color::from_rgb(0.5, 0.5, 0.5),
             time_marker_minor_color: Color::from_rgb(0.3, 0.3, 0.3),
             time_marker_color_major: Color::from_rgb(0.5, 0.5, 0.5),
+            path_color: ACTIVE,
         }
     }
 }

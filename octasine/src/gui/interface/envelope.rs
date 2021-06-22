@@ -29,8 +29,11 @@ const MIN_VIEWPORT_FACTOR: f32 = 1.0 / 128.0;
 
 #[derive(Debug, Clone)]
 pub struct Style {
+    pub background_color: Color,
+    pub border_color: Color,
     pub time_marker_minor_color: Color,
     pub time_marker_color_major: Color,
+    pub path_color: Color,
 }
 
 pub trait StyleSheet {
@@ -505,6 +508,7 @@ impl Envelope {
     }
 
     fn draw_stage_paths(&self, frame: &mut Frame, style_sheet: Box<dyn StyleSheet>) {
+        let style = style_sheet.active();
         let size = frame.size();
 
         let top_drag_border = Path::line(
@@ -518,12 +522,12 @@ impl Envelope {
 
         let drag_border_stroke = Stroke::default()
             .with_width(1.0)
-            .with_color(Color::from_rgb(0.7, 0.7, 0.7));
+            .with_color(style.time_marker_color_major);
 
         frame.stroke(&top_drag_border, drag_border_stroke);
         frame.stroke(&bottom_drag_border, drag_border_stroke);
 
-        let stage_path_stroke = Stroke::default().with_width(1.0).with_color(Color::BLACK);
+        let stage_path_stroke = Stroke::default().with_width(1.0).with_color(style.path_color);
 
         frame.stroke(&self.attack_stage_path.path, stage_path_stroke);
         frame.stroke(&self.decay_stage_path.path, stage_path_stroke);
@@ -533,16 +537,16 @@ impl Envelope {
 
         let left_bg_x = scale_point_x(size, Point::ORIGIN).snap().x - 1.0;
         let left_bg = Path::rectangle(Point::ORIGIN, Size::new(left_bg_x, size.height));
-        frame.fill(&left_bg, Color::WHITE);
-        frame.stroke(&left_bg, Stroke::default().with_color(Color::WHITE));
+        frame.fill(&left_bg, style.background_color);
+        frame.stroke(&left_bg, Stroke::default().with_color(style.background_color));
 
         let right_bg_x = scale_point_x(size, Point::new(size.width, 0.0)).snap().x + 1.0;
         let right_bg = Path::rectangle(
             Point::new(right_bg_x, 0.0),
             Size::new(size.width, size.height),
         );
-        frame.fill(&right_bg, Color::WHITE);
-        frame.stroke(&right_bg, Stroke::default().with_color(Color::WHITE));
+        frame.fill(&right_bg, style.background_color);
+        frame.stroke(&right_bg, Stroke::default().with_color(style.background_color));
 
         let top_border = Path::line(
             scale_point_x(size, Point::ORIGIN).snap(),
@@ -569,7 +573,7 @@ impl Envelope {
         );
         let border_stroke = Stroke::default()
             .with_width(1.0)
-            .with_color(Color::from_rgb(0.3, 0.3, 0.3));
+            .with_color(style.border_color);
 
         frame.stroke(&top_border, border_stroke);
         frame.stroke(&bottom_border, border_stroke);
