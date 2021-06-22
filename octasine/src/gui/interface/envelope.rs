@@ -31,9 +31,13 @@ const MIN_VIEWPORT_FACTOR: f32 = 1.0 / 128.0;
 pub struct Style {
     pub background_color: Color,
     pub border_color: Color,
+    pub text_color: Color,
     pub time_marker_minor_color: Color,
     pub time_marker_color_major: Color,
     pub path_color: Color,
+    pub dragger_fill_color_active: Color,
+    pub dragger_fill_color_hover: Color,
+    pub dragger_border_color: Color,
 }
 
 pub trait StyleSheet {
@@ -487,6 +491,7 @@ impl Envelope {
                     content: format!("{:.1}s", time_marker_interval * 4.0 * i as f32),
                     position: scale_point_x(self.size, text_point),
                     size: FONT_SIZE as f32,
+                    color: style.text_color,
                     ..Default::default()
                 };
 
@@ -581,8 +586,9 @@ impl Envelope {
         frame.stroke(&right_border, border_stroke);
     }
 
-    fn draw_dragger(frame: &mut Frame, dragger: &EnvelopeDragger) {
+    fn draw_dragger(frame: &mut Frame, style_sheet: Box<dyn StyleSheet>, dragger: &EnvelopeDragger) {
         let size = frame.size();
+        let style = style_sheet.active();
 
         let left_end_x = scale_point(size, Point::ORIGIN).snap().x;
         let right_end_x = scale_point(size, Point::new(size.width, 0.0)).snap().x;
@@ -601,16 +607,16 @@ impl Envelope {
         };
 
         let fill_color = match dragger.status {
-            EnvelopeDraggerStatus::Normal => Color::from_rgb(1.0, 1.0, 1.0),
-            EnvelopeDraggerStatus::Hover => Color::from_rgb(0.0, 0.0, 0.0),
-            EnvelopeDraggerStatus::Dragging { .. } => Color::from_rgb(0.0, 0.0, 0.0),
+            EnvelopeDraggerStatus::Normal => style_sheet.active().dragger_fill_color_active,
+            EnvelopeDraggerStatus::Hover => style_sheet.active().dragger_fill_color_hover,
+            EnvelopeDraggerStatus::Dragging { .. } => style_sheet.active().dragger_fill_color_hover,
         };
 
         frame.fill(&circle_path, fill_color);
 
         let stroke = Stroke::default()
             .with_width(1.0)
-            .with_color(Color::from_rgb(0.5, 0.5, 0.5));
+            .with_color(style.dragger_border_color);
 
         frame.stroke(&circle_path, stroke);
     }
@@ -622,9 +628,9 @@ impl Program<Message> for Envelope {
             self.draw_time_markers(frame, self.style.into());
             self.draw_stage_paths(frame, self.style.into());
 
-            Self::draw_dragger(frame, &self.attack_dragger);
-            Self::draw_dragger(frame, &self.decay_dragger);
-            Self::draw_dragger(frame, &self.release_dragger);
+            Self::draw_dragger(frame, self.style.into(), &self.attack_dragger);
+            Self::draw_dragger(frame, self.style.into(), &self.decay_dragger);
+            Self::draw_dragger(frame, self.style.into(), &self.release_dragger);
         });
 
         vec![geometry]

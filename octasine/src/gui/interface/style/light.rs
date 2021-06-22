@@ -48,9 +48,13 @@ impl envelope::StyleSheet for Envelope {
         envelope::Style {
             background_color: Color::WHITE,
             border_color: Color::from_rgb(0.3, 0.3, 0.3),
+            text_color: Color::WHITE,
             time_marker_minor_color: Color::from_rgb(0.9, 0.9, 0.9),
             time_marker_color_major: Color::from_rgb(0.7, 0.7, 0.7),
             path_color: Color::BLACK,
+            dragger_fill_color_active: Color::WHITE,
+            dragger_fill_color_hover: Color::BLACK,
+            dragger_border_color: Color::from_rgb(0.5, 0.5, 0.5),
         }
     }
 }
