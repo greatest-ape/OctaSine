@@ -2,7 +2,7 @@ use iced_baseview::{
     button, container, pick_list, radio, Background, Color,
 };
 
-use super::envelope;
+use super::{envelope, mod_matrix};
 
 const SURFACE: Color = Color::from_rgb(
     0x20 as f32 / 255.0,
@@ -206,6 +206,24 @@ impl envelope::StyleSheet for Envelope {
             dragger_fill_color_active: Color::BLACK,
             dragger_fill_color_hover: ACTIVE,
             dragger_border_color: ACTIVE,
+        }
+    }
+}
+
+pub struct ModulationMatrix;
+
+impl mod_matrix::StyleSheet for ModulationMatrix {
+    fn active(&self) -> mod_matrix::Style {
+        mod_matrix::Style {
+            background_color: Color::BLACK,
+            border_color: Color::from_rgb(0.5, 0.5, 0.5),
+            text_color: Color::BLACK,
+            box_border_color: Color::from_rgb(0.5, 0.5, 0.5),
+            operator_box_color_active: ACTIVE,
+            operator_box_color_hover: Color::from_rgb(0.7, 0.7, 0.7),
+            operator_box_color_dragging: Color::from_rgb(0.9, 0.9, 0.9),
+            modulation_box_color_active: ACTIVE,
+            modulation_box_color_inactive: Color::BLACK,
         }
     }
 }

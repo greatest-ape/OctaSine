@@ -9,6 +9,7 @@ use crate::parameters::values::{
 };
 use crate::GuiSyncHandle;
 
+use super::style::Theme;
 use super::{Message, SnapPoint, FONT_BOLD, FONT_SIZE, LINE_HEIGHT};
 
 const BACKGROUND_COLOR: Color = Color::from_rgb(0.9, 0.9, 0.9);
@@ -28,6 +29,24 @@ const SIZE: Size = Size {
 const OPERATOR_BOX_SCALE: f32 = BIG_BOX_SIZE as f32 / SMALL_BOX_SIZE as f32;
 const WIDTH: u16 = WIDTH_FLOAT as u16 + 2;
 
+
+#[derive(Debug, Clone)]
+pub struct Style {
+    pub background_color: Color,
+    pub border_color: Color,
+    pub text_color: Color,
+    pub box_border_color: Color,
+    pub operator_box_color_active: Color,
+    pub operator_box_color_hover: Color,
+    pub operator_box_color_dragging: Color,
+    pub modulation_box_color_active: Color,
+    pub modulation_box_color_inactive: Color,
+}
+
+pub trait StyleSheet {
+    fn active(&self) -> Style;
+}
+
 enum BoxStatus {
     Normal,
     Hover,
@@ -41,6 +60,7 @@ impl BoxStatus {
 }
 
 struct OperatorBox {
+    style: Theme,
     index: usize,
     text: Text,
     path: Path,
@@ -102,6 +122,7 @@ impl OperatorBox {
         };
 
         Self {
+            style: Theme::default(),
             index,
             text,
             path,
@@ -188,13 +209,17 @@ impl OperatorBox {
         ModulationBoxChange::None
     }
 
-    fn draw(&self, frame: &mut Frame) {
-        let stroke = Stroke::default().with_color(Color::BLACK).with_width(1.0);
+    fn draw(&self, frame: &mut Frame, style_sheet: Box<dyn StyleSheet>) {
+        let style = style_sheet.active();
+
+        let stroke = Stroke::default()
+            .with_color(style.box_border_color)
+            .with_width(1.0);
 
         let background_color = match self.status {
-            BoxStatus::Normal => Color::WHITE,
-            BoxStatus::Hover => Color::from_rgb(0.7, 0.7, 0.7),
-            BoxStatus::Dragging { .. } => Color::from_rgb(0.5, 0.5, 0.5),
+            BoxStatus::Normal => style.operator_box_color_active,
+            BoxStatus::Hover => style.operator_box_color_hover,
+            BoxStatus::Dragging { .. } => style.operator_box_color_dragging,
         };
 
         frame.fill(&self.path, background_color);
@@ -297,15 +322,17 @@ impl ModulationBox {
         ModulationBoxChange::None
     }
 
-    fn draw(&self, frame: &mut Frame) {
-        let stroke = Stroke::default().with_color(Color::BLACK).with_width(1.0);
+    fn draw(&self, frame: &mut Frame, style_sheet: Box<dyn StyleSheet>) {
+        let style = style_sheet.active();
+
+        let stroke = Stroke::default()
+            .with_color(style.box_border_color)
+            .with_width(1.0);
 
         if self.active || self.hover {
-            let (r, g, b) = ACTIVE_MOD_BOX_COLOR;
-
-            frame.fill(&self.path, Color::from_rgb8(r, g, b));
+            frame.fill(&self.path, style.modulation_box_color_active);
         } else {
-            frame.fill(&self.path, Color::WHITE);
+            frame.fill(&self.path, style.modulation_box_color_inactive);
         }
 
         frame.stroke(&self.path, stroke);
@@ -347,8 +374,10 @@ impl OutputBox {
         Self { path, y: left.y }
     }
 
-    fn draw(&self, frame: &mut Frame) {
-        let stroke = Stroke::default().with_color(Color::BLACK).with_width(1.0);
+    fn draw(&self, frame: &mut Frame, style_sheet: Box<dyn StyleSheet>) {
+        let stroke = Stroke::default()
+            .with_color(style_sheet.active().box_border_color)
+            .with_width(1.0);
 
         frame.stroke(&self.path, stroke);
     }
@@ -692,7 +721,7 @@ impl ModulationMatrixComponents {
         );
     }
 
-    fn draw_lines(&self, frame: &mut Frame) {
+    fn draw_lines(&self, frame: &mut Frame, style: Theme) {
         self.operator_4_additive_line.draw(frame);
         self.operator_3_additive_line.draw(frame);
         self.operator_2_additive_line.draw(frame);
@@ -703,25 +732,26 @@ impl ModulationMatrixComponents {
         self.operator_2_modulation_line.draw(frame);
     }
 
-    fn draw_boxes(&self, frame: &mut Frame) {
-        self.operator_1_box.draw(frame);
-        self.operator_2_box.draw(frame);
-        self.operator_3_box.draw(frame);
-        self.operator_4_box.draw(frame);
+    fn draw_boxes(&self, frame: &mut Frame, style: Theme) {
+        self.operator_1_box.draw(frame, style.into());
+        self.operator_2_box.draw(frame, style.into());
+        self.operator_3_box.draw(frame, style.into());
+        self.operator_4_box.draw(frame, style.into());
 
-        self.operator_4_mod_3_box.draw(frame);
-        self.operator_4_mod_2_box.draw(frame);
-        self.operator_4_mod_1_box.draw(frame);
-        self.operator_3_mod_2_box.draw(frame);
-        self.operator_3_mod_1_box.draw(frame);
-        self.operator_2_mod_1_box.draw(frame);
+        self.operator_4_mod_3_box.draw(frame, style.into());
+        self.operator_4_mod_2_box.draw(frame, style.into());
+        self.operator_4_mod_1_box.draw(frame, style.into());
+        self.operator_3_mod_2_box.draw(frame, style.into());
+        self.operator_3_mod_1_box.draw(frame, style.into());
+        self.operator_2_mod_1_box.draw(frame, style.into());
 
-        self.output_box.draw(frame);
+        self.output_box.draw(frame, style.into());
     }
 }
 
 pub struct ModulationMatrix {
     cache: Cache,
+    style: Theme,
     parameters: ModulationMatrixParameters,
     components: ModulationMatrixComponents,
 }
@@ -733,6 +763,7 @@ impl ModulationMatrix {
 
         Self {
             cache: Cache::default(),
+            style: Theme::default(),
             parameters,
             components,
         }
@@ -807,17 +838,18 @@ impl ModulationMatrix {
             .into()
     }
 
-    fn draw_background(&self, frame: &mut Frame) {
+    fn draw_background(&self, frame: &mut Frame, style_sheet: Box<dyn StyleSheet>) {
         let mut size = frame.size();
+        let style = style_sheet.active();
 
         size.width -= 1.0;
         size.height -= 1.0;
 
         let background = Path::rectangle(Point::new(0.5, 0.5), size);
 
-        let stroke = Stroke::default().with_width(1.0);
+        let stroke = Stroke::default().with_color(style.border_color).with_width(1.0);
 
-        frame.fill(&background, BACKGROUND_COLOR);
+        frame.fill(&background, style.background_color);
         frame.stroke(&background, stroke);
     }
 }
@@ -825,10 +857,10 @@ impl ModulationMatrix {
 impl Program<Message> for ModulationMatrix {
     fn draw(&self, bounds: Rectangle, _cursor: Cursor) -> Vec<Geometry> {
         let geometry = self.cache.draw(bounds.size(), |frame| {
-            self.draw_background(frame);
+            self.draw_background(frame, self.style.into());
 
-            self.components.draw_lines(frame);
-            self.components.draw_boxes(frame);
+            self.components.draw_lines(frame, self.style);
+            self.components.draw_boxes(frame, self.style);
         });
 
         vec![geometry]

@@ -1,6 +1,6 @@
 use iced_baseview::{button, pick_list, Background, Color, Vector};
 
-use super::envelope;
+use super::{envelope, mod_matrix};
 
 pub struct Button;
 
@@ -55,6 +55,24 @@ impl envelope::StyleSheet for Envelope {
             dragger_fill_color_active: Color::WHITE,
             dragger_fill_color_hover: Color::BLACK,
             dragger_border_color: Color::from_rgb(0.5, 0.5, 0.5),
+        }
+    }
+}
+
+pub struct ModulationMatrix;
+
+impl mod_matrix::StyleSheet for ModulationMatrix {
+    fn active(&self) -> mod_matrix::Style {
+        mod_matrix::Style {
+            background_color: Color::from_rgb(0.9, 0.9, 0.9),
+            border_color: Color::BLACK, // Default?
+            text_color: Color::BLACK, // Default?
+            box_border_color: Color::BLACK,
+            operator_box_color_active: Color::WHITE,
+            operator_box_color_hover: Color::from_rgb(0.7, 0.7, 0.7),
+            operator_box_color_dragging: Color::from_rgb(0.5, 0.5, 0.5),
+            modulation_box_color_active: Color::BLACK,
+            modulation_box_color_inactive: Color::WHITE,
         }
     }
 }

@@ -3,7 +3,7 @@ mod light;
 
 use iced_baseview::{button, container, pick_list, radio};
 
-use super::envelope;
+use super::{envelope, mod_matrix};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Theme {
@@ -71,6 +71,15 @@ impl From<Theme> for Box<dyn envelope::StyleSheet> {
         match theme {
             Theme::Light => Box::new(light::Envelope) as Box<dyn envelope::StyleSheet>,
             Theme::Dark => Box::new(dark::Envelope) as Box<dyn envelope::StyleSheet>,
+        }
+    }
+}
+
+impl From<Theme> for Box<dyn mod_matrix::StyleSheet> {
+    fn from(theme: Theme) -> Self {
+        match theme {
+            Theme::Light => Box::new(light::ModulationMatrix) as Box<dyn mod_matrix::StyleSheet>,
+            Theme::Dark => Box::new(dark::ModulationMatrix) as Box<dyn mod_matrix::StyleSheet>,
         }
     }
 }
