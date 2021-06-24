@@ -16,11 +16,8 @@ const ACTIVE: Color = Color::from_rgb(
     0x90 as f32 / 255.0,
 );
 
-const HOVERED: Color = Color::from_rgb(
-    0x80 as f32 / 255.0,
-    0x80 as f32 / 255.0,
-    0x80 as f32 / 255.0,
-);
+const HOVERED: Color = Color::from_rgb(0.7, 0.7, 0.7);
+const DRAGGING: Color = Color::from_rgb(0.9, 0.9, 0.9);
 
 pub struct Container;
 
@@ -48,7 +45,7 @@ impl radio::StyleSheet for Radio {
 
     fn hovered(&self) -> radio::Style {
         radio::Style {
-            background: Color { a: 0.5, ..SURFACE }.into(),
+            border_color: HOVERED,
             ..self.active()
         }
     }
@@ -61,8 +58,8 @@ impl button::StyleSheet for Button {
         button::Style {
             background: Color::BLACK.into(),
             border_radius: 3.0,
-	    border_width: 1.0,
-	    border_color: ACTIVE,
+            border_width: 1.0,
+            border_color: ACTIVE,
             text_color: ACTIVE,
             ..button::Style::default()
         }
@@ -70,18 +67,15 @@ impl button::StyleSheet for Button {
 
     fn hovered(&self) -> button::Style {
         button::Style {
-            background: SURFACE.into(),
-	    border_width: 1.0,
-	    border_color: ACTIVE,
-            text_color: ACTIVE,
+            border_color: HOVERED,
+            text_color: HOVERED,
             ..self.active()
         }
     }
 
     fn pressed(&self) -> button::Style {
         button::Style {
-            border_width: 1.0,
-            border_color: Color::WHITE,
+            border_color: DRAGGING,
             ..self.hovered()
         }
     }
@@ -92,34 +86,31 @@ pub struct PickList;
 impl pick_list::StyleSheet for PickList {
     fn menu(&self) -> iced_style::menu::Style {
         iced_style::menu::Style {
-	    background: Background::from(ACTIVE),
+            background: Background::from(ACTIVE),
             selected_background: Background::from(SURFACE),
             ..Default::default()
         }
     }
     fn active(&self) -> pick_list::Style {
-	pick_list::Style {
-	    background: Background::from(Color::BLACK),
-	    text_color: ACTIVE,
-	    border_color: ACTIVE,
+        pick_list::Style {
+            background: Color::BLACK.into(),
+            text_color: ACTIVE,
+            border_color: ACTIVE,
             ..Default::default()
-	}
+        }
     }
     fn hovered(&self) -> pick_list::Style {
-	pick_list::Style {
-	    background: Background::from(SURFACE),
-	    text_color: ACTIVE,
-	    border_color: ACTIVE,
-            ..Default::default()
-	}
+        pick_list::Style {
+            text_color: HOVERED,
+            border_color: HOVERED,
+            ..self.active()
+        }
     }
 }
 
 pub(super) mod knob {
     use iced_audio::knob::*;
     use super::*;
-
-    pub const BORDER: Color = Color::from_rgb(0.315, 0.315, 0.315);
 
     pub const TICK_TIER_1: Color = Color {
         r: 0.56,
@@ -140,19 +131,19 @@ pub(super) mod knob {
         a: 0.65,
     };
 
-    pub const KNOB_BACK_HOVER: Color = Color::from_rgb(0.96, 0.96, 0.96);
+    const ACTIVE_CIRCLE_NOTCH_STYLE: CircleNotch = CircleNotch {
+        color: ACTIVE,
+        border_width: 0.0,
+        border_color: Color::TRANSPARENT,
+        diameter: StyleLength::Scaled(0.17),
+        offset: StyleLength::Scaled(0.15),
+    };
 
     const ACTIVE_CIRCLE_STYLE: CircleStyle = CircleStyle {
         color: Color::BLACK,
         border_width: 1.0,
         border_color: ACTIVE,
-        notch: NotchShape::Circle(CircleNotch {
-            color: ACTIVE,
-            border_width: 0.0,
-            border_color: Color::TRANSPARENT,
-            diameter: StyleLength::Scaled(0.17),
-            offset: StyleLength::Scaled(0.15),
-        }),
+        notch: NotchShape::Circle(ACTIVE_CIRCLE_NOTCH_STYLE),
     };
 
     pub struct Knob;
@@ -163,7 +154,11 @@ pub(super) mod knob {
         }
         fn hovered(&self) -> iced_audio::knob::Style {
             Style::Circle(CircleStyle {
-                color: KNOB_BACK_HOVER,
+                border_color: HOVERED,
+                notch: NotchShape::Circle(CircleNotch {
+                    color: HOVERED,
+                    ..ACTIVE_CIRCLE_NOTCH_STYLE
+                }),
                 ..ACTIVE_CIRCLE_STYLE
             })
         }
@@ -220,8 +215,8 @@ impl mod_matrix::StyleSheet for ModulationMatrix {
             text_color: Color::BLACK,
             box_border_color: Color::from_rgb(0.5, 0.5, 0.5),
             operator_box_color_active: ACTIVE,
-            operator_box_color_hover: Color::from_rgb(0.7, 0.7, 0.7),
-            operator_box_color_dragging: Color::from_rgb(0.9, 0.9, 0.9),
+            operator_box_color_hover: HOVERED,
+            operator_box_color_dragging: HOVERED,
             modulation_box_color_active: ACTIVE,
             modulation_box_color_inactive: Color::BLACK,
         }
