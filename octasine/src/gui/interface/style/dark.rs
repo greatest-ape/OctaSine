@@ -28,7 +28,7 @@ impl container::StyleSheet for Container {
     fn style(&self) -> container::Style {
         container::Style {
             background: Color::from_rgb8(0x0, 0x0, 0x0).into(),
-            text_color: Color::from_rgb8(0x90, 0x90, 0x90).into(),
+            text_color: ACTIVE.into(),
             ..container::Style::default()
         }
     }
@@ -143,11 +143,11 @@ pub(super) mod knob {
     pub const KNOB_BACK_HOVER: Color = Color::from_rgb(0.96, 0.96, 0.96);
 
     const ACTIVE_CIRCLE_STYLE: CircleStyle = CircleStyle {
-        color: ACTIVE,
+        color: Color::BLACK,
         border_width: 1.0,
-        border_color: BORDER,
+        border_color: ACTIVE,
         notch: NotchShape::Circle(CircleNotch {
-            color: BORDER,
+            color: ACTIVE,
             border_width: 0.0,
             border_color: Color::TRANSPARENT,
             diameter: StyleLength::Scaled(0.17),

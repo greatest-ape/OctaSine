@@ -71,7 +71,7 @@ struct OperatorBox {
 }
 
 impl OperatorBox {
-    fn new(bounds: Size, index: usize) -> Self {
+    fn new(bounds: Size, index: usize, style_sheet: Box<dyn StyleSheet>) -> Self {
         let (x, y) = match index {
             3 => (0, 0),
             2 => (2, 2),
@@ -118,6 +118,7 @@ impl OperatorBox {
             position: text_position,
             font: FONT_BOLD,
             size: FONT_SIZE as f32,
+            color: style_sheet.active().text_color,
             ..Default::default()
         };
 
@@ -529,11 +530,11 @@ struct ModulationMatrixComponents {
 }
 
 impl ModulationMatrixComponents {
-    fn new(parameters: &ModulationMatrixParameters, bounds: Size) -> Self {
-        let operator_1_box = OperatorBox::new(bounds, 0);
-        let operator_2_box = OperatorBox::new(bounds, 1);
-        let operator_3_box = OperatorBox::new(bounds, 2);
-        let operator_4_box = OperatorBox::new(bounds, 3);
+    fn new(parameters: &ModulationMatrixParameters, bounds: Size, style: Theme) -> Self {
+        let operator_1_box = OperatorBox::new(bounds, 0, style.into());
+        let operator_2_box = OperatorBox::new(bounds, 1, style.into());
+        let operator_3_box = OperatorBox::new(bounds, 2, style.into());
+        let operator_4_box = OperatorBox::new(bounds, 3, style.into());
 
         let operator_4_mod_3_box = ModulationBox::new(
             bounds,
@@ -759,7 +760,7 @@ pub struct ModulationMatrix {
 impl ModulationMatrix {
     pub fn new<H: GuiSyncHandle>(sync_handle: &H) -> Self {
         let parameters = ModulationMatrixParameters::new(sync_handle);
-        let components = ModulationMatrixComponents::new(&parameters, SIZE);
+        let components = ModulationMatrixComponents::new(&parameters, SIZE, Theme::default());
 
         Self {
             cache: Cache::default(),
