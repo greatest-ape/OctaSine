@@ -8,6 +8,7 @@ pub mod constants;
 pub mod gen;
 pub mod parameters;
 pub mod preset_bank;
+pub mod settings;
 pub mod voices;
 
 #[cfg(feature = "gui")]
@@ -28,6 +29,7 @@ use common::*;
 use constants::*;
 use parameters::processing::*;
 use preset_bank::PresetBank;
+use settings::Settings;
 use voices::*;
 
 /// State used for processing
@@ -47,6 +49,7 @@ pub struct SyncState {
     /// option of leaving this field empty is useful when benchmarking.
     pub host: Option<HostCallback>,
     pub presets: PresetBank,
+    pub settings: Settings,
 }
 
 /// Main structure
@@ -65,6 +68,21 @@ impl Default for OctaSine {
 
 impl OctaSine {
     fn create(host: Option<HostCallback>) -> Self {
+        #[cfg(feature = "logging")]
+        Self::init_logging();
+
+        let settings = match Settings::load() {
+            Ok(settings) => {
+                settings
+            },
+            Err(err) => {
+                #[cfg(feature = "logging")]
+                ::log::error!("Couldn't load settings: {}", err);
+
+                Settings::default()
+            },
+        };
+
         let sample_rate = SampleRate(44100.0);
 
         let processing = ProcessingState {
@@ -80,6 +98,7 @@ impl OctaSine {
         let sync = Arc::new(SyncState {
             host,
             presets: built_in_preset_bank(),
+            settings,
         });
 
         #[cfg(feature = "gui")]
@@ -91,6 +110,29 @@ impl OctaSine {
             #[cfg(feature = "gui")]
             editor: Some(editor),
         }
+    }
+
+    #[cfg(feature = "logging")]
+    fn init_logging() {
+        let log_folder = dirs::home_dir().unwrap().join("tmp");
+
+        let _ = ::std::fs::create_dir(log_folder.clone());
+
+        let log_file =
+            ::std::fs::File::create(log_folder.join(format!("{}.log", PLUGIN_NAME))).unwrap();
+
+        let log_config = simplelog::ConfigBuilder::new()
+            .set_time_to_local(true)
+            .build();
+
+        let _ = simplelog::WriteLogger::init(simplelog::LevelFilter::Info, log_config, log_file);
+
+        log_panics::init();
+
+        info!("init");
+
+        info!("OS: {}", ::os_info::get());
+        info!("OctaSine build: {}", get_git_info());
     }
 
     fn time_per_sample(sample_rate: SampleRate) -> TimePerSample {
@@ -151,29 +193,6 @@ impl Plugin for OctaSine {
             f64_precision: false,
             ..Info::default()
         }
-    }
-
-    #[cfg(feature = "logging")]
-    fn init(&mut self) {
-        let log_folder = dirs::home_dir().unwrap().join("tmp");
-
-        let _ = ::std::fs::create_dir(log_folder.clone());
-
-        let log_file =
-            ::std::fs::File::create(log_folder.join(format!("{}.log", PLUGIN_NAME))).unwrap();
-
-        let log_config = simplelog::ConfigBuilder::new()
-            .set_time_to_local(true)
-            .build();
-
-        let _ = simplelog::WriteLogger::init(simplelog::LevelFilter::Info, log_config, log_file);
-
-        log_panics::init();
-
-        info!("init");
-
-        info!("OS: {}", ::os_info::get());
-        info!("OctaSine build: {}", get_git_info());
     }
 
     fn process_events(&mut self, events: &Events) {
@@ -323,6 +342,7 @@ cfg_if::cfg_if! {
             fn format_parameter_value(&self, index: usize, value: f64) -> String;
             fn get_presets(&self) -> (usize, Vec<String>);
             fn set_preset_index(&self, index: usize);
+            fn get_gui_settings(&self) -> gui::GuiSettings;
         }
 
         impl GuiSyncHandle for Arc<SyncState> {
@@ -352,6 +372,9 @@ cfg_if::cfg_if! {
             }
             fn set_preset_index(&self, index: usize){
                 self.presets.set_preset_index(index);
+            }
+            fn get_gui_settings(&self) -> gui::GuiSettings {
+                self.settings.gui.clone()
             }
         }
     }

@@ -16,7 +16,7 @@ mod lfo_target_picker;
 mod mod_matrix;
 mod operator;
 mod preset_picker;
-mod style;
+pub mod style;
 
 use divider::VerticalRule;
 use knob::OctaSineKnob;
@@ -25,6 +25,9 @@ use mod_matrix::ModulationMatrix;
 use operator::OperatorWidgets;
 use preset_picker::PresetPicker;
 use style::Theme;
+
+use super::GuiSettings;
+use crate::settings::Settings;
 
 pub const FONT_SIZE: u16 = 14;
 pub const LINE_HEIGHT: u16 = 14;
@@ -235,6 +238,29 @@ impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {
             }
         }
     }
+
+    fn save_settings(&self) {
+        let settings = Settings {
+            schema_version: 1,
+            gui: GuiSettings {
+                theme: self.style,
+            },
+        };
+
+        let builder = ::std::thread::Builder::new();
+
+        let spawn_result = builder.spawn(move || {
+            if let Err(err) = settings.save() {
+                #[cfg(feature = "logging")]
+                ::log::error!("Couldn't save settings: {}", err)
+            }
+        });
+
+        #[cfg(feature = "logging")]
+        if let Err(err) = spawn_result {
+            ::log::error!("Couldn't spawn thread for saving settings: {}", err)
+        }
+    }
 }
 
 impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
@@ -243,7 +269,7 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
     type Flags = H;
 
     fn new(sync_handle: Self::Flags) -> (Self, Command<Self::Message>) {
-        let style = style::Theme::default();
+        let style = sync_handle.get_gui_settings().theme;
 
         let master_volume = knob::master_volume(&sync_handle, style);
         let master_frequency = knob::master_frequency(&sync_handle, style);
@@ -396,6 +422,8 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                 self.lfo_2.set_style(style);
                 self.lfo_3.set_style(style);
                 self.lfo_4.set_style(style);
+
+                self.save_settings();
             }
         }
 

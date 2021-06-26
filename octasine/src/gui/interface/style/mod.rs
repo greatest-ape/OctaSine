@@ -2,10 +2,12 @@ mod dark;
 mod light;
 
 use iced_baseview::{button, container, pick_list, radio, Color};
+use serde::{Serialize, Deserialize};
 
 use super::{envelope, mod_matrix};
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
 pub enum Theme {
     Light,
     Dark,
@@ -30,7 +32,7 @@ impl Theme {
 
 impl Default for Theme {
     fn default() -> Theme {
-        Theme::Dark
+        Theme::Light
     }
 }
 

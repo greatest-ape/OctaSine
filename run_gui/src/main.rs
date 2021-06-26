@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use octasine::{built_in_preset_bank, gui::Gui, GuiSyncHandle, SyncState};
+use octasine::{built_in_preset_bank, gui::Gui, GuiSyncHandle, SyncState, settings::Settings};
 use simplelog::{ConfigBuilder, LevelFilter, SimpleLogger};
 
 fn main() {
@@ -13,6 +13,7 @@ fn main() {
     let sync_state = Arc::new(SyncState {
         presets: built_in_preset_bank(),
         host: None,
+        settings: Settings::load().unwrap_or_default(),
     });
 
     // Set envelope data for easier testing
