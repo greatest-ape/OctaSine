@@ -196,7 +196,7 @@ impl envelope::StyleSheet for Envelope {
         envelope::Style {
             background_color: Color::BLACK,
             border_color: Color::from_rgb(0.5, 0.5, 0.5),
-            text_color: Color::from_rgb8(0x90, 0x90, 0x90),
+            text_color: ACTIVE,
             time_marker_minor_color: Color::from_rgb(0.3, 0.3, 0.3),
             time_marker_color_major: Color::from_rgb(0.5, 0.5, 0.5),
             path_color: ACTIVE,

@@ -12,9 +12,6 @@ use crate::GuiSyncHandle;
 use super::style::Theme;
 use super::{Message, SnapPoint, FONT_BOLD, FONT_SIZE, LINE_HEIGHT};
 
-const BACKGROUND_COLOR: Color = Color::from_rgb(0.9, 0.9, 0.9);
-const ACTIVE_MOD_BOX_COLOR: (u8, u8, u8) = (0, 0, 0);
-
 pub const HEIGHT: u16 = LINE_HEIGHT * 7;
 const SMALL_BOX_SIZE: u16 = 10;
 const BIG_BOX_SIZE: u16 = LINE_HEIGHT;
