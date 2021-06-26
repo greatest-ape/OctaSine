@@ -469,7 +469,7 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                             Container::new(
                                 Row::new()
                                     .push(
-                                        Button::new(&mut self.toggle_style_state, Text::new("COLORS"))
+                                        Button::new(&mut self.toggle_style_state, Text::new("MODE"))
                                             .on_press(Message::ToggleColorMode)
                                             .style(self.style),
                                     )
