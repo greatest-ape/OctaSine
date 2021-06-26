@@ -4,13 +4,15 @@ use iced_baseview::{
 
 use super::{envelope, mod_matrix};
 
+pub const BACKGROUND: Color = Color::BLACK;
+
 const SURFACE: Color = Color::from_rgb(
     0x20 as f32 / 255.0,
     0x20 as f32 / 255.0,
     0x20 as f32 / 255.0,
 );
 
-const ACTIVE: Color = Color::from_rgb(
+pub const ACTIVE: Color = Color::from_rgb(
     0x90 as f32 / 255.0,
     0x90 as f32 / 255.0,
     0x90 as f32 / 255.0,
@@ -24,7 +26,7 @@ pub struct Container;
 impl container::StyleSheet for Container {
     fn style(&self) -> container::Style {
         container::Style {
-            background: Color::from_rgb8(0x0, 0x0, 0x0).into(),
+            background: BACKGROUND.into(),
             text_color: ACTIVE.into(),
             ..container::Style::default()
         }

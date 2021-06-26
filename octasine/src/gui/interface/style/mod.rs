@@ -1,7 +1,7 @@
 mod dark;
 mod light;
 
-use iced_baseview::{button, container, pick_list, radio};
+use iced_baseview::{button, container, pick_list, radio, Color};
 
 use super::{envelope, mod_matrix};
 
@@ -13,6 +13,19 @@ pub enum Theme {
 
 impl Theme {
     pub const ALL: [Theme; 2] = [Theme::Light, Theme::Dark];
+
+    pub fn background_color(&self) -> Color {
+        match self {
+            Theme::Dark => dark::BACKGROUND,
+            Theme::Light => Color::WHITE,
+        }
+    }
+    pub fn text_color(&self) -> Color {
+        match self {
+            Theme::Dark => dark::ACTIVE,
+            Theme::Light => Color::BLACK,
+        }
+    }
 }
 
 impl Default for Theme {

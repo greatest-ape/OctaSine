@@ -81,7 +81,7 @@ pub enum Message {
 
 pub struct OctaSineIcedApplication<H: GuiSyncHandle> {
     sync_handle: H,
-    theme: style::Theme,
+    style: style::Theme,
     toggle_info_state: button::State,
     show_version: bool,
     master_volume: OctaSineKnob<MasterVolumeValue>,
@@ -268,7 +268,7 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
 
         let app = Self {
             sync_handle,
-            theme,
+            style: theme,
             toggle_info_state: button::State::default(),
             show_version: false,
             master_volume,
@@ -374,7 +374,7 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                 self.sync_handle.set_preset_index(index);
             }
             Message::StyleChange(theme) => {
-                self.theme = theme;
+                self.style = theme;
             }
         }
 
@@ -403,7 +403,11 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
             .horizontal_alignment(HorizontalAlignment::Center)
             .vertical_alignment(VerticalAlignment::Center);
 
-        let info_opacity = if self.show_version { 1.0 } else { 0.0 };
+        let info_text_color = if self.show_version {
+            self.style.text_color()
+        } else {
+            Color::TRANSPARENT
+        };
 
         let all = Column::new()
             .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
@@ -418,13 +422,13 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                                     .push(
                                         Button::new(&mut self.toggle_info_state, Text::new("INFO"))
                                             .on_press(Message::ToggleInfo)
-                                            .style(self.theme),
+                                            .style(self.style),
                                     )
                                     .push(Space::with_width(Length::Units(LINE_HEIGHT)))
                                     .push(
                                         Text::new(get_info_text())
                                             .size(LINE_HEIGHT)
-                                            .color(Color::from_rgba(0.0, 0.0, 0.0, info_opacity))
+                                            .color(info_text_color)
                                             .vertical_alignment(VerticalAlignment::Center),
                                     ),
                             )
@@ -512,7 +516,7 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
 
         Container::new(all)
             .height(Length::Fill)
-            .style(self.theme)
+            .style(self.style)
             .into()
     }
 }
