@@ -73,6 +73,7 @@ impl mod_matrix::StyleSheet for ModulationMatrix {
             operator_box_color_dragging: Color::from_rgb(0.5, 0.5, 0.5),
             modulation_box_color_active: Color::BLACK,
             modulation_box_color_inactive: Color::WHITE,
+            line_max_color: Color::BLACK,
         }
     }
 }

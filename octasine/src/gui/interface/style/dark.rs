@@ -221,6 +221,7 @@ impl mod_matrix::StyleSheet for ModulationMatrix {
             operator_box_color_dragging: HOVERED,
             modulation_box_color_active: ACTIVE,
             modulation_box_color_inactive: Color::BLACK,
+            line_max_color: Color::WHITE,
         }
     }
 }

@@ -41,6 +41,7 @@ pub struct Style {
     pub operator_box_color_dragging: Color,
     pub modulation_box_color_active: Color,
     pub modulation_box_color_inactive: Color,
+    pub line_max_color: Color,
 }
 
 pub trait StyleSheet {
@@ -390,7 +391,7 @@ struct AdditiveLine {
 }
 
 impl AdditiveLine {
-    fn new(from: Point, to_y: f32, additive: f64, volume: f64) -> Self {
+    fn new(from: Point, to_y: f32, additive: f64, volume: f64, style_sheet: Box<dyn StyleSheet>) -> Self {
         let mut to = from;
 
         to.y = to_y;
@@ -402,16 +403,18 @@ impl AdditiveLine {
             stroke: Stroke::default(),
         };
 
-        line.update(additive, volume);
+        line.update(additive, volume, style_sheet);
 
         line
     }
 
-    fn update(&mut self, additive: f64, volume: f64) {
+    fn update(&mut self, additive: f64, volume: f64, style_sheet: Box<dyn StyleSheet>) {
+        let c = style_sheet.active().line_max_color;
+
         let opacity = (additive * volume.min(0.5) * 2.0) as f32;
         let gradient = Gradient::new(vec![
             LinSrgba::new(0.0, 0.25, 0.0, opacity),
-            LinSrgba::new(0.0, 0.0, 0.0, opacity),
+            LinSrgba::new(c.r, c.g, c.b, opacity),
         ]);
         let mix_factor = (volume as f32 - 0.5).max(0.0) * 2.0;
         let color = gradient.get(mix_factor);
@@ -432,7 +435,7 @@ struct ModulationLine {
 }
 
 impl ModulationLine {
-    fn new(from: Point, through: Point, to: Point, additive: f64, volume: f64) -> Self {
+    fn new(from: Point, through: Point, to: Point, additive: f64, volume: f64, style_sheet: Box<dyn StyleSheet>) -> Self {
         let mut builder = path::Builder::new();
 
         builder.move_to(from.snap());
@@ -441,10 +444,11 @@ impl ModulationLine {
 
         let path = builder.build();
 
+        let c = style_sheet.active().line_max_color;
         let opacity = ((1.0 - additive) * volume.min(0.5) * 2.0) as f32;
         let gradient = Gradient::new(vec![
             LinSrgba::new(0.0, 0.25, 0.0, opacity),
-            LinSrgba::new(0.0, 0.0, 0.0, opacity),
+            LinSrgba::new(c.r, c.g, c.b, opacity),
         ]);
         let mix_factor = (volume as f32 - 0.5).max(0.0) * 2.0;
         let color = gradient.get(mix_factor);
@@ -580,24 +584,28 @@ impl ModulationMatrixComponents {
             output_box.y,
             parameters.operator_4_additive,
             parameters.operator_4_volume,
+            style.into(),
         );
         let operator_3_additive_line = AdditiveLine::new(
             operator_3_box.center,
             output_box.y,
             parameters.operator_3_additive,
             parameters.operator_3_volume,
+            style.into(),
         );
         let operator_2_additive_line = AdditiveLine::new(
             operator_2_box.center,
             output_box.y,
             parameters.operator_2_additive,
             parameters.operator_2_volume,
+            style.into(),
         );
         let operator_1_additive_line = AdditiveLine::new(
             operator_1_box.center,
             output_box.y,
             1.0,
             parameters.operator_1_volume,
+            style.into(),
         );
 
         let operator_4_modulation_line = {
@@ -614,6 +622,7 @@ impl ModulationMatrixComponents {
                 to,
                 parameters.operator_4_additive,
                 parameters.operator_4_volume,
+                style.into(),
             )
         };
 
@@ -630,6 +639,7 @@ impl ModulationMatrixComponents {
                 to,
                 parameters.operator_3_additive,
                 parameters.operator_3_volume,
+                style.into(),
             )
         };
 
@@ -639,6 +649,7 @@ impl ModulationMatrixComponents {
             operator_1_box.center,
             parameters.operator_2_additive,
             parameters.operator_2_volume,
+            style.into(),
         );
 
         Self {
@@ -663,7 +674,7 @@ impl ModulationMatrixComponents {
         }
     }
 
-    fn update(&mut self, parameters: &ModulationMatrixParameters) {
+    fn update(&mut self, parameters: &ModulationMatrixParameters, style: Theme) {
         self.operator_4_mod_3_box.active = parameters.operator_4_target == 2;
         self.operator_4_mod_2_box.active = parameters.operator_4_target == 1;
         self.operator_4_mod_1_box.active = parameters.operator_4_target == 0;
@@ -671,14 +682,14 @@ impl ModulationMatrixComponents {
         self.operator_3_mod_1_box.active = parameters.operator_3_target == 0;
 
         self.operator_4_additive_line
-            .update(parameters.operator_4_additive, parameters.operator_4_volume);
+            .update(parameters.operator_4_additive, parameters.operator_4_volume, style.into());
 
         self.operator_3_additive_line
-            .update(parameters.operator_3_additive, parameters.operator_3_volume);
+            .update(parameters.operator_3_additive, parameters.operator_3_volume, style.into());
         self.operator_2_additive_line
-            .update(parameters.operator_2_additive, parameters.operator_2_volume);
+            .update(parameters.operator_2_additive, parameters.operator_2_volume, style.into());
         self.operator_1_additive_line
-            .update(1.0, parameters.operator_1_volume);
+            .update(1.0, parameters.operator_1_volume, style.into());
 
         self.operator_4_modulation_line = {
             let (through, to) = match parameters.operator_4_target {
@@ -694,6 +705,7 @@ impl ModulationMatrixComponents {
                 to,
                 parameters.operator_4_additive,
                 parameters.operator_4_volume,
+                style.into(),
             )
         };
 
@@ -710,6 +722,7 @@ impl ModulationMatrixComponents {
                 to,
                 parameters.operator_3_additive,
                 parameters.operator_3_volume,
+                style.into(),
             )
         };
 
@@ -719,6 +732,7 @@ impl ModulationMatrixComponents {
             self.operator_1_box.center,
             parameters.operator_2_additive,
             parameters.operator_2_volume,
+            style.into(),
         );
     }
 
@@ -827,7 +841,7 @@ impl ModulationMatrix {
     }
 
     fn update_components(&mut self) {
-        self.components.update(&self.parameters);
+        self.components.update(&self.parameters, self.style);
 
         self.cache.clear();
     }
