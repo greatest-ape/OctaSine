@@ -21,11 +21,11 @@ pub struct PresetPicker {
     state: pick_list::State<Preset>,
     options: Vec<Preset>,
     selected: usize,
-    theme: Theme,
+    pub style: Theme,
 }
 
 impl PresetPicker {
-    pub fn new<H: GuiSyncHandle>(sync_handle: &H) -> Self {
+    pub fn new<H: GuiSyncHandle>(sync_handle: &H, style: Theme) -> Self {
         let (selected, names) = sync_handle.get_presets();
 
         let options = names
@@ -38,7 +38,7 @@ impl PresetPicker {
             state: pick_list::State::default(),
             options,
             selected,
-            theme: Theme::default(),
+            style,
         }
     }
 
@@ -55,7 +55,7 @@ impl PresetPicker {
             |option| Message::PresetChange(option.index),
         )
         .text_size(FONT_SIZE)
-        .style(self.theme)
+        .style(self.style)
         // Will be limited by parent, but setting a size here ensures that
         // it doesn't shrink too much when choice strings are short.
         .width(Length::Units(LINE_HEIGHT * 12 - 3));

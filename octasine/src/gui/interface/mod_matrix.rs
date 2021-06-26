@@ -61,7 +61,6 @@ impl BoxStatus {
 }
 
 struct OperatorBox {
-    style: Theme,
     index: usize,
     text: Text,
     path: Path,
@@ -124,7 +123,6 @@ impl OperatorBox {
         };
 
         Self {
-            style: Theme::default(),
             index,
             text,
             path,
@@ -736,7 +734,7 @@ impl ModulationMatrixComponents {
         );
     }
 
-    fn draw_lines(&self, frame: &mut Frame, style: Theme) {
+    fn draw_lines(&self, frame: &mut Frame) {
         self.operator_4_additive_line.draw(frame);
         self.operator_3_additive_line.draw(frame);
         self.operator_2_additive_line.draw(frame);
@@ -772,16 +770,21 @@ pub struct ModulationMatrix {
 }
 
 impl ModulationMatrix {
-    pub fn new<H: GuiSyncHandle>(sync_handle: &H) -> Self {
+    pub fn new<H: GuiSyncHandle>(sync_handle: &H, style: Theme) -> Self {
         let parameters = ModulationMatrixParameters::new(sync_handle);
-        let components = ModulationMatrixComponents::new(&parameters, SIZE, Theme::default());
+        let components = ModulationMatrixComponents::new(&parameters, SIZE, style);
 
         Self {
             cache: Cache::default(),
-            style: Theme::default(),
+            style,
             parameters,
             components,
         }
+    }
+
+    pub fn set_style(&mut self, style: Theme) {
+        self.style = style;
+        self.cache.clear();
     }
 
     pub fn set_operator_3_target(&mut self, value: f64) {
@@ -874,7 +877,7 @@ impl Program<Message> for ModulationMatrix {
         let geometry = self.cache.draw(bounds.size(), |frame| {
             self.draw_background(frame, self.style.into());
 
-            self.components.draw_lines(frame, self.style);
+            self.components.draw_lines(frame);
             self.components.draw_boxes(frame, self.style);
         });
 

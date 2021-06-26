@@ -55,7 +55,7 @@ impl From<Theme> for Box<dyn radio::StyleSheet> {
 impl From<Theme> for Box<dyn button::StyleSheet> {
     fn from(theme: Theme) -> Self {
         match theme {
-            Theme::Light => light::Button.into(),
+            Theme::Light => Default::default(),
             Theme::Dark => dark::Button.into(),
         }
     }

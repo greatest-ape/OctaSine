@@ -230,7 +230,7 @@ pub struct Envelope {
 }
 
 impl Envelope {
-    pub fn new<H: GuiSyncHandle>(sync_handle: &H, operator_index: usize) -> Self {
+    pub fn new<H: GuiSyncHandle>(sync_handle: &H, operator_index: usize, style: Theme) -> Self {
         let (attack_dur, attack_val, decay_dur, decay_val, release_dur) = match operator_index {
             0 => (10, 11, 12, 13, 14),
             1 => (24, 25, 26, 27, 28),
@@ -248,7 +248,7 @@ impl Envelope {
         let mut envelope = Self {
             log10_table: Log10Table::default(),
             cache: Cache::default(),
-            style: Theme::default(),
+            style,
             operator_index,
             attack_duration,
             attack_end_value: sync_handle.get_parameter(attack_val) as f32,
@@ -302,6 +302,11 @@ impl Envelope {
         self.x_offset = Self::process_x_offset(x_offset, viewport_factor);
 
         self.update_data();
+    }
+    
+    pub fn set_style(&mut self, style: Theme) {
+        self.style = style;
+        self.cache.clear();
     }
 
     fn process_x_offset(x_offset: f32, viewport_factor: f32) -> f32 {
