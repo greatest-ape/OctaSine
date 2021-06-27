@@ -19,6 +19,7 @@ name = "process"
 harness = false
 
 [dependencies]
+anyhow = "1"
 arc-swap = "1"
 arrayvec = "0.7"
 array-init = "2"

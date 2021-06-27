@@ -16,7 +16,7 @@ mod lfo_target_picker;
 mod mod_matrix;
 mod operator;
 mod preset_picker;
-mod style;
+pub mod style;
 
 use divider::VerticalRule;
 use knob::OctaSineKnob;
@@ -24,6 +24,10 @@ use lfo::LfoWidgets;
 use mod_matrix::ModulationMatrix;
 use operator::OperatorWidgets;
 use preset_picker::PresetPicker;
+use style::Theme;
+
+use super::GuiSettings;
+use crate::settings::Settings;
 
 pub const FONT_SIZE: u16 = 14;
 pub const LINE_HEIGHT: u16 = 14;
@@ -76,11 +80,14 @@ pub enum Message {
     EnvelopeZoomOut(usize),
     EnvelopeZoomToFit(usize),
     EnvelopeSyncViewports { viewport_factor: f32, x_offset: f32 },
+    ToggleColorMode,
 }
 
 pub struct OctaSineIcedApplication<H: GuiSyncHandle> {
     sync_handle: H,
+    style: style::Theme,
     toggle_info_state: button::State,
+    toggle_style_state: button::State,
     show_version: bool,
     master_volume: OctaSineKnob<MasterVolumeValue>,
     master_frequency: OctaSineKnob<MasterFrequencyValue>,
@@ -231,6 +238,29 @@ impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {
             }
         }
     }
+
+    fn save_settings(&self) {
+        let settings = Settings {
+            schema_version: 1,
+            gui: GuiSettings {
+                theme: self.style,
+            },
+        };
+
+        let builder = ::std::thread::Builder::new();
+
+        let spawn_result = builder.spawn(move || {
+            if let Err(err) = settings.save() {
+                #[cfg(feature = "logging")]
+                ::log::error!("Couldn't save settings: {}", err)
+            }
+        });
+
+        #[cfg(feature = "logging")]
+        if let Err(err) = spawn_result {
+            ::log::error!("Couldn't spawn thread for saving settings: {}", err)
+        }
+    }
 }
 
 impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
@@ -239,20 +269,22 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
     type Flags = H;
 
     fn new(sync_handle: Self::Flags) -> (Self, Command<Self::Message>) {
-        let master_volume = knob::master_volume(&sync_handle);
-        let master_frequency = knob::master_frequency(&sync_handle);
-        let modulation_matrix = ModulationMatrix::new(&sync_handle);
-        let preset_picker = PresetPicker::new(&sync_handle);
+        let style = sync_handle.get_gui_settings().theme;
 
-        let operator_1 = OperatorWidgets::new(&sync_handle, 0);
-        let operator_2 = OperatorWidgets::new(&sync_handle, 1);
-        let operator_3 = OperatorWidgets::new(&sync_handle, 2);
-        let operator_4 = OperatorWidgets::new(&sync_handle, 3);
+        let master_volume = knob::master_volume(&sync_handle, style);
+        let master_frequency = knob::master_frequency(&sync_handle, style);
+        let modulation_matrix = ModulationMatrix::new(&sync_handle, style);
+        let preset_picker = PresetPicker::new(&sync_handle, style);
 
-        let lfo_1 = LfoWidgets::new(&sync_handle, 0);
-        let lfo_2 = LfoWidgets::new(&sync_handle, 1);
-        let lfo_3 = LfoWidgets::new(&sync_handle, 2);
-        let lfo_4 = LfoWidgets::new(&sync_handle, 3);
+        let operator_1 = OperatorWidgets::new(&sync_handle, 0, style);
+        let operator_2 = OperatorWidgets::new(&sync_handle, 1, style);
+        let operator_3 = OperatorWidgets::new(&sync_handle, 2, style);
+        let operator_4 = OperatorWidgets::new(&sync_handle, 3, style);
+
+        let lfo_1 = LfoWidgets::new(&sync_handle, 0, style);
+        let lfo_2 = LfoWidgets::new(&sync_handle, 1, style);
+        let lfo_3 = LfoWidgets::new(&sync_handle, 2, style);
+        let lfo_4 = LfoWidgets::new(&sync_handle, 3, style);
 
         let lfo_vr_1 = VerticalRule::new(
             Length::Units(LINE_HEIGHT * 2),
@@ -264,7 +296,9 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
 
         let app = Self {
             sync_handle,
+            style,
             toggle_info_state: button::State::default(),
+            toggle_style_state: button::State::default(),
             show_version: false,
             master_volume,
             master_frequency,
@@ -309,7 +343,7 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
         match message {
             Message::Frame => {
                 if self.sync_handle.get_bank().get_presets_changed() {
-                    self.preset_picker = PresetPicker::new(&self.sync_handle);
+                    self.preset_picker = PresetPicker::new(&self.sync_handle, self.style);
                 }
                 self.update_widgets_from_parameters();
             }
@@ -368,6 +402,29 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
             Message::PresetChange(index) => {
                 self.sync_handle.set_preset_index(index);
             }
+            Message::ToggleColorMode => {
+                let style = if let Theme::Light = self.style {
+                    Theme::Dark
+                } else {
+                    Theme::Light
+                };
+
+                self.style = style;
+                self.master_volume.style = style;
+                self.master_frequency.style = style;
+                self.modulation_matrix.set_style(style);
+                self.preset_picker.style = style;
+                self.operator_1.set_style(style);
+                self.operator_2.set_style(style);
+                self.operator_3.set_style(style);
+                self.operator_4.set_style(style);
+                self.lfo_1.set_style(style);
+                self.lfo_2.set_style(style);
+                self.lfo_3.set_style(style);
+                self.lfo_4.set_style(style);
+
+                self.save_settings();
+            }
         }
 
         Command::none()
@@ -395,7 +452,11 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
             .horizontal_alignment(HorizontalAlignment::Center)
             .vertical_alignment(VerticalAlignment::Center);
 
-        let info_opacity = if self.show_version { 1.0 } else { 0.0 };
+        let info_text_color = if self.show_version {
+            self.style.text_color()
+        } else {
+            Color::TRANSPARENT
+        };
 
         let all = Column::new()
             .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
@@ -404,18 +465,25 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                     .align_items(Align::Center)
                     .height(Length::Units(LINE_HEIGHT * 4))
                     .push(
-                        Column::new().width(Length::FillPortion(1)).push(
+                        Column::new().width(Length::FillPortion(6)).push(
                             Container::new(
                                 Row::new()
                                     .push(
+                                        Button::new(&mut self.toggle_style_state, Text::new("MODE"))
+                                            .on_press(Message::ToggleColorMode)
+                                            .style(self.style),
+                                    )
+                                    .push(Space::with_width(Length::Units(3)))
+                                    .push(
                                         Button::new(&mut self.toggle_info_state, Text::new("INFO"))
-                                            .on_press(Message::ToggleInfo),
+                                            .on_press(Message::ToggleInfo)
+                                            .style(self.style),
                                     )
                                     .push(Space::with_width(Length::Units(LINE_HEIGHT)))
                                     .push(
                                         Text::new(get_info_text())
                                             .size(LINE_HEIGHT)
-                                            .color(Color::from_rgba(0.0, 0.0, 0.0, info_opacity))
+                                            .color(info_text_color)
                                             .vertical_alignment(VerticalAlignment::Center),
                                     ),
                             )
@@ -431,12 +499,12 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                                 .size(FONT_SIZE * 2 + FONT_SIZE / 2)
                                 .horizontal_alignment(HorizontalAlignment::Center),
                         )
-                        .width(Length::FillPortion(1))
+                        .width(Length::FillPortion(4))
                         .align_x(Align::Center),
                     )
                     .push(
                         Column::new()
-                            .width(Length::FillPortion(1))
+                            .width(Length::FillPortion(6))
                             .align_items(Align::End)
                             .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
                             .push(
@@ -501,6 +569,9 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                     ),
             );
 
-        Container::new(all).into()
+        Container::new(all)
+            .height(Length::Fill)
+            .style(self.style)
+            .into()
     }
 }

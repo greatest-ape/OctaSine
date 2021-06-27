@@ -7,7 +7,7 @@ use crate::parameters::values::{
     Lfo4TargetParameterValue, ParameterValue,
 };
 
-use super::{style::OctaSineStyle, GuiSyncHandle, Message, FONT_SIZE, LINE_HEIGHT};
+use super::{style::Theme, GuiSyncHandle, Message, FONT_SIZE, LINE_HEIGHT};
 
 #[derive(Clone, PartialEq, Eq)]
 struct LfoTarget {
@@ -27,6 +27,7 @@ pub struct LfoTargetPicker {
     selected: usize,
     lfo_index: usize,
     parameter_index: usize,
+    pub style: Theme,
 }
 
 impl LfoTargetPicker {
@@ -34,6 +35,7 @@ impl LfoTargetPicker {
         sync_handle: &H,
         lfo_index: usize,
         parameter_index: usize,
+        style: Theme,
     ) -> Self {
         let sync_value = sync_handle.get_parameter(parameter_index);
         let selected = Self::get_index_from_sync(lfo_index, sync_value);
@@ -53,6 +55,7 @@ impl LfoTargetPicker {
             selected,
             lfo_index,
             parameter_index,
+            style,
         }
     }
 
@@ -101,7 +104,7 @@ impl LfoTargetPicker {
             },
         )
         .text_size(FONT_SIZE)
-        .style(OctaSineStyle)
+        .style(self.style)
         .width(Length::Units(LINE_HEIGHT * 12 - 3));
 
         Column::new()

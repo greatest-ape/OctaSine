@@ -9,10 +9,8 @@ use crate::parameters::values::{
 };
 use crate::GuiSyncHandle;
 
+use super::style::Theme;
 use super::{Message, SnapPoint, FONT_BOLD, FONT_SIZE, LINE_HEIGHT};
-
-const BACKGROUND_COLOR: Color = Color::from_rgb(0.9, 0.9, 0.9);
-const ACTIVE_MOD_BOX_COLOR: (u8, u8, u8) = (0, 0, 0);
 
 pub const HEIGHT: u16 = LINE_HEIGHT * 7;
 const SMALL_BOX_SIZE: u16 = 10;
@@ -27,6 +25,25 @@ const SIZE: Size = Size {
 };
 const OPERATOR_BOX_SCALE: f32 = BIG_BOX_SIZE as f32 / SMALL_BOX_SIZE as f32;
 const WIDTH: u16 = WIDTH_FLOAT as u16 + 2;
+
+
+#[derive(Debug, Clone)]
+pub struct Style {
+    pub background_color: Color,
+    pub border_color: Color,
+    pub text_color: Color,
+    pub box_border_color: Color,
+    pub operator_box_color_active: Color,
+    pub operator_box_color_hover: Color,
+    pub operator_box_color_dragging: Color,
+    pub modulation_box_color_active: Color,
+    pub modulation_box_color_inactive: Color,
+    pub line_max_color: Color,
+}
+
+pub trait StyleSheet {
+    fn active(&self) -> Style;
+}
 
 enum BoxStatus {
     Normal,
@@ -51,7 +68,7 @@ struct OperatorBox {
 }
 
 impl OperatorBox {
-    fn new(bounds: Size, index: usize) -> Self {
+    fn new(bounds: Size, index: usize, style_sheet: Box<dyn StyleSheet>) -> Self {
         let (x, y) = match index {
             3 => (0, 0),
             2 => (2, 2),
@@ -98,6 +115,7 @@ impl OperatorBox {
             position: text_position,
             font: FONT_BOLD,
             size: FONT_SIZE as f32,
+            color: style_sheet.active().text_color,
             ..Default::default()
         };
 
@@ -188,13 +206,17 @@ impl OperatorBox {
         ModulationBoxChange::None
     }
 
-    fn draw(&self, frame: &mut Frame) {
-        let stroke = Stroke::default().with_color(Color::BLACK).with_width(1.0);
+    fn draw(&self, frame: &mut Frame, style_sheet: Box<dyn StyleSheet>) {
+        let style = style_sheet.active();
+
+        let stroke = Stroke::default()
+            .with_color(style.box_border_color)
+            .with_width(1.0);
 
         let background_color = match self.status {
-            BoxStatus::Normal => Color::WHITE,
-            BoxStatus::Hover => Color::from_rgb(0.7, 0.7, 0.7),
-            BoxStatus::Dragging { .. } => Color::from_rgb(0.5, 0.5, 0.5),
+            BoxStatus::Normal => style.operator_box_color_active,
+            BoxStatus::Hover => style.operator_box_color_hover,
+            BoxStatus::Dragging { .. } => style.operator_box_color_dragging,
         };
 
         frame.fill(&self.path, background_color);
@@ -297,15 +319,17 @@ impl ModulationBox {
         ModulationBoxChange::None
     }
 
-    fn draw(&self, frame: &mut Frame) {
-        let stroke = Stroke::default().with_color(Color::BLACK).with_width(1.0);
+    fn draw(&self, frame: &mut Frame, style_sheet: Box<dyn StyleSheet>) {
+        let style = style_sheet.active();
+
+        let stroke = Stroke::default()
+            .with_color(style.box_border_color)
+            .with_width(1.0);
 
         if self.active || self.hover {
-            let (r, g, b) = ACTIVE_MOD_BOX_COLOR;
-
-            frame.fill(&self.path, Color::from_rgb8(r, g, b));
+            frame.fill(&self.path, style.modulation_box_color_active);
         } else {
-            frame.fill(&self.path, Color::WHITE);
+            frame.fill(&self.path, style.modulation_box_color_inactive);
         }
 
         frame.stroke(&self.path, stroke);
@@ -347,8 +371,10 @@ impl OutputBox {
         Self { path, y: left.y }
     }
 
-    fn draw(&self, frame: &mut Frame) {
-        let stroke = Stroke::default().with_color(Color::BLACK).with_width(1.0);
+    fn draw(&self, frame: &mut Frame, style_sheet: Box<dyn StyleSheet>) {
+        let stroke = Stroke::default()
+            .with_color(style_sheet.active().box_border_color)
+            .with_width(1.0);
 
         frame.stroke(&self.path, stroke);
     }
@@ -360,7 +386,7 @@ struct AdditiveLine {
 }
 
 impl AdditiveLine {
-    fn new(from: Point, to_y: f32, additive: f64, volume: f64) -> Self {
+    fn new(from: Point, to_y: f32, additive: f64, volume: f64, style_sheet: Box<dyn StyleSheet>) -> Self {
         let mut to = from;
 
         to.y = to_y;
@@ -372,16 +398,18 @@ impl AdditiveLine {
             stroke: Stroke::default(),
         };
 
-        line.update(additive, volume);
+        line.update(additive, volume, style_sheet);
 
         line
     }
 
-    fn update(&mut self, additive: f64, volume: f64) {
+    fn update(&mut self, additive: f64, volume: f64, style_sheet: Box<dyn StyleSheet>) {
+        let c = style_sheet.active().line_max_color;
+
         let opacity = (additive * volume.min(0.5) * 2.0) as f32;
         let gradient = Gradient::new(vec![
             LinSrgba::new(0.0, 0.25, 0.0, opacity),
-            LinSrgba::new(0.0, 0.0, 0.0, opacity),
+            LinSrgba::new(c.r, c.g, c.b, opacity),
         ]);
         let mix_factor = (volume as f32 - 0.5).max(0.0) * 2.0;
         let color = gradient.get(mix_factor);
@@ -402,7 +430,7 @@ struct ModulationLine {
 }
 
 impl ModulationLine {
-    fn new(from: Point, through: Point, to: Point, additive: f64, volume: f64) -> Self {
+    fn new(from: Point, through: Point, to: Point, additive: f64, volume: f64, style_sheet: Box<dyn StyleSheet>) -> Self {
         let mut builder = path::Builder::new();
 
         builder.move_to(from.snap());
@@ -411,10 +439,11 @@ impl ModulationLine {
 
         let path = builder.build();
 
+        let c = style_sheet.active().line_max_color;
         let opacity = ((1.0 - additive) * volume.min(0.5) * 2.0) as f32;
         let gradient = Gradient::new(vec![
             LinSrgba::new(0.0, 0.25, 0.0, opacity),
-            LinSrgba::new(0.0, 0.0, 0.0, opacity),
+            LinSrgba::new(c.r, c.g, c.b, opacity),
         ]);
         let mix_factor = (volume as f32 - 0.5).max(0.0) * 2.0;
         let color = gradient.get(mix_factor);
@@ -500,11 +529,11 @@ struct ModulationMatrixComponents {
 }
 
 impl ModulationMatrixComponents {
-    fn new(parameters: &ModulationMatrixParameters, bounds: Size) -> Self {
-        let operator_1_box = OperatorBox::new(bounds, 0);
-        let operator_2_box = OperatorBox::new(bounds, 1);
-        let operator_3_box = OperatorBox::new(bounds, 2);
-        let operator_4_box = OperatorBox::new(bounds, 3);
+    fn new(parameters: &ModulationMatrixParameters, bounds: Size, style: Theme) -> Self {
+        let operator_1_box = OperatorBox::new(bounds, 0, style.into());
+        let operator_2_box = OperatorBox::new(bounds, 1, style.into());
+        let operator_3_box = OperatorBox::new(bounds, 2, style.into());
+        let operator_4_box = OperatorBox::new(bounds, 3, style.into());
 
         let operator_4_mod_3_box = ModulationBox::new(
             bounds,
@@ -550,24 +579,28 @@ impl ModulationMatrixComponents {
             output_box.y,
             parameters.operator_4_additive,
             parameters.operator_4_volume,
+            style.into(),
         );
         let operator_3_additive_line = AdditiveLine::new(
             operator_3_box.center,
             output_box.y,
             parameters.operator_3_additive,
             parameters.operator_3_volume,
+            style.into(),
         );
         let operator_2_additive_line = AdditiveLine::new(
             operator_2_box.center,
             output_box.y,
             parameters.operator_2_additive,
             parameters.operator_2_volume,
+            style.into(),
         );
         let operator_1_additive_line = AdditiveLine::new(
             operator_1_box.center,
             output_box.y,
             1.0,
             parameters.operator_1_volume,
+            style.into(),
         );
 
         let operator_4_modulation_line = {
@@ -584,6 +617,7 @@ impl ModulationMatrixComponents {
                 to,
                 parameters.operator_4_additive,
                 parameters.operator_4_volume,
+                style.into(),
             )
         };
 
@@ -600,6 +634,7 @@ impl ModulationMatrixComponents {
                 to,
                 parameters.operator_3_additive,
                 parameters.operator_3_volume,
+                style.into(),
             )
         };
 
@@ -609,6 +644,7 @@ impl ModulationMatrixComponents {
             operator_1_box.center,
             parameters.operator_2_additive,
             parameters.operator_2_volume,
+            style.into(),
         );
 
         Self {
@@ -633,7 +669,7 @@ impl ModulationMatrixComponents {
         }
     }
 
-    fn update(&mut self, parameters: &ModulationMatrixParameters) {
+    fn update(&mut self, parameters: &ModulationMatrixParameters, style: Theme) {
         self.operator_4_mod_3_box.active = parameters.operator_4_target == 2;
         self.operator_4_mod_2_box.active = parameters.operator_4_target == 1;
         self.operator_4_mod_1_box.active = parameters.operator_4_target == 0;
@@ -641,14 +677,14 @@ impl ModulationMatrixComponents {
         self.operator_3_mod_1_box.active = parameters.operator_3_target == 0;
 
         self.operator_4_additive_line
-            .update(parameters.operator_4_additive, parameters.operator_4_volume);
+            .update(parameters.operator_4_additive, parameters.operator_4_volume, style.into());
 
         self.operator_3_additive_line
-            .update(parameters.operator_3_additive, parameters.operator_3_volume);
+            .update(parameters.operator_3_additive, parameters.operator_3_volume, style.into());
         self.operator_2_additive_line
-            .update(parameters.operator_2_additive, parameters.operator_2_volume);
+            .update(parameters.operator_2_additive, parameters.operator_2_volume, style.into());
         self.operator_1_additive_line
-            .update(1.0, parameters.operator_1_volume);
+            .update(1.0, parameters.operator_1_volume, style.into());
 
         self.operator_4_modulation_line = {
             let (through, to) = match parameters.operator_4_target {
@@ -664,6 +700,7 @@ impl ModulationMatrixComponents {
                 to,
                 parameters.operator_4_additive,
                 parameters.operator_4_volume,
+                style.into(),
             )
         };
 
@@ -680,6 +717,7 @@ impl ModulationMatrixComponents {
                 to,
                 parameters.operator_3_additive,
                 parameters.operator_3_volume,
+                style.into(),
             )
         };
 
@@ -689,6 +727,7 @@ impl ModulationMatrixComponents {
             self.operator_1_box.center,
             parameters.operator_2_additive,
             parameters.operator_2_volume,
+            style.into(),
         );
     }
 
@@ -703,39 +742,46 @@ impl ModulationMatrixComponents {
         self.operator_2_modulation_line.draw(frame);
     }
 
-    fn draw_boxes(&self, frame: &mut Frame) {
-        self.operator_1_box.draw(frame);
-        self.operator_2_box.draw(frame);
-        self.operator_3_box.draw(frame);
-        self.operator_4_box.draw(frame);
+    fn draw_boxes(&self, frame: &mut Frame, style: Theme) {
+        self.operator_1_box.draw(frame, style.into());
+        self.operator_2_box.draw(frame, style.into());
+        self.operator_3_box.draw(frame, style.into());
+        self.operator_4_box.draw(frame, style.into());
 
-        self.operator_4_mod_3_box.draw(frame);
-        self.operator_4_mod_2_box.draw(frame);
-        self.operator_4_mod_1_box.draw(frame);
-        self.operator_3_mod_2_box.draw(frame);
-        self.operator_3_mod_1_box.draw(frame);
-        self.operator_2_mod_1_box.draw(frame);
+        self.operator_4_mod_3_box.draw(frame, style.into());
+        self.operator_4_mod_2_box.draw(frame, style.into());
+        self.operator_4_mod_1_box.draw(frame, style.into());
+        self.operator_3_mod_2_box.draw(frame, style.into());
+        self.operator_3_mod_1_box.draw(frame, style.into());
+        self.operator_2_mod_1_box.draw(frame, style.into());
 
-        self.output_box.draw(frame);
+        self.output_box.draw(frame, style.into());
     }
 }
 
 pub struct ModulationMatrix {
     cache: Cache,
+    style: Theme,
     parameters: ModulationMatrixParameters,
     components: ModulationMatrixComponents,
 }
 
 impl ModulationMatrix {
-    pub fn new<H: GuiSyncHandle>(sync_handle: &H) -> Self {
+    pub fn new<H: GuiSyncHandle>(sync_handle: &H, style: Theme) -> Self {
         let parameters = ModulationMatrixParameters::new(sync_handle);
-        let components = ModulationMatrixComponents::new(&parameters, SIZE);
+        let components = ModulationMatrixComponents::new(&parameters, SIZE, style);
 
         Self {
             cache: Cache::default(),
+            style,
             parameters,
             components,
         }
+    }
+
+    pub fn set_style(&mut self, style: Theme) {
+        self.style = style;
+        self.cache.clear();
     }
 
     pub fn set_operator_3_target(&mut self, value: f64) {
@@ -795,7 +841,7 @@ impl ModulationMatrix {
     }
 
     fn update_components(&mut self) {
-        self.components.update(&self.parameters);
+        self.components.update(&self.parameters, self.style);
 
         self.cache.clear();
     }
@@ -807,17 +853,18 @@ impl ModulationMatrix {
             .into()
     }
 
-    fn draw_background(&self, frame: &mut Frame) {
+    fn draw_background(&self, frame: &mut Frame, style_sheet: Box<dyn StyleSheet>) {
         let mut size = frame.size();
+        let style = style_sheet.active();
 
         size.width -= 1.0;
         size.height -= 1.0;
 
         let background = Path::rectangle(Point::new(0.5, 0.5), size);
 
-        let stroke = Stroke::default().with_width(1.0);
+        let stroke = Stroke::default().with_color(style.border_color).with_width(1.0);
 
-        frame.fill(&background, BACKGROUND_COLOR);
+        frame.fill(&background, style.background_color);
         frame.stroke(&background, stroke);
     }
 }
@@ -825,10 +872,10 @@ impl ModulationMatrix {
 impl Program<Message> for ModulationMatrix {
     fn draw(&self, bounds: Rectangle, _cursor: Cursor) -> Vec<Geometry> {
         let geometry = self.cache.draw(bounds.size(), |frame| {
-            self.draw_background(frame);
+            self.draw_background(frame, self.style.into());
 
             self.components.draw_lines(frame);
-            self.components.draw_boxes(frame);
+            self.components.draw_boxes(frame, self.style);
         });
 
         vec![geometry]

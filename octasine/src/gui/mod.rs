@@ -1,6 +1,7 @@
 use baseview::{Size, WindowOpenOptions, WindowScalePolicy};
 use iced_baseview::{IcedWindow, Settings};
 use raw_window_handle::{HasRawWindowHandle, RawWindowHandle};
+use serde::{Serialize, Deserialize};
 use vst::editor::Editor;
 
 use super::GuiSyncHandle;
@@ -12,6 +13,12 @@ use interface::OctaSineIcedApplication;
 
 pub const GUI_WIDTH: usize = 14 * 66;
 pub const GUI_HEIGHT: usize = 14 * 58;
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+
+pub struct GuiSettings {
+    pub theme: interface::style::Theme,
+}
 
 pub struct Gui<H: GuiSyncHandle> {
     sync_state: H,

@@ -9,6 +9,7 @@ use crate::constants::{ENVELOPE_MAX_DURATION, ENVELOPE_MIN_DURATION};
 use crate::voices::envelopes::VoiceOperatorVolumeEnvelope;
 use crate::GuiSyncHandle;
 
+use super::style::Theme;
 use super::{Message, SnapPoint, FONT_SIZE, LINE_HEIGHT};
 
 const WIDTH: u16 = LINE_HEIGHT * 19;
@@ -25,6 +26,23 @@ const ENVELOPE_PATH_SCALE_Y: f32 = 1.0 - (1.0 / 8.0) - (1.0 / 16.0);
 
 const TOTAL_DURATION: f32 = 3.0;
 const MIN_VIEWPORT_FACTOR: f32 = 1.0 / 128.0;
+
+#[derive(Debug, Clone)]
+pub struct Style {
+    pub background_color: Color,
+    pub border_color: Color,
+    pub text_color: Color,
+    pub time_marker_minor_color: Color,
+    pub time_marker_color_major: Color,
+    pub path_color: Color,
+    pub dragger_fill_color_active: Color,
+    pub dragger_fill_color_hover: Color,
+    pub dragger_border_color: Color,
+}
+
+pub trait StyleSheet {
+    fn active(&self) -> Style;
+}
 
 struct EnvelopeStagePath {
     path: Path,
@@ -191,6 +209,7 @@ impl Default for EnvelopeDragger {
 pub struct Envelope {
     log10_table: Log10Table,
     cache: Cache,
+    style: Theme,
     operator_index: usize,
     attack_duration: f32,
     attack_end_value: f32,
@@ -211,7 +230,7 @@ pub struct Envelope {
 }
 
 impl Envelope {
-    pub fn new<H: GuiSyncHandle>(sync_handle: &H, operator_index: usize) -> Self {
+    pub fn new<H: GuiSyncHandle>(sync_handle: &H, operator_index: usize, style: Theme) -> Self {
         let (attack_dur, attack_val, decay_dur, decay_val, release_dur) = match operator_index {
             0 => (10, 11, 12, 13, 14),
             1 => (24, 25, 26, 27, 28),
@@ -229,6 +248,7 @@ impl Envelope {
         let mut envelope = Self {
             log10_table: Log10Table::default(),
             cache: Cache::default(),
+            style,
             operator_index,
             attack_duration,
             attack_end_value: sync_handle.get_parameter(attack_val) as f32,
@@ -282,6 +302,11 @@ impl Envelope {
         self.x_offset = Self::process_x_offset(x_offset, viewport_factor);
 
         self.update_data();
+    }
+    
+    pub fn set_style(&mut self, style: Theme) {
+        self.style = style;
+        self.cache.clear();
     }
 
     fn process_x_offset(x_offset: f32, viewport_factor: f32) -> f32 {
@@ -428,7 +453,9 @@ impl Envelope {
             .into()
     }
 
-    fn draw_time_markers(&self, frame: &mut Frame) {
+    fn draw_time_markers(&self, frame: &mut Frame, style_sheet: Box<dyn StyleSheet>) {
+        let style = style_sheet.active();
+
         let total_duration = self.viewport_factor * TOTAL_DURATION;
         let x_offset = self.x_offset / self.viewport_factor;
 
@@ -469,6 +496,7 @@ impl Envelope {
                     content: format!("{:.1}s", time_marker_interval * 4.0 * i as f32),
                     position: scale_point_x(self.size, text_point),
                     size: FONT_SIZE as f32,
+                    color: style.text_color,
                     ..Default::default()
                 };
 
@@ -476,20 +504,21 @@ impl Envelope {
 
                 let stroke = Stroke::default()
                     .with_width(1.0)
-                    .with_color(Color::from_rgb(0.7, 0.7, 0.7));
+                    .with_color(style.time_marker_color_major);
 
                 frame.stroke(&path, stroke);
             } else {
                 let stroke = Stroke::default()
                     .with_width(1.0)
-                    .with_color(Color::from_rgb(0.9, 0.9, 0.9));
+                    .with_color(style.time_marker_minor_color);
 
                 frame.stroke(&path, stroke);
             }
         }
     }
 
-    fn draw_stage_paths(&self, frame: &mut Frame) {
+    fn draw_stage_paths(&self, frame: &mut Frame, style_sheet: Box<dyn StyleSheet>) {
+        let style = style_sheet.active();
         let size = frame.size();
 
         let top_drag_border = Path::line(
@@ -503,12 +532,12 @@ impl Envelope {
 
         let drag_border_stroke = Stroke::default()
             .with_width(1.0)
-            .with_color(Color::from_rgb(0.7, 0.7, 0.7));
+            .with_color(style.time_marker_color_major);
 
         frame.stroke(&top_drag_border, drag_border_stroke);
         frame.stroke(&bottom_drag_border, drag_border_stroke);
 
-        let stage_path_stroke = Stroke::default().with_width(1.0).with_color(Color::BLACK);
+        let stage_path_stroke = Stroke::default().with_width(1.0).with_color(style.path_color);
 
         frame.stroke(&self.attack_stage_path.path, stage_path_stroke);
         frame.stroke(&self.decay_stage_path.path, stage_path_stroke);
@@ -518,16 +547,16 @@ impl Envelope {
 
         let left_bg_x = scale_point_x(size, Point::ORIGIN).snap().x - 1.0;
         let left_bg = Path::rectangle(Point::ORIGIN, Size::new(left_bg_x, size.height));
-        frame.fill(&left_bg, Color::WHITE);
-        frame.stroke(&left_bg, Stroke::default().with_color(Color::WHITE));
+        frame.fill(&left_bg, style.background_color);
+        frame.stroke(&left_bg, Stroke::default().with_color(style.background_color));
 
         let right_bg_x = scale_point_x(size, Point::new(size.width, 0.0)).snap().x + 1.0;
         let right_bg = Path::rectangle(
             Point::new(right_bg_x, 0.0),
             Size::new(size.width, size.height),
         );
-        frame.fill(&right_bg, Color::WHITE);
-        frame.stroke(&right_bg, Stroke::default().with_color(Color::WHITE));
+        frame.fill(&right_bg, style.background_color);
+        frame.stroke(&right_bg, Stroke::default().with_color(style.background_color));
 
         let top_border = Path::line(
             scale_point_x(size, Point::ORIGIN).snap(),
@@ -554,7 +583,7 @@ impl Envelope {
         );
         let border_stroke = Stroke::default()
             .with_width(1.0)
-            .with_color(Color::from_rgb(0.3, 0.3, 0.3));
+            .with_color(style.border_color);
 
         frame.stroke(&top_border, border_stroke);
         frame.stroke(&bottom_border, border_stroke);
@@ -562,8 +591,9 @@ impl Envelope {
         frame.stroke(&right_border, border_stroke);
     }
 
-    fn draw_dragger(frame: &mut Frame, dragger: &EnvelopeDragger) {
+    fn draw_dragger(frame: &mut Frame, style_sheet: Box<dyn StyleSheet>, dragger: &EnvelopeDragger) {
         let size = frame.size();
+        let style = style_sheet.active();
 
         let left_end_x = scale_point(size, Point::ORIGIN).snap().x;
         let right_end_x = scale_point(size, Point::new(size.width, 0.0)).snap().x;
@@ -582,16 +612,16 @@ impl Envelope {
         };
 
         let fill_color = match dragger.status {
-            EnvelopeDraggerStatus::Normal => Color::from_rgb(1.0, 1.0, 1.0),
-            EnvelopeDraggerStatus::Hover => Color::from_rgb(0.0, 0.0, 0.0),
-            EnvelopeDraggerStatus::Dragging { .. } => Color::from_rgb(0.0, 0.0, 0.0),
+            EnvelopeDraggerStatus::Normal => style_sheet.active().dragger_fill_color_active,
+            EnvelopeDraggerStatus::Hover => style_sheet.active().dragger_fill_color_hover,
+            EnvelopeDraggerStatus::Dragging { .. } => style_sheet.active().dragger_fill_color_hover,
         };
 
         frame.fill(&circle_path, fill_color);
 
         let stroke = Stroke::default()
             .with_width(1.0)
-            .with_color(Color::from_rgb(0.5, 0.5, 0.5));
+            .with_color(style.dragger_border_color);
 
         frame.stroke(&circle_path, stroke);
     }
@@ -600,12 +630,12 @@ impl Envelope {
 impl Program<Message> for Envelope {
     fn draw(&self, bounds: Rectangle, _cursor: Cursor) -> Vec<Geometry> {
         let geometry = self.cache.draw(bounds.size(), |frame| {
-            self.draw_time_markers(frame);
-            self.draw_stage_paths(frame);
+            self.draw_time_markers(frame, self.style.into());
+            self.draw_stage_paths(frame, self.style.into());
 
-            Self::draw_dragger(frame, &self.attack_dragger);
-            Self::draw_dragger(frame, &self.decay_dragger);
-            Self::draw_dragger(frame, &self.release_dragger);
+            Self::draw_dragger(frame, self.style.into(), &self.attack_dragger);
+            Self::draw_dragger(frame, self.style.into(), &self.decay_dragger);
+            Self::draw_dragger(frame, self.style.into(), &self.release_dragger);
         });
 
         vec![geometry]

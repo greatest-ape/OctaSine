@@ -12,6 +12,7 @@ use super::boolean_picker::{self, BooleanPicker};
 use super::knob::{self, OctaSineKnob};
 use super::lfo_target_picker::LfoTargetPicker;
 use super::{Message, FONT_SIZE, FONT_VERY_BOLD, LINE_HEIGHT};
+use super::style::Theme;
 
 pub struct LfoWidgets {
     index: usize,
@@ -25,7 +26,7 @@ pub struct LfoWidgets {
 }
 
 impl LfoWidgets {
-    pub fn new<H: GuiSyncHandle>(sync_handle: &H, lfo_index: usize) -> Self {
+    pub fn new<H: GuiSyncHandle>(sync_handle: &H, lfo_index: usize, style: Theme) -> Self {
         let offset = 59 + lfo_index * 7;
         let target = offset + 0;
         let bpm_sync = offset + 1;
@@ -37,14 +38,24 @@ impl LfoWidgets {
 
         Self {
             index: lfo_index,
-            target: LfoTargetPicker::new(sync_handle, lfo_index, target),
-            shape: knob::lfo_shape(sync_handle, shape),
-            mode: boolean_picker::lfo_mode(sync_handle, mode),
-            bpm_sync: boolean_picker::bpm_sync(sync_handle, bpm_sync),
-            frequency_ratio: knob::lfo_frequency_ratio(sync_handle, ratio),
-            frequency_free: knob::lfo_frequency_free(sync_handle, free),
-            amount: knob::lfo_amount(sync_handle, amount),
+            target: LfoTargetPicker::new(sync_handle, lfo_index, target, style),
+            shape: knob::lfo_shape(sync_handle, shape, style),
+            mode: boolean_picker::lfo_mode(sync_handle, mode, style),
+            bpm_sync: boolean_picker::bpm_sync(sync_handle, bpm_sync, style),
+            frequency_ratio: knob::lfo_frequency_ratio(sync_handle, ratio, style),
+            frequency_free: knob::lfo_frequency_free(sync_handle, free, style),
+            amount: knob::lfo_amount(sync_handle, amount, style),
         }
+    }
+
+    pub fn set_style(&mut self, style: Theme) {
+        self.target.style = style;
+        self.shape.style = style;
+        self.mode.style = style;
+        self.bpm_sync.style = style;
+        self.frequency_ratio.style = style;
+        self.frequency_free.style = style;
+        self.amount.style = style;
     }
 
     pub fn view(&mut self) -> Element<Message> {

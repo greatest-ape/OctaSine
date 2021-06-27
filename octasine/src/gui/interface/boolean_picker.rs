@@ -6,36 +6,42 @@ use crate::parameters::values::{
 };
 use crate::GuiSyncHandle;
 
+use super::style::Theme;
 use super::{Message, FONT_BOLD, FONT_SIZE, LINE_HEIGHT};
 
 pub fn wave_type<H: GuiSyncHandle>(
     sync_handle: &H,
     parameter_index: usize,
+    style: Theme,
 ) -> BooleanPicker<OperatorWaveTypeValue> {
     BooleanPicker::new(
         sync_handle,
         parameter_index,
         "WAVE",
         vec![WaveType::Sine, WaveType::WhiteNoise],
+        style,
     )
 }
 
 pub fn bpm_sync<H: GuiSyncHandle>(
     sync_handle: &H,
     parameter_index: usize,
+    style: Theme,
 ) -> BooleanPicker<LfoBpmSyncValue> {
-    BooleanPicker::new(sync_handle, parameter_index, "BPM SYNC", vec![true, false])
+    BooleanPicker::new(sync_handle, parameter_index, "BPM SYNC", vec![true, false], style)
 }
 
 pub fn lfo_mode<H: GuiSyncHandle>(
     sync_handle: &H,
     parameter_index: usize,
+    style: Theme,
 ) -> BooleanPicker<LfoModeValue> {
     BooleanPicker::new(
         sync_handle,
         parameter_index,
         "MODE",
         vec![LfoMode::Forever, LfoMode::Once],
+        style
     )
 }
 
@@ -43,6 +49,7 @@ pub fn lfo_mode<H: GuiSyncHandle>(
 pub struct BooleanPicker<P: ParameterValue> {
     title: String,
     parameter_index: usize,
+    pub style: Theme,
     selected: P::Value,
     choices: Vec<P::Value>,
 }
@@ -56,6 +63,7 @@ where
         parameter_index: usize,
         title: &str,
         choices: Vec<P::Value>,
+        style: Theme,
     ) -> Self {
         let sync_value = sync_handle.get_parameter(parameter_index);
         let selected = P::from_sync(sync_value).get();
@@ -63,6 +71,7 @@ where
         Self {
             title: title.into(),
             parameter_index,
+            style,
             choices,
             selected,
         }
@@ -92,7 +101,8 @@ where
             )
             .size(FONT_SIZE)
             .text_size(FONT_SIZE)
-            .spacing(4);
+            .spacing(4)
+            .style(self.style);
 
             radios = radios.push(radio);
         }
