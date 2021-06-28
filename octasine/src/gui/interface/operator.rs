@@ -82,7 +82,7 @@ impl OperatorWidgets {
         self.frequency_ratio.style = style;
         self.frequency_free.style = style;
         self.frequency_fine.style = style;
-        if let Some(additive) = self.additive.as_mut(){
+        if let Some(additive) = self.additive.as_mut() {
             additive.style = style;
         }
         self.envelope.set_style(style);

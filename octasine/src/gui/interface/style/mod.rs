@@ -2,7 +2,7 @@ mod dark;
 mod light;
 
 use iced_baseview::{button, container, pick_list, radio, Color};
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 use super::{envelope, mod_matrix};
 

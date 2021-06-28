@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Settings {
@@ -11,10 +11,10 @@ pub struct Settings {
 
 impl Default for Settings {
     fn default() -> Self {
-	Self {
-	    schema_version: 1,
-	    gui: Default::default(),
-	}
+        Self {
+            schema_version: 1,
+            gui: Default::default(),
+        }
     }
 }
 
@@ -26,11 +26,11 @@ impl Settings {
     }
 
     fn get_config_file_path() -> anyhow::Result<PathBuf> {
-	Self::get_config_dir().map(|path| path.join("OctaSine.json"))
+        Self::get_config_dir().map(|path| path.join("OctaSine.json"))
     }
 
     pub fn save(&self) -> anyhow::Result<()> {
-	let config_dir = Self::get_config_dir()?;
+        let config_dir = Self::get_config_dir()?;
 
         let _ = ::std::fs::create_dir(&config_dir); // Ignore creation errors
 
@@ -42,11 +42,11 @@ impl Settings {
     }
 
     pub fn load() -> anyhow::Result<Self> {
-	let path = Self::get_config_file_path()?;
-	let file = ::std::fs::File::open(path)?;
+        let path = Self::get_config_file_path()?;
+        let file = ::std::fs::File::open(path)?;
 
-	let settings = ::serde_json::from_reader(file)?;
+        let settings = ::serde_json::from_reader(file)?;
 
-	Ok(settings)
+        Ok(settings)
     }
 }

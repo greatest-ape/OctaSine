@@ -11,8 +11,8 @@ use crate::GuiSyncHandle;
 use super::boolean_picker::{self, BooleanPicker};
 use super::knob::{self, OctaSineKnob};
 use super::lfo_target_picker::LfoTargetPicker;
-use super::{Message, FONT_SIZE, FONT_VERY_BOLD, LINE_HEIGHT};
 use super::style::Theme;
+use super::{Message, FONT_SIZE, FONT_VERY_BOLD, LINE_HEIGHT};
 
 pub struct LfoWidgets {
     index: usize,

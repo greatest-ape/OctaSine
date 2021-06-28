@@ -72,15 +72,13 @@ impl OctaSine {
         Self::init_logging();
 
         let settings = match Settings::load() {
-            Ok(settings) => {
-                settings
-            },
+            Ok(settings) => settings,
             Err(err) => {
                 #[cfg(feature = "logging")]
                 ::log::error!("Couldn't load settings: {}", err);
 
                 Settings::default()
-            },
+            }
         };
 
         let sample_rate = SampleRate(44100.0);
@@ -401,7 +399,7 @@ fn crate_version_to_vst_format(crate_version: String) -> i32 {
 fn get_version_info() -> String {
     use git_testament::{git_testament, CommitKind};
 
-let mut info = format!("v{}", env!("CARGO_PKG_VERSION"));
+    let mut info = format!("v{}", env!("CARGO_PKG_VERSION"));
 
     git_testament!(GIT_TESTAMENT);
 

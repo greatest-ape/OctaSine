@@ -1,7 +1,7 @@
 use baseview::{Size, WindowOpenOptions, WindowScalePolicy};
 use iced_baseview::{IcedWindow, Settings};
 use raw_window_handle::{HasRawWindowHandle, RawWindowHandle};
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 use vst::editor::Editor;
 
 use super::GuiSyncHandle;

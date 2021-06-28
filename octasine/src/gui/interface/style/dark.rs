@@ -1,6 +1,4 @@
-use iced_baseview::{
-    button, container, pick_list, radio, Background, Color,
-};
+use iced_baseview::{button, container, pick_list, radio, Background, Color};
 
 use super::{envelope, mod_matrix};
 
@@ -111,8 +109,8 @@ impl pick_list::StyleSheet for PickList {
 }
 
 pub(super) mod knob {
-    use iced_audio::knob::*;
     use super::*;
+    use iced_audio::knob::*;
 
     pub const TICK_TIER_1: Color = Color {
         r: 0.56,

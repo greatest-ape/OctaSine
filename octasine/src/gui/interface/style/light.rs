@@ -44,7 +44,7 @@ impl mod_matrix::StyleSheet for ModulationMatrix {
         mod_matrix::Style {
             background_color: Color::from_rgb(0.9, 0.9, 0.9),
             border_color: Color::BLACK, // Default?
-            text_color: Color::BLACK, // Default?
+            text_color: Color::BLACK,   // Default?
             box_border_color: Color::BLACK,
             operator_box_color_active: Color::WHITE,
             operator_box_color_hover: Color::from_rgb(0.7, 0.7, 0.7),

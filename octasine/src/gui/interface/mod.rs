@@ -242,9 +242,7 @@ impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {
     fn save_settings(&self) {
         let settings = Settings {
             schema_version: 1,
-            gui: GuiSettings {
-                theme: self.style,
-            },
+            gui: GuiSettings { theme: self.style },
         };
 
         let builder = ::std::thread::Builder::new();
@@ -469,9 +467,12 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                             Container::new(
                                 Row::new()
                                     .push(
-                                        Button::new(&mut self.toggle_style_state, Text::new("MODE"))
-                                            .on_press(Message::ToggleColorMode)
-                                            .style(self.style),
+                                        Button::new(
+                                            &mut self.toggle_style_state,
+                                            Text::new("MODE"),
+                                        )
+                                        .on_press(Message::ToggleColorMode)
+                                        .style(self.style),
                                     )
                                     .push(Space::with_width(Length::Units(3)))
                                     .push(

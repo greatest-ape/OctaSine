@@ -28,7 +28,13 @@ pub fn bpm_sync<H: GuiSyncHandle>(
     parameter_index: usize,
     style: Theme,
 ) -> BooleanPicker<LfoBpmSyncValue> {
-    BooleanPicker::new(sync_handle, parameter_index, "BPM SYNC", vec![true, false], style)
+    BooleanPicker::new(
+        sync_handle,
+        parameter_index,
+        "BPM SYNC",
+        vec![true, false],
+        style,
+    )
 }
 
 pub fn lfo_mode<H: GuiSyncHandle>(
@@ -41,7 +47,7 @@ pub fn lfo_mode<H: GuiSyncHandle>(
         parameter_index,
         "MODE",
         vec![LfoMode::Forever, LfoMode::Once],
-        style
+        style,
     )
 }
 

@@ -303,7 +303,7 @@ impl Envelope {
 
         self.update_data();
     }
-    
+
     pub fn set_style(&mut self, style: Theme) {
         self.style = style;
         self.cache.clear();
@@ -537,7 +537,9 @@ impl Envelope {
         frame.stroke(&top_drag_border, drag_border_stroke);
         frame.stroke(&bottom_drag_border, drag_border_stroke);
 
-        let stage_path_stroke = Stroke::default().with_width(1.0).with_color(style.path_color);
+        let stage_path_stroke = Stroke::default()
+            .with_width(1.0)
+            .with_color(style.path_color);
 
         frame.stroke(&self.attack_stage_path.path, stage_path_stroke);
         frame.stroke(&self.decay_stage_path.path, stage_path_stroke);
@@ -548,7 +550,10 @@ impl Envelope {
         let left_bg_x = scale_point_x(size, Point::ORIGIN).snap().x - 1.0;
         let left_bg = Path::rectangle(Point::ORIGIN, Size::new(left_bg_x, size.height));
         frame.fill(&left_bg, style.background_color);
-        frame.stroke(&left_bg, Stroke::default().with_color(style.background_color));
+        frame.stroke(
+            &left_bg,
+            Stroke::default().with_color(style.background_color),
+        );
 
         let right_bg_x = scale_point_x(size, Point::new(size.width, 0.0)).snap().x + 1.0;
         let right_bg = Path::rectangle(
@@ -556,7 +561,10 @@ impl Envelope {
             Size::new(size.width, size.height),
         );
         frame.fill(&right_bg, style.background_color);
-        frame.stroke(&right_bg, Stroke::default().with_color(style.background_color));
+        frame.stroke(
+            &right_bg,
+            Stroke::default().with_color(style.background_color),
+        );
 
         let top_border = Path::line(
             scale_point_x(size, Point::ORIGIN).snap(),
@@ -591,7 +599,11 @@ impl Envelope {
         frame.stroke(&right_border, border_stroke);
     }
 
-    fn draw_dragger(frame: &mut Frame, style_sheet: Box<dyn StyleSheet>, dragger: &EnvelopeDragger) {
+    fn draw_dragger(
+        frame: &mut Frame,
+        style_sheet: Box<dyn StyleSheet>,
+        dragger: &EnvelopeDragger,
+    ) {
         let size = frame.size();
         let style = style_sheet.active();
 

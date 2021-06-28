@@ -23,7 +23,10 @@ enum TickMarkType {
     Other(tick_marks::Group),
 }
 
-pub fn master_volume<H: GuiSyncHandle>(sync_handle: &H, style: Theme) -> OctaSineKnob<MasterVolumeValue> {
+pub fn master_volume<H: GuiSyncHandle>(
+    sync_handle: &H,
+    style: Theme,
+) -> OctaSineKnob<MasterVolumeValue> {
     let parameter_index = 0;
 
     OctaSineKnob::new(
@@ -35,7 +38,10 @@ pub fn master_volume<H: GuiSyncHandle>(sync_handle: &H, style: Theme) -> OctaSin
     )
 }
 
-pub fn master_frequency<H: GuiSyncHandle>(sync_handle: &H, style: Theme) -> OctaSineKnob<MasterFrequencyValue> {
+pub fn master_frequency<H: GuiSyncHandle>(
+    sync_handle: &H,
+    style: Theme,
+) -> OctaSineKnob<MasterFrequencyValue> {
     let parameter_index = 1;
 
     OctaSineKnob::new(

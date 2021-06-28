@@ -26,7 +26,6 @@ const SIZE: Size = Size {
 const OPERATOR_BOX_SCALE: f32 = BIG_BOX_SIZE as f32 / SMALL_BOX_SIZE as f32;
 const WIDTH: u16 = WIDTH_FLOAT as u16 + 2;
 
-
 #[derive(Debug, Clone)]
 pub struct Style {
     pub background_color: Color,
@@ -386,7 +385,13 @@ struct AdditiveLine {
 }
 
 impl AdditiveLine {
-    fn new(from: Point, to_y: f32, additive: f64, volume: f64, style_sheet: Box<dyn StyleSheet>) -> Self {
+    fn new(
+        from: Point,
+        to_y: f32,
+        additive: f64,
+        volume: f64,
+        style_sheet: Box<dyn StyleSheet>,
+    ) -> Self {
         let mut to = from;
 
         to.y = to_y;
@@ -430,7 +435,14 @@ struct ModulationLine {
 }
 
 impl ModulationLine {
-    fn new(from: Point, through: Point, to: Point, additive: f64, volume: f64, style_sheet: Box<dyn StyleSheet>) -> Self {
+    fn new(
+        from: Point,
+        through: Point,
+        to: Point,
+        additive: f64,
+        volume: f64,
+        style_sheet: Box<dyn StyleSheet>,
+    ) -> Self {
         let mut builder = path::Builder::new();
 
         builder.move_to(from.snap());
@@ -676,13 +688,22 @@ impl ModulationMatrixComponents {
         self.operator_3_mod_2_box.active = parameters.operator_3_target == 1;
         self.operator_3_mod_1_box.active = parameters.operator_3_target == 0;
 
-        self.operator_4_additive_line
-            .update(parameters.operator_4_additive, parameters.operator_4_volume, style.into());
+        self.operator_4_additive_line.update(
+            parameters.operator_4_additive,
+            parameters.operator_4_volume,
+            style.into(),
+        );
 
-        self.operator_3_additive_line
-            .update(parameters.operator_3_additive, parameters.operator_3_volume, style.into());
-        self.operator_2_additive_line
-            .update(parameters.operator_2_additive, parameters.operator_2_volume, style.into());
+        self.operator_3_additive_line.update(
+            parameters.operator_3_additive,
+            parameters.operator_3_volume,
+            style.into(),
+        );
+        self.operator_2_additive_line.update(
+            parameters.operator_2_additive,
+            parameters.operator_2_volume,
+            style.into(),
+        );
         self.operator_1_additive_line
             .update(1.0, parameters.operator_1_volume, style.into());
 
@@ -862,7 +883,9 @@ impl ModulationMatrix {
 
         let background = Path::rectangle(Point::new(0.5, 0.5), size);
 
-        let stroke = Stroke::default().with_color(style.border_color).with_width(1.0);
+        let stroke = Stroke::default()
+            .with_color(style.border_color)
+            .with_width(1.0);
 
         frame.fill(&background, style.background_color);
         frame.stroke(&background, stroke);
