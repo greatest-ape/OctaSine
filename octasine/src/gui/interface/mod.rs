@@ -5,7 +5,7 @@ use iced_baseview::{
 use iced_baseview::{executor, Align, Application, Command, Subscription, WindowSubs};
 
 use crate::parameters::values::{MasterFrequencyValue, MasterVolumeValue};
-use crate::{get_git_info, GuiSyncHandle};
+use crate::{get_version_info, GuiSyncHandle};
 
 mod boolean_picker;
 mod divider;
@@ -52,7 +52,7 @@ const OPEN_SANS_BOLD: &[u8] = include_bytes!("../../../../contrib/open-sans/Open
 fn get_info_text() -> String {
     format!(
         "Copyright © 2019-2021 Joakim Frostegård\nBuild: {}",
-        get_git_info()
+        get_version_info()
     )
 }
 

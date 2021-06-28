@@ -132,7 +132,7 @@ impl OctaSine {
         info!("init");
 
         info!("OS: {}", ::os_info::get());
-        info!("OctaSine build: {}", get_git_info());
+        info!("OctaSine build: {}", get_version_info());
     }
 
     fn time_per_sample(sample_rate: SampleRate) -> TimePerSample {
@@ -398,27 +398,27 @@ fn crate_version_to_vst_format(crate_version: String) -> i32 {
 }
 
 #[cfg(any(feature = "gui", feature = "logging"))]
-fn get_git_info() -> String {
+fn get_version_info() -> String {
     use git_testament::{git_testament, CommitKind};
+
+let mut info = format!("v{}", env!("CARGO_PKG_VERSION"));
 
     git_testament!(GIT_TESTAMENT);
 
-    let version = match GIT_TESTAMENT.commit {
-        CommitKind::NoRepository(crate_version, _build_date) => crate_version.into(),
-        CommitKind::NoCommit(crate_version, _build_date) => crate_version.into(),
-        CommitKind::NoTags(commit, _commit_date) => commit.chars().take(7).collect::<String>(),
-        CommitKind::FromTag(tag, commit, _commit_date, _distance) => {
-            format!("{} ({})", tag, commit.chars().take(7).collect::<String>())
+    match GIT_TESTAMENT.commit {
+        CommitKind::NoTags(commit, _) | CommitKind::FromTag(_, commit, _, _) => {
+            let commit = commit.chars().take(7).collect::<String>();
+
+            info.push_str(&format!(" ({})", commit));
         }
+        _ => (),
     };
 
-    let dirty = if GIT_TESTAMENT.modifications.is_empty() {
-        ""
-    } else {
-        " (dirty)"
-    };
+    if !GIT_TESTAMENT.modifications.is_empty() {
+        info.push_str(" (dirty)");
+    }
 
-    format!("{}{}", version, dirty)
+    info
 }
 
 #[cfg(test)]
