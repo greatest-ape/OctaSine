@@ -199,7 +199,8 @@ impl PresetBank {
         self.presets_changed.store(true, Ordering::SeqCst);
     }
 
-    pub fn get_presets_changed(&self) -> bool {
+    /// Only used from GUI
+    pub fn have_presets_changed(&self) -> bool {
         self.presets_changed.fetch_and(false, Ordering::SeqCst)
     }
 
