@@ -28,7 +28,7 @@ use approximations::*;
 use common::*;
 use constants::*;
 use parameters::processing::*;
-use preset_bank::{MAX_NUM_PARAMETERS, PresetBank};
+use preset_bank::{PresetBank, MAX_NUM_PARAMETERS};
 use settings::Settings;
 use voices::*;
 

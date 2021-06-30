@@ -225,9 +225,7 @@ impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {
     }
 
     fn update_widgets_from_parameters(&mut self) {
-        let opt_changes = self
-            .sync_handle
-            .get_changed_parameters();
+        let opt_changes = self.sync_handle.get_changed_parameters();
 
         if let Some(changes) = opt_changes {
             for (index, opt_new_value) in changes.iter().enumerate() {
