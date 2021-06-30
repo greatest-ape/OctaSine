@@ -370,6 +370,10 @@ cfg_if::cfg_if! {
             }
             fn set_preset_index(&self, index: usize){
                 self.presets.set_preset_index(index);
+
+                if let Some(host) = self.host {
+                    host.update_display();
+                }
             }
             fn get_gui_settings(&self) -> gui::GuiSettings {
                 self.settings.gui.clone()
