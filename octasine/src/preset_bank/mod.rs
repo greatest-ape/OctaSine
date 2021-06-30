@@ -55,10 +55,6 @@ impl SyncParameter {
             false
         }
     }
-
-    fn mark_as_changed(&self){
-        self.value.mark_as_changed();
-    }
 }
 
 struct Preset {
@@ -155,10 +151,6 @@ impl PresetBank {
     }
 
     fn mark_parameters_as_changed(&self) {
-        for parameter in self.get_current_preset().parameters.iter() {
-            parameter.mark_as_changed();
-        }
-
         self.parameter_change_info_processing.mark_all_as_changed();
         self.parameter_change_info_gui.mark_all_as_changed();
     }
@@ -222,7 +214,7 @@ impl PresetBank {
 
     pub fn get_changed_parameters_from_gui(&self) -> Option<[Option<f64>; MAX_NUM_PARAMETERS]> {
         self.parameter_change_info_gui
-            .get_changed_parameters_transient(&self.get_current_preset().parameters)
+            .get_changed_parameters(&self.get_current_preset().parameters)
     }
 
     // Get parameter values
@@ -246,13 +238,6 @@ impl PresetBank {
             .parameters
             .get(index)
             .map(|p| p.name.clone())
-    }
-
-    pub fn get_parameter_value_if_changed(&self, index: usize) -> Option<f64> {
-        self.get_current_preset()
-            .parameters
-            .get(index)
-            .and_then(|p| p.value.get_if_changed())
     }
 
     pub fn format_parameter_value(&self, index: usize, value: f64) -> Option<String> {
