@@ -55,6 +55,10 @@ impl SyncParameter {
             false
         }
     }
+
+    fn mark_as_changed(&self){
+        self.value.mark_as_changed();
+    }
 }
 
 struct Preset {
@@ -151,6 +155,10 @@ impl PresetBank {
     }
 
     fn mark_parameters_as_changed(&self) {
+        for parameter in self.get_current_preset().parameters.iter() {
+            parameter.mark_as_changed();
+        }
+
         self.parameter_change_info_processing.mark_all_as_changed();
         self.parameter_change_info_gui.mark_all_as_changed();
     }

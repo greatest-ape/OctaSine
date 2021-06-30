@@ -47,6 +47,11 @@ impl AtomicPositiveDouble {
 
         self.value.store(value, Ordering::Relaxed);
     }
+
+    #[inline]
+    pub fn mark_as_changed(&self){
+        self.value.fetch_or(1 << 63, Ordering::SeqCst);
+    }
 }
 
 #[cfg(test)]
