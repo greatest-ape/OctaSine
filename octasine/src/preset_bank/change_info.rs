@@ -43,53 +43,8 @@ impl ParameterChangeInfo {
         false
     }
 
-    /// Go through change info. Get all changed parameters. If parameters are
-    /// marked as changed but are in fact not registered as changed in
-    /// PresetParameters, mark them as changed in Self.changed
+    /// Get all changed parameters
     pub fn get_changed_parameters(
-        &self,
-        parameters: &Vec<SyncParameter>,
-    ) -> Option<[Option<f64>; MAX_NUM_PARAMETERS]> {
-        let mut no_changes = true;
-        let mut changed = [0u64; NUM_ATOMIC_U64S];
-
-        for (c, atomic_u64) in changed.iter_mut().zip(self.atomic_u64s.iter()) {
-            let changed = atomic_u64.fetch_and(0, Ordering::SeqCst);
-
-            no_changes &= changed == 0;
-
-            *c = changed;
-        }
-
-        if no_changes {
-            return None;
-        }
-
-        let mut changes = [None; MAX_NUM_PARAMETERS];
-
-        for (parameter_index, c) in changes.iter_mut().enumerate() {
-            let u64_index = parameter_index / 64;
-            let u64_bit = parameter_index % 64;
-
-            let changed = changed[u64_index];
-
-            if (changed >> u64_bit) & 1 == 1 {
-                if let Some(p) = parameters.get(parameter_index) {
-                    if let Some(value) = p.value.get_if_changed() {
-                        *c = Some(value);
-                    } else {
-                        self.mark_as_changed(parameter_index);
-                    }
-                }
-            }
-        }
-
-        Some(changes)
-    }
-
-    /// Get all changed parameters, without reading or modifying the changed flag
-    /// in the AtomicPositiveDouble
-    pub fn get_changed_parameters_transient(
         &self,
         parameters: &Vec<SyncParameter>,
     ) -> Option<[Option<f64>; MAX_NUM_PARAMETERS]> {

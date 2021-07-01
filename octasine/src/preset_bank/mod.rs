@@ -199,7 +199,8 @@ impl PresetBank {
         self.presets_changed.store(true, Ordering::SeqCst);
     }
 
-    pub fn get_presets_changed(&self) -> bool {
+    /// Only used from GUI
+    pub fn have_presets_changed(&self) -> bool {
         self.presets_changed.fetch_and(false, Ordering::SeqCst)
     }
 
@@ -214,7 +215,7 @@ impl PresetBank {
 
     pub fn get_changed_parameters_from_gui(&self) -> Option<[Option<f64>; MAX_NUM_PARAMETERS]> {
         self.parameter_change_info_gui
-            .get_changed_parameters_transient(&self.get_current_preset().parameters)
+            .get_changed_parameters(&self.get_current_preset().parameters)
     }
 
     // Get parameter values
@@ -238,13 +239,6 @@ impl PresetBank {
             .parameters
             .get(index)
             .map(|p| p.name.clone())
-    }
-
-    pub fn get_parameter_value_if_changed(&self, index: usize) -> Option<f64> {
-        self.get_current_preset()
-            .parameters
-            .get(index)
-            .and_then(|p| p.value.get_if_changed())
     }
 
     pub fn format_parameter_value(&self, index: usize, value: f64) -> Option<String> {

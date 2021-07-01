@@ -28,7 +28,7 @@ use approximations::*;
 use common::*;
 use constants::*;
 use parameters::processing::*;
-use preset_bank::PresetBank;
+use preset_bank::{PresetBank, MAX_NUM_PARAMETERS};
 use settings::Settings;
 use voices::*;
 
@@ -334,19 +334,17 @@ cfg_if::cfg_if! {
     if #[cfg(feature = "gui")] {
         /// Trait passed to GUI code for encapsulation
         pub trait GuiSyncHandle: Clone + Send + Sync + 'static {
-            fn get_bank(&self) -> &PresetBank;
             fn set_parameter(&self, index: usize, value: f64);
             fn get_parameter(&self, index: usize) -> f64;
             fn format_parameter_value(&self, index: usize, value: f64) -> String;
             fn get_presets(&self) -> (usize, Vec<String>);
             fn set_preset_index(&self, index: usize);
+            fn get_changed_parameters(&self) -> Option<[Option<f64>; MAX_NUM_PARAMETERS]>;
+            fn have_presets_changed(&self) -> bool;
             fn get_gui_settings(&self) -> gui::GuiSettings;
         }
 
         impl GuiSyncHandle for Arc<SyncState> {
-            fn get_bank(&self) -> &PresetBank {
-                &self.presets
-            }
             fn set_parameter(&self, index: usize, value: f64){
                 if let Some(host) = self.host {
                     // Host will occasionally set the value again, but that's
@@ -370,6 +368,16 @@ cfg_if::cfg_if! {
             }
             fn set_preset_index(&self, index: usize){
                 self.presets.set_preset_index(index);
+
+                if let Some(host) = self.host {
+                    host.update_display();
+                }
+            }
+            fn get_changed_parameters(&self) -> Option<[Option<f64>; MAX_NUM_PARAMETERS]> {
+                self.presets.get_changed_parameters_from_gui()
+            }
+            fn have_presets_changed(&self) -> bool {
+                self.presets.have_presets_changed()
             }
             fn get_gui_settings(&self) -> gui::GuiSettings {
                 self.settings.gui.clone()

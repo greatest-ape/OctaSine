@@ -225,10 +225,7 @@ impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {
     }
 
     fn update_widgets_from_parameters(&mut self) {
-        let opt_changes = self
-            .sync_handle
-            .get_bank()
-            .get_changed_parameters_from_gui();
+        let opt_changes = self.sync_handle.get_changed_parameters();
 
         if let Some(changes) = opt_changes {
             for (index, opt_new_value) in changes.iter().enumerate() {
@@ -340,7 +337,7 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
     fn update(&mut self, message: Self::Message) -> Command<Self::Message> {
         match message {
             Message::Frame => {
-                if self.sync_handle.get_bank().get_presets_changed() {
+                if self.sync_handle.have_presets_changed() {
                     self.preset_picker = PresetPicker::new(&self.sync_handle, self.style);
                 }
                 self.update_widgets_from_parameters();
