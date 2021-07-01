@@ -6,10 +6,11 @@
 
 - Add GUI dark mode
 - Add Apple Silicon build
-- Log OctaSine version and OS info
 
-### Other
-
+## Bug fixes
 - Fix bug where audio engine doesn't pick up preset changes
 - Update dependencies
+
+## Other
+- Print OctaSine version and OS info to log file
 - Simplify preset/parameter handling code
