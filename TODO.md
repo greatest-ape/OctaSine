@@ -2,8 +2,11 @@
 
 ## Important
 
+* Build for Apple silicon
+  * ADVSIMD (NEON) acceleration should be supported, at least by enabling the
+    target feature. I'm sure sure how that is done when cross-compiling.
+
 * GUI
-  * Dark mode
   * Improve macOS Retina support
   * Scrolling in dropdowns
     * Needs to be added to baseview macOS code
