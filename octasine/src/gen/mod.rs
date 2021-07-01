@@ -1,6 +1,6 @@
 mod lfo;
 
-#[cfg(feature = "simd")]
+#[cfg(all(feature = "simd", target_arch = "x86_64"))]
 use core::arch::x86_64::*;
 
 use duplicate::duplicate;
@@ -138,7 +138,7 @@ impl<T: FallbackSine> Simd for Fallback<T> {
 
 pub struct Sse2;
 
-#[cfg(feature = "simd")]
+#[cfg(all(feature = "simd", target_arch = "x86_64"))]
 impl Simd for Sse2 {
     type PackedDouble = __m128d;
     const PD_WIDTH: usize = 2;
@@ -201,7 +201,7 @@ impl Simd for Sse2 {
 
 pub struct Avx;
 
-#[cfg(feature = "simd")]
+#[cfg(all(feature = "simd", target_arch = "x86_64"))]
 impl Simd for Avx {
     type PackedDouble = __m256d;
     const PD_WIDTH: usize = 4;
@@ -275,17 +275,17 @@ pub type FallbackSleef = Fallback<FallbackSineSleef>;
     [
         S [ FallbackSleef ]
         target_feature_enable [ cfg(not(feature = "fake-feature")) ]
-        feature_gate [ cfg(feature = "simd") ]
+        feature_gate [ cfg(all(feature = "simd")) ]
     ]
     [
         S [ Sse2 ]
         target_feature_enable [ target_feature(enable = "sse2") ]
-        feature_gate [ cfg(feature = "simd") ]
+        feature_gate [ cfg(all(feature = "simd", target_arch = "x86_64")) ]
     ]
     [
         S [ Avx ]
         target_feature_enable [ target_feature(enable = "avx") ]
-        feature_gate [ cfg(feature = "simd") ]
+        feature_gate [ cfg(all(feature = "simd", target_arch = "x86_64")) ]
     ]
 )]
 mod gen {
