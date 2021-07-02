@@ -26,19 +26,14 @@ VST2 frequency modulation synthesizer written in Rust.
 
 ## About
 
-* Four operators with independent parameters such as volume, panning,
-  modulation index, feedback, three different frequency modifiers (ratio, free
-  and fine) and ADSR volume envelope parameters. The operators can be
-  independently switched to white noise mode
-* Flexible routing allowing setting the output operator (with some
-  limitations) as well as the percentage of signal that is simply added to the
-  final output, enabling additive synthesis. By default, operator 4 is routed
-  to operator 3, operator 3 to operator 2 and operator 2 to operator 1.
+* Four FM operators with parameters for volume, panning, modulation index, feedback, frequency modifiers (ratio, free and fine), envelope values (attack, decay, release) and toggling of white noise mode.
+* Flexible routing allows setting the operator modulation target (with some limitations) as well as the percentage of signal that is simply added to the final output, enabling additive synthesis.
+* Four LFOs with multiple waveforms, oneshot and loop modes and optional DAW BPM sync. They can target most operator parameters and most parameters of lower-index LFOs.
+* Each operator is connected to an attack-decay-sustain-release volume envelope with logarithmic slopes.
+* Per-operator white noise mode makes it easy to create percussive sounds such as hi-hats and cymbals.
+* Runs on macOS, Windows 10 and Linux in VST2-compatible DAWs. Synthesis is SIMD-accelerated where possible.
 * Master volume and master frequency parameters
-* Four LFOs capable of targeting most operator parameters as well as
-  most parameters of lower index LFOs.
-* 128 voices (using them all simultaneously might consume quite a bit
-  of CPU time though)
+* 128 voices (using them all simultaneously might consume quite a bit of CPU time though)
 * Fully automatable
 
 ## Installation
@@ -67,21 +62,15 @@ If you already have any of the software mentioned below, that step can be skippe
 
 1. [Install the Rust compiler](https://rustup.rs/). Choose the nightly toolchain when prompted. Requires the XCode build tools from Apple, you will probably be prompted to install those.
 
-2. If you didn't install the nightly Rust toolchain in the last step, do it now:
+2. [Install homebrew](https://brew.sh).
 
-```sh
-rustup toolchain install nightly
-```
-
-3. [Install homebrew](https://brew.sh).
-
-4. Install git and cmake with homebrew:
+3. Install git and cmake with homebrew:
 
 ```sh
 brew install git cmake
 ```
 
-5. Clone this repository to a folder on your computer:
+4. Clone this repository to a folder on your computer:
 
 ```sh
 mkdir -p "$HOME/Downloads"
@@ -90,7 +79,7 @@ git clone https://github.com/greatest-ape/OctaSine.git
 cd OctaSine
 ```
 
-6. Build and install:
+5. Build and install:
 
 ```sh
 ./scripts/macos/build-simd-and-install.sh
@@ -124,19 +113,19 @@ If you already have any of the software mentioned below, that step can be skippe
 sudo apt-get install cmake git build-essential libx11-dev libxcursor-dev libxcb-dri2-0-dev libxcb-icccm4-dev libx11-xcb-dev 
 ```
 
+You might need to install llvm/clang dependencies too, e.g.,
+
+```sh
+sudo apt-get install llvm clang
+```
+
 On Debian 10, you might need to install some more dependencies:
 
 ```sh
 sudo apt-get install pkg-config libfreetype6-dev libexpat1-dev
 ```
 
-3. You might need to install llvm/clang dependencies too, e.g.,
-
-```sh
-sudo apt-get install llvm clang
-```
-
-4. Clone this repository to a folder on your computer, e.g.,
+3. Clone this repository to a folder on your computer, e.g.,
 
 ```sh
 mkdir -p "$HOME/Downloads"
@@ -144,7 +133,8 @@ cd "$HOME/Downloads"
 git clone https://github.com/greatest-ape/OctaSine.git
 cd OctaSine
 ```
-5. Build the OctaSine plugin:
+
+4. Build the OctaSine plugin:
 
 ```sh
 cargo +nightly build --release --features "simd" -p octasine_vst2_plugin
@@ -156,7 +146,7 @@ If build fails, please try building without sleef SIMD acceleration:
 cargo +nightly build --release -p octasine_vst2_plugin
 ```
 
-6. Copy `target/release/liboctasine.so` to your VST plugin folder 
+5. Copy `target/release/liboctasine.so` to your VST plugin folder 
 
 ## Architecture
 
