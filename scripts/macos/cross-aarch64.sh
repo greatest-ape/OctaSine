@@ -10,4 +10,4 @@ export MACOSX_DEPLOYMENT_TARGET=$(xcrun -sdk macosx11.1 --show-sdk-platform-vers
 cargo build --release -p octasine_vst2_plugin --target=aarch64-apple-darwin
 
 ./scripts/macos/bundle.sh "./target/aarch64-apple-darwin/release/liboctasine.dylib"
-./scripts/macos/package.sh "OctaSine.vst" "OctaSine-macOS-AppleSilicon"
+./scripts/unix/package.sh "OctaSine.vst" "OctaSine-macOS-AppleSilicon"
