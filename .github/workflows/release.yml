@@ -69,6 +69,7 @@ jobs:
 
     - name: Create release file (Linux)
       run: |
+        mkdir -p tmp
         cp "./target/release/liboctasine.so" "tmp/OctaSine.so"
         bash ./scripts/unix/package.sh "OctaSine.so" "../releases/OctaSine-${{ steps.get_version.outputs.VERSION }}-Ubuntu-20_04"
       if: contains(matrix.os, 'ubuntu')
