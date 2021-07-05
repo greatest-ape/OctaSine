@@ -5,14 +5,8 @@ VST2 frequency modulation synthesizer written in Rust.
 </p>
 
 <p align="center">
-  <strong>Official website</strong><br>
+  <strong>Official website with downloads</strong><br>
   <a href="https://octasine.com">octasine.com</a>
-</p>
-
-<p align="center">
-  <strong>Download latest</strong><br>
-  <a href="https://github.com/greatest-ape/OctaSine/releases/download/v0.5.1/OctaSine-v0.5.1-macOS-Intel.zip">macOS (Intel)</a> • 
-  <a href="https://github.com/greatest-ape/OctaSine/releases/download/v0.5.1/OctaSine-v0.5.1-Windows.zip">Windows</a>
 </p>
 
 <p align="center">
@@ -38,21 +32,7 @@ VST2 frequency modulation synthesizer written in Rust.
 
 ## Installation
 
-### macOS
-
-1. Download the latest version from [the release page](https://github.com/greatest-ape/OctaSine/releases).
-2. Unzip the file.
-3. Move OctaSine.vst to your plugin folder, which is typically `/Library/Audio/Plug-Ins/VST/`. You may be promted to enter your administrative password.
-
-### Windows
-
-1. Download the latest version from [the release page](https://github.com/greatest-ape/OctaSine/releases).
-2. Unzip the file.
-3. Move OctaSine.dll to your plugin folder. You may be promted to enter your administrative password.
-
-### Linux
-
-Please refer to the section on installing from source below.
+Please refer to <a href="https://octasine.com">octasine.com</a>.
 
 ## Installation from source code
 
@@ -147,6 +127,8 @@ cargo +nightly build --release -p octasine_vst2_plugin
 ```
 
 5. Copy `target/release/liboctasine.so` to your VST plugin folder 
+
+6. You might need to install Vulkan graphics drivers too. [More info here](https://guide.nannou.cc/getting_started/platform-specific_setup.html).
 
 ## Architecture
 
