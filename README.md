@@ -14,9 +14,15 @@ VST2 frequency modulation synthesizer written in Rust.
   <a href="https://soundcloud.com/octasine">SoundCloud</a>
 </p>
 
-## Screenshot
+## Screenshots
 
-![Screenshot of OctaSine](images/screenshot-1.png)
+### Light mode
+
+![Screenshot of OctaSine in light mode](images/screenshot-light.png)
+
+### Dark mode
+
+![Screenshot of OctaSine in dark mode](images/screenshot-dark.png)
 
 ## About
 
