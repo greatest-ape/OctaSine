@@ -36,7 +36,7 @@ pub struct Radio;
 impl radio::StyleSheet for Radio {
     fn active(&self) -> radio::Style {
         radio::Style {
-            background: SURFACE.into(),
+            background: BACKGROUND.into(),
             dot_color: ACTIVE,
             border_width: 1.0,
             border_color: ACTIVE,
