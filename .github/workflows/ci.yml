@@ -45,12 +45,6 @@ jobs:
           override: true
           components: clippy
 
-    - name: Install cargo-deny
-      run: cargo install --locked cargo-deny
-
-    - name: Check licenses of dependencies
-      run: cargo deny --workspace check licenses
-
     # Speed up builds
     - name: Deactivate lto and debug symbols (Unix)
       run: sed -i'.backup' -e 's/^lto = true$//g' Cargo.toml && sed -i'.backup' -e 's/^debug = true$//g' Cargo.toml
