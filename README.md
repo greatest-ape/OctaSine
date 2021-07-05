@@ -6,7 +6,7 @@ VST2 frequency modulation synthesizer written in Rust.
 
 <p align="center">
   <strong>Official website with downloads</strong><br>
-  <a href="https://octasine.com">octasine.com</a>
+  <a href="https://www.octasine.com">OctaSine.com</a>
 </p>
 
 <p align="center">
@@ -32,7 +32,7 @@ VST2 frequency modulation synthesizer written in Rust.
 
 ## Installation
 
-Please refer to <a href="https://octasine.com">octasine.com</a>.
+Please refer to <a href="https://www.octasine.com">OctaSine.com</a>.
 
 ## Installation from source code
 
