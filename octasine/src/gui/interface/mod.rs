@@ -51,7 +51,7 @@ const OPEN_SANS_BOLD: &[u8] = include_bytes!("../../../../contrib/open-sans/Open
 
 fn get_info_text() -> String {
     format!(
-        "Copyright © 2019-2021 Joakim Frostegård\nBuild: {}",
+        "Copyright © 2019-2021 Joakim Frostegård\nSite: OctaSine.com. Build: {}",
         get_version_info()
     )
 }
@@ -460,7 +460,7 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                     .align_items(Align::Center)
                     .height(Length::Units(LINE_HEIGHT * 4))
                     .push(
-                        Column::new().width(Length::FillPortion(6)).push(
+                        Column::new().width(Length::FillPortion(9)).push(
                             Container::new(
                                 Row::new()
                                     .push(
@@ -502,7 +502,7 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                     )
                     .push(
                         Column::new()
-                            .width(Length::FillPortion(6))
+                            .width(Length::FillPortion(9))
                             .align_items(Align::End)
                             .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
                             .push(
