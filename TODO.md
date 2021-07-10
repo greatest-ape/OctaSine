@@ -7,6 +7,7 @@
     target feature. I'm sure sure how that is done when cross-compiling.
 
 * GUI
+  * Fix Rule/VerticalRule inconsistency
   * Improve macOS Retina support
   * Scrolling in dropdowns
     * Needs to be added to baseview macOS code
