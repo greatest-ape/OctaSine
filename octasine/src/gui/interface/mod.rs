@@ -325,6 +325,7 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
         Subscription::none()
     }
 
+    #[cfg(feature = "gui_wgpu")]
     fn renderer_settings() -> renderer::Settings {
         renderer::Settings {
             default_font: Some(FONT_REGULAR),
@@ -332,6 +333,18 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
             antialiasing: Some(renderer::Antialiasing::MSAAx4),
             ..Default::default()
         }
+    }
+
+    #[cfg(feature = "gui_glow")]
+    fn renderer_settings() -> (raw_gl_context::GlConfig, iced_glow::settings::Settings) {
+        (
+            raw_gl_context::GlConfig::default(),
+            iced_glow::settings::Settings {
+                default_font: Some(FONT_REGULAR),
+                default_text_size: FONT_SIZE,
+                antialiasing: Some(renderer::settings::Antialiasing::MSAAx4),
+            },
+        )
     }
 
     fn update(&mut self, message: Self::Message) -> Command<Self::Message> {

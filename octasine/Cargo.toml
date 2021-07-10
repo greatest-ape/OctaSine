@@ -6,9 +6,11 @@ license = "AGPL-3.0"
 edition = "2018"
 
 [features]
-default = ["logging", "gui"]
+default = ["logging", "gui_glow"]
 simd = ["sleef-sys"]
 logging = ["dirs", "git-testament", "log", "log-panics", "os_info", "simplelog"]
+gui_glow = ["gui", "iced_glow", "raw-gl-context", "iced_baseview/glow", "iced_baseview/glow_canvas"]
+gui_wgpu = ["gui", "iced_baseview/wgpu", "iced_baseview/canvas"]
 gui = ["baseview", "iced_baseview", "iced_style", "iced_audio", "palette", "raw-window-handle", "git-testament"]
 
 [lib]
@@ -42,6 +44,8 @@ simplelog = { version = "0.10", optional = true, default-features = false }
 
 raw-window-handle = { version = "0.3", optional = true }
 git-testament = { version = "0.2", optional = true }
+raw-gl-context = { version = "0.1", optional = true }
+iced_glow = { version = "0.2", optional = true }
 
 [dependencies.baseview]
 git = "https://github.com/rustaudio/baseview.git"
@@ -50,8 +54,9 @@ optional = true
 
 [dependencies.iced_baseview]
 git = "https://github.com/BillyDM/iced_baseview.git"
-branch = "main"
-features = ["canvas", "palette"]
+rev = "b879d0fabb0a9b5bb122fae8c0db608c6025d472"
+default-features = false
+features = ["palette"]
 optional = true
 
 [dependencies.iced_style]
