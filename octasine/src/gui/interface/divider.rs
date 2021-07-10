@@ -1,24 +1,33 @@
-use iced_baseview::canvas::{Canvas, Cursor, Frame, Geometry, Program};
+use iced_baseview::canvas::{Cache, Canvas, Cursor, Geometry, Program};
 use iced_baseview::{Align, Color, Container, Element, Length, Point, Rectangle};
 
+use super::style::Theme;
 use super::Message;
 
+#[derive(Debug, Clone)]
+pub struct Style {
+    pub color: Color,
+}
+
+pub trait StyleSheet {
+    fn active(&self) -> Style;
+}
+
 /// Vertical rule that fills whole height
-#[derive(Clone)]
 pub struct VerticalRule {
+    style: Theme,
+    cache: Cache,
     width: Length,
     height: Length,
-    color: Color,
 }
 
 impl VerticalRule {
-    pub fn new(width: Length, height: Length) -> Self {
-        let color = Color::from_rgb(0.8, 0.8, 0.8);
-
+    pub fn new(style: Theme, width: Length, height: Length) -> Self {
         Self {
+            style,
+            cache: Cache::default(),
             width,
             height,
-            color,
         }
     }
 
@@ -33,14 +42,23 @@ impl VerticalRule {
             .align_x(Align::Center)
             .into()
     }
+
+    pub fn set_style(&mut self, style: Theme) {
+        self.style = style;
+
+        self.cache.clear();
+    }
 }
 
 impl Program<Message> for VerticalRule {
     fn draw(&self, bounds: Rectangle, _cursor: Cursor) -> Vec<Geometry> {
-        let mut frame = Frame::new(bounds.size());
+        let geometry = self.cache.draw(bounds.size(), |frame| {
+            let style: Box<dyn StyleSheet> = self.style.into();
+            let color = style.active().color;
 
-        frame.fill_rectangle(Point::ORIGIN, frame.size(), self.color);
+            frame.fill_rectangle(Point::ORIGIN, frame.size(), color);
+        });
 
-        vec![frame.into_geometry()]
+        vec![geometry]
     }
 }

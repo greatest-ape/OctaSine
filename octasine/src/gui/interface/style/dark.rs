@@ -1,6 +1,6 @@
 use iced_baseview::{button, container, pick_list, radio, Background, Color};
 
-use super::{envelope, mod_matrix};
+use super::{divider, envelope, mod_matrix};
 
 pub const BACKGROUND: Color = Color::BLACK;
 
@@ -220,6 +220,20 @@ impl mod_matrix::StyleSheet for ModulationMatrix {
             modulation_box_color_active: ACTIVE,
             modulation_box_color_inactive: Color::BLACK,
             line_max_color: Color::WHITE,
+        }
+    }
+}
+
+pub struct Divider;
+
+impl divider::StyleSheet for Divider {
+    fn active(&self) -> divider::Style {
+        divider::Style {
+            // Really dubious anti-aliasing issue workaround
+            #[cfg(feature = "gui_glow")]
+            color: Color::from_rgb8(0x70, 0x70, 0x70),
+            #[cfg(feature = "gui_wgpu")]
+            color: Color::from_rgb(0.8, 0.8, 0.8),
         }
     }
 }

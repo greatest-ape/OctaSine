@@ -281,13 +281,18 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
         let lfo_3 = LfoWidgets::new(&sync_handle, 2, style);
         let lfo_4 = LfoWidgets::new(&sync_handle, 3, style);
 
-        let lfo_vr_1 = VerticalRule::new(
-            Length::Units(LINE_HEIGHT * 2),
-            Length::Units(LINE_HEIGHT * 16),
-        );
-        let lfo_vr_2 = lfo_vr_1.clone();
-        let lfo_vr_3 = lfo_vr_1.clone();
-        let lfo_vr_4 = lfo_vr_1.clone();
+        fn lfo_rule(style: Theme) -> VerticalRule {
+            VerticalRule::new(
+                style,
+                Length::Units(LINE_HEIGHT * 2),
+                Length::Units(LINE_HEIGHT * 16),
+            )
+        }
+
+        let lfo_vr_1 = lfo_rule(style);
+        let lfo_vr_2 = lfo_rule(style);
+        let lfo_vr_3 = lfo_rule(style);
+        let lfo_vr_4 = lfo_rule(style);
 
         let app = Self {
             sync_handle,
@@ -430,6 +435,10 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                 self.lfo_2.set_style(style);
                 self.lfo_3.set_style(style);
                 self.lfo_4.set_style(style);
+                self.lfo_vr_1.set_style(style);
+                self.lfo_vr_2.set_style(style);
+                self.lfo_vr_3.set_style(style);
+                self.lfo_vr_4.set_style(style);
 
                 self.save_settings();
             }

@@ -1,6 +1,6 @@
 use iced_baseview::{pick_list, Background, Color};
 
-use super::{envelope, mod_matrix};
+use super::{divider, envelope, mod_matrix};
 
 pub struct PickList;
 
@@ -52,6 +52,16 @@ impl mod_matrix::StyleSheet for ModulationMatrix {
             modulation_box_color_active: Color::BLACK,
             modulation_box_color_inactive: Color::WHITE,
             line_max_color: Color::BLACK,
+        }
+    }
+}
+
+pub struct Divider;
+
+impl divider::StyleSheet for Divider {
+    fn active(&self) -> divider::Style {
+        divider::Style {
+            color: Color::from_rgb8(0xD3, 0xD3, 0xD3),
         }
     }
 }

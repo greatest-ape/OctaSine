@@ -4,7 +4,7 @@ mod light;
 use iced_baseview::{button, container, pick_list, radio, Color};
 use serde::{Deserialize, Serialize};
 
-use super::{envelope, mod_matrix};
+use super::{divider, envelope, mod_matrix};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
@@ -95,6 +95,15 @@ impl From<Theme> for Box<dyn mod_matrix::StyleSheet> {
         match theme {
             Theme::Light => Box::new(light::ModulationMatrix) as Box<dyn mod_matrix::StyleSheet>,
             Theme::Dark => Box::new(dark::ModulationMatrix) as Box<dyn mod_matrix::StyleSheet>,
+        }
+    }
+}
+
+impl From<Theme> for Box<dyn divider::StyleSheet> {
+    fn from(theme: Theme) -> Self {
+        match theme {
+            Theme::Light => Box::new(light::Divider) as Box<dyn divider::StyleSheet>,
+            Theme::Dark => Box::new(dark::Divider) as Box<dyn divider::StyleSheet>,
         }
     }
 }
