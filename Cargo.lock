@@ -1570,6 +1570,7 @@ dependencies = [
  "iced_baseview",
  "iced_glow",
  "iced_style",
+ "iced_wgpu",
  "log",
  "log-panics",
  "os_info",

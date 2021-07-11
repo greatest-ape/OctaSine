@@ -333,6 +333,7 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
     #[cfg(feature = "gui_wgpu")]
     fn renderer_settings() -> renderer::Settings {
         renderer::Settings {
+            present_mode: iced_wgpu::wgpu::PresentMode::Immediate,
             default_font: Some(FONT_REGULAR),
             default_text_size: FONT_SIZE,
             antialiasing: Some(renderer::Antialiasing::MSAAx4),
