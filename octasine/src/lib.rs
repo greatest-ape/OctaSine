@@ -69,7 +69,7 @@ impl OctaSine {
         let settings = match Settings::load() {
             Ok(settings) => settings,
             Err(err) => {
-                ::log::error!("Couldn't load settings: {}", err);
+                ::log::info!("Couldn't load settings: {}", err);
 
                 Settings::default()
             }
