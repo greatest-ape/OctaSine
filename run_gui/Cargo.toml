@@ -6,5 +6,5 @@ license = "AGPL-3.0"
 edition = "2018"
 
 [dependencies]
-octasine = { path = "../octasine", features = ["gui"] }
+octasine = { path = "../octasine" }
 simplelog = { version = "0.10", default-features = false }

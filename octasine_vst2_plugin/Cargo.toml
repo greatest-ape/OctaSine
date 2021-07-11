@@ -11,8 +11,8 @@ crate-type = ["cdylib"]
 
 [features]
 simd = ["octasine/simd"]
-logging = ["octasine/logging"]
-gui = ["octasine/gui"]
+gui_glow = ["octasine/gui_glow"]
+gui_wgpu = ["octasine/gui_wgpu"]
 
 [dependencies]
 vst = "0.2"

@@ -246,12 +246,10 @@ impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {
 
         let spawn_result = builder.spawn(move || {
             if let Err(err) = settings.save() {
-                #[cfg(feature = "logging")]
                 ::log::error!("Couldn't save settings: {}", err)
             }
         });
 
-        #[cfg(feature = "logging")]
         if let Err(err) = spawn_result {
             ::log::error!("Couldn't spawn thread for saving settings: {}", err)
         }

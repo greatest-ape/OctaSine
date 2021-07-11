@@ -1,7 +1,3 @@
-#[cfg(feature = "logging")]
-#[macro_use]
-extern crate log;
-
 pub mod approximations;
 pub mod common;
 pub mod constants;
@@ -68,13 +64,11 @@ impl Default for OctaSine {
 
 impl OctaSine {
     fn create(host: Option<HostCallback>) -> Self {
-        #[cfg(feature = "logging")]
         Self::init_logging();
 
         let settings = match Settings::load() {
             Ok(settings) => settings,
             Err(err) => {
-                #[cfg(feature = "logging")]
                 ::log::error!("Couldn't load settings: {}", err);
 
                 Settings::default()
@@ -110,7 +104,6 @@ impl OctaSine {
         }
     }
 
-    #[cfg(feature = "logging")]
     fn init_logging() {
         let log_folder = dirs::home_dir().unwrap().join("tmp");
 
@@ -127,10 +120,10 @@ impl OctaSine {
 
         log_panics::init();
 
-        info!("init");
+        ::log::info!("init");
 
-        info!("OS: {}", ::os_info::get());
-        info!("OctaSine build: {}", get_version_info());
+        ::log::info!("OS: {}", ::os_info::get());
+        ::log::info!("OctaSine build: {}", get_version_info());
     }
 
     fn time_per_sample(sample_rate: SampleRate) -> TimePerSample {
@@ -324,7 +317,6 @@ impl vst::plugin::PluginParameters for SyncState {
     /// given chunk data.
     fn load_bank_data(&self, data: &[u8]) {
         if let Err(err) = self.presets.import_bank_from_bytes(data) {
-            #[cfg(feature = "logging")]
             ::log::error!("Couldn't load bank data: {}", err)
         }
     }
@@ -403,7 +395,6 @@ fn crate_version_to_vst_format(crate_version: String) -> i32 {
         .expect("convert crate version to i32")
 }
 
-#[cfg(any(feature = "gui", feature = "logging"))]
 fn get_version_info() -> String {
     use git_testament::{git_testament, CommitKind};
 
