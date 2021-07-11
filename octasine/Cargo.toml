@@ -19,6 +19,12 @@ name = "octasine"
 name = "process"
 harness = false
 
+[dev-dependencies]
+assert_approx_eq = "1"
+colored = "2"
+quickcheck = { version = "1", default-features = false }
+sha2 = "0.9"
+
 [dependencies]
 anyhow = "1"
 arc-swap = "1"
@@ -49,6 +55,11 @@ git = "https://github.com/rustaudio/baseview.git"
 branch = "master"
 optional = true
 
+[dependencies.iced_audio]
+git = "https://github.com/BillyDM/iced_audio.git"
+branch = "main"
+optional = true
+
 [dependencies.iced_baseview]
 git = "https://github.com/BillyDM/iced_baseview.git"
 rev = "b879d0fabb0a9b5bb122fae8c0db608c6025d472"
@@ -58,11 +69,6 @@ optional = true
 
 [dependencies.iced_style]
 version = "0.3"
-optional = true
-
-[dependencies.iced_audio]
-git = "https://github.com/BillyDM/iced_audio.git"
-branch = "main"
 optional = true
 
 [dependencies.palette]
@@ -77,9 +83,3 @@ git = 'https://github.com/greatest-ape/sleef-sys.git'
 branch = "octasine"
 features = ["static"]
 optional = true
-
-[dev-dependencies]
-assert_approx_eq = "1"
-colored = "2"
-quickcheck = { version = "1", default-features = false }
-sha2 = "0.9"

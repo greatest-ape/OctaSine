@@ -15,5 +15,5 @@ gui_glow = ["octasine/gui_glow"]
 gui_wgpu = ["octasine/gui_wgpu"]
 
 [dependencies]
-vst = "0.2"
 octasine = { path = "../octasine" }
+vst = "0.2"
