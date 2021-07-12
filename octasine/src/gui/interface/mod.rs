@@ -515,6 +515,7 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                         Container::new(
                             Text::new("OctaSine")
                                 .font(FONT_VERY_BOLD)
+                                .color(self.style.heading_color())
                                 .size(FONT_SIZE * 2 + FONT_SIZE / 2)
                                 .horizontal_alignment(HorizontalAlignment::Center),
                         )

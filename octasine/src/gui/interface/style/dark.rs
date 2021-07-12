@@ -16,7 +16,26 @@ pub const ACTIVE: Color = Color::from_rgb(
     0x90 as f32 / 255.0,
 );
 
-const HOVERED: Color = Color::from_rgb(0.7, 0.7, 0.7);
+pub const DARK_GRAY: Color = Color::from_rgb(
+    0x00 as f32 / 255.0,
+    0x00 as f32 / 255.0,
+    0x00 as f32 / 255.0,
+);
+
+pub const GRAY: Color = ACTIVE;
+
+pub const LIGHT_GRAY: Color = Color::from_rgb(
+    0xBB as f32 / 255.0,
+    0xBB as f32 / 255.0,
+    0xBB as f32 / 255.0,
+);
+
+pub const HOVERED: Color = Color::from_rgb(
+    0xDD as f32 / 255.0,
+    0xDD as f32 / 255.0,
+    0xDD as f32 / 255.0,
+);
+
 const DRAGGING: Color = Color::from_rgb(0.9, 0.9, 0.9);
 
 pub struct Container;
@@ -36,10 +55,10 @@ pub struct Radio;
 impl radio::StyleSheet for Radio {
     fn active(&self) -> radio::Style {
         radio::Style {
-            background: BACKGROUND.into(),
-            dot_color: ACTIVE,
+            background: DARK_GRAY.into(),
+            dot_color: LIGHT_GRAY,
             border_width: 1.0,
-            border_color: ACTIVE,
+            border_color: LIGHT_GRAY,
         }
     }
 
@@ -56,11 +75,11 @@ pub struct Button;
 impl button::StyleSheet for Button {
     fn active(&self) -> button::Style {
         button::Style {
-            background: Color::BLACK.into(),
+            background: DARK_GRAY.into(),
             border_radius: 3.0,
             border_width: 1.0,
-            border_color: ACTIVE,
-            text_color: ACTIVE,
+            border_color: GRAY,
+            text_color: GRAY,
             ..button::Style::default()
         }
     }
@@ -93,9 +112,10 @@ impl pick_list::StyleSheet for PickList {
     }
     fn active(&self) -> pick_list::Style {
         pick_list::Style {
-            background: Color::BLACK.into(),
-            text_color: ACTIVE,
-            border_color: ACTIVE,
+            background: DARK_GRAY.into(),
+            text_color: GRAY,
+            border_color: GRAY,
+            border_radius: 3.0,
             ..Default::default()
         }
     }
@@ -132,7 +152,7 @@ pub(super) mod knob {
     };
 
     const ACTIVE_CIRCLE_NOTCH_STYLE: CircleNotch = CircleNotch {
-        color: ACTIVE,
+        color: LIGHT_GRAY,
         border_width: 0.0,
         border_color: Color::TRANSPARENT,
         diameter: StyleLength::Scaled(0.17),
@@ -140,9 +160,9 @@ pub(super) mod knob {
     };
 
     const ACTIVE_CIRCLE_STYLE: CircleStyle = CircleStyle {
-        color: Color::BLACK,
+        color: DARK_GRAY,
         border_width: 1.0,
-        border_color: ACTIVE,
+        border_color: LIGHT_GRAY,
         notch: NotchShape::Circle(ACTIVE_CIRCLE_NOTCH_STYLE),
     };
 
@@ -197,10 +217,10 @@ impl envelope::StyleSheet for Envelope {
             text_color: ACTIVE,
             time_marker_minor_color: Color::from_rgb(0.3, 0.3, 0.3),
             time_marker_color_major: Color::from_rgb(0.5, 0.5, 0.5),
-            path_color: ACTIVE,
-            dragger_fill_color_active: Color::BLACK,
-            dragger_fill_color_hover: ACTIVE,
-            dragger_border_color: ACTIVE,
+            path_color: GRAY,
+            dragger_fill_color_active: DARK_GRAY,
+            dragger_fill_color_hover: LIGHT_GRAY,
+            dragger_border_color: LIGHT_GRAY,
         }
     }
 }
@@ -214,10 +234,10 @@ impl mod_matrix::StyleSheet for ModulationMatrix {
             border_color: Color::from_rgb(0.5, 0.5, 0.5),
             text_color: Color::BLACK,
             box_border_color: Color::from_rgb(0.5, 0.5, 0.5),
-            operator_box_color_active: ACTIVE,
+            operator_box_color_active: LIGHT_GRAY,
             operator_box_color_hover: HOVERED,
             operator_box_color_dragging: HOVERED,
-            modulation_box_color_active: ACTIVE,
+            modulation_box_color_active: LIGHT_GRAY,
             modulation_box_color_inactive: Color::BLACK,
             line_max_color: Color::WHITE,
         }

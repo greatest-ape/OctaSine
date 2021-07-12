@@ -28,6 +28,12 @@ impl Theme {
             Theme::Light => Color::BLACK,
         }
     }
+    pub fn heading_color(&self) -> Color {
+        match self {
+            Theme::Dark => dark::LIGHT_GRAY,
+            Theme::Light => Color::BLACK,
+        }
+    }
 }
 
 impl Default for Theme {
