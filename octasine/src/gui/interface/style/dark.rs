@@ -36,6 +36,12 @@ pub const HOVERED: Color = Color::from_rgb(
     0xDD as f32 / 255.0,
 );
 
+pub const CONTRAST: Color = Color::from_rgb(
+    0x1d as f32 / 255.0,
+    0x35 as f32 / 255.0,
+    0x57 as f32 / 255.0,
+);
+
 const DRAGGING: Color = Color::from_rgb(0.9, 0.9, 0.9);
 
 pub struct Container;
@@ -75,7 +81,7 @@ pub struct Button;
 impl button::StyleSheet for Button {
     fn active(&self) -> button::Style {
         button::Style {
-            background: DARK_GRAY.into(),
+            background: CONTRAST.into(),
             border_radius: 3.0,
             border_width: 1.0,
             border_color: GRAY,
@@ -105,14 +111,16 @@ pub struct PickList;
 impl pick_list::StyleSheet for PickList {
     fn menu(&self) -> iced_style::menu::Style {
         iced_style::menu::Style {
-            background: Background::from(ACTIVE),
+            background: Background::from(CONTRAST),
             selected_background: Background::from(SURFACE),
+            text_color: LIGHT_GRAY,
+            selected_text_color: LIGHT_GRAY,
             ..Default::default()
         }
     }
     fn active(&self) -> pick_list::Style {
         pick_list::Style {
-            background: DARK_GRAY.into(),
+            background: Background::from(CONTRAST),
             text_color: LIGHT_GRAY,
             border_color: GRAY,
             border_radius: 3.0,
