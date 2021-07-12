@@ -37,9 +37,9 @@ pub const HOVERED: Color = Color::from_rgb(
 );
 
 pub const CONTRAST: Color = Color::from_rgb(
-    0x1d as f32 / 255.0,
-    0x35 as f32 / 255.0,
-    0x57 as f32 / 255.0,
+    0x19 as f32 / 255.0,
+    0x2F as f32 / 255.0,
+    0x4D as f32 / 255.0,
 );
 
 const DRAGGING: Color = Color::from_rgb(0.9, 0.9, 0.9);
