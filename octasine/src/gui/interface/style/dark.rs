@@ -38,7 +38,7 @@ pub const HOVERED: Color = Color::from_rgb(
 
 pub const CONTRAST: Color = Color::from_rgb(
     0x19 as f32 / 255.0,
-    0x2F as f32 / 255.0,
+    0x2E as f32 / 255.0,
     0x4D as f32 / 255.0,
 );
 
@@ -225,7 +225,7 @@ impl envelope::StyleSheet for Envelope {
             text_color: ACTIVE,
             time_marker_minor_color: Color::from_rgb(0.3, 0.3, 0.3),
             time_marker_color_major: Color::from_rgb(0.5, 0.5, 0.5),
-            path_color: GRAY,
+            path_color: LIGHT_GRAY,
             dragger_fill_color_active: DARK_GRAY,
             dragger_fill_color_hover: LIGHT_GRAY,
             dragger_border_color: LIGHT_GRAY,
