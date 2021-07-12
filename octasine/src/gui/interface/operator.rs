@@ -92,6 +92,7 @@ impl OperatorWidgets {
         let operator_number = Text::new(format!("{}", self.index + 1))
             .size(FONT_SIZE * 2)
             .font(FONT_VERY_BOLD)
+            .color(self.style.heading_color())
             .horizontal_alignment(HorizontalAlignment::Center);
 
         let mut row = Row::new()

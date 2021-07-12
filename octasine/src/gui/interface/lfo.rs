@@ -16,6 +16,7 @@ use super::{Message, FONT_SIZE, FONT_VERY_BOLD, LINE_HEIGHT};
 
 pub struct LfoWidgets {
     index: usize,
+    style: Theme,
     pub target: LfoTargetPicker,
     pub shape: OctaSineKnob<LfoShapeValue>,
     pub mode: BooleanPicker<LfoModeValue>,
@@ -38,6 +39,7 @@ impl LfoWidgets {
 
         Self {
             index: lfo_index,
+            style,
             target: LfoTargetPicker::new(sync_handle, lfo_index, target, style),
             shape: knob::lfo_shape(sync_handle, shape, style),
             mode: boolean_picker::lfo_mode(sync_handle, mode, style),
@@ -49,6 +51,7 @@ impl LfoWidgets {
     }
 
     pub fn set_style(&mut self, style: Theme) {
+        self.style = style;
         self.target.style = style;
         self.shape.style = style;
         self.mode.style = style;
@@ -64,6 +67,7 @@ impl LfoWidgets {
             .height(Length::Units(LINE_HEIGHT * 2))
             .width(Length::Units(LINE_HEIGHT * 12))
             .font(FONT_VERY_BOLD)
+            .color(self.style.heading_color())
             .horizontal_alignment(HorizontalAlignment::Center)
             .vertical_alignment(VerticalAlignment::Center);
 

@@ -465,6 +465,7 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
             .height(Length::Units(LINE_HEIGHT * 2))
             .width(Length::Units(LINE_HEIGHT * 8))
             .font(FONT_VERY_BOLD)
+            .color(self.style.heading_color())
             .horizontal_alignment(HorizontalAlignment::Center)
             .vertical_alignment(VerticalAlignment::Center);
 
