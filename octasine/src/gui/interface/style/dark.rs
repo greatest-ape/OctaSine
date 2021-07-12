@@ -79,7 +79,7 @@ impl button::StyleSheet for Button {
             border_radius: 3.0,
             border_width: 1.0,
             border_color: GRAY,
-            text_color: GRAY,
+            text_color: LIGHT_GRAY,
             ..button::Style::default()
         }
     }
@@ -113,7 +113,7 @@ impl pick_list::StyleSheet for PickList {
     fn active(&self) -> pick_list::Style {
         pick_list::Style {
             background: DARK_GRAY.into(),
-            text_color: GRAY,
+            text_color: LIGHT_GRAY,
             border_color: GRAY,
             border_radius: 3.0,
             ..Default::default()
