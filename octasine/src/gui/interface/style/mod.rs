@@ -24,13 +24,13 @@ impl Theme {
     }
     pub fn text_color(&self) -> Color {
         match self {
-            Theme::Dark => dark::GRAY,
+            Theme::Dark => dark::TEXT_BG,
             Theme::Light => Color::BLACK,
         }
     }
     pub fn heading_color(&self) -> Color {
         match self {
-            Theme::Dark => dark::LIGHT_GRAY,
+            Theme::Dark => dark::TEXT_FG,
             Theme::Light => Color::BLACK,
         }
     }

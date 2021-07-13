@@ -13,9 +13,9 @@ macro_rules! hex_gray {
 }
 
 pub const BACKGROUND: Color = Color::BLACK;
-pub const DARK_GRAY: Color = hex_gray!(0x20);
-pub const GRAY: Color = hex_gray!(0x90);
-pub const LIGHT_GRAY: Color = hex_gray!(0xBB);
+pub const SURFACE: Color = hex_gray!(0x20);
+pub const TEXT_BG: Color = hex_gray!(0x90);
+pub const TEXT_FG: Color = hex_gray!(0xBB);
 pub const HOVERED: Color = hex_gray!(0xDD);
 
 pub const CONTRAST: Color = Color::from_rgb(
@@ -30,7 +30,7 @@ impl container::StyleSheet for Container {
     fn style(&self) -> container::Style {
         container::Style {
             background: BACKGROUND.into(),
-            text_color: GRAY.into(),
+            text_color: TEXT_BG.into(),
             ..container::Style::default()
         }
     }
@@ -54,10 +54,10 @@ pub struct Radio;
 impl radio::StyleSheet for Radio {
     fn active(&self) -> radio::Style {
         radio::Style {
-            background: DARK_GRAY.into(),
-            dot_color: LIGHT_GRAY,
+            background: SURFACE.into(),
+            dot_color: TEXT_FG,
             border_width: 1.0,
-            border_color: LIGHT_GRAY,
+            border_color: TEXT_FG,
         }
     }
 
@@ -77,8 +77,8 @@ impl button::StyleSheet for Button {
             background: CONTRAST.into(),
             border_radius: 3.0,
             border_width: 1.0,
-            border_color: GRAY,
-            text_color: LIGHT_GRAY,
+            border_color: TEXT_BG,
+            text_color: TEXT_FG,
             ..button::Style::default()
         }
     }
@@ -103,16 +103,16 @@ impl pick_list::StyleSheet for PickList {
         iced_style::menu::Style {
             background: hex_gray!(0x40).into(),
             selected_background: CONTRAST.into(),
-            text_color: LIGHT_GRAY,
-            selected_text_color: LIGHT_GRAY,
+            text_color: TEXT_FG,
+            selected_text_color: TEXT_FG,
             ..Default::default()
         }
     }
     fn active(&self) -> pick_list::Style {
         pick_list::Style {
             background: CONTRAST.into(),
-            text_color: LIGHT_GRAY,
-            border_color: GRAY,
+            text_color: TEXT_FG,
+            border_color: TEXT_BG,
             border_radius: 3.0,
             ..Default::default()
         }
@@ -150,7 +150,7 @@ pub(super) mod knob {
     };
 
     const ACTIVE_CIRCLE_NOTCH_STYLE: CircleNotch = CircleNotch {
-        color: LIGHT_GRAY,
+        color: TEXT_FG,
         border_width: 0.0,
         border_color: Color::TRANSPARENT,
         diameter: StyleLength::Scaled(0.17),
@@ -158,9 +158,9 @@ pub(super) mod knob {
     };
 
     const ACTIVE_CIRCLE_STYLE: CircleStyle = CircleStyle {
-        color: DARK_GRAY,
+        color: SURFACE,
         border_width: 1.0,
-        border_color: LIGHT_GRAY,
+        border_color: TEXT_FG,
         notch: NotchShape::Circle(ACTIVE_CIRCLE_NOTCH_STYLE),
     };
 
@@ -212,13 +212,13 @@ impl envelope::StyleSheet for Envelope {
         envelope::Style {
             background_color: Color::BLACK,
             border_color: Color::from_rgb(0.5, 0.5, 0.5),
-            text_color: GRAY,
+            text_color: TEXT_BG,
             time_marker_minor_color: Color::from_rgb(0.3, 0.3, 0.3),
             time_marker_color_major: Color::from_rgb(0.5, 0.5, 0.5),
-            path_color: LIGHT_GRAY,
-            dragger_fill_color_active: DARK_GRAY,
-            dragger_fill_color_hover: LIGHT_GRAY,
-            dragger_border_color: LIGHT_GRAY,
+            path_color: TEXT_FG,
+            dragger_fill_color_active: SURFACE,
+            dragger_fill_color_hover: TEXT_FG,
+            dragger_border_color: TEXT_FG,
         }
     }
 }
@@ -232,11 +232,11 @@ impl mod_matrix::StyleSheet for ModulationMatrix {
             border_color: Color::from_rgb(0.5, 0.5, 0.5),
             text_color: Color::BLACK,
             box_border_color: Color::from_rgb(0.5, 0.5, 0.5),
-            operator_box_color_active: LIGHT_GRAY,
+            operator_box_color_active: TEXT_FG,
             operator_box_color_hover: HOVERED,
             operator_box_color_dragging: HOVERED,
-            modulation_box_color_active: LIGHT_GRAY,
-            modulation_box_color_inactive: DARK_GRAY,
+            modulation_box_color_active: TEXT_FG,
+            modulation_box_color_inactive: SURFACE,
             line_max_color: Color::WHITE,
         }
     }
