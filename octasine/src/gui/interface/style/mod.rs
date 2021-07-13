@@ -45,7 +45,7 @@ impl Default for Theme {
 impl From<Theme> for Box<dyn container::StyleSheet> {
     fn from(theme: Theme) -> Self {
         match theme {
-            Theme::Light => Default::default(),
+            Theme::Light => light::Container.into(),
             Theme::Dark => dark::Container.into(),
         }
     }
@@ -54,7 +54,7 @@ impl From<Theme> for Box<dyn container::StyleSheet> {
 impl From<Theme> for Box<dyn rule::StyleSheet> {
     fn from(theme: Theme) -> Self {
         match theme {
-            Theme::Light => dark::Rule.into(),
+            Theme::Light => light::Rule.into(),
             Theme::Dark => dark::Rule.into(),
         }
     }
@@ -63,7 +63,7 @@ impl From<Theme> for Box<dyn rule::StyleSheet> {
 impl From<Theme> for Box<dyn radio::StyleSheet> {
     fn from(theme: Theme) -> Self {
         match theme {
-            Theme::Light => Default::default(),
+            Theme::Light => light::Radio.into(),
             Theme::Dark => dark::Radio.into(),
         }
     }
@@ -72,7 +72,7 @@ impl From<Theme> for Box<dyn radio::StyleSheet> {
 impl From<Theme> for Box<dyn button::StyleSheet> {
     fn from(theme: Theme) -> Self {
         match theme {
-            Theme::Light => Default::default(),
+            Theme::Light => light::Button.into(),
             Theme::Dark => dark::Button.into(),
         }
     }
@@ -90,7 +90,7 @@ impl From<Theme> for Box<dyn pick_list::StyleSheet> {
 impl From<Theme> for Box<dyn iced_audio::knob::StyleSheet> {
     fn from(theme: Theme) -> Self {
         match theme {
-            Theme::Light => Default::default(),
+            Theme::Light => light::knob::Knob.into(),
             Theme::Dark => dark::knob::Knob.into(),
         }
     }
