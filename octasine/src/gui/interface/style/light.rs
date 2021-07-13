@@ -1,4 +1,8 @@
-use iced_baseview::{Color, button, container, pick_list, radio, rule::{self, FillMode}};
+use iced_baseview::{
+    button, container, pick_list, radio,
+    rule::{self, FillMode},
+    Color,
+};
 
 use super::{envelope, mod_matrix};
 

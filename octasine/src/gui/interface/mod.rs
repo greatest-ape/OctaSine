@@ -1,6 +1,6 @@
 use iced_baseview::{
     button, renderer, Button, Color, Column, Container, Element, Font, HorizontalAlignment, Length,
-    Point, Row, Space, Text, VerticalAlignment, Rule,
+    Point, Row, Rule, Space, Text, VerticalAlignment,
 };
 use iced_baseview::{executor, Align, Application, Command, Subscription, WindowSubs};
 
@@ -531,7 +531,7 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                                 Container::new(Rule::vertical(1).style(self.style))
                                     .align_x(Align::Center)
                                     .width(Length::Units(LINE_HEIGHT * 2))
-                                    .height(Length::Units(LINE_HEIGHT * 16))
+                                    .height(Length::Units(LINE_HEIGHT * 16)),
                             ),
                     )
                     .push(lfo_2)
@@ -542,7 +542,7 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                                 Container::new(Rule::vertical(1).style(self.style))
                                     .align_x(Align::Center)
                                     .width(Length::Units(LINE_HEIGHT * 2))
-                                    .height(Length::Units(LINE_HEIGHT * 16))
+                                    .height(Length::Units(LINE_HEIGHT * 16)),
                             ),
                     )
                     .push(lfo_3)
@@ -553,7 +553,7 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                                 Container::new(Rule::vertical(1).style(self.style))
                                     .align_x(Align::Center)
                                     .width(Length::Units(LINE_HEIGHT * 2))
-                                    .height(Length::Units(LINE_HEIGHT * 16))
+                                    .height(Length::Units(LINE_HEIGHT * 16)),
                             ),
                     )
                     .push(lfo_4)
@@ -564,7 +564,7 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                                 Container::new(Rule::vertical(1).style(self.style))
                                     .align_x(Align::Center)
                                     .width(Length::Units(LINE_HEIGHT * 2))
-                                    .height(Length::Units(LINE_HEIGHT * 16))
+                                    .height(Length::Units(LINE_HEIGHT * 16)),
                             ),
                     )
                     .push(
