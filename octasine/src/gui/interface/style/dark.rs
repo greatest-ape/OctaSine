@@ -101,10 +101,10 @@ pub struct PickList;
 impl pick_list::StyleSheet for PickList {
     fn menu(&self) -> iced_style::menu::Style {
         iced_style::menu::Style {
-            background: hex_gray!(0x40).into(),
+            background: hex_gray!(0x30).into(),
             selected_background: CONTRAST.into(),
             text_color: TEXT_FG,
-            selected_text_color: TEXT_FG,
+            selected_text_color: HOVERED,
             ..Default::default()
         }
     }
