@@ -802,6 +802,9 @@ impl ModulationMatrix {
 
     pub fn set_style(&mut self, style: Theme) {
         self.style = style;
+
+        self.update_components();
+
         self.cache.clear();
     }
 
