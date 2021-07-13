@@ -1,14 +1,8 @@
-use iced_baseview::{button, container, pick_list, radio, Background, Color};
+use iced_baseview::{button, container, pick_list, radio, Color};
 
 use super::{divider, envelope, mod_matrix};
 
 pub const BACKGROUND: Color = Color::BLACK;
-
-const SURFACE: Color = Color::from_rgb(
-    0x20 as f32 / 255.0,
-    0x20 as f32 / 255.0,
-    0x20 as f32 / 255.0,
-);
 
 pub const ACTIVE: Color = Color::from_rgb(
     0x90 as f32 / 255.0,
@@ -17,9 +11,9 @@ pub const ACTIVE: Color = Color::from_rgb(
 );
 
 pub const DARK_GRAY: Color = Color::from_rgb(
-    0x00 as f32 / 255.0,
-    0x00 as f32 / 255.0,
-    0x00 as f32 / 255.0,
+    0x20 as f32 / 255.0,
+    0x20 as f32 / 255.0,
+    0x20 as f32 / 255.0,
 );
 
 pub const GRAY: Color = ACTIVE;
@@ -111,8 +105,8 @@ pub struct PickList;
 impl pick_list::StyleSheet for PickList {
     fn menu(&self) -> iced_style::menu::Style {
         iced_style::menu::Style {
-            background: Background::from(CONTRAST),
-            selected_background: Background::from(SURFACE),
+            background: CONTRAST.into(),
+            selected_background: DARK_GRAY.into(),
             text_color: LIGHT_GRAY,
             selected_text_color: LIGHT_GRAY,
             ..Default::default()
@@ -120,7 +114,7 @@ impl pick_list::StyleSheet for PickList {
     }
     fn active(&self) -> pick_list::Style {
         pick_list::Style {
-            background: Background::from(CONTRAST),
+            background: CONTRAST.into(),
             text_color: LIGHT_GRAY,
             border_color: GRAY,
             border_radius: 3.0,
@@ -246,7 +240,7 @@ impl mod_matrix::StyleSheet for ModulationMatrix {
             operator_box_color_hover: HOVERED,
             operator_box_color_dragging: HOVERED,
             modulation_box_color_active: LIGHT_GRAY,
-            modulation_box_color_inactive: Color::BLACK,
+            modulation_box_color_inactive: DARK_GRAY,
             line_max_color: Color::WHITE,
         }
     }
