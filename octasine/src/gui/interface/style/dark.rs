@@ -2,6 +2,16 @@ use iced_baseview::{button, container, pick_list, radio, Color};
 
 use super::{divider, envelope, mod_matrix};
 
+macro_rules! hex_gray {
+    ($hex:literal) => {
+        Color::from_rgb(
+            $hex as f32 / 255.0,
+            $hex as f32 / 255.0,
+            $hex as f32 / 255.0,
+        )
+    };
+}
+
 pub const BACKGROUND: Color = Color::BLACK;
 
 pub const ACTIVE: Color = Color::from_rgb(
@@ -105,8 +115,8 @@ pub struct PickList;
 impl pick_list::StyleSheet for PickList {
     fn menu(&self) -> iced_style::menu::Style {
         iced_style::menu::Style {
-            background: CONTRAST.into(),
-            selected_background: DARK_GRAY.into(),
+            background: hex_gray!(0x40).into(),
+            selected_background: CONTRAST.into(),
             text_color: LIGHT_GRAY,
             selected_text_color: LIGHT_GRAY,
             ..Default::default()
