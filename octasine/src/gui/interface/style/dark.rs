@@ -1,6 +1,6 @@
-use iced_baseview::{button, container, pick_list, radio, Color};
+use iced_baseview::{Color, button, container, pick_list, radio, rule::{self, FillMode}};
 
-use super::{divider, envelope, mod_matrix};
+use super::{envelope, mod_matrix};
 
 macro_rules! hex_gray {
     ($hex:literal) => {
@@ -34,6 +34,19 @@ impl container::StyleSheet for Container {
             background: BACKGROUND.into(),
             text_color: GRAY.into(),
             ..container::Style::default()
+        }
+    }
+}
+
+pub struct Rule;
+
+impl rule::StyleSheet for Rule {
+    fn style(&self) -> rule::Style {
+        rule::Style {
+            color: Color::from_rgba8(0x90, 0x90, 0x90, 0.5),
+            width: 1,
+            radius: 0.0,
+            fill_mode: FillMode::Full,
         }
     }
 }
@@ -230,20 +243,6 @@ impl mod_matrix::StyleSheet for ModulationMatrix {
             modulation_box_color_active: LIGHT_GRAY,
             modulation_box_color_inactive: DARK_GRAY,
             line_max_color: Color::WHITE,
-        }
-    }
-}
-
-pub struct Divider;
-
-impl divider::StyleSheet for Divider {
-    fn active(&self) -> divider::Style {
-        divider::Style {
-            // Really dubious anti-aliasing issue workaround
-            #[cfg(feature = "gui_glow")]
-            color: Color::from_rgb8(0x70, 0x70, 0x70),
-            #[cfg(feature = "gui_wgpu")]
-            color: Color::from_rgb(0.8, 0.8, 0.8),
         }
     }
 }

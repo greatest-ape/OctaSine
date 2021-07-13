@@ -1,6 +1,6 @@
 use iced_baseview::{
     button, renderer, Button, Color, Column, Container, Element, Font, HorizontalAlignment, Length,
-    Point, Row, Space, Text, VerticalAlignment,
+    Point, Row, Space, Text, VerticalAlignment, Rule,
 };
 use iced_baseview::{executor, Align, Application, Command, Subscription, WindowSubs};
 
@@ -8,7 +8,6 @@ use crate::parameters::values::{MasterFrequencyValue, MasterVolumeValue};
 use crate::{get_version_info, GuiSyncHandle};
 
 mod boolean_picker;
-mod divider;
 mod envelope;
 mod knob;
 mod lfo;
@@ -18,7 +17,6 @@ mod operator;
 mod preset_picker;
 pub mod style;
 
-use divider::VerticalRule;
 use knob::OctaSineKnob;
 use lfo::LfoWidgets;
 use mod_matrix::ModulationMatrix;
@@ -101,10 +99,6 @@ pub struct OctaSineIcedApplication<H: GuiSyncHandle> {
     lfo_2: LfoWidgets,
     lfo_3: LfoWidgets,
     lfo_4: LfoWidgets,
-    lfo_vr_1: divider::VerticalRule,
-    lfo_vr_2: divider::VerticalRule,
-    lfo_vr_3: divider::VerticalRule,
-    lfo_vr_4: divider::VerticalRule,
 }
 
 impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {
@@ -279,19 +273,6 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
         let lfo_3 = LfoWidgets::new(&sync_handle, 2, style);
         let lfo_4 = LfoWidgets::new(&sync_handle, 3, style);
 
-        fn lfo_rule(style: Theme) -> VerticalRule {
-            VerticalRule::new(
-                style,
-                Length::Units(LINE_HEIGHT * 2),
-                Length::Units(LINE_HEIGHT * 16),
-            )
-        }
-
-        let lfo_vr_1 = lfo_rule(style);
-        let lfo_vr_2 = lfo_rule(style);
-        let lfo_vr_3 = lfo_rule(style);
-        let lfo_vr_4 = lfo_rule(style);
-
         let app = Self {
             sync_handle,
             style,
@@ -310,10 +291,6 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
             lfo_2,
             lfo_3,
             lfo_4,
-            lfo_vr_1,
-            lfo_vr_2,
-            lfo_vr_3,
-            lfo_vr_4,
         };
 
         (app, Command::none())
@@ -434,10 +411,6 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                 self.lfo_2.set_style(style);
                 self.lfo_3.set_style(style);
                 self.lfo_4.set_style(style);
-                self.lfo_vr_1.set_style(style);
-                self.lfo_vr_2.set_style(style);
-                self.lfo_vr_3.set_style(style);
-                self.lfo_vr_4.set_style(style);
 
                 self.save_settings();
             }
@@ -551,25 +524,45 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                     .push(
                         Column::new()
                             .push(Space::with_height(Length::Units(LINE_HEIGHT * 3)))
-                            .push(self.lfo_vr_1.view()),
+                            .push(
+                                Container::new(Rule::vertical(1).style(self.style))
+                                    .align_x(Align::Center)
+                                    .width(Length::Units(LINE_HEIGHT * 2))
+                                    .height(Length::Units(LINE_HEIGHT * 16))
+                            ),
                     )
                     .push(lfo_2)
                     .push(
                         Column::new()
                             .push(Space::with_height(Length::Units(LINE_HEIGHT * 3)))
-                            .push(self.lfo_vr_2.view()),
+                            .push(
+                                Container::new(Rule::vertical(1).style(self.style))
+                                    .align_x(Align::Center)
+                                    .width(Length::Units(LINE_HEIGHT * 2))
+                                    .height(Length::Units(LINE_HEIGHT * 16))
+                            ),
                     )
                     .push(lfo_3)
                     .push(
                         Column::new()
                             .push(Space::with_height(Length::Units(LINE_HEIGHT * 3)))
-                            .push(self.lfo_vr_3.view()),
+                            .push(
+                                Container::new(Rule::vertical(1).style(self.style))
+                                    .align_x(Align::Center)
+                                    .width(Length::Units(LINE_HEIGHT * 2))
+                                    .height(Length::Units(LINE_HEIGHT * 16))
+                            ),
                     )
                     .push(lfo_4)
                     .push(
                         Column::new()
                             .push(Space::with_height(Length::Units(LINE_HEIGHT * 3)))
-                            .push(self.lfo_vr_4.view()),
+                            .push(
+                                Container::new(Rule::vertical(1).style(self.style))
+                                    .align_x(Align::Center)
+                                    .width(Length::Units(LINE_HEIGHT * 2))
+                                    .height(Length::Units(LINE_HEIGHT * 16))
+                            ),
                     )
                     .push(
                         Column::new()

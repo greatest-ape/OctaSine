@@ -10,7 +10,6 @@
   * Provide glow backend as alternative or maybe even default build
     * Fix glow backend antialiasing
       * `raw_gl_context::GlConfig { samples: Some(4) }` doesn't work reliably
-    * Fix Rule/VerticalRule inconsistency
   * Improve macOS Retina support
   * Scrolling in dropdowns
     * Needs to be added to baseview macOS code
