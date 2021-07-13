@@ -319,7 +319,10 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
     #[cfg(feature = "gui_glow")]
     fn renderer_settings() -> (raw_gl_context::GlConfig, iced_glow::settings::Settings) {
         (
-            raw_gl_context::GlConfig::default(),
+            raw_gl_context::GlConfig {
+                samples: Some(4),
+                ..Default::default()
+            },
             iced_glow::settings::Settings {
                 default_font: Some(FONT_REGULAR),
                 default_text_size: FONT_SIZE,
