@@ -109,7 +109,7 @@ impl pick_list::StyleSheet for PickList {
             background: CONTRAST.into(),
             text_color: TEXT_FG,
             border_color: BORDER,
-            border_radius: 3.0,
+            border_radius: 0.0,
             ..Default::default()
         }
     }
