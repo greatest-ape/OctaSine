@@ -24,8 +24,6 @@ pub const CONTRAST: Color = Color::from_rgb(
     0x4D as f32 / 255.0,
 );
 
-const DRAGGING: Color = Color::from_rgb(0.9, 0.9, 0.9);
-
 pub struct Container;
 
 impl container::StyleSheet for Container {
@@ -94,10 +92,7 @@ impl button::StyleSheet for Button {
     }
 
     fn pressed(&self) -> button::Style {
-        button::Style {
-            border_color: DRAGGING,
-            ..self.hovered()
-        }
+        self.hovered()
     }
 }
 
