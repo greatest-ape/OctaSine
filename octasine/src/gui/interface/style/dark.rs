@@ -13,32 +13,10 @@ macro_rules! hex_gray {
 }
 
 pub const BACKGROUND: Color = Color::BLACK;
-
-pub const ACTIVE: Color = Color::from_rgb(
-    0x90 as f32 / 255.0,
-    0x90 as f32 / 255.0,
-    0x90 as f32 / 255.0,
-);
-
-pub const DARK_GRAY: Color = Color::from_rgb(
-    0x20 as f32 / 255.0,
-    0x20 as f32 / 255.0,
-    0x20 as f32 / 255.0,
-);
-
-pub const GRAY: Color = ACTIVE;
-
-pub const LIGHT_GRAY: Color = Color::from_rgb(
-    0xBB as f32 / 255.0,
-    0xBB as f32 / 255.0,
-    0xBB as f32 / 255.0,
-);
-
-pub const HOVERED: Color = Color::from_rgb(
-    0xDD as f32 / 255.0,
-    0xDD as f32 / 255.0,
-    0xDD as f32 / 255.0,
-);
+pub const DARK_GRAY: Color = hex_gray!(0x20);
+pub const GRAY: Color = hex_gray!(0x90);
+pub const LIGHT_GRAY: Color = hex_gray!(0xBB);
+pub const HOVERED: Color = hex_gray!(0xDD);
 
 pub const CONTRAST: Color = Color::from_rgb(
     0x19 as f32 / 255.0,
@@ -54,7 +32,7 @@ impl container::StyleSheet for Container {
     fn style(&self) -> container::Style {
         container::Style {
             background: BACKGROUND.into(),
-            text_color: ACTIVE.into(),
+            text_color: GRAY.into(),
             ..container::Style::default()
         }
     }
@@ -226,7 +204,7 @@ impl envelope::StyleSheet for Envelope {
         envelope::Style {
             background_color: Color::BLACK,
             border_color: Color::from_rgb(0.5, 0.5, 0.5),
-            text_color: ACTIVE,
+            text_color: GRAY,
             time_marker_minor_color: Color::from_rgb(0.3, 0.3, 0.3),
             time_marker_color_major: Color::from_rgb(0.5, 0.5, 0.5),
             path_color: LIGHT_GRAY,

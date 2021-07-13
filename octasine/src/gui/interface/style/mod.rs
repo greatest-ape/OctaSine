@@ -24,7 +24,7 @@ impl Theme {
     }
     pub fn text_color(&self) -> Color {
         match self {
-            Theme::Dark => dark::ACTIVE,
+            Theme::Dark => dark::GRAY,
             Theme::Light => Color::BLACK,
         }
     }
