@@ -133,7 +133,7 @@ pub(super) mod knob {
     };
 
     const ACTIVE_CIRCLE_NOTCH_STYLE: CircleNotch = CircleNotch {
-        color: TEXT_FG,
+        color: TEXT_BG,
         border_width: 0.0,
         border_color: Color::TRANSPARENT,
         diameter: StyleLength::Scaled(0.17),
@@ -143,7 +143,7 @@ pub(super) mod knob {
     const ACTIVE_CIRCLE_STYLE: CircleStyle = CircleStyle {
         color: SURFACE,
         border_width: 1.0,
-        border_color: TEXT_FG,
+        border_color: TEXT_BG,
         notch: NotchShape::Circle(ACTIVE_CIRCLE_NOTCH_STYLE),
     };
 
