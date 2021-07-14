@@ -320,13 +320,13 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
     fn renderer_settings() -> (raw_gl_context::GlConfig, iced_glow::settings::Settings) {
         (
             raw_gl_context::GlConfig {
-                samples: Some(4),
+                samples: Some(8),
                 ..Default::default()
             },
             iced_glow::settings::Settings {
                 default_font: Some(FONT_REGULAR),
                 default_text_size: FONT_SIZE,
-                antialiasing: Some(renderer::settings::Antialiasing::MSAAx4),
+                antialiasing: Some(renderer::settings::Antialiasing::MSAAx8),
             },
         )
     }
