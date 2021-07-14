@@ -12,7 +12,7 @@ mod interface;
 use interface::OctaSineIcedApplication;
 
 pub const GUI_WIDTH: usize = 12 * 66;
-pub const GUI_HEIGHT: usize = 12 * 58;
+pub const GUI_HEIGHT: usize = 12 * 62;
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 
