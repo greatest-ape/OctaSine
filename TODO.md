@@ -4,7 +4,7 @@
 
 * Build for Apple silicon
   * ADVSIMD (NEON) acceleration should be supported, at least by enabling the
-    target feature. I'm sure sure how that is done when cross-compiling.
+    target feature. I'm not sure about how that is done when cross-compiling.
 
 * GUI
   * Provide glow backend as alternative or maybe even default build
