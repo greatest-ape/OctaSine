@@ -1,8 +1,4 @@
-use iced_baseview::{
-    button, container, pick_list, radio,
-    rule::{self, FillMode},
-    Color,
-};
+use iced_baseview::{button, container, pick_list, radio, Color};
 
 use super::{envelope, mod_matrix};
 
@@ -36,19 +32,6 @@ impl container::StyleSheet for Container {
             background: BACKGROUND.into(),
             text_color: TEXT_BG.into(),
             ..container::Style::default()
-        }
-    }
-}
-
-pub struct Rule;
-
-impl rule::StyleSheet for Rule {
-    fn style(&self) -> rule::Style {
-        rule::Style {
-            color: Color::from_rgba8(0x90, 0x90, 0x90, 0.5),
-            width: 1,
-            radius: 0.0,
-            fill_mode: FillMode::Full,
         }
     }
 }

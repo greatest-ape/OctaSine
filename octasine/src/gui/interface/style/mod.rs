@@ -1,7 +1,11 @@
 mod dark;
 mod light;
 
-use iced_baseview::{button, container, pick_list, radio, rule, Color};
+use iced_baseview::{
+    button, container, pick_list, radio,
+    rule::{self, FillMode},
+    Color,
+};
 use serde::{Deserialize, Serialize};
 
 use super::{envelope, mod_matrix};
@@ -42,6 +46,22 @@ impl Default for Theme {
     }
 }
 
+pub struct Rule;
+
+impl rule::StyleSheet for Rule {
+    fn style(&self) -> rule::Style {
+        let default: Box<dyn rule::StyleSheet> = Default::default();
+        let color = default.style().color;
+
+        rule::Style {
+            color,
+            width: 1,
+            radius: 0.0,
+            fill_mode: FillMode::Full,
+        }
+    }
+}
+
 impl From<Theme> for Box<dyn container::StyleSheet> {
     fn from(theme: Theme) -> Self {
         match theme {
@@ -52,11 +72,8 @@ impl From<Theme> for Box<dyn container::StyleSheet> {
 }
 
 impl From<Theme> for Box<dyn rule::StyleSheet> {
-    fn from(theme: Theme) -> Self {
-        match theme {
-            Theme::Light => light::Rule.into(),
-            Theme::Dark => dark::Rule.into(),
-        }
+    fn from(_theme: Theme) -> Self {
+        Rule.into()
     }
 }
 
