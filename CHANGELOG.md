@@ -6,7 +6,10 @@
 
 - Revamp styling for dark and light modes
 - Decrease size of plugin window to accommodate laptop screens
-- Add iced_glow backend
+
+### Other
+
+- Add experimental iced_glow backend
 
 ## v0.5.2
 
