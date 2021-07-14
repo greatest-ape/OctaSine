@@ -6,7 +6,6 @@ license = "AGPL-3.0"
 edition = "2018"
 
 [features]
-default = ["gui_wgpu"]
 simd = ["sleef-sys"]
 gui_glow = ["gui", "iced_glow", "raw-gl-context", "iced_baseview/glow", "iced_baseview/glow_canvas"]
 gui_wgpu = ["gui", "iced_wgpu", "iced_baseview/wgpu", "iced_baseview/canvas"]
