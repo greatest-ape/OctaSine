@@ -14,11 +14,12 @@ macro_rules! hex_gray {
 
 pub const BACKGROUND: Color = hex_gray!(0xFF);
 pub const SURFACE: Color = hex_gray!(0xF0);
+pub const SURFACE_DARK: Color = hex_gray!(0xD9);
 pub const TEXT_BG: Color = hex_gray!(0x40);
 pub const TEXT_FG: Color = hex_gray!(0x00);
-pub const HOVERED: Color = hex_gray!(0x00);
 pub const BORDER: Color = hex_gray!(0xA0);
 pub const CONTRAST: Color = hex_gray!(0xD9);
+pub const CONTRAST_DARK: Color = hex_gray!(0xC0);
 
 pub struct Container;
 
@@ -46,7 +47,7 @@ impl radio::StyleSheet for Radio {
 
     fn hovered(&self) -> radio::Style {
         radio::Style {
-            border_color: BORDER,
+            background: SURFACE_DARK.into(),
             ..self.active()
         }
     }
@@ -68,8 +69,7 @@ impl button::StyleSheet for Button {
 
     fn hovered(&self) -> button::Style {
         button::Style {
-            border_color: BORDER,
-            text_color: HOVERED,
+            background: CONTRAST_DARK.into(),
             ..self.active()
         }
     }
@@ -102,8 +102,7 @@ impl pick_list::StyleSheet for PickList {
     }
     fn hovered(&self) -> pick_list::Style {
         pick_list::Style {
-            text_color: HOVERED,
-            border_color: BORDER,
+            background: CONTRAST_DARK.into(),
             ..self.active()
         }
     }
@@ -154,14 +153,7 @@ pub(super) mod knob {
             Style::Circle(ACTIVE_CIRCLE_STYLE)
         }
         fn hovered(&self) -> iced_audio::knob::Style {
-            Style::Circle(CircleStyle {
-                border_color: HOVERED,
-                notch: NotchShape::Circle(CircleNotch {
-                    color: HOVERED,
-                    ..ACTIVE_CIRCLE_NOTCH_STYLE
-                }),
-                ..ACTIVE_CIRCLE_STYLE
-            })
+            self.active()
         }
         fn dragging(&self) -> iced_audio::knob::Style {
             self.hovered()
@@ -194,12 +186,12 @@ impl envelope::StyleSheet for Envelope {
     fn active(&self) -> envelope::Style {
         envelope::Style {
             background_color: Color::WHITE,
-            border_color: Color::from_rgb(0.3, 0.3, 0.3),
+            border_color: BORDER,
             text_color: TEXT_FG,
             time_marker_minor_color: Color::from_rgb(0.9, 0.9, 0.9),
             time_marker_color_major: Color::from_rgb(0.7, 0.7, 0.7),
             path_color: TEXT_FG,
-            dragger_fill_color_active: Color::WHITE,
+            dragger_fill_color_active: SURFACE,
             dragger_fill_color_hover: TEXT_FG,
             dragger_border_color: Color::from_rgb(0.5, 0.5, 0.5),
         }
@@ -211,15 +203,15 @@ pub struct ModulationMatrix;
 impl mod_matrix::StyleSheet for ModulationMatrix {
     fn active(&self) -> mod_matrix::Style {
         mod_matrix::Style {
-            background_color: SURFACE,
-            border_color: TEXT_FG,
+            background_color: Color::WHITE,
+            border_color: BORDER,
             text_color: TEXT_FG,
-            box_border_color: TEXT_FG,
-            operator_box_color_active: Color::WHITE,
-            operator_box_color_hover: Color::from_rgb(0.7, 0.7, 0.7),
-            operator_box_color_dragging: Color::from_rgb(0.5, 0.5, 0.5),
+            box_border_color: BORDER,
+            operator_box_color_active: SURFACE,
+            operator_box_color_hover: SURFACE_DARK,
+            operator_box_color_dragging: hex_gray!(0xC0),
             modulation_box_color_active: TEXT_FG,
-            modulation_box_color_inactive: Color::WHITE,
+            modulation_box_color_inactive: SURFACE,
             line_max_color: Color::BLACK,
         }
     }
