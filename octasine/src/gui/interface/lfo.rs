@@ -75,14 +75,16 @@ impl LfoWidgets {
             .push(Row::new().push(title))
             .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
             .push(Row::new().push(self.target.view()))
-            .push(Space::with_height(Length::Units(LINE_HEIGHT * 1 + LINE_HEIGHT / 2)))
+            .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
             .push(
                 Row::new()
                     .push(self.bpm_sync.view())
                     .push(self.frequency_ratio.view())
                     .push(self.frequency_free.view()),
             )
-            .push(Space::with_height(Length::Units(LINE_HEIGHT * 1 + LINE_HEIGHT / 2)))
+            .push(Space::with_height(Length::Units(
+                LINE_HEIGHT * 1 + LINE_HEIGHT / 1,
+            )))
             .push(
                 Row::new()
                     .push(self.mode.view())

@@ -452,11 +452,11 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
         };
 
         let all = Column::new()
-            .push(Space::with_height(Length::Units(LINE_HEIGHT)))
+            .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
             .push(
                 Row::new()
                     .align_items(Align::Center)
-                    .height(Length::Units(LINE_HEIGHT * 5))
+                    .height(Length::Units(LINE_HEIGHT * 4))
                     .push(
                         Column::new().width(Length::FillPortion(9)).push(
                             Container::new(
@@ -483,8 +483,8 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                                             .vertical_alignment(VerticalAlignment::Center),
                                     ),
                             )
-                            .height(Length::Units(LINE_HEIGHT * 5))
-                            .padding(LINE_HEIGHT + LINE_HEIGHT / 2)
+                            .height(Length::Units(LINE_HEIGHT * 4))
+                            .padding(LINE_HEIGHT)
                             .align_y(Align::Center),
                         ),
                     )
@@ -503,7 +503,7 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                         Column::new()
                             .width(Length::FillPortion(9))
                             .align_items(Align::End)
-                            .push(Space::with_height(Length::Units(LINE_HEIGHT + LINE_HEIGHT / 2)))
+                            .push(Space::with_height(Length::Units(LINE_HEIGHT)))
                             .push(
                                 Row::new()
                                     .push(preset_picker)
