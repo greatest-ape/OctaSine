@@ -19,7 +19,7 @@ const SIZE: Size = Size {
     height: HEIGHT as f32,
 };
 
-const DRAGGER_RADIUS: f32 = 5.0;
+const DRAGGER_RADIUS: f32 = 4.0;
 
 const ENVELOPE_PATH_SCALE_X: f32 = (WIDTH as f32 - 2.0 * LINE_HEIGHT as f32) / WIDTH as f32;
 const ENVELOPE_PATH_SCALE_Y: f32 = 1.0 - (1.0 / 8.0) - (1.0 / 16.0);

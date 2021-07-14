@@ -27,8 +27,8 @@ use style::Theme;
 use super::GuiSettings;
 use crate::settings::Settings;
 
-pub const FONT_SIZE: u16 = 14;
-pub const LINE_HEIGHT: u16 = 14;
+pub const FONT_SIZE: u16 = 12;
+pub const LINE_HEIGHT: u16 = 12;
 
 const FONT_REGULAR: &[u8] = OPEN_SANS_REGULAR;
 
