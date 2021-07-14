@@ -9,7 +9,8 @@
 * GUI
   * Provide glow backend as alternative or maybe even default build
     * Fix high DPI mode
-    * Fix anti-aliasing
+    * Crash when reopening GUI. Faulty superview call?
+    * Fix anti-aliasing?
   * Improve macOS Retina support
   * Parameter editing: bracket changes with begin_edit and end_edit
     * iced_audio knobs need events for starting and ending dragging
