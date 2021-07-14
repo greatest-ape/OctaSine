@@ -458,7 +458,7 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                     .align_items(Align::Center)
                     .height(Length::Units(LINE_HEIGHT * 4))
                     .push(
-                        Column::new().width(Length::FillPortion(9)).push(
+                        Column::new().width(Length::FillPortion(10)).push(
                             Container::new(
                                 Row::new()
                                     .push(
@@ -501,7 +501,7 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                     )
                     .push(
                         Column::new()
-                            .width(Length::FillPortion(9))
+                            .width(Length::FillPortion(10))
                             .align_items(Align::End)
                             .push(Space::with_height(Length::Units(LINE_HEIGHT)))
                             .push(
