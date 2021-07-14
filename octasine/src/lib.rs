@@ -412,8 +412,14 @@ fn get_version_info() -> String {
     };
 
     if !GIT_TESTAMENT.modifications.is_empty() {
-        info.push_str(" (dirty)");
+        info.push_str(" (M)");
     }
+
+    #[cfg(feature = "gui_wgpu")]
+    info.push_str(" (wgpu)");
+
+    #[cfg(feature = "gui_glow")]
+    info.push_str(" (gl)");
 
     info
 }
