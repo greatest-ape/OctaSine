@@ -1,6 +1,6 @@
 use iced_baseview::{
     button, renderer, Button, Color, Column, Container, Element, Font, HorizontalAlignment, Length,
-    Point, Row, Space, Text, VerticalAlignment,
+    Point, Row, Rule, Space, Text, VerticalAlignment,
 };
 use iced_baseview::{executor, Align, Application, Command, Subscription, WindowSubs};
 
@@ -8,7 +8,6 @@ use crate::parameters::values::{MasterFrequencyValue, MasterVolumeValue};
 use crate::{get_version_info, GuiSyncHandle};
 
 mod boolean_picker;
-mod divider;
 mod envelope;
 mod knob;
 mod lfo;
@@ -18,7 +17,6 @@ mod operator;
 mod preset_picker;
 pub mod style;
 
-use divider::VerticalRule;
 use knob::OctaSineKnob;
 use lfo::LfoWidgets;
 use mod_matrix::ModulationMatrix;
@@ -29,8 +27,8 @@ use style::Theme;
 use super::GuiSettings;
 use crate::settings::Settings;
 
-pub const FONT_SIZE: u16 = 14;
-pub const LINE_HEIGHT: u16 = 14;
+pub const FONT_SIZE: u16 = 12;
+pub const LINE_HEIGHT: u16 = 12;
 
 const FONT_REGULAR: &[u8] = OPEN_SANS_REGULAR;
 
@@ -101,10 +99,6 @@ pub struct OctaSineIcedApplication<H: GuiSyncHandle> {
     lfo_2: LfoWidgets,
     lfo_3: LfoWidgets,
     lfo_4: LfoWidgets,
-    lfo_vr_1: divider::VerticalRule,
-    lfo_vr_2: divider::VerticalRule,
-    lfo_vr_3: divider::VerticalRule,
-    lfo_vr_4: divider::VerticalRule,
 }
 
 impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {
@@ -246,12 +240,10 @@ impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {
 
         let spawn_result = builder.spawn(move || {
             if let Err(err) = settings.save() {
-                #[cfg(feature = "logging")]
                 ::log::error!("Couldn't save settings: {}", err)
             }
         });
 
-        #[cfg(feature = "logging")]
         if let Err(err) = spawn_result {
             ::log::error!("Couldn't spawn thread for saving settings: {}", err)
         }
@@ -281,14 +273,6 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
         let lfo_3 = LfoWidgets::new(&sync_handle, 2, style);
         let lfo_4 = LfoWidgets::new(&sync_handle, 3, style);
 
-        let lfo_vr_1 = VerticalRule::new(
-            Length::Units(LINE_HEIGHT * 2),
-            Length::Units(LINE_HEIGHT * 16),
-        );
-        let lfo_vr_2 = lfo_vr_1.clone();
-        let lfo_vr_3 = lfo_vr_1.clone();
-        let lfo_vr_4 = lfo_vr_1.clone();
-
         let app = Self {
             sync_handle,
             style,
@@ -307,10 +291,6 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
             lfo_2,
             lfo_3,
             lfo_4,
-            lfo_vr_1,
-            lfo_vr_2,
-            lfo_vr_3,
-            lfo_vr_4,
         };
 
         (app, Command::none())
@@ -325,13 +305,30 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
         Subscription::none()
     }
 
+    #[cfg(feature = "gui_wgpu")]
     fn renderer_settings() -> renderer::Settings {
         renderer::Settings {
+            present_mode: iced_wgpu::wgpu::PresentMode::Immediate,
             default_font: Some(FONT_REGULAR),
             default_text_size: FONT_SIZE,
             antialiasing: Some(renderer::Antialiasing::MSAAx4),
             ..Default::default()
         }
+    }
+
+    #[cfg(feature = "gui_glow")]
+    fn renderer_settings() -> (raw_gl_context::GlConfig, iced_glow::settings::Settings) {
+        (
+            raw_gl_context::GlConfig {
+                samples: Some(8),
+                ..Default::default()
+            },
+            iced_glow::settings::Settings {
+                default_font: Some(FONT_REGULAR),
+                default_text_size: FONT_SIZE,
+                antialiasing: Some(renderer::settings::Antialiasing::MSAAx8),
+            },
+        )
     }
 
     fn update(&mut self, message: Self::Message) -> Command<Self::Message> {
@@ -444,6 +441,7 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
             .height(Length::Units(LINE_HEIGHT * 2))
             .width(Length::Units(LINE_HEIGHT * 8))
             .font(FONT_VERY_BOLD)
+            .color(self.style.heading_color())
             .horizontal_alignment(HorizontalAlignment::Center)
             .vertical_alignment(VerticalAlignment::Center);
 
@@ -460,7 +458,7 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                     .align_items(Align::Center)
                     .height(Length::Units(LINE_HEIGHT * 4))
                     .push(
-                        Column::new().width(Length::FillPortion(9)).push(
+                        Column::new().width(Length::FillPortion(10)).push(
                             Container::new(
                                 Row::new()
                                     .push(
@@ -494,6 +492,7 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                         Container::new(
                             Text::new("OctaSine")
                                 .font(FONT_VERY_BOLD)
+                                .color(self.style.heading_color())
                                 .size(FONT_SIZE * 2 + FONT_SIZE / 2)
                                 .horizontal_alignment(HorizontalAlignment::Center),
                         )
@@ -502,9 +501,9 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                     )
                     .push(
                         Column::new()
-                            .width(Length::FillPortion(9))
+                            .width(Length::FillPortion(10))
                             .align_items(Align::End)
-                            .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
+                            .push(Space::with_height(Length::Units(LINE_HEIGHT)))
                             .push(
                                 Row::new()
                                     .push(preset_picker)
@@ -520,7 +519,7 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
             .push(operator_2)
             .push(Space::with_height(Length::Units(LINE_HEIGHT * 2)))
             .push(operator_1)
-            .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
+            .push(Space::with_height(Length::Units(LINE_HEIGHT * 2)))
             .push(
                 Row::new()
                     .push(Space::with_width(Length::Units(LINE_HEIGHT)))
@@ -528,25 +527,45 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                     .push(
                         Column::new()
                             .push(Space::with_height(Length::Units(LINE_HEIGHT * 3)))
-                            .push(self.lfo_vr_1.view()),
+                            .push(
+                                Container::new(Rule::vertical(1).style(self.style))
+                                    .align_x(Align::Center)
+                                    .width(Length::Units(LINE_HEIGHT * 2))
+                                    .height(Length::Units(LINE_HEIGHT * 17)),
+                            ),
                     )
                     .push(lfo_2)
                     .push(
                         Column::new()
                             .push(Space::with_height(Length::Units(LINE_HEIGHT * 3)))
-                            .push(self.lfo_vr_2.view()),
+                            .push(
+                                Container::new(Rule::vertical(1).style(self.style))
+                                    .align_x(Align::Center)
+                                    .width(Length::Units(LINE_HEIGHT * 2))
+                                    .height(Length::Units(LINE_HEIGHT * 17)),
+                            ),
                     )
                     .push(lfo_3)
                     .push(
                         Column::new()
                             .push(Space::with_height(Length::Units(LINE_HEIGHT * 3)))
-                            .push(self.lfo_vr_3.view()),
+                            .push(
+                                Container::new(Rule::vertical(1).style(self.style))
+                                    .align_x(Align::Center)
+                                    .width(Length::Units(LINE_HEIGHT * 2))
+                                    .height(Length::Units(LINE_HEIGHT * 17)),
+                            ),
                     )
                     .push(lfo_4)
                     .push(
                         Column::new()
                             .push(Space::with_height(Length::Units(LINE_HEIGHT * 3)))
-                            .push(self.lfo_vr_4.view()),
+                            .push(
+                                Container::new(Rule::vertical(1).style(self.style))
+                                    .align_x(Align::Center)
+                                    .width(Length::Units(LINE_HEIGHT * 2))
+                                    .height(Length::Units(LINE_HEIGHT * 17)),
+                            ),
                     )
                     .push(
                         Column::new()
@@ -562,7 +581,7 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                             )
                             .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
                             .push(Row::new().push(master_volume).push(master_frequency))
-                            .push(Space::with_height(Length::Units(LINE_HEIGHT * 3)))
+                            .push(Space::with_height(Length::Units(LINE_HEIGHT * 4)))
                             .push(Row::new().push(modulation_matrix)),
                     ),
             );

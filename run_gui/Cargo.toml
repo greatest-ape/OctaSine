@@ -5,6 +5,10 @@ authors = ["Joakim Frostegård <joakim.frostegard@gmail.com>"]
 license = "AGPL-3.0"
 edition = "2018"
 
+[features]
+wgpu = ["octasine/gui_wgpu"]
+glow = ["octasine/gui_glow"]
+
 [dependencies]
-octasine = { path = "../octasine", features = ["gui"] }
+octasine = { path = "../octasine", default-features = false }
 simplelog = { version = "0.10", default-features = false }

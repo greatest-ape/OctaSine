@@ -13,7 +13,7 @@ use super::style::Theme;
 use super::{Message, SnapPoint, FONT_BOLD, FONT_SIZE, LINE_HEIGHT};
 
 pub const HEIGHT: u16 = LINE_HEIGHT * 7;
-const SMALL_BOX_SIZE: u16 = 10;
+const SMALL_BOX_SIZE: u16 = 8;
 const BIG_BOX_SIZE: u16 = LINE_HEIGHT;
 
 // Calculated from the constants above
@@ -802,6 +802,9 @@ impl ModulationMatrix {
 
     pub fn set_style(&mut self, style: Theme) {
         self.style = style;
+
+        self.update_components();
+
         self.cache.clear();
     }
 

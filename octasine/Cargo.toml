@@ -6,10 +6,10 @@ license = "AGPL-3.0"
 edition = "2018"
 
 [features]
-default = ["logging", "gui"]
 simd = ["sleef-sys"]
-logging = ["dirs", "git-testament", "log", "log-panics", "os_info", "simplelog"]
-gui = ["baseview", "iced_baseview", "iced_style", "iced_audio", "palette", "raw-window-handle", "git-testament"]
+gui_glow = ["gui", "iced_glow", "raw-gl-context", "iced_baseview/glow", "iced_baseview/glow_canvas"]
+gui_wgpu = ["gui", "iced_wgpu", "iced_baseview/wgpu", "iced_baseview/canvas"]
+gui = ["baseview", "iced_baseview", "iced_style", "iced_audio", "palette", "raw-window-handle"]
 
 [lib]
 name = "octasine"
@@ -18,49 +18,56 @@ name = "octasine"
 name = "process"
 harness = false
 
+[dev-dependencies]
+assert_approx_eq = "1"
+colored = "2"
+quickcheck = { version = "1", default-features = false }
+sha2 = "0.9"
+
 [dependencies]
 anyhow = "1"
 arc-swap = "1"
-arrayvec = "0.7"
 array-init = "2"
+arrayvec = "0.7"
 cfg-if = "1"
+dirs = "3"
 duplicate = "0.3"
 fastrand = "1"
+git-testament = "0.2"
+log = { version = "0.4", default-features = false }
+log-panics = "2"
+os_info = "3"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
+simplelog = { version = "0.10", default-features = false }
 vst = "0.2"
-
-# Logging
-
-dirs = { version = "3", optional = true}
-log = { version = "0.4", optional = true, default-features = false }
-log-panics = { version = "2", optional = true }
-os_info = { version = "3", optional = true }
-simplelog = { version = "0.10", optional = true, default-features = false }
 
 # GUI
 
+iced_glow = { version = "0.2", optional = true }
+iced_wgpu = { version = "0.4", optional = true }
+raw-gl-context = { version = "0.1", optional = true }
 raw-window-handle = { version = "0.3", optional = true }
-git-testament = { version = "0.2", optional = true }
 
 [dependencies.baseview]
 git = "https://github.com/rustaudio/baseview.git"
 branch = "master"
 optional = true
 
+[dependencies.iced_audio]
+git = "https://github.com/BillyDM/iced_audio.git"
+branch = "main"
+optional = true
+
 [dependencies.iced_baseview]
 git = "https://github.com/BillyDM/iced_baseview.git"
-branch = "main"
-features = ["canvas", "palette"]
+rev = "b879d0fabb0a9b5bb122fae8c0db608c6025d472"
+default-features = false
+features = ["palette"]
 optional = true
 
 [dependencies.iced_style]
 version = "0.3"
-optional = true
-
-[dependencies.iced_audio]
-git = "https://github.com/BillyDM/iced_audio.git"
-branch = "main"
 optional = true
 
 [dependencies.palette]
@@ -75,9 +82,3 @@ git = 'https://github.com/greatest-ape/sleef-sys.git'
 branch = "octasine"
 features = ["static"]
 optional = true
-
-[dev-dependencies]
-assert_approx_eq = "1"
-colored = "2"
-quickcheck = { version = "1", default-features = false }
-sha2 = "0.9"

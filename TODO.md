@@ -4,13 +4,20 @@
 
 * Build for Apple silicon
   * ADVSIMD (NEON) acceleration should be supported, at least by enabling the
-    target feature. I'm sure sure how that is done when cross-compiling.
+    target feature. I'm not sure about how that is done when cross-compiling.
 
 * GUI
+  * Provide glow backend as alternative or maybe even default build
+    * Fix high DPI mode
+    * Crash when reopening GUI. Faulty superview call?
+    * Fix anti-aliasing?
   * Improve macOS Retina support
+  * Parameter editing: bracket changes with begin_edit and end_edit
+    * iced_audio knobs need events for starting and ending dragging
   * Scrolling in dropdowns
     * Needs to be added to baseview macOS code
     * Other platforms?
+
 
 ## Less important
 
