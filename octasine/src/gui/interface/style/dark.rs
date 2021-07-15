@@ -17,12 +17,7 @@ pub const SURFACE: Color = hex_gray!(0x20);
 pub const TEXT_BG: Color = hex_gray!(0x90);
 pub const TEXT_FG: Color = hex_gray!(0xBB);
 pub const HOVERED: Color = hex_gray!(0xDD);
-
-pub const CONTRAST: Color = Color::from_rgb(
-    0x19 as f32 / 255.0,
-    0x2E as f32 / 255.0,
-    0x4D as f32 / 255.0,
-);
+pub const CONTRAST: Color = hex_gray!(0x30);
 
 pub struct Container;
 
@@ -88,7 +83,7 @@ pub struct PickList;
 impl pick_list::StyleSheet for PickList {
     fn menu(&self) -> iced_style::menu::Style {
         iced_style::menu::Style {
-            background: hex_gray!(0x30).into(),
+            background: hex_gray!(0x20).into(),
             selected_background: CONTRAST.into(),
             text_color: TEXT_FG,
             selected_text_color: HOVERED,
