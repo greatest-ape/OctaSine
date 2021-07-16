@@ -8,19 +8,20 @@
 
 * GUI
   * Provide glow backend as alternative or maybe even default build
-    * Fix high DPI mode
     * Crash when reopening GUI. Faulty superview call?
-    * Fix anti-aliasing?
-  * Improve macOS Retina support
+    * Crash when closing GUI?
+    * Fix anti-aliasing? Maybe broken on Windows?
   * Parameter editing: bracket changes with begin_edit and end_edit
-    * iced_audio knobs need events for starting and ending dragging
+    * iced_audio knobs would need events for starting and ending dragging
   * Scrolling in dropdowns
-    * Needs to be added to baseview macOS code
-    * Other platforms?
-
+    * iced 0.4: https://github.com/hecrj/iced/pull/872
+    * Does scrolling (including touch bar) need to be added to baseview
+      macOS code? What about other platforms?
 
 ## Less important
 
+* Manual under info button?
+  * Presets are exported/imported through DAW
 * Process benchmark output not same on Windows as on macOS/Linux
 * Debian 10 / other Linux distros CI
 * Record video of workflow, upload to YouTube
@@ -55,7 +56,6 @@
   * Implement simple parsing etc for all
   * DAW integration working anywhere?
 * Nice online documentation
-* rustfmt
 
 ## Don't do
 
