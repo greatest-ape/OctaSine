@@ -61,7 +61,7 @@ optional = true
 
 [dependencies.iced_baseview]
 git = "https://github.com/BillyDM/iced_baseview.git"
-rev = "b879d0fabb0a9b5bb122fae8c0db608c6025d472"
+rev = "3cd6214"
 default-features = false
 features = ["palette"]
 optional = true
