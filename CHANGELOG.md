@@ -1,15 +1,12 @@
 # Changelog
 
-## v0.5.3 (not released)
+## v0.5.3
 
 ### Features
 
-- Revamp styling for dark and light modes
+- Redesign dark and light modes
 - Decrease size of plugin window to accommodate laptop screens
-
-### Other
-
-- Add experimental iced_glow backend
+- Fix multiple HiDPI issues by updating baseview dependency
 
 ## v0.5.2
 
