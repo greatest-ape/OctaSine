@@ -2,6 +2,14 @@
 
 ## Important
 
+* Bugs
+  * When attack and decay is short, release is long and key presses are very
+    short, tones keeps going on or don't trigger at all. Key release event not
+    properly received? Envelope bug?
+  * LFO issue: when time between key presses is short, lfo seems to still be
+    running and affecting next key press. Valid for all shapes and both modes.
+    Interpolation issue?
+
 * Build for Apple silicon
   * ADVSIMD (NEON) acceleration should be supported, at least by enabling the
     target feature. I'm not sure about how that is done when cross-compiling.
@@ -17,6 +25,9 @@
     * iced 0.4: https://github.com/hecrj/iced/pull/872
     * Does scrolling (including touch bar) need to be added to baseview
       macOS code? What about other platforms?
+
+* Documentation
+  * LFO shapes, shape/amount interaction
 
 ## Less important
 
