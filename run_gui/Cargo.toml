@@ -3,7 +3,7 @@ name = "run_gui"
 version = "0.1.0"
 authors = ["Joakim Frostegård <joakim.frostegard@gmail.com>"]
 license = "AGPL-3.0"
-edition = "2018"
+edition = "2021"
 
 [features]
 wgpu = ["octasine/gui_wgpu"]
