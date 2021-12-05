@@ -2,8 +2,8 @@
 name = "octasine_vst2_plugin"
 version = "0.5.3"
 authors = ["Joakim Frostegård <joakim.frostegard@gmail.com>"]
-edition = "2018"
 license = "AGPL-3.0"
+edition = "2018"
 
 [lib]
 name = "octasine"

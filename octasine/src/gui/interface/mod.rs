@@ -1,8 +1,8 @@
 use iced_baseview::{
-    button, renderer, Button, Color, Column, Container, Element, Font, HorizontalAlignment, Length,
-    Point, Row, Rule, Space, Text, VerticalAlignment,
+    button, renderer, Button, Color, Column, Container, Element, Font, Horizontal, Length,
+    Point, Row, Rule, Space, Text, Vertical, WindowQueue,
 };
-use iced_baseview::{executor, Align, Application, Command, Subscription, WindowSubs};
+use iced_baseview::{executor, Alignment, Application, Command, Subscription, WindowSubs};
 
 use crate::parameters::values::{MasterFrequencyValue, MasterVolumeValue};
 use crate::{get_version_info, GuiSyncHandle};
@@ -331,7 +331,7 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
         )
     }
 
-    fn update(&mut self, message: Self::Message) -> Command<Self::Message> {
+    fn update(&mut self, _window_queue: &mut WindowQueue, message: Self::Message) -> Command<Self::Message> {
         match message {
             Message::Frame => {
                 if self.sync_handle.have_presets_changed() {
@@ -442,8 +442,8 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
             .width(Length::Units(LINE_HEIGHT * 8))
             .font(FONT_VERY_BOLD)
             .color(self.style.heading_color())
-            .horizontal_alignment(HorizontalAlignment::Center)
-            .vertical_alignment(VerticalAlignment::Center);
+            .horizontal_alignment(Horizontal::Center)
+            .vertical_alignment(Vertical::Center);
 
         let info_text_color = if self.show_version {
             self.style.text_color()
@@ -455,7 +455,7 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
             .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
             .push(
                 Row::new()
-                    .align_items(Align::Center)
+                    .align_items(Alignment::Center)
                     .height(Length::Units(LINE_HEIGHT * 4))
                     .push(
                         Column::new().width(Length::FillPortion(10)).push(
@@ -480,12 +480,12 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                                         Text::new(get_info_text())
                                             .size(LINE_HEIGHT)
                                             .color(info_text_color)
-                                            .vertical_alignment(VerticalAlignment::Center),
+                                            .vertical_alignment(Vertical::Center),
                                     ),
                             )
                             .height(Length::Units(LINE_HEIGHT * 4))
                             .padding(LINE_HEIGHT)
-                            .align_y(Align::Center),
+                            .align_y(Vertical::Center),
                         ),
                     )
                     .push(
@@ -494,15 +494,15 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                                 .font(FONT_VERY_BOLD)
                                 .color(self.style.heading_color())
                                 .size(FONT_SIZE * 2 + FONT_SIZE / 2)
-                                .horizontal_alignment(HorizontalAlignment::Center),
+                                .horizontal_alignment(Horizontal::Center),
                         )
                         .width(Length::FillPortion(4))
-                        .align_x(Align::Center),
+                        .align_x(Horizontal::Center),
                     )
                     .push(
                         Column::new()
                             .width(Length::FillPortion(10))
-                            .align_items(Align::End)
+                            .align_items(Alignment::End)
                             .push(Space::with_height(Length::Units(LINE_HEIGHT)))
                             .push(
                                 Row::new()
@@ -529,7 +529,7 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                             .push(Space::with_height(Length::Units(LINE_HEIGHT * 3)))
                             .push(
                                 Container::new(Rule::vertical(1).style(self.style))
-                                    .align_x(Align::Center)
+                                    .align_x(Horizontal::Center)
                                     .width(Length::Units(LINE_HEIGHT * 2))
                                     .height(Length::Units(LINE_HEIGHT * 17)),
                             ),
@@ -540,7 +540,7 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                             .push(Space::with_height(Length::Units(LINE_HEIGHT * 3)))
                             .push(
                                 Container::new(Rule::vertical(1).style(self.style))
-                                    .align_x(Align::Center)
+                                    .align_x(Horizontal::Center)
                                     .width(Length::Units(LINE_HEIGHT * 2))
                                     .height(Length::Units(LINE_HEIGHT * 17)),
                             ),
@@ -551,7 +551,7 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                             .push(Space::with_height(Length::Units(LINE_HEIGHT * 3)))
                             .push(
                                 Container::new(Rule::vertical(1).style(self.style))
-                                    .align_x(Align::Center)
+                                    .align_x(Horizontal::Center)
                                     .width(Length::Units(LINE_HEIGHT * 2))
                                     .height(Length::Units(LINE_HEIGHT * 17)),
                             ),
@@ -562,7 +562,7 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                             .push(Space::with_height(Length::Units(LINE_HEIGHT * 3)))
                             .push(
                                 Container::new(Rule::vertical(1).style(self.style))
-                                    .align_x(Align::Center)
+                                    .align_x(Horizontal::Center)
                                     .width(Length::Units(LINE_HEIGHT * 2))
                                     .height(Length::Units(LINE_HEIGHT * 17)),
                             ),
@@ -575,8 +575,8 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                                     Container::new(master_title)
                                         .width(Length::Units(LINE_HEIGHT * 8))
                                         .height(Length::Units(LINE_HEIGHT * 2))
-                                        .align_x(Align::Center)
-                                        .align_y(Align::Center),
+                                        .align_x(Horizontal::Center)
+                                        .align_y(Vertical::Center),
                                 ),
                             )
                             .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))

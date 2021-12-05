@@ -1,6 +1,6 @@
 use iced_audio::{knob, text_marks, tick_marks, Normal, NormalParam};
 use iced_baseview::{
-    keyboard::Modifiers, Align, Column, Element, HorizontalAlignment, Length, Space, Text,
+    keyboard::Modifiers, Alignment, Column, Element, Horizontal, Length, Space, Text,
 };
 
 use crate::constants::*;
@@ -301,18 +301,15 @@ impl<P: ParameterValue> OctaSineKnob<P> {
 
     pub fn view(&mut self) -> Element<Message> {
         let title = Text::new(self.title.clone())
-            .horizontal_alignment(HorizontalAlignment::Center)
+            .horizontal_alignment(Horizontal::Center)
             .font(FONT_BOLD);
 
         let value =
-            Text::new(self.value_text.clone()).horizontal_alignment(HorizontalAlignment::Center);
+            Text::new(self.value_text.clone()).horizontal_alignment(Horizontal::Center);
 
         let parameter_index = self.parameter_index;
 
-        let modifier_keys = Modifiers {
-            shift: true,
-            ..Default::default()
-        };
+        let modifier_keys = Modifiers::SHIFT;
 
         let mut knob = knob::Knob::new(&mut self.knob_state, move |value| {
             Message::ParameterChange(parameter_index, value.as_f32() as f64)
@@ -330,7 +327,7 @@ impl<P: ParameterValue> OctaSineKnob<P> {
 
         Column::new()
             .width(Length::Units(LINE_HEIGHT * 4))
-            .align_items(Align::Center)
+            .align_items(Alignment::Center)
             .push(title)
             .push(Space::with_height(Length::Units(LINE_HEIGHT)))
             .push(knob)

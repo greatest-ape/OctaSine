@@ -1,5 +1,5 @@
 use iced_baseview::{
-    Column, Element, HorizontalAlignment, Length, Row, Space, Text, VerticalAlignment,
+    Column, Element, Horizontal, Length, Row, Space, Text, Vertical,
 };
 
 use crate::parameters::values::{
@@ -68,8 +68,8 @@ impl LfoWidgets {
             .width(Length::Units(LINE_HEIGHT * 12))
             .font(FONT_VERY_BOLD)
             .color(self.style.heading_color())
-            .horizontal_alignment(HorizontalAlignment::Center)
-            .vertical_alignment(VerticalAlignment::Center);
+            .horizontal_alignment(Horizontal::Center)
+            .vertical_alignment(Vertical::Center);
 
         Column::new()
             .push(Row::new().push(title))
