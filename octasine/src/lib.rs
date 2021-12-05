@@ -116,7 +116,7 @@ impl OctaSine {
             .set_time_to_local(true)
             .build();
 
-        let _ = simplelog::WriteLogger::init(simplelog::LevelFilter::Info, log_config, log_file);
+        let _ = simplelog::WriteLogger::init(simplelog::LevelFilter::Warn, log_config, log_file);
 
         log_panics::init();
 
