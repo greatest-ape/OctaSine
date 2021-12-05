@@ -1441,7 +1441,7 @@ dependencies = [
  "palette",
  "quickcheck",
  "raw-gl-context",
- "raw-window-handle 0.3.4",
+ "raw-window-handle 0.4.2",
  "serde",
  "serde_json",
  "sha2",

@@ -48,7 +48,7 @@ iced_glow = { git = "https://github.com/iced-rs/iced.git", rev = "26d053a", opti
 iced_wgpu = { git = "https://github.com/iced-rs/iced.git", rev = "26d053a", optional = true }
 iced_style = { git = "https://github.com/iced-rs/iced.git", rev = "26d053a", optional = true }
 raw-gl-context = { version = "0.1", optional = true }
-raw-window-handle = { version = "0.3", optional = true }
+raw-window-handle = { version = "0.4", optional = true }
 
 [dependencies.baseview]
 git = "https://github.com/rustaudio/baseview.git"

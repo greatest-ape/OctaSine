@@ -91,31 +91,28 @@ pub struct ParentWindow(pub *mut ::core::ffi::c_void);
 unsafe impl HasRawWindowHandle for ParentWindow {
     #[cfg(target_os = "macos")]
     fn raw_window_handle(&self) -> RawWindowHandle {
-        use raw_window_handle::macos::MacOSHandle;
+        let mut handle = raw_window_handle::AppKitHandle::empty();
 
-        RawWindowHandle::MacOS(MacOSHandle {
-            ns_view: self.0,
-            ..MacOSHandle::empty()
-        })
+        handle.ns_view = self.0;
+
+        RawWindowHandle::AppKit(handle)
     }
 
     #[cfg(target_os = "windows")]
     fn raw_window_handle(&self) -> RawWindowHandle {
-        use raw_window_handle::windows::WindowsHandle;
+        let mut handle = raw_window_handle::Win32Handle::empty();
 
-        RawWindowHandle::Windows(WindowsHandle {
-            hwnd: self.0,
-            ..WindowsHandle::empty()
-        })
+        handle.hwnd = self.0;
+
+        RawWindowHandle::Win32(handle)
     }
 
     #[cfg(target_os = "linux")]
     fn raw_window_handle(&self) -> RawWindowHandle {
-        use raw_window_handle::unix::XcbHandle;
+        let mut handle = raw_window_handle::XcbHandle::empty();
 
-        RawWindowHandle::Xcb(XcbHandle {
-            window: self.0 as u32,
-            ..XcbHandle::empty()
-        })
+        handle.window = self.0 as u32;
+
+        RawWindowHandle::Xcb(handle)
     }
 }
