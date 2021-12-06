@@ -954,7 +954,7 @@ checksum = "9a3a5bfb195931eeb336b2a7b4d761daec841b97f947d34394601737a7bba5e4"
 [[package]]
 name = "iced_audio"
 version = "0.6.1"
-source = "git+https://github.com/greatest-ape/iced_audio.git?branch=iced_git#5b5d28f2d125ef4cdc95eef15450df1da1f95f1e"
+source = "git+https://github.com/BillyDM/iced_audio.git?branch=iced_git#7a647c5a47dbd06852cde62c0d8baabf93ea472d"
 dependencies = [
  "iced_graphics",
  "iced_native",
@@ -963,7 +963,7 @@ dependencies = [
 [[package]]
 name = "iced_baseview"
 version = "0.0.3"
-source = "git+https://github.com/greatest-ape/iced_baseview.git?branch=iced_git#f4d82c9969e262f66bd9633d9abe50554fdc656f"
+source = "git+https://github.com/BillyDM/iced_baseview.git?branch=iced_git#d33246d29c058d1a09034c916bd90f191b4532df"
 dependencies = [
  "baseview",
  "iced_core",

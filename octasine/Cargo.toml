@@ -56,12 +56,12 @@ branch = "master"
 optional = true
 
 [dependencies.iced_audio]
-git = "https://github.com/greatest-ape/iced_audio.git"
+git = "https://github.com/BillyDM/iced_audio.git"
 branch = "iced_git"
 optional = true
 
 [dependencies.iced_baseview]
-git = "https://github.com/greatest-ape/iced_baseview.git"
+git = "https://github.com/BillyDM/iced_baseview.git"
 branch = "iced_git"
 default-features = false
 features = ["palette"]
