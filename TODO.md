@@ -9,6 +9,7 @@
   * LFO issue: when time between key presses is short, lfo seems to still be
     running and affecting next key press. Valid for all shapes and both modes.
     Interpolation issue?
+  * Mouse drag movements in pick list transfer through to envelope editor
 
 * Build for Apple silicon
   * ADVSIMD (NEON) acceleration should be supported, at least by enabling the
