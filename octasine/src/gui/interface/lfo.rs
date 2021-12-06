@@ -1,6 +1,4 @@
-use iced_baseview::{
-    Column, Element, Horizontal, Length, Row, Space, Text, Vertical,
-};
+use iced_baseview::{Column, Element, Horizontal, Length, Row, Space, Text, Vertical};
 
 use crate::parameters::values::{
     LfoAmountValue, LfoBpmSyncValue, LfoFrequencyFreeValue, LfoFrequencyRatioValue, LfoModeValue,

@@ -1,6 +1,6 @@
 use iced_baseview::{
-    button, Alignment, Button, Column, Container, Element, Horizontal, Length, Row, Rule,
-    Space, Text, Vertical,
+    button, Alignment, Button, Column, Container, Element, Horizontal, Length, Row, Rule, Space,
+    Text, Vertical,
 };
 
 use crate::parameters::values::{

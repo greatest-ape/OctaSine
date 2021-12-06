@@ -1,6 +1,6 @@
 use iced_baseview::{
-    button, renderer, Button, Color, Column, Container, Element, Font, Horizontal, Length,
-    Point, Row, Rule, Space, Text, Vertical, WindowQueue,
+    button, renderer, Button, Color, Column, Container, Element, Font, Horizontal, Length, Point,
+    Row, Rule, Space, Text, Vertical, WindowQueue,
 };
 use iced_baseview::{executor, Alignment, Application, Command, Subscription, WindowSubs};
 
@@ -332,7 +332,11 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
         )
     }
 
-    fn update(&mut self, _window_queue: &mut WindowQueue, message: Self::Message) -> Command<Self::Message> {
+    fn update(
+        &mut self,
+        _window_queue: &mut WindowQueue,
+        message: Self::Message,
+    ) -> Command<Self::Message> {
         match message {
             Message::Frame => {
                 if self.sync_handle.have_presets_changed() {

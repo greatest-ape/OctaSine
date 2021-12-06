@@ -304,8 +304,7 @@ impl<P: ParameterValue> OctaSineKnob<P> {
             .horizontal_alignment(Horizontal::Center)
             .font(FONT_BOLD);
 
-        let value =
-            Text::new(self.value_text.clone()).horizontal_alignment(Horizontal::Center);
+        let value = Text::new(self.value_text.clone()).horizontal_alignment(Horizontal::Center);
 
         let parameter_index = self.parameter_index;
 
