@@ -7,8 +7,8 @@ edition = "2021"
 
 [features]
 simd = ["sleef-sys"]
-gui_glow = ["gui", "iced_glow", "raw-gl-context", "iced_baseview/glow", "iced_baseview/glow_canvas"]
-gui_wgpu = ["gui", "iced_wgpu", "iced_baseview/wgpu", "iced_baseview/canvas"]
+gui_glow = ["gui", "iced_glow", "raw-gl-context", "iced_baseview/with-glow", "iced_baseview/with-glow-canvas"]
+gui_wgpu = ["gui", "iced_wgpu", "iced_baseview/with-wgpu", "iced_baseview/with-wgpu-canvas"]
 gui = ["baseview", "iced_baseview", "iced_style", "iced_audio", "palette", "raw-window-handle"]
 
 [lib]
@@ -64,7 +64,7 @@ optional = true
 git = "https://github.com/BillyDM/iced_baseview.git"
 branch = "iced_git"
 default-features = false
-features = ["palette"]
+features = ["with-palette"]
 optional = true
 
 [dependencies.palette]

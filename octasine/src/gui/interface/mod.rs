@@ -317,16 +317,14 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
     }
 
     #[cfg(feature = "gui_glow")]
+    // AA settings will be overridden because of use_max_aa_samples = true
     fn renderer_settings() -> (raw_gl_context::GlConfig, iced_glow::settings::Settings) {
         (
-            raw_gl_context::GlConfig {
-                samples: Some(8),
-                ..Default::default()
-            },
-            iced_glow::settings::Settings {
+            raw_gl_context::GlConfig::default(),
+            renderer::Settings {
                 default_font: Some(FONT_REGULAR),
                 default_text_size: FONT_SIZE,
-                antialiasing: Some(renderer::settings::Antialiasing::MSAAx8),
+                antialiasing: None,
                 text_multithreading: false,
             },
         )

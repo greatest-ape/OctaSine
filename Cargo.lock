@@ -963,9 +963,10 @@ dependencies = [
 [[package]]
 name = "iced_baseview"
 version = "0.0.3"
-source = "git+https://github.com/BillyDM/iced_baseview.git?branch=iced_git#d33246d29c058d1a09034c916bd90f191b4532df"
+source = "git+https://github.com/BillyDM/iced_baseview.git?branch=iced_git#dda634308476dc4f93da1b3a6537e92a0f8a13e2"
 dependencies = [
  "baseview",
+ "glow 0.11.0",
  "iced_core",
  "iced_futures",
  "iced_glow",

@@ -40,6 +40,8 @@ impl<H: GuiSyncHandle> Gui<H> {
                 scale: WindowScalePolicy::SystemScaleFactor,
                 title: PLUGIN_NAME.to_string(),
             },
+            #[cfg(feature = "gui_glow")]
+            use_max_aa_samples: true,
             flags: sync_handle,
         }
     }
