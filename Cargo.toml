@@ -11,7 +11,7 @@ members = [
 # [patch.'https://github.com/RustAudio/baseview']
 # baseview = { path = "../baseview" }
 
-# [patch.'https://github.com/greatest-ape/iced_baseview']
+# [patch.'https://github.com/BillyDM/iced_baseview']
 # iced_baseview = { path = "../iced_baseview" }
 
 # [patch.'https://github.com/greatest-ape/iced_audio']
