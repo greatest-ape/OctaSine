@@ -151,7 +151,7 @@ dependencies = [
 [[package]]
 name = "baseview"
 version = "0.1.0"
-source = "git+https://github.com/greatest-ape/baseview.git?branch=octasine#d11f0ecc2ebe0199169f7f1ed2a288d013f65585"
+source = "git+https://github.com/greatest-ape/baseview.git?branch=octasine#3c05f087132cbf8bf7f2882af202f22ddbeb6715"
 dependencies = [
  "cocoa",
  "core-foundation",
