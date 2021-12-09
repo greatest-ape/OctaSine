@@ -316,14 +316,28 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
         }
     }
 
+    /// Renderer settings with glow
+    /// 
+    /// On non-Windows platforms, AA settings will be overridden because of
+    /// use_max_aa_samples = true.  Windows, however, doesn't support
+    /// recreating OpenGL contexts for same window, so we have to set a fixed
+    /// antialiasing count.
     #[cfg(feature = "gui_glow")]
-    // AA settings will be overridden because of use_max_aa_samples = true
     fn renderer_settings() -> (raw_gl_context::GlConfig, iced_glow::settings::Settings) {
         (
-            raw_gl_context::GlConfig::default(),
+            raw_gl_context::GlConfig {
+                #[cfg(target_os = "windows")]
+                samples: Some(8),
+                ..Default::default()
+            },
             renderer::Settings {
                 default_font: Some(FONT_REGULAR),
                 default_text_size: FONT_SIZE,
+                // Windows doesn't support recreating OpenGL context for same
+                // window, so use_max_aa_samples won't work.
+                #[cfg(target_os = "windows")]
+                antialiasing: Some(renderer::settings::Antialiasing::MSAAx8),
+                #[cfg(not(target_os = "windows"))]
                 antialiasing: None,
                 text_multithreading: false,
             },
