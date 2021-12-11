@@ -1,5 +1,5 @@
 use iced_baseview::widget::{pick_list, PickList};
-use iced_baseview::{Align, Column, Element, Length};
+use iced_baseview::{Alignment, Column, Element, Length};
 
 use crate::common::*;
 use crate::parameters::values::{
@@ -109,7 +109,7 @@ impl LfoTargetPicker {
 
         Column::new()
             .width(Length::Units(LINE_HEIGHT * 12))
-            .align_items(Align::Center)
+            .align_items(Alignment::Center)
             .push(list)
             .into()
     }

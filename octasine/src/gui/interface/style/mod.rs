@@ -62,7 +62,7 @@ impl rule::StyleSheet for Rule {
     }
 }
 
-impl From<Theme> for Box<dyn container::StyleSheet> {
+impl<'a> From<Theme> for Box<dyn container::StyleSheet + 'a> {
     fn from(theme: Theme) -> Self {
         match theme {
             Theme::Light => light::Container.into(),
@@ -71,13 +71,13 @@ impl From<Theme> for Box<dyn container::StyleSheet> {
     }
 }
 
-impl From<Theme> for Box<dyn rule::StyleSheet> {
+impl<'a> From<Theme> for Box<dyn rule::StyleSheet + 'a> {
     fn from(_theme: Theme) -> Self {
         Rule.into()
     }
 }
 
-impl From<Theme> for Box<dyn radio::StyleSheet> {
+impl<'a> From<Theme> for Box<dyn radio::StyleSheet + 'a> {
     fn from(theme: Theme) -> Self {
         match theme {
             Theme::Light => light::Radio.into(),
@@ -86,7 +86,7 @@ impl From<Theme> for Box<dyn radio::StyleSheet> {
     }
 }
 
-impl From<Theme> for Box<dyn button::StyleSheet> {
+impl<'a> From<Theme> for Box<dyn button::StyleSheet + 'a> {
     fn from(theme: Theme) -> Self {
         match theme {
             Theme::Light => light::Button.into(),
@@ -95,7 +95,7 @@ impl From<Theme> for Box<dyn button::StyleSheet> {
     }
 }
 
-impl From<Theme> for Box<dyn pick_list::StyleSheet> {
+impl<'a> From<Theme> for Box<dyn pick_list::StyleSheet + 'a> {
     fn from(theme: Theme) -> Self {
         match theme {
             Theme::Light => light::PickList.into(),
@@ -104,7 +104,7 @@ impl From<Theme> for Box<dyn pick_list::StyleSheet> {
     }
 }
 
-impl From<Theme> for Box<dyn iced_audio::knob::StyleSheet> {
+impl<'a> From<Theme> for Box<dyn iced_audio::knob::StyleSheet + 'a> {
     fn from(theme: Theme) -> Self {
         match theme {
             Theme::Light => light::knob::Knob.into(),
@@ -113,7 +113,7 @@ impl From<Theme> for Box<dyn iced_audio::knob::StyleSheet> {
     }
 }
 
-impl From<Theme> for Box<dyn envelope::StyleSheet> {
+impl<'a> From<Theme> for Box<dyn envelope::StyleSheet + 'a> {
     fn from(theme: Theme) -> Self {
         match theme {
             Theme::Light => Box::new(light::Envelope) as Box<dyn envelope::StyleSheet>,
@@ -122,7 +122,7 @@ impl From<Theme> for Box<dyn envelope::StyleSheet> {
     }
 }
 
-impl From<Theme> for Box<dyn mod_matrix::StyleSheet> {
+impl<'a> From<Theme> for Box<dyn mod_matrix::StyleSheet + 'a> {
     fn from(theme: Theme) -> Self {
         match theme {
             Theme::Light => Box::new(light::ModulationMatrix) as Box<dyn mod_matrix::StyleSheet>,

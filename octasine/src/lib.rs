@@ -124,6 +124,8 @@ impl OctaSine {
 
         ::log::info!("OS: {}", ::os_info::get());
         ::log::info!("OctaSine build: {}", get_version_info());
+
+        ::log::set_max_level(simplelog::LevelFilter::Error);
     }
 
     fn time_per_sample(sample_rate: SampleRate) -> TimePerSample {

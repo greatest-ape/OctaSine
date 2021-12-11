@@ -1,4 +1,4 @@
-use iced_baseview::{Align, Column, Element, HorizontalAlignment, Length, Radio, Space, Text};
+use iced_baseview::{Alignment, Column, Element, Horizontal, Length, Radio, Space, Text};
 
 use crate::common::*;
 use crate::parameters::values::{
@@ -89,7 +89,7 @@ where
 
     pub fn view(&mut self) -> Element<Message> {
         let title = Text::new(self.title.clone())
-            .horizontal_alignment(HorizontalAlignment::Center)
+            .horizontal_alignment(Horizontal::Center)
             .font(FONT_BOLD);
 
         let mut radios = Column::new().spacing(4);
@@ -115,7 +115,7 @@ where
 
         Column::new()
             .width(Length::Units(LINE_HEIGHT * 4))
-            .align_items(Align::Center)
+            .align_items(Alignment::Center)
             .push(title)
             .push(Space::with_height(Length::Units(LINE_HEIGHT)))
             .push(radios)

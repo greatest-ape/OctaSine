@@ -9,16 +9,16 @@
   * LFO issue: when time between key presses is short, lfo seems to still be
     running and affecting next key press. Valid for all shapes and both modes.
     Interpolation issue?
+  * Mouse drag movements in pick list transfer through to envelope editor
 
 * Build for Apple silicon
   * ADVSIMD (NEON) acceleration should be supported, at least by enabling the
     target feature. I'm not sure about how that is done when cross-compiling.
 
 * GUI
-  * Provide glow backend as alternative or maybe even default build
-    * Crash when reopening GUI. Faulty superview call?
-    * Crash when closing GUI?
-    * Fix anti-aliasing? Maybe broken on Windows?
+  * Default to glow backend
+    * Check if max num samples antialiasing actually works on Windows
+    * Test on Linux
   * Parameter editing: bracket changes with begin_edit and end_edit
     * iced_audio knobs would need events for starting and ending dragging
   * Scrolling in dropdowns
