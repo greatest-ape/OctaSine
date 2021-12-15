@@ -802,9 +802,9 @@ dependencies = [
 
 [[package]]
 name = "glow"
-version = "0.11.0"
+version = "0.11.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4f04649123493bc2483cbef4daddb45d40bbdae5adb221a63a23efdb0cc99520"
+checksum = "4c07210904884e8e2e6a2d7f36f39040a9cefe3b379b721969b5275e9f5b464a"
 dependencies = [
  "js-sys",
  "slotmap 1.0.6",
@@ -966,7 +966,7 @@ version = "0.0.3"
 source = "git+https://github.com/greatest-ape/iced_baseview.git?branch=iced_git#c6476f9fd687d1ec9766edc31f93918cede34b68"
 dependencies = [
  "baseview",
- "glow 0.11.0",
+ "glow 0.11.1",
  "iced_core",
  "iced_futures",
  "iced_glow",
@@ -1315,9 +1315,9 @@ checksum = "16cf681a23b4d0a43fc35024c176437f9dcd818db34e0f42ab456a0ee5ad497b"
 
 [[package]]
 name = "naga"
-version = "0.7.2"
+version = "0.7.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "63765d243f5d32ece09b2ff95c1f50ec7353266024a2ce89619a09e1b6aa4cce"
+checksum = "806f448a7ce662ca79ef5484ef8f451a9b7c51b8166c95f5a667228b3825a6ca"
 dependencies = [
  "bit-set",
  "bitflags",
@@ -1462,9 +1462,9 @@ dependencies = [
 
 [[package]]
 name = "once_cell"
-version = "1.8.0"
+version = "1.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "692fcb63b64b1758029e0a96ee63e049ce8c5948587f2f7208df04625e5f6b56"
+checksum = "da32515d9f6e6e489d7bc9d84c71b060db7247dc035bbe44eac88cf87486d8d5"
 
 [[package]]
 name = "opaque-debug"
@@ -2357,7 +2357,7 @@ dependencies = [
  "d3d12",
  "foreign-types",
  "fxhash",
- "glow 0.11.0",
+ "glow 0.11.1",
  "gpu-alloc",
  "gpu-descriptor",
  "inplace_it",
