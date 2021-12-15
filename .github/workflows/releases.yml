@@ -42,11 +42,11 @@ jobs:
           override: true
           components: clippy
 
-    - name: Install cargo-deny
-      run: cargo install --locked cargo-deny
-
     - name: Check licenses of dependencies
-      run: cargo deny --workspace check licenses
+      uses: EmbarkStudios/cargo-deny-action@v1
+      with:
+        command: check licensces
+        arguments: --workspace --features "simd"
 
     - name: Build plugin in release mode
       run: cargo +nightly build --release --features "simd" -p octasine_vst2_plugin --verbose
