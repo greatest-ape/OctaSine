@@ -10,7 +10,7 @@ name = "octasine"
 crate-type = ["cdylib"]
 
 [features]
-default = ["wgpu"]
+default = ["glow"]
 simd = ["octasine/simd"]
 glow = ["octasine/gui_glow"]
 wgpu = ["octasine/gui_wgpu"]
