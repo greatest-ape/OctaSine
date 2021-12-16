@@ -37,7 +37,12 @@ impl<H: GuiSyncHandle> Gui<H> {
         Settings {
             window: WindowOpenOptions {
                 size: Size::new(GUI_WIDTH as f64, GUI_HEIGHT as f64),
+                #[cfg(not(target_os = "windows"))]
                 scale: WindowScalePolicy::SystemScaleFactor,
+                // Windows currently needs scale factor 1.0, or GUI contents
+                // will be too large for window
+                #[cfg(target_os = "windows")]
+                scale: WindowScalePolicy::ScaleFactor(1.0),
                 title: PLUGIN_NAME.to_string(),
             },
             #[cfg(all(feature = "gui_glow", target_os = "windows"))]
