@@ -151,7 +151,7 @@ dependencies = [
 [[package]]
 name = "baseview"
 version = "0.1.0"
-source = "git+https://github.com/greatest-ape/baseview.git?branch=octasine#3c05f087132cbf8bf7f2882af202f22ddbeb6715"
+source = "git+https://github.com/rustaudio/baseview.git?rev=004065e9a43e79751040879c572d95b9b63e0edc#004065e9a43e79751040879c572d95b9b63e0edc"
 dependencies = [
  "cocoa",
  "core-foundation",
@@ -954,7 +954,7 @@ checksum = "9a3a5bfb195931eeb336b2a7b4d761daec841b97f947d34394601737a7bba5e4"
 [[package]]
 name = "iced_audio"
 version = "0.6.1"
-source = "git+https://github.com/BillyDM/iced_audio.git?branch=iced_git#7a647c5a47dbd06852cde62c0d8baabf93ea472d"
+source = "git+https://github.com/iced-rs/iced_audio.git?branch=iced_git#7a647c5a47dbd06852cde62c0d8baabf93ea472d"
 dependencies = [
  "iced_graphics",
  "iced_native",
@@ -963,7 +963,7 @@ dependencies = [
 [[package]]
 name = "iced_baseview"
 version = "0.0.3"
-source = "git+https://github.com/greatest-ape/iced_baseview.git?branch=iced_git#c6476f9fd687d1ec9766edc31f93918cede34b68"
+source = "git+https://github.com/BillyDM/iced_baseview.git?branch=iced_git#b4d8edb5d20fa452b1d19cf7743b29fef97a7fcf"
 dependencies = [
  "baseview",
  "glow 0.11.1",
@@ -1793,8 +1793,7 @@ checksum = "63e935c45e09cc6dcf00d2f0b2d630a58f4095320223d47fc68918722f0538b6"
 [[package]]
 name = "raw-gl-context"
 version = "0.1.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c4590d88b5f7f4a7b140a2bbb90085c2c3c9ac80832e53521a47c6a4ac1adbc3"
+source = "git+https://github.com/greatest-ape/raw-gl-context.git?branch=octasine-v0.5.4#ff0b45a61bd871c5afb20767a087153637659451"
 dependencies = [
  "cocoa",
  "core-foundation",

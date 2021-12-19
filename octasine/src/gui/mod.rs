@@ -49,6 +49,7 @@ impl<H: GuiSyncHandle> Gui<H> {
             use_max_aa_samples: false,
             #[cfg(all(feature = "gui_glow", not(target_os = "windows")))]
             use_max_aa_samples: true,
+            ignore_non_modifier_keys: true,
             flags: sync_handle,
         }
     }

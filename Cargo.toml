@@ -8,20 +8,19 @@ members = [
     "run_gui",
 ]
 
+
 # [patch.'https://github.com/RustAudio/baseview']
 # baseview = { path = "../baseview" }
 
 # [patch.'https://github.com/BillyDM/iced_baseview']
 # iced_baseview = { path = "../iced_baseview" }
 
-# [patch.'https://github.com/greatest-ape/iced_audio']
+# [patch.'https://github.com/iced-rs/iced_audio']
 # iced_audio = { path = "../iced_audio" }
 
-# Don't take keyboard input. Ignoring keyboard input will hopefully
-# work with future releases of baseview/iced_baseview/iced, but until
-# then, use this fork.
-[patch.'https://github.com/RustAudio/baseview']
-baseview = { git = "https://github.com/greatest-ape/baseview.git", branch = "octasine" }
+[patch.crates-io]
+# macOS high DPI fix
+raw-gl-context = { git = "https://github.com/greatest-ape/raw-gl-context.git", branch = "octasine-v0.5.4" }
 
 [profile.release]
 debug = false
