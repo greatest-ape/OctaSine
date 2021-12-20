@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.5.4
+
+### Other
+
+- Default to glow (OpenGL) backend
+- Use much more recent version of iced, from its git repository
+
 ## v0.5.3
 
 ### Features

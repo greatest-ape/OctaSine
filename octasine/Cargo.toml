@@ -1,6 +1,6 @@
 [package]
 name = "octasine"
-version = "0.5.3"
+version = "0.5.4"
 authors = ["Joakim Frostegård <joakim.frostegard@gmail.com>"]
 license = "AGPL-3.0"
 edition = "2021"
@@ -52,16 +52,16 @@ raw-window-handle = { version = "0.4", optional = true }
 
 [dependencies.baseview]
 git = "https://github.com/rustaudio/baseview.git"
-branch = "master"
+rev = "004065e9a43e79751040879c572d95b9b63e0edc"
 optional = true
 
 [dependencies.iced_audio]
-git = "https://github.com/BillyDM/iced_audio.git"
+git = "https://github.com/iced-rs/iced_audio.git"
 branch = "iced_git"
 optional = true
 
 [dependencies.iced_baseview]
-git = "https://github.com/greatest-ape/iced_baseview.git"
+git = "https://github.com/BillyDM/iced_baseview.git"
 branch = "iced_git"
 default-features = false
 features = ["with-palette"]

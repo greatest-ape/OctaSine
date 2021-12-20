@@ -46,7 +46,7 @@ jobs:
       run: cargo install --locked cargo-deny
 
     - name: Check licenses of dependencies
-      run: cargo deny --workspace check licenses
+      run: cargo deny --workspace --all-features check licenses
 
     - name: Build plugin in release mode
       run: cargo +nightly build --release --features "simd" -p octasine_vst2_plugin --verbose

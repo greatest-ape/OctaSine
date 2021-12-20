@@ -2,6 +2,9 @@
 
 ## Important
 
+* Wait for merge of raw-gl-context fix, use that repo
+* Consider defaulting to wgpu on Linux
+
 * Bugs
   * When attack and decay is short, release is long and key presses are very
     short, tones keeps going on or don't trigger at all. Key release event not
@@ -16,9 +19,6 @@
     target feature. I'm not sure about how that is done when cross-compiling.
 
 * GUI
-  * Default to glow backend
-    * Check if max num samples antialiasing actually works on Windows
-    * Test on Linux
   * Parameter editing: bracket changes with begin_edit and end_edit
     * iced_audio knobs would need events for starting and ending dragging
   * Scrolling in dropdowns

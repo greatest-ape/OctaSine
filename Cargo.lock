@@ -151,7 +151,7 @@ dependencies = [
 [[package]]
 name = "baseview"
 version = "0.1.0"
-source = "git+https://github.com/greatest-ape/baseview.git?branch=octasine#3c05f087132cbf8bf7f2882af202f22ddbeb6715"
+source = "git+https://github.com/rustaudio/baseview.git?rev=004065e9a43e79751040879c572d95b9b63e0edc#004065e9a43e79751040879c572d95b9b63e0edc"
 dependencies = [
  "cocoa",
  "core-foundation",
@@ -802,9 +802,9 @@ dependencies = [
 
 [[package]]
 name = "glow"
-version = "0.11.0"
+version = "0.11.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4f04649123493bc2483cbef4daddb45d40bbdae5adb221a63a23efdb0cc99520"
+checksum = "4c07210904884e8e2e6a2d7f36f39040a9cefe3b379b721969b5275e9f5b464a"
 dependencies = [
  "js-sys",
  "slotmap 1.0.6",
@@ -954,7 +954,7 @@ checksum = "9a3a5bfb195931eeb336b2a7b4d761daec841b97f947d34394601737a7bba5e4"
 [[package]]
 name = "iced_audio"
 version = "0.6.1"
-source = "git+https://github.com/BillyDM/iced_audio.git?branch=iced_git#7a647c5a47dbd06852cde62c0d8baabf93ea472d"
+source = "git+https://github.com/iced-rs/iced_audio.git?branch=iced_git#7a647c5a47dbd06852cde62c0d8baabf93ea472d"
 dependencies = [
  "iced_graphics",
  "iced_native",
@@ -963,10 +963,10 @@ dependencies = [
 [[package]]
 name = "iced_baseview"
 version = "0.0.3"
-source = "git+https://github.com/greatest-ape/iced_baseview.git?branch=iced_git#c6476f9fd687d1ec9766edc31f93918cede34b68"
+source = "git+https://github.com/BillyDM/iced_baseview.git?branch=iced_git#b4d8edb5d20fa452b1d19cf7743b29fef97a7fcf"
 dependencies = [
  "baseview",
- "glow 0.11.0",
+ "glow 0.11.1",
  "iced_core",
  "iced_futures",
  "iced_glow",
@@ -1315,9 +1315,9 @@ checksum = "16cf681a23b4d0a43fc35024c176437f9dcd818db34e0f42ab456a0ee5ad497b"
 
 [[package]]
 name = "naga"
-version = "0.7.2"
+version = "0.7.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "63765d243f5d32ece09b2ff95c1f50ec7353266024a2ce89619a09e1b6aa4cce"
+checksum = "806f448a7ce662ca79ef5484ef8f451a9b7c51b8166c95f5a667228b3825a6ca"
 dependencies = [
  "bit-set",
  "bitflags",
@@ -1418,7 +1418,7 @@ dependencies = [
 
 [[package]]
 name = "octasine"
-version = "0.5.3"
+version = "0.5.4"
 dependencies = [
  "anyhow",
  "arc-swap",
@@ -1454,7 +1454,7 @@ dependencies = [
 
 [[package]]
 name = "octasine_vst2_plugin"
-version = "0.5.3"
+version = "0.5.4"
 dependencies = [
  "octasine",
  "vst",
@@ -1462,9 +1462,9 @@ dependencies = [
 
 [[package]]
 name = "once_cell"
-version = "1.8.0"
+version = "1.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "692fcb63b64b1758029e0a96ee63e049ce8c5948587f2f7208df04625e5f6b56"
+checksum = "da32515d9f6e6e489d7bc9d84c71b060db7247dc035bbe44eac88cf87486d8d5"
 
 [[package]]
 name = "opaque-debug"
@@ -1793,8 +1793,7 @@ checksum = "63e935c45e09cc6dcf00d2f0b2d630a58f4095320223d47fc68918722f0538b6"
 [[package]]
 name = "raw-gl-context"
 version = "0.1.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c4590d88b5f7f4a7b140a2bbb90085c2c3c9ac80832e53521a47c6a4ac1adbc3"
+source = "git+https://github.com/greatest-ape/raw-gl-context.git?branch=octasine-v0.5.4#ff0b45a61bd871c5afb20767a087153637659451"
 dependencies = [
  "cocoa",
  "core-foundation",
@@ -2357,7 +2356,7 @@ dependencies = [
  "d3d12",
  "foreign-types",
  "fxhash",
- "glow 0.11.0",
+ "glow 0.11.1",
  "gpu-alloc",
  "gpu-descriptor",
  "inplace_it",
