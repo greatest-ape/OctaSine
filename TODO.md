@@ -34,9 +34,7 @@
 * Manual under info button?
   * Presets are exported/imported through DAW
 * Process benchmark output not same on Windows as on macOS/Linux
-* Debian 10 / other Linux distros CI
 * Record video of workflow, upload to YouTube
-* Pass through keyboard to DAW without using forked baseview
 * Consider updating envelope and lfo values in process benchmark too. This
   would further improve usefulness of output hashing.
 * GUI
@@ -58,7 +56,6 @@
 ## Not important
 
 * Test that number of sync and processing parameters is equal
-* Parameterise lfo target picker over ParameterValue?
 * suspend mode and so on, maybe just reset time, note time, envelopes etc on resume
 * Fuzz Log10Table (cargo-fuzz?)
 * Is it necessary to look at time signatures etc for bpm sync?
