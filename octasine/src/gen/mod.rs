@@ -54,19 +54,17 @@ pub fn process_f32_runtime_select(octasine: &mut OctaSine, audio_buffer: &mut Au
                 continue;
             }
 
-            if samples_remaining == 1 {
-                let end_position = position + 1;
+            let end_position = position + 1;
 
-                cfg_if::cfg_if!(
-                    if #[cfg(all(feature = "simd", target_arch = "x86_64"))] {
-                        FallbackSleef::process_f32(octasine, &mut lefts[position..end_position], &mut rights[position..end_position]);
-                    } else {
-                        FallbackStd::process_f32(octasine, &mut lefts[position..end_position], &mut rights[position..end_position]);
-                    }
-                );
+            cfg_if::cfg_if!(
+                if #[cfg(all(feature = "simd", target_arch = "x86_64"))] {
+                    FallbackSleef::process_f32(octasine, &mut lefts[position..end_position], &mut rights[position..end_position]);
+                } else {
+                    FallbackStd::process_f32(octasine, &mut lefts[position..end_position], &mut rights[position..end_position]);
+                }
+            );
 
-                position = end_position;
-            }
+            position = end_position;
         }
     }
 }
