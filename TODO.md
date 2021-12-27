@@ -5,6 +5,12 @@
 * Wait for merge of raw-gl-context fix, use that repo
 * Consider defaulting to wgpu on Linux
 
+* Log level should be warn
+* Log file should be saved elsewhere, maybe in ::dirs::data_local_dir()
+* Consider adding phase knobs
+* Consider adding saw, square and triangle waves. Maybe look at
+  TX81Z waveforms. https://www.reddit.com/r/synthesizers/comments/rkyk6j/comment/hpgcu6r/?utm_source=share&utm_medium=web2x&context=3
+
 * Bugs
   * When attack and decay is short, release is long and key presses are very
     short, tones keeps going on or don't trigger at all. Key release event not
@@ -23,7 +29,7 @@
     * iced_audio knobs would need events for starting and ending dragging
   * Scrolling in dropdowns
     * iced 0.4: https://github.com/hecrj/iced/pull/872
-    * Does scrolling (including touch bar) need to be added to baseview
+    * Does scrolling (including touch) need to be added to baseview
       macOS code? What about other platforms?
 
 * Documentation
