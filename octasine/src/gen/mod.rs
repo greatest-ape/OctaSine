@@ -19,30 +19,64 @@ const SAMPLE_PASS_SIZE: usize = 16;
 
 #[inline]
 pub fn process_f32_runtime_select(octasine: &mut OctaSine, audio_buffer: &mut AudioBuffer<f32>) {
-    unsafe {
-        cfg_if::cfg_if! {
-            if #[cfg(feature = "simd")] {
-                cfg_if::cfg_if! {
-                    if #[cfg(target_arch = "x86_64")] {
-                        if is_x86_feature_detected!("avx") {
-                            Avx::process_f32(octasine, audio_buffer);
-                        } else {
-                            // SSE2 is always supported on x86_64
-                            Sse2::process_f32(octasine, audio_buffer);
-                        }
+    let num_samples = audio_buffer.samples();
+
+    let mut audio_buffer_outputs = audio_buffer.split().1;
+    let lefts = audio_buffer_outputs.get_mut(0);
+    let rights = audio_buffer_outputs.get_mut(1);
+
+    let mut position = 0;
+
+    loop {
+        let samples_remaining = num_samples - position;
+
+        if samples_remaining == 0 {
+            break;
+        }
+
+        unsafe {
+            #[cfg(all(feature = "simd", target_arch = "x86_64"))]
+            if samples_remaining >= 4 && is_x86_feature_detected!("avx") {
+                let end_position = position + 4;
+
+                Avx::process_f32(octasine, &mut lefts[position..end_position], &mut rights[position..end_position]);
+
+                position = end_position;
+
+                continue;
+            }
+
+            #[cfg(all(feature = "simd", target_arch = "x86_64"))]
+            if samples_remaining >= 2 {
+                let end_position = position + 2;
+
+                // SSE2 is always supported on x86_64
+                Sse2::process_f32(octasine, &mut lefts[position..end_position], &mut rights[position..end_position]);
+
+                position = end_position;
+
+                continue;
+            }
+
+            if samples_remaining == 1 {
+                let end_position = position + 1;
+
+                cfg_if::cfg_if!(
+                    if #[cfg(all(feature = "simd", target_arch = "x86_64"))] {
+                        FallbackSleef::process_f32(octasine, &mut lefts[position..end_position], &mut rights[position..end_position]);
                     } else {
-                        FallbackSleef::process_f32(octasine, audio_buffer);
+                        FallbackStd::process_f32(octasine, &mut lefts[position..end_position], &mut rights[position..end_position]);
                     }
-                }
-            } else {
-                FallbackStd::process_f32(octasine, audio_buffer);
+                );
+
+                position = end_position;
             }
         }
     }
 }
 
 pub trait AudioGen {
-    unsafe fn process_f32(octasine: &mut OctaSine, audio_buffer: &mut AudioBuffer<f32>);
+    unsafe fn process_f32(octasine: &mut OctaSine, lefts: &mut [f32], rights: &mut [f32]);
 }
 
 pub trait FallbackSine {
@@ -295,25 +329,8 @@ mod gen {
     #[feature_gate]
     impl AudioGen for S {
         #[target_feature_enable]
-        unsafe fn process_f32(octasine: &mut OctaSine, audio_buffer: &mut AudioBuffer<f32>) {
-            let num_samples = audio_buffer.samples();
-
-            let mut audio_buffer_outputs = audio_buffer.split().1;
-            let audio_buffer_lefts = audio_buffer_outputs.get_mut(0);
-            let audio_buffer_rights = audio_buffer_outputs.get_mut(1);
-
-            let num_passes = num_samples / SAMPLE_PASS_SIZE;
-
-            for i in 0..num_passes {
-                let start = i * SAMPLE_PASS_SIZE;
-                let end = start + SAMPLE_PASS_SIZE;
-
-                run_pass(
-                    octasine,
-                    &mut audio_buffer_lefts[start..end],
-                    &mut audio_buffer_rights[start..end],
-                )
-            }
+        unsafe fn process_f32(octasine: &mut OctaSine, lefts: &mut [f32], rights: &mut [f32]) {
+            run_pass(octasine, lefts, rights)
         }
     }
 
