@@ -1,6 +1,7 @@
+#[cfg(all(feature = "simd", target_arch = "x86_64"))]
+use core::arch::x86_64::*;
+
 use crate::constants::ZERO_VALUE_LIMIT;
-
-
 
 pub trait FallbackSine {
     fn sin(a: [f64; 2]) -> [f64; 2];
@@ -32,6 +33,7 @@ impl FallbackSine for FallbackSineSleef {
 pub trait Simd {
     type PackedDouble;
     const PD_WIDTH: usize;
+    const SAMPLES: usize;
 
     unsafe fn pd_set1(value: f64) -> Self::PackedDouble;
     unsafe fn pd_loadu(source: *const f64) -> Self::PackedDouble;
@@ -54,6 +56,7 @@ pub struct Fallback<T> {
 impl<T: FallbackSine> Simd for Fallback<T> {
     type PackedDouble = [f64; 2];
     const PD_WIDTH: usize = 2;
+    const SAMPLES: usize = 1;
 
     unsafe fn pd_set1(value: f64) -> [f64; 2] {
         [value, value]
@@ -99,6 +102,7 @@ pub struct Sse2;
 impl Simd for Sse2 {
     type PackedDouble = __m128d;
     const PD_WIDTH: usize = 2;
+    const SAMPLES: usize = 1;
 
     #[target_feature(enable = "sse2")]
     unsafe fn pd_set1(value: f64) -> __m128d {
@@ -162,6 +166,7 @@ pub struct Avx;
 impl Simd for Avx {
     type PackedDouble = __m256d;
     const PD_WIDTH: usize = 4;
+    const SAMPLES: usize = 2;
 
     #[target_feature(enable = "avx")]
     unsafe fn pd_set1(value: f64) -> __m256d {

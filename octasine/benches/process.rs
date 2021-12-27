@@ -5,6 +5,7 @@ use sha2::{Digest, Sha256};
 use vst::plugin::PluginParameters;
 
 use octasine::gen::AudioGen;
+use octasine::gen::simd::Simd;
 use octasine::OctaSine;
 
 /// Benchmark OctaSine process functions
@@ -53,7 +54,7 @@ fn main() -> Result<(), ()> {
     let (_, fallback_std) = benchmark(
         "fallback (std)",
         "ad 0d 1d 04 5e 38 95 7f ",
-        1,
+        octasine::gen::simd::FallbackStd::SAMPLES,
         octasine::gen::simd::FallbackStd::process_f32,
     );
 
@@ -63,14 +64,15 @@ fn main() -> Result<(), ()> {
     #[cfg(feature = "simd")]
     {
         // Don't forget trailing space
-        let hash = "ac fd ce 1e a2 7b 79 e1 ";
+        let hash = "a3 32 ee aa 45 ce 7d 61 ";
 
         {
+            use octasine::gen::simd::FallbackSleef;
             let (success, r) = benchmark(
                 "fallback (sleef)",
                 hash,
-                1,
-                octasine::gen::simd::FallbackSleef::process_f32,
+                FallbackSleef::SAMPLES,
+                FallbackSleef::process_f32,
             );
 
             all_hashes_match &= success;
@@ -79,14 +81,18 @@ fn main() -> Result<(), ()> {
         }
 
         if is_x86_feature_detected!("sse2") {
-            let (success, r) = benchmark("sse2", hash, 2, octasine::gen::simd::Sse2::process_f32);
+            use octasine::gen::simd::Sse2;
+
+            let (success, r) = benchmark("sse2", hash, Sse2::SAMPLES, Sse2::process_f32);
 
             all_hashes_match &= success;
 
             println!("Speed compared to std fallback: {}x", fallback_std / r);
         }
         if is_x86_feature_detected!("avx") {
-            let (success, r) = benchmark("avx", hash, 4, octasine::gen::simd::Avx::process_f32);
+            use octasine::gen::simd::Avx;
+
+            let (success, r) = benchmark("avx", hash, Avx::SAMPLES, Avx::process_f32);
 
             all_hashes_match &= success;
 
@@ -117,7 +123,7 @@ fn benchmark(
 
     let wave_type_parameters = [4i32, 17, 31, 46];
 
-    const SIZE: usize = 256;
+    const SIZE: usize = 128;
 
     let mut lefts = vec![0.0f32; SIZE];
     let mut rights = vec![0.0f32; SIZE];
@@ -156,11 +162,11 @@ fn benchmark(
             octasine.sync.set_parameter(j, (i % 64) as f32 / 64.0);
         }
 
-        for (l, r) in lefts.chunks_exact_mut(samples_per_iteration).zip(rights.chunks_exact_mut(samples_per_iteration)) {
-            octasine.update_processing_parameters();
+        octasine.update_processing_parameters();
 
+        for (lefts, rights) in lefts.chunks_exact_mut(samples_per_iteration).zip(rights.chunks_exact_mut(samples_per_iteration)) {
             unsafe {
-                process_fn(&mut octasine, l, r);
+                process_fn(&mut octasine, lefts, rights);
             }
         }
 

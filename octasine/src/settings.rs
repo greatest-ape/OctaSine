@@ -13,6 +13,7 @@ impl Default for Settings {
     fn default() -> Self {
         Self {
             schema_version: 1,
+            #[cfg(feature = "gui")]
             gui: Default::default(),
         }
     }
