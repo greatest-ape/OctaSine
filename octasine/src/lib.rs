@@ -159,6 +159,24 @@ impl OctaSine {
     fn key_off(&mut self, pitch: u8) {
         self.processing.voices[pitch as usize].release_key();
     }
+
+    fn update_processing_parameters(&mut self) {
+        let changed_sync_parameters = self
+            .sync
+            .presets
+            .get_changed_parameters_from_processing();
+
+        if let Some(indeces) = changed_sync_parameters {
+            for (index, opt_new_value) in indeces.iter().enumerate() {
+                if let Some(new_value) = opt_new_value {
+                    self
+                        .processing
+                        .parameters
+                        .set_from_sync(index, *new_value);
+                }
+            }
+        }
+    }
 }
 
 impl Plugin for OctaSine {

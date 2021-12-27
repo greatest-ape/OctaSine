@@ -13,8 +13,31 @@ use crate::OctaSine;
 
 use lfo::*;
 
+enum RemainingSamples {
+    FourOrMore,
+    TwoOrMore,
+    One,
+    Zero
+}
+
+impl RemainingSamples {
+    fn new(remaining_samples: usize) -> Self {
+        if remaining_samples >= 4 {
+            Self::FourOrMore
+        } else if remaining_samples >= 2 {
+            Self::TwoOrMore
+        } else if remaining_samples == 1 {
+            Self::One
+        } else {
+            Self::Zero
+        }
+    }
+}
+
 #[inline]
 pub fn process_f32_runtime_select(octasine: &mut OctaSine, audio_buffer: &mut AudioBuffer<f32>) {
+    octasine.update_processing_parameters();
+
     let num_samples = audio_buffer.samples();
 
     let mut audio_buffer_outputs = audio_buffer.split().1;
@@ -24,47 +47,44 @@ pub fn process_f32_runtime_select(octasine: &mut OctaSine, audio_buffer: &mut Au
     let mut position = 0;
 
     loop {
-        let samples_remaining = num_samples - position;
-
-        if samples_remaining == 0 {
-            break;
-        }
+        use RemainingSamples::*;
 
         unsafe {
-            #[cfg(all(feature = "simd", target_arch = "x86_64"))]
-            if samples_remaining >= 4 && is_x86_feature_detected!("avx") {
-                let end_position = position + 4;
+            match RemainingSamples::new(num_samples - position) {
+                #[cfg(all(feature = "simd", target_arch = "x86_64"))]
+                FourOrMore if is_x86_feature_detected!("avx") => {
+                    let end_position = position + 4;
 
-                Avx::process_f32(octasine, &mut lefts[position..end_position], &mut rights[position..end_position]);
+                    Avx::process_f32(octasine, &mut lefts[position..end_position], &mut rights[position..end_position]);
 
-                position = end_position;
-
-                continue;
-            }
-
-            #[cfg(all(feature = "simd", target_arch = "x86_64"))]
-            if samples_remaining >= 2 {
-                let end_position = position + 2;
-
-                // SSE2 is always supported on x86_64
-                Sse2::process_f32(octasine, &mut lefts[position..end_position], &mut rights[position..end_position]);
-
-                position = end_position;
-
-                continue;
-            }
-
-            let end_position = position + 1;
-
-            cfg_if::cfg_if!(
-                if #[cfg(all(feature = "simd", target_arch = "x86_64"))] {
-                    FallbackSleef::process_f32(octasine, &mut lefts[position..end_position], &mut rights[position..end_position]);
-                } else {
-                    FallbackStd::process_f32(octasine, &mut lefts[position..end_position], &mut rights[position..end_position]);
+                    position = end_position;
                 }
-            );
+                #[cfg(all(feature = "simd", target_arch = "x86_64"))]
+                TwoOrMore | FourOrMore => {
+                    let end_position = position + 2;
 
-            position = end_position;
+                    // SSE2 is always supported on x86_64
+                    Sse2::process_f32(octasine, &mut lefts[position..end_position], &mut rights[position..end_position]);
+
+                    position = end_position;
+                }
+                One | TwoOrMore | FourOrMore => {
+                    let end_position = position + 1;
+
+                    cfg_if::cfg_if!(
+                        if #[cfg(all(feature = "simd", target_arch = "x86_64"))] {
+                            FallbackSleef::process_f32(octasine, &mut lefts[position..end_position], &mut rights[position..end_position]);
+                        } else {
+                            FallbackStd::process_f32(octasine, &mut lefts[position..end_position], &mut rights[position..end_position]);
+                        }
+                    );
+
+                    position = end_position;
+                }
+                Zero => {
+                    break;
+                }
+            }
         }
     }
 }
@@ -335,23 +355,6 @@ mod gen {
         audio_buffer_lefts: &mut [f32],
         audio_buffer_rights: &mut [f32],
     ) {
-        // --- Update processing parameters from preset parameters
-
-        let changed_sync_parameters = octasine
-            .sync
-            .presets
-            .get_changed_parameters_from_processing();
-
-        if let Some(indeces) = changed_sync_parameters {
-            for (index, opt_new_value) in indeces.iter().enumerate() {
-                if let Some(new_value) = opt_new_value {
-                    octasine
-                        .processing
-                        .parameters
-                        .set_from_sync(index, *new_value);
-                }
-            }
-        }
 
         // --- Set some generally useful variables
 
