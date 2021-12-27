@@ -13,10 +13,6 @@ use crate::OctaSine;
 
 use lfo::*;
 
-/// Each SAMPLE_PASS_SIZE samples, load parameter changes and processing
-/// parameter values (interpolated values where applicable)
-const SAMPLE_PASS_SIZE: usize = 16;
-
 #[inline]
 pub fn process_f32_runtime_select(octasine: &mut OctaSine, audio_buffer: &mut AudioBuffer<f32>) {
     let num_samples = audio_buffer.samples();
@@ -330,13 +326,13 @@ mod gen {
     impl AudioGen for S {
         #[target_feature_enable]
         unsafe fn process_f32(octasine: &mut OctaSine, lefts: &mut [f32], rights: &mut [f32]) {
-            run_pass(octasine, lefts, rights)
+            process(octasine, lefts, rights)
         }
     }
 
     #[feature_gate]
     #[target_feature_enable]
-    unsafe fn run_pass(
+    unsafe fn process(
         octasine: &mut OctaSine,
         audio_buffer_lefts: &mut [f32],
         audio_buffer_rights: &mut [f32],
@@ -367,7 +363,7 @@ mod gen {
 
         let time_per_sample = octasine.processing.time_per_sample;
         let time = octasine.processing.global_time;
-        let time_advancement = time_per_sample.0 * (SAMPLE_PASS_SIZE as f64);
+        let time_advancement = time_per_sample.0 * (S::PD_WIDTH as f64);
 
         // Necessary for interpolation
         octasine.processing.global_time.0 += time_advancement;
@@ -379,8 +375,8 @@ mod gen {
         // Maybe operator indexes should be inversed (3 - operator_index)
         // because that is how they will be accessed later.
 
-        // Sample pass size * 2 because of two channels. Even index = left channel
-        let mut summed_additive_outputs = [0.0f64; SAMPLE_PASS_SIZE * 2];
+        // PD_WIDTH * 2 because of two channels. Even index = left channel
+        let mut summed_additive_outputs = [0.0f64; S::PD_WIDTH * 2];
 
         for voice in octasine
             .processing
@@ -423,8 +419,8 @@ mod gen {
             let mut operator_frequency: [f64; 4] = [voice_base_frequency; 4];
             let mut operator_modulation_targets = [0usize; 4];
 
-            let mut operator_envelope_volumes = [[0.0f64; SAMPLE_PASS_SIZE * 2]; 4];
-            let mut operator_phases = [[0.0f64; SAMPLE_PASS_SIZE * 2]; 4];
+            let mut operator_envelope_volumes = [[0.0f64; S::PD_WIDTH * 2]; 4];
+            let mut operator_phases = [[0.0f64; S::PD_WIDTH * 2]; 4];
 
             for (index, operator) in operators.iter_mut().enumerate() {
                 operator_volume[index] = operator.volume.get_value_with_lfo_addition(
@@ -502,7 +498,7 @@ mod gen {
             }
 
             // Envelope
-            for i in 0..SAMPLE_PASS_SIZE {
+            for i in 0..S::PD_WIDTH {
                 for (operator_index, operator) in operators.iter_mut().enumerate() {
                     let v = voice.operators[operator_index].volume_envelope.get_volume(
                         &octasine.processing.log10_table,
@@ -528,7 +524,7 @@ mod gen {
 
                 let mut new_phase = 0.0;
 
-                for i in 0..SAMPLE_PASS_SIZE {
+                for i in 0..S::PD_WIDTH {
                     // Do multiplication instead of successive addition for
                     // less precision loss (hopefully)
                     new_phase = last_phase + phase_addition * ((i + 1) as f64);
@@ -571,7 +567,7 @@ mod gen {
             // --- Generate samples for all operators
 
             // Voice modulation input storage, indexed by operator
-            let mut voice_modulation_inputs = [[0.0f64; SAMPLE_PASS_SIZE * 2]; 4];
+            let mut voice_modulation_inputs = [[0.0f64; S::PD_WIDTH * 2]; 4];
 
             // Go through operators downwards, starting with operator 4
             for operator_index in 0..4 {
@@ -585,9 +581,9 @@ mod gen {
 
                 if operator_wave_type[operator_index] == WaveType::WhiteNoise {
                     let random_numbers = {
-                        let mut random_numbers = [0.0f64; SAMPLE_PASS_SIZE * 2];
+                        let mut random_numbers = [0.0f64; S::PD_WIDTH * 2];
 
-                        for i in 0..SAMPLE_PASS_SIZE {
+                        for i in 0..S::PD_WIDTH {
                             let random = (octasine.processing.rng.f64() - 0.5) * 2.0;
 
                             let j = i * 2;
@@ -610,7 +606,7 @@ mod gen {
                     let operator_volume_splat = S::pd_set1(operator_volume[operator_index]);
                     let operator_additive_splat = S::pd_set1(operator_additive[operator_index]);
 
-                    for i in (0..SAMPLE_PASS_SIZE * 2).step_by(S::PD_WIDTH) {
+                    for i in (0..S::PD_WIDTH * 2).step_by(S::PD_WIDTH) {
                         let envelope_volume =
                             S::pd_loadu(&operator_envelope_volumes[operator_index][i]);
                         let volume_product = S::pd_mul(operator_volume_splat, envelope_volume);
@@ -673,7 +669,7 @@ mod gen {
 
                     let tau_splat = S::pd_set1(TAU);
 
-                    for i in (0..SAMPLE_PASS_SIZE * 2).step_by(S::PD_WIDTH) {
+                    for i in (0..S::PD_WIDTH * 2).step_by(S::PD_WIDTH) {
                         let envelope_volume =
                             S::pd_loadu(&operator_envelope_volumes[operator_index][i]);
                         let volume_product = S::pd_mul(operator_volume_splat, envelope_volume);
@@ -742,7 +738,7 @@ mod gen {
                             S::pd_mul(additive_out, voice_volume_factor_splat),
                         );
                         S::pd_storeu(&mut summed_additive_outputs[i], summed_plus_new);
-                    } // End of sample pass size *  2 iteration
+                    } // End of PD_WIDTH *  2 iteration
                 }
             } // End of operator iteration
         } // End of voice iteration
@@ -763,7 +759,7 @@ mod gen {
 
         // --- Write additive outputs to audio buffer
 
-        for i in 0..SAMPLE_PASS_SIZE {
+        for i in 0..S::PD_WIDTH {
             let j = i * 2;
             audio_buffer_lefts[i] = summed_additive_outputs[j] as f32;
             audio_buffer_rights[i] = summed_additive_outputs[j + 1] as f32;
