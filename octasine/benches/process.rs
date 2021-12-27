@@ -2,7 +2,6 @@ use std::time::Instant;
 
 use colored::*;
 use sha2::{Digest, Sha256};
-use vst::buffer::AudioBuffer;
 use vst::plugin::PluginParameters;
 
 use octasine::gen::AudioGen;
@@ -54,7 +53,8 @@ fn main() -> Result<(), ()> {
     let (_, fallback_std) = benchmark(
         "fallback (std)",
         "ad 0d 1d 04 5e 38 95 7f ",
-        octasine::gen::FallbackStd::process_f32,
+        1,
+        octasine::gen::simd::FallbackStd::process_f32,
     );
 
     #[allow(unused_variables, unused_mut)]
@@ -69,7 +69,8 @@ fn main() -> Result<(), ()> {
             let (success, r) = benchmark(
                 "fallback (sleef)",
                 hash,
-                octasine::gen::FallbackSleef::process_f32,
+                1,
+                octasine::gen::simd::FallbackSleef::process_f32,
             );
 
             all_hashes_match &= success;
@@ -78,14 +79,14 @@ fn main() -> Result<(), ()> {
         }
 
         if is_x86_feature_detected!("sse2") {
-            let (success, r) = benchmark("sse2", hash, octasine::gen::Sse2::process_f32);
+            let (success, r) = benchmark("sse2", hash, 2, octasine::gen::simd::Sse2::process_f32);
 
             all_hashes_match &= success;
 
             println!("Speed compared to std fallback: {}x", fallback_std / r);
         }
         if is_x86_feature_detected!("avx") {
-            let (success, r) = benchmark("avx", hash, octasine::gen::Avx::process_f32);
+            let (success, r) = benchmark("avx", hash, 4, octasine::gen::simd::Avx::process_f32);
 
             all_hashes_match &= success;
 
@@ -107,7 +108,8 @@ fn main() -> Result<(), ()> {
 fn benchmark(
     name: &str,
     expected_hash: &str,
-    process_fn: unsafe fn(&mut OctaSine, &mut AudioBuffer<f32>),
+    samples_per_iteration: usize,
+    process_fn: unsafe fn(&mut OctaSine, lefts: &mut [f32], rights: &mut [f32]),
 ) -> (bool, f32) {
     let mut octasine = OctaSine::default();
 
@@ -117,17 +119,8 @@ fn benchmark(
 
     const SIZE: usize = 256;
 
-    let input_1 = vec![0.0f32; SIZE];
-    let input_2 = input_1.clone();
-
-    let mut output_1 = input_1.clone();
-    let mut output_2 = input_1.clone();
-
-    let inputs = vec![input_1.as_ptr(), input_2.as_ptr()];
-    let mut outputs = vec![output_1.as_mut_ptr(), output_2.as_mut_ptr()];
-
-    let mut buffer =
-        unsafe { AudioBuffer::from_raw(2, 2, inputs.as_ptr(), outputs.as_mut_ptr(), SIZE) };
+    let mut lefts = vec![0.0f32; SIZE];
+    let mut rights = vec![0.0f32; SIZE];
 
     let mut results = Sha256::new();
 
@@ -163,11 +156,15 @@ fn benchmark(
             octasine.sync.set_parameter(j, (i % 64) as f32 / 64.0);
         }
 
-        unsafe {
-            process_fn(&mut octasine, &mut buffer);
+        for (l, r) in lefts.chunks_exact_mut(samples_per_iteration).zip(rights.chunks_exact_mut(samples_per_iteration)) {
+            octasine.update_processing_parameters();
+
+            unsafe {
+                process_fn(&mut octasine, l, r);
+            }
         }
 
-        for (l, r) in output_1.iter().zip(output_2.iter()) {
+        for (l, r) in lefts.iter().zip(rights.iter()) {
             results.update(&l.to_ne_bytes());
             results.update(&r.to_ne_bytes());
         }

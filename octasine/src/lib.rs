@@ -160,7 +160,7 @@ impl OctaSine {
         self.processing.voices[pitch as usize].release_key();
     }
 
-    fn update_processing_parameters(&mut self) {
+    pub fn update_processing_parameters(&mut self) {
         let changed_sync_parameters = self
             .sync
             .presets
