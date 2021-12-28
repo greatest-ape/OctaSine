@@ -1,6 +1,13 @@
 mod lfo;
 pub mod simd;
 
+use std::cell::UnsafeCell;
+use std::ops::Deref;
+use std::ops::DerefMut;
+use std::sync::Arc;
+use std::sync::atomic::AtomicUsize;
+use std::sync::atomic::Ordering;
+
 use duplicate::duplicate;
 use vst::buffer::AudioBuffer;
 
@@ -30,6 +37,61 @@ impl RemainingSamples {
         } else {
             Self::Zero
         }
+    }
+}
+
+/// Lock allowing access only from a single thread at a time
+struct SingleAccessLock<T> {
+    inner: UnsafeCell<T>,
+    holders: Arc<AtomicUsize>,
+}
+
+impl<T> SingleAccessLock<T> {
+    fn new(contents: T) -> Self {
+        Self {
+            inner: UnsafeCell::new(contents),
+            holders: Arc::new(AtomicUsize::new(0)),
+        }
+    }
+
+    fn get_mut(&self) -> Option<SingleAccessLockGuard<T>> {
+        if let Ok(_) = self.holders.compare_exchange(0, 1, Ordering::SeqCst, Ordering::SeqCst) {
+            if let Some(reference) = unsafe { self.inner.get().as_mut() } {
+                return Some(SingleAccessLockGuard {
+                    reference,
+                    holders: &self.holders,
+                })
+            }
+        }
+
+        None
+    }
+}
+
+unsafe impl<T> Sync for SingleAccessLock<T> {}
+
+struct SingleAccessLockGuard<'a, T> {
+    reference: &'a mut T,
+    holders: &'a Arc<AtomicUsize>,
+}
+
+impl<'a, T> Deref for SingleAccessLockGuard<'a, T> {
+    type Target = T;
+
+    fn deref(&self) -> &Self::Target {
+        self.reference
+    }
+}
+
+impl<'a, T> DerefMut for SingleAccessLockGuard<'a, T> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        self.reference
+    }
+}
+
+impl<'a, T> Drop for SingleAccessLockGuard<'a, T> {
+    fn drop(&mut self) {
+        self.holders.fetch_sub(1, Ordering::SeqCst);
     }
 }
 
@@ -149,6 +211,11 @@ impl Default for VoiceData<4, 2> {
     }
 }
 
+#[derive(Debug)]
+pub enum Error {
+    ConcurrentAccess,
+}
+
 #[duplicate(
     [
         S [ FallbackStd ]
@@ -173,8 +240,6 @@ impl Default for VoiceData<4, 2> {
 )]
 mod gen {
     #[feature_gate]
-    use std::cell::UnsafeCell;
-    #[feature_gate]
     use once_cell::sync::Lazy;
 
     #[feature_gate]
@@ -184,25 +249,8 @@ mod gen {
     type VoiceData = super::VoiceData<{S::PD_WIDTH}, {S::SAMPLES}>;
 
     #[feature_gate]
-    struct VoiceDataArray(UnsafeCell<[VoiceData; 128]>);
-
-    #[feature_gate]
-    impl VoiceDataArray {
-        fn new() -> Self {
-            Self(UnsafeCell::new(array_init::array_init(|_| VoiceData::default())))
-        }
-
-        unsafe fn get_mut(&self) -> &mut [VoiceData; 128] {
-            self.0.get().as_mut().unwrap()
-        }
-    }
-
-    #[feature_gate]
-    unsafe impl Sync for VoiceDataArray {}
-
-    #[feature_gate]
-    static VOICE_DATA: Lazy<VoiceDataArray> = Lazy::new(|| {
-        VoiceDataArray::new()
+    static VOICE_DATA: Lazy<SingleAccessLock<[VoiceData; 128]>> = Lazy::new(|| {
+        SingleAccessLock::new(array_init::array_init(|_| VoiceData::default()))
     });
 
     #[feature_gate]
@@ -212,10 +260,16 @@ mod gen {
             assert_eq!(lefts.len(), S::SAMPLES);
             assert_eq!(rights.len(), S::SAMPLES);
 
-            extract_voice_data(octasine);
-            gen_audio(&mut octasine.processing.rng, lefts, rights);
-
             octasine.processing.global_time.0 += S::SAMPLES as f64 * octasine.processing.time_per_sample.0;
+
+            if let Err(err) = extract_voice_data(octasine) {
+                ::log::error!("audio gen: {:?}", err);
+
+                return;
+            }
+            if let Err(err) = gen_audio(&mut octasine.processing.rng, lefts, rights) {
+                ::log::error!("audio gen: {:?}", err);
+            }
         }
     }
 
@@ -223,11 +277,12 @@ mod gen {
     #[target_feature_enable]
     unsafe fn extract_voice_data(
         octasine: &mut OctaSine,
-    ) {
-        let voice_data = VOICE_DATA.get_mut();
+    ) -> Result<(), Error> {
+        let mut voice_data = VOICE_DATA.get_mut().ok_or(Error::ConcurrentAccess)?;
 
         for voice_data in voice_data.iter_mut() {
             voice_data.active = false;
+            // TODO: reset values if active?
         }
 
         let time_per_sample = octasine.processing.time_per_sample;
@@ -416,6 +471,8 @@ mod gen {
                 voice.deactivate_if_envelopes_ended();
             }
         }
+
+        Ok(())
     }
 
     #[feature_gate]
@@ -424,8 +481,8 @@ mod gen {
         rng: &mut fastrand::Rng,
         audio_buffer_lefts: &mut [f32],
         audio_buffer_rights: &mut [f32],
-    ) {
-        let voice_data = VOICE_DATA.get_mut();
+    ) -> Result<(), Error> {
+        let voice_data = VOICE_DATA.get_mut().ok_or(Error::ConcurrentAccess)?;
 
         // Maybe operator indexes should be inversed (3 - operator_index)
         // because that is how they will be accessed later.
@@ -434,7 +491,7 @@ mod gen {
         let mut summed_additive_outputs = [0.0f64; S::SAMPLES * 2];
 
         for voice_data in voice_data
-            .into_iter()
+            .iter()
             .filter(|voice_data| voice_data.active)
         {
             /*
@@ -631,6 +688,8 @@ mod gen {
             audio_buffer_lefts[i] = summed_additive_outputs[j] as f32;
             audio_buffer_rights[i] = summed_additive_outputs[j + 1] as f32;
         }
+
+        Ok(())
     }
 
     /// Operator dependency analysis to allow skipping audio generation when possible
