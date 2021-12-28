@@ -46,7 +46,7 @@ pub trait Simd {
     unsafe fn pd_fast_sin(a: Self::PackedDouble) -> Self::PackedDouble;
     unsafe fn pd_pairwise_horizontal_sum(a: Self::PackedDouble) -> Self::PackedDouble;
     unsafe fn pd_distribute_left_right(l: f64, r: f64) -> Self::PackedDouble;
-    unsafe fn pd_first_over_zero_limit(volume: Self::PackedDouble) -> bool;
+    unsafe fn pd_over_zero_limit(volume: Self::PackedDouble) -> bool;
 }
 
 pub struct Fallback<T> {
@@ -91,8 +91,8 @@ impl<T: FallbackSine> Simd for Fallback<T> {
     unsafe fn pd_distribute_left_right(l: f64, r: f64) -> [f64; 2] {
         [l, r]
     }
-    unsafe fn pd_first_over_zero_limit([first_volume, _]: [f64; 2]) -> bool {
-        first_volume > ZERO_VALUE_LIMIT
+    unsafe fn pd_over_zero_limit([a1, a2]: [f64; 2]) -> bool {
+        (a1 > ZERO_VALUE_LIMIT) & (a2 > ZERO_VALUE_LIMIT)
     }
 }
 
@@ -150,13 +150,14 @@ impl Simd for Sse2 {
 
         _mm_loadu_pd(&lr[0])
     }
+    // FIXME
     #[target_feature(enable = "sse2")]
-    unsafe fn pd_first_over_zero_limit(volume: __m128d) -> bool {
+    unsafe fn pd_over_zero_limit(volume: __m128d) -> bool {
         let mut volume_tmp = [0.0f64; 2];
 
         _mm_storeu_pd(&mut volume_tmp[0], volume);
 
-        volume_tmp[0] > ZERO_VALUE_LIMIT
+        (volume_tmp[0] > ZERO_VALUE_LIMIT) & (volume_tmp[1] > ZERO_VALUE_LIMIT)
     }
 }
 
@@ -214,13 +215,17 @@ impl Simd for Avx {
 
         _mm256_loadu_pd(&lr[0])
     }
+    // FIXME
     #[target_feature(enable = "avx")]
-    unsafe fn pd_first_over_zero_limit(volume: __m256d) -> bool {
+    unsafe fn pd_over_zero_limit(volume: __m256d) -> bool {
         let mut volume_tmp = [0.0f64; 4];
 
         _mm256_storeu_pd(&mut volume_tmp[0], volume);
 
-        volume_tmp[0] > ZERO_VALUE_LIMIT
+        (volume_tmp[0] > ZERO_VALUE_LIMIT) &
+            (volume_tmp[1] > ZERO_VALUE_LIMIT) &
+            (volume_tmp[2] > ZERO_VALUE_LIMIT) &
+            (volume_tmp[3] > ZERO_VALUE_LIMIT)
     }
 }
 

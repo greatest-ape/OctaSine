@@ -90,7 +90,6 @@ fn main() {
             println!("Speed compared to std fallback: {}x", fallback_std / r);
         }
         if is_x86_feature_detected!("avx") {
-            println!("Running Avx..");
             use octasine::gen::simd::Avx;
 
             let (success, r) = benchmark("avx", hash, Avx::SAMPLES, Avx::process_f32);
@@ -120,14 +119,14 @@ fn benchmark(
 
     let wave_type_parameters = [4i32, 17, 31, 46];
 
-    const SIZE: usize = 256;
+    const SIZE: usize = 8;
 
     let mut lefts = vec![0.0f32; SIZE];
     let mut rights = vec![0.0f32; SIZE];
 
     let mut results = Sha256::new();
 
-    let iterations = 10_000;
+    let iterations = 50_000;
 
     for p in envelope_duration_parameters.iter() {
         octasine.sync.set_parameter(*p, 1.0);

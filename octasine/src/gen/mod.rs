@@ -122,76 +122,72 @@ mod gen {
     impl AudioGen for S {
         #[target_feature_enable]
         unsafe fn process_f32(octasine: &mut OctaSine, lefts: &mut [f32], rights: &mut [f32]) {
-            process(octasine, lefts, rights)
+            assert_eq!(lefts.len(), S::SAMPLES);
+            assert_eq!(rights.len(), S::SAMPLES);
+
+            let mut voice_data: [VoiceData; 128] = array_init::array_init(|_| VoiceData::default());
+
+            extract_voice_data(octasine, &mut voice_data);
+            gen_audio(&mut octasine.processing.rng, &voice_data, lefts, rights);
+
+            octasine.processing.global_time.0 += S::SAMPLES as f64 * octasine.processing.time_per_sample.0;
         }
     }
 
     #[feature_gate]
+    #[derive(Debug, Default)]
+    struct VoiceData {
+        active: bool,
+        operator_volumes: [[f64; S::PD_WIDTH]; 4],
+        operator_modulation_indices: [[f64; S::PD_WIDTH]; 4],
+        operator_feedbacks: [[f64; S::PD_WIDTH]; 4],
+        operator_additives: [[f64; S::PD_WIDTH]; 4],
+        operator_frequencies: [[f64; S::PD_WIDTH]; 4],
+        operator_pannings: [[f64; S::SAMPLES]; 4],
+        operator_constant_power_pannings: [[f64; S::PD_WIDTH]; 4],
+        operator_envelope_volumes: [[f64; S::PD_WIDTH]; 4],
+        operator_phases: [[f64; S::PD_WIDTH]; 4],
+        operator_wave_type: [crate::WaveType; 4],
+        operator_modulation_targets: [usize; 4],
+        volume_factors: [f64; 4],
+    }
+
+    #[feature_gate]
     #[target_feature_enable]
-    unsafe fn process(
+    unsafe fn extract_voice_data(
         octasine: &mut OctaSine,
-        audio_buffer_lefts: &mut [f32],
-        audio_buffer_rights: &mut [f32],
+        voice_data: &mut [VoiceData; 128],
     ) {
-        assert_eq!(audio_buffer_lefts.len(), S::SAMPLES);
-        assert_eq!(audio_buffer_rights.len(), S::SAMPLES);
-
-        // --- Set some generally useful variables
-
         let time_per_sample = octasine.processing.time_per_sample;
         let bpm = octasine.get_bpm();
 
-        let operators = &mut octasine.processing.parameters.operators;
+        for sample_index in 0..S::SAMPLES {
+            let any_voice_active = octasine.processing.voices.iter().filter(|voice| voice.active).count() > 0;
 
-        // --- Collect parameter data and do audio generation
+            if any_voice_active {
+                octasine.processing.parameters.advance_one_sample();
+            } else {
+                break;
+            }
 
-        // Maybe operator indexes should be inversed (3 - operator_index)
-        // because that is how they will be accessed later.
+            let operators = &mut octasine.processing.parameters.operators;
 
-        // S::SAMPLES * 2 because of two channels. Even index = left channel
-        let mut summed_additive_outputs = [0.0f64; S::SAMPLES * 2];
+            for (voice_index, (voice, voice_data)) in octasine
+                .processing
+                .voices
+                .iter_mut()
+                .zip(voice_data.iter_mut())
+                .enumerate()
+                .filter(|(_, (voice, _))| voice.active)
+            {
+                voice_data.active = true;
 
-        for voice in octasine
-            .processing
-            .voices
-            .iter_mut()
-            .filter(|voice| voice.active)
-        {
-            // Can be changed per sample
-            let mut operator_volumes = [[0.0f64; S::SAMPLES * 2]; 4];
-            let mut operator_modulation_indices = [[0.0f64; S::SAMPLES * 2]; 4];
-            let mut operator_feedbacks = [[0.0f64; S::SAMPLES * 2]; 4];
-            let mut operator_additives = [[0.0f64; S::SAMPLES * 2]; 4];
-            let mut operator_frequencies = [[0.0f64; S::SAMPLES * 2]; 4];
-
-            let mut operator_pannings = [[0.0f64; S::SAMPLES]; 4];
-            let mut operator_pannings_left_and_right = [[0.0f64; S::SAMPLES * 2]; 4];
-            let mut operator_envelope_volumes = [[0.0f64; S::SAMPLES * 2]; 4];
-            let mut operator_phases = [[0.0f64; S::SAMPLES * 2]; 4];
-
-            // Can not be changed per sample
-            let mut operator_wave_type = [WaveType::Sine; 4];
-            let mut operator_modulation_targets = [0usize; 4];
-
-            // Other
-            let mut voice_volume_factors = [0.0f64; S::SAMPLES * 2];
-
-            for sample_index in 0..S::SAMPLES {
                 let sample_index_offset = sample_index * 2;
-
-                // --- Get voice data
-
-                let time = octasine.processing.global_time;
-                let time_advancement = time_per_sample.0;
-
-                // Necessary for interpolation
-                octasine.processing.global_time.0 += time_advancement;
 
                 let lfo_values = get_lfo_target_values(
                     &mut octasine.processing.parameters.lfos,
                     &mut voice.lfos,
-                    time,
-                    time_advancement,
+                    time_per_sample.0,
                     bpm,
                 );
 
@@ -201,7 +197,6 @@ mod gen {
                         .parameters
                         .master_frequency
                         .get_value_with_lfo_addition(
-                            (),
                             lfo_values.get(LfoTargetParameter::Master(
                                 LfoTargetMasterParameter::Frequency,
                             )),
@@ -209,64 +204,59 @@ mod gen {
                 );
 
                 for (operator_index, operator) in operators.iter_mut().enumerate() {
-                    operator_wave_type[operator_index] = operator.wave_type.value;
+                    voice_data.operator_wave_type[operator_index] = operator.wave_type.value;
 
                     if let Some(p) = &mut operator.output_operator {
-                        operator_modulation_targets[operator_index] = p.get_value();
+                        voice_data.operator_modulation_targets[operator_index] = p.get_value();
                     }
 
                     let volume = operator.volume.get_value_with_lfo_addition(
-                        time,
                         lfo_values.get(LfoTargetParameter::Operator(
                             operator_index,
                             LfoTargetOperatorParameter::Volume,
                         )),
                     );
 
-                    operator_volumes[operator_index][sample_index_offset] = volume;
-                    operator_volumes[operator_index][sample_index_offset + 1] = volume;
+                    voice_data.operator_volumes[operator_index][sample_index_offset] = volume;
+                    voice_data.operator_volumes[operator_index][sample_index_offset + 1] = volume;
 
                     let modulation_index = operator.modulation_index.get_value_with_lfo_addition(
-                        time,
                         lfo_values.get(LfoTargetParameter::Operator(
                             operator_index,
                             LfoTargetOperatorParameter::ModulationIndex,
                         )),
                     );
 
-                    operator_modulation_indices[operator_index][sample_index_offset] = modulation_index;
-                    operator_modulation_indices[operator_index][sample_index_offset + 1] = modulation_index;
+                    voice_data.operator_modulation_indices[operator_index][sample_index_offset] = modulation_index;
+                    voice_data.operator_modulation_indices[operator_index][sample_index_offset + 1] = modulation_index;
 
                     let feedback = operator.feedback.get_value_with_lfo_addition(
-                        time,
                         lfo_values.get(LfoTargetParameter::Operator(
                             operator_index,
                             LfoTargetOperatorParameter::Feedback,
                         )),
                     );
 
-                    operator_feedbacks[operator_index][sample_index_offset] = feedback;
-                    operator_feedbacks[operator_index][sample_index_offset + 1] = feedback;
+                    voice_data.operator_feedbacks[operator_index][sample_index_offset] = feedback;
+                    voice_data.operator_feedbacks[operator_index][sample_index_offset + 1] = feedback;
 
                     let panning = operator.panning.get_value_with_lfo_addition(
-                        time,
                         lfo_values.get(LfoTargetParameter::Operator(
                             operator_index,
                             LfoTargetOperatorParameter::Panning,
                         )),
                     );
 
-                    operator_pannings[operator_index][sample_index] = panning;
+                    voice_data.operator_pannings[operator_index][sample_index] = panning;
                     let [l, r] = operator.panning.left_and_right;
-                    operator_pannings_left_and_right[operator_index][sample_index_offset] = l;
-                    operator_pannings_left_and_right[operator_index][sample_index_offset + 1] = r;
+                    voice_data.operator_constant_power_pannings[operator_index][sample_index_offset] = l;
+                    voice_data.operator_constant_power_pannings[operator_index][sample_index_offset + 1] = r;
 
                     // Get additive factor; use 1.0 for operator 1
                     let additive = if operator_index == 0 {
                         1.0
                     } else {
                         operator.additive_factor.get_value_with_lfo_addition(
-                            time,
                             lfo_values.get(LfoTargetParameter::Operator(
                                 operator_index,
                                 LfoTargetOperatorParameter::Additive,
@@ -274,25 +264,22 @@ mod gen {
                         )
                     };
 
-                    operator_additives[operator_index][sample_index_offset] = additive;
-                    operator_additives[operator_index][sample_index_offset + 1] = additive;
+                    voice_data.operator_additives[operator_index][sample_index_offset] = additive;
+                    voice_data.operator_additives[operator_index][sample_index_offset + 1] = additive;
 
                     let frequency_ratio = operator.frequency_ratio.get_value_with_lfo_addition(
-                        (),
                         lfo_values.get(LfoTargetParameter::Operator(
                             operator_index,
                             LfoTargetOperatorParameter::FrequencyRatio,
                         )),
                     );
                     let frequency_free = operator.frequency_free.get_value_with_lfo_addition(
-                        (),
                         lfo_values.get(LfoTargetParameter::Operator(
                             operator_index,
                             LfoTargetOperatorParameter::FrequencyFree,
                         )),
                     );
                     let frequency_fine = operator.frequency_fine.get_value_with_lfo_addition(
-                        (),
                         lfo_values.get(LfoTargetParameter::Operator(
                             operator_index,
                             LfoTargetOperatorParameter::FrequencyFine,
@@ -301,8 +288,8 @@ mod gen {
 
                     let frequency = voice_base_frequency * frequency_ratio * frequency_free * frequency_fine;
 
-                    operator_frequencies[operator_index][sample_index_offset] = frequency;
-                    operator_frequencies[operator_index][sample_index_offset + 1] = frequency;
+                    voice_data.operator_frequencies[operator_index][sample_index_offset] = frequency;
+                    voice_data.operator_frequencies[operator_index][sample_index_offset + 1] = frequency;
                 }
 
                 // Envelope
@@ -314,25 +301,23 @@ mod gen {
                         voice.duration,
                     );
 
-                    operator_envelope_volumes[operator_index][sample_index_offset] = v;
-                    operator_envelope_volumes[operator_index][sample_index_offset + 1] = v;
+                    voice_data.operator_envelope_volumes[operator_index][sample_index_offset] = v;
+                    voice_data.operator_envelope_volumes[operator_index][sample_index_offset + 1] = v;
                 }
 
                 voice.duration.0 += time_per_sample.0;
 
-                voice.deactivate_if_envelopes_ended();
-
                 // Phase
                 for operator_index in 0..4 {
-                    let frequency = operator_frequencies[operator_index][sample_index * 2];
+                    let frequency = voice_data.operator_frequencies[operator_index][sample_index * 2];
 
                     let last_phase = voice.operators[operator_index].last_phase.0;
                     let phase_addition = frequency * time_per_sample.0;
 
                     let new_phase = last_phase + phase_addition;
 
-                    operator_phases[operator_index][sample_index_offset] = new_phase;
-                    operator_phases[operator_index][sample_index_offset + 1] = new_phase;
+                    voice_data.operator_phases[operator_index][sample_index_offset] = new_phase;
+                    voice_data.operator_phases[operator_index][sample_index_offset + 1] = new_phase;
 
                     // Save phase
                     voice.operators[operator_index].last_phase.0 = new_phase;
@@ -346,17 +331,39 @@ mod gen {
                         .processing
                         .parameters
                         .master_volume
-                        .get_value_with_lfo_addition(time, lfo_addition);
+                        .get_value_with_lfo_addition(lfo_addition);
 
                     let key_velocity = voice.key_velocity.0;
 
                     VOICE_VOLUME_FACTOR * master_volume * key_velocity
                 };
 
-                voice_volume_factors[sample_index_offset] = voice_volume_factor;
-                voice_volume_factors[sample_index_offset + 1] = voice_volume_factor;
-            }
+                voice_data.volume_factors[sample_index_offset] = voice_volume_factor;
+                voice_data.volume_factors[sample_index_offset + 1] = voice_volume_factor;
 
+                voice.deactivate_if_envelopes_ended();
+            }
+        }
+    }
+
+    #[feature_gate]
+    #[target_feature_enable]
+    unsafe fn gen_audio(
+        rng: &mut fastrand::Rng,
+        voice_data: &[VoiceData; 128],
+        audio_buffer_lefts: &mut [f32],
+        audio_buffer_rights: &mut [f32],
+    ) {
+        // Maybe operator indexes should be inversed (3 - operator_index)
+        // because that is how they will be accessed later.
+
+        // S::SAMPLES * 2 because of two channels. Even index = left channel
+        let mut summed_additive_outputs = [0.0f64; S::SAMPLES * 2];
+
+        for voice_data in voice_data
+            .into_iter()
+            .filter(|voice_data| voice_data.active)
+        {
             /*
             let operator_generate_audio = run_operator_dependency_analysis(
                 operator_volume,
@@ -382,12 +389,12 @@ mod gen {
                 //     continue;
                 // }
 
-                if operator_wave_type[operator_index] == WaveType::WhiteNoise {
+                if voice_data.operator_wave_type[operator_index] == WaveType::WhiteNoise {
                     let random_numbers = {
                         let mut random_numbers = [0.0f64; S::SAMPLES * 2];
 
                         for i in 0..S::SAMPLES {
-                            let random = (octasine.processing.rng.f64() - 0.5) * 2.0;
+                            let random = (rng.f64() - 0.5) * 2.0;
 
                             let j = i * 2;
 
@@ -398,17 +405,17 @@ mod gen {
                         random_numbers
                     };
 
-                    let modulation_target = operator_modulation_targets[operator_index];
+                    let modulation_target = voice_data.operator_modulation_targets[operator_index];
 
-                    let constant_power_panning = S::pd_loadu(operator_pannings_left_and_right[operator_index].as_ptr());
-                    let operator_volume = S::pd_loadu(operator_volumes[operator_index].as_ptr());
-                    let operator_additive = S::pd_loadu(operator_additives[operator_index].as_ptr());
+                    let constant_power_panning = S::pd_loadu(voice_data.operator_constant_power_pannings[operator_index].as_ptr());
+                    let operator_volume = S::pd_loadu(voice_data.operator_volumes[operator_index].as_ptr());
+                    let operator_additive = S::pd_loadu(voice_data.operator_additives[operator_index].as_ptr());
 
                     let envelope_volume =
-                        S::pd_loadu(&operator_envelope_volumes[operator_index][0]);
+                        S::pd_loadu(voice_data.operator_envelope_volumes[operator_index].as_ptr());
                     let volume_product = S::pd_mul(operator_volume, envelope_volume);
 
-                    let sample = S::pd_loadu(&random_numbers[0]);
+                    let sample = S::pd_loadu(random_numbers.as_ptr());
 
                     let sample_adjusted =
                         S::pd_mul(S::pd_mul(sample, volume_product), constant_power_panning);
@@ -417,35 +424,35 @@ mod gen {
 
                     // Add modulation output to target operator's modulation inputs
                     let modulation_sum = S::pd_add(
-                        S::pd_loadu(&voice_modulation_inputs[modulation_target][0]),
+                        S::pd_loadu(voice_modulation_inputs[modulation_target].as_ptr()),
                         modulation_out,
                     );
                     S::pd_storeu(
-                        &mut voice_modulation_inputs[modulation_target][0],
+                        voice_modulation_inputs[modulation_target].as_mut_ptr(),
                         modulation_sum,
                     );
 
                     // Add additive output to summed_additive_outputs
                     let summed_plus_new = S::pd_add(
-                        S::pd_loadu(&summed_additive_outputs[0]),
-                        S::pd_mul(additive_out, S::pd_loadu(&voice_volume_factors[0])),
+                        S::pd_loadu(summed_additive_outputs.as_ptr()),
+                        S::pd_mul(additive_out, S::pd_loadu(voice_data.volume_factors.as_ptr())),
                     );
-                    S::pd_storeu(&mut summed_additive_outputs[0], summed_plus_new);
+                    S::pd_storeu(summed_additive_outputs.as_mut_ptr(), summed_plus_new);
                 } else {
                     // --- Setup operator SIMD vars
 
-                    let operator_volume = S::pd_loadu(operator_volumes[operator_index].as_ptr());
-                    let operator_feedback = S::pd_loadu(operator_feedbacks[operator_index].as_ptr());
-                    let operator_additive = S::pd_loadu(operator_additives[operator_index].as_ptr());
+                    let operator_volume = S::pd_loadu(voice_data.operator_volumes[operator_index].as_ptr());
+                    let operator_feedback = S::pd_loadu(voice_data.operator_feedbacks[operator_index].as_ptr());
+                    let operator_additive = S::pd_loadu(voice_data.operator_additives[operator_index].as_ptr());
                     let operator_modulation_index =
-                        S::pd_loadu(operator_modulation_indices[operator_index].as_ptr());
+                        S::pd_loadu(voice_data.operator_modulation_indices[operator_index].as_ptr());
                     
                     let mut pan_tendency = [0.0f64; S::PD_WIDTH];
                     let mut one_minus_pan_tendency = [0.0f64; S::PD_WIDTH];
 
                     for sample_index in 0..S::SAMPLES {
                         // Get panning as value between -1 and 1
-                        let pan_transformed = 2.0 * (operator_pannings[operator_index][sample_index] - 0.5);
+                        let pan_transformed = 2.0 * (voice_data.operator_pannings[operator_index][sample_index] - 0.5);
 
                         let r = pan_transformed.max(0.0);
                         let l = (pan_transformed * -1.0).max(0.0);
@@ -456,41 +463,37 @@ mod gen {
                         pan_tendency[j + 1] = r;
 
                         one_minus_pan_tendency[j] = 1.0 - l;
-                        one_minus_pan_tendency[j + 1] = 1.0 - l;
+                        one_minus_pan_tendency[j + 1] = 1.0 - r;
                     }
 
                     let pan_tendency = S::pd_loadu(pan_tendency.as_ptr());
                     let one_minus_pan_tendency = S::pd_loadu(one_minus_pan_tendency.as_ptr());
 
-                    let constant_power_panning = S::pd_loadu(operator_pannings_left_and_right[operator_index].as_ptr());
+                    let constant_power_panning = S::pd_loadu(voice_data.operator_constant_power_pannings[operator_index].as_ptr());
 
-                    let modulation_target = operator_modulation_targets[operator_index];
+                    let modulation_target = voice_data.operator_modulation_targets[operator_index];
 
                     // --- Create samples for both channels
 
                     let tau_splat = S::pd_set1(TAU);
 
                     let envelope_volume =
-                        S::pd_loadu(operator_envelope_volumes[operator_index].as_ptr());
+                        S::pd_loadu(voice_data.operator_envelope_volumes[operator_index].as_ptr());
                     let volume_product = S::pd_mul(operator_volume, envelope_volume);
 
                     // Skip generation when envelope volume or operator
                     // volume is zero. Helps performance when operator
                     // envelope lengths vary a lot. Otherwise, the
                     // branching probably negatively impacts performance.
-                    // Higher indeces don't really matter: if previous
-                    // sample has zero envelope volume, next one probably
-                    // does too. The worst case scenario is that attacks
-                    // are a tiny bit slower.
-                    if !S::pd_first_over_zero_limit(volume_product) {
-                        continue;
-                    }
+                    // if !S::pd_over_zero_limit(volume_product) {
+                    //     continue;
+                    // }
 
                     let phase =
-                        S::pd_mul(S::pd_loadu(&operator_phases[operator_index][0]), tau_splat);
+                        S::pd_mul(S::pd_loadu(voice_data.operator_phases[operator_index].as_ptr()), tau_splat);
 
                     let modulation_in_for_channel =
-                        S::pd_loadu(&voice_modulation_inputs[operator_index][0]);
+                        S::pd_loadu(voice_modulation_inputs[operator_index].as_ptr());
                     let modulation_in_channel_sum =
                         S::pd_pairwise_horizontal_sum(modulation_in_for_channel);
                     // Weird modulation input panning
@@ -524,20 +527,20 @@ mod gen {
 
                     // Add modulation output to target operator's modulation inputs
                     let modulation_sum = S::pd_add(
-                        S::pd_loadu(&voice_modulation_inputs[modulation_target][0]),
+                        S::pd_loadu(voice_modulation_inputs[modulation_target].as_ptr()),
                         modulation_out,
                     );
                     S::pd_storeu(
-                        &mut voice_modulation_inputs[modulation_target][0],
+                        voice_modulation_inputs[modulation_target].as_mut_ptr(),
                         modulation_sum,
                     );
 
                     // Add additive output to summed_additive_outputs
                     let summed_plus_new = S::pd_add(
-                        S::pd_loadu(&summed_additive_outputs[0]),
-                        S::pd_mul(additive_out, S::pd_loadu(&voice_volume_factors[0])),
+                        S::pd_loadu(summed_additive_outputs.as_ptr()),
+                        S::pd_mul(additive_out, S::pd_loadu(voice_data.volume_factors.as_ptr())),
                     );
-                    S::pd_storeu(&mut summed_additive_outputs[0], summed_plus_new);
+                    S::pd_storeu(summed_additive_outputs.as_mut_ptr(), summed_plus_new);
                 }
             } // End of operator iteration
         } // End of voice iteration

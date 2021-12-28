@@ -38,6 +38,12 @@ pub enum WaveType {
     WhiteNoise,
 }
 
+impl Default for WaveType {
+    fn default() -> Self {
+        Self::Sine
+    }
+}
+
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub enum LfoTargetMasterParameter {
     Volume,

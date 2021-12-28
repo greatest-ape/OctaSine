@@ -11,13 +11,10 @@ pub trait ProcessingParameter {
     type Value;
     type ExtraData;
 
-    fn get_value(&mut self, extra_data: Self::ExtraData) -> Self::Value;
+    fn advance_one_sample(&mut self);
+    fn get_value(&self) -> Self::Value;
     fn set_from_sync(&mut self, value: f64);
-    fn get_value_with_lfo_addition(
-        &mut self,
-        extra_data: Self::ExtraData,
-        lfo_addition: Option<f64>,
-    ) -> Self::Value;
+    fn get_value_with_lfo_addition(&mut self, lfo_addition: Option<f64>) -> Self::Value;
 }
 
 pub struct ProcessingParameters {
@@ -212,6 +209,19 @@ impl ProcessingParameters {
     pub fn len(&self) -> usize {
         87
     }
+
+    pub fn advance_one_sample(&mut self) {
+        self.master_volume.advance_one_sample();
+        self.master_frequency.advance_one_sample();
+        
+        for operator in self.operators.iter_mut() {
+            operator.advance_one_sample();
+        }
+
+        for lfo in self.lfos.iter_mut() {
+            lfo.advance_one_sample();
+        }
+    }
 }
 
 pub struct ProcessingParameterOperator {
@@ -244,6 +254,22 @@ impl ProcessingParameterOperator {
             volume_envelope: Default::default(),
         }
     }
+
+    pub fn advance_one_sample(&mut self) {
+        self.volume.advance_one_sample();
+        self.wave_type.advance_one_sample();
+        self.panning.advance_one_sample();
+        self.additive_factor.advance_one_sample();
+        if let Some(ref mut output_operator) = self.output_operator {
+            output_operator.advance_one_sample();
+        }
+        self.frequency_ratio.advance_one_sample();
+        self.frequency_free.advance_one_sample();
+        self.frequency_fine.advance_one_sample();
+        self.feedback.advance_one_sample();
+        self.modulation_index.advance_one_sample();
+        self.volume_envelope.advance_one_sample();
+    }
 }
 
 #[derive(Default)]
@@ -253,6 +279,16 @@ pub struct OperatorEnvelopeProcessingParameter {
     pub decay_duration: SimpleProcessingParameter<OperatorDecayDurationValue>,
     pub decay_end_value: SimpleProcessingParameter<OperatorDecayVolumeValue>,
     pub release_duration: SimpleProcessingParameter<OperatorReleaseDurationValue>,
+}
+
+impl OperatorEnvelopeProcessingParameter {
+    fn advance_one_sample(&mut self) {
+        self.attack_duration.advance_one_sample();
+        self.attack_end_value.advance_one_sample();
+        self.decay_duration.advance_one_sample();
+        self.decay_end_value.advance_one_sample();
+        self.release_duration.advance_one_sample();
+    }
 }
 
 pub struct ProcessingParameterLfo {
@@ -277,6 +313,16 @@ impl ProcessingParameterLfo {
             amount: Default::default(),
         }
     }
+
+    fn advance_one_sample(&mut self) {
+        self.target_parameter.advance_one_sample();
+        self.bpm_sync.advance_one_sample();
+        self.frequency_ratio.advance_one_sample();
+        self.frequency_free.advance_one_sample();
+        self.mode.advance_one_sample();
+        self.shape.advance_one_sample();
+        self.amount.advance_one_sample();
+    }
 }
 
 #[cfg(test)]
@@ -287,32 +333,25 @@ mod tests {
     fn test_operator_panning_left_and_right() {
         use super::interpolatable_value::*;
         use super::*;
-        use crate::common::*;
 
         let mut operator = OperatorPanningProcessingParameter::default();
 
-        let mut time = TimeCounter(0.0);
-        let mut value = operator.get_value(time);
+        let mut value = operator.get_value();
 
         operator.set_from_sync(1.0);
 
-        let n = INTERPOLATION_SAMPLES_PER_STEP * INTERPOLATION_STEPS + 1;
+        let n = INTERPOLATION_STEPS + 1;
         let mut left_and_right = [0.0, 0.0];
 
         for i in 0..n {
-            let new_value = operator.get_value(time);
+            let new_value = operator.get_value();
             let new_left_and_right = operator.left_and_right;
 
-            #[allow(clippy::float_cmp)]
-            if i >= INTERPOLATION_SAMPLES_PER_STEP && i % INTERPOLATION_SAMPLES_PER_STEP == 0 {
-                assert_ne!(value, new_value);
-                assert_ne!(left_and_right, new_left_and_right);
-            }
+            assert_ne!(value, new_value);
+            assert_ne!(left_and_right, new_left_and_right);
 
             value = new_value;
             left_and_right = new_left_and_right;
-
-            time.0 += 1.0 / 44100.0;
         }
 
         assert_approx_eq!(left_and_right[0], 0.0);
