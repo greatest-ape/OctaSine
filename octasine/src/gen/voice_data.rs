@@ -56,7 +56,7 @@ impl<'a, T> DerefMut for SingleAccessLockGuard<'a, T> {
 
 impl<'a, T> Drop for SingleAccessLockGuard<'a, T> {
     fn drop(&mut self) {
-        self.holders.fetch_sub(1, Ordering::SeqCst);
+        self.holders.store(0, Ordering::SeqCst);
     }
 }
 

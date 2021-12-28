@@ -15,7 +15,6 @@ use simd::*;
 use voice_data::*;
 
 enum RemainingSamples {
-    FourOrMore,
     TwoOrMore,
     One,
     Zero
@@ -23,9 +22,7 @@ enum RemainingSamples {
 
 impl RemainingSamples {
     fn new(remaining_samples: usize) -> Self {
-        if remaining_samples >= 4 {
-            Self::FourOrMore
-        } else if remaining_samples >= 2 {
+        if remaining_samples >= 2 {
             Self::TwoOrMore
         } else if remaining_samples == 1 {
             Self::One
@@ -48,33 +45,23 @@ pub fn process_f32_runtime_select(octasine: &mut OctaSine, audio_buffer: &mut Au
     let mut position = 0;
 
     loop {
-        use RemainingSamples::*;
-
         unsafe {
             match RemainingSamples::new(num_samples - position) {
                 #[cfg(all(feature = "simd", target_arch = "x86_64"))]
-                FourOrMore if is_x86_feature_detected!("avx") => {
-                    let end_position = position + 4;
+                RemainingSamples::TwoOrMore if is_x86_feature_detected!("avx") => {
+                    let end_position = position + 2;
 
                     Avx::process_f32(octasine, &mut lefts[position..end_position], &mut rights[position..end_position]);
 
                     position = end_position;
                 }
-                #[cfg(all(feature = "simd", target_arch = "x86_64"))]
-                TwoOrMore | FourOrMore => {
-                    let end_position = position + 2;
-
-                    // SSE2 is always supported on x86_64
-                    Sse2::process_f32(octasine, &mut lefts[position..end_position], &mut rights[position..end_position]);
-
-                    position = end_position;
-                }
-                One | TwoOrMore | FourOrMore => {
+                RemainingSamples::One | RemainingSamples::TwoOrMore => {
                     let end_position = position + 1;
 
                     cfg_if::cfg_if!(
                         if #[cfg(all(feature = "simd", target_arch = "x86_64"))] {
-                            FallbackSleef::process_f32(octasine, &mut lefts[position..end_position], &mut rights[position..end_position]);
+                            // SSE2 is always supported on x86_64
+                            Sse2::process_f32(octasine, &mut lefts[position..end_position], &mut rights[position..end_position]);
                         } else {
                             FallbackStd::process_f32(octasine, &mut lefts[position..end_position], &mut rights[position..end_position]);
                         }
@@ -82,7 +69,7 @@ pub fn process_f32_runtime_select(octasine: &mut OctaSine, audio_buffer: &mut Au
 
                     position = end_position;
                 }
-                Zero => {
+                RemainingSamples::Zero => {
                     break;
                 }
             }
@@ -123,18 +110,13 @@ pub enum Error {
 )]
 mod gen {
     #[feature_gate]
-    use once_cell::sync::Lazy;
+    use once_cell::sync::OnceCell;
 
     #[feature_gate]
     use super::*;
 
     #[feature_gate]
     type VoiceData = super::VoiceData<{S::PD_WIDTH}, {S::SAMPLES}>;
-
-    #[feature_gate]
-    static VOICE_DATA: Lazy<super::voice_data::SingleAccessLock<[VoiceData; 128]>> = Lazy::new(|| {
-        super::voice_data::SingleAccessLock::new(array_init::array_init(|_| VoiceData::default()))
-    });
 
     #[feature_gate]
     impl AudioGen for S {
@@ -145,14 +127,24 @@ mod gen {
 
             octasine.processing.global_time.0 += S::SAMPLES as f64 * octasine.processing.time_per_sample.0;
 
-            if let Err(err) = extract_voice_data(octasine) {
-                ::log::error!("audio gen: {:?}", err);
+            static VOICE_DATA: OnceCell<SingleAccessLock<[VoiceData; 128]>> = OnceCell::new();
+
+            let lock = VOICE_DATA.get_or_init(|| {
+                SingleAccessLock::new(array_init::array_init(|_| VoiceData::default()))
+            });
+
+            let opt_guard = lock.get_mut();
+
+            let mut voice_data = if let Some(voice_data) = opt_guard {
+                voice_data
+            } else {
+                ::log::error!("audio gen concurrent access");
 
                 return;
-            }
-            if let Err(err) = gen_audio(&mut octasine.processing.rng, lefts, rights) {
-                ::log::error!("audio gen: {:?}", err);
-            }
+            };
+
+            extract_voice_data(octasine, &mut voice_data);
+            gen_audio(&mut octasine.processing.rng, &mut voice_data, lefts, rights);
         }
     }
 
@@ -160,9 +152,8 @@ mod gen {
     #[target_feature_enable]
     unsafe fn extract_voice_data(
         octasine: &mut OctaSine,
-    ) -> Result<(), Error> {
-        let mut voice_data = VOICE_DATA.get_mut().ok_or(Error::ConcurrentAccess)?;
-
+        voice_data: &mut SingleAccessLockGuard<[VoiceData; 128]>,
+    ) {
         for voice_data in voice_data.iter_mut() {
             voice_data.active = false;
             // TODO: reset values if active?
@@ -354,19 +345,16 @@ mod gen {
                 voice.deactivate_if_envelopes_ended();
             }
         }
-
-        Ok(())
     }
 
     #[feature_gate]
     #[target_feature_enable]
     unsafe fn gen_audio(
         rng: &mut fastrand::Rng,
+        voice_data: &mut SingleAccessLockGuard<[VoiceData; 128]>,
         audio_buffer_lefts: &mut [f32],
         audio_buffer_rights: &mut [f32],
-    ) -> Result<(), Error> {
-        let voice_data = VOICE_DATA.get_mut().ok_or(Error::ConcurrentAccess)?;
-
+    ) {
         // Maybe operator indexes should be inversed (3 - operator_index)
         // because that is how they will be accessed later.
 
@@ -571,8 +559,6 @@ mod gen {
             audio_buffer_lefts[i] = summed_additive_outputs[j] as f32;
             audio_buffer_rights[i] = summed_additive_outputs[j + 1] as f32;
         }
-
-        Ok(())
     }
 
     /// Operator dependency analysis to allow skipping audio generation when possible
