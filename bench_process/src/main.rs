@@ -53,7 +53,7 @@ fn main() {
     #[allow(unused_variables)]
     let (_, fallback_std) = benchmark(
         "fallback (std)",
-        "65 c6 35 0b f1 bc 65 3b ",
+        "4b b2 88 74 b7 91 34 ca ",
         octasine::gen::simd::FallbackStd::SAMPLES,
         octasine::gen::simd::FallbackStd::process_f32,
     );
@@ -64,7 +64,7 @@ fn main() {
     #[cfg(feature = "simd")]
     {
         // Don't forget trailing space
-        let hash = "65 c6 35 0b f1 bc 65 3b ";
+        let hash = "4b b2 88 74 b7 91 34 ca ";
 
         {
             use octasine::gen::simd::FallbackSleef;
@@ -119,14 +119,14 @@ fn benchmark(
 
     let wave_type_parameters = [4i32, 17, 31, 46];
 
-    const SIZE: usize = 8;
+    const SIZE: usize = 128;
 
     let mut lefts = vec![0.0f32; SIZE];
     let mut rights = vec![0.0f32; SIZE];
 
     let mut results = Sha256::new();
 
-    let iterations = 50_000;
+    let iterations = 5_000;
 
     for p in envelope_duration_parameters.iter() {
         octasine.sync.set_parameter(*p, 1.0);
