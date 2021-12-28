@@ -92,6 +92,63 @@ pub trait AudioGen {
     unsafe fn process_f32(octasine: &mut OctaSine, lefts: &mut [f32], rights: &mut [f32]);
 }
 
+#[derive(Debug)]
+pub struct VoiceData<const PD_WIDTH: usize, const SAMPLES: usize> {
+    active: bool,
+    operator_volumes: [[f64; PD_WIDTH]; 4],
+    operator_modulation_indices: [[f64; PD_WIDTH]; 4],
+    operator_feedbacks: [[f64; PD_WIDTH]; 4],
+    operator_additives: [[f64; PD_WIDTH]; 4],
+    operator_frequencies: [[f64; PD_WIDTH]; 4],
+    operator_pannings: [[f64; SAMPLES]; 4],
+    operator_constant_power_pannings: [[f64; PD_WIDTH]; 4],
+    operator_envelope_volumes: [[f64; PD_WIDTH]; 4],
+    operator_phases: [[f64; PD_WIDTH]; 4],
+    operator_wave_type: [crate::WaveType; 4],
+    operator_modulation_targets: [usize; 4],
+    volume_factors: [f64; 4],
+}
+
+impl Default for VoiceData<2, 1> {
+    fn default() -> Self {
+        Self {
+            active: false,
+            operator_volumes: Default::default(),
+            operator_modulation_indices: Default::default(),
+            operator_feedbacks: Default::default(),
+            operator_additives: Default::default(),
+            operator_frequencies: Default::default(),
+            operator_pannings: Default::default(),
+            operator_constant_power_pannings: Default::default(),
+            operator_envelope_volumes: Default::default(),
+            operator_phases: Default::default(),
+            operator_wave_type: Default::default(),
+            operator_modulation_targets: Default::default(),
+            volume_factors: Default::default(),
+        }
+    }
+}
+
+impl Default for VoiceData<4, 2> {
+    fn default() -> Self {
+        Self {
+            active: false,
+            operator_volumes: Default::default(),
+            operator_modulation_indices: Default::default(),
+            operator_feedbacks: Default::default(),
+            operator_additives: Default::default(),
+            operator_frequencies: Default::default(),
+            operator_pannings: Default::default(),
+            operator_constant_power_pannings: Default::default(),
+            operator_envelope_volumes: Default::default(),
+            operator_phases: Default::default(),
+            operator_wave_type: Default::default(),
+            operator_modulation_targets: Default::default(),
+            volume_factors: Default::default(),
+        }
+    }
+}
+
 #[duplicate(
     [
         S [ FallbackStd ]
@@ -116,7 +173,37 @@ pub trait AudioGen {
 )]
 mod gen {
     #[feature_gate]
+    use std::cell::UnsafeCell;
+    #[feature_gate]
+    use once_cell::sync::Lazy;
+
+    #[feature_gate]
     use super::*;
+
+    #[feature_gate]
+    type VoiceData = super::VoiceData<{S::PD_WIDTH}, {S::SAMPLES}>;
+
+    #[feature_gate]
+    struct VoiceDataArray(UnsafeCell<[VoiceData; 128]>);
+
+    #[feature_gate]
+    impl VoiceDataArray {
+        fn new() -> Self {
+            Self(UnsafeCell::new(array_init::array_init(|_| VoiceData::default())))
+        }
+
+        unsafe fn get_mut(&self) -> &mut [VoiceData; 128] {
+            self.0.get().as_mut().unwrap()
+        }
+    }
+
+    #[feature_gate]
+    unsafe impl Sync for VoiceDataArray {}
+
+    #[feature_gate]
+    static VOICE_DATA: Lazy<VoiceDataArray> = Lazy::new(|| {
+        VoiceDataArray::new()
+    });
 
     #[feature_gate]
     impl AudioGen for S {
@@ -125,39 +212,24 @@ mod gen {
             assert_eq!(lefts.len(), S::SAMPLES);
             assert_eq!(rights.len(), S::SAMPLES);
 
-            let mut voice_data: [VoiceData; 128] = array_init::array_init(|_| VoiceData::default());
-
-            extract_voice_data(octasine, &mut voice_data);
-            gen_audio(&mut octasine.processing.rng, &voice_data, lefts, rights);
+            extract_voice_data(octasine);
+            gen_audio(&mut octasine.processing.rng, lefts, rights);
 
             octasine.processing.global_time.0 += S::SAMPLES as f64 * octasine.processing.time_per_sample.0;
         }
     }
 
     #[feature_gate]
-    #[derive(Debug, Default)]
-    struct VoiceData {
-        active: bool,
-        operator_volumes: [[f64; S::PD_WIDTH]; 4],
-        operator_modulation_indices: [[f64; S::PD_WIDTH]; 4],
-        operator_feedbacks: [[f64; S::PD_WIDTH]; 4],
-        operator_additives: [[f64; S::PD_WIDTH]; 4],
-        operator_frequencies: [[f64; S::PD_WIDTH]; 4],
-        operator_pannings: [[f64; S::SAMPLES]; 4],
-        operator_constant_power_pannings: [[f64; S::PD_WIDTH]; 4],
-        operator_envelope_volumes: [[f64; S::PD_WIDTH]; 4],
-        operator_phases: [[f64; S::PD_WIDTH]; 4],
-        operator_wave_type: [crate::WaveType; 4],
-        operator_modulation_targets: [usize; 4],
-        volume_factors: [f64; 4],
-    }
-
-    #[feature_gate]
     #[target_feature_enable]
     unsafe fn extract_voice_data(
         octasine: &mut OctaSine,
-        voice_data: &mut [VoiceData; 128],
     ) {
+        let voice_data = VOICE_DATA.get_mut();
+
+        for voice_data in voice_data.iter_mut() {
+            voice_data.active = false;
+        }
+
         let time_per_sample = octasine.processing.time_per_sample;
         let bpm = octasine.get_bpm();
 
@@ -172,7 +244,7 @@ mod gen {
 
             let operators = &mut octasine.processing.parameters.operators;
 
-            for (voice_index, (voice, voice_data)) in octasine
+            for (_voice_index, (voice, voice_data)) in octasine
                 .processing
                 .voices
                 .iter_mut()
@@ -350,10 +422,11 @@ mod gen {
     #[target_feature_enable]
     unsafe fn gen_audio(
         rng: &mut fastrand::Rng,
-        voice_data: &[VoiceData; 128],
         audio_buffer_lefts: &mut [f32],
         audio_buffer_rights: &mut [f32],
     ) {
+        let voice_data = VOICE_DATA.get_mut();
+
         // Maybe operator indexes should be inversed (3 - operator_index)
         // because that is how they will be accessed later.
 
