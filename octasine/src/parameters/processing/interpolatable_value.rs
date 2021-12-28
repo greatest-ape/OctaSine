@@ -17,14 +17,11 @@ impl InterpolatableProcessingValue {
         }
     }
 
-    pub fn advance_one_sample<F: FnMut(f64)>(
-        &mut self,
-        callback_on_advance: &mut F,
-    ) {
+    pub fn advance_one_sample<F: FnMut(f64)>(&mut self, callback_on_advance: &mut F) {
         if self.steps_remaining == 0 || INTERPOLATION_STEPS == 0 {
             return;
         }
-        
+
         self.steps_remaining -= 1;
         self.value += self.step_size;
 

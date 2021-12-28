@@ -317,7 +317,7 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
     }
 
     /// Renderer settings with glow
-    /// 
+    ///
     /// On non-Windows platforms, AA settings will be overridden because of
     /// use_max_aa_samples = true.  Windows, however, doesn't support
     /// recreating OpenGL contexts for same window, so we have to set a fixed

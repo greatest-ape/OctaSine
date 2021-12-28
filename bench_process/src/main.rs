@@ -4,8 +4,8 @@ use colored::*;
 use sha2::{Digest, Sha256};
 use vst::plugin::PluginParameters;
 
-use octasine::gen::AudioGen;
 use octasine::gen::simd::Simd;
+use octasine::gen::AudioGen;
 use octasine::OctaSine;
 
 /// Benchmark OctaSine process functions
@@ -160,7 +160,10 @@ fn benchmark(
 
         octasine.update_processing_parameters();
 
-        for (lefts, rights) in lefts.chunks_exact_mut(samples_per_iteration).zip(rights.chunks_exact_mut(samples_per_iteration)) {
+        for (lefts, rights) in lefts
+            .chunks_exact_mut(samples_per_iteration)
+            .zip(rights.chunks_exact_mut(samples_per_iteration))
+        {
             unsafe {
                 process_fn(&mut octasine, lefts, rights);
             }

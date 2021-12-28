@@ -222,10 +222,10 @@ impl Simd for Avx {
 
         _mm256_storeu_pd(&mut volume_tmp[0], volume);
 
-        (volume_tmp[0] > ZERO_VALUE_LIMIT) &
-            (volume_tmp[1] > ZERO_VALUE_LIMIT) &
-            (volume_tmp[2] > ZERO_VALUE_LIMIT) &
-            (volume_tmp[3] > ZERO_VALUE_LIMIT)
+        (volume_tmp[0] > ZERO_VALUE_LIMIT)
+            & (volume_tmp[1] > ZERO_VALUE_LIMIT)
+            & (volume_tmp[2] > ZERO_VALUE_LIMIT)
+            & (volume_tmp[3] > ZERO_VALUE_LIMIT)
     }
 }
 

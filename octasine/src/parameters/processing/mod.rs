@@ -213,7 +213,7 @@ impl ProcessingParameters {
     pub fn advance_one_sample(&mut self) {
         self.master_volume.advance_one_sample();
         self.master_frequency.advance_one_sample();
-        
+
         for operator in self.operators.iter_mut() {
             operator.advance_one_sample();
         }

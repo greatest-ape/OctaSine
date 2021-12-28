@@ -1,9 +1,9 @@
 use std::cell::UnsafeCell;
 use std::ops::Deref;
 use std::ops::DerefMut;
-use std::sync::Arc;
 use std::sync::atomic::AtomicUsize;
 use std::sync::atomic::Ordering;
+use std::sync::Arc;
 
 /// Lock allowing access only from a single thread at a time
 pub struct SingleAccessLock<T> {
@@ -20,12 +20,15 @@ impl<T> SingleAccessLock<T> {
     }
 
     pub fn get_mut(&self) -> Option<SingleAccessLockGuard<T>> {
-        if let Ok(_) = self.holders.compare_exchange(0, 1, Ordering::SeqCst, Ordering::SeqCst) {
+        if let Ok(_) = self
+            .holders
+            .compare_exchange(0, 1, Ordering::SeqCst, Ordering::SeqCst)
+        {
             if let Some(reference) = unsafe { self.inner.get().as_mut() } {
                 return Some(SingleAccessLockGuard {
                     reference,
                     holders: &self.holders,
-                })
+                });
             }
         }
 

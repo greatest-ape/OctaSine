@@ -34,7 +34,7 @@ where
     type Value = f64;
     type ExtraData = TimeCounter;
 
-    fn advance_one_sample(&mut self){
+    fn advance_one_sample(&mut self) {
         self.value.advance_one_sample(&mut |_| ())
     }
     fn get_value(&self) -> Self::Value {
@@ -75,9 +75,7 @@ where
     type Value = <P as ParameterValue>::Value;
     type ExtraData = ();
 
-    fn advance_one_sample(&mut self) {
-
-    }
+    fn advance_one_sample(&mut self) {}
     fn get_value(&self) -> Self::Value {
         self.value
     }
@@ -85,10 +83,7 @@ where
         self.sync_cache = value;
         self.value = P::from_sync(value).get();
     }
-    fn get_value_with_lfo_addition(
-        &mut self,
-        lfo_addition: Option<f64>,
-    ) -> Self::Value {
+    fn get_value_with_lfo_addition(&mut self, lfo_addition: Option<f64>) -> Self::Value {
         if let Some(lfo_addition) = lfo_addition {
             P::from_sync((self.sync_cache + lfo_addition).min(1.0).max(0.0)).get()
         } else {
@@ -130,8 +125,7 @@ impl ProcessingParameter for OperatorVolumeProcessingParameter {
     }
     fn get_value_with_lfo_addition(&mut self, lfo_addition: Option<f64>) -> Self::Value {
         if let Some(lfo_addition) = lfo_addition {
-            let sync_value =
-                OperatorVolumeValue::from_processing(self.get_value()).to_sync();
+            let sync_value = OperatorVolumeValue::from_processing(self.get_value()).to_sync();
 
             OperatorVolumeValue::from_sync((sync_value + lfo_addition).min(1.0).max(0.0)).get()
         } else {
@@ -220,8 +214,7 @@ impl ProcessingParameter for OperatorPanningProcessingParameter {
     }
     fn get_value_with_lfo_addition(&mut self, lfo_addition: Option<f64>) -> Self::Value {
         if let Some(lfo_addition) = lfo_addition {
-            let sync_value =
-                OperatorPanningValue::from_processing(self.get_value()).to_sync();
+            let sync_value = OperatorPanningValue::from_processing(self.get_value()).to_sync();
 
             let new_panning =
                 OperatorPanningValue::from_sync((sync_value + lfo_addition).min(1.0).max(0.0))
