@@ -14,6 +14,10 @@ use lfo::*;
 use simd::*;
 use voice_data::*;
 
+pub trait AudioGen {
+    unsafe fn process_f32(octasine: &mut OctaSine, lefts: &mut [f32], rights: &mut [f32]);
+}
+
 enum RemainingSamples {
     TwoOrMore,
     One,
@@ -79,15 +83,6 @@ pub fn process_f32_runtime_select(octasine: &mut OctaSine, audio_buffer: &mut Au
             }
         }
     }
-}
-
-pub trait AudioGen {
-    unsafe fn process_f32(octasine: &mut OctaSine, lefts: &mut [f32], rights: &mut [f32]);
-}
-
-#[derive(Debug)]
-pub enum Error {
-    ConcurrentAccess,
 }
 
 #[duplicate(
