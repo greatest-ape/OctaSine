@@ -1,0 +1,20 @@
+[package]
+name = "bench_process"
+version = "0.5.4"
+authors = ["Joakim Frostegård <joakim.frostegard@gmail.com>"]
+license = "AGPL-3.0"
+edition = "2021"
+
+[[bin]]
+name = "bench_process"
+
+[features]
+simd = ["octasine/simd"]
+
+[dependencies]
+octasine = { path = "../octasine", default-features = false }
+vst = "0.2"
+assert_approx_eq = "1"
+colored = "2"
+quickcheck = { version = "1", default-features = false }
+sha2 = "0.9"

@@ -167,6 +167,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "bench_process"
+version = "0.5.4"
+dependencies = [
+ "assert_approx_eq",
+ "colored",
+ "octasine",
+ "quickcheck",
+ "sha2",
+ "vst",
+]
+
+[[package]]
 name = "bindgen"
 version = "0.57.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1427,7 +1439,6 @@ dependencies = [
  "assert_approx_eq",
  "baseview",
  "cfg-if 1.0.0",
- "colored",
  "dirs",
  "duplicate",
  "fastrand",
@@ -1446,7 +1457,6 @@ dependencies = [
  "raw-window-handle 0.4.2",
  "serde",
  "serde_json",
- "sha2",
  "simplelog",
  "sleef-sys",
  "vst",

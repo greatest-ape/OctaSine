@@ -14,15 +14,9 @@ gui = ["baseview", "iced_baseview", "iced_style", "iced_audio", "palette", "raw-
 [lib]
 name = "octasine"
 
-[[bench]]
-name = "process"
-harness = false
-
 [dev-dependencies]
 assert_approx_eq = "1"
-colored = "2"
 quickcheck = { version = "1", default-features = false }
-sha2 = "0.9"
 
 [dependencies]
 anyhow = "1"

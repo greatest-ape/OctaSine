@@ -47,7 +47,7 @@ use octasine::OctaSine;
 /// Output hash (first 8 bytes):    ac fd ce 1e a2 7b 79 e1
 /// Speed compared to std fallback: 2.3127007x
 /// ```
-fn main() -> Result<(), ()> {
+fn main() {
     // Ignore success status here, since output differs across platforms
     // depending on std sine implementation
     #[allow(unused_variables)]
@@ -90,6 +90,7 @@ fn main() -> Result<(), ()> {
             println!("Speed compared to std fallback: {}x", fallback_std / r);
         }
         if is_x86_feature_detected!("avx") {
+            println!("Running Avx..");
             use octasine::gen::simd::Avx;
 
             let (success, r) = benchmark("avx", hash, Avx::SAMPLES, Avx::process_f32);
@@ -102,12 +103,8 @@ fn main() -> Result<(), ()> {
 
     if all_hashes_match {
         println!("\n{}", "All sleef output hashes matched".green());
-
-        Ok(())
     } else {
         println!("\n{}", "Sleef output hashes didn't match".red());
-
-        Err(())
     }
 }
 
@@ -123,14 +120,14 @@ fn benchmark(
 
     let wave_type_parameters = [4i32, 17, 31, 46];
 
-    const SIZE: usize = 128;
+    const SIZE: usize = 256;
 
     let mut lefts = vec![0.0f32; SIZE];
     let mut rights = vec![0.0f32; SIZE];
 
     let mut results = Sha256::new();
 
-    let iterations = 50_000;
+    let iterations = 10_000;
 
     for p in envelope_duration_parameters.iter() {
         octasine.sync.set_parameter(*p, 1.0);
