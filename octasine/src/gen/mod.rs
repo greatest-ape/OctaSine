@@ -159,23 +159,23 @@ mod gen {
             // TODO: reset values if active?
         }
 
+        let any_voice_active = octasine
+            .processing
+            .voices
+            .iter()
+            .filter(|voice| voice.active)
+            .count()
+            > 0;
+        
+        if !any_voice_active {
+            return;
+        }
+
         let time_per_sample = octasine.processing.time_per_sample;
         let bpm = octasine.get_bpm();
 
         for sample_index in 0..S::SAMPLES {
-            let any_voice_active = octasine
-                .processing
-                .voices
-                .iter()
-                .filter(|voice| voice.active)
-                .count()
-                > 0;
-
-            if any_voice_active {
-                octasine.processing.parameters.advance_one_sample();
-            } else {
-                break;
-            }
+            octasine.processing.parameters.advance_one_sample();
 
             let operators = &mut octasine.processing.parameters.operators;
 
