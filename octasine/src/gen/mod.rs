@@ -417,6 +417,17 @@ mod gen {
                 //     continue;
                 // }
 
+                let envelope_volume =
+                    S::pd_loadu(voice_data.operator_envelope_volumes[operator_index].as_ptr());
+
+                // Skip generation when envelope volume is zero. Helps
+                // performance when operator envelope lengths vary a lot.
+                // Otherwise, the branching probably negatively impacts
+                // performance.
+                if !S::pd_over_zero_limit(envelope_volume) {
+                    continue;
+                }
+
                 if voice_data.operator_wave_type[operator_index] == WaveType::WhiteNoise {
                     let random_numbers = {
                         let mut random_numbers = [0.0f64; S::SAMPLES * 2];
@@ -443,8 +454,6 @@ mod gen {
                     let operator_additive =
                         S::pd_loadu(voice_data.operator_additives[operator_index].as_ptr());
 
-                    let envelope_volume =
-                        S::pd_loadu(voice_data.operator_envelope_volumes[operator_index].as_ptr());
                     let volume_product = S::pd_mul(operator_volume, envelope_volume);
 
                     let sample = S::pd_loadu(random_numbers.as_ptr());
@@ -519,18 +528,6 @@ mod gen {
 
                     let tau_splat = S::pd_set1(TAU);
 
-                    let envelope_volume =
-                        S::pd_loadu(voice_data.operator_envelope_volumes[operator_index].as_ptr());
-                    let volume_product = S::pd_mul(operator_volume, envelope_volume);
-
-                    // Skip generation when envelope volume or operator
-                    // volume is zero. Helps performance when operator
-                    // envelope lengths vary a lot. Otherwise, the
-                    // branching probably negatively impacts performance.
-                    // if !S::pd_over_zero_limit(volume_product) {
-                    //     continue;
-                    // }
-
                     let phase = S::pd_mul(
                         S::pd_loadu(voice_data.operator_phases[operator_index].as_ptr()),
                         tau_splat,
@@ -561,6 +558,8 @@ mod gen {
                         ),
                         phase,
                     );
+
+                    let volume_product = S::pd_mul(operator_volume, envelope_volume);
 
                     let sample = S::pd_fast_sin(sin_input);
 
