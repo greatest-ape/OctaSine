@@ -69,9 +69,17 @@ pub fn process_f32_runtime_select(octasine: &mut OctaSine, audio_buffer: &mut Au
                     cfg_if::cfg_if!(
                         if #[cfg(all(feature = "simd", target_arch = "x86_64"))] {
                             // SSE2 is always supported on x86_64
-                            Sse2::process_f32(octasine, &mut lefts[position..end_position], &mut rights[position..end_position]);
+                            Sse2::process_f32(
+                                octasine,
+                                &mut lefts[position..end_position],
+                                &mut rights[position..end_position]
+                            );
                         } else {
-                            FallbackStd::process_f32(octasine, &mut lefts[position..end_position], &mut rights[position..end_position]);
+                            FallbackStd::process_f32(
+                                octasine,
+                                &mut lefts[position..end_position],
+                                &mut rights[position..end_position]
+                            );
                         }
                     );
 
@@ -422,7 +430,9 @@ mod gen {
 
                 let modulation_target = voice_data.operator_modulation_targets[operator_index];
 
-                let sample = if voice_data.operator_wave_type[operator_index] == WaveType::WhiteNoise {
+                let sample = if voice_data.operator_wave_type[operator_index]
+                    == WaveType::WhiteNoise
+                {
                     let mut random_numbers = [0.0f64; S::PD_WIDTH];
 
                     for sample_index in 0..S::SAMPLES {
@@ -477,16 +487,14 @@ mod gen {
                     );
                     let feedback = S::pd_mul(
                         S::pd_loadu(voice_data.operator_feedbacks[operator_index].as_ptr()),
-                        S::pd_fast_sin(phase)
+                        S::pd_fast_sin(phase),
                     );
 
                     let modulation_index = S::pd_loadu(
-                        voice_data.operator_modulation_indices[operator_index].as_ptr()
+                        voice_data.operator_modulation_indices[operator_index].as_ptr(),
                     );
-                    let modulation_phase_addition = S::pd_mul(
-                        modulation_index,
-                        S::pd_add(feedback, modulation_in),
-                    );
+                    let modulation_phase_addition =
+                        S::pd_mul(modulation_index, S::pd_add(feedback, modulation_in));
 
                     let sin_input = S::pd_add(phase, modulation_phase_addition);
 
@@ -524,8 +532,8 @@ mod gen {
                 );
 
                 // Add additive output to summed_additive_outputs
-                let summed_plus_new = S::pd_add(
-                    S::pd_loadu(summed_additive_outputs.as_ptr()), addition);
+                let summed_plus_new =
+                    S::pd_add(S::pd_loadu(summed_additive_outputs.as_ptr()), addition);
                 S::pd_storeu(summed_additive_outputs.as_mut_ptr(), summed_plus_new);
             }
         }
