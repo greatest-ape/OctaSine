@@ -397,7 +397,7 @@ mod gen {
         // because that is how they will be accessed later.
 
         // S::SAMPLES * 2 because of two channels. Even index = left channel
-        let mut summed_additive_outputs = [0.0f64; S::SAMPLES * 2];
+        let mut summed_additive_outputs = S::pd_setzero();
 
         for voice_data in voice_data.iter().filter(|voice_data| voice_data.active) {
             // let operator_generate_audio = run_operator_dependency_analysis(voice_data);
@@ -527,25 +527,26 @@ mod gen {
                     S::pd_loadu(voice_data.volume_factors.as_ptr()),
                 );
 
-                // Add additive output to summed_additive_outputs
-                let summed_plus_new =
-                    S::pd_add(S::pd_loadu(summed_additive_outputs.as_ptr()), addition);
-                S::pd_storeu(summed_additive_outputs.as_mut_ptr(), summed_plus_new);
+                summed_additive_outputs = S::pd_add(summed_additive_outputs, addition);
             }
         }
 
         // --- Summed additive outputs: apply hard limit.
 
-        for out in summed_additive_outputs.iter_mut() {
-            *out = out.min(5.0).max(-5.0);
-        }
+        summed_additive_outputs = S::pd_min(summed_additive_outputs, S::pd_set1(5.0));
+        summed_additive_outputs = S::pd_max(summed_additive_outputs, S::pd_set1(-5.0));
 
         // --- Write additive outputs to audio buffer
 
-        for i in 0..S::SAMPLES {
-            let j = i * 2;
-            audio_buffer_lefts[i] = summed_additive_outputs[j] as f32;
-            audio_buffer_rights[i] = summed_additive_outputs[j + 1] as f32;
+        let mut out = [0.0f64; S::PD_WIDTH];
+
+        S::pd_storeu(out.as_mut_ptr(), summed_additive_outputs);
+
+        for sample_index in 0..S::SAMPLES {
+            let sample_index_offset = sample_index * 2;
+
+            audio_buffer_lefts[sample_index] = out[sample_index_offset] as f32;
+            audio_buffer_rights[sample_index] = out[sample_index_offset + 1] as f32;
         }
     }
 
