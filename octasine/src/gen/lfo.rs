@@ -53,7 +53,7 @@ pub fn get_lfo_target_values(
                 LfoTargetLfoParameter::Amount,
             )));
 
-        if amount.abs() < ZERO_VALUE_LIMIT {
+        if amount.abs() == 0.0 {
             continue;
         }
 

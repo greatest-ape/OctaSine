@@ -425,7 +425,7 @@ mod gen {
                 // performance when operator envelope lengths vary a lot.
                 // Otherwise, the branching probably negatively impacts
                 // performance.
-                if !S::pd_over_zero_limit(envelope_volume) {
+                if !S::pd_over_zero(envelope_volume) {
                     continue;
                 }
 
@@ -561,11 +561,11 @@ mod gen {
         for operator_index in 0..4 {
             let operator_volume = S::pd_loadu(voice_data.operator_volumes[operator_index].as_ptr());
 
-            if S::pd_over_zero_limit(operator_volume) {
-                operator_additive_zero[operator_index] = !S::pd_over_zero_limit(S::pd_loadu(
+            if S::pd_over_zero(operator_volume) {
+                operator_additive_zero[operator_index] = !S::pd_over_zero(S::pd_loadu(
                     voice_data.operator_additives[operator_index].as_ptr(),
                 ));
-                operator_modulation_index_zero[operator_index] = !S::pd_over_zero_limit(
+                operator_modulation_index_zero[operator_index] = !S::pd_over_zero(
                     S::pd_loadu(voice_data.operator_modulation_indices[operator_index].as_ptr()),
                 );
             } else {

@@ -53,7 +53,7 @@ fn main() {
     #[allow(unused_variables)]
     let (_, fallback_std) = benchmark(
         "fallback (std)",
-        "0f 13 c7 04 36 1f a0 56 ",
+        "ef b5 74 b5 bb 9e 69 82 ",
         octasine::gen::simd::FallbackStd::SAMPLES,
         octasine::gen::simd::FallbackStd::process_f32,
     );
@@ -64,7 +64,7 @@ fn main() {
     #[cfg(feature = "simd")]
     {
         // Don't forget trailing space
-        let hash = "d7 09 ab 41 87 76 f7 f0 ";
+        let hash = "68 64 48 55 b8 76 15 18 ";
 
         {
             use octasine::gen::simd::FallbackSleef;

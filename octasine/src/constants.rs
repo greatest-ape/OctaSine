@@ -4,9 +4,6 @@ use crate::common::*;
 
 pub const TAU: f64 = PI * 2.0;
 
-/// Lower values can be considered to be zero for optimization purposes
-pub const ZERO_VALUE_LIMIT: f64 = 0.001;
-
 pub const PLUGIN_NAME: &str = "OctaSine";
 pub const PLUGIN_UNIQUE_ID: i32 = 1_438_048_623;
 
