@@ -179,13 +179,12 @@ mod gen {
 
             let operators = &mut octasine.processing.parameters.operators;
 
-            for (_voice_index, (voice, voice_data)) in octasine
+            for (voice, voice_data) in octasine
                 .processing
                 .voices
                 .iter_mut()
                 .zip(voice_data.iter_mut())
-                .enumerate()
-                .filter(|(_, (voice, _))| voice.active)
+                .filter(|(voice, _)| voice.active)
             {
                 voice_data.active = true;
 
@@ -392,15 +391,7 @@ mod gen {
         let mut summed_additive_outputs = [0.0f64; S::SAMPLES * 2];
 
         for voice_data in voice_data.iter().filter(|voice_data| voice_data.active) {
-            /*
-            let operator_generate_audio = run_operator_dependency_analysis(
-                operator_volume,
-                operator_additive,
-                operator_modulation_index,
-                operator_wave_type,
-                operator_modulation_targets,
-            );
-            */
+            // let operator_generate_audio = run_operator_dependency_analysis(voice_data);
 
             // --- Generate samples for all operators
 
@@ -412,6 +403,7 @@ mod gen {
                 // FIXME: better iterator with 3, 2, 1, 0 possible?
                 let operator_index = 3 - operator_index;
 
+                // Disabled for now
                 // Possibly skip generation based on previous dependency analysis
                 // if !operator_generate_audio[operator_index] {
                 //     continue;
@@ -578,13 +570,14 @@ mod gen {
                         modulation_sum,
                     );
 
+                    let addition = S::pd_mul(
+                        additive_out,
+                        S::pd_loadu(voice_data.volume_factors.as_ptr()),
+                    );
                     // Add additive output to summed_additive_outputs
                     let summed_plus_new = S::pd_add(
                         S::pd_loadu(summed_additive_outputs.as_ptr()),
-                        S::pd_mul(
-                            additive_out,
-                            S::pd_loadu(voice_data.volume_factors.as_ptr()),
-                        ),
+                        addition
                     );
                     S::pd_storeu(summed_additive_outputs.as_mut_ptr(), summed_plus_new);
                 }
@@ -609,48 +602,40 @@ mod gen {
     /// Operator dependency analysis to allow skipping audio generation when possible
     #[feature_gate]
     #[target_feature_enable]
-    unsafe fn run_operator_dependency_analysis(
-        operator_volume: [f64; 4],
-        operator_additive: [f64; 4],
-        operator_modulation_index: [f64; 4],
-        operator_wave_type: [WaveType; 4],
-        operator_modulation_targets: [usize; 4],
-    ) -> [bool; 4] {
+    unsafe fn run_operator_dependency_analysis(voice_data: &VoiceData) -> [bool; 4] {
         let mut operator_generate_audio = [true; 4];
         let mut operator_additive_zero = [false; 4];
         let mut operator_modulation_index_zero = [false; 4];
 
         for operator_index in 0..4 {
-            // If volume is off, just set to skippable, don't even bother with lt calculations
-            if operator_volume[operator_index].lt(&ZERO_VALUE_LIMIT) {
-                operator_generate_audio[operator_index] = false;
-            } else {
-                operator_additive_zero[operator_index] =
-                    operator_additive[operator_index].lt(&ZERO_VALUE_LIMIT);
+            let operator_volume = S::pd_loadu(voice_data.operator_volumes[operator_index].as_ptr());
 
-                operator_modulation_index_zero[operator_index] =
-                    operator_modulation_index[operator_index].lt(&ZERO_VALUE_LIMIT);
+            if S::pd_over_zero_limit(operator_volume) {
+                operator_additive_zero[operator_index] = !S::pd_over_zero_limit(S::pd_loadu(voice_data.operator_additives[operator_index].as_ptr()));
+                operator_modulation_index_zero[operator_index] = !S::pd_over_zero_limit(S::pd_loadu(voice_data.operator_modulation_indices[operator_index].as_ptr()));
+            } else {
+                // If volume is off, just set to skippable, don't even bother with lt calculations
+                operator_generate_audio[operator_index] = false;
             }
         }
 
         for _ in 0..3 {
             for operator_index in 1..4 {
-                let modulation_target = operator_modulation_targets[operator_index];
+                let modulation_target = voice_data.operator_modulation_targets[operator_index];
 
                 // Skip generation if operator was previously determined to be skippable OR
-                let skip_condition = !operator_generate_audio[operator_index]
-                    || (
-                        // Additive factor for this operator is off AND
-                        operator_additive_zero[operator_index]
-                            && (
-                                // Modulation target was previously determined to be skippable OR
-                                !operator_generate_audio[modulation_target] ||
+                #[rustfmt::skip]
+                let skip_condition = !operator_generate_audio[operator_index] | (
+                    // Additive factor for this operator is off AND
+                    operator_additive_zero[operator_index] & (
+                        // Modulation target was previously determined to be skippable OR
+                        !operator_generate_audio[modulation_target] |
                         // Modulation target is white noise OR
-                        operator_wave_type[modulation_target] == WaveType::WhiteNoise ||
+                        (voice_data.operator_wave_type[modulation_target] == WaveType::WhiteNoise) |
                         // Modulation target doesn't do anything with its input modulation
                         operator_modulation_index_zero[modulation_target]
-                            )
-                    );
+                    )
+                );
 
                 if skip_condition {
                     operator_generate_audio[operator_index] = false;
