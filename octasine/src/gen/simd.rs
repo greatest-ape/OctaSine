@@ -36,6 +36,7 @@ pub trait Simd {
     const SAMPLES: usize;
 
     unsafe fn pd_set1(value: f64) -> Self::PackedDouble;
+    unsafe fn pd_setzero() -> Self::PackedDouble;
     unsafe fn pd_loadu(source: *const f64) -> Self::PackedDouble;
     unsafe fn pd_storeu(target: *mut f64, a: Self::PackedDouble);
     unsafe fn pd_add(a: Self::PackedDouble, b: Self::PackedDouble) -> Self::PackedDouble;
@@ -60,6 +61,9 @@ impl<T: FallbackSine> Simd for Fallback<T> {
 
     unsafe fn pd_set1(value: f64) -> [f64; 2] {
         [value, value]
+    }
+    unsafe fn pd_setzero() -> [f64; 2] {
+        [0.0, 0.0]
     }
     unsafe fn pd_loadu(source: *const f64) -> [f64; 2] {
         *(source as *const [f64; 2])
@@ -107,6 +111,10 @@ impl Simd for Sse2 {
     #[target_feature(enable = "sse2")]
     unsafe fn pd_set1(value: f64) -> __m128d {
         _mm_set1_pd(value)
+    }
+    #[target_feature(enable = "sse2")]
+    unsafe fn pd_setzero() -> __m128d {
+        _mm_setzero_pd()
     }
     #[target_feature(enable = "sse2")]
     unsafe fn pd_loadu(source: *const f64) -> __m128d {
@@ -172,6 +180,10 @@ impl Simd for Avx {
     #[target_feature(enable = "avx")]
     unsafe fn pd_set1(value: f64) -> __m256d {
         _mm256_set1_pd(value)
+    }
+    #[target_feature(enable = "avx")]
+    unsafe fn pd_setzero() -> __m256d {
+        _mm256_setzero_pd()
     }
     #[target_feature(enable = "avx")]
     unsafe fn pd_loadu(source: *const f64) -> __m256d {

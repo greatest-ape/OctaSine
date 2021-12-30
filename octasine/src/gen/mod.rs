@@ -265,7 +265,8 @@ mod gen {
                         ),
                     ));
 
-                    voice_data.operator_pannings[operator_index][sample_index] = panning;
+                    voice_data.operator_pannings[operator_index][sample_index_offset] = panning;
+                    voice_data.operator_pannings[operator_index][sample_index_offset + 1] = panning;
                     let [l, r] = operator.panning.left_and_right;
                     voice_data.operator_constant_power_pannings[operator_index]
                         [sample_index_offset] = l;
@@ -446,23 +447,18 @@ mod gen {
 
                     S::pd_loadu(random_numbers.as_ptr())
                 } else {
-                    let mut pan_tendency = [0.0f64; S::PD_WIDTH];
+                    let pan_tendency = {
+                        let pan = S::pd_loadu(voice_data.operator_pannings[operator_index].as_ptr());
 
-                    for sample_index in 0..S::SAMPLES {
                         // Get panning as value between -1 and 1
-                        let pan_transformed = 2.0
-                            * (voice_data.operator_pannings[operator_index][sample_index] - 0.5);
+                        let pan = S::pd_mul(S::pd_set1(2.0), S::pd_sub(pan, S::pd_set1(0.5)));
 
-                        let r = pan_transformed.max(0.0);
-                        let l = (pan_transformed * -1.0).max(0.0);
+                        S::pd_max(
+                            S::pd_mul(pan, S::pd_distribute_left_right(-1.0, 1.0)),
+                            S::pd_setzero()
+                        )
+                    };
 
-                        let sample_index_offset = sample_index * 2;
-
-                        pan_tendency[sample_index_offset] = l;
-                        pan_tendency[sample_index_offset + 1] = r;
-                    }
-
-                    let pan_tendency = S::pd_loadu(pan_tendency.as_ptr());
                     let one_minus_pan_tendency = S::pd_sub(S::pd_set1(1.0), pan_tendency);
 
                     let modulation_in_for_channel =

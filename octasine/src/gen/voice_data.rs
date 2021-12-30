@@ -71,7 +71,7 @@ pub struct VoiceData<const PD_WIDTH: usize, const SAMPLES: usize> {
     pub operator_feedbacks: [[f64; PD_WIDTH]; 4],
     pub operator_additives: [[f64; PD_WIDTH]; 4],
     pub operator_frequencies: [[f64; PD_WIDTH]; 4],
-    pub operator_pannings: [[f64; SAMPLES]; 4],
+    pub operator_pannings: [[f64; PD_WIDTH]; 4],
     pub operator_constant_power_pannings: [[f64; PD_WIDTH]; 4],
     pub operator_envelope_volumes: [[f64; PD_WIDTH]; 4],
     pub operator_phases: [[f64; PD_WIDTH]; 4],
