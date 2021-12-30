@@ -436,14 +436,7 @@ mod gen {
 
                     S::pd_loadu(random_numbers.as_ptr())
                 } else {
-                    let operator_feedback =
-                        S::pd_loadu(voice_data.operator_feedbacks[operator_index].as_ptr());
-                    let operator_modulation_index = S::pd_loadu(
-                        voice_data.operator_modulation_indices[operator_index].as_ptr(),
-                    );
-
                     let mut pan_tendency = [0.0f64; S::PD_WIDTH];
-                    let mut one_minus_pan_tendency = [0.0f64; S::PD_WIDTH];
 
                     for sample_index in 0..S::SAMPLES {
                         // Get panning as value between -1 and 1
@@ -453,22 +446,14 @@ mod gen {
                         let r = pan_transformed.max(0.0);
                         let l = (pan_transformed * -1.0).max(0.0);
 
-                        let j = sample_index * 2;
+                        let sample_index_offset = sample_index * 2;
 
-                        pan_tendency[j] = l;
-                        pan_tendency[j + 1] = r;
-
-                        one_minus_pan_tendency[j] = 1.0 - l;
-                        one_minus_pan_tendency[j + 1] = 1.0 - r;
+                        pan_tendency[sample_index_offset] = l;
+                        pan_tendency[sample_index_offset + 1] = r;
                     }
 
                     let pan_tendency = S::pd_loadu(pan_tendency.as_ptr());
-                    let one_minus_pan_tendency = S::pd_loadu(one_minus_pan_tendency.as_ptr());
-
-                    let phase = S::pd_mul(
-                        S::pd_loadu(voice_data.operator_phases[operator_index].as_ptr()),
-                        S::pd_set1(TAU),
-                    );
+                    let one_minus_pan_tendency = S::pd_sub(S::pd_set1(1.0), pan_tendency);
 
                     let modulation_in_for_channel =
                         S::pd_loadu(voice_modulation_inputs[operator_index].as_ptr());
@@ -486,15 +471,24 @@ mod gen {
                         S::pd_mul(one_minus_pan_tendency, modulation_in_for_channel),
                     );
 
-                    let feedback = S::pd_mul(operator_feedback, S::pd_fast_sin(phase));
-
-                    let sin_input = S::pd_add(
-                        S::pd_mul(
-                            operator_modulation_index,
-                            S::pd_add(feedback, modulation_in),
-                        ),
-                        phase,
+                    let phase = S::pd_mul(
+                        S::pd_loadu(voice_data.operator_phases[operator_index].as_ptr()),
+                        S::pd_set1(TAU),
                     );
+                    let feedback = S::pd_mul(
+                        S::pd_loadu(voice_data.operator_feedbacks[operator_index].as_ptr()),
+                        S::pd_fast_sin(phase)
+                    );
+
+                    let modulation_index = S::pd_loadu(
+                        voice_data.operator_modulation_indices[operator_index].as_ptr()
+                    );
+                    let modulation_phase_addition = S::pd_mul(
+                        modulation_index,
+                        S::pd_add(feedback, modulation_in),
+                    );
+
+                    let sin_input = S::pd_add(phase, modulation_phase_addition);
 
                     S::pd_fast_sin(sin_input)
                 };
