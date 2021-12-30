@@ -146,6 +146,10 @@ mod gen {
             octasine.processing.global_time.0 +=
                 S::SAMPLES as f64 * octasine.processing.time_per_sample.0;
 
+            if !octasine.processing.voices.iter().any(|voice| voice.active) {
+                return;
+            }
+
             extract_voice_data(octasine);
             gen_audio(
                 &mut octasine.processing.rng,
@@ -162,18 +166,6 @@ mod gen {
         for voice_data in octasine.processing.audio_gen_voice_data.iter_mut() {
             voice_data.active = false;
             // TODO: reset values if active?
-        }
-
-        let any_voice_active = octasine
-            .processing
-            .voices
-            .iter()
-            .filter(|voice| voice.active)
-            .count()
-            > 0;
-
-        if !any_voice_active {
-            return;
         }
 
         let time_per_sample = octasine.processing.time_per_sample;
