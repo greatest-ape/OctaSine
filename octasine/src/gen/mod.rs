@@ -420,69 +420,24 @@ mod gen {
                     continue;
                 }
 
-                if voice_data.operator_wave_type[operator_index] == WaveType::WhiteNoise {
-                    let random_numbers = {
-                        let mut random_numbers = [0.0f64; S::SAMPLES * 2];
+                let modulation_target = voice_data.operator_modulation_targets[operator_index];
 
-                        for i in 0..S::SAMPLES {
-                            let random = (rng.f64() - 0.5) * 2.0;
+                let sample = if voice_data.operator_wave_type[operator_index] == WaveType::WhiteNoise {
+                    let mut random_numbers = [0.0f64; S::PD_WIDTH];
 
-                            let j = i * 2;
+                    for sample_index in 0..S::SAMPLES {
+                        let random = (rng.f64() - 0.5) * 2.0;
 
-                            random_numbers[j] = random;
-                            random_numbers[j + 1] = random;
-                        }
+                        let sample_index_offset = sample_index * 2;
 
-                        random_numbers
-                    };
+                        random_numbers[sample_index_offset] = random;
+                        random_numbers[sample_index_offset + 1] = random;
+                    }
 
-                    let modulation_target = voice_data.operator_modulation_targets[operator_index];
-
-                    let constant_power_panning = S::pd_loadu(
-                        voice_data.operator_constant_power_pannings[operator_index].as_ptr(),
-                    );
-                    let operator_volume =
-                        S::pd_loadu(voice_data.operator_volumes[operator_index].as_ptr());
-                    let operator_additive =
-                        S::pd_loadu(voice_data.operator_additives[operator_index].as_ptr());
-
-                    let volume_product = S::pd_mul(operator_volume, envelope_volume);
-
-                    let sample = S::pd_loadu(random_numbers.as_ptr());
-
-                    let sample_adjusted =
-                        S::pd_mul(S::pd_mul(sample, volume_product), constant_power_panning);
-                    let additive_out = S::pd_mul(sample_adjusted, operator_additive);
-                    let modulation_out = S::pd_sub(sample_adjusted, additive_out);
-
-                    // Add modulation output to target operator's modulation inputs
-                    let modulation_sum = S::pd_add(
-                        S::pd_loadu(voice_modulation_inputs[modulation_target].as_ptr()),
-                        modulation_out,
-                    );
-                    S::pd_storeu(
-                        voice_modulation_inputs[modulation_target].as_mut_ptr(),
-                        modulation_sum,
-                    );
-
-                    // Add additive output to summed_additive_outputs
-                    let summed_plus_new = S::pd_add(
-                        S::pd_loadu(summed_additive_outputs.as_ptr()),
-                        S::pd_mul(
-                            additive_out,
-                            S::pd_loadu(voice_data.volume_factors.as_ptr()),
-                        ),
-                    );
-                    S::pd_storeu(summed_additive_outputs.as_mut_ptr(), summed_plus_new);
+                    S::pd_loadu(random_numbers.as_ptr())
                 } else {
-                    // --- Setup operator SIMD vars
-
-                    let operator_volume =
-                        S::pd_loadu(voice_data.operator_volumes[operator_index].as_ptr());
                     let operator_feedback =
                         S::pd_loadu(voice_data.operator_feedbacks[operator_index].as_ptr());
-                    let operator_additive =
-                        S::pd_loadu(voice_data.operator_additives[operator_index].as_ptr());
                     let operator_modulation_index = S::pd_loadu(
                         voice_data.operator_modulation_indices[operator_index].as_ptr(),
                     );
@@ -510,19 +465,9 @@ mod gen {
                     let pan_tendency = S::pd_loadu(pan_tendency.as_ptr());
                     let one_minus_pan_tendency = S::pd_loadu(one_minus_pan_tendency.as_ptr());
 
-                    let constant_power_panning = S::pd_loadu(
-                        voice_data.operator_constant_power_pannings[operator_index].as_ptr(),
-                    );
-
-                    let modulation_target = voice_data.operator_modulation_targets[operator_index];
-
-                    // --- Create samples for both channels
-
-                    let tau_splat = S::pd_set1(TAU);
-
                     let phase = S::pd_mul(
                         S::pd_loadu(voice_data.operator_phases[operator_index].as_ptr()),
-                        tau_splat,
+                        S::pd_set1(TAU),
                     );
 
                     let modulation_in_for_channel =
@@ -551,36 +496,45 @@ mod gen {
                         phase,
                     );
 
-                    let volume_product = S::pd_mul(operator_volume, envelope_volume);
+                    S::pd_fast_sin(sin_input)
+                };
 
-                    let sample = S::pd_fast_sin(sin_input);
+                let operator_volume =
+                    S::pd_loadu(voice_data.operator_volumes[operator_index].as_ptr());
+                let constant_power_panning = S::pd_loadu(
+                    voice_data.operator_constant_power_pannings[operator_index].as_ptr(),
+                );
+                let operator_additive =
+                    S::pd_loadu(voice_data.operator_additives[operator_index].as_ptr());
 
-                    let sample_adjusted =
-                        S::pd_mul(S::pd_mul(sample, volume_product), constant_power_panning);
-                    let additive_out = S::pd_mul(sample_adjusted, operator_additive);
-                    let modulation_out = S::pd_sub(sample_adjusted, additive_out);
+                let volume_product = S::pd_mul(operator_volume, envelope_volume);
 
-                    // Add modulation output to target operator's modulation inputs
-                    let modulation_sum = S::pd_add(
-                        S::pd_loadu(voice_modulation_inputs[modulation_target].as_ptr()),
-                        modulation_out,
-                    );
-                    S::pd_storeu(
-                        voice_modulation_inputs[modulation_target].as_mut_ptr(),
-                        modulation_sum,
-                    );
+                let sample_adjusted =
+                    S::pd_mul(S::pd_mul(sample, volume_product), constant_power_panning);
+                let additive_out = S::pd_mul(sample_adjusted, operator_additive);
+                let modulation_out = S::pd_sub(sample_adjusted, additive_out);
 
-                    let addition = S::pd_mul(
-                        additive_out,
-                        S::pd_loadu(voice_data.volume_factors.as_ptr()),
-                    );
-                    // Add additive output to summed_additive_outputs
-                    let summed_plus_new =
-                        S::pd_add(S::pd_loadu(summed_additive_outputs.as_ptr()), addition);
-                    S::pd_storeu(summed_additive_outputs.as_mut_ptr(), summed_plus_new);
-                }
-            } // End of operator iteration
-        } // End of voice iteration
+                // Add modulation output to target operator's modulation inputs
+                let modulation_sum = S::pd_add(
+                    S::pd_loadu(voice_modulation_inputs[modulation_target].as_ptr()),
+                    modulation_out,
+                );
+                S::pd_storeu(
+                    voice_modulation_inputs[modulation_target].as_mut_ptr(),
+                    modulation_sum,
+                );
+
+                let addition = S::pd_mul(
+                    additive_out,
+                    S::pd_loadu(voice_data.volume_factors.as_ptr()),
+                );
+
+                // Add additive output to summed_additive_outputs
+                let summed_plus_new = S::pd_add(
+                    S::pd_loadu(summed_additive_outputs.as_ptr()), addition);
+                S::pd_storeu(summed_additive_outputs.as_mut_ptr(), summed_plus_new);
+            }
+        }
 
         // --- Summed additive outputs: apply hard limit.
 
