@@ -222,9 +222,7 @@ impl Simd for Avx {
     }
     #[target_feature(enable = "avx")]
     unsafe fn pd_over_zero(a: __m256d) -> bool {
-        _mm256_movemask_pd(
-            _mm256_cmp_pd::<{_CMP_GT_OQ}>(a, _mm256_setzero_pd())
-        ) == 0b1111
+        _mm256_movemask_pd(_mm256_cmp_pd::<{ _CMP_GT_OQ }>(a, _mm256_setzero_pd())) == 0b1111
     }
 }
 

@@ -15,6 +15,7 @@ use std::sync::Arc;
 use array_init::array_init;
 use fastrand::Rng;
 
+use gen::VoiceData;
 use vst::api::{Events, Supported};
 use vst::event::Event;
 use vst::host::Host;
@@ -37,6 +38,7 @@ pub struct ProcessingState {
     pub log10_table: Log10Table,
     pub voices: [Voice; 128],
     pub parameters: ProcessingParameters,
+    pub audio_gen_voice_data: [VoiceData; 128],
 }
 
 /// Thread-safe state used for parameter and preset calls
@@ -85,6 +87,7 @@ impl OctaSine {
             log10_table: Log10Table::default(),
             voices: array_init(|i| Voice::new(MidiPitch::new(i as u8))),
             parameters: ProcessingParameters::default(),
+            audio_gen_voice_data: array_init::array_init(|_| VoiceData::default()),
         };
 
         let sync = Arc::new(SyncState {
