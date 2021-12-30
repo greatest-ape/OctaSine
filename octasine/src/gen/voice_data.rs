@@ -64,7 +64,7 @@ impl<'a, T> Drop for SingleAccessLockGuard<'a, T> {
 }
 
 #[derive(Debug)]
-pub struct VoiceData<const PD_WIDTH: usize, const SAMPLES: usize> {
+pub struct VoiceData<const PD_WIDTH: usize> {
     pub active: bool,
     pub operator_volumes: [[f64; PD_WIDTH]; 4],
     pub operator_modulation_indices: [[f64; PD_WIDTH]; 4],
@@ -80,7 +80,7 @@ pub struct VoiceData<const PD_WIDTH: usize, const SAMPLES: usize> {
     pub volume_factors: [f64; 4],
 }
 
-impl Default for VoiceData<2, 1> {
+impl Default for VoiceData<2> {
     fn default() -> Self {
         Self {
             active: false,
@@ -100,7 +100,7 @@ impl Default for VoiceData<2, 1> {
     }
 }
 
-impl Default for VoiceData<4, 2> {
+impl Default for VoiceData<4> {
     fn default() -> Self {
         Self {
             active: false,

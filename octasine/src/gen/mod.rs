@@ -123,7 +123,7 @@ mod gen {
     use super::*;
 
     #[feature_gate]
-    type VoiceData = super::VoiceData<{ S::PD_WIDTH }, { S::SAMPLES }>;
+    type VoiceData = super::VoiceData<{ S::PD_WIDTH }>;
 
     #[feature_gate]
     impl AudioGen for S {
