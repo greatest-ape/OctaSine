@@ -166,7 +166,7 @@ mod gen {
             .filter(|voice| voice.active)
             .count()
             > 0;
-        
+
         if !any_voice_active {
             return;
         }
@@ -575,10 +575,8 @@ mod gen {
                         S::pd_loadu(voice_data.volume_factors.as_ptr()),
                     );
                     // Add additive output to summed_additive_outputs
-                    let summed_plus_new = S::pd_add(
-                        S::pd_loadu(summed_additive_outputs.as_ptr()),
-                        addition
-                    );
+                    let summed_plus_new =
+                        S::pd_add(S::pd_loadu(summed_additive_outputs.as_ptr()), addition);
                     S::pd_storeu(summed_additive_outputs.as_mut_ptr(), summed_plus_new);
                 }
             } // End of operator iteration
@@ -611,8 +609,12 @@ mod gen {
             let operator_volume = S::pd_loadu(voice_data.operator_volumes[operator_index].as_ptr());
 
             if S::pd_over_zero_limit(operator_volume) {
-                operator_additive_zero[operator_index] = !S::pd_over_zero_limit(S::pd_loadu(voice_data.operator_additives[operator_index].as_ptr()));
-                operator_modulation_index_zero[operator_index] = !S::pd_over_zero_limit(S::pd_loadu(voice_data.operator_modulation_indices[operator_index].as_ptr()));
+                operator_additive_zero[operator_index] = !S::pd_over_zero_limit(S::pd_loadu(
+                    voice_data.operator_additives[operator_index].as_ptr(),
+                ));
+                operator_modulation_index_zero[operator_index] = !S::pd_over_zero_limit(
+                    S::pd_loadu(voice_data.operator_modulation_indices[operator_index].as_ptr()),
+                );
             } else {
                 // If volume is off, just set to skippable, don't even bother with lt calculations
                 operator_generate_audio[operator_index] = false;
