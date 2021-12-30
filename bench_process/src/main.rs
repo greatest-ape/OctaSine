@@ -53,18 +53,18 @@ fn main() {
     #[allow(unused_variables)]
     let (_, fallback_std) = benchmark(
         "fallback (std)",
-        "c0 51 ff c3 6b 28 a7 6d ",
+        "0f 13 c7 04 36 1f a0 56 ",
         octasine::gen::simd::FallbackStd::SAMPLES,
         octasine::gen::simd::FallbackStd::process_f32,
     );
 
     #[allow(unused_variables, unused_mut)]
-    let mut all_hashes_match = true;
+    let mut all_sleef_hashes_match = true;
 
     #[cfg(feature = "simd")]
     {
         // Don't forget trailing space
-        let hash = "c0 51 ff c3 6b 28 a7 6d ";
+        let hash = "d7 09 ab 41 87 76 f7 f0 ";
 
         {
             use octasine::gen::simd::FallbackSleef;
@@ -75,7 +75,7 @@ fn main() {
                 FallbackSleef::process_f32,
             );
 
-            all_hashes_match &= success;
+            all_sleef_hashes_match &= success;
 
             println!("Speed compared to std fallback: {}x", fallback_std / r);
         }
@@ -85,7 +85,7 @@ fn main() {
 
             let (success, r) = benchmark("sse2", hash, Sse2::SAMPLES, Sse2::process_f32);
 
-            all_hashes_match &= success;
+            all_sleef_hashes_match &= success;
 
             println!("Speed compared to std fallback: {}x", fallback_std / r);
         }
@@ -94,13 +94,13 @@ fn main() {
 
             let (success, r) = benchmark("avx", hash, Avx::SAMPLES, Avx::process_f32);
 
-            all_hashes_match &= success;
+            all_sleef_hashes_match &= success;
 
             println!("Speed compared to std fallback: {}x", fallback_std / r);
         }
     }
 
-    if all_hashes_match {
+    if all_sleef_hashes_match {
         println!("\n{}", "All sleef output hashes matched".green());
     } else {
         println!("\n{}", "Sleef output hashes didn't match".red());
@@ -150,7 +150,7 @@ fn benchmark(
             octasine.process_midi_event([128, 103, 0]);
         }
 
-        for j in 0..60 {
+        for j in 0..87 {
             if envelope_duration_parameters.contains(&j) || wave_type_parameters.contains(&j) {
                 continue;
             }
