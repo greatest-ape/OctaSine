@@ -370,6 +370,15 @@ mod gen {
                 voice_data.volume_factors[sample_index_offset + 1] = voice_volume_factor;
 
                 voice.deactivate_if_envelopes_ended();
+
+                // If voice was deactivated during first sample in avx mode, ensure
+                // audio isn't generated for second sample
+                if (!voice.active) & (S::SAMPLES == 2) & (sample_index == 0) {
+                    for volumes in voice_data.operator_envelope_volumes.iter_mut() {
+                        volumes[2] = 0.0;
+                        volumes[3] = 0.0;
+                    }
+                }
             }
         }
     }
