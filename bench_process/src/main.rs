@@ -119,7 +119,7 @@ fn benchmark(
 
     let wave_type_parameters = [4i32, 17, 31, 46];
 
-    const SIZE: usize = 128;
+    const SIZE: usize = 256;
 
     let mut lefts = vec![0.0f32; SIZE];
     let mut rights = vec![0.0f32; SIZE];
@@ -129,7 +129,7 @@ fn benchmark(
     let iterations = 5_000;
 
     for p in envelope_duration_parameters.iter() {
-        octasine.sync.set_parameter(*p, 1.0);
+        octasine.sync.set_parameter(*p, 0.1);
     }
     for p in wave_type_parameters.iter() {
         octasine.sync.set_parameter(*p, 0.0);
@@ -143,7 +143,7 @@ fn benchmark(
             octasine.process_midi_event([144, 101, 100]);
             octasine.process_midi_event([144, 102, 100]);
             octasine.process_midi_event([144, 103, 100]);
-        } else if i % 1024 == 768 {
+        } else if i % 1024 == 512 {
             octasine.process_midi_event([128, 100, 0]);
             octasine.process_midi_event([128, 101, 0]);
             octasine.process_midi_event([128, 102, 0]);
