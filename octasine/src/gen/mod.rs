@@ -425,7 +425,7 @@ mod gen {
                         let mut random_numbers = [0.0f64; S::PD_WIDTH];
 
                         for sample_index in 0..S::SAMPLES {
-                            let random = (rng.f64() - 0.5) * 2.0;
+                            let random = rng.f64();
 
                             let sample_index_offset = sample_index * 2;
 
@@ -433,7 +433,10 @@ mod gen {
                             random_numbers[sample_index_offset + 1] = random;
                         }
 
-                        S::pd_loadu(random_numbers.as_ptr())
+                        let random_numbers = S::pd_loadu(random_numbers.as_ptr());
+
+                        // Convert random numbers to range -1.0 to 1.0
+                        S::pd_mul(S::pd_set1(2.0), S::pd_sub(random_numbers, S::pd_set1(0.5)))
                     } else {
                         let pan_tendency = {
                             let pan =
