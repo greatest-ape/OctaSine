@@ -45,7 +45,7 @@ pub trait Simd {
     unsafe fn pd_fast_sin(a: Self::PackedDouble) -> Self::PackedDouble;
     unsafe fn pd_pairwise_horizontal_sum(a: Self::PackedDouble) -> Self::PackedDouble;
     unsafe fn pd_distribute_left_right(l: f64, r: f64) -> Self::PackedDouble;
-    unsafe fn pd_over_zero(volume: Self::PackedDouble) -> bool;
+    unsafe fn pd_any_over_zero(volume: Self::PackedDouble) -> bool;
 }
 
 pub struct Fallback<T> {
@@ -93,8 +93,8 @@ impl<T: FallbackSine> Simd for Fallback<T> {
     unsafe fn pd_distribute_left_right(l: f64, r: f64) -> [f64; 2] {
         [l, r]
     }
-    unsafe fn pd_over_zero([a1, a2]: [f64; 2]) -> bool {
-        (a1 > 0.0) & (a2 > 0.0)
+    unsafe fn pd_any_over_zero([a1, a2]: [f64; 2]) -> bool {
+        (a1 > 0.0) | (a2 > 0.0)
     }
 }
 
@@ -157,8 +157,8 @@ impl Simd for Sse2 {
         _mm_loadu_pd(&lr[0])
     }
     #[target_feature(enable = "sse2")]
-    unsafe fn pd_over_zero(a: __m128d) -> bool {
-        _mm_movemask_pd(_mm_cmpgt_pd(a, _mm_setzero_pd())) == 0b11
+    unsafe fn pd_any_over_zero(a: __m128d) -> bool {
+        _mm_movemask_pd(_mm_cmpgt_pd(a, _mm_setzero_pd())) != 0
     }
 }
 
@@ -221,8 +221,8 @@ impl Simd for Avx {
         _mm256_loadu_pd(&lr[0])
     }
     #[target_feature(enable = "avx")]
-    unsafe fn pd_over_zero(a: __m256d) -> bool {
-        _mm256_movemask_pd(_mm256_cmp_pd::<{ _CMP_GT_OQ }>(a, _mm256_setzero_pd())) == 0b1111
+    unsafe fn pd_any_over_zero(a: __m256d) -> bool {
+        _mm256_movemask_pd(_mm256_cmp_pd::<{ _CMP_GT_OQ }>(a, _mm256_setzero_pd())) != 0
     }
 }
 

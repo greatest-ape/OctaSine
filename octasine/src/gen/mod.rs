@@ -143,12 +143,12 @@ mod gen {
             assert_eq!(lefts.len(), S::SAMPLES);
             assert_eq!(rights.len(), S::SAMPLES);
 
-            octasine.processing.global_time.0 +=
-                S::SAMPLES as f64 * octasine.processing.time_per_sample.0;
-
             if !octasine.processing.voices.iter().any(|voice| voice.active) {
                 return;
             }
+
+            // FIXME: no longer necessary?
+            octasine.processing.global_time.0 += S::SAMPLES as f64 * octasine.processing.time_per_sample.0;
 
             extract_voice_data(octasine);
             gen_audio(
@@ -373,11 +373,19 @@ mod gen {
 
                 // If voice was deactivated during first sample in avx mode, ensure
                 // audio isn't generated for second sample
+                // FIXME: necessary?
                 if (!voice.active) & (S::SAMPLES == 2) & (sample_index == 0) {
                     for volumes in voice_data.operator_envelope_volumes.iter_mut() {
                         volumes[2] = 0.0;
                         volumes[3] = 0.0;
                     }
+                    for volumes in voice_data.operator_volumes.iter_mut() {
+                        volumes[2] = 0.0;
+                        volumes[3] = 0.0;
+                    }
+
+                    voice_data.volume_factors[2] = 0.0;
+                    voice_data.volume_factors[3] = 0.0;
                 }
             }
         }
@@ -398,7 +406,7 @@ mod gen {
         let mut summed_additive_outputs = S::pd_setzero();
 
         for voice_data in voice_data.iter().filter(|voice_data| voice_data.active) {
-            // let operator_generate_audio = run_operator_dependency_analysis(voice_data);
+            let operator_generate_audio = run_operator_dependency_analysis(voice_data);
 
             // --- Generate samples for all operators
 
@@ -410,11 +418,10 @@ mod gen {
                 // FIXME: better iterator with 3, 2, 1, 0 possible?
                 let operator_index = 3 - operator_index;
 
-                // Disabled for now
                 // Possibly skip generation based on previous dependency analysis
-                // if !operator_generate_audio[operator_index] {
-                //     continue;
-                // }
+                if !operator_generate_audio[operator_index] {
+                    continue;
+                }
 
                 let envelope_volume =
                     S::pd_loadu(voice_data.operator_envelope_volumes[operator_index].as_ptr());
@@ -423,7 +430,7 @@ mod gen {
                 // performance when operator envelope lengths vary a lot.
                 // Otherwise, the branching probably negatively impacts
                 // performance.
-                if !S::pd_over_zero(envelope_volume) {
+                if !S::pd_any_over_zero(envelope_volume) {
                     continue;
                 }
 
@@ -562,11 +569,11 @@ mod gen {
         for operator_index in 0..4 {
             let operator_volume = S::pd_loadu(voice_data.operator_volumes[operator_index].as_ptr());
 
-            if S::pd_over_zero(operator_volume) {
-                operator_additive_zero[operator_index] = !S::pd_over_zero(S::pd_loadu(
+            if S::pd_any_over_zero(operator_volume) {
+                operator_additive_zero[operator_index] = !S::pd_any_over_zero(S::pd_loadu(
                     voice_data.operator_additives[operator_index].as_ptr(),
                 ));
-                operator_modulation_index_zero[operator_index] = !S::pd_over_zero(S::pd_loadu(
+                operator_modulation_index_zero[operator_index] = !S::pd_any_over_zero(S::pd_loadu(
                     voice_data.operator_modulation_indices[operator_index].as_ptr(),
                 ));
             } else {
