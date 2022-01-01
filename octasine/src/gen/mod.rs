@@ -187,6 +187,14 @@ mod gen {
 
                 let sample_index_offset = sample_index * 2;
 
+                for (operator_index, operator) in operators.iter_mut().enumerate() {
+                    voice.operators[operator_index].volume_envelope.advance_one_sample(
+                        &operator.volume_envelope,
+                        voice.key_pressed,
+                        time_per_sample,
+                    );
+                }
+
                 let lfo_values = get_lfo_target_values(
                     &mut octasine.processing.parameters.lfos,
                     &mut voice.lfos,
@@ -320,18 +328,13 @@ mod gen {
                 // Envelope
                 for (operator_index, operator) in operators.iter_mut().enumerate() {
                     let v = voice.operators[operator_index].volume_envelope.get_volume(
-                        &octasine.processing.log10_table,
                         &operator.volume_envelope,
-                        voice.key_pressed,
-                        voice.duration,
                     );
 
                     voice_data.operator_envelope_volumes[operator_index][sample_index_offset] = v;
                     voice_data.operator_envelope_volumes[operator_index][sample_index_offset + 1] =
                         v;
                 }
-
-                voice.duration.0 += time_per_sample.0;
 
                 // Phase
                 for operator_index in 0..4 {

@@ -1,112 +1,124 @@
 use crate::approximations::Log10Table;
 use crate::common::*;
-use crate::constants::*;
 use crate::parameters::processing::OperatorEnvelopeProcessingParameter;
 
 use super::VoiceDuration;
 
+const DECAY_RELEASE_DURATION: f64 = 0.01;
+
 #[derive(Debug, Copy, Clone)]
 pub struct VoiceOperatorVolumeEnvelope {
     stage: EnvelopeStage,
+    duration: VoiceDuration,
     duration_at_stage_change: VoiceDuration,
     volume_at_stage_change: f64,
     last_volume: f64,
 }
 
 impl VoiceOperatorVolumeEnvelope {
-    #[inline]
-    fn advance_if_key_not_pressed(&mut self, key_pressed: bool, voice_duration: VoiceDuration) {
+    pub fn advance_one_sample(
+        &mut self,
+        operator_envelope: &OperatorEnvelopeProcessingParameter,
+        key_pressed: bool,
+        time_per_sample: TimePerSample,
+    ) {
         use EnvelopeStage::*;
+
+        if let Ended = self.stage {
+            return;
+        }
+
+        self.duration.0 += time_per_sample.0;
 
         if !key_pressed {
             match self.stage {
-                Attack | Decay | Sustain => {
-                    self.stage = Release;
-                    self.duration_at_stage_change = voice_duration;
+                Decay => {
+                    self.stage = DecayRelease;
+                    self.duration_at_stage_change = self.duration;
                     self.volume_at_stage_change = self.last_volume;
+
+                    return;
+                }
+                Attack | Sustain => {
+                    self.stage = Release;
+                    self.duration_at_stage_change = self.duration;
+                    self.volume_at_stage_change = self.last_volume;
+
+                    return;
                 }
                 _ => (),
             }
         }
-    }
 
-    #[inline]
-    fn advance_if_stage_time_up(
-        &mut self,
-        operator_envelope: &OperatorEnvelopeProcessingParameter,
-        voice_duration: VoiceDuration,
-    ) {
-        use EnvelopeStage::*;
+        let duration_since_stage_change = self.duration_since_stage_change();
 
-        let opt_stage_duration = match self.stage {
-            Attack => Some(operator_envelope.attack_duration.value),
-            Decay => Some(operator_envelope.decay_duration.value),
-            Release => Some(operator_envelope.release_duration.value),
-            _ => None,
-        };
-
-        if let Some(stage_duration) = opt_stage_duration {
-            let duration_since_stage_change = voice_duration.0 - self.duration_at_stage_change.0;
-
-            if duration_since_stage_change >= stage_duration {
-                if self.stage == Attack {
-                    self.stage = Decay;
-                    self.duration_at_stage_change = voice_duration;
-                    self.volume_at_stage_change = self.last_volume;
-                } else if self.stage == Decay {
-                    self.stage = Sustain;
-                    self.duration_at_stage_change = voice_duration;
-                    self.volume_at_stage_change = self.last_volume;
-                } else if self.stage == Release {
-                    self.stage = Ended;
-                    self.duration_at_stage_change = VoiceDuration(0.0);
-                    self.volume_at_stage_change = 0.0;
-                }
+        match self.stage {
+            Attack if duration_since_stage_change >= operator_envelope.attack_duration.value => {
+                self.stage = Decay;
+                self.duration_at_stage_change = self.duration;
+                self.volume_at_stage_change = self.last_volume;
+            },
+            Decay if duration_since_stage_change >= operator_envelope.decay_duration.value => {
+                self.stage = Sustain;
+                self.duration_at_stage_change = self.duration;
+                self.volume_at_stage_change = self.last_volume;
             }
+            DecayRelease if duration_since_stage_change >= DECAY_RELEASE_DURATION => {
+                self.stage = Release;
+                self.duration_at_stage_change = self.duration;
+                self.volume_at_stage_change = self.last_volume;
+            }
+            Release if duration_since_stage_change >= operator_envelope.release_duration.value => {
+                self.stage = Ended;
+                self.duration_at_stage_change = VoiceDuration(0.0);
+                self.volume_at_stage_change = 0.0;
+            }
+            _ => {}
         }
     }
 
-    #[inline]
-    fn calculate_volume(
-        &self,
-        log10_table: &Log10Table,
-        operator_envelope: &OperatorEnvelopeProcessingParameter,
-        voice_duration: VoiceDuration,
-    ) -> f64 {
+    pub fn get_volume(&mut self, operator_envelope: &OperatorEnvelopeProcessingParameter) -> f64 {
         use EnvelopeStage::*;
 
-        let duration_since_stage_change = voice_duration.0 - self.duration_at_stage_change.0;
+        let duration_since_stage_change = self.duration_since_stage_change();
 
-        match self.stage {
+        self.last_volume = match self.stage {
             Attack => Self::calculate_curve(
-                log10_table,
                 self.volume_at_stage_change,
                 operator_envelope.attack_end_value.value,
                 duration_since_stage_change,
                 operator_envelope.attack_duration.value,
             ),
             Decay => Self::calculate_curve(
-                log10_table,
                 self.volume_at_stage_change,
                 operator_envelope.decay_end_value.value,
                 duration_since_stage_change,
                 operator_envelope.decay_duration.value,
             ),
             Sustain => operator_envelope.decay_end_value.value,
+            DecayRelease => Self::calculate_curve(
+                self.volume_at_stage_change,
+                operator_envelope.decay_end_value.value,
+                duration_since_stage_change,
+                DECAY_RELEASE_DURATION,
+            ),
             Release => Self::calculate_curve(
-                log10_table,
                 self.volume_at_stage_change,
                 0.0,
                 duration_since_stage_change,
                 operator_envelope.release_duration.value,
             ),
             Ended => 0.0,
-        }
+        };
+
+        self.last_volume
     }
 
-    #[inline]
+    fn duration_since_stage_change(&self) -> f64 {
+        self.duration.0 - self.duration_at_stage_change.0
+    }
+
     pub fn calculate_curve(
-        log10_table: &Log10Table,
         start_volume: f64,
         end_volume: f64,
         time_so_far_this_stage: f64,
@@ -114,42 +126,16 @@ impl VoiceOperatorVolumeEnvelope {
     ) -> f64 {
         let time_progress = time_so_far_this_stage / stage_length;
 
-        let curve_factor = (stage_length * ENVELOPE_CURVE_TAKEOVER_RECIP).min(1.0);
-        let linear_factor = 1.0 - curve_factor;
-
-        let curve = curve_factor * log10_table.calculate(time_progress);
-        let linear = linear_factor * time_progress;
-
-        start_volume + (end_volume - start_volume) * (curve + linear)
-    }
-
-    #[inline]
-    /// Calculate volume and possibly advance envelope stage
-    pub fn get_volume(
-        &mut self,
-        log10_table: &Log10Table,
-        operator_envelope: &OperatorEnvelopeProcessingParameter,
-        key_pressed: bool,
-        voice_duration: VoiceDuration,
-    ) -> f64 {
-        if self.stage == EnvelopeStage::Ended {
-            0.0
-        } else {
-            self.advance_if_key_not_pressed(key_pressed, voice_duration);
-            self.advance_if_stage_time_up(operator_envelope, voice_duration);
-
-            self.last_volume =
-                self.calculate_volume(log10_table, operator_envelope, voice_duration);
-
-            self.last_volume
-        }
+        start_volume + Log10Table::calculate(time_progress) * (end_volume - start_volume)
     }
 
     #[inline]
     pub fn restart(&mut self) {
-        self.stage = EnvelopeStage::Attack;
-        self.volume_at_stage_change = self.last_volume;
-        self.duration_at_stage_change = VoiceDuration(0.0);
+        let mut new = Self::default();
+
+        new.last_volume = self.last_volume;
+
+        *self = new;
     }
 
     #[inline]
@@ -163,6 +149,7 @@ impl Default for VoiceOperatorVolumeEnvelope {
         Self {
             stage: EnvelopeStage::Attack,
             duration_at_stage_change: VoiceDuration(0.0),
+            duration: VoiceDuration(0.0),
             volume_at_stage_change: 0.0,
             last_volume: 0.0,
         }
@@ -173,6 +160,8 @@ impl Default for VoiceOperatorVolumeEnvelope {
 mod tests {
     use assert_approx_eq::assert_approx_eq;
     use quickcheck::{quickcheck, TestResult};
+
+    use crate::constants::*;
 
     use super::*;
 
@@ -216,7 +205,6 @@ mod tests {
             }
 
             let volume = VoiceOperatorVolumeEnvelope::calculate_curve(
-                &Log10Table::default(),
                 start_volume,
                 end_volume,
                 time_so_far_this_stage,
@@ -233,14 +221,12 @@ mod tests {
 
     #[test]
     fn calculate_curve_volume_start_end() {
-        let table = Log10Table::default();
-
         assert_approx_eq!(
-            VoiceOperatorVolumeEnvelope::calculate_curve(&table, 0.0, 1.0, 0.0, 4.0),
+            VoiceOperatorVolumeEnvelope::calculate_curve(0.0, 1.0, 0.0, 4.0),
             0.0
         );
         assert_approx_eq!(
-            VoiceOperatorVolumeEnvelope::calculate_curve(&table, 0.0, 1.0, 4.0, 4.0),
+            VoiceOperatorVolumeEnvelope::calculate_curve(0.0, 1.0, 4.0, 4.0),
             1.0
         );
     }
@@ -253,7 +239,6 @@ mod tests {
             }
 
             let stage_1_end = VoiceOperatorVolumeEnvelope::calculate_curve(
-                &Log10Table::default(),
                 0.0,
                 stage_change_volume,
                 4.0,
@@ -261,7 +246,6 @@ mod tests {
             );
 
             let stage_2_start = VoiceOperatorVolumeEnvelope::calculate_curve(
-                &Log10Table::default(),
                 stage_change_volume,
                 1.0,
                 0.0,

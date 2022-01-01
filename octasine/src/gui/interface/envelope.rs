@@ -3,8 +3,6 @@ use iced_baseview::canvas::{
 };
 use iced_baseview::{Color, Element, Length, Point, Rectangle, Size, Vector};
 
-use crate::approximations::Log10Table;
-
 use crate::constants::{ENVELOPE_MAX_DURATION, ENVELOPE_MIN_DURATION};
 use crate::voices::envelopes::VoiceOperatorVolumeEnvelope;
 use crate::GuiSyncHandle;
@@ -51,7 +49,6 @@ struct EnvelopeStagePath {
 
 impl EnvelopeStagePath {
     fn new(
-        log10_table: &Log10Table,
         size: Size,
         total_duration: f32,
         x_offset: f32,
@@ -63,7 +60,6 @@ impl EnvelopeStagePath {
         let mut path = path::Builder::new();
 
         let start = Self::calculate_stage_progress_point(
-            log10_table,
             size,
             total_duration,
             x_offset,
@@ -74,7 +70,6 @@ impl EnvelopeStagePath {
             0.0,
         );
         let control_a = Self::calculate_stage_progress_point(
-            log10_table,
             size,
             total_duration,
             x_offset,
@@ -85,7 +80,6 @@ impl EnvelopeStagePath {
             1.0 / 3.0,
         );
         let control_b = Self::calculate_stage_progress_point(
-            log10_table,
             size,
             total_duration,
             x_offset,
@@ -96,7 +90,6 @@ impl EnvelopeStagePath {
             2.0 / 3.0,
         );
         let to = Self::calculate_stage_progress_point(
-            log10_table,
             size,
             total_duration,
             x_offset,
@@ -117,7 +110,6 @@ impl EnvelopeStagePath {
     }
 
     fn calculate_stage_progress_point(
-        log10_table: &Log10Table,
         size: Size,
         total_duration: f32,
         x_offset: f32,
@@ -130,7 +122,6 @@ impl EnvelopeStagePath {
         let duration = stage_duration * progress;
 
         let value = VoiceOperatorVolumeEnvelope::calculate_curve(
-            log10_table,
             start_value as f64,
             stage_end_value as f64,
             duration as f64,
@@ -207,7 +198,6 @@ impl Default for EnvelopeDragger {
 }
 
 pub struct Envelope {
-    log10_table: Log10Table,
     cache: Cache,
     style: Theme,
     operator_index: usize,
@@ -246,7 +236,6 @@ impl Envelope {
             Self::process_envelope_duration(sync_handle.get_parameter(release_dur));
 
         let mut envelope = Self {
-            log10_table: Log10Table::default(),
             cache: Cache::default(),
             style,
             operator_index,
@@ -413,7 +402,6 @@ impl Envelope {
         let x_offset = self.x_offset / self.viewport_factor;
 
         self.attack_stage_path = EnvelopeStagePath::new(
-            &self.log10_table,
             self.size,
             total_duration,
             x_offset,
@@ -424,7 +412,6 @@ impl Envelope {
         );
 
         self.decay_stage_path = EnvelopeStagePath::new(
-            &self.log10_table,
             self.size,
             total_duration,
             x_offset,
@@ -435,7 +422,6 @@ impl Envelope {
         );
 
         self.release_stage_path = EnvelopeStagePath::new(
-            &self.log10_table,
             self.size,
             total_duration,
             x_offset,

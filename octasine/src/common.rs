@@ -28,6 +28,8 @@ pub enum EnvelopeStage {
     Attack,
     Decay,
     Sustain,
+    /// When key is released before decay finished
+    DecayRelease,
     Release,
     Ended,
 }

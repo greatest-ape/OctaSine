@@ -3,7 +3,6 @@ use plotlib::repr::Plot;
 use plotlib::style::{LineStyle, PointMarker, PointStyle};
 use plotlib::view::ContinuousView;
 
-use octasine::approximations::Log10Table;
 use octasine::common::*;
 use octasine::parameters::processing::OperatorEnvelopeProcessingParameter;
 use octasine::voices::envelopes::VoiceOperatorVolumeEnvelope;
@@ -17,11 +16,10 @@ fn plot_envelope_stage(start_volume: f64, end_volume: f64, filename: &str) {
     let plot = Plot::from_function(
         |x| {
             VoiceOperatorVolumeEnvelope::calculate_curve(
-                &Log10Table::default(),
                 start_volume,
                 end_volume,
                 x as f64,
-                length as f64,
+                length,
             )
         },
         0.,
@@ -50,7 +48,6 @@ fn plot_lfo_values(filename: &str) {
         .collect();
 
     let num_samples = 44_100usize * 4;
-    let log10_table = Log10Table::default();
 
     let time_per_sample = TimePerSample(1.0 / 44100.0);
     let bpm = BeatsPerMinute(120.0);
@@ -76,11 +73,14 @@ fn plot_lfo_values(filename: &str) {
 
         lfo_value_points.push((i as f64, lfo_value));
 
-        let envelope_value = envelope.get_volume(
-            &log10_table,
+        envelope.advance_one_sample(
             &mut processing_parameter_envelope,
             key_pressed,
-            voice_duration,
+            time_per_sample
+        );
+
+        let envelope_value = envelope.get_volume(
+            &mut processing_parameter_envelope,
         );
 
         envelope_value_points.push((i as f64, envelope_value));
@@ -161,9 +161,9 @@ fn plot_lfo_values(filename: &str) {
 }
 
 fn main() {
-    plot_lfo_values("tmp/lfo.svg");
+    // plot_lfo_values("tmp/lfo.svg");
 
-    // plot_envelope_stage(0.0, 1.0, "attack.svg");
-    // plot_envelope_stage(0.5, 1.0, "decay.svg");
-    // plot_envelope_stage(1.0, 0.0, "release.svg");
+    plot_envelope_stage(0.0, 1.0, "tmp/attack.svg");
+    plot_envelope_stage(0.5, 1.0, "tmp/decay.svg");
+    plot_envelope_stage(1.0, 0.0, "tmp/release.svg");
 }
