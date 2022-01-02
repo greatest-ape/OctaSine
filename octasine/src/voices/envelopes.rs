@@ -4,7 +4,6 @@ use crate::parameters::processing::OperatorEnvelopeProcessingParameter;
 
 use super::VoiceDuration;
 
-const QUICKRELEASE_DURATION: f64 = 0.01;
 const RESTART_DURATION: f64 = 0.01;
 
 #[derive(Debug, Copy, Clone)]
@@ -31,24 +30,15 @@ impl VoiceOperatorVolumeEnvelope {
 
         self.duration.0 += time_per_sample.0;
 
-        if !key_pressed {
-            match self.stage {
-                Attack | Decay => {
-                    self.stage = QuickRelease;
-                    self.duration_at_stage_change = self.duration;
-                    self.volume_at_stage_change = self.last_volume;
+        match self.stage {
+            Attack | Decay | Sustain if !key_pressed => {
+                self.stage = Release;
+                self.duration_at_stage_change = self.duration;
+                self.volume_at_stage_change = self.last_volume;
 
-                    return;
-                }
-                Sustain => {
-                    self.stage = Release;
-                    self.duration_at_stage_change = self.duration;
-                    self.volume_at_stage_change = self.last_volume;
-
-                    return;
-                }
-                _ => (),
+                return;
             }
+            _ => (),
         }
 
         let duration_since_stage_change = self.duration_since_stage_change();
@@ -66,11 +56,6 @@ impl VoiceOperatorVolumeEnvelope {
             }
             Decay if duration_since_stage_change >= operator_envelope.decay_duration.value => {
                 self.stage = Sustain;
-                self.duration_at_stage_change = self.duration;
-                self.volume_at_stage_change = self.last_volume;
-            }
-            QuickRelease if duration_since_stage_change >= QUICKRELEASE_DURATION => {
-                self.stage = Release;
                 self.duration_at_stage_change = self.duration;
                 self.volume_at_stage_change = self.last_volume;
             }
@@ -107,12 +92,6 @@ impl VoiceOperatorVolumeEnvelope {
                 operator_envelope.decay_duration.value,
             ),
             Sustain => operator_envelope.decay_end_value.value,
-            QuickRelease => Self::calculate_curve(
-                self.volume_at_stage_change,
-                operator_envelope.decay_end_value.value,
-                self.duration_since_stage_change(),
-                QUICKRELEASE_DURATION,
-            ),
             Release => Self::calculate_curve(
                 self.volume_at_stage_change,
                 0.0,
