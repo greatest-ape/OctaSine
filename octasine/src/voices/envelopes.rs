@@ -57,7 +57,7 @@ impl VoiceOperatorVolumeEnvelope {
                 self.stage = Decay;
                 self.duration_at_stage_change = self.duration;
                 self.volume_at_stage_change = self.last_volume;
-            },
+            }
             Decay if duration_since_stage_change >= operator_envelope.decay_duration.value => {
                 self.stage = Sustain;
                 self.duration_at_stage_change = self.duration;
@@ -236,19 +236,11 @@ mod tests {
                 return TestResult::discard();
             }
 
-            let stage_1_end = VoiceOperatorVolumeEnvelope::calculate_curve(
-                0.0,
-                stage_change_volume,
-                4.0,
-                4.0,
-            );
+            let stage_1_end =
+                VoiceOperatorVolumeEnvelope::calculate_curve(0.0, stage_change_volume, 4.0, 4.0);
 
-            let stage_2_start = VoiceOperatorVolumeEnvelope::calculate_curve(
-                stage_change_volume,
-                1.0,
-                0.0,
-                4.0,
-            );
+            let stage_2_start =
+                VoiceOperatorVolumeEnvelope::calculate_curve(stage_change_volume, 1.0, 0.0, 4.0);
 
             let diff = (stage_1_end - stage_2_start).abs();
 

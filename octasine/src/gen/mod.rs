@@ -148,7 +148,8 @@ mod gen {
             }
 
             // FIXME: no longer necessary?
-            octasine.processing.global_time.0 += S::SAMPLES as f64 * octasine.processing.time_per_sample.0;
+            octasine.processing.global_time.0 +=
+                S::SAMPLES as f64 * octasine.processing.time_per_sample.0;
 
             extract_voice_data(octasine);
             gen_audio(
@@ -188,11 +189,13 @@ mod gen {
                 let sample_index_offset = sample_index * 2;
 
                 for (operator_index, operator) in operators.iter_mut().enumerate() {
-                    voice.operators[operator_index].volume_envelope.advance_one_sample(
-                        &operator.volume_envelope,
-                        voice.key_pressed,
-                        time_per_sample,
-                    );
+                    voice.operators[operator_index]
+                        .volume_envelope
+                        .advance_one_sample(
+                            &operator.volume_envelope,
+                            voice.key_pressed,
+                            time_per_sample,
+                        );
                 }
 
                 let lfo_values = get_lfo_target_values(
@@ -327,9 +330,9 @@ mod gen {
 
                 // Envelope
                 for (operator_index, operator) in operators.iter_mut().enumerate() {
-                    let v = voice.operators[operator_index].volume_envelope.get_volume(
-                        &operator.volume_envelope,
-                    );
+                    let v = voice.operators[operator_index]
+                        .volume_envelope
+                        .get_volume(&operator.volume_envelope);
 
                     voice_data.operator_envelope_volumes[operator_index][sample_index_offset] = v;
                     voice_data.operator_envelope_volumes[operator_index][sample_index_offset + 1] =
