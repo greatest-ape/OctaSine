@@ -12,9 +12,6 @@
   TX81Z waveforms. https://www.reddit.com/r/synthesizers/comments/rkyk6j/comment/hpgcu6r/?utm_source=share&utm_medium=web2x&context=3
 
 * Bugs
-  * When attack and decay is short, release is long and key presses are very
-    short, tones keeps going on or don't trigger at all. Key release event not
-    properly received? Envelope bug?
   * LFO issue: when time between key presses is short, lfo seems to still be
     running and affecting next key press. Valid for all shapes and both modes.
     Interpolation issue?

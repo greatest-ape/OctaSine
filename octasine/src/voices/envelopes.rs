@@ -4,7 +4,7 @@ use crate::parameters::processing::OperatorEnvelopeProcessingParameter;
 
 use super::VoiceDuration;
 
-const DECAY_RELEASE_DURATION: f64 = 0.01;
+const QUICKRELEASE_DURATION: f64 = 0.01;
 
 #[derive(Debug, Copy, Clone)]
 pub struct VoiceOperatorVolumeEnvelope {
@@ -32,14 +32,14 @@ impl VoiceOperatorVolumeEnvelope {
 
         if !key_pressed {
             match self.stage {
-                Decay => {
-                    self.stage = DecayRelease;
+                Attack | Decay => {
+                    self.stage = QuickRelease;
                     self.duration_at_stage_change = self.duration;
                     self.volume_at_stage_change = self.last_volume;
 
                     return;
                 }
-                Attack | Sustain => {
+                Sustain => {
                     self.stage = Release;
                     self.duration_at_stage_change = self.duration;
                     self.volume_at_stage_change = self.last_volume;
@@ -63,7 +63,7 @@ impl VoiceOperatorVolumeEnvelope {
                 self.duration_at_stage_change = self.duration;
                 self.volume_at_stage_change = self.last_volume;
             }
-            DecayRelease if duration_since_stage_change >= DECAY_RELEASE_DURATION => {
+            QuickRelease if duration_since_stage_change >= QUICKRELEASE_DURATION => {
                 self.stage = Release;
                 self.duration_at_stage_change = self.duration;
                 self.volume_at_stage_change = self.last_volume;
@@ -80,35 +80,33 @@ impl VoiceOperatorVolumeEnvelope {
     pub fn get_volume(&mut self, operator_envelope: &OperatorEnvelopeProcessingParameter) -> f64 {
         use EnvelopeStage::*;
 
-        let duration_since_stage_change = self.duration_since_stage_change();
-
         self.last_volume = match self.stage {
+            Ended => 0.0,
             Attack => Self::calculate_curve(
                 self.volume_at_stage_change,
                 operator_envelope.attack_end_value.value,
-                duration_since_stage_change,
+                self.duration_since_stage_change(),
                 operator_envelope.attack_duration.value,
             ),
             Decay => Self::calculate_curve(
                 self.volume_at_stage_change,
                 operator_envelope.decay_end_value.value,
-                duration_since_stage_change,
+                self.duration_since_stage_change(),
                 operator_envelope.decay_duration.value,
             ),
             Sustain => operator_envelope.decay_end_value.value,
-            DecayRelease => Self::calculate_curve(
+            QuickRelease => Self::calculate_curve(
                 self.volume_at_stage_change,
                 operator_envelope.decay_end_value.value,
-                duration_since_stage_change,
-                DECAY_RELEASE_DURATION,
+                self.duration_since_stage_change(),
+                QUICKRELEASE_DURATION,
             ),
             Release => Self::calculate_curve(
                 self.volume_at_stage_change,
                 0.0,
-                duration_since_stage_change,
+                self.duration_since_stage_change(),
                 operator_envelope.release_duration.value,
             ),
-            Ended => 0.0,
         };
 
         self.last_volume

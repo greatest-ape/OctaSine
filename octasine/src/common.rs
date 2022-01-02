@@ -28,8 +28,9 @@ pub enum EnvelopeStage {
     Attack,
     Decay,
     Sustain,
-    /// When key is released before decay finished
-    DecayRelease,
+    /// When key is released before reaching sustain, go here,
+    /// interpolate to decay end volume and then go to release
+    QuickRelease,
     Release,
     Ended,
 }
