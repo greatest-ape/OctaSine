@@ -5,6 +5,7 @@ use crate::parameters::processing::OperatorEnvelopeProcessingParameter;
 use super::VoiceDuration;
 
 const QUICKRELEASE_DURATION: f64 = 0.01;
+const RESTART_DURATION: f64 = 0.01;
 
 #[derive(Debug, Copy, Clone)]
 pub struct VoiceOperatorVolumeEnvelope {
@@ -53,6 +54,11 @@ impl VoiceOperatorVolumeEnvelope {
         let duration_since_stage_change = self.duration_since_stage_change();
 
         match self.stage {
+            Restart if duration_since_stage_change >= RESTART_DURATION => {
+                self.stage = Attack;
+                self.duration_at_stage_change = self.duration;
+                self.volume_at_stage_change = self.last_volume;
+            }
             Attack if duration_since_stage_change >= operator_envelope.attack_duration.value => {
                 self.stage = Decay;
                 self.duration_at_stage_change = self.duration;
@@ -82,8 +88,14 @@ impl VoiceOperatorVolumeEnvelope {
 
         self.last_volume = match self.stage {
             Ended => 0.0,
-            Attack => Self::calculate_curve(
+            Restart => Self::calculate_curve(
                 self.volume_at_stage_change,
+                0.0,
+                self.duration_since_stage_change(),
+                RESTART_DURATION
+            ),
+            Attack => Self::calculate_curve(
+                0.0,
                 operator_envelope.attack_end_value.value,
                 self.duration_since_stage_change(),
                 operator_envelope.attack_duration.value,
@@ -129,12 +141,17 @@ impl VoiceOperatorVolumeEnvelope {
 
     #[inline]
     pub fn restart(&mut self) {
-        let mut new = Self::default();
+        if let EnvelopeStage::Ended = self.stage {
+            *self = Self::default();
+        } else {
+            let mut new = Self::default();
 
-        new.volume_at_stage_change = self.volume_at_stage_change;
-        new.last_volume = self.last_volume;
+            new.volume_at_stage_change = self.volume_at_stage_change;
+            new.last_volume = self.last_volume;
+            new.stage = EnvelopeStage::Restart;
 
-        *self = new;
+            *self = new;
+        }
     }
 
     #[inline]
