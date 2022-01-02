@@ -5,6 +5,9 @@
 * Wait for merge of raw-gl-context fix, use that repo
 * Consider defaulting to wgpu on Linux
 
+* Interpolation in processing parameters: should it be based on time rather
+  than number of samples?
+
 * Log level should be warn
 * Log file should be saved elsewhere, maybe in ::dirs::data_local_dir()
 * Consider adding phase knobs
