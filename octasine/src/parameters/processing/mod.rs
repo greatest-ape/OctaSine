@@ -331,7 +331,7 @@ mod tests {
 
     #[test]
     fn test_operator_panning_left_and_right() {
-        use super::interpolatable_value::*;
+        use super::interpolatable_value::INTERPOLATION_STEPS;
         use super::*;
 
         let mut operator = OperatorPanningProcessingParameter::default();
@@ -340,10 +340,11 @@ mod tests {
 
         operator.set_from_sync(1.0);
 
-        let n = INTERPOLATION_STEPS + 1;
         let mut left_and_right = [0.0, 0.0];
 
-        for i in 0..n {
+        for _ in 0..INTERPOLATION_STEPS {
+            operator.advance_one_sample();
+
             let new_value = operator.get_value();
             let new_left_and_right = operator.left_and_right;
 
@@ -353,6 +354,8 @@ mod tests {
             value = new_value;
             left_and_right = new_left_and_right;
         }
+
+        assert_approx_eq!(value, 1.0);
 
         assert_approx_eq!(left_and_right[0], 0.0);
         assert_approx_eq!(left_and_right[1], 1.0);
