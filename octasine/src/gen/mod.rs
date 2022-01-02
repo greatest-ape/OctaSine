@@ -15,7 +15,7 @@ use simd::*;
 const MAX_PD_WIDTH: usize = 4;
 
 pub trait AudioGen {
-    unsafe fn process_f32(octasine: &mut OctaSine, lefts: &mut [f32], rights: &mut [f32]);
+    unsafe fn process_f32(octasine: &mut OctaSine, lefts: &mut [f32], rights: &mut [f32], position: usize);
 }
 
 enum RemainingSamples {
@@ -76,6 +76,7 @@ pub fn process_f32_runtime_select(octasine: &mut OctaSine, audio_buffer: &mut Au
                         octasine,
                         &mut lefts[position..end_position],
                         &mut rights[position..end_position],
+                        position,
                     );
 
                     position = end_position;
@@ -89,13 +90,15 @@ pub fn process_f32_runtime_select(octasine: &mut OctaSine, audio_buffer: &mut Au
                             Sse2::process_f32(
                                 octasine,
                                 &mut lefts[position..end_position],
-                                &mut rights[position..end_position]
+                                &mut rights[position..end_position],
+                                position,
                             );
                         } else {
                             FallbackStd::process_f32(
                                 octasine,
                                 &mut lefts[position..end_position],
-                                &mut rights[position..end_position]
+                                &mut rights[position..end_position],
+                                position,
                             );
                         }
                     );
@@ -139,11 +142,11 @@ mod gen {
     #[feature_gate]
     impl AudioGen for S {
         #[target_feature_enable]
-        unsafe fn process_f32(octasine: &mut OctaSine, lefts: &mut [f32], rights: &mut [f32]) {
+        unsafe fn process_f32(octasine: &mut OctaSine, lefts: &mut [f32], rights: &mut [f32], position: usize) {
             assert_eq!(lefts.len(), S::SAMPLES);
             assert_eq!(rights.len(), S::SAMPLES);
 
-            if !octasine.processing.voices.iter().any(|voice| voice.active) {
+            if octasine.processing.pending_midi_events.is_empty() && !octasine.processing.voices.iter().any(|voice| voice.active) {
                 return;
             }
 
@@ -151,7 +154,7 @@ mod gen {
             octasine.processing.global_time.0 +=
                 S::SAMPLES as f64 * octasine.processing.time_per_sample.0;
 
-            extract_voice_data(octasine);
+            extract_voice_data(octasine, position);
             gen_audio(
                 &mut octasine.processing.rng,
                 &octasine.processing.audio_gen_voice_data,
@@ -163,7 +166,7 @@ mod gen {
 
     #[feature_gate]
     #[target_feature_enable]
-    unsafe fn extract_voice_data(octasine: &mut OctaSine) {
+    unsafe fn extract_voice_data(octasine: &mut OctaSine, position: usize) {
         for voice_data in octasine.processing.audio_gen_voice_data.iter_mut() {
             voice_data.active = false;
             // TODO: reset values if active?
@@ -174,6 +177,20 @@ mod gen {
 
         for sample_index in 0..S::SAMPLES {
             octasine.processing.parameters.advance_one_sample();
+
+            // Process events for position in buffer
+            loop {
+                match octasine.processing.pending_midi_events.get(0).map(|e| e.delta_frames as usize) {
+                    Some(event_delta_frames) if event_delta_frames == position + sample_index => {
+                        let event = octasine.processing.pending_midi_events.pop_front().unwrap();
+
+                        octasine.process_midi_event(event);
+                    },
+                    _ => {
+                        break
+                    },
+                }
+            }
 
             let operators = &mut octasine.processing.parameters.operators;
 

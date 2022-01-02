@@ -10,6 +10,7 @@ pub mod voices;
 #[cfg(feature = "gui")]
 pub mod gui;
 
+use std::collections::VecDeque;
 use std::sync::Arc;
 
 use array_init::array_init;
@@ -17,11 +18,10 @@ use fastrand::Rng;
 
 use gen::VoiceData;
 use vst::api::{Events, Supported};
-use vst::event::Event;
+use vst::event::{Event, MidiEvent};
 use vst::host::Host;
 use vst::plugin::{CanDo, Category, HostCallback, Info, Plugin, PluginParameters};
 
-use approximations::*;
 use common::*;
 use constants::*;
 use parameters::processing::*;
@@ -37,6 +37,7 @@ pub struct ProcessingState {
     pub rng: Rng,
     pub voices: [Voice; 128],
     pub parameters: ProcessingParameters,
+    pub pending_midi_events: VecDeque<MidiEvent>,
     pub audio_gen_voice_data: [VoiceData; 128],
 }
 
@@ -85,6 +86,8 @@ impl OctaSine {
             rng: Rng::new(),
             voices: array_init(|i| Voice::new(MidiPitch::new(i as u8))),
             parameters: ProcessingParameters::default(),
+            // Start with some capacity to cut down on later allocations
+            pending_midi_events: VecDeque::with_capacity(128),
             audio_gen_voice_data: array_init::array_init(|_| VoiceData::default()),
         };
 
@@ -145,10 +148,10 @@ impl OctaSine {
 
     /// MIDI keyboard support
 
-    pub fn process_midi_event(&mut self, data: [u8; 3]) {
-        match data[0] {
-            128 => self.key_off(data[1]),
-            144 => self.key_on(data[1], data[2]),
+    pub fn process_midi_event(&mut self, event: MidiEvent) {
+        match event.data[0] {
+            128 => self.key_off(event.data[1]),
+            144 => self.key_on(event.data[1], event.data[2]),
             _ => (),
         }
     }
@@ -203,10 +206,14 @@ impl Plugin for OctaSine {
 
     fn process_events(&mut self, events: &Events) {
         for event in events.events() {
-            if let Event::Midi(ev) = event {
-                self.process_midi_event(ev.data);
+            if let Event::Midi(event) = event {
+                self.processing.pending_midi_events.push_back(event);
             }
         }
+
+        self.processing.pending_midi_events
+            .make_contiguous()
+            .sort_by_key(|e| e.delta_frames);
     }
 
     fn set_sample_rate(&mut self, rate: f32) {
