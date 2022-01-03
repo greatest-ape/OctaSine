@@ -150,10 +150,6 @@ mod gen {
                 return;
             }
 
-            // FIXME: no longer necessary?
-            octasine.processing.global_time.0 +=
-                S::SAMPLES as f64 * octasine.processing.time_per_sample.0;
-
             extract_voice_data(octasine, position);
             gen_audio(
                 &mut octasine.processing.rng,
@@ -169,13 +165,12 @@ mod gen {
     unsafe fn extract_voice_data(octasine: &mut OctaSine, position: usize) {
         for voice_data in octasine.processing.audio_gen_voice_data.iter_mut() {
             voice_data.active = false;
-            // TODO: reset values if active?
         }
 
-        let time_per_sample = octasine.processing.time_per_sample;
-        let bpm = octasine.get_bpm();
-
         for sample_index in 0..S::SAMPLES {
+            let time_per_sample = octasine.processing.time_per_sample;
+            let bpm = octasine.get_bpm();
+
             octasine.processing.parameters.advance_one_sample();
 
             // Process events for position in buffer

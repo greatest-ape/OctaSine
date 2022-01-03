@@ -31,7 +31,6 @@ use voices::*;
 
 /// State used for processing
 pub struct ProcessingState {
-    pub global_time: TimeCounter,
     pub sample_rate: SampleRate,
     pub time_per_sample: TimePerSample,
     pub rng: Rng,
@@ -80,7 +79,6 @@ impl OctaSine {
         let sample_rate = SampleRate(44100.0);
 
         let processing = ProcessingState {
-            global_time: TimeCounter(0.0),
             sample_rate,
             time_per_sample: Self::time_per_sample(sample_rate),
             rng: Rng::new(),
