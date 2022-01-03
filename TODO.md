@@ -5,7 +5,6 @@
 * Wait for merge of raw-gl-context fix, use that repo
 * Consider defaulting to wgpu on Linux
 
-* Rewrite smoothing algo for envelopes so that restarts aren't so sudden etc
 * Interpolation in processing parameters: should it be based on time rather
   than number of samples?
 
