@@ -192,10 +192,6 @@ mod gen {
                 .zip(octasine.processing.audio_gen_voice_data.iter_mut())
                 .filter(|(voice, _)| voice.active)
             {
-                voice_data.active = true;
-
-                let sample_index_offset = sample_index * 2;
-
                 for (operator_index, operator) in operators.iter_mut().enumerate() {
                     voice.operators[operator_index]
                         .volume_envelope
@@ -204,6 +200,22 @@ mod gen {
                             voice.key_pressed,
                             time_per_sample,
                         );
+                }
+
+                voice.deactivate_if_envelopes_ended();
+
+                if voice.active {
+                    voice_data.active = true;
+                } else {
+                    // If voice was deactivated during first sample in avx mode, ensure
+                    // audio isn't generated for second sample (as long as voice isn't
+                    // reactivated by midi events)
+                    if (S::SAMPLES == 2) & (sample_index == 0) {
+                        for volumes in voice_data.operator_envelope_volumes.iter_mut() {
+                            volumes[2] = 0.0;
+                            volumes[3] = 0.0;
+                        }
+                    }
                 }
 
                 let lfo_values = get_lfo_target_values(
@@ -222,6 +234,8 @@ mod gen {
                             LfoTargetMasterParameter::Frequency,
                         ))),
                 );
+
+                let sample_index_offset = sample_index * 2;
 
                 for (operator_index, operator) in operators.iter_mut().enumerate() {
                     voice_data.operator_wave_type[operator_index] = operator.wave_type.value;
@@ -382,25 +396,6 @@ mod gen {
 
                 voice_data.volume_factors[sample_index_offset] = voice_volume_factor;
                 voice_data.volume_factors[sample_index_offset + 1] = voice_volume_factor;
-
-                voice.deactivate_if_envelopes_ended();
-
-                // If voice was deactivated during first sample in avx mode, ensure
-                // audio isn't generated for second sample
-                // FIXME: necessary?
-                if (!voice.active) & (S::SAMPLES == 2) & (sample_index == 0) {
-                    for volumes in voice_data.operator_envelope_volumes.iter_mut() {
-                        volumes[2] = 0.0;
-                        volumes[3] = 0.0;
-                    }
-                    for volumes in voice_data.operator_volumes.iter_mut() {
-                        volumes[2] = 0.0;
-                        volumes[3] = 0.0;
-                    }
-
-                    voice_data.volume_factors[2] = 0.0;
-                    voice_data.volume_factors[3] = 0.0;
-                }
             }
         }
     }
