@@ -52,10 +52,8 @@ fn main() {
     // Ignore success status here, since output differs across platforms
     // depending on std sine implementation
     #[allow(unused_variables)]
-    let (_, fallback_std) = benchmark::<octasine::gen::simd::FallbackStd>(
-        "fallback (std)",
-        "30 2e 0a ed c3 ec 10 83 ",
-    );
+    let (_, fallback_std) =
+        benchmark::<octasine::gen::simd::FallbackStd>("fallback (std)", "30 2e 0a ed c3 ec 10 83 ");
 
     #[allow(unused_variables, unused_mut)]
     let mut all_sleef_hashes_match = true;
@@ -66,10 +64,8 @@ fn main() {
         let hash = "30 2e 0a ed c3 ec 10 83 ";
 
         {
-            let (success, r) = benchmark::<octasine::gen::simd::FallbackSleef>(
-                "fallback (sleef)",
-                hash,
-            );
+            let (success, r) =
+                benchmark::<octasine::gen::simd::FallbackSleef>("fallback (sleef)", hash);
 
             all_sleef_hashes_match &= success;
 
@@ -99,10 +95,7 @@ fn main() {
     }
 }
 
-fn benchmark<A: AudioGen + Simd>(
-    name: &str,
-    expected_hash: &str,
-) -> (bool, f32) {
+fn benchmark<A: AudioGen + Simd>(name: &str, expected_hash: &str) -> (bool, f32) {
     let mut octasine = OctaSine::default();
 
     let envelope_duration_parameters = [10i32, 12, 14, 24, 26, 28, 39, 41, 43, 54, 56, 58];
@@ -127,8 +120,8 @@ fn benchmark<A: AudioGen + Simd>(
 
     let now = Instant::now();
 
-    let key_on_events: Vec<MidiEvent> = (0..=3usize).map(|i| {
-        MidiEvent {
+    let key_on_events: Vec<MidiEvent> = (0..=3usize)
+        .map(|i| MidiEvent {
             data: [144, 100 + i as u8, 100],
             delta_frames: i as i32,
             live: false,
@@ -136,11 +129,11 @@ fn benchmark<A: AudioGen + Simd>(
             note_offset: None,
             detune: 0,
             note_off_velocity: 0,
-        }
-    }).collect();
+        })
+        .collect();
 
-    let key_off_events: Vec<MidiEvent> = (0..=3usize).map(|i| {
-        MidiEvent {
+    let key_off_events: Vec<MidiEvent> = (0..=3usize)
+        .map(|i| MidiEvent {
             data: [128, 100 + i as u8, 0],
             delta_frames: i as i32,
             live: false,
@@ -148,8 +141,8 @@ fn benchmark<A: AudioGen + Simd>(
             note_offset: None,
             detune: 0,
             note_off_velocity: 0,
-        }
-    }).collect();
+        })
+        .collect();
 
     for i in 0..iterations {
         if i % 1024 == 0 {

@@ -15,7 +15,12 @@ use simd::*;
 const MAX_PD_WIDTH: usize = 4;
 
 pub trait AudioGen {
-    unsafe fn process_f32(octasine: &mut OctaSine, lefts: &mut [f32], rights: &mut [f32], position: usize);
+    unsafe fn process_f32(
+        octasine: &mut OctaSine,
+        lefts: &mut [f32],
+        rights: &mut [f32],
+        position: usize,
+    );
 }
 
 enum RemainingSamples {
@@ -142,11 +147,18 @@ mod gen {
     #[feature_gate]
     impl AudioGen for S {
         #[target_feature_enable]
-        unsafe fn process_f32(octasine: &mut OctaSine, lefts: &mut [f32], rights: &mut [f32], position: usize) {
+        unsafe fn process_f32(
+            octasine: &mut OctaSine,
+            lefts: &mut [f32],
+            rights: &mut [f32],
+            position: usize,
+        ) {
             assert_eq!(lefts.len(), S::SAMPLES);
             assert_eq!(rights.len(), S::SAMPLES);
 
-            if octasine.processing.pending_midi_events.is_empty() && !octasine.processing.voices.iter().any(|v| v.active) {
+            if octasine.processing.pending_midi_events.is_empty()
+                && !octasine.processing.voices.iter().any(|v| v.active)
+            {
                 for (l, r) in lefts.iter_mut().zip(rights.iter_mut()) {
                     *l = 0.0;
                     *r = 0.0;
@@ -181,15 +193,18 @@ mod gen {
 
             // Process events for position in buffer
             loop {
-                match octasine.processing.pending_midi_events.get(0).map(|e| e.delta_frames as usize) {
+                match octasine
+                    .processing
+                    .pending_midi_events
+                    .get(0)
+                    .map(|e| e.delta_frames as usize)
+                {
                     Some(event_delta_frames) if event_delta_frames == position + sample_index => {
                         let event = octasine.processing.pending_midi_events.pop_front().unwrap();
 
                         octasine.process_midi_event(event);
-                    },
-                    _ => {
-                        break
-                    },
+                    }
+                    _ => break,
                 }
             }
 

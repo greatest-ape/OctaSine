@@ -1,6 +1,6 @@
 use crate::approximations::Log10Table;
 use crate::common::*;
-use crate::constants::{ENVELOPE_MIN_DURATION, ENVELOPE_CURVE_TAKEOVER_RECIP};
+use crate::constants::{ENVELOPE_CURVE_TAKEOVER_RECIP, ENVELOPE_MIN_DURATION};
 use crate::parameters::processing::OperatorEnvelopeProcessingParameter;
 
 use super::VoiceDuration;
@@ -76,7 +76,7 @@ impl VoiceOperatorVolumeEnvelope {
                 self.volume_at_stage_change,
                 0.0,
                 self.duration_since_stage_change(),
-                ENVELOPE_MIN_DURATION
+                ENVELOPE_MIN_DURATION,
             ),
             Attack => Self::calculate_curve(
                 0.0,

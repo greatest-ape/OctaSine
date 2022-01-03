@@ -149,7 +149,8 @@ impl OctaSine {
             self.processing.pending_midi_events.push_back(event);
         }
 
-        self.processing.pending_midi_events
+        self.processing
+            .pending_midi_events
             .make_contiguous()
             .sort_by_key(|e| e.delta_frames);
     }
