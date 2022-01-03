@@ -52,11 +52,9 @@ fn main() {
     // Ignore success status here, since output differs across platforms
     // depending on std sine implementation
     #[allow(unused_variables)]
-    let (_, fallback_std) = benchmark(
+    let (_, fallback_std) = benchmark::<octasine::gen::simd::FallbackStd>(
         "fallback (std)",
         "76 e6 da aa 08 41 66 b4 ",
-        octasine::gen::simd::FallbackStd::SAMPLES,
-        octasine::gen::simd::FallbackStd::process_f32,
     );
 
     #[allow(unused_variables, unused_mut)]
@@ -68,12 +66,9 @@ fn main() {
         let hash = "ce 83 e5 2f 74 a5 dc 1b ";
 
         {
-            use octasine::gen::simd::FallbackSleef;
-            let (success, r) = benchmark(
+            let (success, r) = benchmark::<octasine::gen::simd::FallbackSleef>(
                 "fallback (sleef)",
                 hash,
-                FallbackSleef::SAMPLES,
-                FallbackSleef::process_f32,
             );
 
             all_sleef_hashes_match &= success;
@@ -82,18 +77,14 @@ fn main() {
         }
 
         if is_x86_feature_detected!("sse2") {
-            use octasine::gen::simd::Sse2;
-
-            let (success, r) = benchmark("sse2", hash, Sse2::SAMPLES, Sse2::process_f32);
+            let (success, r) = benchmark::<octasine::gen::simd::Sse2>("sse2", hash);
 
             all_sleef_hashes_match &= success;
 
             println!("Speed compared to std fallback: {}x", fallback_std / r);
         }
         if is_x86_feature_detected!("avx") {
-            use octasine::gen::simd::Avx;
-
-            let (success, r) = benchmark("avx", hash, Avx::SAMPLES, Avx::process_f32);
+            let (success, r) = benchmark::<octasine::gen::simd::Avx>("avx", hash);
 
             all_sleef_hashes_match &= success;
 
@@ -108,11 +99,9 @@ fn main() {
     }
 }
 
-fn benchmark(
+fn benchmark<A: AudioGen + Simd>(
     name: &str,
     expected_hash: &str,
-    samples_per_iteration: usize,
-    process_fn: unsafe fn(&mut OctaSine, lefts: &mut [f32], rights: &mut [f32], position: usize),
 ) -> (bool, f32) {
     let mut octasine = OctaSine::default();
 
@@ -182,14 +171,14 @@ fn benchmark(
         let mut position = 0usize;
 
         for (lefts, rights) in lefts
-            .chunks_exact_mut(samples_per_iteration)
-            .zip(rights.chunks_exact_mut(samples_per_iteration))
+            .chunks_exact_mut(A::SAMPLES)
+            .zip(rights.chunks_exact_mut(A::SAMPLES))
         {
             unsafe {
-                process_fn(&mut octasine, lefts, rights, position);
+                A::process_f32(&mut octasine, lefts, rights, position);
             }
 
-            position += samples_per_iteration;
+            position += A::SAMPLES;
         }
 
         for (l, r) in lefts.iter().zip(rights.iter()) {
