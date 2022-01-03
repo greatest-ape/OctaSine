@@ -65,7 +65,9 @@ impl Default for OctaSine {
 
 impl OctaSine {
     fn create(host: Option<HostCallback>) -> Self {
-        Self::init_logging();
+        // If initialization of logging fails, we can't do much about it, but
+        // we shouldn't panic
+        let _ = Self::init_logging();
 
         let settings = match Settings::load() {
             Ok(settings) => settings,
@@ -106,19 +108,20 @@ impl OctaSine {
         }
     }
 
-    fn init_logging() {
-        let log_folder = dirs::home_dir().unwrap().join("tmp");
+    fn init_logging() -> anyhow::Result<()> {
+        let log_folder = dirs::home_dir().ok_or(anyhow::anyhow!("Couldn't extract home dir"))?.join("tmp");
 
+        // Ignore any creation error
         let _ = ::std::fs::create_dir(log_folder.clone());
 
         let log_file =
-            ::std::fs::File::create(log_folder.join(format!("{}.log", PLUGIN_NAME))).unwrap();
+            ::std::fs::File::create(log_folder.join(format!("{}.log", PLUGIN_NAME)))?;
 
         let log_config = simplelog::ConfigBuilder::new()
             .set_time_to_local(true)
             .build();
 
-        let _ = simplelog::WriteLogger::init(simplelog::LevelFilter::Info, log_config, log_file);
+        simplelog::WriteLogger::init(simplelog::LevelFilter::Info, log_config, log_file)?;
 
         log_panics::init();
 
@@ -128,6 +131,8 @@ impl OctaSine {
         ::log::info!("OctaSine build: {}", get_version_info());
 
         ::log::set_max_level(simplelog::LevelFilter::Error);
+
+        Ok(())
     }
 
     fn time_per_sample(sample_rate: SampleRate) -> TimePerSample {
