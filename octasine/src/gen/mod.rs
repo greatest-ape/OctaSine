@@ -455,17 +455,6 @@ mod gen {
                     continue;
                 }
 
-                let envelope_volume =
-                    S::pd_loadu(voice_data.operator_envelope_volumes[operator_index].as_ptr());
-
-                // Skip generation when envelope volume is zero. Helps
-                // performance when operator envelope lengths vary a lot.
-                // Otherwise, the branching probably negatively impacts
-                // performance.
-                if !S::pd_any_over_zero(envelope_volume) {
-                    continue;
-                }
-
                 let modulation_target = voice_data.operator_modulation_targets[operator_index];
 
                 let sample =
@@ -545,6 +534,8 @@ mod gen {
                 let operator_additive =
                     S::pd_loadu(voice_data.operator_additives[operator_index].as_ptr());
 
+                let envelope_volume =
+                    S::pd_loadu(voice_data.operator_envelope_volumes[operator_index].as_ptr());
                 let volume_product = S::pd_mul(operator_volume, envelope_volume);
 
                 let sample_adjusted =
@@ -600,8 +591,10 @@ mod gen {
 
         for operator_index in 0..4 {
             let operator_volume = S::pd_loadu(voice_data.operator_volumes[operator_index].as_ptr());
+            let envelope_volume =
+                S::pd_loadu(voice_data.operator_envelope_volumes[operator_index].as_ptr());
 
-            if S::pd_any_over_zero(operator_volume) {
+            if S::pd_any_over_zero(S::pd_mul(operator_volume, envelope_volume)) {
                 operator_additive_zero[operator_index] = !S::pd_any_over_zero(S::pd_loadu(
                     voice_data.operator_additives[operator_index].as_ptr(),
                 ));
