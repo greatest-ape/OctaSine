@@ -146,6 +146,15 @@ mod gen {
             assert_eq!(lefts.len(), S::SAMPLES);
             assert_eq!(rights.len(), S::SAMPLES);
 
+            if octasine.processing.pending_midi_events.is_empty() && !octasine.processing.voices.iter().any(|v| v.active) {
+                for (l, r) in lefts.iter_mut().zip(rights.iter_mut()) {
+                    *l = 0.0;
+                    *r = 0.0;
+                }
+
+                return;
+            }
+
             extract_voice_data(octasine, position);
             gen_audio(
                 &mut octasine.processing.rng,
