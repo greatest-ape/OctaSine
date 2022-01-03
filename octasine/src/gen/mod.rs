@@ -173,6 +173,7 @@ mod gen {
         }
 
         for sample_index in 0..S::SAMPLES {
+            let sample_index_offset = sample_index * 2;
             let time_per_sample = octasine.processing.time_per_sample;
             let bpm = octasine.get_bpm();
 
@@ -243,8 +244,6 @@ mod gen {
                             LfoTargetMasterParameter::Frequency,
                         ))),
                 );
-
-                let sample_index_offset = sample_index * 2;
 
                 for (operator_index, operator) in operators.iter_mut().enumerate() {
                     voice_data.operator_wave_type[operator_index] = operator.wave_type.value;
