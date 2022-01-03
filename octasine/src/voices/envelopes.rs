@@ -129,7 +129,7 @@ impl VoiceOperatorVolumeEnvelope {
         } else {
             let mut new = Self::default();
 
-            new.volume_at_stage_change = self.volume_at_stage_change;
+            new.volume_at_stage_change = self.last_volume;
             new.last_volume = self.last_volume;
             new.stage = EnvelopeStage::Restart;
 
