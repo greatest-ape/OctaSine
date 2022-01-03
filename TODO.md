@@ -8,7 +8,7 @@
 * Interpolation in processing parameters: should it be based on time rather
   than number of samples?
 
-* Log level should be warn
+* Log level should maybe be warn
 * Log file should be saved elsewhere, maybe in ::dirs::data_local_dir()
 * Consider adding phase knobs
 * Consider adding saw, square and triangle waves. Maybe look at
