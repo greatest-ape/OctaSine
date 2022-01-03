@@ -35,6 +35,11 @@ pub const OPERATOR_BETA_STEPS: [f64; 16] = [
 pub const ENVELOPE_MAX_DURATION: f64 = 4.0;
 pub const ENVELOPE_MIN_DURATION: f64 = 0.004;
 
+/// After this duration, the envelope slope does not get mixed with linear
+/// slope at all
+pub const ENVELOPE_CURVE_TAKEOVER: f64 = ENVELOPE_MIN_DURATION * 10.0;
+pub const ENVELOPE_CURVE_TAKEOVER_RECIP: f64 = 1.0 / ENVELOPE_CURVE_TAKEOVER;
+
 // When adjusting this, remember to also modify get_lfo_target_parameters
 pub const LFO_TARGET_CONTEXT_STEPS: [LfoTargetParameter; 45] = [
     LfoTargetParameter::Master(LfoTargetMasterParameter::Volume),

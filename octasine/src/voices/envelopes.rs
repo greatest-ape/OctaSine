@@ -1,10 +1,9 @@
 use crate::approximations::Log10Table;
 use crate::common::*;
+use crate::constants::{ENVELOPE_MIN_DURATION, ENVELOPE_CURVE_TAKEOVER_RECIP};
 use crate::parameters::processing::OperatorEnvelopeProcessingParameter;
 
 use super::VoiceDuration;
-
-const RESTART_DURATION: f64 = 0.01;
 
 #[derive(Debug, Copy, Clone)]
 pub struct VoiceOperatorVolumeEnvelope {
@@ -31,7 +30,7 @@ impl VoiceOperatorVolumeEnvelope {
         self.duration.0 += time_per_sample.0;
 
         match self.stage {
-            Attack | Decay | Sustain if !key_pressed => {
+            Restart | Attack | Decay | Sustain if !key_pressed => {
                 self.stage = Release;
                 self.duration_at_stage_change = self.duration;
                 self.volume_at_stage_change = self.last_volume;
@@ -44,7 +43,7 @@ impl VoiceOperatorVolumeEnvelope {
         let duration_since_stage_change = self.duration_since_stage_change();
 
         match self.stage {
-            Restart if duration_since_stage_change >= RESTART_DURATION => {
+            Restart if duration_since_stage_change >= ENVELOPE_MIN_DURATION => {
                 self.stage = Attack;
                 self.duration_at_stage_change = self.duration;
                 self.volume_at_stage_change = self.last_volume;
@@ -77,7 +76,7 @@ impl VoiceOperatorVolumeEnvelope {
                 self.volume_at_stage_change,
                 0.0,
                 self.duration_since_stage_change(),
-                RESTART_DURATION
+                ENVELOPE_MIN_DURATION
             ),
             Attack => Self::calculate_curve(
                 0.0,
@@ -115,7 +114,12 @@ impl VoiceOperatorVolumeEnvelope {
     ) -> f64 {
         let time_progress = time_so_far_this_stage / stage_length;
 
-        start_volume + Log10Table::calculate(time_progress) * (end_volume - start_volume)
+        let curve_factor = (stage_length * ENVELOPE_CURVE_TAKEOVER_RECIP).min(1.0);
+        let linear_factor = 1.0 - curve_factor;
+        let curve = curve_factor * Log10Table::calculate(time_progress);
+        let linear = linear_factor * time_progress;
+
+        start_volume + (end_volume - start_volume) * (curve + linear)
     }
 
     #[inline]
