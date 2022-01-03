@@ -443,7 +443,7 @@ mod gen {
             // --- Generate samples for all operators
 
             // Voice modulation input storage, indexed by operator
-            let mut voice_modulation_inputs = [[0.0f64; S::SAMPLES * 2]; 4];
+            let mut voice_modulation_inputs = [S::pd_setzero(); 4];
 
             // Go through operators downwards, starting with operator 4
             for operator_index in 0..4 {
@@ -490,8 +490,7 @@ mod gen {
 
                         let one_minus_pan_tendency = S::pd_sub(S::pd_set1(1.0), pan_tendency);
 
-                        let modulation_in_for_channel =
-                            S::pd_loadu(voice_modulation_inputs[operator_index].as_ptr());
+                        let modulation_in_for_channel = voice_modulation_inputs[operator_index];
                         let modulation_in_channel_sum =
                             S::pd_pairwise_horizontal_sum(modulation_in_for_channel);
                         // Weird modulation input panning
@@ -544,14 +543,8 @@ mod gen {
                 let modulation_out = S::pd_sub(sample_adjusted, additive_out);
 
                 // Add modulation output to target operator's modulation inputs
-                let modulation_sum = S::pd_add(
-                    S::pd_loadu(voice_modulation_inputs[modulation_target].as_ptr()),
-                    modulation_out,
-                );
-                S::pd_storeu(
-                    voice_modulation_inputs[modulation_target].as_mut_ptr(),
-                    modulation_sum,
-                );
+                voice_modulation_inputs[modulation_target] =
+                    S::pd_add(voice_modulation_inputs[modulation_target], modulation_out);
 
                 let addition = S::pd_mul(
                     additive_out,
