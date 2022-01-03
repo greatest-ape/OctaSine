@@ -146,9 +146,17 @@ impl OctaSine {
             .unwrap_or_default()
     }
 
-    /// MIDI keyboard support
+    pub fn enqueue_midi_events<I: Iterator<Item = MidiEvent>>(&mut self, events: I) {
+        for event in events {
+            self.processing.pending_midi_events.push_back(event);
+        }
 
-    pub fn process_midi_event(&mut self, event: MidiEvent) {
+        self.processing.pending_midi_events
+            .make_contiguous()
+            .sort_by_key(|e| e.delta_frames);
+    }
+
+    fn process_midi_event(&mut self, event: MidiEvent) {
         match event.data[0] {
             128 => self.key_off(event.data[1]),
             144 => self.key_on(event.data[1], event.data[2]),
@@ -205,15 +213,13 @@ impl Plugin for OctaSine {
     }
 
     fn process_events(&mut self, events: &Events) {
-        for event in events.events() {
+        self.enqueue_midi_events(events.events().filter_map(|event| {
             if let Event::Midi(event) = event {
-                self.processing.pending_midi_events.push_back(event);
+                Some(event)
+            } else {
+                None
             }
-        }
-
-        self.processing.pending_midi_events
-            .make_contiguous()
-            .sort_by_key(|e| e.delta_frames);
+        }))
     }
 
     fn set_sample_rate(&mut self, rate: f32) {

@@ -2,6 +2,7 @@ use std::time::Instant;
 
 use colored::*;
 use sha2::{Digest, Sha256};
+use vst::event::MidiEvent;
 use vst::plugin::PluginParameters;
 
 use octasine::gen::simd::Simd;
@@ -111,7 +112,7 @@ fn benchmark(
     name: &str,
     expected_hash: &str,
     samples_per_iteration: usize,
-    process_fn: unsafe fn(&mut OctaSine, lefts: &mut [f32], rights: &mut [f32]),
+    process_fn: unsafe fn(&mut OctaSine, lefts: &mut [f32], rights: &mut [f32], position: usize),
 ) -> (bool, f32) {
     let mut octasine = OctaSine::default();
 
@@ -137,17 +138,35 @@ fn benchmark(
 
     let now = Instant::now();
 
+    let key_on_events: Vec<MidiEvent> = (0..=3usize).map(|i| {
+        MidiEvent {
+            data: [144, 100 + i as u8, 100],
+            delta_frames: i as i32,
+            live: false,
+            note_length: None,
+            note_offset: None,
+            detune: 0,
+            note_off_velocity: 0,
+        }
+    }).collect();
+
+    let key_off_events: Vec<MidiEvent> = (0..=3usize).map(|i| {
+        MidiEvent {
+            data: [128, 100 + i as u8, 0],
+            delta_frames: i as i32,
+            live: false,
+            note_length: None,
+            note_offset: None,
+            detune: 0,
+            note_off_velocity: 0,
+        }
+    }).collect();
+
     for i in 0..iterations {
         if i % 1024 == 0 {
-            octasine.process_midi_event([144, 100, 100]);
-            octasine.process_midi_event([144, 101, 100]);
-            octasine.process_midi_event([144, 102, 100]);
-            octasine.process_midi_event([144, 103, 100]);
+            octasine.enqueue_midi_events(key_on_events.iter().copied());
         } else if i % 1024 == 512 {
-            octasine.process_midi_event([128, 100, 0]);
-            octasine.process_midi_event([128, 101, 0]);
-            octasine.process_midi_event([128, 102, 0]);
-            octasine.process_midi_event([128, 103, 0]);
+            octasine.enqueue_midi_events(key_off_events.iter().copied());
         }
 
         for j in 0..87 {
@@ -160,13 +179,17 @@ fn benchmark(
 
         octasine.update_processing_parameters();
 
+        let mut position = 0usize;
+
         for (lefts, rights) in lefts
             .chunks_exact_mut(samples_per_iteration)
             .zip(rights.chunks_exact_mut(samples_per_iteration))
         {
             unsafe {
-                process_fn(&mut octasine, lefts, rights);
+                process_fn(&mut octasine, lefts, rights, position);
             }
+
+            position += samples_per_iteration;
         }
 
         for (l, r) in lefts.iter().zip(rights.iter()) {
