@@ -25,7 +25,7 @@ use vst::plugin::{CanDo, Category, HostCallback, Info, Plugin, PluginParameters}
 use common::*;
 use constants::*;
 use parameters::processing::*;
-use preset_bank::{PresetBank, MAX_NUM_PARAMETERS};
+use preset_bank::PresetBank;
 use settings::Settings;
 use voices::*;
 
@@ -109,13 +109,14 @@ impl OctaSine {
     }
 
     fn init_logging() -> anyhow::Result<()> {
-        let log_folder = dirs::home_dir().ok_or(anyhow::anyhow!("Couldn't extract home dir"))?.join("tmp");
+        let log_folder = dirs::home_dir()
+            .ok_or(anyhow::anyhow!("Couldn't extract home dir"))?
+            .join("tmp");
 
         // Ignore any creation error
         let _ = ::std::fs::create_dir(log_folder.clone());
 
-        let log_file =
-            ::std::fs::File::create(log_folder.join(format!("{}.log", PLUGIN_NAME)))?;
+        let log_file = ::std::fs::File::create(log_folder.join(format!("{}.log", PLUGIN_NAME)))?;
 
         let log_config = simplelog::ConfigBuilder::new()
             .set_time_to_local(true)
@@ -356,6 +357,8 @@ impl vst::plugin::PluginParameters for SyncState {
 
 cfg_if::cfg_if! {
     if #[cfg(feature = "gui")] {
+        use preset_bank::MAX_NUM_PARAMETERS;
+
         /// Trait passed to GUI code for encapsulation
         pub trait GuiSyncHandle: Clone + Send + Sync + 'static {
             fn set_parameter(&self, index: usize, value: f64);
