@@ -174,6 +174,10 @@ impl VoiceLfo {
         };
         self.phase.0 = 0.0;
     }
+
+    pub fn is_stopped(&self) -> bool {
+        matches!(self.stage, LfoStage::Stopped)
+    }
 }
 
 fn triangle(phase: Phase) -> f64 {

@@ -46,6 +46,10 @@ pub fn get_lfo_target_values(
         .enumerate()
         .rev()
     {
+        if voice_lfo.is_stopped() {
+            continue;
+        }
+
         let amount = lfo_parameter
             .amount
             .get_value_with_lfo_addition(lfo_values.get(LfoTargetParameter::Lfo(
