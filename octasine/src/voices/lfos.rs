@@ -51,6 +51,8 @@ impl VoiceLfo {
 
         let new_phase = self.phase.0 + frequency * (bpm.0 / 120.0) * time_per_sample.0;
 
+        self.phase.0 = new_phase.fract();
+
         match self.stage {
             LfoStage::Interpolate {
                 from_value,
@@ -73,13 +75,9 @@ impl VoiceLfo {
                         stop_afterwards,
                     }
                 }
-
-                self.phase.0 = new_phase;
             }
             LfoStage::Running => {
                 if new_phase >= 1.0 {
-                    self.phase.0 = new_phase.fract();
-
                     if mode == LfoMode::Once {
                         self.request_stop();
                     } else {
@@ -92,8 +90,6 @@ impl VoiceLfo {
                         }
                     }
                 } else {
-                    self.phase.0 = new_phase;
-
                     match self.current_shape.unwrap() {
                         LfoShape::Square | LfoShape::ReverseSquare if self.phase.0 >= 0.5 => {
                             self.stage = LfoStage::Interpolate {

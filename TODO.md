@@ -5,6 +5,10 @@
 * Wait for merge of raw-gl-context fix, use that repo
 * Consider defaulting to wgpu on Linux
 
+* LFOs:
+  * Very fast frequencies and once mode: never quits
+  * Very fast frequencies and square forms interpolation
+
 * Interpolation in processing parameters: should it be based on time rather
   than number of samples?
 
