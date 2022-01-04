@@ -48,7 +48,6 @@ pub struct VoiceData {
     pub operator_modulation_indices: [[f64; MAX_PD_WIDTH]; 4],
     pub operator_feedbacks: [[f64; MAX_PD_WIDTH]; 4],
     pub operator_additives: [[f64; MAX_PD_WIDTH]; 4],
-    pub operator_frequencies: [[f64; MAX_PD_WIDTH]; 4],
     pub operator_pannings: [[f64; MAX_PD_WIDTH]; 4],
     pub operator_constant_power_pannings: [[f64; MAX_PD_WIDTH]; 4],
     pub operator_envelope_volumes: [[f64; MAX_PD_WIDTH]; 4],
@@ -367,10 +366,16 @@ mod gen {
                     let frequency =
                         voice_base_frequency * frequency_ratio * frequency_free * frequency_fine;
 
-                    voice_data.operator_frequencies[operator_index][sample_index_offset] =
-                        frequency;
-                    voice_data.operator_frequencies[operator_index][sample_index_offset + 1] =
-                        frequency;
+                    let last_phase = voice.operators[operator_index].last_phase.0;
+                    let phase_addition = frequency * time_per_sample.0;
+
+                    let new_phase = last_phase + phase_addition;
+
+                    voice_data.operator_phases[operator_index][sample_index_offset] = new_phase;
+                    voice_data.operator_phases[operator_index][sample_index_offset + 1] = new_phase;
+
+                    // Save phase
+                    voice.operators[operator_index].last_phase.0 = new_phase;
                 }
 
                 // Envelope
@@ -382,23 +387,6 @@ mod gen {
                     voice_data.operator_envelope_volumes[operator_index][sample_index_offset] = v;
                     voice_data.operator_envelope_volumes[operator_index][sample_index_offset + 1] =
                         v;
-                }
-
-                // Phase
-                for operator_index in 0..4 {
-                    let frequency =
-                        voice_data.operator_frequencies[operator_index][sample_index * 2];
-
-                    let last_phase = voice.operators[operator_index].last_phase.0;
-                    let phase_addition = frequency * time_per_sample.0;
-
-                    let new_phase = last_phase + phase_addition;
-
-                    voice_data.operator_phases[operator_index][sample_index_offset] = new_phase;
-                    voice_data.operator_phases[operator_index][sample_index_offset + 1] = new_phase;
-
-                    // Save phase
-                    voice.operators[operator_index].last_phase.0 = new_phase;
                 }
 
                 let voice_volume_factor = {
