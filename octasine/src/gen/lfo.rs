@@ -35,7 +35,7 @@ impl LfoTargetValues {
 pub fn get_lfo_target_values(
     lfo_parameters: &mut [ProcessingParameterLfo; NUM_LFOS],
     voice_lfos: &mut [VoiceLfo; NUM_LFOS],
-    time_advancement: f64,
+    time_per_sample: TimePerSample,
     bpm: BeatsPerMinute,
 ) -> LfoTargetValues {
     let mut lfo_values = LfoTargetValues::default();
@@ -87,14 +87,15 @@ pub fn get_lfo_target_values(
             BeatsPerMinute::default()
         };
 
-        let addition = voice_lfo.get_value(
-            time_advancement,
+        voice_lfo.advance_one_sample(
+            time_per_sample,
             bpm,
             shape,
             mode,
             frequency_ratio * frequency_free,
-            amount,
         );
+
+        let addition = voice_lfo.get_value(amount);
 
         let target = lfo_parameter.target_parameter.get_value();
 

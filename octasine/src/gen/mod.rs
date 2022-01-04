@@ -246,7 +246,7 @@ mod gen {
                 let lfo_values = get_lfo_target_values(
                     &mut octasine.processing.parameters.lfos,
                     &mut voice.lfos,
-                    time_per_sample.0,
+                    time_per_sample,
                     bpm,
                 );
 

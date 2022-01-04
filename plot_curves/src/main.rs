@@ -60,7 +60,9 @@ fn plot_lfo_values(filename: &str) {
     let mut envelope_value_points = Vec::with_capacity(num_samples);
 
     for i in 0..num_samples {
-        let lfo_value = lfo.get_value(time_per_sample.0, bpm, shape, mode, speed, magnitude);
+        lfo.advance_one_sample(time_per_sample, bpm, shape, mode, speed);
+
+        let lfo_value = lfo.get_value(magnitude);
 
         lfo_value_points.push((i as f64, lfo_value));
 
@@ -91,7 +93,7 @@ fn plot_lfo_values(filename: &str) {
         }
 
         if envelope.is_ended() {
-            lfo.stop();
+            lfo.request_stop();
         }
     }
 
