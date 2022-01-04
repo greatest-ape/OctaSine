@@ -53,7 +53,7 @@ fn main() {
     // depending on std sine implementation
     #[allow(unused_variables)]
     let (_, fallback_std) =
-        benchmark::<octasine::gen::simd::FallbackStd>("fallback (std)", "30 2e 0a ed c3 ec 10 83 ");
+        benchmark::<octasine::gen::simd::FallbackStd>("fallback (std)", "1f 8d 15 16 06 15 67 90 ");
 
     #[allow(unused_variables, unused_mut)]
     let mut all_sleef_hashes_match = true;
@@ -61,7 +61,7 @@ fn main() {
     #[cfg(feature = "simd")]
     {
         // Don't forget trailing space
-        let hash = "30 2e 0a ed c3 ec 10 83 ";
+        let hash = "1f 8d 15 16 06 15 67 90 ";
 
         {
             let (success, r) =
