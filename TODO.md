@@ -22,6 +22,9 @@
     target feature. I'm not sure about how that is done when cross-compiling.
 
 * GUI
+  * Default to dark mode
+  * Consider replacing LFO wave selector with custom widget that shows the
+    shapes
   * Parameter editing: bracket changes with begin_edit and end_edit
     * iced_audio knobs would need events for starting and ending dragging
   * Scrolling in dropdowns
