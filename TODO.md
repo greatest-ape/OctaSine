@@ -15,9 +15,6 @@
   TX81Z waveforms. https://www.reddit.com/r/synthesizers/comments/rkyk6j/comment/hpgcu6r/?utm_source=share&utm_medium=web2x&context=3
 
 * Bugs
-  * LFO issue: when time between key presses is short, lfo seems to still be
-    running and affecting next key press. Valid for all shapes and both modes.
-    Interpolation issue?
   * Mouse drag movements in pick list transfer through to envelope editor
 
 * Build for Apple silicon
