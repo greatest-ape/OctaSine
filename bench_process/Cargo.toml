@@ -17,4 +17,4 @@ vst = "0.2"
 assert_approx_eq = "1"
 colored = "2"
 quickcheck = { version = "1", default-features = false }
-sha2 = "0.9"
+sha2 = "0.10"
