@@ -19,6 +19,7 @@ pub struct VoiceLfo {
     current_shape: Option<LfoShape>,
     phase: Phase,
     last_value: f64,
+    first_cycle: bool,
 }
 
 impl Default for VoiceLfo {
@@ -28,6 +29,7 @@ impl Default for VoiceLfo {
             current_shape: None,
             phase: Phase(0.0),
             last_value: 0.0,
+            first_cycle: true,
         }
     }
 }
@@ -50,6 +52,10 @@ impl VoiceLfo {
         }
 
         let new_phase = self.phase.0 + frequency * (bpm.0 / 120.0) * time_per_sample.0;
+
+        if new_phase >= 1.0 {
+            self.first_cycle = false;
+        }
 
         self.phase.0 = new_phase.fract();
 
@@ -77,7 +83,7 @@ impl VoiceLfo {
                 }
             }
             LfoStage::Running => {
-                if new_phase >= 1.0 {
+                if !self.first_cycle {
                     if mode == LfoMode::Once {
                         self.request_stop();
                     } else {
@@ -147,14 +153,16 @@ impl VoiceLfo {
     pub fn restart(&mut self) {
         self.phase = Phase(0.0);
         self.current_shape = None;
+        self.first_cycle = true;
 
-        self.stage = match self.stage {
-            LfoStage::Stopped => LfoStage::Running,
-            _ => LfoStage::Interpolate {
+        self.stage = if let LfoStage::Stopped = self.stage {
+            LfoStage::Running
+        } else {
+            LfoStage::Interpolate {
                 from_value: self.last_value,
                 samples_done: 0,
                 stop_afterwards: false,
-            },
+            }
         };
     }
 
