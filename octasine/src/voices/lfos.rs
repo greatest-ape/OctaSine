@@ -89,17 +89,6 @@ impl VoiceLfo {
                             stop_afterwards: false,
                         }
                     }
-                } else {
-                    match self.current_shape.unwrap() {
-                        LfoShape::Square | LfoShape::ReverseSquare if self.phase.0 >= 0.5 => {
-                            self.stage = LfoStage::Interpolate {
-                                from_value: self.last_value,
-                                samples_done: 0,
-                                stop_afterwards: false,
-                            }
-                        }
-                        _ => {}
-                    }
                 }
             }
             LfoStage::Stopped => {
@@ -180,35 +169,53 @@ impl VoiceLfo {
 }
 
 fn triangle(phase: Phase) -> f64 {
-    let peak = 0.5;
-
-    if phase.0 <= peak {
-        phase.0 / peak
-    } else {
-        1.0 - (phase.0 - peak) / (1.0 - peak)
-    }
+    flexible_triangle(phase, Phase(16.0 / 32.0))
 }
 
 fn saw(phase: Phase) -> f64 {
-    phase.0
+    flexible_triangle(phase, Phase(31.0 / 32.0))
 }
 
 fn reverse_saw(phase: Phase) -> f64 {
-    1.0 - phase.0
+    flexible_triangle(phase, Phase(1.0 / 32.0))
 }
 
 fn square(phase: Phase) -> f64 {
-    if phase.0 <= 0.5 {
+    let peak_start = 1.0 / 32.0;
+    let peak_end = 16.0 / 32.0;
+    let base_start = 17.0 / 32.0;
+
+    if phase.0 <= peak_start {
+        phase.0 / peak_start
+    } else if phase.0 <= peak_end {
         1.0
+    } else if phase.0 <= base_start {
+        1.0 - (phase.0 - peak_end) / (base_start - peak_end)
     } else {
         0.0
     }
 }
 
 fn rev_square(phase: Phase) -> f64 {
-    if phase.0 <= 0.5 {
+    let base_end = 15.0 / 32.0;
+    let peak_start = 16.0 / 32.0;
+    let peak_end = 31.0 / 32.0;
+
+    if phase.0 <= base_end {
         0.0
-    } else {
+    } else if phase.0 <= peak_start {
+        (phase.0 - base_end) / (peak_start - base_end)
+    } else if phase.0 <= peak_end {
         1.0
+    } else {
+        1.0 - (phase.0 - peak_end) / (1.0 - peak_end)
+    }
+}
+
+fn flexible_triangle(phase: Phase, peak: Phase) -> f64 {
+    if phase.0 <= peak.0 {
+        phase.0 / peak.0
+    } else {
+        1.0 - (phase.0 - peak.0) / (1.0 - peak.0)
     }
 }
