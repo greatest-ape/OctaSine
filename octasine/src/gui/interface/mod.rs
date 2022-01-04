@@ -49,7 +49,7 @@ const OPEN_SANS_BOLD: &[u8] = include_bytes!("../../../../contrib/open-sans/Open
 
 fn get_info_text() -> String {
     format!(
-        "Copyright © 2019-2021 Joakim Frostegård\nSite: OctaSine.com. Build: {}",
+        "Copyright © 2019-2022 Joakim Frostegård\nSite: OctaSine.com. Build: {}",
         get_version_info()
     )
 }
