@@ -2,6 +2,8 @@
 
 ## Important
 
+* Test LFOs, mainly that square waves feel nice. Probably use x / 64.0 values
+
 * Wait for merge of raw-gl-context fix, use that repo
 * Consider defaulting to wgpu on Linux
 
