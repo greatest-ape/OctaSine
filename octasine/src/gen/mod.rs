@@ -54,7 +54,7 @@ pub struct VoiceData {
     pub operator_phases: [[f64; MAX_PD_WIDTH]; 4],
     pub operator_wave_type: [crate::WaveType; 4],
     pub operator_modulation_targets: [usize; 4],
-    pub volume_factors: [f64; 4],
+    pub volume_factors: [f64; MAX_PD_WIDTH],
 }
 
 #[inline]
