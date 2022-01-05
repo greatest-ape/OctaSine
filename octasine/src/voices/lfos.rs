@@ -7,9 +7,12 @@ enum LfoStage {
     Interpolate {
         from_value: f64,
         samples_done: usize,
-        stop_afterwards: bool,
     },
     Running,
+    Stopping {
+        from_value: f64,
+        samples_done: usize,
+    },
     Stopped,
 }
 
@@ -19,7 +22,6 @@ pub struct VoiceLfo {
     current_shape: Option<LfoShape>,
     phase: Phase,
     last_value: f64,
-    first_cycle: bool,
 }
 
 impl Default for VoiceLfo {
@@ -29,7 +31,6 @@ impl Default for VoiceLfo {
             current_shape: None,
             phase: Phase(0.0),
             last_value: 0.0,
-            first_cycle: true,
         }
     }
 }
@@ -53,37 +54,37 @@ impl VoiceLfo {
 
         let new_phase = self.phase.0 + frequency * (bpm.0 / 120.0) * time_per_sample.0;
 
-        if new_phase >= 1.0 {
-            self.first_cycle = false;
-        }
-
         self.phase.0 = new_phase.fract();
 
         match self.stage {
             LfoStage::Interpolate {
                 from_value,
-                stop_afterwards,
                 mut samples_done,
             } => {
-                samples_done += 1;
-
-                if samples_done == INTERPOLATION_SAMPLES {
-                    if stop_afterwards {
-                        self.stage = LfoStage::Stopped;
-                        self.last_value = 0.0;
+                if new_phase >= 1.0 {
+                    if mode == LfoMode::Once {
+                        self.request_stop();
                     } else {
-                        self.stage = LfoStage::Running;
+                        self.stage = LfoStage::Interpolate {
+                            from_value: self.last_value,
+                            samples_done: 0,
+                        };
                     }
                 } else {
-                    self.stage = LfoStage::Interpolate {
-                        from_value,
-                        samples_done,
-                        stop_afterwards,
+                    samples_done += 1;
+
+                    if samples_done == INTERPOLATION_SAMPLES {
+                        self.stage = LfoStage::Running;
+                    } else {
+                        self.stage = LfoStage::Interpolate {
+                            from_value,
+                            samples_done,
+                        }
                     }
                 }
             }
             LfoStage::Running => {
-                if !self.first_cycle {
+                if new_phase >= 1.0 {
                     if mode == LfoMode::Once {
                         self.request_stop();
                     } else {
@@ -92,8 +93,23 @@ impl VoiceLfo {
                         self.stage = LfoStage::Interpolate {
                             from_value: self.last_value,
                             samples_done: 0,
-                            stop_afterwards: false,
                         }
+                    }
+                }
+            }
+            LfoStage::Stopping {
+                from_value,
+                mut samples_done,
+            } => {
+                samples_done += 1;
+
+                if samples_done == INTERPOLATION_SAMPLES {
+                    self.stage = LfoStage::Stopped;
+                    self.last_value = 0.0;
+                } else {
+                    self.stage = LfoStage::Stopping {
+                        from_value,
+                        samples_done,
                     }
                 }
             }
@@ -117,19 +133,22 @@ impl VoiceLfo {
         let value = match self.stage {
             LfoStage::Interpolate {
                 from_value,
-                stop_afterwards,
                 samples_done,
             } => {
                 let progress = samples_done as f64 / INTERPOLATION_SAMPLES as f64;
 
-                if stop_afterwards {
-                    from_value - from_value * progress
-                } else {
-                    progress * Self::calculate_curve(shape, self.phase)
-                        + (1.0 - progress) * from_value
-                }
+                progress * Self::calculate_curve(shape, self.phase)
+                    + (1.0 - progress) * from_value
             }
             LfoStage::Running => Self::calculate_curve(shape, self.phase),
+            LfoStage::Stopping {
+                from_value,
+                samples_done,
+            } => {
+                let progress = samples_done as f64 / INTERPOLATION_SAMPLES as f64;
+
+                from_value - from_value * progress
+            }
             LfoStage::Stopped => {
                 unreachable!()
             }
@@ -153,26 +172,25 @@ impl VoiceLfo {
     pub fn restart(&mut self) {
         self.phase = Phase(0.0);
         self.current_shape = None;
-        self.first_cycle = true;
 
         self.stage = if let LfoStage::Stopped = self.stage {
-            LfoStage::Running
+            LfoStage::Interpolate {
+                from_value: 0.0,
+                samples_done: 0,
+            }
         } else {
             LfoStage::Interpolate {
                 from_value: self.last_value,
                 samples_done: 0,
-                stop_afterwards: false,
             }
         };
     }
 
     pub fn request_stop(&mut self) {
-        self.stage = LfoStage::Interpolate {
+        self.stage = LfoStage::Stopping {
             from_value: self.last_value,
             samples_done: 0,
-            stop_afterwards: true,
         };
-        self.phase.0 = 0.0;
     }
 
     pub fn is_stopped(&self) -> bool {
@@ -181,25 +199,22 @@ impl VoiceLfo {
 }
 
 fn triangle(phase: Phase) -> f64 {
-    flexible_triangle(phase, Phase(16.0 / 32.0))
+    flexible_triangle(phase, Phase(32.0 / 64.0))
 }
 
 fn saw(phase: Phase) -> f64 {
-    flexible_triangle(phase, Phase(31.0 / 32.0))
+    phase.0
 }
 
 fn reverse_saw(phase: Phase) -> f64 {
-    flexible_triangle(phase, Phase(1.0 / 32.0))
+    1.0 - phase.0
 }
 
 fn square(phase: Phase) -> f64 {
-    let peak_start = 1.0 / 32.0;
-    let peak_end = 16.0 / 32.0;
-    let base_start = 17.0 / 32.0;
+    let peak_end = 32.0 / 64.0;
+    let base_start = 33.0 / 64.0;
 
-    if phase.0 <= peak_start {
-        phase.0 / peak_start
-    } else if phase.0 <= peak_end {
+     if phase.0 <= peak_end {
         1.0
     } else if phase.0 <= base_start {
         1.0 - (phase.0 - peak_end) / (base_start - peak_end)
@@ -209,18 +224,15 @@ fn square(phase: Phase) -> f64 {
 }
 
 fn rev_square(phase: Phase) -> f64 {
-    let base_end = 15.0 / 32.0;
-    let peak_start = 16.0 / 32.0;
-    let peak_end = 31.0 / 32.0;
+    let base_end = 32.0 / 64.0;
+    let peak_start = 33.0 / 64.0;
 
     if phase.0 <= base_end {
         0.0
     } else if phase.0 <= peak_start {
         (phase.0 - base_end) / (peak_start - base_end)
-    } else if phase.0 <= peak_end {
-        1.0
     } else {
-        1.0 - (phase.0 - peak_end) / (1.0 - peak_end)
+        1.0
     }
 }
 
