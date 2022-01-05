@@ -103,11 +103,13 @@ fn plot_lfo_values(filename: &str) {
         .map(|((lfo_x, lfo_y), (_, envelope_y))| (*lfo_x, lfo_y * envelope_y))
         .collect::<Vec<(f64, f64)>>();
 
+    /*
     let value_product_points_nonzero_base = lfo_value_points
         .iter()
         .zip(envelope_value_points.iter())
         .map(|((lfo_x, lfo_y), (_, envelope_y))| (*lfo_x, (1.0 + lfo_y) * envelope_y))
         .collect::<Vec<(f64, f64)>>();
+    */
 
     let seconds_plot = Plot::new(seconds_points).point_style(
         PointStyle::new()
@@ -126,8 +128,8 @@ fn plot_lfo_values(filename: &str) {
     let value_product_plot =
         Plot::new(value_product_points).line_style(LineStyle::new().colour("red").width(0.1));
 
-    let value_product_plot_nonzero_base = Plot::new(value_product_points_nonzero_base)
-        .line_style(LineStyle::new().colour("orange").width(0.1));
+    // let value_product_plot_nonzero_base = Plot::new(value_product_points_nonzero_base)
+    //     .line_style(LineStyle::new().colour("orange").width(0.1));
 
     let lfo_values_plot =
         Plot::new(lfo_value_points).line_style(LineStyle::new().colour("green").width(0.1));
@@ -139,7 +141,7 @@ fn plot_lfo_values(filename: &str) {
         .add(seconds_plot)
         .add(restarts_plot)
         .add(value_product_plot)
-        .add(value_product_plot_nonzero_base)
+        // .add(value_product_plot_nonzero_base)
         .add(lfo_values_plot)
         .add(envelope_values_plot)
         .y_range(-2.0, 2.0);
