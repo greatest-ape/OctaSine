@@ -11,6 +11,8 @@ how patches sound.
   zero volume
 - Tend towards linear envelopes rather than logarithmic for slightly longer
   envelope stage durations that previously
+- Adjust LFO wave shapes for better beat fit
+- Fix LFO retrigger issues
 
 ## v0.5.4
 
