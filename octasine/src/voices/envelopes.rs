@@ -1,9 +1,11 @@
 use crate::approximations::Log10Table;
 use crate::common::*;
-use crate::constants::{ENVELOPE_CURVE_TAKEOVER_RECIP, ENVELOPE_MIN_DURATION};
+use crate::constants::ENVELOPE_CURVE_TAKEOVER_RECIP;
 use crate::parameters::processing::OperatorEnvelopeProcessingParameter;
 
 use super::VoiceDuration;
+
+const RESTART_DURATION: f64 = 0.01;
 
 #[derive(Debug, Copy, Clone)]
 pub struct VoiceOperatorVolumeEnvelope {
@@ -43,7 +45,7 @@ impl VoiceOperatorVolumeEnvelope {
         let duration_since_stage_change = self.duration_since_stage_change();
 
         match self.stage {
-            Restart if duration_since_stage_change >= ENVELOPE_MIN_DURATION => {
+            Restart if duration_since_stage_change >= RESTART_DURATION => {
                 self.stage = Attack;
                 self.duration_at_stage_change = self.duration;
                 self.volume_at_stage_change = self.last_volume;
@@ -72,12 +74,11 @@ impl VoiceOperatorVolumeEnvelope {
 
         self.last_volume = match self.stage {
             Ended => 0.0,
-            Restart => Self::calculate_curve(
-                self.volume_at_stage_change,
-                0.0,
-                self.duration_since_stage_change(),
-                ENVELOPE_MIN_DURATION,
-            ),
+            Restart => {
+                let progress = self.duration_since_stage_change() / RESTART_DURATION;
+
+                self.volume_at_stage_change - self.volume_at_stage_change * progress
+            },
             Attack => Self::calculate_curve(
                 0.0,
                 operator_envelope.attack_end_value.value,
