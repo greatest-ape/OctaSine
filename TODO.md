@@ -2,8 +2,6 @@
 
 ## Important
 
-* Test LFOs, mainly that square waves feel nice. Probably use x / 64.0 values
-
 * Wait for merge of raw-gl-context fix, use that repo
 * Consider defaulting to wgpu on Linux
 
@@ -11,7 +9,6 @@
   than number of samples? Should it be longer (16 samples might be stingy)
 * Use longer LFO interpolation? Current is about 3ms with 44100 Hz
 
-* Log level should maybe be warn
 * Log file should be saved elsewhere, maybe in ::dirs::data_local_dir()
 * Consider adding phase knobs
 * Consider adding saw, square and triangle waves. Maybe look at
