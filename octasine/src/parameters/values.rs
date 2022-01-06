@@ -535,14 +535,12 @@ impl ParameterValue for OperatorPanningValue {
         self.0
     }
     fn format(self) -> String {
-        let tmp = ((self.0 - 0.5) * 100.0) as isize;
+        let pan = ((self.0 - 0.5) * 100.0) as isize;
 
-        if tmp > 0 {
-            format!("{}R", tmp)
-        } else if tmp < 0 {
-            format!("{}L", tmp)
-        } else {
-            "C".to_string()
+        match pan.cmp(&0) {
+            std::cmp::Ordering::Greater => format!("{}R", pan),
+            std::cmp::Ordering::Less => format!("{}L", pan),
+            std::cmp::Ordering::Equal => "C".to_string(),
         }
     }
     fn format_sync(value: f64) -> String {

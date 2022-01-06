@@ -28,6 +28,7 @@ impl FallbackSine for FallbackSineSleef {
     }
 }
 
+#[allow(clippy::missing_safety_doc)]
 pub trait Simd {
     type PackedDouble;
     const PD_WIDTH: usize;
@@ -52,6 +53,7 @@ pub struct Fallback<T> {
     phantom_data: ::std::marker::PhantomData<T>,
 }
 
+#[allow(clippy::missing_safety_doc)]
 impl<T: FallbackSine> Simd for Fallback<T> {
     type PackedDouble = [f64; 2];
     const PD_WIDTH: usize = 2;
@@ -101,6 +103,7 @@ impl<T: FallbackSine> Simd for Fallback<T> {
 pub struct Sse2;
 
 #[cfg(all(feature = "simd", target_arch = "x86_64"))]
+#[allow(clippy::missing_safety_doc)]
 impl Simd for Sse2 {
     type PackedDouble = __m128d;
     const PD_WIDTH: usize = 2;
@@ -165,6 +168,7 @@ impl Simd for Sse2 {
 pub struct Avx;
 
 #[cfg(all(feature = "simd", target_arch = "x86_64"))]
+#[allow(clippy::missing_safety_doc)]
 impl Simd for Avx {
     type PackedDouble = __m256d;
     const PD_WIDTH: usize = 4;

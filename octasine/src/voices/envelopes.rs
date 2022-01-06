@@ -78,7 +78,7 @@ impl VoiceOperatorVolumeEnvelope {
                 let progress = self.duration_since_stage_change() / RESTART_DURATION;
 
                 self.volume_at_stage_change - self.volume_at_stage_change * progress
-            },
+            }
             Attack => Self::calculate_curve(
                 0.0,
                 operator_envelope.attack_end_value.value,
@@ -125,17 +125,16 @@ impl VoiceOperatorVolumeEnvelope {
 
     #[inline]
     pub fn restart(&mut self) {
-        if let EnvelopeStage::Ended = self.stage {
-            *self = Self::default();
+        *self = if let EnvelopeStage::Ended = self.stage {
+            Self::default()
         } else {
-            let mut new = Self::default();
-
-            new.volume_at_stage_change = self.last_volume;
-            new.last_volume = self.last_volume;
-            new.stage = EnvelopeStage::Restart;
-
-            *self = new;
-        }
+            Self {
+                volume_at_stage_change: self.last_volume,
+                last_volume: self.last_volume,
+                stage: EnvelopeStage::Restart,
+                ..Default::default()
+            }
+        };
     }
 
     #[inline]

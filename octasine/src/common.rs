@@ -78,11 +78,11 @@ pub enum LfoTargetParameter {
     Lfo(usize, LfoTargetLfoParameter),
 }
 
-impl LfoTargetParameter {
-    pub fn to_string(&self) -> String {
+impl std::fmt::Display for LfoTargetParameter {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
             LfoTargetParameter::Master(p) => {
-                format!("Master {}", format!("{:?}", p).to_lowercase())
+                write!(f, "Master {}", format!("{:?}", p).to_lowercase())
             }
             LfoTargetParameter::Operator(n, p) => {
                 use LfoTargetOperatorParameter::*;
@@ -98,7 +98,7 @@ impl LfoTargetParameter {
                     FrequencyFine => "freq fine",
                 };
 
-                format!("Op. {} {}", n + 1, p)
+                write!(f, "Op. {} {}", n + 1, p)
             }
             LfoTargetParameter::Lfo(n, p) => {
                 use LfoTargetLfoParameter::*;
@@ -110,7 +110,7 @@ impl LfoTargetParameter {
                     Amount => "amount",
                 };
 
-                format!("LFO {} {}", n + 1, p)
+                write!(f, "LFO {} {}", n + 1, p)
             }
         }
     }

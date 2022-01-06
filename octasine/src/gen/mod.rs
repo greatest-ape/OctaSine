@@ -15,6 +15,7 @@ use simd::*;
 const MAX_PD_WIDTH: usize = 4;
 
 pub trait AudioGen {
+    #[allow(clippy::missing_safety_doc)]
     unsafe fn process_f32(
         octasine: &mut OctaSine,
         lefts: &mut [f32],

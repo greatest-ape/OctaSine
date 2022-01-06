@@ -46,7 +46,7 @@ impl ParameterChangeInfo {
     /// Get all changed parameters
     pub fn get_changed_parameters(
         &self,
-        parameters: &Vec<SyncParameter>,
+        parameters: &[SyncParameter],
     ) -> Option<[Option<f64>; MAX_NUM_PARAMETERS]> {
         let mut no_changes = true;
         let mut changed = [0u64; NUM_ATOMIC_U64S];

@@ -162,7 +162,7 @@ impl OctaSine {
     }
 
     fn process_midi_event(&mut self, mut event: MidiEvent) {
-        event.data[0] = event.data[0] >> 4;
+        event.data[0] >>= 4;
 
         match event.data {
             [0b_1000, pitch, _] => self.key_off(pitch),
@@ -428,7 +428,7 @@ macro_rules! crate_version {
 }
 
 fn crate_version_to_vst_format(crate_version: String) -> i32 {
-    format!("{:0<4}", crate_version.replace(".", ""))
+    format!("{:0<4}", crate_version.replace('.', ""))
         .parse()
         .expect("convert crate version to i32")
 }

@@ -30,7 +30,7 @@ impl Default for ProcessingParameters {
             master_volume: Default::default(),
             master_frequency: Default::default(),
             operators: array_init(ProcessingParameterOperator::new),
-            lfos: array_init(|lfo_index| ProcessingParameterLfo::new(lfo_index)),
+            lfos: array_init(ProcessingParameterLfo::new),
         }
     }
 }
