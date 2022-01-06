@@ -161,10 +161,13 @@ impl OctaSine {
             .sort_by_key(|e| e.delta_frames);
     }
 
-    fn process_midi_event(&mut self, event: MidiEvent) {
-        match event.data[0] {
-            128 => self.key_off(event.data[1]),
-            144 => self.key_on(event.data[1], event.data[2]),
+    fn process_midi_event(&mut self, mut event: MidiEvent) {
+        event.data[0] = event.data[0] >> 4;
+
+        match event.data {
+            [0b_1000, pitch, _] => self.key_off(pitch),
+            [0b_1001, pitch, 0] => self.key_off(pitch),
+            [0b_1001, pitch, velocity] => self.key_on(pitch, velocity),
             _ => (),
         }
     }

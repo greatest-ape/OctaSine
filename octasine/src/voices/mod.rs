@@ -23,11 +23,7 @@ impl Default for KeyVelocity {
 
 impl KeyVelocity {
     pub fn from_midi_velocity(midi_velocity: u8) -> Self {
-        if midi_velocity == 0 {
-            Self::default()
-        } else {
-            Self(f64::from(midi_velocity) / 127.0)
-        }
+        Self(f64::from(midi_velocity) / 127.0)
     }
 }
 
