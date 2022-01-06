@@ -34,23 +34,22 @@ where
     type Value = f64;
     type ExtraData = TimeCounter;
 
-    fn get_value(&mut self, extra_data: Self::ExtraData) -> Self::Value {
-        self.value.get_value(extra_data, &mut |_| ())
+    fn advance_one_sample(&mut self) {
+        self.value.advance_one_sample(&mut |_| ())
+    }
+    fn get_value(&self) -> Self::Value {
+        self.value.get_value()
     }
     fn set_from_sync(&mut self, value: f64) {
         self.value.set_value(P::from_sync(value).get())
     }
-    fn get_value_with_lfo_addition(
-        &mut self,
-        extra_data: Self::ExtraData,
-        lfo_addition: Option<f64>,
-    ) -> Self::Value {
+    fn get_value_with_lfo_addition(&mut self, lfo_addition: Option<f64>) -> Self::Value {
         if let Some(lfo_addition) = lfo_addition {
-            let sync_value = P::from_processing(self.get_value(extra_data)).to_sync();
+            let sync_value = P::from_processing(self.get_value()).to_sync();
 
             P::from_sync((sync_value + lfo_addition).min(1.0).max(0.0)).get()
         } else {
-            self.get_value(extra_data)
+            self.get_value()
         }
     }
 }
@@ -76,22 +75,19 @@ where
     type Value = <P as ParameterValue>::Value;
     type ExtraData = ();
 
-    fn get_value(&mut self, _: Self::ExtraData) -> Self::Value {
+    fn advance_one_sample(&mut self) {}
+    fn get_value(&self) -> Self::Value {
         self.value
     }
     fn set_from_sync(&mut self, value: f64) {
         self.sync_cache = value;
         self.value = P::from_sync(value).get();
     }
-    fn get_value_with_lfo_addition(
-        &mut self,
-        extra_data: Self::ExtraData,
-        lfo_addition: Option<f64>,
-    ) -> Self::Value {
+    fn get_value_with_lfo_addition(&mut self, lfo_addition: Option<f64>) -> Self::Value {
         if let Some(lfo_addition) = lfo_addition {
             P::from_sync((self.sync_cache + lfo_addition).min(1.0).max(0.0)).get()
         } else {
-            self.get_value(extra_data)
+            self.get_value()
         }
     }
 }
@@ -117,25 +113,23 @@ impl ProcessingParameter for OperatorVolumeProcessingParameter {
     type Value = f64;
     type ExtraData = TimeCounter;
 
-    fn get_value(&mut self, extra_data: Self::ExtraData) -> Self::Value {
-        self.value.get_value(extra_data, &mut |_| ())
+    fn advance_one_sample(&mut self) {
+        self.value.advance_one_sample(&mut |_| ())
+    }
+    fn get_value(&self) -> Self::Value {
+        self.value.get_value()
     }
     fn set_from_sync(&mut self, value: f64) {
         self.value
             .set_value(OperatorVolumeValue::from_sync(value).get())
     }
-    fn get_value_with_lfo_addition(
-        &mut self,
-        extra_data: Self::ExtraData,
-        lfo_addition: Option<f64>,
-    ) -> Self::Value {
+    fn get_value_with_lfo_addition(&mut self, lfo_addition: Option<f64>) -> Self::Value {
         if let Some(lfo_addition) = lfo_addition {
-            let sync_value =
-                OperatorVolumeValue::from_processing(self.get_value(extra_data)).to_sync();
+            let sync_value = OperatorVolumeValue::from_processing(self.get_value()).to_sync();
 
             OperatorVolumeValue::from_sync((sync_value + lfo_addition).min(1.0).max(0.0)).get()
         } else {
-            self.get_value(extra_data)
+            self.get_value()
         }
     }
 }
@@ -162,8 +156,15 @@ impl OperatorModulationTargetProcessingParameter {
 
     pub fn get_value(&mut self) -> usize {
         match self {
-            Self::Three(p) => p.get_value(()),
-            Self::Four(p) => p.get_value(()),
+            Self::Three(p) => p.get_value(),
+            Self::Four(p) => p.get_value(),
+        }
+    }
+
+    pub fn advance_one_sample(&mut self) {
+        match self {
+            Self::Three(p) => p.advance_one_sample(),
+            Self::Four(p) => p.advance_one_sample(),
         }
     }
 }
@@ -189,35 +190,31 @@ impl ProcessingParameter for OperatorPanningProcessingParameter {
     type Value = f64;
     type ExtraData = TimeCounter;
 
-    fn get_value(&mut self, time: Self::ExtraData) -> Self::Value {
+    fn advance_one_sample(&mut self) {
         let mut opt_new_left_and_right = None;
 
-        let value = self.value.get_value(time, &mut |new_panning| {
+        self.value.advance_one_sample(&mut |new_panning| {
             opt_new_left_and_right = Some(Self::calculate_left_and_right(new_panning));
         });
 
         if let Some(new_left_and_right) = opt_new_left_and_right {
             self.left_and_right = new_left_and_right;
         } else if self.lfo_active {
-            self.left_and_right = Self::calculate_left_and_right(value);
+            self.left_and_right = Self::calculate_left_and_right(self.get_value());
         }
 
         self.lfo_active = false;
-
-        value
+    }
+    fn get_value(&self) -> Self::Value {
+        self.value.get_value()
     }
     fn set_from_sync(&mut self, value: f64) {
         self.value
             .set_value(OperatorPanningValue::from_sync(value).get())
     }
-    fn get_value_with_lfo_addition(
-        &mut self,
-        extra_data: Self::ExtraData,
-        lfo_addition: Option<f64>,
-    ) -> Self::Value {
+    fn get_value_with_lfo_addition(&mut self, lfo_addition: Option<f64>) -> Self::Value {
         if let Some(lfo_addition) = lfo_addition {
-            let sync_value =
-                OperatorPanningValue::from_processing(self.get_value(extra_data)).to_sync();
+            let sync_value = OperatorPanningValue::from_processing(self.get_value()).to_sync();
 
             let new_panning =
                 OperatorPanningValue::from_sync((sync_value + lfo_addition).min(1.0).max(0.0))
@@ -228,7 +225,7 @@ impl ProcessingParameter for OperatorPanningProcessingParameter {
 
             new_panning
         } else {
-            self.get_value(extra_data)
+            self.get_value()
         }
     }
 }
@@ -280,6 +277,15 @@ impl LfoTargetProcessingParameter {
             Self::Two(p) => p.value,
             Self::Three(p) => p.value,
             Self::Four(p) => p.value,
+        }
+    }
+
+    pub fn advance_one_sample(&mut self) {
+        match self {
+            Self::One(p) => p.advance_one_sample(),
+            Self::Two(p) => p.advance_one_sample(),
+            Self::Three(p) => p.advance_one_sample(),
+            Self::Four(p) => p.advance_one_sample(),
         }
     }
 }

@@ -2,9 +2,10 @@ use std::time::Instant;
 
 use colored::*;
 use sha2::{Digest, Sha256};
-use vst::buffer::AudioBuffer;
+use vst::event::MidiEvent;
 use vst::plugin::PluginParameters;
 
+use octasine::gen::simd::Simd;
 use octasine::gen::AudioGen;
 use octasine::OctaSine;
 
@@ -47,68 +48,54 @@ use octasine::OctaSine;
 /// Output hash (first 8 bytes):    ac fd ce 1e a2 7b 79 e1
 /// Speed compared to std fallback: 2.3127007x
 /// ```
-fn main() -> Result<(), ()> {
+fn main() {
     // Ignore success status here, since output differs across platforms
     // depending on std sine implementation
     #[allow(unused_variables)]
-    let (_, fallback_std) = benchmark(
-        "fallback (std)",
-        "ad 0d 1d 04 5e 38 95 7f ",
-        octasine::gen::FallbackStd::process_f32,
-    );
+    let (_, fallback_std) =
+        benchmark::<octasine::gen::simd::FallbackStd>("fallback (std)", "de 84 48 25 c7 d1 4b 92 ");
 
     #[allow(unused_variables, unused_mut)]
-    let mut all_hashes_match = true;
+    let mut all_sleef_hashes_match = true;
 
     #[cfg(feature = "simd")]
     {
         // Don't forget trailing space
-        let hash = "ac fd ce 1e a2 7b 79 e1 ";
+        let hash = "de 84 48 25 c7 d1 4b 92 ";
 
         {
-            let (success, r) = benchmark(
-                "fallback (sleef)",
-                hash,
-                octasine::gen::FallbackSleef::process_f32,
-            );
+            let (success, r) =
+                benchmark::<octasine::gen::simd::FallbackSleef>("fallback (sleef)", hash);
 
-            all_hashes_match &= success;
+            all_sleef_hashes_match &= success;
 
             println!("Speed compared to std fallback: {}x", fallback_std / r);
         }
 
         if is_x86_feature_detected!("sse2") {
-            let (success, r) = benchmark("sse2", hash, octasine::gen::Sse2::process_f32);
+            let (success, r) = benchmark::<octasine::gen::simd::Sse2>("sse2", hash);
 
-            all_hashes_match &= success;
+            all_sleef_hashes_match &= success;
 
             println!("Speed compared to std fallback: {}x", fallback_std / r);
         }
         if is_x86_feature_detected!("avx") {
-            let (success, r) = benchmark("avx", hash, octasine::gen::Avx::process_f32);
+            let (success, r) = benchmark::<octasine::gen::simd::Avx>("avx", hash);
 
-            all_hashes_match &= success;
+            all_sleef_hashes_match &= success;
 
             println!("Speed compared to std fallback: {}x", fallback_std / r);
         }
     }
 
-    if all_hashes_match {
+    if all_sleef_hashes_match {
         println!("\n{}", "All sleef output hashes matched".green());
-
-        Ok(())
     } else {
         println!("\n{}", "Sleef output hashes didn't match".red());
-
-        Err(())
     }
 }
 
-fn benchmark(
-    name: &str,
-    expected_hash: &str,
-    process_fn: unsafe fn(&mut OctaSine, &mut AudioBuffer<f32>),
-) -> (bool, f32) {
+fn benchmark<A: AudioGen + Simd>(name: &str, expected_hash: &str) -> (bool, f32) {
     let mut octasine = OctaSine::default();
 
     let envelope_duration_parameters = [10i32, 12, 14, 24, 26, 28, 39, 41, 43, 54, 56, 58];
@@ -117,24 +104,15 @@ fn benchmark(
 
     const SIZE: usize = 256;
 
-    let input_1 = vec![0.0f32; SIZE];
-    let input_2 = input_1.clone();
-
-    let mut output_1 = input_1.clone();
-    let mut output_2 = input_1.clone();
-
-    let inputs = vec![input_1.as_ptr(), input_2.as_ptr()];
-    let mut outputs = vec![output_1.as_mut_ptr(), output_2.as_mut_ptr()];
-
-    let mut buffer =
-        unsafe { AudioBuffer::from_raw(2, 2, inputs.as_ptr(), outputs.as_mut_ptr(), SIZE) };
+    let mut lefts = vec![0.0f32; SIZE];
+    let mut rights = vec![0.0f32; SIZE];
 
     let mut results = Sha256::new();
 
-    let iterations = 50_000;
+    let iterations = 5_000;
 
     for p in envelope_duration_parameters.iter() {
-        octasine.sync.set_parameter(*p, 1.0);
+        octasine.sync.set_parameter(*p, 0.1);
     }
     for p in wave_type_parameters.iter() {
         octasine.sync.set_parameter(*p, 0.0);
@@ -142,20 +120,38 @@ fn benchmark(
 
     let now = Instant::now();
 
+    let key_on_events: Vec<MidiEvent> = (0..=3usize)
+        .map(|i| MidiEvent {
+            data: [144, 100 + i as u8, 100],
+            delta_frames: i as i32,
+            live: false,
+            note_length: None,
+            note_offset: None,
+            detune: 0,
+            note_off_velocity: 0,
+        })
+        .collect();
+
+    let key_off_events: Vec<MidiEvent> = (0..=3usize)
+        .map(|i| MidiEvent {
+            data: [128, 100 + i as u8, 0],
+            delta_frames: i as i32,
+            live: false,
+            note_length: None,
+            note_offset: None,
+            detune: 0,
+            note_off_velocity: 0,
+        })
+        .collect();
+
     for i in 0..iterations {
         if i % 1024 == 0 {
-            octasine.process_midi_event([144, 100, 100]);
-            octasine.process_midi_event([144, 101, 100]);
-            octasine.process_midi_event([144, 102, 100]);
-            octasine.process_midi_event([144, 103, 100]);
-        } else if i % 1024 == 768 {
-            octasine.process_midi_event([128, 100, 0]);
-            octasine.process_midi_event([128, 101, 0]);
-            octasine.process_midi_event([128, 102, 0]);
-            octasine.process_midi_event([128, 103, 0]);
+            octasine.enqueue_midi_events(key_on_events.iter().copied());
+        } else if i % 1024 == 512 {
+            octasine.enqueue_midi_events(key_off_events.iter().copied());
         }
 
-        for j in 0..60 {
+        for j in 0..87 {
             if envelope_duration_parameters.contains(&j) || wave_type_parameters.contains(&j) {
                 continue;
             }
@@ -163,11 +159,22 @@ fn benchmark(
             octasine.sync.set_parameter(j, (i % 64) as f32 / 64.0);
         }
 
-        unsafe {
-            process_fn(&mut octasine, &mut buffer);
+        octasine.update_processing_parameters();
+
+        let mut position = 0usize;
+
+        for (lefts, rights) in lefts
+            .chunks_exact_mut(A::SAMPLES)
+            .zip(rights.chunks_exact_mut(A::SAMPLES))
+        {
+            unsafe {
+                A::process_f32(&mut octasine, lefts, rights, position);
+            }
+
+            position += A::SAMPLES;
         }
 
-        for (l, r) in output_1.iter().zip(output_2.iter()) {
+        for (l, r) in lefts.iter().zip(rights.iter()) {
             results.update(&l.to_ne_bytes());
             results.update(&r.to_ne_bytes());
         }

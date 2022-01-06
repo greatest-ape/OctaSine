@@ -1,5 +1,19 @@
 # Changelog
 
+## Next release
+
+This release contains breaking changes, i.e., changes that can affect
+how patches sound.
+
+- Properly handle audio buffers of arbitrary size
+- Properly handle midi event timings
+- When triggering note while envelope is still running, restart envelope from
+  zero volume
+- Tend towards linear envelopes rather than logarithmic for slightly longer
+  envelope stage durations that previously
+- Adjust LFO wave shapes for better beat fit
+- Fix LFO retrigger issues
+
 ## v0.5.4
 
 ### Other

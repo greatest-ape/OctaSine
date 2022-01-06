@@ -1,73 +1,49 @@
-pub const INTERPOLATION_SAMPLES_PER_STEP: u8 = 4;
-pub const INTERPOLATION_STEPS: u8 = 8;
+pub const INTERPOLATION_STEPS: usize = 16;
 pub const INTERPOLATION_STEPS_FLOAT: f64 = INTERPOLATION_STEPS as f64;
-
-use crate::common::TimeCounter;
 
 #[derive(Debug, Copy, Clone)]
 pub struct InterpolatableProcessingValue {
-    current_value: f64,
+    value: f64,
     step_size: f64,
-    steps_remaining: u8,
-    samples_remaining: u8,
-    last_time: TimeCounter,
+    steps_remaining: usize,
 }
 
 impl InterpolatableProcessingValue {
     pub fn new(value: f64) -> Self {
         Self {
-            current_value: value,
+            value,
             step_size: 0.0,
             steps_remaining: 0,
-            last_time: TimeCounter(0.0),
-            samples_remaining: INTERPOLATION_SAMPLES_PER_STEP,
         }
     }
 
-    /// Possibly advance interpolation and call callback, return value.
-    /// Needs to be called for every sample!
-    pub fn get_value<F: FnMut(f64)>(
-        &mut self,
-        time: TimeCounter,
-        callback_on_advance: &mut F,
-    ) -> f64 {
+    pub fn advance_one_sample<F: FnMut(f64)>(&mut self, callback_on_advance: &mut F) {
         if self.steps_remaining == 0 || INTERPOLATION_STEPS == 0 {
-            return self.current_value;
+            return;
         }
 
-        if time != self.last_time {
-            self.samples_remaining -= 1;
+        self.steps_remaining -= 1;
+        self.value += self.step_size;
 
-            if self.samples_remaining == 0 {
-                self.current_value += self.step_size;
+        callback_on_advance(self.value);
+    }
 
-                callback_on_advance(self.current_value);
-
-                self.steps_remaining -= 1;
-                self.samples_remaining = INTERPOLATION_SAMPLES_PER_STEP;
-            }
-
-            self.last_time = time;
-        }
-
-        self.current_value
+    pub fn get_value(&self) -> f64 {
+        self.value
     }
 
     #[allow(clippy::float_cmp)]
     pub fn set_value(&mut self, value: f64) {
         if INTERPOLATION_STEPS == 0 {
-            self.current_value = value;
-        } else if value == self.current_value
-            || (value - self.current_value).abs() <= ::std::f64::EPSILON
-        {
+            self.value = value;
+        } else if value == self.value || (value - self.value).abs() <= ::std::f64::EPSILON {
             self.steps_remaining = 0;
         } else {
             // Restart stepping process
-            let diff = value - self.current_value;
-            self.step_size = diff / INTERPOLATION_STEPS_FLOAT;
+            let diff = value - self.value;
 
+            self.step_size = diff / INTERPOLATION_STEPS_FLOAT;
             self.steps_remaining = INTERPOLATION_STEPS;
-            self.samples_remaining = INTERPOLATION_SAMPLES_PER_STEP;
         }
     }
 }

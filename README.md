@@ -65,7 +65,13 @@ git clone https://github.com/greatest-ape/OctaSine.git
 cd OctaSine
 ```
 
-5. Build and install:
+5. Unless you want to use the bleeding edge development branch, switch to the latest stable version, e.g.:
+
+```sh
+git checkout tags/v0.5.4
+```
+
+6. Build and install:
 
 ```sh
 ./scripts/macos/build-simd-and-install.sh
@@ -79,14 +85,21 @@ If you already have any of the software mentioned below, that step can be skippe
 2. [Install the Rust compiler](https://rustup.rs/). When prompted, choose the nightly toolchain and to modify the path variable.
 3. Install [cmake](https://cmake.org/download/). When prompted, choose the option to add cmake to the system executable path.
 4. Install [git](https://git-scm.com/downloads).
-5. Clone this repository to a folder on your computer.
-6. Build OctaSine:
+5. Clone this repository to a folder on your computer, enter it.
+
+6. Unless you want to use the bleeding edge development branch, switch to the latest stable version, e.g.:
+
+```sh
+git checkout tags/v0.5.4
+```
+
+7. Build OctaSine:
 
 ```cmd
 cargo +nightly build --release --features "simd" -p octasine_vst2_plugin
 ```
 
-7. Copy `target\release\octasine.dll` to your VST plugin folder.
+8. Copy `target\release\octasine.dll` to your VST plugin folder.
 
 ### Linux
 
@@ -120,7 +133,13 @@ git clone https://github.com/greatest-ape/OctaSine.git
 cd OctaSine
 ```
 
-4. Build the OctaSine plugin:
+4. Unless you want to use the bleeding edge development branch, switch to the latest stable version, e.g.:
+
+```sh
+git checkout tags/v0.5.4
+```
+
+5. Build the OctaSine plugin:
 
 ```sh
 cargo +nightly build --release --features "simd" -p octasine_vst2_plugin
@@ -132,9 +151,7 @@ If build fails, please try building without sleef SIMD acceleration:
 cargo +nightly build --release -p octasine_vst2_plugin
 ```
 
-5. Copy `target/release/liboctasine.so` to your VST plugin folder 
-
-6. You might need to install Vulkan graphics drivers too. [More info here](https://guide.nannou.cc/getting_started/platform-specific_setup.html).
+6. Copy `target/release/liboctasine.so` to your VST plugin folder 
 
 ## Architecture
 
@@ -142,7 +159,7 @@ See [ARCHITECTURE.md](ARCHITECTURE.md).
 
 ## Copyright and license
 
-Copyright (C) 2019-2021 Joakim Frostegård
+Copyright (C) 2019-2022 Joakim Frostegård
 
 OctaSine is licensed under the GNU Affero General Public License, Version 3, as
 published by the Free Software Foundation. See [LICENSE](LICENSE) for details.

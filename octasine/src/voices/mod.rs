@@ -73,7 +73,6 @@ impl Default for VoiceOperator {
 pub struct Voice {
     pub active: bool,
     pub midi_pitch: MidiPitch,
-    pub duration: VoiceDuration,
     pub key_pressed: bool,
     pub key_velocity: KeyVelocity,
     pub operators: [VoiceOperator; NUM_OPERATORS],
@@ -87,7 +86,6 @@ impl Voice {
         Self {
             active: false,
             midi_pitch,
-            duration: VoiceDuration(0.0),
             key_pressed: false,
             key_velocity: KeyVelocity::default(),
             operators,
@@ -99,7 +97,6 @@ impl Voice {
     pub fn press_key(&mut self, velocity: u8) {
         self.key_velocity = KeyVelocity::from_midi_velocity(velocity);
         self.key_pressed = true;
-        self.duration = VoiceDuration(0.0);
 
         for operator in self.operators.iter_mut() {
             operator.volume_envelope.restart();
@@ -126,7 +123,7 @@ impl Voice {
 
         if all_envelopes_ended {
             for lfo in self.lfos.iter_mut() {
-                lfo.stop();
+                lfo.request_stop();
             }
 
             self.active = false;

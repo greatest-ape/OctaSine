@@ -10,33 +10,34 @@ pub mod voices;
 #[cfg(feature = "gui")]
 pub mod gui;
 
+use std::collections::VecDeque;
 use std::sync::Arc;
 
 use array_init::array_init;
 use fastrand::Rng;
 
+use gen::VoiceData;
 use vst::api::{Events, Supported};
-use vst::event::Event;
+use vst::event::{Event, MidiEvent};
 use vst::host::Host;
 use vst::plugin::{CanDo, Category, HostCallback, Info, Plugin, PluginParameters};
 
-use approximations::*;
 use common::*;
 use constants::*;
 use parameters::processing::*;
-use preset_bank::{PresetBank, MAX_NUM_PARAMETERS};
+use preset_bank::PresetBank;
 use settings::Settings;
 use voices::*;
 
 /// State used for processing
 pub struct ProcessingState {
-    pub global_time: TimeCounter,
     pub sample_rate: SampleRate,
     pub time_per_sample: TimePerSample,
     pub rng: Rng,
-    pub log10_table: Log10Table,
     pub voices: [Voice; 128],
     pub parameters: ProcessingParameters,
+    pub pending_midi_events: VecDeque<MidiEvent>,
+    pub audio_gen_voice_data: [VoiceData; 128],
 }
 
 /// Thread-safe state used for parameter and preset calls
@@ -64,7 +65,9 @@ impl Default for OctaSine {
 
 impl OctaSine {
     fn create(host: Option<HostCallback>) -> Self {
-        Self::init_logging();
+        // If initialization of logging fails, we can't do much about it, but
+        // we shouldn't panic
+        let _ = Self::init_logging();
 
         let settings = match Settings::load() {
             Ok(settings) => settings,
@@ -78,13 +81,14 @@ impl OctaSine {
         let sample_rate = SampleRate(44100.0);
 
         let processing = ProcessingState {
-            global_time: TimeCounter(0.0),
             sample_rate,
             time_per_sample: Self::time_per_sample(sample_rate),
             rng: Rng::new(),
-            log10_table: Log10Table::default(),
             voices: array_init(|i| Voice::new(MidiPitch::new(i as u8))),
             parameters: ProcessingParameters::default(),
+            // Start with some capacity to cut down on later allocations
+            pending_midi_events: VecDeque::with_capacity(128),
+            audio_gen_voice_data: array_init::array_init(|_| VoiceData::default()),
         };
 
         let sync = Arc::new(SyncState {
@@ -104,19 +108,21 @@ impl OctaSine {
         }
     }
 
-    fn init_logging() {
-        let log_folder = dirs::home_dir().unwrap().join("tmp");
+    fn init_logging() -> anyhow::Result<()> {
+        let log_folder = dirs::home_dir()
+            .ok_or(anyhow::anyhow!("Couldn't extract home dir"))?
+            .join("tmp");
 
+        // Ignore any creation error
         let _ = ::std::fs::create_dir(log_folder.clone());
 
-        let log_file =
-            ::std::fs::File::create(log_folder.join(format!("{}.log", PLUGIN_NAME))).unwrap();
+        let log_file = ::std::fs::File::create(log_folder.join(format!("{}.log", PLUGIN_NAME)))?;
 
         let log_config = simplelog::ConfigBuilder::new()
             .set_time_to_local(true)
             .build();
 
-        let _ = simplelog::WriteLogger::init(simplelog::LevelFilter::Info, log_config, log_file);
+        simplelog::WriteLogger::init(simplelog::LevelFilter::Info, log_config, log_file)?;
 
         log_panics::init();
 
@@ -126,6 +132,8 @@ impl OctaSine {
         ::log::info!("OctaSine build: {}", get_version_info());
 
         ::log::set_max_level(simplelog::LevelFilter::Error);
+
+        Ok(())
     }
 
     fn time_per_sample(sample_rate: SampleRate) -> TimePerSample {
@@ -142,12 +150,21 @@ impl OctaSine {
             .unwrap_or_default()
     }
 
-    /// MIDI keyboard support
+    pub fn enqueue_midi_events<I: Iterator<Item = MidiEvent>>(&mut self, events: I) {
+        for event in events {
+            self.processing.pending_midi_events.push_back(event);
+        }
 
-    pub fn process_midi_event(&mut self, data: [u8; 3]) {
-        match data[0] {
-            128 => self.key_off(data[1]),
-            144 => self.key_on(data[1], data[2]),
+        self.processing
+            .pending_midi_events
+            .make_contiguous()
+            .sort_by_key(|e| e.delta_frames);
+    }
+
+    fn process_midi_event(&mut self, event: MidiEvent) {
+        match event.data[0] {
+            128 => self.key_off(event.data[1]),
+            144 => self.key_on(event.data[1], event.data[2]),
             _ => (),
         }
     }
@@ -158,6 +175,18 @@ impl OctaSine {
 
     fn key_off(&mut self, pitch: u8) {
         self.processing.voices[pitch as usize].release_key();
+    }
+
+    pub fn update_processing_parameters(&mut self) {
+        let changed_sync_parameters = self.sync.presets.get_changed_parameters_from_processing();
+
+        if let Some(indeces) = changed_sync_parameters {
+            for (index, opt_new_value) in indeces.iter().enumerate() {
+                if let Some(new_value) = opt_new_value {
+                    self.processing.parameters.set_from_sync(index, *new_value);
+                }
+            }
+        }
     }
 }
 
@@ -189,11 +218,13 @@ impl Plugin for OctaSine {
     }
 
     fn process_events(&mut self, events: &Events) {
-        for event in events.events() {
-            if let Event::Midi(ev) = event {
-                self.process_midi_event(ev.data);
+        self.enqueue_midi_events(events.events().filter_map(|event| {
+            if let Event::Midi(event) = event {
+                Some(event)
+            } else {
+                None
             }
-        }
+        }))
     }
 
     fn set_sample_rate(&mut self, rate: f32) {
@@ -326,6 +357,8 @@ impl vst::plugin::PluginParameters for SyncState {
 
 cfg_if::cfg_if! {
     if #[cfg(feature = "gui")] {
+        use preset_bank::MAX_NUM_PARAMETERS;
+
         /// Trait passed to GUI code for encapsulation
         pub trait GuiSyncHandle: Clone + Send + Sync + 'static {
             fn set_parameter(&self, index: usize, value: f64);

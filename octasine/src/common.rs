@@ -30,12 +30,19 @@ pub enum EnvelopeStage {
     Sustain,
     Release,
     Ended,
+    Restart,
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum WaveType {
     Sine,
     WhiteNoise,
+}
+
+impl Default for WaveType {
+    fn default() -> Self {
+        Self::Sine
+    }
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]

@@ -49,7 +49,7 @@ const OPEN_SANS_BOLD: &[u8] = include_bytes!("../../../../contrib/open-sans/Open
 
 fn get_info_text() -> String {
     format!(
-        "Copyright © 2019-2021 Joakim Frostegård\nSite: OctaSine.com. Build: {}",
+        "Copyright © 2019-2022 Joakim Frostegård\nSite: OctaSine.com. Build: {}",
         get_version_info()
     )
 }
@@ -317,7 +317,7 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
     }
 
     /// Renderer settings with glow
-    /// 
+    ///
     /// On non-Windows platforms, AA settings will be overridden because of
     /// use_max_aa_samples = true.  Windows, however, doesn't support
     /// recreating OpenGL contexts for same window, so we have to set a fixed

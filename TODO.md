@@ -5,19 +5,16 @@
 * Wait for merge of raw-gl-context fix, use that repo
 * Consider defaulting to wgpu on Linux
 
-* Log level should be warn
+* Interpolation in processing parameters: should it be based on time rather
+  than number of samples? Should it be longer (16 samples might be stingy)
+* Use longer LFO interpolation? Current is about 3ms with 44100 Hz
+
 * Log file should be saved elsewhere, maybe in ::dirs::data_local_dir()
 * Consider adding phase knobs
 * Consider adding saw, square and triangle waves. Maybe look at
   TX81Z waveforms. https://www.reddit.com/r/synthesizers/comments/rkyk6j/comment/hpgcu6r/?utm_source=share&utm_medium=web2x&context=3
 
 * Bugs
-  * When attack and decay is short, release is long and key presses are very
-    short, tones keeps going on or don't trigger at all. Key release event not
-    properly received? Envelope bug?
-  * LFO issue: when time between key presses is short, lfo seems to still be
-    running and affecting next key press. Valid for all shapes and both modes.
-    Interpolation issue?
   * Mouse drag movements in pick list transfer through to envelope editor
 
 * Build for Apple silicon
@@ -25,6 +22,9 @@
     target feature. I'm not sure about how that is done when cross-compiling.
 
 * GUI
+  * Default to dark mode
+  * Consider replacing LFO wave selector with custom widget that shows the
+    shapes
   * Parameter editing: bracket changes with begin_edit and end_edit
     * iced_audio knobs would need events for starting and ending dragging
   * Scrolling in dropdowns

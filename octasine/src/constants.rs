@@ -4,9 +4,6 @@ use crate::common::*;
 
 pub const TAU: f64 = PI * 2.0;
 
-/// Lower values can be considered to be zero for optimization purposes
-pub const ZERO_VALUE_LIMIT: f64 = 0.001;
-
 pub const PLUGIN_NAME: &str = "OctaSine";
 pub const PLUGIN_UNIQUE_ID: i32 = 1_438_048_623;
 
@@ -40,7 +37,7 @@ pub const ENVELOPE_MIN_DURATION: f64 = 0.004;
 
 /// After this duration, the envelope slope does not get mixed with linear
 /// slope at all
-pub const ENVELOPE_CURVE_TAKEOVER: f64 = 0.01;
+pub const ENVELOPE_CURVE_TAKEOVER: f64 = ENVELOPE_MIN_DURATION * 10.0;
 pub const ENVELOPE_CURVE_TAKEOVER_RECIP: f64 = 1.0 / ENVELOPE_CURVE_TAKEOVER;
 
 // When adjusting this, remember to also modify get_lfo_target_parameters

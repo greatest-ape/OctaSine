@@ -14,15 +14,9 @@ gui = ["baseview", "iced_baseview", "iced_style", "iced_audio", "palette", "raw-
 [lib]
 name = "octasine"
 
-[[bench]]
-name = "process"
-harness = false
-
 [dev-dependencies]
 assert_approx_eq = "1"
-colored = "2"
 quickcheck = { version = "1", default-features = false }
-sha2 = "0.9"
 
 [dependencies]
 anyhow = "1"
@@ -36,6 +30,7 @@ fastrand = "1"
 git-testament = "0.2"
 log = { version = "0.4", default-features = false }
 log-panics = "2"
+once_cell = "1"
 os_info = "3"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
