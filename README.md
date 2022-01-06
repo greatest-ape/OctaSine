@@ -31,7 +31,7 @@ VST2 frequency modulation synthesizer written in Rust.
 * Four LFOs with multiple waveforms, oneshot and loop modes and optional DAW BPM sync. They can target most operator parameters and most parameters of lower-index LFOs.
 * Each operator is connected to an attack-decay-sustain-release volume envelope with logarithmic slopes.
 * Per-operator white noise mode makes it easy to create percussive sounds such as hi-hats and cymbals.
-* Runs on macOS, Windows 10 and Linux in VST2-compatible DAWs. Synthesis is SIMD-accelerated where possible.
+* Runs on macOS, Windows 10 and Linux (X11) in VST2-compatible DAWs on 64-bit computers. Synthesis is SIMD-accelerated where possible.
 * Master volume and master frequency parameters
 * 128 voices (using them all simultaneously might consume quite a bit of CPU time though)
 * Fully automatable
