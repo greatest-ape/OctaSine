@@ -137,8 +137,7 @@ impl VoiceLfo {
             } => {
                 let progress = samples_done as f64 / INTERPOLATION_SAMPLES as f64;
 
-                progress * Self::calculate_curve(shape, self.phase)
-                    + (1.0 - progress) * from_value
+                progress * Self::calculate_curve(shape, self.phase) + (1.0 - progress) * from_value
             }
             LfoStage::Running => Self::calculate_curve(shape, self.phase),
             LfoStage::Stopping {
@@ -214,7 +213,7 @@ fn square(phase: Phase) -> f64 {
     let peak_end = 32.0 / 64.0;
     let base_start = 33.0 / 64.0;
 
-     if phase.0 <= peak_end {
+    if phase.0 <= peak_end {
         1.0
     } else if phase.0 <= base_start {
         1.0 - (phase.0 - peak_end) / (base_start - peak_end)

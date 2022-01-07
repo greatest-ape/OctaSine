@@ -19,7 +19,7 @@ impl Log10Table {
     pub fn calculate(value: f64) -> f64 {
         static TABLE: OnceCell<Log10Table> = OnceCell::new();
 
-        let table = TABLE.get_or_init(|| Log10Table::default());
+        let table = TABLE.get_or_init(Log10Table::default);
 
         let index_float = value * TABLE_SIZE_MINUS_ONE_FLOAT;
         let index_fract = index_float.fract();

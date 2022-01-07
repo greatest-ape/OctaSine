@@ -7,7 +7,8 @@
 
 * Interpolation in processing parameters: should it be based on time rather
   than number of samples? Should it be longer (16 samples might be stingy)
-* Use longer LFO interpolation? Current is about 3ms with 44100 Hz
+* Use longer LFO interpolation? Current is about 3ms with 44100 Hz. Use
+  time-based interpolation instead?
 
 * Log file should be saved elsewhere, maybe in ::dirs::data_local_dir()
 * Consider adding phase knobs
