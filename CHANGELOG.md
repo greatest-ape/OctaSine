@@ -22,14 +22,14 @@ how patches sound.
 - Fix LFO retrigger issues
 - Treat MIDI note on/off event with 0 velocity as note off
 
-## [0.5.4] - 2021-12-20
+## 0.5.4 - 2021-12-20
 
 ### Changed
 
 - Default to glow (OpenGL) backend
 - Use much more recent version of iced, from its git repository
 
-## [0.5.3] - 2021-06-18
+## 0.5.3 - 2021-06-18
 
 ### Changed
 
@@ -40,7 +40,7 @@ how patches sound.
 
 - Fix multiple HiDPI issues by updating baseview dependency
 
-## [0.5.2] - 2021-06-05
+## 0.5.2 - 2021-06-05
 
 ### Added
 
@@ -56,7 +56,7 @@ how patches sound.
 
 - Fix bug where audio engine doesn't pick up preset changes
 
-## [0.5.1] - 2021-05-29
+## 0.5.1 - 2021-05-29
 
 ### Added
 
@@ -66,6 +66,6 @@ how patches sound.
 
 - Update dependencies
 
-## [0.5.0] - 2021-02-14
+## 0.5.0 - 2021-02-14
 
 First release
