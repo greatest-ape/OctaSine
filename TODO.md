@@ -6,7 +6,7 @@
 * Consider defaulting to wgpu on Linux
 
 * Interpolation in processing parameters: should it be based on time rather
-  than number of samples? Should it be longer (16 samples might be stingy)
+  than number of samples?
 * Use longer LFO interpolation? Current is about 3ms with 44100 Hz. Use
   time-based interpolation instead?
 
