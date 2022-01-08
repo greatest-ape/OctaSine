@@ -11,7 +11,6 @@
   time-based interpolation instead?
 
 * Log file should be saved elsewhere, maybe in ::dirs::data_local_dir()
-* Consider adding phase knobs
 * Consider adding saw, square and triangle waves. Maybe look at
   TX81Z waveforms. https://www.reddit.com/r/synthesizers/comments/rkyk6j/comment/hpgcu6r/?utm_source=share&utm_medium=web2x&context=3
 
@@ -77,3 +76,7 @@
 * Cache sync value in interpolatable parameters too? Don't do this, it seems
   to hurt performance.
 * proper beta scaling - double with doubling modulator frequency: too late now
+* Add phase knobs. This isn't compatible with the fact that the voices have
+  independent phases and FM is done by incrementing the phase. It probably
+  wouldn't contribute a lot to audio generation flexibility to change this
+  just to add possibility of setting operator phase in addition to frequency.
