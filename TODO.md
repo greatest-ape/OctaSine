@@ -5,14 +5,11 @@
 * Wait for merge of raw-gl-context fix, use that repo
 * Consider defaulting to wgpu on Linux
 
-* Interpolation in processing parameters: should it be based on time rather
-  than number of samples?
-* Use longer LFO interpolation? Current is about 3ms with 44100 Hz. Use
-  time-based interpolation instead?
-
 * Log file should be saved elsewhere, maybe in ::dirs::data_local_dir()
 * Consider adding saw, square and triangle waves. Maybe look at
   TX81Z waveforms. https://www.reddit.com/r/synthesizers/comments/rkyk6j/comment/hpgcu6r/?utm_source=share&utm_medium=web2x&context=3
+* Consider time-based instead of sample-based interpolation for processing
+  parameters and LFOs
 
 * Bugs
   * Mouse drag movements in pick list transfer through to envelope editor
