@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## Unreleased
+## 0.6.0 - 2022-01-08
 
 This release contains breaking changes, i.e., changes that can affect
 how patches sound.
