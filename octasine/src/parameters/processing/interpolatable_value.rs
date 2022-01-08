@@ -1,4 +1,4 @@
-pub const INTERPOLATION_STEPS: usize = 16;
+pub const INTERPOLATION_STEPS: usize = 32;
 pub const INTERPOLATION_STEPS_FLOAT: f64 = INTERPOLATION_STEPS as f64;
 
 #[derive(Debug, Copy, Clone)]

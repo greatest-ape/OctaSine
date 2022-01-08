@@ -9,51 +9,57 @@ use octasine::gen::simd::Simd;
 use octasine::gen::AudioGen;
 use octasine::OctaSine;
 
-/// Benchmark OctaSine process functions
+/// Benchmark OctaSine process functions and check sample-accurate output
 ///
 /// Example output:
 /// ```txt
 /// --- Benchmarking OctaSine process_f32 variant: fallback (std) ---
-/// Total number of samples:        12800000
-/// Equivalent to audio duration:   290.24942 seconds
-/// Processing time in total:       27893 milliseconds
-/// Processing time per sample:     2179.1711 nanoseconds
-/// Estimated CPU use:              9.610011%
-/// Output hash (first 8 bytes):    ad 0d 1d 04 5e 38 95 7f
-///
+/// Total number of samples:        1280000
+/// Equivalent to audio duration:   29.024942 seconds
+/// Processing time in total:       2364 milliseconds
+/// Processing time per sample:     1847.5138 nanoseconds
+/// Estimated CPU use:              8.144719%
+/// Output hash (first 8 bytes):    3a 05 72 a0 77 76 49 0a 
+/// Hash match:                     yes
+/// 
 /// --- Benchmarking OctaSine process_f32 variant: fallback (sleef) ---
-/// Total number of samples:        12800000
-/// Equivalent to audio duration:   290.24942 seconds
-/// Processing time in total:       21805 milliseconds
-/// Processing time per sample:     1703.5895 nanoseconds
-/// Estimated CPU use:              7.5125046%
-/// Output hash (first 8 bytes):    ac fd ce 1e a2 7b 79 e1
-/// Speed compared to std fallback: 1.2791644x
-
+/// Total number of samples:        1280000
+/// Equivalent to audio duration:   29.024942 seconds
+/// Processing time in total:       1639 milliseconds
+/// Processing time per sample:     1280.9581 nanoseconds
+/// Estimated CPU use:              5.6468673%
+/// Output hash (first 8 bytes):    3a 05 72 a0 77 76 49 0a 
+/// Hash match:                     yes
+/// Speed compared to std fallback: 1.4422905x
+/// 
 /// --- Benchmarking OctaSine process_f32 variant: sse2 ---
-/// Total number of samples:        12800000
-/// Equivalent to audio duration:   290.24942 seconds
-/// Processing time in total:       18445 milliseconds
-/// Processing time per sample:     1441.0449 nanoseconds
-/// Estimated CPU use:              6.3548794%
-/// Output hash (first 8 bytes):    ac fd ce 1e a2 7b 79 e1
-/// Speed compared to std fallback: 1.512216x
-
+/// Total number of samples:        1280000
+/// Equivalent to audio duration:   29.024942 seconds
+/// Processing time in total:       1449 milliseconds
+/// Processing time per sample:     1132.5383 nanoseconds
+/// Estimated CPU use:              4.992258%
+/// Output hash (first 8 bytes):    3a 05 72 a0 77 76 49 0a 
+/// Hash match:                     yes
+/// Speed compared to std fallback: 1.6313035x
+/// 
 /// --- Benchmarking OctaSine process_f32 variant: avx ---
-/// Total number of samples:        12800000
-/// Equivalent to audio duration:   290.24942 seconds
-/// Processing time in total:       12060 milliseconds
-/// Processing time per sample:     942.26245 nanoseconds
-/// Estimated CPU use:              4.155047%
-/// Output hash (first 8 bytes):    ac fd ce 1e a2 7b 79 e1
-/// Speed compared to std fallback: 2.3127007x
+/// Total number of samples:        1280000
+/// Equivalent to audio duration:   29.024942 seconds
+/// Processing time in total:       985 milliseconds
+/// Processing time per sample:     770.06256 nanoseconds
+/// Estimated CPU use:              3.393633%
+/// Output hash (first 8 bytes):    3a 05 72 a0 77 76 49 0a 
+/// Hash match:                     yes
+/// Speed compared to std fallback: 2.3991737x
+/// 
+/// All sleef output hashes matched
 /// ```
 fn main() {
     // Ignore success status here, since output differs across platforms
     // depending on std sine implementation
     #[allow(unused_variables)]
     let (_, fallback_std) =
-        benchmark::<octasine::gen::simd::FallbackStd>("fallback (std)", "de 84 48 25 c7 d1 4b 92 ");
+        benchmark::<octasine::gen::simd::FallbackStd>("fallback (std)", "3a 05 72 a0 77 76 49 0a ");
 
     #[allow(unused_variables, unused_mut)]
     let mut all_sleef_hashes_match = true;
@@ -61,7 +67,7 @@ fn main() {
     #[cfg(feature = "simd")]
     {
         // Don't forget trailing space
-        let hash = "de 84 48 25 c7 d1 4b 92 ";
+        let hash = "3a 05 72 a0 77 76 49 0a ";
 
         {
             let (success, r) =

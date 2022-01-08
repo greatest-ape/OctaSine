@@ -11,8 +11,9 @@ how patches sound.
 
 - When triggering note while envelope is still running, restart envelope from
   zero volume
-- Tend towards linear envelopes rather than logarithmic for slightly longer
-  envelope stage durations than previously
+- To prevent artifacts, for very short envelope stages, the normal logarithmic
+  slopes will be mixed with linear slopes. This is not done for slightly longer
+  envelope stages
 - Adjust LFO wave shapes for better beat fit
 
 ### Fixed
@@ -20,7 +21,7 @@ how patches sound.
 - Properly handle audio buffers of arbitrary size
 - Properly handle midi event timings
 - Fix LFO retrigger issues
-- Treat MIDI note on/off event with 0 velocity as note off
+- Properly treat MIDI note on/off event with 0 velocity as note off
 
 ## 0.5.4 - 2021-12-20
 
