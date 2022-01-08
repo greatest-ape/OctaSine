@@ -80,6 +80,7 @@ allow = [
     "FTL",
     "OFL-1.1",
     "Zlib",
+    "AGPL-3.0",
     #"Apache-2.0 WITH LLVM-exception",
 ]
 # List of explictly disallowed licenses

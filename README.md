@@ -68,7 +68,7 @@ cd OctaSine
 5. Unless you want to use the bleeding edge development branch, switch to the latest stable version, e.g.:
 
 ```sh
-git checkout tags/v0.5.4
+git checkout tags/v0.6.0
 ```
 
 6. Build and install:
@@ -90,7 +90,7 @@ If you already have any of the software mentioned below, that step can be skippe
 6. Unless you want to use the bleeding edge development branch, switch to the latest stable version, e.g.:
 
 ```sh
-git checkout tags/v0.5.4
+git checkout tags/v0.6.0
 ```
 
 7. Build OctaSine:
@@ -136,7 +136,7 @@ cd OctaSine
 4. Unless you want to use the bleeding edge development branch, switch to the latest stable version, e.g.:
 
 ```sh
-git checkout tags/v0.5.4
+git checkout tags/v0.6.0
 ```
 
 5. Build the OctaSine plugin:
