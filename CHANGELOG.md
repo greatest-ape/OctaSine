@@ -11,10 +11,11 @@ how patches sound.
 
 - When triggering note while envelope is still running, restart envelope from
   zero volume
-- To prevent artifacts, for very short envelope stages, the normal logarithmic
-  slopes will be mixed with linear slopes. This is not done for slightly longer
+- To prevent artefacts, for very short envelope stages, the normal logarithmic
+  slopes will be mixed with linear slopes. This is now done for slightly longer
   envelope stages
 - Adjust LFO wave shapes for better beat fit
+- Interpolate parameters for 32 samples
 
 ### Fixed
 
@@ -25,10 +26,17 @@ how patches sound.
 
 ## 0.5.4 - 2021-12-20
 
+### Added
+- Pass back key presses to DAW for virtual keyboard support
+
 ### Changed
 
 - Default to glow (OpenGL) backend
-- Use much more recent version of iced, from its git repository
+- Use much more recent version of graphics dependency iced, from its git repository
+
+### Fixed
+- Fix bug where closing plugin window on macOS could cause a crash
+- Improve support for screens with high DPI on macOS and Windows
 
 ## 0.5.3 - 2021-06-18
 
