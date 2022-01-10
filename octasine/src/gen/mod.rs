@@ -44,7 +44,6 @@ impl RemainingSamples {
 
 #[derive(Debug, Default)]
 pub struct OperatorVoiceData {
-    pub active: bool,
     pub volumes: [f64; MAX_PD_WIDTH],
     pub modulation_indices: [f64; MAX_PD_WIDTH],
     pub feedbacks: [f64; MAX_PD_WIDTH],
@@ -429,16 +428,11 @@ mod gen {
         audio_buffer_lefts: &mut [f32],
         audio_buffer_rights: &mut [f32],
     ) {
-        // Maybe operator indexes should be inversed (3 - operator_index)
-        // because that is how they will be accessed later.
-
         // S::SAMPLES * 2 because of two channels. Even index = left channel
         let mut summed_additive_outputs = S::pd_setzero();
 
         for voice_data in voice_data.iter().filter(|voice_data| voice_data.active) {
             let operator_generate_audio = run_operator_dependency_analysis(voice_data);
-
-            // --- Generate samples for all operators
 
             // Voice modulation input storage, indexed by operator
             let mut voice_modulation_inputs = [S::pd_setzero(); 4];
@@ -446,10 +440,7 @@ mod gen {
             let volume_factors = S::pd_loadu(voice_data.volume_factors.as_ptr());
 
             // Go through operators downwards, starting with operator 4
-            for operator_index in 0..4 {
-                // FIXME: better iterator with 3, 2, 1, 0 possible?
-                let operator_index = 3 - operator_index;
-
+            for operator_index in (0..4).map(|i| 3 - i) {
                 // Possibly skip generation based on previous dependency analysis
                 if !operator_generate_audio[operator_index] {
                     continue;
@@ -457,7 +448,7 @@ mod gen {
 
                 let operator_voice_data = &voice_data.operators[operator_index];
 
-                let (additive_out, modulation_out) = gen_operator_audio(
+                let (additive_out, modulation_out) = gen_voice_operator_audio(
                     rng,
                     operator_voice_data,
                     voice_modulation_inputs[operator_index],
@@ -476,12 +467,12 @@ mod gen {
             }
         }
 
-        // --- Summed additive outputs: apply hard limit.
+        // Apply hard limit
 
         summed_additive_outputs = S::pd_min(summed_additive_outputs, S::pd_set1(5.0));
         summed_additive_outputs = S::pd_max(summed_additive_outputs, S::pd_set1(-5.0));
 
-        // --- Write additive outputs to audio buffer
+        // Write additive outputs to audio buffer
 
         let mut out = [0.0f64; S::PD_WIDTH];
 
@@ -497,7 +488,7 @@ mod gen {
 
     #[feature_gate]
     #[target_feature_enable]
-    unsafe fn gen_operator_audio(
+    unsafe fn gen_voice_operator_audio(
         rng: &mut fastrand::Rng,
         voice_data: &OperatorVoiceData,
         modulation_inputs: <S as Simd>::PackedDouble,
@@ -561,10 +552,10 @@ mod gen {
 
         let operator_volume = S::pd_loadu(voice_data.volumes.as_ptr());
         let envelope_volume = S::pd_loadu(voice_data.envelope_volumes.as_ptr());
-        let volume_product = S::pd_mul(operator_volume, envelope_volume);
         let constant_power_panning = S::pd_loadu(voice_data.constant_power_pannings.as_ptr());
         let operator_additive = S::pd_loadu(voice_data.additives.as_ptr());
 
+        let volume_product = S::pd_mul(operator_volume, envelope_volume);
         let sample_adjusted = S::pd_mul(S::pd_mul(sample, volume_product), constant_power_panning);
         let additive_out = S::pd_mul(sample_adjusted, operator_additive);
         let modulation_out = S::pd_sub(sample_adjusted, additive_out);
