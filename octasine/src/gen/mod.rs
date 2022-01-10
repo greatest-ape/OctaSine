@@ -6,7 +6,7 @@ use vst::buffer::AudioBuffer;
 
 use crate::common::*;
 use crate::constants::*;
-use crate::parameters::processing::ProcessingParameter;
+use crate::parameters::processing::{ProcessingParameter, ProcessingParameterOperator};
 use crate::OctaSine;
 
 use lfo::*;
@@ -191,7 +191,6 @@ mod gen {
         }
 
         for sample_index in 0..S::SAMPLES {
-            let sample_index_offset = sample_index * 2;
             let time_per_sample = octasine.processing.time_per_sample;
             let bpm = octasine.get_bpm();
 
@@ -243,8 +242,7 @@ mod gen {
                     // reactivated by midi events)
                     if (S::SAMPLES == 2) & (sample_index == 0) {
                         for operator in voice_data.operators.iter_mut() {
-                            operator.envelope_volumes[2] = 0.0;
-                            operator.envelope_volumes[3] = 0.0;
+                            set_value_for_both_channels(&mut operator.envelope_volumes, 1, 0.0);
                         }
                     }
                 }
@@ -255,148 +253,6 @@ mod gen {
                     time_per_sample,
                     bpm,
                 );
-
-                let voice_base_frequency = voice.midi_pitch.get_frequency(
-                    octasine
-                        .processing
-                        .parameters
-                        .master_frequency
-                        .get_value_with_lfo_addition(lfo_values.get(LfoTargetParameter::Master(
-                            LfoTargetMasterParameter::Frequency,
-                        ))),
-                );
-
-                for (operator_index, operator) in operators.iter_mut().enumerate() {
-                    voice_data.operators[operator_index].wave_type = operator.wave_type.value;
-
-                    if let Some(p) = &mut operator.output_operator {
-                        voice_data.operators[operator_index].modulation_target = p.get_value();
-                    }
-
-                    let volume = operator.volume.get_value_with_lfo_addition(lfo_values.get(
-                        LfoTargetParameter::Operator(
-                            operator_index,
-                            LfoTargetOperatorParameter::Volume,
-                        ),
-                    ));
-
-                    voice_data.operators[operator_index].volumes[sample_index_offset] = volume;
-                    voice_data.operators[operator_index].volumes[sample_index_offset + 1] = volume;
-
-                    let modulation_index =
-                        operator
-                            .modulation_index
-                            .get_value_with_lfo_addition(lfo_values.get(
-                                LfoTargetParameter::Operator(
-                                    operator_index,
-                                    LfoTargetOperatorParameter::ModulationIndex,
-                                ),
-                            ));
-
-                    voice_data.operators[operator_index].modulation_indices[sample_index_offset] =
-                        modulation_index;
-                    voice_data.operators[operator_index].modulation_indices
-                        [sample_index_offset + 1] = modulation_index;
-
-                    let feedback = operator
-                        .feedback
-                        .get_value_with_lfo_addition(lfo_values.get(LfoTargetParameter::Operator(
-                            operator_index,
-                            LfoTargetOperatorParameter::Feedback,
-                        )));
-
-                    voice_data.operators[operator_index].feedbacks[sample_index_offset] = feedback;
-                    voice_data.operators[operator_index].feedbacks[sample_index_offset + 1] =
-                        feedback;
-
-                    let panning = operator.panning.get_value_with_lfo_addition(lfo_values.get(
-                        LfoTargetParameter::Operator(
-                            operator_index,
-                            LfoTargetOperatorParameter::Panning,
-                        ),
-                    ));
-
-                    voice_data.operators[operator_index].pannings[sample_index_offset] = panning;
-                    voice_data.operators[operator_index].pannings[sample_index_offset + 1] =
-                        panning;
-                    let [l, r] = operator.panning.left_and_right;
-                    voice_data.operators[operator_index].constant_power_pannings
-                        [sample_index_offset] = l;
-                    voice_data.operators[operator_index].constant_power_pannings
-                        [sample_index_offset + 1] = r;
-
-                    // Get additive factor; use 1.0 for operator 1
-                    let additive = if operator_index == 0 {
-                        1.0
-                    } else {
-                        operator
-                            .additive_factor
-                            .get_value_with_lfo_addition(lfo_values.get(
-                                LfoTargetParameter::Operator(
-                                    operator_index,
-                                    LfoTargetOperatorParameter::Additive,
-                                ),
-                            ))
-                    };
-
-                    voice_data.operators[operator_index].additives[sample_index_offset] = additive;
-                    voice_data.operators[operator_index].additives[sample_index_offset + 1] =
-                        additive;
-
-                    let frequency_ratio =
-                        operator
-                            .frequency_ratio
-                            .get_value_with_lfo_addition(lfo_values.get(
-                                LfoTargetParameter::Operator(
-                                    operator_index,
-                                    LfoTargetOperatorParameter::FrequencyRatio,
-                                ),
-                            ));
-                    let frequency_free =
-                        operator
-                            .frequency_free
-                            .get_value_with_lfo_addition(lfo_values.get(
-                                LfoTargetParameter::Operator(
-                                    operator_index,
-                                    LfoTargetOperatorParameter::FrequencyFree,
-                                ),
-                            ));
-                    let frequency_fine =
-                        operator
-                            .frequency_fine
-                            .get_value_with_lfo_addition(lfo_values.get(
-                                LfoTargetParameter::Operator(
-                                    operator_index,
-                                    LfoTargetOperatorParameter::FrequencyFine,
-                                ),
-                            ));
-
-                    let frequency =
-                        voice_base_frequency * frequency_ratio * frequency_free * frequency_fine;
-
-                    let last_phase = voice.operators[operator_index].last_phase.0;
-                    let phase_addition = frequency * time_per_sample.0;
-
-                    let new_phase = last_phase + phase_addition;
-
-                    voice_data.operators[operator_index].phases[sample_index_offset] = new_phase;
-                    voice_data.operators[operator_index].phases[sample_index_offset + 1] =
-                        new_phase;
-
-                    // Save phase
-                    voice.operators[operator_index].last_phase.0 = new_phase;
-                }
-
-                // Envelope
-                for (operator_index, operator) in operators.iter_mut().enumerate() {
-                    let v = voice.operators[operator_index]
-                        .volume_envelope
-                        .get_volume(&operator.volume_envelope);
-
-                    voice_data.operators[operator_index].envelope_volumes[sample_index_offset] = v;
-                    voice_data.operators[operator_index].envelope_volumes
-                        [sample_index_offset + 1] = v;
-                }
 
                 let voice_volume_factor = {
                     let lfo_parameter =
@@ -414,10 +270,150 @@ mod gen {
                     VOICE_VOLUME_FACTOR * master_volume * key_velocity
                 };
 
-                voice_data.volume_factors[sample_index_offset] = voice_volume_factor;
-                voice_data.volume_factors[sample_index_offset + 1] = voice_volume_factor;
+                set_value_for_both_channels(
+                    &mut voice_data.volume_factors,
+                    sample_index,
+                    voice_volume_factor,
+                );
+
+                let voice_base_frequency = voice.midi_pitch.get_frequency(
+                    octasine
+                        .processing
+                        .parameters
+                        .master_frequency
+                        .get_value_with_lfo_addition(lfo_values.get(LfoTargetParameter::Master(
+                            LfoTargetMasterParameter::Frequency,
+                        ))),
+                );
+
+                for (operator_index, operator) in operators.iter_mut().enumerate() {
+                    extract_voice_operator_data(
+                        sample_index,
+                        operator_index,
+                        operator,
+                        &mut voice.operators[operator_index],
+                        &mut voice_data.operators[operator_index],
+                        &lfo_values,
+                        time_per_sample,
+                        voice_base_frequency,
+                    )
+                }
             }
         }
+    }
+
+    #[feature_gate]
+    #[target_feature_enable]
+    unsafe fn extract_voice_operator_data(
+        sample_index: usize,
+        operator_index: usize,
+        operator: &mut ProcessingParameterOperator,
+        voice_operator: &mut crate::voices::VoiceOperator,
+        voice_data: &mut OperatorVoiceData,
+        lfo_values: &LfoTargetValues,
+        time_per_sample: TimePerSample,
+        voice_base_frequency: f64,
+    ) {
+        voice_data.wave_type = operator.wave_type.value;
+
+        if let Some(p) = &mut operator.output_operator {
+            voice_data.modulation_target = p.get_value();
+        }
+
+        let envelope_volume = voice_operator
+            .volume_envelope
+            .get_volume(&operator.volume_envelope);
+
+        set_value_for_both_channels(
+            &mut voice_data.envelope_volumes,
+            sample_index,
+            envelope_volume,
+        );
+
+        let volume = operator.volume.get_value_with_lfo_addition(lfo_values.get(
+            LfoTargetParameter::Operator(operator_index, LfoTargetOperatorParameter::Volume),
+        ));
+
+        set_value_for_both_channels(&mut voice_data.volumes, sample_index, volume);
+
+        let modulation_index =
+            operator
+                .modulation_index
+                .get_value_with_lfo_addition(lfo_values.get(LfoTargetParameter::Operator(
+                    operator_index,
+                    LfoTargetOperatorParameter::ModulationIndex,
+                )));
+
+        set_value_for_both_channels(
+            &mut voice_data.modulation_indices,
+            sample_index,
+            modulation_index,
+        );
+
+        let feedback = operator
+            .feedback
+            .get_value_with_lfo_addition(lfo_values.get(LfoTargetParameter::Operator(
+                operator_index,
+                LfoTargetOperatorParameter::Feedback,
+            )));
+
+        set_value_for_both_channels(&mut voice_data.feedbacks, sample_index, feedback);
+
+        let panning = operator.panning.get_value_with_lfo_addition(lfo_values.get(
+            LfoTargetParameter::Operator(operator_index, LfoTargetOperatorParameter::Panning),
+        ));
+
+        set_value_for_both_channels(&mut voice_data.pannings, sample_index, panning);
+
+        {
+            let [l, r] = operator.panning.left_and_right;
+
+            let sample_index_offset = sample_index * 2;
+
+            voice_data.constant_power_pannings[sample_index_offset] = l;
+            voice_data.constant_power_pannings[sample_index_offset + 1] = r;
+        }
+
+        // Get additive factor; use 1.0 for operator 1
+        let additive = if operator_index == 0 {
+            1.0
+        } else {
+            operator
+                .additive_factor
+                .get_value_with_lfo_addition(lfo_values.get(LfoTargetParameter::Operator(
+                    operator_index,
+                    LfoTargetOperatorParameter::Additive,
+                )))
+        };
+
+        set_value_for_both_channels(&mut voice_data.additives, sample_index, additive);
+
+        let frequency_ratio = operator
+            .frequency_ratio
+            .get_value_with_lfo_addition(lfo_values.get(LfoTargetParameter::Operator(
+                operator_index,
+                LfoTargetOperatorParameter::FrequencyRatio,
+            )));
+        let frequency_free = operator
+            .frequency_free
+            .get_value_with_lfo_addition(lfo_values.get(LfoTargetParameter::Operator(
+                operator_index,
+                LfoTargetOperatorParameter::FrequencyFree,
+            )));
+        let frequency_fine = operator
+            .frequency_fine
+            .get_value_with_lfo_addition(lfo_values.get(LfoTargetParameter::Operator(
+                operator_index,
+                LfoTargetOperatorParameter::FrequencyFine,
+            )));
+
+        let frequency = voice_base_frequency * frequency_ratio * frequency_free * frequency_fine;
+        let new_phase = voice_operator.last_phase.0 + frequency * time_per_sample.0;
+
+        set_value_for_both_channels(&mut voice_data.phases, sample_index, new_phase);
+
+        // Save phase
+        voice_operator.last_phase.0 = new_phase;
     }
 
     #[feature_gate]
@@ -620,5 +616,18 @@ mod gen {
         }
 
         operator_generate_audio
+    }
+
+    #[feature_gate]
+    #[target_feature_enable]
+    unsafe fn set_value_for_both_channels(
+        target: &mut [f64; MAX_PD_WIDTH],
+        sample_index: usize,
+        value: f64,
+    ) {
+        let offset = sample_index * 2;
+
+        target[offset] = value;
+        target[offset + 1] = value;
     }
 }
