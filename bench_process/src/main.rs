@@ -19,39 +19,39 @@ use octasine::OctaSine;
 /// Processing time in total:       2364 milliseconds
 /// Processing time per sample:     1847.5138 nanoseconds
 /// Estimated CPU use:              8.144719%
-/// Output hash (first 8 bytes):    3a 05 72 a0 77 76 49 0a 
+/// Output hash (first 8 bytes):    3a 05 72 a0 77 76 49 0a
 /// Hash match:                     yes
-/// 
+///
 /// --- Benchmarking OctaSine process_f32 variant: fallback (sleef) ---
 /// Total number of samples:        1280000
 /// Equivalent to audio duration:   29.024942 seconds
 /// Processing time in total:       1639 milliseconds
 /// Processing time per sample:     1280.9581 nanoseconds
 /// Estimated CPU use:              5.6468673%
-/// Output hash (first 8 bytes):    3a 05 72 a0 77 76 49 0a 
+/// Output hash (first 8 bytes):    3a 05 72 a0 77 76 49 0a
 /// Hash match:                     yes
 /// Speed compared to std fallback: 1.4422905x
-/// 
+///
 /// --- Benchmarking OctaSine process_f32 variant: sse2 ---
 /// Total number of samples:        1280000
 /// Equivalent to audio duration:   29.024942 seconds
 /// Processing time in total:       1449 milliseconds
 /// Processing time per sample:     1132.5383 nanoseconds
 /// Estimated CPU use:              4.992258%
-/// Output hash (first 8 bytes):    3a 05 72 a0 77 76 49 0a 
+/// Output hash (first 8 bytes):    3a 05 72 a0 77 76 49 0a
 /// Hash match:                     yes
 /// Speed compared to std fallback: 1.6313035x
-/// 
+///
 /// --- Benchmarking OctaSine process_f32 variant: avx ---
 /// Total number of samples:        1280000
 /// Equivalent to audio duration:   29.024942 seconds
 /// Processing time in total:       985 milliseconds
 /// Processing time per sample:     770.06256 nanoseconds
 /// Estimated CPU use:              3.393633%
-/// Output hash (first 8 bytes):    3a 05 72 a0 77 76 49 0a 
+/// Output hash (first 8 bytes):    3a 05 72 a0 77 76 49 0a
 /// Hash match:                     yes
 /// Speed compared to std fallback: 2.3991737x
-/// 
+///
 /// All sleef output hashes matched
 /// ```
 fn main() {
