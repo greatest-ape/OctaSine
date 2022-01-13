@@ -5,7 +5,9 @@
 * Wait for merge of raw-gl-context fix, use that repo
 * Consider defaulting to wgpu on Linux
 
-* Log file should be saved elsewhere, maybe in ::dirs::data_local_dir()
+* Handle BPM change events instead of checking all the time
+* Use directories crate to choose paths for log and settings files
+
 * Consider adding saw, square and triangle waves. Maybe look at
   TX81Z waveforms. https://www.reddit.com/r/synthesizers/comments/rkyk6j/comment/hpgcu6r/?utm_source=share&utm_medium=web2x&context=3
 * Consider time-based instead of sample-based interpolation for processing
