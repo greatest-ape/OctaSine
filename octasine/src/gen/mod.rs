@@ -207,7 +207,7 @@ mod gen {
                     Some(event_delta_frames) if event_delta_frames == position + sample_index => {
                         let event = octasine.processing.pending_midi_events.pop_front().unwrap();
 
-                        octasine.process_midi_event(event);
+                        octasine.processing.process_midi_event(event);
                     }
                     _ => break,
                 }

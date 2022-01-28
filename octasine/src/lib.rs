@@ -29,7 +29,6 @@ use preset_bank::PresetBank;
 use settings::Settings;
 use voices::*;
 
-/// State used for processing
 pub struct ProcessingState {
     pub sample_rate: SampleRate,
     pub time_per_sample: TimePerSample,
@@ -39,6 +38,37 @@ pub struct ProcessingState {
     pub parameters: ProcessingParameters,
     pub pending_midi_events: VecDeque<MidiEvent>,
     pub audio_gen_voice_data: [VoiceData; 128],
+}
+
+impl ProcessingState {
+    pub fn enqueue_midi_events<I: Iterator<Item = MidiEvent>>(&mut self, events: I) {
+        for event in events {
+            self.pending_midi_events.push_back(event);
+        }
+
+        self.pending_midi_events
+            .make_contiguous()
+            .sort_by_key(|e| e.delta_frames);
+    }
+
+    fn process_midi_event(&mut self, mut event: MidiEvent) {
+        event.data[0] >>= 4;
+
+        match event.data {
+            [0b_1000, pitch, _] => self.key_off(pitch),
+            [0b_1001, pitch, 0] => self.key_off(pitch),
+            [0b_1001, pitch, velocity] => self.key_on(pitch, velocity),
+            _ => (),
+        }
+    }
+
+    fn key_on(&mut self, pitch: u8, velocity: u8) {
+        self.voices[pitch as usize].press_key(velocity);
+    }
+
+    fn key_off(&mut self, pitch: u8) {
+        self.voices[pitch as usize].release_key();
+    }
 }
 
 /// Thread-safe state used for parameter and preset calls
@@ -66,9 +96,8 @@ impl SyncState {
     }
 }
 
-/// Main structure
 pub struct OctaSine {
-    processing: ProcessingState,
+    pub processing: ProcessingState,
     pub sync: Arc<SyncState>,
     #[cfg(feature = "gui")]
     editor: Option<crate::gui::Gui<Arc<SyncState>>>,
@@ -132,36 +161,6 @@ impl OctaSine {
         }
     }
 
-    pub fn enqueue_midi_events<I: Iterator<Item = MidiEvent>>(&mut self, events: I) {
-        for event in events {
-            self.processing.pending_midi_events.push_back(event);
-        }
-
-        self.processing
-            .pending_midi_events
-            .make_contiguous()
-            .sort_by_key(|e| e.delta_frames);
-    }
-
-    fn process_midi_event(&mut self, mut event: MidiEvent) {
-        event.data[0] >>= 4;
-
-        match event.data {
-            [0b_1000, pitch, _] => self.key_off(pitch),
-            [0b_1001, pitch, 0] => self.key_off(pitch),
-            [0b_1001, pitch, velocity] => self.key_on(pitch, velocity),
-            _ => (),
-        }
-    }
-
-    fn key_on(&mut self, pitch: u8, velocity: u8) {
-        self.processing.voices[pitch as usize].press_key(velocity);
-    }
-
-    fn key_off(&mut self, pitch: u8) {
-        self.processing.voices[pitch as usize].release_key();
-    }
-
     pub fn update_processing_parameters(&mut self) {
         let changed_sync_parameters = self.sync.presets.get_changed_parameters_from_processing();
 
@@ -203,13 +202,14 @@ impl Plugin for OctaSine {
     }
 
     fn process_events(&mut self, events: &Events) {
-        self.enqueue_midi_events(events.events().filter_map(|event| {
-            if let Event::Midi(event) = event {
-                Some(event)
-            } else {
-                None
-            }
-        }))
+        self.processing
+            .enqueue_midi_events(events.events().filter_map(|event| {
+                if let Event::Midi(event) = event {
+                    Some(event)
+                } else {
+                    None
+                }
+            }))
     }
 
     fn set_sample_rate(&mut self, rate: f32) {
