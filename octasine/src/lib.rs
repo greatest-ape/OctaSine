@@ -57,20 +57,6 @@ impl OctaSine {
             }
         };
 
-        let sample_rate = SampleRate(44100.0);
-
-        let processing = ProcessingState {
-            sample_rate,
-            time_per_sample: sample_rate.into(),
-            bpm: Default::default(),
-            rng: Rng::new(),
-            voices: array_init(|i| Voice::new(MidiPitch::new(i as u8))),
-            parameters: ProcessingParameters::default(),
-            // Start with some capacity to cut down on later allocations
-            pending_midi_events: VecDeque::with_capacity(128),
-            audio_gen_voice_data: array_init::array_init(|_| VoiceData::default()),
-        };
-
         let sync = Arc::new(SyncState {
             host,
             presets: built_in_preset_bank(),
@@ -81,7 +67,7 @@ impl OctaSine {
         let editor = crate::gui::Gui::new(sync.clone());
 
         Self {
-            processing,
+            processing: Default::default(),
             sync,
             #[cfg(feature = "gui")]
             editor: Some(editor),
@@ -146,10 +132,7 @@ impl Plugin for OctaSine {
     }
 
     fn set_sample_rate(&mut self, rate: f32) {
-        let sample_rate = SampleRate(f64::from(rate));
-
-        self.processing.sample_rate = sample_rate;
-        self.processing.time_per_sample = sample_rate.into();
+        self.processing.time_per_sample = SampleRate(f64::from(rate)).into();
     }
 
     fn can_do(&self, can_do: CanDo) -> Supported {
@@ -177,7 +160,6 @@ impl Plugin for OctaSine {
 }
 
 pub struct ProcessingState {
-    pub sample_rate: SampleRate,
     pub time_per_sample: TimePerSample,
     pub bpm: BeatsPerMinute,
     pub rng: Rng,
@@ -185,6 +167,21 @@ pub struct ProcessingState {
     pub parameters: ProcessingParameters,
     pub pending_midi_events: VecDeque<MidiEvent>,
     pub audio_gen_voice_data: [VoiceData; 128],
+}
+
+impl Default for ProcessingState {
+    fn default() -> Self {
+        Self {
+            time_per_sample: SampleRate::default().into(),
+            bpm: Default::default(),
+            rng: Rng::new(),
+            voices: array_init(|i| Voice::new(MidiPitch::new(i as u8))),
+            parameters: ProcessingParameters::default(),
+            // Start with some capacity to cut down on later allocations
+            pending_midi_events: VecDeque::with_capacity(128),
+            audio_gen_voice_data: array_init::array_init(|_| VoiceData::default()),
+        }
+    }
 }
 
 impl ProcessingState {
