@@ -7,7 +7,7 @@ use vst::buffer::AudioBuffer;
 use crate::common::*;
 use crate::constants::*;
 use crate::parameters::processing::{ProcessingParameter, ProcessingParameterOperator};
-use crate::OctaSine;
+use crate::{OctaSine, ProcessingState};
 
 use lfo::*;
 use simd::*;
@@ -174,7 +174,7 @@ mod gen {
                 return;
             }
 
-            extract_voice_data(octasine, position);
+            extract_voice_data(&mut octasine.processing, position);
             gen_audio(
                 &mut octasine.processing.rng,
                 &octasine.processing.audio_gen_voice_data,
@@ -186,26 +186,23 @@ mod gen {
 
     #[feature_gate]
     #[target_feature_enable]
-    unsafe fn extract_voice_data(octasine: &mut OctaSine, position: usize) {
-        for voice_data in octasine.processing.audio_gen_voice_data.iter_mut() {
+    unsafe fn extract_voice_data(processing: &mut ProcessingState, position: usize) {
+        for voice_data in processing.audio_gen_voice_data.iter_mut() {
             voice_data.active = false;
         }
 
         for sample_index in 0..S::SAMPLES {
-            let time_per_sample = octasine.processing.time_per_sample;
+            let time_per_sample = processing.time_per_sample;
 
-            octasine.processing.parameters.advance_one_sample();
-            octasine
-                .processing
-                .process_events_for_sample(position + sample_index);
+            processing.parameters.advance_one_sample();
+            processing.process_events_for_sample(position + sample_index);
 
-            let operators = &mut octasine.processing.parameters.operators;
+            let operators = &mut processing.parameters.operators;
 
-            for (voice, voice_data) in octasine
-                .processing
+            for (voice, voice_data) in processing
                 .voices
                 .iter_mut()
-                .zip(octasine.processing.audio_gen_voice_data.iter_mut())
+                .zip(processing.audio_gen_voice_data.iter_mut())
                 .filter(|(voice, _)| voice.active)
             {
                 for (operator_index, operator) in operators.iter_mut().enumerate() {
@@ -234,10 +231,10 @@ mod gen {
                 }
 
                 let lfo_values = get_lfo_target_values(
-                    &mut octasine.processing.parameters.lfos,
+                    &mut processing.parameters.lfos,
                     &mut voice.lfos,
                     time_per_sample,
-                    octasine.processing.bpm,
+                    processing.bpm,
                 );
 
                 let voice_volume_factor = {
@@ -245,8 +242,7 @@ mod gen {
                         LfoTargetParameter::Master(LfoTargetMasterParameter::Volume);
                     let lfo_addition = lfo_values.get(lfo_parameter);
 
-                    let master_volume = octasine
-                        .processing
+                    let master_volume = processing
                         .parameters
                         .master_volume
                         .get_value_with_lfo_addition(lfo_addition);
@@ -263,8 +259,7 @@ mod gen {
                 );
 
                 let voice_base_frequency = voice.midi_pitch.get_frequency(
-                    octasine
-                        .processing
+                    processing
                         .parameters
                         .master_frequency
                         .get_value_with_lfo_addition(lfo_values.get(LfoTargetParameter::Master(
