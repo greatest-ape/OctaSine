@@ -29,90 +29,6 @@ use preset_bank::PresetBank;
 use settings::Settings;
 use voices::*;
 
-pub struct ProcessingState {
-    pub sample_rate: SampleRate,
-    pub time_per_sample: TimePerSample,
-    pub bpm: BeatsPerMinute,
-    pub rng: Rng,
-    pub voices: [Voice; 128],
-    pub parameters: ProcessingParameters,
-    pub pending_midi_events: VecDeque<MidiEvent>,
-    pub audio_gen_voice_data: [VoiceData; 128],
-}
-
-impl ProcessingState {
-    pub fn enqueue_midi_events<I: Iterator<Item = MidiEvent>>(&mut self, events: I) {
-        for event in events {
-            self.pending_midi_events.push_back(event);
-        }
-
-        self.pending_midi_events
-            .make_contiguous()
-            .sort_by_key(|e| e.delta_frames);
-    }
-
-    fn process_events_for_sample(&mut self, buffer_offset: usize) {
-        loop {
-            match self
-                .pending_midi_events
-                .get(0)
-                .map(|e| e.delta_frames as usize)
-            {
-                Some(event_delta_frames) if event_delta_frames == buffer_offset => {
-                    let event = self.pending_midi_events.pop_front().unwrap();
-
-                    self.process_midi_event(event);
-                }
-                _ => break,
-            }
-        }
-    }
-
-    fn process_midi_event(&mut self, mut event: MidiEvent) {
-        event.data[0] >>= 4;
-
-        match event.data {
-            [0b_1000, pitch, _] => self.key_off(pitch),
-            [0b_1001, pitch, 0] => self.key_off(pitch),
-            [0b_1001, pitch, velocity] => self.key_on(pitch, velocity),
-            _ => (),
-        }
-    }
-
-    fn key_on(&mut self, pitch: u8, velocity: u8) {
-        self.voices[pitch as usize].press_key(velocity);
-    }
-
-    fn key_off(&mut self, pitch: u8) {
-        self.voices[pitch as usize].release_key();
-    }
-}
-
-/// Thread-safe state used for parameter and preset calls
-pub struct SyncState {
-    /// Host should always be set when running as real plugin, but having the
-    /// option of leaving this field empty is useful when benchmarking.
-    pub host: Option<HostCallback>,
-    pub presets: PresetBank,
-    pub settings: Settings,
-}
-
-impl SyncState {
-    fn get_bpm_from_host(&self) -> Option<BeatsPerMinute> {
-        // Use TEMPO_VALID constant content as mask directly because
-        // of problems with using TimeInfoFlags
-        let mask = 1 << 10;
-
-        let time_info = self.host?.get_time_info(mask)?;
-
-        if (time_info.flags & mask) != 0 {
-            Some(BeatsPerMinute(time_info.tempo as f64))
-        } else {
-            None
-        }
-    }
-}
-
 pub struct OctaSine {
     pub processing: ProcessingState,
     pub sync: Arc<SyncState>,
@@ -254,6 +170,90 @@ impl Plugin for OctaSine {
     fn get_editor(&mut self) -> Option<Box<dyn ::vst::editor::Editor>> {
         if let Some(editor) = self.editor.take() {
             Some(Box::new(editor) as Box<dyn ::vst::editor::Editor>)
+        } else {
+            None
+        }
+    }
+}
+
+pub struct ProcessingState {
+    pub sample_rate: SampleRate,
+    pub time_per_sample: TimePerSample,
+    pub bpm: BeatsPerMinute,
+    pub rng: Rng,
+    pub voices: [Voice; 128],
+    pub parameters: ProcessingParameters,
+    pub pending_midi_events: VecDeque<MidiEvent>,
+    pub audio_gen_voice_data: [VoiceData; 128],
+}
+
+impl ProcessingState {
+    pub fn enqueue_midi_events<I: Iterator<Item = MidiEvent>>(&mut self, events: I) {
+        for event in events {
+            self.pending_midi_events.push_back(event);
+        }
+
+        self.pending_midi_events
+            .make_contiguous()
+            .sort_by_key(|e| e.delta_frames);
+    }
+
+    fn process_events_for_sample(&mut self, buffer_offset: usize) {
+        loop {
+            match self
+                .pending_midi_events
+                .get(0)
+                .map(|e| e.delta_frames as usize)
+            {
+                Some(event_delta_frames) if event_delta_frames == buffer_offset => {
+                    let event = self.pending_midi_events.pop_front().unwrap();
+
+                    self.process_midi_event(event);
+                }
+                _ => break,
+            }
+        }
+    }
+
+    fn process_midi_event(&mut self, mut event: MidiEvent) {
+        event.data[0] >>= 4;
+
+        match event.data {
+            [0b_1000, pitch, _] => self.key_off(pitch),
+            [0b_1001, pitch, 0] => self.key_off(pitch),
+            [0b_1001, pitch, velocity] => self.key_on(pitch, velocity),
+            _ => (),
+        }
+    }
+
+    fn key_on(&mut self, pitch: u8, velocity: u8) {
+        self.voices[pitch as usize].press_key(velocity);
+    }
+
+    fn key_off(&mut self, pitch: u8) {
+        self.voices[pitch as usize].release_key();
+    }
+}
+
+/// Thread-safe state used for parameter and preset calls
+pub struct SyncState {
+    /// Host should always be set when running as real plugin, but having the
+    /// option of leaving this field empty is useful when benchmarking.
+    pub host: Option<HostCallback>,
+    pub presets: PresetBank,
+    pub settings: Settings,
+}
+
+impl SyncState {
+    fn get_bpm_from_host(&self) -> Option<BeatsPerMinute> {
+        // Use TEMPO_VALID constant content as mask directly because
+        // of problems with using TimeInfoFlags
+        let mask = 1 << 10;
+
+        let time_info = self.host?.get_time_info(mask)?;
+
+        if (time_info.flags & mask) != 0 {
+            Some(BeatsPerMinute(time_info.tempo as f64))
         } else {
             None
         }
