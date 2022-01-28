@@ -178,7 +178,7 @@ fn benchmark<A: AudioGen + Simd>(name: &str, expected_hash: &str) -> (bool, f32)
             .zip(rights.chunks_exact_mut(A::SAMPLES))
         {
             unsafe {
-                A::process_f32(&mut octasine, lefts, rights, position);
+                A::process_f32(&mut octasine.processing, lefts, rights, position);
             }
 
             position += A::SAMPLES;

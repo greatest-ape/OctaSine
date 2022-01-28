@@ -17,7 +17,7 @@ const MAX_PD_WIDTH: usize = 4;
 pub trait AudioGen {
     #[allow(clippy::missing_safety_doc)]
     unsafe fn process_f32(
-        octasine: &mut OctaSine,
+        octasine: &mut ProcessingState,
         lefts: &mut [f32],
         rights: &mut [f32],
         position: usize,
@@ -85,7 +85,7 @@ pub fn process_f32_runtime_select(octasine: &mut OctaSine, audio_buffer: &mut Au
                     let end_position = position + 2;
 
                     Avx::process_f32(
-                        octasine,
+                        &mut octasine.processing,
                         &mut lefts[position..end_position],
                         &mut rights[position..end_position],
                         position,
@@ -100,14 +100,14 @@ pub fn process_f32_runtime_select(octasine: &mut OctaSine, audio_buffer: &mut Au
                         if #[cfg(all(feature = "simd", target_arch = "x86_64"))] {
                             // SSE2 is always supported on x86_64
                             Sse2::process_f32(
-                                octasine,
+                                &mut octasine.processing,
                                 &mut lefts[position..end_position],
                                 &mut rights[position..end_position],
                                 position,
                             );
                         } else {
                             FallbackStd::process_f32(
-                                octasine,
+                                &mut octasine.processing,
                                 &mut lefts[position..end_position],
                                 &mut rights[position..end_position],
                                 position,
@@ -155,7 +155,7 @@ mod gen {
     impl AudioGen for S {
         #[target_feature_enable]
         unsafe fn process_f32(
-            octasine: &mut OctaSine,
+            processing: &mut ProcessingState,
             lefts: &mut [f32],
             rights: &mut [f32],
             position: usize,
@@ -163,8 +163,8 @@ mod gen {
             assert_eq!(lefts.len(), S::SAMPLES);
             assert_eq!(rights.len(), S::SAMPLES);
 
-            if octasine.processing.pending_midi_events.is_empty()
-                && !octasine.processing.voices.iter().any(|v| v.active)
+            if processing.pending_midi_events.is_empty()
+                && !processing.voices.iter().any(|v| v.active)
             {
                 for (l, r) in lefts.iter_mut().zip(rights.iter_mut()) {
                     *l = 0.0;
@@ -174,10 +174,10 @@ mod gen {
                 return;
             }
 
-            extract_voice_data(&mut octasine.processing, position);
+            extract_voice_data(processing, position);
             gen_audio(
-                &mut octasine.processing.rng,
-                &octasine.processing.audio_gen_voice_data,
+                &mut processing.rng,
+                &processing.audio_gen_voice_data,
                 lefts,
                 rights,
             );
