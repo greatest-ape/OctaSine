@@ -195,23 +195,9 @@ mod gen {
             let time_per_sample = octasine.processing.time_per_sample;
 
             octasine.processing.parameters.advance_one_sample();
-
-            // Process events for position in buffer
-            loop {
-                match octasine
-                    .processing
-                    .pending_midi_events
-                    .get(0)
-                    .map(|e| e.delta_frames as usize)
-                {
-                    Some(event_delta_frames) if event_delta_frames == position + sample_index => {
-                        let event = octasine.processing.pending_midi_events.pop_front().unwrap();
-
-                        octasine.processing.process_midi_event(event);
-                    }
-                    _ => break,
-                }
-            }
+            octasine
+                .processing
+                .process_events_for_sample(position + sample_index);
 
             let operators = &mut octasine.processing.parameters.operators;
 

@@ -51,6 +51,23 @@ impl ProcessingState {
             .sort_by_key(|e| e.delta_frames);
     }
 
+    fn process_events_for_sample(&mut self, buffer_offset: usize) {
+        loop {
+            match self
+                .pending_midi_events
+                .get(0)
+                .map(|e| e.delta_frames as usize)
+            {
+                Some(event_delta_frames) if event_delta_frames == buffer_offset => {
+                    let event = self.pending_midi_events.pop_front().unwrap();
+
+                    self.process_midi_event(event);
+                }
+                _ => break,
+            }
+        }
+    }
+
     fn process_midi_event(&mut self, mut event: MidiEvent) {
         event.data[0] >>= 4;
 
