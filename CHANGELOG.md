@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## Unreleased
+
+### Fixed
+
+- Fetch BPM once per process call instead of each sample
+
 ## 0.6.0 - 2022-01-08
 
 This release contains breaking changes, i.e., changes that can affect
