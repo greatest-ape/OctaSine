@@ -67,6 +67,7 @@ pub struct VoiceData {
 #[inline]
 pub fn process_f32_runtime_select(octasine: &mut OctaSine, audio_buffer: &mut AudioBuffer<f32>) {
     octasine.update_processing_parameters();
+    octasine.update_bpm();
 
     let num_samples = audio_buffer.samples();
 
@@ -192,7 +193,6 @@ mod gen {
 
         for sample_index in 0..S::SAMPLES {
             let time_per_sample = octasine.processing.time_per_sample;
-            let bpm = octasine.get_bpm();
 
             octasine.processing.parameters.advance_one_sample();
 
@@ -251,7 +251,7 @@ mod gen {
                     &mut octasine.processing.parameters.lfos,
                     &mut voice.lfos,
                     time_per_sample,
-                    bpm,
+                    octasine.processing.bpm,
                 );
 
                 let voice_volume_factor = {

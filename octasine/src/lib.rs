@@ -33,6 +33,7 @@ use voices::*;
 pub struct ProcessingState {
     pub sample_rate: SampleRate,
     pub time_per_sample: TimePerSample,
+    pub bpm: BeatsPerMinute,
     pub rng: Rng,
     pub voices: [Voice; 128],
     pub parameters: ProcessingParameters,
@@ -47,6 +48,22 @@ pub struct SyncState {
     pub host: Option<HostCallback>,
     pub presets: PresetBank,
     pub settings: Settings,
+}
+
+impl SyncState {
+    fn get_bpm_from_host(&self) -> Option<BeatsPerMinute> {
+        // Use TEMPO_VALID constant content as mask directly because
+        // of problems with using TimeInfoFlags
+        let mask = 1 << 10;
+
+        let time_info = self.host?.get_time_info(mask)?;
+
+        if (time_info.flags & mask) != 0 {
+            Some(BeatsPerMinute(time_info.tempo as f64))
+        } else {
+            None
+        }
+    }
 }
 
 /// Main structure
@@ -83,6 +100,7 @@ impl OctaSine {
         let processing = ProcessingState {
             sample_rate,
             time_per_sample: Self::time_per_sample(sample_rate),
+            bpm: Default::default(),
             rng: Rng::new(),
             voices: array_init(|i| Voice::new(MidiPitch::new(i as u8))),
             parameters: ProcessingParameters::default(),
@@ -140,14 +158,10 @@ impl OctaSine {
         TimePerSample(1.0 / sample_rate.0)
     }
 
-    fn get_bpm(&self) -> BeatsPerMinute {
-        // Use TEMPO_VALID constant content as mask directly because
-        // of problems with using TimeInfoFlags
-        self.sync
-            .host
-            .and_then(|host| host.get_time_info(1 << 10))
-            .map(|time_info| BeatsPerMinute(time_info.tempo as f64))
-            .unwrap_or_default()
+    fn update_bpm(&mut self) {
+        if let Some(bpm) = self.sync.get_bpm_from_host() {
+            self.processing.bpm = bpm;
+        }
     }
 
     pub fn enqueue_midi_events<I: Iterator<Item = MidiEvent>>(&mut self, events: I) {
