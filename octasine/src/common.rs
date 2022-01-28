@@ -11,6 +11,12 @@ pub struct Phase(pub f64);
 #[derive(Debug, Copy, Clone)]
 pub struct SampleRate(pub f64);
 
+impl Into<TimePerSample> for SampleRate {
+    fn into(self) -> TimePerSample {
+        TimePerSample(1.0 / self.0)
+    }
+}
+
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct TimePerSample(pub f64);
 

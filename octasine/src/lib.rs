@@ -99,7 +99,7 @@ impl OctaSine {
 
         let processing = ProcessingState {
             sample_rate,
-            time_per_sample: Self::time_per_sample(sample_rate),
+            time_per_sample: sample_rate.into(),
             bpm: Default::default(),
             rng: Rng::new(),
             voices: array_init(|i| Voice::new(MidiPitch::new(i as u8))),
@@ -152,10 +152,6 @@ impl OctaSine {
         ::log::set_max_level(simplelog::LevelFilter::Error);
 
         Ok(())
-    }
-
-    fn time_per_sample(sample_rate: SampleRate) -> TimePerSample {
-        TimePerSample(1.0 / sample_rate.0)
     }
 
     fn update_bpm(&mut self) {
@@ -248,7 +244,7 @@ impl Plugin for OctaSine {
         let sample_rate = SampleRate(f64::from(rate));
 
         self.processing.sample_rate = sample_rate;
-        self.processing.time_per_sample = Self::time_per_sample(sample_rate);
+        self.processing.time_per_sample = sample_rate.into();
     }
 
     fn can_do(&self, can_do: CanDo) -> Supported {
