@@ -84,7 +84,7 @@ impl OctaSine {
     fn create(host: Option<HostCallback>) -> Self {
         // If initialization of logging fails, we can't do much about it, but
         // we shouldn't panic
-        let _ = Self::init_logging();
+        let _ = init_logging();
 
         let settings = match Settings::load() {
             Ok(settings) => settings,
@@ -124,34 +124,6 @@ impl OctaSine {
             #[cfg(feature = "gui")]
             editor: Some(editor),
         }
-    }
-
-    fn init_logging() -> anyhow::Result<()> {
-        let log_folder = dirs::home_dir()
-            .ok_or(anyhow::anyhow!("Couldn't extract home dir"))?
-            .join("tmp");
-
-        // Ignore any creation error
-        let _ = ::std::fs::create_dir(log_folder.clone());
-
-        let log_file = ::std::fs::File::create(log_folder.join(format!("{}.log", PLUGIN_NAME)))?;
-
-        let log_config = simplelog::ConfigBuilder::new()
-            .set_time_to_local(true)
-            .build();
-
-        simplelog::WriteLogger::init(simplelog::LevelFilter::Info, log_config, log_file)?;
-
-        log_panics::init();
-
-        ::log::info!("init");
-
-        ::log::info!("OS: {}", ::os_info::get());
-        ::log::info!("OctaSine build: {}", get_version_info());
-
-        ::log::set_max_level(simplelog::LevelFilter::Error);
-
-        Ok(())
     }
 
     fn update_bpm(&mut self) {
@@ -424,6 +396,34 @@ cfg_if::cfg_if! {
             }
         }
     }
+}
+
+fn init_logging() -> anyhow::Result<()> {
+    let log_folder = dirs::home_dir()
+        .ok_or(anyhow::anyhow!("Couldn't extract home dir"))?
+        .join("tmp");
+
+    // Ignore any creation error
+    let _ = ::std::fs::create_dir(log_folder.clone());
+
+    let log_file = ::std::fs::File::create(log_folder.join(format!("{}.log", PLUGIN_NAME)))?;
+
+    let log_config = simplelog::ConfigBuilder::new()
+        .set_time_to_local(true)
+        .build();
+
+    simplelog::WriteLogger::init(simplelog::LevelFilter::Info, log_config, log_file)?;
+
+    log_panics::init();
+
+    ::log::info!("init");
+
+    ::log::info!("OS: {}", ::os_info::get());
+    ::log::info!("OctaSine build: {}", get_version_info());
+
+    ::log::set_max_level(simplelog::LevelFilter::Error);
+
+    Ok(())
 }
 
 pub fn built_in_preset_bank() -> PresetBank {
