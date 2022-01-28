@@ -1,9 +1,5 @@
 use crate::constants::LFO_TARGET_CONTEXT_STEPS;
 
-/// Number that gets incremented with 1.0 every second
-#[derive(Debug, Copy, Clone, PartialEq)]
-pub struct TimeCounter(pub f64);
-
 /// Phase. value >= 0.0 && value < 1.0
 #[derive(Debug, Copy, Clone)]
 pub struct Phase(pub f64);
