@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+This release contains breaking changes, i.e., changes that can affect
+how patches sound.
+
+### Changed
+
+- Use a more traditional LFO design that oscillates around the base value, not
+  in a single direction.
+
 ### Fixed
 
 - Fetch BPM once per process call instead of each sample
