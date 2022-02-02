@@ -129,6 +129,7 @@ pub enum LfoShape {
     Saw,
     ReverseSaw,
     Triangle,
+    ReverseTriangle,
     Square,
     ReverseSquare,
 }

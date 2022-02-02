@@ -163,8 +163,9 @@ impl VoiceLfo {
             LfoShape::Saw => saw(phase),
             LfoShape::ReverseSaw => reverse_saw(phase),
             LfoShape::Triangle => triangle(phase),
+            LfoShape::ReverseTriangle => reverse_triangle(phase),
             LfoShape::Square => square(phase),
-            LfoShape::ReverseSquare => rev_square(phase),
+            LfoShape::ReverseSquare => reverse_square(phase),
         }
     }
 
@@ -198,15 +199,19 @@ impl VoiceLfo {
 }
 
 fn triangle(phase: Phase) -> f64 {
-    flexible_triangle(phase, Phase(32.0 / 64.0))
+    (flexible_triangle(phase, Phase(32.0 / 64.0)) - 0.5) * 2.0
+}
+
+fn reverse_triangle(phase: Phase) -> f64 {
+    (-flexible_triangle(phase, Phase(32.0 / 64.0)) - 0.5) * 2.0
 }
 
 fn saw(phase: Phase) -> f64 {
-    phase.0
+    (phase.0 - 0.5) * 2.0
 }
 
 fn reverse_saw(phase: Phase) -> f64 {
-    1.0 - phase.0
+    (0.5 - phase.0) * 2.0
 }
 
 fn square(phase: Phase) -> f64 {
@@ -216,20 +221,20 @@ fn square(phase: Phase) -> f64 {
     if phase.0 <= peak_end {
         1.0
     } else if phase.0 <= base_start {
-        1.0 - (phase.0 - peak_end) / (base_start - peak_end)
+        1.0 - 2.0 * ((phase.0 - peak_end) / (base_start - peak_end))
     } else {
-        0.0
+        -1.0
     }
 }
 
-fn rev_square(phase: Phase) -> f64 {
+fn reverse_square(phase: Phase) -> f64 {
     let base_end = 32.0 / 64.0;
     let peak_start = 33.0 / 64.0;
 
     if phase.0 <= base_end {
-        0.0
+        -1.0
     } else if phase.0 <= peak_start {
-        (phase.0 - base_end) / (peak_start - base_end)
+        -1.0 + 2.0 * ((phase.0 - base_end) / (peak_start - base_end))
     } else {
         1.0
     }
@@ -237,8 +242,8 @@ fn rev_square(phase: Phase) -> f64 {
 
 fn flexible_triangle(phase: Phase, peak: Phase) -> f64 {
     if phase.0 <= peak.0 {
-        phase.0 / peak.0
+        -1.0 + 2.0 * (phase.0 / peak.0)
     } else {
-        1.0 - (phase.0 - peak.0) / (1.0 - peak.0)
+        1.0 - 2.0 * ((phase.0 - peak.0) / (1.0 - peak.0))
     }
 }
