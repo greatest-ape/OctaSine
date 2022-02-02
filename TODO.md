@@ -1,11 +1,16 @@
 # TODO
 
+* Consider if LFO amount should be logarithmic when affecting volume
+* Consider adding sine and reverse sine LFO shapes
+* GUI
+  * Parameter editing: bracket changes with begin_edit and end_edit
+    * iced_audio knobs would need events for starting and ending dragging
+
 ## Important
 
 * Wait for merge of raw-gl-context fix, use that repo
 * Consider defaulting to wgpu on Linux
 
-* Handle BPM change events instead of checking all the time
 * Use directories crate to choose paths for log and settings files
 
 * Consider adding saw, square and triangle waves. Maybe look at
@@ -24,15 +29,10 @@
   * Default to dark mode
   * Consider replacing LFO wave selector with custom widget that shows the
     shapes
-  * Parameter editing: bracket changes with begin_edit and end_edit
-    * iced_audio knobs would need events for starting and ending dragging
   * Scrolling in dropdowns
     * iced 0.4: https://github.com/hecrj/iced/pull/872
     * Does scrolling (including touch) need to be added to baseview
       macOS code? What about other platforms?
-
-* Documentation
-  * LFO shapes, shape/amount interaction
 
 ## Less important
 
