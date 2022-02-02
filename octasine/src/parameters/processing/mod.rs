@@ -9,7 +9,6 @@ use parameters::*;
 
 pub trait ProcessingParameter {
     type Value;
-    type ExtraData;
 
     fn advance_one_sample(&mut self);
     fn get_value(&self) -> Self::Value;

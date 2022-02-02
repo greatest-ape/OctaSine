@@ -29,29 +29,8 @@ use preset_bank::PresetBank;
 use settings::Settings;
 use voices::*;
 
-/// State used for processing
-pub struct ProcessingState {
-    pub sample_rate: SampleRate,
-    pub time_per_sample: TimePerSample,
-    pub rng: Rng,
-    pub voices: [Voice; 128],
-    pub parameters: ProcessingParameters,
-    pub pending_midi_events: VecDeque<MidiEvent>,
-    pub audio_gen_voice_data: [VoiceData; 128],
-}
-
-/// Thread-safe state used for parameter and preset calls
-pub struct SyncState {
-    /// Host should always be set when running as real plugin, but having the
-    /// option of leaving this field empty is useful when benchmarking.
-    pub host: Option<HostCallback>,
-    pub presets: PresetBank,
-    pub settings: Settings,
-}
-
-/// Main structure
 pub struct OctaSine {
-    processing: ProcessingState,
+    pub processing: ProcessingState,
     pub sync: Arc<SyncState>,
     #[cfg(feature = "gui")]
     editor: Option<crate::gui::Gui<Arc<SyncState>>>,
@@ -67,7 +46,7 @@ impl OctaSine {
     fn create(host: Option<HostCallback>) -> Self {
         // If initialization of logging fails, we can't do much about it, but
         // we shouldn't panic
-        let _ = Self::init_logging();
+        let _ = init_logging();
 
         let settings = match Settings::load() {
             Ok(settings) => settings,
@@ -76,19 +55,6 @@ impl OctaSine {
 
                 Settings::default()
             }
-        };
-
-        let sample_rate = SampleRate(44100.0);
-
-        let processing = ProcessingState {
-            sample_rate,
-            time_per_sample: Self::time_per_sample(sample_rate),
-            rng: Rng::new(),
-            voices: array_init(|i| Voice::new(MidiPitch::new(i as u8))),
-            parameters: ProcessingParameters::default(),
-            // Start with some capacity to cut down on later allocations
-            pending_midi_events: VecDeque::with_capacity(128),
-            audio_gen_voice_data: array_init::array_init(|_| VoiceData::default()),
         };
 
         let sync = Arc::new(SyncState {
@@ -101,83 +67,17 @@ impl OctaSine {
         let editor = crate::gui::Gui::new(sync.clone());
 
         Self {
-            processing,
+            processing: Default::default(),
             sync,
             #[cfg(feature = "gui")]
             editor: Some(editor),
         }
     }
 
-    fn init_logging() -> anyhow::Result<()> {
-        let log_folder = dirs::home_dir()
-            .ok_or(anyhow::anyhow!("Couldn't extract home dir"))?
-            .join("tmp");
-
-        // Ignore any creation error
-        let _ = ::std::fs::create_dir(log_folder.clone());
-
-        let log_file = ::std::fs::File::create(log_folder.join(format!("{}.log", PLUGIN_NAME)))?;
-
-        let log_config = simplelog::ConfigBuilder::new()
-            .set_time_to_local(true)
-            .build();
-
-        simplelog::WriteLogger::init(simplelog::LevelFilter::Info, log_config, log_file)?;
-
-        log_panics::init();
-
-        ::log::info!("init");
-
-        ::log::info!("OS: {}", ::os_info::get());
-        ::log::info!("OctaSine build: {}", get_version_info());
-
-        ::log::set_max_level(simplelog::LevelFilter::Error);
-
-        Ok(())
-    }
-
-    fn time_per_sample(sample_rate: SampleRate) -> TimePerSample {
-        TimePerSample(1.0 / sample_rate.0)
-    }
-
-    fn get_bpm(&self) -> BeatsPerMinute {
-        // Use TEMPO_VALID constant content as mask directly because
-        // of problems with using TimeInfoFlags
-        self.sync
-            .host
-            .and_then(|host| host.get_time_info(1 << 10))
-            .map(|time_info| BeatsPerMinute(time_info.tempo as f64))
-            .unwrap_or_default()
-    }
-
-    pub fn enqueue_midi_events<I: Iterator<Item = MidiEvent>>(&mut self, events: I) {
-        for event in events {
-            self.processing.pending_midi_events.push_back(event);
+    fn update_bpm(&mut self) {
+        if let Some(bpm) = self.sync.get_bpm_from_host() {
+            self.processing.bpm = bpm;
         }
-
-        self.processing
-            .pending_midi_events
-            .make_contiguous()
-            .sort_by_key(|e| e.delta_frames);
-    }
-
-    fn process_midi_event(&mut self, mut event: MidiEvent) {
-        event.data[0] >>= 4;
-
-        match event.data {
-            [0b_1000, pitch, _] => self.key_off(pitch),
-            [0b_1001, pitch, 0] => self.key_off(pitch),
-            [0b_1001, pitch, velocity] => self.key_on(pitch, velocity),
-            _ => (),
-        }
-    }
-
-    fn key_on(&mut self, pitch: u8, velocity: u8) {
-        self.processing.voices[pitch as usize].press_key(velocity);
-    }
-
-    fn key_off(&mut self, pitch: u8) {
-        self.processing.voices[pitch as usize].release_key();
     }
 
     pub fn update_processing_parameters(&mut self) {
@@ -221,20 +121,18 @@ impl Plugin for OctaSine {
     }
 
     fn process_events(&mut self, events: &Events) {
-        self.enqueue_midi_events(events.events().filter_map(|event| {
-            if let Event::Midi(event) = event {
-                Some(event)
-            } else {
-                None
-            }
-        }))
+        self.processing
+            .enqueue_midi_events(events.events().filter_map(|event| {
+                if let Event::Midi(event) = event {
+                    Some(event)
+                } else {
+                    None
+                }
+            }))
     }
 
     fn set_sample_rate(&mut self, rate: f32) {
-        let sample_rate = SampleRate(f64::from(rate));
-
-        self.processing.sample_rate = sample_rate;
-        self.processing.time_per_sample = Self::time_per_sample(sample_rate);
+        self.processing.time_per_sample = SampleRate(f64::from(rate)).into();
     }
 
     fn can_do(&self, can_do: CanDo) -> Supported {
@@ -255,6 +153,104 @@ impl Plugin for OctaSine {
     fn get_editor(&mut self) -> Option<Box<dyn ::vst::editor::Editor>> {
         if let Some(editor) = self.editor.take() {
             Some(Box::new(editor) as Box<dyn ::vst::editor::Editor>)
+        } else {
+            None
+        }
+    }
+}
+
+pub struct ProcessingState {
+    pub time_per_sample: TimePerSample,
+    pub bpm: BeatsPerMinute,
+    pub rng: Rng,
+    pub voices: [Voice; 128],
+    pub parameters: ProcessingParameters,
+    pub pending_midi_events: VecDeque<MidiEvent>,
+    pub audio_gen_voice_data: [VoiceData; 128],
+}
+
+impl Default for ProcessingState {
+    fn default() -> Self {
+        Self {
+            time_per_sample: SampleRate::default().into(),
+            bpm: Default::default(),
+            rng: Rng::new(),
+            voices: array_init(|i| Voice::new(MidiPitch::new(i as u8))),
+            parameters: ProcessingParameters::default(),
+            // Start with some capacity to cut down on later allocations
+            pending_midi_events: VecDeque::with_capacity(128),
+            audio_gen_voice_data: array_init::array_init(|_| VoiceData::default()),
+        }
+    }
+}
+
+impl ProcessingState {
+    pub fn enqueue_midi_events<I: Iterator<Item = MidiEvent>>(&mut self, events: I) {
+        for event in events {
+            self.pending_midi_events.push_back(event);
+        }
+
+        self.pending_midi_events
+            .make_contiguous()
+            .sort_by_key(|e| e.delta_frames);
+    }
+
+    fn process_events_for_sample(&mut self, buffer_offset: usize) {
+        loop {
+            match self
+                .pending_midi_events
+                .get(0)
+                .map(|e| e.delta_frames as usize)
+            {
+                Some(event_delta_frames) if event_delta_frames == buffer_offset => {
+                    let event = self.pending_midi_events.pop_front().unwrap();
+
+                    self.process_midi_event(event);
+                }
+                _ => break,
+            }
+        }
+    }
+
+    fn process_midi_event(&mut self, mut event: MidiEvent) {
+        event.data[0] >>= 4;
+
+        match event.data {
+            [0b_1000, pitch, _] => self.key_off(pitch),
+            [0b_1001, pitch, 0] => self.key_off(pitch),
+            [0b_1001, pitch, velocity] => self.key_on(pitch, velocity),
+            _ => (),
+        }
+    }
+
+    fn key_on(&mut self, pitch: u8, velocity: u8) {
+        self.voices[pitch as usize].press_key(velocity);
+    }
+
+    fn key_off(&mut self, pitch: u8) {
+        self.voices[pitch as usize].release_key();
+    }
+}
+
+/// Thread-safe state used for parameter and preset calls
+pub struct SyncState {
+    /// Host should always be set when running as real plugin, but having the
+    /// option of leaving this field empty is useful when benchmarking.
+    pub host: Option<HostCallback>,
+    pub presets: PresetBank,
+    pub settings: Settings,
+}
+
+impl SyncState {
+    fn get_bpm_from_host(&self) -> Option<BeatsPerMinute> {
+        // Use TEMPO_VALID constant content as mask directly because
+        // of problems with using TimeInfoFlags
+        let mask = 1 << 10;
+
+        let time_info = self.host?.get_time_info(mask)?;
+
+        if (time_info.flags & mask) != 0 {
+            Some(BeatsPerMinute(time_info.tempo as f64))
         } else {
             None
         }
@@ -414,6 +410,34 @@ cfg_if::cfg_if! {
             }
         }
     }
+}
+
+fn init_logging() -> anyhow::Result<()> {
+    let log_folder = dirs::home_dir()
+        .ok_or(anyhow::anyhow!("Couldn't extract home dir"))?
+        .join("tmp");
+
+    // Ignore any creation error
+    let _ = ::std::fs::create_dir(log_folder.clone());
+
+    let log_file = ::std::fs::File::create(log_folder.join(format!("{}.log", PLUGIN_NAME)))?;
+
+    let log_config = simplelog::ConfigBuilder::new()
+        .set_time_to_local(true)
+        .build();
+
+    simplelog::WriteLogger::init(simplelog::LevelFilter::Info, log_config, log_file)?;
+
+    log_panics::init();
+
+    ::log::info!("init");
+
+    ::log::info!("OS: {}", ::os_info::get());
+    ::log::info!("OctaSine build: {}", get_version_info());
+
+    ::log::set_max_level(simplelog::LevelFilter::Error);
+
+    Ok(())
 }
 
 pub fn built_in_preset_bank() -> PresetBank {

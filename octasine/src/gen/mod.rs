@@ -7,7 +7,7 @@ use vst::buffer::AudioBuffer;
 use crate::common::*;
 use crate::constants::*;
 use crate::parameters::processing::{ProcessingParameter, ProcessingParameterOperator};
-use crate::OctaSine;
+use crate::{OctaSine, ProcessingState};
 
 use lfo::*;
 use simd::*;
@@ -17,7 +17,7 @@ const MAX_PD_WIDTH: usize = 4;
 pub trait AudioGen {
     #[allow(clippy::missing_safety_doc)]
     unsafe fn process_f32(
-        octasine: &mut OctaSine,
+        octasine: &mut ProcessingState,
         lefts: &mut [f32],
         rights: &mut [f32],
         position: usize,
@@ -67,6 +67,7 @@ pub struct VoiceData {
 #[inline]
 pub fn process_f32_runtime_select(octasine: &mut OctaSine, audio_buffer: &mut AudioBuffer<f32>) {
     octasine.update_processing_parameters();
+    octasine.update_bpm();
 
     let num_samples = audio_buffer.samples();
 
@@ -84,7 +85,7 @@ pub fn process_f32_runtime_select(octasine: &mut OctaSine, audio_buffer: &mut Au
                     let end_position = position + 2;
 
                     Avx::process_f32(
-                        octasine,
+                        &mut octasine.processing,
                         &mut lefts[position..end_position],
                         &mut rights[position..end_position],
                         position,
@@ -99,14 +100,14 @@ pub fn process_f32_runtime_select(octasine: &mut OctaSine, audio_buffer: &mut Au
                         if #[cfg(all(feature = "simd", target_arch = "x86_64"))] {
                             // SSE2 is always supported on x86_64
                             Sse2::process_f32(
-                                octasine,
+                                &mut octasine.processing,
                                 &mut lefts[position..end_position],
                                 &mut rights[position..end_position],
                                 position,
                             );
                         } else {
                             FallbackStd::process_f32(
-                                octasine,
+                                &mut octasine.processing,
                                 &mut lefts[position..end_position],
                                 &mut rights[position..end_position],
                                 position,
@@ -154,7 +155,7 @@ mod gen {
     impl AudioGen for S {
         #[target_feature_enable]
         unsafe fn process_f32(
-            octasine: &mut OctaSine,
+            processing: &mut ProcessingState,
             lefts: &mut [f32],
             rights: &mut [f32],
             position: usize,
@@ -162,8 +163,8 @@ mod gen {
             assert_eq!(lefts.len(), S::SAMPLES);
             assert_eq!(rights.len(), S::SAMPLES);
 
-            if octasine.processing.pending_midi_events.is_empty()
-                && !octasine.processing.voices.iter().any(|v| v.active)
+            if processing.pending_midi_events.is_empty()
+                && !processing.voices.iter().any(|v| v.active)
             {
                 for (l, r) in lefts.iter_mut().zip(rights.iter_mut()) {
                     *l = 0.0;
@@ -173,10 +174,10 @@ mod gen {
                 return;
             }
 
-            extract_voice_data(octasine, position);
+            extract_voice_data(processing, position);
             gen_audio(
-                &mut octasine.processing.rng,
-                &octasine.processing.audio_gen_voice_data,
+                &mut processing.rng,
+                &processing.audio_gen_voice_data,
                 lefts,
                 rights,
             );
@@ -185,41 +186,23 @@ mod gen {
 
     #[feature_gate]
     #[target_feature_enable]
-    unsafe fn extract_voice_data(octasine: &mut OctaSine, position: usize) {
-        for voice_data in octasine.processing.audio_gen_voice_data.iter_mut() {
+    unsafe fn extract_voice_data(processing: &mut ProcessingState, position: usize) {
+        for voice_data in processing.audio_gen_voice_data.iter_mut() {
             voice_data.active = false;
         }
 
         for sample_index in 0..S::SAMPLES {
-            let time_per_sample = octasine.processing.time_per_sample;
-            let bpm = octasine.get_bpm();
+            let time_per_sample = processing.time_per_sample;
 
-            octasine.processing.parameters.advance_one_sample();
+            processing.parameters.advance_one_sample();
+            processing.process_events_for_sample(position + sample_index);
 
-            // Process events for position in buffer
-            loop {
-                match octasine
-                    .processing
-                    .pending_midi_events
-                    .get(0)
-                    .map(|e| e.delta_frames as usize)
-                {
-                    Some(event_delta_frames) if event_delta_frames == position + sample_index => {
-                        let event = octasine.processing.pending_midi_events.pop_front().unwrap();
+            let operators = &mut processing.parameters.operators;
 
-                        octasine.process_midi_event(event);
-                    }
-                    _ => break,
-                }
-            }
-
-            let operators = &mut octasine.processing.parameters.operators;
-
-            for (voice, voice_data) in octasine
-                .processing
+            for (voice, voice_data) in processing
                 .voices
                 .iter_mut()
-                .zip(octasine.processing.audio_gen_voice_data.iter_mut())
+                .zip(processing.audio_gen_voice_data.iter_mut())
                 .filter(|(voice, _)| voice.active)
             {
                 for (operator_index, operator) in operators.iter_mut().enumerate() {
@@ -248,10 +231,10 @@ mod gen {
                 }
 
                 let lfo_values = get_lfo_target_values(
-                    &mut octasine.processing.parameters.lfos,
+                    &mut processing.parameters.lfos,
                     &mut voice.lfos,
                     time_per_sample,
-                    bpm,
+                    processing.bpm,
                 );
 
                 let voice_volume_factor = {
@@ -259,8 +242,7 @@ mod gen {
                         LfoTargetParameter::Master(LfoTargetMasterParameter::Volume);
                     let lfo_addition = lfo_values.get(lfo_parameter);
 
-                    let master_volume = octasine
-                        .processing
+                    let master_volume = processing
                         .parameters
                         .master_volume
                         .get_value_with_lfo_addition(lfo_addition);
@@ -277,8 +259,7 @@ mod gen {
                 );
 
                 let voice_base_frequency = voice.midi_pitch.get_frequency(
-                    octasine
-                        .processing
+                    processing
                         .parameters
                         .master_frequency
                         .get_value_with_lfo_addition(lfo_values.get(LfoTargetParameter::Master(

@@ -32,7 +32,6 @@ where
     P: ParameterValue<Value = f64>,
 {
     type Value = f64;
-    type ExtraData = TimeCounter;
 
     fn advance_one_sample(&mut self) {
         self.value.advance_one_sample(&mut |_| ())
@@ -73,7 +72,6 @@ where
     P: ParameterValue,
 {
     type Value = <P as ParameterValue>::Value;
-    type ExtraData = ();
 
     fn advance_one_sample(&mut self) {}
     fn get_value(&self) -> Self::Value {
@@ -111,7 +109,6 @@ impl OperatorVolumeProcessingParameter {
 
 impl ProcessingParameter for OperatorVolumeProcessingParameter {
     type Value = f64;
-    type ExtraData = TimeCounter;
 
     fn advance_one_sample(&mut self) {
         self.value.advance_one_sample(&mut |_| ())
@@ -188,7 +185,6 @@ impl OperatorPanningProcessingParameter {
 
 impl ProcessingParameter for OperatorPanningProcessingParameter {
     type Value = f64;
-    type ExtraData = TimeCounter;
 
     fn advance_one_sample(&mut self) {
         let mut opt_new_left_and_right = None;

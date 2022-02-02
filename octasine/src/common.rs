@@ -1,15 +1,23 @@
 use crate::constants::LFO_TARGET_CONTEXT_STEPS;
 
-/// Number that gets incremented with 1.0 every second
-#[derive(Debug, Copy, Clone, PartialEq)]
-pub struct TimeCounter(pub f64);
-
 /// Phase. value >= 0.0 && value < 1.0
 #[derive(Debug, Copy, Clone)]
 pub struct Phase(pub f64);
 
 #[derive(Debug, Copy, Clone)]
 pub struct SampleRate(pub f64);
+
+impl Default for SampleRate {
+    fn default() -> Self {
+        Self(44100.0)
+    }
+}
+
+impl Into<TimePerSample> for SampleRate {
+    fn into(self) -> TimePerSample {
+        TimePerSample(1.0 / self.0)
+    }
+}
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct TimePerSample(pub f64);
