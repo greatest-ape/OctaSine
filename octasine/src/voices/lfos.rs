@@ -250,7 +250,7 @@ fn reverse_square(phase: Phase) -> f64 {
     }
 }
 
-cfg_if::cfg_if!{
+cfg_if::cfg_if! {
     if #[cfg(feature = "simd")] {
         fn sine(phase: Phase) -> f64 {
             unsafe {
