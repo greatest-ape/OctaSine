@@ -169,13 +169,13 @@ impl VoiceLfo {
     fn calculate_curve(shape: LfoShape, phase: Phase) -> f64 {
         match shape {
             LfoShape::Saw => saw(phase),
-            LfoShape::ReverseSaw => reverse_saw(phase),
+            LfoShape::ReverseSaw => -saw(phase),
             LfoShape::Triangle => triangle(phase),
-            LfoShape::ReverseTriangle => reverse_triangle(phase),
+            LfoShape::ReverseTriangle => -triangle(phase),
             LfoShape::Square => square(phase),
-            LfoShape::ReverseSquare => reverse_square(phase),
+            LfoShape::ReverseSquare => -square(phase),
             LfoShape::Sine => sine(phase),
-            LfoShape::ReverseSine => reverse_sine(phase),
+            LfoShape::ReverseSine => -sine(phase),
         }
     }
 
@@ -209,19 +209,15 @@ impl VoiceLfo {
 }
 
 fn triangle(phase: Phase) -> f64 {
-    (flexible_triangle(phase, Phase(32.0 / 64.0)) - 0.5) * 2.0
-}
-
-fn reverse_triangle(phase: Phase) -> f64 {
-    (-flexible_triangle(phase, Phase(32.0 / 64.0)) - 0.5) * 2.0
+    if phase.0 <= 0.5 {
+        -1.0 + 4.0 * phase.0
+    } else {
+        1.0 - 4.0 * (phase.0 - 0.5)
+    }
 }
 
 fn saw(phase: Phase) -> f64 {
     (phase.0 - 0.5) * 2.0
-}
-
-fn reverse_saw(phase: Phase) -> f64 {
-    (0.5 - phase.0) * 2.0
 }
 
 fn square(phase: Phase) -> f64 {
@@ -237,19 +233,6 @@ fn square(phase: Phase) -> f64 {
     }
 }
 
-fn reverse_square(phase: Phase) -> f64 {
-    let base_end = 32.0 / 64.0;
-    let peak_start = 33.0 / 64.0;
-
-    if phase.0 <= base_end {
-        -1.0
-    } else if phase.0 <= peak_start {
-        -1.0 + 2.0 * ((phase.0 - base_end) / (peak_start - base_end))
-    } else {
-        1.0
-    }
-}
-
 cfg_if::cfg_if! {
     if #[cfg(feature = "simd")] {
         fn sine(phase: Phase) -> f64 {
@@ -261,17 +244,5 @@ cfg_if::cfg_if! {
         fn sine(phase: Phase) -> f64 {
             (phase.0 * TAU).sin()
         }
-    }
-}
-
-fn reverse_sine(phase: Phase) -> f64 {
-    -sine(phase)
-}
-
-fn flexible_triangle(phase: Phase, peak: Phase) -> f64 {
-    if phase.0 <= peak.0 {
-        -1.0 + 2.0 * (phase.0 / peak.0)
-    } else {
-        1.0 - 2.0 * ((phase.0 - peak.0) / (1.0 - peak.0))
     }
 }
