@@ -11,6 +11,7 @@ how patches sound.
 
 - Use a more traditional LFO design that oscillates around the base value, not
   in a single direction.
+- Add LFO wave types reverse triangle, sine and reverse sine
 
 ### Fixed
 
