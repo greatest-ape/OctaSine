@@ -802,6 +802,8 @@ impl ParameterValue for LfoShapeValue {
             LfoShape::ReverseSaw => "REV SAW".to_string(),
             LfoShape::Square => "SQUARE".to_string(),
             LfoShape::ReverseSquare => "REV SQR".to_string(),
+            LfoShape::Sine => "SINE".to_string(),
+            LfoShape::ReverseSine => "REV SINE".to_string(),
         }
     }
     fn format_sync(value: f64) -> String {

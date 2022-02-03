@@ -1,3 +1,5 @@
+use std::f64::consts::TAU;
+
 use crate::common::*;
 
 const INTERPOLATION_SAMPLES: usize = 128;
@@ -88,11 +90,17 @@ impl VoiceLfo {
                     if mode == LfoMode::Once {
                         self.request_stop();
                     } else {
-                        self.current_shape = Some(shape);
+                        match (self.current_shape, shape) {
+                            (Some(LfoShape::Sine), LfoShape::Sine)
+                            | (Some(LfoShape::ReverseSine), LfoShape::ReverseSine) => {}
+                            _ => {
+                                self.current_shape = Some(shape);
 
-                        self.stage = LfoStage::Interpolate {
-                            from_value: self.last_value,
-                            samples_done: 0,
+                                self.stage = LfoStage::Interpolate {
+                                    from_value: self.last_value,
+                                    samples_done: 0,
+                                }
+                            }
                         }
                     }
                 }
@@ -166,6 +174,8 @@ impl VoiceLfo {
             LfoShape::ReverseTriangle => reverse_triangle(phase),
             LfoShape::Square => square(phase),
             LfoShape::ReverseSquare => reverse_square(phase),
+            LfoShape::Sine => sine(phase),
+            LfoShape::ReverseSine => reverse_sine(phase),
         }
     }
 
@@ -238,6 +248,24 @@ fn reverse_square(phase: Phase) -> f64 {
     } else {
         1.0
     }
+}
+
+cfg_if::cfg_if!{
+    if #[cfg(feature = "simd")] {
+        fn sine(phase: Phase) -> f64 {
+            unsafe {
+                ::sleef_sys::Sleef_cinz_sind1_u35purec(phase.0 * TAU)
+            }
+        }
+    } else {
+        fn sine(phase: Phase) -> f64 {
+            (phase.0 * TAU).sin()
+        }
+    }
+}
+
+fn reverse_sine(phase: Phase) -> f64 {
+    -sine(phase)
 }
 
 fn flexible_triangle(phase: Phase, peak: Phase) -> f64 {

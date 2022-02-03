@@ -89,13 +89,15 @@ pub const LFO_TARGET_CONTEXT_STEPS: [LfoTargetParameter; 45] = [
     LfoTargetParameter::Lfo(2, LfoTargetLfoParameter::Amount),
 ];
 
-pub const LFO_SHAPE_STEPS: [LfoShape; 6] = [
+pub const LFO_SHAPE_STEPS: [LfoShape; 8] = [
     LfoShape::Triangle,
     LfoShape::ReverseTriangle,
     LfoShape::Saw,
     LfoShape::ReverseSaw,
     LfoShape::Square,
     LfoShape::ReverseSquare,
+    LfoShape::Sine,
+    LfoShape::ReverseSine,
 ];
 pub const LFO_MODE_STEPS: [LfoMode; 2] = [LfoMode::Forever, LfoMode::Once];
 pub const LFO_FREQUENCY_RATIO_STEPS: [f64; 9] = [
