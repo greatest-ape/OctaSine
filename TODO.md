@@ -1,6 +1,7 @@
 # TODO
 
 * Consider if LFO amount should be logarithmic when affecting volume
+* Are LFOs to clicky?
 * GUI
   * Parameter editing: bracket changes with begin_edit and end_edit
     * iced_audio knobs would need events for starting and ending dragging
