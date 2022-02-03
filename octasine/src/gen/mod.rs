@@ -1,6 +1,8 @@
 mod lfo;
 pub mod simd;
 
+use std::f64::consts::TAU;
+
 use duplicate::duplicate;
 use vst::buffer::AudioBuffer;
 
