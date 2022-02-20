@@ -18,7 +18,7 @@ pub trait ProcessingParameter {
 
 pub struct ProcessingParameters {
     pub master_volume: InterpolatableProcessingParameter<MasterVolumeValue>,
-    pub master_frequency: SimpleProcessingParameter<MasterFrequencyValue>,
+    pub master_frequency: FreeFrequencyProcessingParameter<MasterFrequencyValue>,
     pub operators: [ProcessingParameterOperator; NUM_OPERATORS],
     pub lfos: [ProcessingParameterLfo; NUM_LFOS],
 }
@@ -230,7 +230,7 @@ pub struct ProcessingParameterOperator {
     pub additive_factor: InterpolatableProcessingParameter<OperatorAdditiveValue>,
     pub output_operator: Option<OperatorModulationTargetProcessingParameter>,
     pub frequency_ratio: SimpleProcessingParameter<OperatorFrequencyRatioValue>,
-    pub frequency_free: SimpleProcessingParameter<OperatorFrequencyFreeValue>,
+    pub frequency_free: FreeFrequencyProcessingParameter<OperatorFrequencyFreeValue>,
     pub frequency_fine: SimpleProcessingParameter<OperatorFrequencyFineValue>,
     pub feedback: InterpolatableProcessingParameter<OperatorFeedbackValue>,
     pub modulation_index: InterpolatableProcessingParameter<OperatorModulationIndexValue>,
