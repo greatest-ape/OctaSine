@@ -13,6 +13,7 @@ pub mod gui;
 use std::collections::VecDeque;
 use std::sync::Arc;
 
+use approximations::Log10Table;
 use array_init::array_init;
 use fastrand::Rng;
 
@@ -163,6 +164,7 @@ pub struct ProcessingState {
     pub time_per_sample: TimePerSample,
     pub bpm: BeatsPerMinute,
     pub rng: Rng,
+    pub log10table: Log10Table,
     pub voices: [Voice; 128],
     pub parameters: ProcessingParameters,
     pub pending_midi_events: VecDeque<MidiEvent>,
@@ -175,6 +177,7 @@ impl Default for ProcessingState {
             time_per_sample: SampleRate::default().into(),
             bpm: Default::default(),
             rng: Rng::new(),
+            log10table: Default::default(),
             voices: array_init(|i| Voice::new(MidiPitch::new(i as u8))),
             parameters: ProcessingParameters::default(),
             // Start with some capacity to cut down on later allocations
