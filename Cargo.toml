@@ -21,16 +21,14 @@ members = [
 
 [profile.release]
 debug = false
-lto = true
+lto = "thin"
 opt-level = 3
 
 [profile.test]
 opt-level = 3
 
 [profile.bench]
-debug = false
-lto = true
-opt-level = 3
+inherits = "release"
 
 [profile.release-debug]
 inherits = "release"
