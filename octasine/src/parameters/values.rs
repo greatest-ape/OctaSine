@@ -797,7 +797,7 @@ impl ParameterValue for LfoShapeValue {
     fn format(self) -> String {
         match self.0 {
             LfoShape::Triangle => "TRIANGLE".to_string(),
-            LfoShape::ReverseTriangle => "REV TRIANGLE".to_string(),
+            LfoShape::ReverseTriangle => "REV TRNG".to_string(),
             LfoShape::Saw => "SAW".to_string(),
             LfoShape::ReverseSaw => "REV SAW".to_string(),
             LfoShape::Square => "SQUARE".to_string(),
