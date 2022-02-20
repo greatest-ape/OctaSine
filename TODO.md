@@ -8,7 +8,6 @@
 
 ## Important
 
-* Wait for merge of raw-gl-context fix, use that repo
 * Consider defaulting to wgpu on Linux
 
 * Use directories crate to choose paths for log and settings files
