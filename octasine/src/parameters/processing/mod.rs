@@ -17,7 +17,7 @@ pub trait ProcessingParameter {
 }
 
 pub struct ProcessingParameters {
-    pub master_volume: InterpolatableProcessingParameter<MasterVolumeValue>,
+    pub master_volume: MasterVolumeProcessingParameter,
     pub master_frequency: FreeFrequencyProcessingParameter<MasterFrequencyValue>,
     pub operators: [ProcessingParameterOperator; NUM_OPERATORS],
     pub lfos: [ProcessingParameterLfo; NUM_LFOS],
