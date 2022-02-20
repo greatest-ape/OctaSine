@@ -386,8 +386,7 @@ impl ProcessingParameter for LfoAmountProcessingParameter {
         self.value.get_value()
     }
     fn set_from_sync(&mut self, value: f64) {
-        self.value
-            .set_value(LfoAmountValue::from_sync(value).get())
+        self.value.set_value(LfoAmountValue::from_sync(value).get())
     }
     fn get_value_with_lfo_addition(&mut self, lfo_addition: Option<f64>) -> Self::Value {
         if let Some(lfo_addition) = lfo_addition {
@@ -397,4 +396,3 @@ impl ProcessingParameter for LfoAmountProcessingParameter {
         }
     }
 }
-
