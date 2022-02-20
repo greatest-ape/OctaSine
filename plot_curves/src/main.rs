@@ -15,7 +15,13 @@ fn plot_envelope_stage(length: f64, start_volume: f64, end_volume: f64, filename
 
     let plot = Plot::from_function(
         |x| {
-            VoiceOperatorVolumeEnvelope::calculate_curve(&log10table, start_volume, end_volume, x as f64, length)
+            VoiceOperatorVolumeEnvelope::calculate_curve(
+                &log10table,
+                start_volume,
+                end_volume,
+                x as f64,
+                length,
+            )
         },
         0.,
         length,

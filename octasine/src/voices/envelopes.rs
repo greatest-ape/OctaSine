@@ -69,7 +69,11 @@ impl VoiceOperatorVolumeEnvelope {
         }
     }
 
-    pub fn get_volume(&mut self, log10table: &Log10Table, operator_envelope: &OperatorEnvelopeProcessingParameter) -> f64 {
+    pub fn get_volume(
+        &mut self,
+        log10table: &Log10Table,
+        operator_envelope: &OperatorEnvelopeProcessingParameter,
+    ) -> f64 {
         use EnvelopeStage::*;
 
         self.last_volume = match self.stage {
@@ -246,11 +250,21 @@ mod tests {
 
             let table = Log10Table::default();
 
-            let stage_1_end =
-                VoiceOperatorVolumeEnvelope::calculate_curve(&table, 0.0, stage_change_volume, 4.0, 4.0);
+            let stage_1_end = VoiceOperatorVolumeEnvelope::calculate_curve(
+                &table,
+                0.0,
+                stage_change_volume,
+                4.0,
+                4.0,
+            );
 
-            let stage_2_start =
-                VoiceOperatorVolumeEnvelope::calculate_curve(&table, stage_change_volume, 1.0, 0.0, 4.0);
+            let stage_2_start = VoiceOperatorVolumeEnvelope::calculate_curve(
+                &table,
+                stage_change_volume,
+                1.0,
+                0.0,
+                4.0,
+            );
 
             let diff = (stage_1_end - stage_2_start).abs();
 
