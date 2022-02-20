@@ -31,3 +31,7 @@ opt-level = 3
 debug = false
 lto = true
 opt-level = 3
+
+[profile.release-debug]
+inherits = "release"
+debug = true
