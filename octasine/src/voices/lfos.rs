@@ -209,10 +209,12 @@ impl VoiceLfo {
 }
 
 fn triangle(phase: Phase) -> f64 {
-    if phase.0 <= 0.5 {
-        -1.0 + 4.0 * phase.0
+    if phase.0 <= 0.25 {
+        4.0 * phase.0
+    } else if phase.0 <= 0.75 {
+        1.0 - 4.0 * (phase.0 - 0.25)
     } else {
-        1.0 - 4.0 * (phase.0 - 0.5)
+        -1.0 + 4.0 * (phase.0 - 0.75)
     }
 }
 

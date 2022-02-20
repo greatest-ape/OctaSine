@@ -14,6 +14,7 @@ how patches sound.
 - Scale LFO effect linearly and bypass normal parameter limits when targeting
   master frequency, master volume, operator free frequency, operator volume,
   LFO amount (magnitude) or LFO free frequency parameters
+- Make LFO triangle wave type start at value 0.0
 - Add LFO wave types reverse triangle, sine and reverse sine
 
 ### Fixed
