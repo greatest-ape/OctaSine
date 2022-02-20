@@ -6,6 +6,7 @@
   * Parameter editing: bracket changes with begin_edit and end_edit
     * iced_audio knobs would need events for starting and ending dragging
 * Don't use OnceCell for log10 map - atomics are too expensive
+* Display reverse triangle as REV TRNG to keep it on a single line
 
 ## Medium priority
 
