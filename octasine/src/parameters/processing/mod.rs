@@ -294,10 +294,10 @@ pub struct ProcessingParameterLfo {
     pub target_parameter: LfoTargetProcessingParameter,
     pub bpm_sync: SimpleProcessingParameter<LfoBpmSyncValue>,
     pub frequency_ratio: SimpleProcessingParameter<LfoFrequencyRatioValue>,
-    pub frequency_free: SimpleProcessingParameter<LfoFrequencyFreeValue>,
+    pub frequency_free: FreeFrequencyProcessingParameter<LfoFrequencyFreeValue>,
     pub mode: SimpleProcessingParameter<LfoModeValue>,
     pub shape: SimpleProcessingParameter<LfoShapeValue>,
-    pub amount: InterpolatableProcessingParameter<LfoAmountValue>,
+    pub amount: LfoAmountProcessingParameter,
 }
 
 impl ProcessingParameterLfo {

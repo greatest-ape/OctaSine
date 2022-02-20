@@ -12,8 +12,8 @@ how patches sound.
 - Use a more traditional LFO design that oscillates around the base value, not
   in a single direction.
 - Scale LFO effect linearly and bypass normal parameter limits when targeting
-  master frequency, free operator frequency, master volume or operator volume
-  parameters
+  master frequency, master volume, operator free frequency, operator volume,
+  LFO amount (magnitude) or LFO free frequency parameters
 - Add LFO wave types reverse triangle, sine and reverse sine
 
 ### Fixed

@@ -168,7 +168,7 @@ impl ProcessingParameter for OperatorVolumeProcessingParameter {
     }
 }
 
-// Master frequency / operator free frequency parameters with special lfo value handling
+// Master / operator / lfo free frequency parameters with special lfo value handling
 
 pub struct FreeFrequencyProcessingParameter<P: ParameterValue<Value = f64>> {
     pub value: <P as ParameterValue>::Value,
@@ -358,3 +358,43 @@ impl LfoTargetProcessingParameter {
         }
     }
 }
+
+// LFO amount
+
+#[derive(Debug, Clone)]
+pub struct LfoAmountProcessingParameter {
+    value: InterpolatableProcessingValue,
+}
+
+impl Default for LfoAmountProcessingParameter {
+    fn default() -> Self {
+        let default = LfoAmountValue::default().get();
+
+        Self {
+            value: InterpolatableProcessingValue::new(default),
+        }
+    }
+}
+
+impl ProcessingParameter for LfoAmountProcessingParameter {
+    type Value = f64;
+
+    fn advance_one_sample(&mut self) {
+        self.value.advance_one_sample(&mut |_| ())
+    }
+    fn get_value(&self) -> Self::Value {
+        self.value.get_value()
+    }
+    fn set_from_sync(&mut self, value: f64) {
+        self.value
+            .set_value(LfoAmountValue::from_sync(value).get())
+    }
+    fn get_value_with_lfo_addition(&mut self, lfo_addition: Option<f64>) -> Self::Value {
+        if let Some(lfo_addition) = lfo_addition {
+            self.get_value() * 2.0f64.powf(lfo_addition)
+        } else {
+            self.get_value()
+        }
+    }
+}
+
