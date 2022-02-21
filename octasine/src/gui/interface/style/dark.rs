@@ -1,6 +1,6 @@
 use iced_baseview::{button, container, pick_list, radio, Color};
 
-use super::{envelope, mod_matrix};
+use super::{envelope, lfo_shape_picker, mod_matrix};
 
 macro_rules! hex_gray {
     ($hex:literal) => {
@@ -220,6 +220,21 @@ impl mod_matrix::StyleSheet for ModulationMatrix {
             modulation_box_color_active: TEXT_FG,
             modulation_box_color_inactive: SURFACE,
             line_max_color: Color::WHITE,
+        }
+    }
+}
+
+pub struct LfoShapePicker;
+
+impl lfo_shape_picker::StyleSheet for LfoShapePicker {
+    fn active(&self) -> lfo_shape_picker::Style {
+        lfo_shape_picker::Style {
+            background_color: SURFACE,
+            border_color_active: TEXT_FG,
+            border_color_hovered: HOVERED,
+            middle_line_color: Color::from_rgb(0.3, 0.3, 0.3),
+            shape_line_color_active: TEXT_FG,
+            shape_line_color_hovered: HOVERED,
         }
     }
 }

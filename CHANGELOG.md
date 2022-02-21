@@ -16,6 +16,7 @@ how patches sound.
   LFO amount (magnitude) or LFO free frequency parameters
 - Make LFO triangle wave type start at value 0.0
 - Add LFO wave types reverse triangle, sine and reverse sine
+- Replace the LFO shape knob with a custom widget that displays the waveform
 
 ### Fixed
 

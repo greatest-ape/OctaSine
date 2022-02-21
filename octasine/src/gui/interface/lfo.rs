@@ -2,12 +2,12 @@ use iced_baseview::{Column, Element, Horizontal, Length, Row, Space, Text, Verti
 
 use crate::parameters::values::{
     LfoAmountValue, LfoBpmSyncValue, LfoFrequencyFreeValue, LfoFrequencyRatioValue, LfoModeValue,
-    LfoShapeValue,
 };
 use crate::GuiSyncHandle;
 
 use super::boolean_picker::{self, BooleanPicker};
 use super::knob::{self, OctaSineKnob};
+use super::lfo_shape_picker::LfoShapePicker;
 use super::lfo_target_picker::LfoTargetPicker;
 use super::style::Theme;
 use super::{Message, FONT_SIZE, FONT_VERY_BOLD, LINE_HEIGHT};
@@ -16,7 +16,7 @@ pub struct LfoWidgets {
     index: usize,
     style: Theme,
     pub target: LfoTargetPicker,
-    pub shape: OctaSineKnob<LfoShapeValue>,
+    pub shape: LfoShapePicker,
     pub mode: BooleanPicker<LfoModeValue>,
     pub bpm_sync: BooleanPicker<LfoBpmSyncValue>,
     pub frequency_ratio: OctaSineKnob<LfoFrequencyRatioValue>,
@@ -39,7 +39,7 @@ impl LfoWidgets {
             index: lfo_index,
             style,
             target: LfoTargetPicker::new(sync_handle, lfo_index, target, style),
-            shape: knob::lfo_shape(sync_handle, shape, style),
+            shape: LfoShapePicker::new(sync_handle, shape, style),
             mode: boolean_picker::lfo_mode(sync_handle, mode, style),
             bpm_sync: boolean_picker::bpm_sync(sync_handle, bpm_sync, style),
             frequency_ratio: knob::lfo_frequency_ratio(sync_handle, ratio, style),
@@ -51,7 +51,7 @@ impl LfoWidgets {
     pub fn set_style(&mut self, style: Theme) {
         self.style = style;
         self.target.style = style;
-        self.shape.style = style;
+        self.shape.set_style(style);
         self.mode.style = style;
         self.bpm_sync.style = style;
         self.frequency_ratio.style = style;

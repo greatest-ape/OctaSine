@@ -166,7 +166,7 @@ impl VoiceLfo {
         value * amount
     }
 
-    fn calculate_curve(shape: LfoShape, phase: Phase) -> f64 {
+    pub fn calculate_curve(shape: LfoShape, phase: Phase) -> f64 {
         match shape {
             LfoShape::Saw => saw(phase),
             LfoShape::ReverseSaw => -saw(phase),

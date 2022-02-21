@@ -11,8 +11,6 @@
 * Use directories crate to choose paths for log and settings files
 
 * GUI
-  * Consider replacing LFO wave selector with custom widget that shows the
-    shapes
   * Scrolling in dropdowns
     * iced 0.4: https://github.com/hecrj/iced/pull/872
     * Does scrolling (including touch) need to be added to baseview

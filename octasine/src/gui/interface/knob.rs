@@ -3,12 +3,11 @@ use iced_baseview::{
     keyboard::Modifiers, Alignment, Column, Element, Horizontal, Length, Space, Text,
 };
 
-use crate::constants::*;
 use crate::parameters::values::{
-    LfoAmountValue, LfoFrequencyFreeValue, LfoFrequencyRatioValue, LfoShapeValue,
-    MasterFrequencyValue, MasterVolumeValue, OperatorAdditiveValue, OperatorFeedbackValue,
-    OperatorFrequencyFineValue, OperatorFrequencyFreeValue, OperatorFrequencyRatioValue,
-    OperatorModulationIndexValue, OperatorPanningValue, OperatorVolumeValue, ParameterValue,
+    LfoAmountValue, LfoFrequencyFreeValue, LfoFrequencyRatioValue, MasterFrequencyValue,
+    MasterVolumeValue, OperatorAdditiveValue, OperatorFeedbackValue, OperatorFrequencyFineValue,
+    OperatorFrequencyFreeValue, OperatorFrequencyRatioValue, OperatorModulationIndexValue,
+    OperatorPanningValue, OperatorVolumeValue, ParameterValue,
 };
 use crate::GuiSyncHandle;
 
@@ -20,7 +19,6 @@ const KNOB_SIZE: Length = Length::Units(LINE_HEIGHT * 2);
 enum TickMarkType {
     MinMaxAndDefault,
     MinMax,
-    Other(tick_marks::Group),
 }
 
 pub fn master_volume<H: GuiSyncHandle>(
@@ -167,22 +165,6 @@ pub fn operator_frequency_fine<H: GuiSyncHandle>(
     )
 }
 
-pub fn lfo_shape<H: GuiSyncHandle>(
-    sync_handle: &H,
-    parameter_index: usize,
-    style: Theme,
-) -> OctaSineKnob<LfoShapeValue> {
-    let tick_marks = tick_marks::Group::evenly_spaced(LFO_SHAPE_STEPS.len(), tick_marks::Tier::Two);
-
-    OctaSineKnob::new(
-        sync_handle,
-        parameter_index,
-        "SHAPE",
-        TickMarkType::Other(tick_marks),
-        style,
-    )
-}
-
 pub fn lfo_frequency_ratio<H: GuiSyncHandle>(
     sync_handle: &H,
     parameter_index: usize,
@@ -276,7 +258,6 @@ impl<P: ParameterValue> OctaSineKnob<P> {
         let tick_marks = match tick_mark_type {
             TickMarkType::MinMaxAndDefault => tick_marks_from_min_max_and_value(default_sync_value),
             TickMarkType::MinMax => tick_marks::Group::min_max(tick_marks::Tier::Two),
-            TickMarkType::Other(tick_marks) => tick_marks,
         };
 
         Self {

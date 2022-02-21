@@ -8,7 +8,7 @@ use iced_baseview::{
 };
 use serde::{Deserialize, Serialize};
 
-use super::{envelope, mod_matrix};
+use super::{envelope, lfo_shape_picker, mod_matrix};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
@@ -127,6 +127,17 @@ impl<'a> From<Theme> for Box<dyn mod_matrix::StyleSheet + 'a> {
         match theme {
             Theme::Light => Box::new(light::ModulationMatrix) as Box<dyn mod_matrix::StyleSheet>,
             Theme::Dark => Box::new(dark::ModulationMatrix) as Box<dyn mod_matrix::StyleSheet>,
+        }
+    }
+}
+
+impl<'a> From<Theme> for Box<dyn lfo_shape_picker::StyleSheet + 'a> {
+    fn from(theme: Theme) -> Self {
+        match theme {
+            Theme::Light => {
+                Box::new(light::LfoShapePicker) as Box<dyn lfo_shape_picker::StyleSheet>
+            }
+            Theme::Dark => Box::new(dark::LfoShapePicker) as Box<dyn lfo_shape_picker::StyleSheet>,
         }
     }
 }
