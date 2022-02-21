@@ -39,6 +39,7 @@ pub struct LfoShapePicker {
     cache: Cache,
     bounds_path: Path,
     cursor_within_bounds: bool,
+    click_started: bool,
     style: Theme,
     shape: LfoShape,
     value_text: String,
@@ -59,6 +60,7 @@ impl LfoShapePicker {
             cache: Cache::new(),
             bounds_path,
             cursor_within_bounds: false,
+            click_started: false,
             style,
             shape,
             value_text,
@@ -189,41 +191,58 @@ impl Program<Message> for LfoShapePicker {
     ) -> (event::Status, Option<Message>) {
         match event {
             event::Event::Mouse(iced_baseview::mouse::Event::CursorMoved { position }) => {
-                let hit = bounds.contains(position);
+                let cursor_within_bounds = bounds.contains(position);
 
-                if self.cursor_within_bounds != hit {
-                    self.cursor_within_bounds = bounds.contains(position);
+                if self.cursor_within_bounds != cursor_within_bounds {
+                    self.cursor_within_bounds = cursor_within_bounds;
+
                     self.cache.clear();
                 }
 
                 (event::Status::Ignored, None)
             }
             event::Event::Mouse(iced_baseview::mouse::Event::ButtonPressed(
-                button @ (iced_baseview::mouse::Button::Left | iced_baseview::mouse::Button::Right),
+                iced_baseview::mouse::Button::Left | iced_baseview::mouse::Button::Right,
             )) if self.cursor_within_bounds => {
-                let shape_index = LFO_SHAPE_STEPS
-                    .iter()
-                    .position(|s| *s == self.shape)
-                    .unwrap();
+                self.click_started = true;
 
-                let new_shape_index = match button {
-                    iced_baseview::mouse::Button::Left => (shape_index + 1) % LFO_SHAPE_STEPS.len(),
-                    iced_baseview::mouse::Button::Right if shape_index == 0 => {
-                        LFO_SHAPE_STEPS.len() - 1
-                    }
-                    iced_baseview::mouse::Button::Right => shape_index - 1,
-                    _ => unreachable!(),
-                };
+                (event::Status::Captured, None)
+            }
+            event::Event::Mouse(iced_baseview::mouse::Event::ButtonReleased(
+                button @ (iced_baseview::mouse::Button::Left | iced_baseview::mouse::Button::Right),
+            )) if self.click_started => {
+                if self.cursor_within_bounds {
+                    let shape_index = LFO_SHAPE_STEPS
+                        .iter()
+                        .position(|s| *s == self.shape)
+                        .unwrap();
 
-                let new_shape = LFO_SHAPE_STEPS[new_shape_index];
-                let new_value = LfoShapeValue::from_processing(new_shape).to_sync();
+                    let new_shape_index = match button {
+                        iced_baseview::mouse::Button::Left => {
+                            (shape_index + 1) % LFO_SHAPE_STEPS.len()
+                        }
+                        iced_baseview::mouse::Button::Right if shape_index == 0 => {
+                            LFO_SHAPE_STEPS.len() - 1
+                        }
+                        iced_baseview::mouse::Button::Right => shape_index - 1,
+                        _ => unreachable!(),
+                    };
 
-                self.set_value(new_value);
+                    let new_shape = LFO_SHAPE_STEPS[new_shape_index];
+                    let new_value = LfoShapeValue::from_processing(new_shape).to_sync();
 
-                (
-                    event::Status::Captured,
-                    Some(Message::ParameterChange(self.parameter_index, new_value)),
-                )
+                    self.set_value(new_value);
+                    self.click_started = false;
+
+                    (
+                        event::Status::Captured,
+                        Some(Message::ParameterChange(self.parameter_index, new_value)),
+                    )
+                } else {
+                    self.click_started = false;
+
+                    (event::Status::Ignored, None)
+                }
             }
             _ => (event::Status::Ignored, None),
         }
