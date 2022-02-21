@@ -292,7 +292,7 @@ impl<P: ParameterValue> OctaSineKnob<P> {
         let modifier_keys = Modifiers::SHIFT;
 
         let mut knob = knob::Knob::new(&mut self.knob_state, move |value| {
-            Message::ParameterChange(parameter_index, value.as_f32() as f64)
+            Message::ChangeSingleParameterSetValue(parameter_index, value.as_f32() as f64)
         })
         .size(Length::from(KNOB_SIZE))
         .modifier_keys(modifier_keys)

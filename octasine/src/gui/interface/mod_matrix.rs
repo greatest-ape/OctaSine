@@ -129,6 +129,16 @@ impl OperatorBox {
         }
     }
 
+    fn get_parameter_index(&self) -> usize {
+        match self.index {
+            0 => 2,
+            1 => 15,
+            2 => 29,
+            3 => 44,
+            _ => unreachable!(),
+        }
+    }
+
     fn update(
         &mut self,
         bounds: Rectangle,
@@ -149,31 +159,25 @@ impl OperatorBox {
                     BoxStatus::Normal if hit => {
                         self.status = BoxStatus::Hover;
 
-                        return ModulationBoxChange::ClearCache;
+                        return ModulationBoxChange::ClearCache(None);
                     }
                     BoxStatus::Hover if !hit => {
                         self.status = BoxStatus::Normal;
 
-                        return ModulationBoxChange::ClearCache;
+                        return ModulationBoxChange::ClearCache(None);
                     }
                     BoxStatus::Dragging {
                         from,
                         original_value,
                     } => {
-                        let parameter_index = match self.index {
-                            0 => 2,
-                            1 => 15,
-                            2 => 29,
-                            3 => 44,
-                            _ => unreachable!(),
-                        };
-
                         let change = -(cursor.y - from.y) as f64 / 100.0;
 
-                        return ModulationBoxChange::Update(Message::ParameterChange(
-                            parameter_index,
-                            (original_value + change).max(0.0).min(1.0),
-                        ));
+                        return ModulationBoxChange::Update(
+                            Message::ChangeSingleParameterSetValue(
+                                self.get_parameter_index(),
+                                (original_value + change).max(0.0).min(1.0),
+                            ),
+                        );
                     }
                     _ => (),
                 }
@@ -185,7 +189,9 @@ impl OperatorBox {
                         original_value: value,
                     };
 
-                    return ModulationBoxChange::ClearCache;
+                    return ModulationBoxChange::ClearCache(Some(
+                        Message::ChangeSingleParameterBegin(self.get_parameter_index()),
+                    ));
                 }
             }
             event::Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left)) => {
@@ -196,7 +202,9 @@ impl OperatorBox {
                         self.status = BoxStatus::Normal;
                     }
 
-                    return ModulationBoxChange::ClearCache;
+                    return ModulationBoxChange::ClearCache(Some(
+                        Message::ChangeSingleParameterEnd(self.get_parameter_index()),
+                    ));
                 }
             }
             _ => (),
@@ -226,7 +234,7 @@ impl OperatorBox {
 
 enum ModulationBoxChange {
     Update(Message),
-    ClearCache,
+    ClearCache(Option<Message>),
     None,
 }
 
@@ -289,12 +297,12 @@ impl ModulationBox {
                         (false, true) => {
                             self.hover = true;
 
-                            return ModulationBoxChange::ClearCache;
+                            return ModulationBoxChange::ClearCache(None);
                         }
                         (true, false) => {
                             self.hover = false;
 
-                            return ModulationBoxChange::ClearCache;
+                            return ModulationBoxChange::ClearCache(None);
                         }
                         _ => (),
                     }
@@ -552,35 +560,35 @@ impl ModulationMatrixComponents {
             3,
             2,
             parameters.operator_4_target == 2,
-            Some(Message::ParameterChange(48, 1.0)),
+            Some(Message::ChangeSingleParameterImmediate(48, 1.0)),
         );
         let operator_4_mod_2_box = ModulationBox::new(
             bounds,
             3,
             1,
             parameters.operator_4_target == 1,
-            Some(Message::ParameterChange(48, 0.5)),
+            Some(Message::ChangeSingleParameterImmediate(48, 0.5)),
         );
         let operator_4_mod_1_box = ModulationBox::new(
             bounds,
             3,
             0,
             parameters.operator_4_target == 0,
-            Some(Message::ParameterChange(48, 0.0)),
+            Some(Message::ChangeSingleParameterImmediate(48, 0.0)),
         );
         let operator_3_mod_2_box = ModulationBox::new(
             bounds,
             2,
             1,
             parameters.operator_3_target == 1,
-            Some(Message::ParameterChange(33, 1.0)),
+            Some(Message::ChangeSingleParameterImmediate(33, 1.0)),
         );
         let operator_3_mod_1_box = ModulationBox::new(
             bounds,
             2,
             0,
             parameters.operator_3_target == 0,
-            Some(Message::ParameterChange(33, 0.0)),
+            Some(Message::ChangeSingleParameterImmediate(33, 0.0)),
         );
         let operator_2_mod_1_box = ModulationBox::new(bounds, 1, 0, true, None);
 
@@ -926,10 +934,10 @@ impl Program<Message> for ModulationMatrix {
                 ModulationBoxChange::Update(message) => {
                     return (event::Status::Captured, Some(message));
                 }
-                ModulationBoxChange::ClearCache => {
+                ModulationBoxChange::ClearCache(opt_message) => {
                     self.cache.clear();
 
-                    return (event::Status::Ignored, None);
+                    return (event::Status::Ignored, opt_message);
                 }
                 _ => (),
             }
@@ -959,10 +967,10 @@ impl Program<Message> for ModulationMatrix {
                 ModulationBoxChange::Update(message) => {
                     return (event::Status::Captured, Some(message));
                 }
-                ModulationBoxChange::ClearCache => {
+                ModulationBoxChange::ClearCache(opt_message) => {
                     self.cache.clear();
 
-                    return (event::Status::Ignored, None);
+                    return (event::Status::Ignored, opt_message);
                 }
                 _ => (),
             }

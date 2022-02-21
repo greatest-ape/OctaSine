@@ -273,6 +273,40 @@ impl Envelope {
         envelope
     }
 
+    fn get_attack_parameter_indices(&self) -> (usize, usize) {
+        let (dur, val) = match self.operator_index {
+            0 => (10, 11),
+            1 => (24, 25),
+            2 => (39, 40),
+            3 => (54, 55),
+            _ => unreachable!(),
+        };
+
+        (dur, val)
+    }
+
+    fn get_decay_parameter_indices(&self) -> (usize, usize) {
+        let (dur, val) = match self.operator_index {
+            0 => (12, 13),
+            1 => (26, 27),
+            2 => (41, 42),
+            3 => (56, 57),
+            _ => unreachable!(),
+        };
+
+        (dur, val)
+    }
+
+    fn get_release_dur_parameter_index(&self) -> usize {
+        match self.operator_index {
+            0 => 14,
+            1 => 28,
+            2 => 43,
+            3 => 58,
+            _ => unreachable!(),
+        }
+    }
+
     fn zoom_in_to_fit(&mut self) {
         let duration_ratio = self.get_current_duration() / TOTAL_DURATION;
 
@@ -694,22 +728,14 @@ impl Program<Message> for Envelope {
 
                         self.update_data();
 
-                        let (dur, val) = match self.operator_index {
-                            0 => (10, 11),
-                            1 => (24, 25),
-                            2 => (39, 40),
-                            3 => (54, 55),
-                            _ => unreachable!(),
-                        };
-
-                        let changes = vec![
-                            (dur, self.attack_duration as f64),
-                            (val, self.attack_end_value as f64),
-                        ];
+                        let (dur, val) = self.get_attack_parameter_indices();
 
                         return (
                             event::Status::Captured,
-                            Some(Message::ParameterChanges(changes)),
+                            Some(Message::ChangeTwoParametersSetValues(
+                                (dur, self.attack_duration as f64),
+                                (val, self.attack_end_value as f64),
+                            )),
                         );
                     }
                 }
@@ -746,22 +772,14 @@ impl Program<Message> for Envelope {
 
                         self.update_data();
 
-                        let (dur, val) = match self.operator_index {
-                            0 => (12, 13),
-                            1 => (26, 27),
-                            2 => (41, 42),
-                            3 => (56, 57),
-                            _ => unreachable!(),
-                        };
-
-                        let changes = vec![
-                            (dur, self.decay_duration as f64),
-                            (val, self.decay_end_value as f64),
-                        ];
+                        let (dur, val) = self.get_decay_parameter_indices();
 
                         return (
                             event::Status::Captured,
-                            Some(Message::ParameterChanges(changes)),
+                            Some(Message::ChangeTwoParametersSetValues(
+                                (dur, self.decay_duration as f64),
+                                (val, self.decay_end_value as f64),
+                            )),
                         );
                     }
                 }
@@ -801,18 +819,10 @@ impl Program<Message> for Envelope {
 
                         self.update_data();
 
-                        let parameter_index = match self.operator_index {
-                            0 => 14,
-                            1 => 28,
-                            2 => 43,
-                            3 => 58,
-                            _ => unreachable!(),
-                        };
-
                         return (
                             event::Status::Captured,
-                            Some(Message::ParameterChange(
-                                parameter_index,
+                            Some(Message::ChangeSingleParameterSetValue(
+                                self.get_release_dur_parameter_index(),
                                 self.release_duration as f64,
                             )),
                         );
@@ -836,6 +846,8 @@ impl Program<Message> for Envelope {
                 iced_baseview::mouse::Button::Left,
             )) => {
                 if bounds.contains(self.last_cursor_position) {
+                    let mut opt_message = None;
+
                     let relative_position = Point::new(
                         self.last_cursor_position.x - bounds.x,
                         self.last_cursor_position.y - bounds.y,
@@ -849,6 +861,10 @@ impl Program<Message> for Envelope {
                             original_duration: self.release_duration,
                             original_end_value: 0.0,
                         };
+
+                        opt_message = Some(Message::ChangeSingleParameterBegin(
+                            self.get_release_dur_parameter_index(),
+                        ));
                     } else if self.decay_dragger.hitbox.contains(relative_position)
                         && !self.decay_dragger.is_dragging()
                     {
@@ -857,6 +873,9 @@ impl Program<Message> for Envelope {
                             original_duration: self.decay_duration,
                             original_end_value: self.decay_end_value,
                         };
+                        opt_message = Some(Message::ChangeTwoParametersBegin(
+                            self.get_decay_parameter_indices(),
+                        ));
                     } else if self.attack_dragger.hitbox.contains(relative_position)
                         && !self.attack_dragger.is_dragging()
                     {
@@ -865,6 +884,9 @@ impl Program<Message> for Envelope {
                             original_duration: self.attack_duration,
                             original_end_value: self.attack_end_value,
                         };
+                        opt_message = Some(Message::ChangeTwoParametersBegin(
+                            self.get_attack_parameter_indices(),
+                        ));
                     } else {
                         self.dragging_background_from =
                             Some((self.last_cursor_position, self.x_offset));
@@ -872,28 +894,38 @@ impl Program<Message> for Envelope {
 
                     self.cache.clear();
 
-                    return (event::Status::Captured, None);
+                    return (event::Status::Captured, opt_message);
                 }
             }
             event::Event::Mouse(iced_baseview::mouse::Event::ButtonReleased(
                 iced_baseview::mouse::Button::Left,
             )) => {
                 let mut captured = false;
+                let mut opt_message = None;
 
                 if self.release_dragger.is_dragging() {
                     self.release_dragger.status = EnvelopeDraggerStatus::Normal;
 
                     captured = true;
+                    opt_message = Some(Message::ChangeSingleParameterEnd(
+                        self.get_release_dur_parameter_index(),
+                    ));
                 }
                 if self.decay_dragger.is_dragging() {
                     self.decay_dragger.status = EnvelopeDraggerStatus::Normal;
 
                     captured = true;
+                    opt_message = Some(Message::ChangeTwoParametersEnd(
+                        self.get_decay_parameter_indices(),
+                    ));
                 }
                 if self.attack_dragger.is_dragging() {
                     self.attack_dragger.status = EnvelopeDraggerStatus::Normal;
 
                     captured = true;
+                    opt_message = Some(Message::ChangeTwoParametersEnd(
+                        self.get_attack_parameter_indices(),
+                    ));
                 }
 
                 if self.dragging_background_from.is_some() {
@@ -905,7 +937,7 @@ impl Program<Message> for Envelope {
                 if captured {
                     self.cache.clear();
 
-                    return (event::Status::Captured, None);
+                    return (event::Status::Captured, opt_message);
                 }
             }
             _ => (),

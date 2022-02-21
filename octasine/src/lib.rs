@@ -363,6 +363,8 @@ cfg_if::cfg_if! {
 
         /// Trait passed to GUI code for encapsulation
         pub trait GuiSyncHandle: Clone + Send + Sync + 'static {
+            fn begin_edit(&self, index: usize);
+            fn end_edit(&self, index: usize);
             fn set_parameter(&self, index: usize, value: f64);
             fn get_parameter(&self, index: usize) -> f64;
             fn format_parameter_value(&self, index: usize, value: f64) -> String;
@@ -374,6 +376,16 @@ cfg_if::cfg_if! {
         }
 
         impl GuiSyncHandle for Arc<SyncState> {
+            fn begin_edit(&self, index: usize) {
+                if let Some(host) = self.host {
+                    host.begin_edit(index as i32);
+                }
+            }
+            fn end_edit(&self, index: usize) {
+                if let Some(host) = self.host {
+                    host.end_edit(index as i32);
+                }
+            }
             fn set_parameter(&self, index: usize, value: f64){
                 if let Some(host) = self.host {
                     // Host will occasionally set the value again, but that's

@@ -236,7 +236,10 @@ impl Program<Message> for LfoShapePicker {
 
                     (
                         event::Status::Captured,
-                        Some(Message::ParameterChange(self.parameter_index, new_value)),
+                        Some(Message::ChangeSingleParameterImmediate(
+                            self.parameter_index,
+                            new_value,
+                        )),
                     )
                 } else {
                     self.click_started = false;

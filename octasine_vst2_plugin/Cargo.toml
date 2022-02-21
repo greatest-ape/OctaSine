@@ -17,4 +17,4 @@ wgpu = ["octasine/gui_wgpu"]
 
 [dependencies]
 octasine = { path = "../octasine", default-features = false }
-vst = "0.2"
+vst = { git = "https://github.com/RustAudio/vst-rs.git", rev = "b5f342c" }
