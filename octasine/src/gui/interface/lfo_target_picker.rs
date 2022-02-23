@@ -100,7 +100,7 @@ impl LfoTargetPicker {
                     _ => unreachable!(),
                 };
 
-                Message::ParameterChange(parameter_index, sync)
+                Message::ChangeSingleParameterImmediate(parameter_index, sync)
             },
         )
         .text_size(FONT_SIZE)

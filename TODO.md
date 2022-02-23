@@ -1,41 +1,38 @@
 # TODO
 
-## Important
+## High priority
 
-* Wait for merge of raw-gl-context fix, use that repo
-* Consider defaulting to wgpu on Linux
+* GUI
+  * Parameter editing: bracket changes with begin_edit and end_edit
+    * iced_audio knobs would need events for starting and ending dragging
 
-* Handle BPM change events instead of checking all the time
+## Medium priority
+
 * Use directories crate to choose paths for log and settings files
+
+* GUI
+  * Scrolling in dropdowns
+    * iced 0.4: https://github.com/hecrj/iced/pull/872
+    * Does scrolling (including touch) need to be added to baseview
+      macOS code? What about other platforms?
+
+## Low priority
+
+* GUI
+  * Mouse drag movements in pick list transfer through to envelope editor
 
 * Consider adding saw, square and triangle waves. Maybe look at
   TX81Z waveforms. https://www.reddit.com/r/synthesizers/comments/rkyk6j/comment/hpgcu6r/?utm_source=share&utm_medium=web2x&context=3
 * Consider time-based instead of sample-based interpolation for processing
   parameters and LFOs
 
-* Bugs
-  * Mouse drag movements in pick list transfer through to envelope editor
-
 * Build for Apple silicon
   * ADVSIMD (NEON) acceleration should be supported, at least by enabling the
     target feature. I'm not sure about how that is done when cross-compiling.
 
-* GUI
-  * Default to dark mode
-  * Consider replacing LFO wave selector with custom widget that shows the
-    shapes
-  * Parameter editing: bracket changes with begin_edit and end_edit
-    * iced_audio knobs would need events for starting and ending dragging
-  * Scrolling in dropdowns
-    * iced 0.4: https://github.com/hecrj/iced/pull/872
-    * Does scrolling (including touch) need to be added to baseview
-      macOS code? What about other platforms?
+## Very low priority
 
-* Documentation
-  * LFO shapes, shape/amount interaction
-
-## Less important
-
+* Consider defaulting to wgpu on Linux
 * Manual under info button?
   * Presets are exported/imported through DAW
 * Process benchmark output not same on Windows as on macOS/Linux
@@ -57,9 +54,6 @@
     * Should it be run on knob drag release?
 * sample rate change: what needs to be done? (time reset?)
 * clippy
-
-## Not important
-
 * Test that number of sync and processing parameters is equal
 * suspend mode and so on, maybe just reset time, note time, envelopes etc on resume
 * Fuzz Log10Table (cargo-fuzz?)

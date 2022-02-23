@@ -1,5 +1,3 @@
-use once_cell::sync::OnceCell;
-
 const TABLE_SIZE: usize = 1 << 5;
 const TABLE_SIZE_MINUS_ONE_FLOAT: f64 = (TABLE_SIZE - 1) as f64;
 
@@ -16,19 +14,15 @@ impl Log10Table {
 
     /// Get volume. Only defined where value >= 0.0 && value <= 1.0
     #[inline]
-    pub fn calculate(value: f64) -> f64 {
-        static TABLE: OnceCell<Log10Table> = OnceCell::new();
-
-        let table = TABLE.get_or_init(Log10Table::default);
-
+    pub fn calculate(&self, value: f64) -> f64 {
         let index_float = value * TABLE_SIZE_MINUS_ONE_FLOAT;
         let index_fract = index_float.fract();
 
         let index_floor = index_float as usize;
         let index_ceil = index_floor + 1;
 
-        let approximation_low = table.0[index_floor];
-        let approximation_high = table.0[index_ceil.min(TABLE_SIZE - 1)];
+        let approximation_low = self.0[index_floor];
+        let approximation_high = self.0[index_ceil.min(TABLE_SIZE - 1)];
 
         approximation_low + index_fract * (approximation_high - approximation_low)
     }
@@ -61,7 +55,9 @@ mod tests {
                 return TestResult::discard();
             }
 
-            let table_result = Log10Table::calculate(value);
+            let table = Log10Table::default();
+
+            let table_result = table.calculate(value);
             let reference_result = Log10Table::reference(value);
             let diff = (table_result - reference_result).abs();
 

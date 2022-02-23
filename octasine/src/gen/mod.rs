@@ -1,9 +1,12 @@
 mod lfo;
 pub mod simd;
 
+use std::f64::consts::TAU;
+
 use duplicate::duplicate;
 use vst::buffer::AudioBuffer;
 
+use crate::approximations::Log10Table;
 use crate::common::*;
 use crate::constants::*;
 use crate::parameters::processing::{ProcessingParameter, ProcessingParameterOperator};
@@ -269,6 +272,7 @@ mod gen {
 
                 for (operator_index, operator) in operators.iter_mut().enumerate() {
                     extract_voice_operator_data(
+                        &processing.log10table,
                         sample_index,
                         operator_index,
                         operator,
@@ -286,6 +290,7 @@ mod gen {
     #[feature_gate]
     #[target_feature_enable]
     unsafe fn extract_voice_operator_data(
+        log10table: &Log10Table,
         sample_index: usize,
         operator_index: usize,
         operator: &mut ProcessingParameterOperator,
@@ -303,7 +308,7 @@ mod gen {
 
         let envelope_volume = voice_operator
             .volume_envelope
-            .get_volume(&operator.volume_envelope);
+            .get_volume(log10table, &operator.volume_envelope);
 
         set_value_for_both_channels(
             &mut voice_data.envelope_volumes,

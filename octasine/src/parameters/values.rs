@@ -797,10 +797,13 @@ impl ParameterValue for LfoShapeValue {
     fn format(self) -> String {
         match self.0 {
             LfoShape::Triangle => "TRIANGLE".to_string(),
+            LfoShape::ReverseTriangle => "REV TRNG".to_string(),
             LfoShape::Saw => "SAW".to_string(),
             LfoShape::ReverseSaw => "REV SAW".to_string(),
             LfoShape::Square => "SQUARE".to_string(),
             LfoShape::ReverseSquare => "REV SQR".to_string(),
+            LfoShape::Sine => "SINE".to_string(),
+            LfoShape::ReverseSine => "REV SINE".to_string(),
         }
     }
     fn format_sync(value: f64) -> String {
@@ -809,6 +812,7 @@ impl ParameterValue for LfoShapeValue {
     fn from_text(text: String) -> Option<Self> {
         match text.to_lowercase().as_ref() {
             "triangle" => Some(Self(LfoShape::Triangle)),
+            "reverse triangle" => Some(Self(LfoShape::ReverseTriangle)),
             "saw" => Some(Self(LfoShape::Saw)),
             "reverse saw" => Some(Self(LfoShape::ReverseSaw)),
             "square" => Some(Self(LfoShape::Square)),
@@ -1002,13 +1006,10 @@ impl ParameterValue for LfoAmountValue {
         self.0
     }
     fn from_sync(sync: f64) -> Self {
-        Self(map_parameter_value_to_value_with_steps(
-            &LFO_AMOUNT_STEPS[..],
-            sync,
-        ))
+        Self(sync * 2.0)
     }
     fn to_sync(self) -> f64 {
-        map_value_to_parameter_value_with_steps(&LFO_AMOUNT_STEPS[..], self.0)
+        self.0 * 0.5
     }
     fn format(self) -> String {
         format!("{:.04}", self.0)

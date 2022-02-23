@@ -11,6 +11,7 @@ mod boolean_picker;
 mod envelope;
 mod knob;
 mod lfo;
+mod lfo_shape_picker;
 mod lfo_target_picker;
 mod mod_matrix;
 mod operator;
@@ -70,8 +71,13 @@ impl SnapPoint for Point {
 #[derive(Debug, Clone)]
 pub enum Message {
     Frame,
-    ParameterChange(usize, f64),
-    ParameterChanges(Vec<(usize, f64)>),
+    ChangeSingleParameterBegin(usize),
+    ChangeSingleParameterEnd(usize),
+    ChangeSingleParameterSetValue(usize, f64),
+    ChangeSingleParameterImmediate(usize, f64),
+    ChangeTwoParametersBegin((usize, usize)),
+    ChangeTwoParametersEnd((usize, usize)),
+    ChangeTwoParametersSetValues((usize, f64), (usize, f64)),
     ToggleInfo,
     PresetChange(usize),
     EnvelopeZoomIn(usize),
@@ -397,16 +403,38 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                     .envelope
                     .set_viewport(viewport_factor, x_offset);
             }
-            Message::ParameterChange(index, value) => {
+            Message::ChangeSingleParameterBegin(index) => {
+                self.sync_handle.begin_edit(index);
+            }
+            Message::ChangeSingleParameterEnd(index) => {
+                self.sync_handle.end_edit(index);
+            }
+            Message::ChangeSingleParameterSetValue(index, value) => {
                 self.set_value(index, value);
 
                 self.sync_handle.set_parameter(index, value);
             }
-            Message::ParameterChanges(changes) => {
-                for (index, value) in changes {
-                    self.set_value(index, value);
-                    self.sync_handle.set_parameter(index, value);
-                }
+            Message::ChangeSingleParameterImmediate(index, value) => {
+                self.set_value(index, value);
+
+                self.sync_handle.begin_edit(index);
+                self.sync_handle.set_parameter(index, value);
+                self.sync_handle.end_edit(index);
+            }
+            Message::ChangeTwoParametersBegin((index_1, index_2)) => {
+                self.sync_handle.begin_edit(index_1);
+                self.sync_handle.begin_edit(index_2);
+            }
+            Message::ChangeTwoParametersEnd((index_1, index_2)) => {
+                self.sync_handle.end_edit(index_1);
+                self.sync_handle.end_edit(index_2);
+            }
+            Message::ChangeTwoParametersSetValues((index_1, value_1), (index_2, value_2)) => {
+                self.set_value(index_1, value_1);
+                self.set_value(index_2, value_2);
+
+                self.sync_handle.set_parameter(index_1, value_1);
+                self.sync_handle.set_parameter(index_2, value_2);
             }
             Message::PresetChange(index) => {
                 self.sync_handle.set_preset_index(index);

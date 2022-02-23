@@ -102,7 +102,10 @@ where
                 P::from_processing(choice).format().to_uppercase(),
                 Some(self.selected),
                 move |choice| {
-                    Message::ParameterChange(parameter_index, P::from_processing(choice).to_sync())
+                    Message::ChangeSingleParameterImmediate(
+                        parameter_index,
+                        P::from_processing(choice).to_sync(),
+                    )
                 },
             )
             .size(FONT_SIZE)

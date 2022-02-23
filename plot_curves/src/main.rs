@@ -1,3 +1,4 @@
+use octasine::approximations::Log10Table;
 use plotlib::page::Page;
 use plotlib::repr::Plot;
 use plotlib::style::{LineStyle, PointMarker, PointStyle};
@@ -10,9 +11,17 @@ use octasine::voices::lfos::*;
 
 #[allow(dead_code)]
 fn plot_envelope_stage(length: f64, start_volume: f64, end_volume: f64, filename: &str) {
+    let log10table = Log10Table::default();
+
     let plot = Plot::from_function(
         |x| {
-            VoiceOperatorVolumeEnvelope::calculate_curve(start_volume, end_volume, x as f64, length)
+            VoiceOperatorVolumeEnvelope::calculate_curve(
+                &log10table,
+                start_volume,
+                end_volume,
+                x as f64,
+                length,
+            )
         },
         0.,
         length,
@@ -48,6 +57,7 @@ fn plot_lfo_values(filename: &str) {
     let speed = 2.0;
     let magnitude = 1.0;
 
+    let log10table = Log10Table::default();
     let mut lfo = VoiceLfo::default();
     let mut envelope = VoiceOperatorVolumeEnvelope::default();
     let mut processing_parameter_envelope = OperatorEnvelopeProcessingParameter::default();
@@ -72,7 +82,7 @@ fn plot_lfo_values(filename: &str) {
             time_per_sample,
         );
 
-        let envelope_value = envelope.get_volume(&mut processing_parameter_envelope);
+        let envelope_value = envelope.get_volume(&log10table, &mut processing_parameter_envelope);
 
         envelope_value_points.push((i as f64, envelope_value));
 

@@ -129,8 +129,11 @@ pub enum LfoShape {
     Saw,
     ReverseSaw,
     Triangle,
+    ReverseTriangle,
     Square,
     ReverseSquare,
+    Sine,
+    ReverseSine,
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]

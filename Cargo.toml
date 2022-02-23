@@ -19,19 +19,17 @@ members = [
 # [patch.'https://github.com/iced-rs/iced_audio']
 # iced_audio = { path = "../iced_audio" }
 
-[patch.crates-io]
-# macOS high DPI fix
-raw-gl-context = { git = "https://github.com/greatest-ape/raw-gl-context.git", branch = "octasine-v0.5.4" }
-
 [profile.release]
 debug = false
-lto = true
+lto = "thin"
 opt-level = 3
 
 [profile.test]
 opt-level = 3
 
 [profile.bench]
-debug = false
-lto = true
-opt-level = 3
+inherits = "release"
+
+[profile.release-debug]
+inherits = "release"
+debug = true

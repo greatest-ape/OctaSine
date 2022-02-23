@@ -13,6 +13,7 @@ pub mod gui;
 use std::collections::VecDeque;
 use std::sync::Arc;
 
+use approximations::Log10Table;
 use array_init::array_init;
 use fastrand::Rng;
 
@@ -163,6 +164,7 @@ pub struct ProcessingState {
     pub time_per_sample: TimePerSample,
     pub bpm: BeatsPerMinute,
     pub rng: Rng,
+    pub log10table: Log10Table,
     pub voices: [Voice; 128],
     pub parameters: ProcessingParameters,
     pub pending_midi_events: VecDeque<MidiEvent>,
@@ -175,6 +177,7 @@ impl Default for ProcessingState {
             time_per_sample: SampleRate::default().into(),
             bpm: Default::default(),
             rng: Rng::new(),
+            log10table: Default::default(),
             voices: array_init(|i| Voice::new(MidiPitch::new(i as u8))),
             parameters: ProcessingParameters::default(),
             // Start with some capacity to cut down on later allocations
@@ -360,6 +363,8 @@ cfg_if::cfg_if! {
 
         /// Trait passed to GUI code for encapsulation
         pub trait GuiSyncHandle: Clone + Send + Sync + 'static {
+            fn begin_edit(&self, index: usize);
+            fn end_edit(&self, index: usize);
             fn set_parameter(&self, index: usize, value: f64);
             fn get_parameter(&self, index: usize) -> f64;
             fn format_parameter_value(&self, index: usize, value: f64) -> String;
@@ -371,6 +376,16 @@ cfg_if::cfg_if! {
         }
 
         impl GuiSyncHandle for Arc<SyncState> {
+            fn begin_edit(&self, index: usize) {
+                if let Some(host) = self.host {
+                    host.begin_edit(index as i32);
+                }
+            }
+            fn end_edit(&self, index: usize) {
+                if let Some(host) = self.host {
+                    host.end_edit(index as i32);
+                }
+            }
             fn set_parameter(&self, index: usize, value: f64){
                 if let Some(host) = self.host {
                     // Host will occasionally set the value again, but that's

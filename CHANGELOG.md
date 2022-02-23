@@ -4,6 +4,20 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+This release contains breaking changes, i.e., changes that can affect
+how patches sound.
+
+### Changed
+
+- Use a more traditional LFO design that oscillates around the base value, not
+  in a single direction.
+- Scale LFO effect linearly and bypass normal parameter limits when targeting
+  master frequency, master volume, operator free frequency, operator volume,
+  LFO amount (magnitude) or LFO free frequency parameters
+- Make LFO triangle wave type start at value 0.0
+- Add LFO wave types reverse triangle, sine and reverse sine
+- Replace the LFO shape knob with a custom widget that displays the waveform
+
 ### Fixed
 
 - Fetch BPM once per process call instead of each sample
