@@ -50,7 +50,7 @@ rev = "004065e9a43e79751040879c572d95b9b63e0edc"
 optional = true
 
 [dependencies.iced_audio]
-git = "https://github.com/greatest-ape/iced_audio.git"
+git = "https://github.com/iced-rs/iced_audio.git"
 branch = "iced_git"
 optional = true
 
