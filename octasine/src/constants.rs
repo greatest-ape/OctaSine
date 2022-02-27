@@ -126,6 +126,7 @@ pub const DEFAULT_OPERATOR_FEEDBACK: f64 = 0.0;
 pub const DEFAULT_OPERATOR_MODULATION_INDEX: f64 = 1.0;
 pub const DEFAULT_OPERATOR_WAVE_TYPE: WaveType = WaveType::Sine;
 
+pub const DEFAULT_OPERATOR_2_MOD_TARGET: usize = 0;
 pub const DEFAULT_OPERATOR_3_MOD_TARGET: usize = 1;
 pub const DEFAULT_OPERATOR_4_MOD_TARGET: usize = 2;
 

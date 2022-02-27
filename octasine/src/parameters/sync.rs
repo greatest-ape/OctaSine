@@ -7,10 +7,9 @@ pub fn create_parameters() -> Vec<SyncParameter> {
         master_volume(),
         master_frequency(),
         // Operator 1
-        operator_volume(0),
+        operator_mix(0),
         operator_panning(0),
         operator_wave_type(0),
-        operator_modulation_index(0),
         operator_feedback(0),
         operator_frequency_ratio(0),
         operator_frequency_free(0),
@@ -21,10 +20,10 @@ pub fn create_parameters() -> Vec<SyncParameter> {
         operator_decay_volume(0),
         operator_release_duration(0),
         // Operator 2
-        operator_volume(1),
+        operator_mix(1),
         operator_panning(1),
         operator_wave_type(1),
-        operator_additive(1),
+        operator_modulation_target_1(),
         operator_modulation_index(1),
         operator_feedback(1),
         operator_frequency_ratio(1),
@@ -36,10 +35,9 @@ pub fn create_parameters() -> Vec<SyncParameter> {
         operator_decay_volume(1),
         operator_release_duration(1),
         // Operator 3
-        operator_volume(2),
+        operator_mix(2),
         operator_panning(2),
         operator_wave_type(2),
-        operator_additive(2),
         operator_modulation_target_2(),
         operator_modulation_index(2),
         operator_feedback(2),
@@ -52,10 +50,9 @@ pub fn create_parameters() -> Vec<SyncParameter> {
         operator_decay_volume(2),
         operator_release_duration(2),
         // Operator 4
-        operator_volume(3),
+        operator_mix(3),
         operator_panning(3),
         operator_wave_type(3),
-        operator_additive(3),
         operator_modulation_target_3(),
         operator_modulation_index(3),
         operator_feedback(3),
@@ -92,10 +89,10 @@ fn master_frequency() -> SyncParameter {
     SyncParameter::new("Master frequency", MasterFrequencyValue::default())
 }
 
-fn operator_volume(index: usize) -> SyncParameter {
+fn operator_mix(index: usize) -> SyncParameter {
     SyncParameter::new(
-        &format!("Op. {} volume", index + 1),
-        OperatorVolumeValue::new(index),
+        &format!("Op. {} mix", index + 1),
+        OperatorMixValue::new(index),
     )
 }
 
@@ -103,13 +100,6 @@ fn operator_panning(index: usize) -> SyncParameter {
     SyncParameter::new(
         &format!("Op. {} pan", index + 1),
         OperatorPanningValue::default(),
-    )
-}
-
-fn operator_additive(index: usize) -> SyncParameter {
-    SyncParameter::new(
-        &format!("Op. {} additive", index + 1),
-        OperatorAdditiveValue::default(),
     )
 }
 
@@ -190,6 +180,10 @@ fn operator_release_duration(index: usize) -> SyncParameter {
     )
 }
 
+fn operator_modulation_target_1() -> SyncParameter {
+    SyncParameter::new("Op. 2 mod out", Operator2ModulationTargetValue::default())
+}
+
 fn operator_modulation_target_2() -> SyncParameter {
     SyncParameter::new("Op. 3 mod out", Operator3ModulationTargetValue::default())
 }
@@ -266,28 +260,28 @@ mod tests {
 
     #[test]
     fn test_set_volume_text() {
-        let p = operator_volume(3);
+        let p = operator_mix(3);
 
         assert!(p.set_from_text("-1.0".to_string()));
-        assert_eq!(OperatorVolumeValue::from_sync(p.get_value()).get(), 0.0);
+        assert_eq!(OperatorMixValue::from_sync(p.get_value()).get(), 0.0);
 
         assert!(p.set_from_text("0".to_string()));
-        assert_eq!(OperatorVolumeValue::from_sync(p.get_value()).get(), 0.0);
+        assert_eq!(OperatorMixValue::from_sync(p.get_value()).get(), 0.0);
 
         assert!(p.set_from_text("0.0".to_string()));
-        assert_eq!(OperatorVolumeValue::from_sync(p.get_value()).get(), 0.0);
+        assert_eq!(OperatorMixValue::from_sync(p.get_value()).get(), 0.0);
 
         assert!(p.set_from_text("1.0".to_string()));
-        assert_eq!(OperatorVolumeValue::from_sync(p.get_value()).get(), 1.0);
+        assert_eq!(OperatorMixValue::from_sync(p.get_value()).get(), 1.0);
 
         assert!(p.set_from_text("1.2".to_string()));
-        assert_eq!(OperatorVolumeValue::from_sync(p.get_value()).get(), 1.2);
+        assert_eq!(OperatorMixValue::from_sync(p.get_value()).get(), 1.2);
 
         assert!(p.set_from_text("2.0".to_string()));
-        assert_eq!(OperatorVolumeValue::from_sync(p.get_value()).get(), 2.0);
+        assert_eq!(OperatorMixValue::from_sync(p.get_value()).get(), 2.0);
 
         assert!(p.set_from_text("3.0".to_string()));
-        assert_eq!(OperatorVolumeValue::from_sync(p.get_value()).get(), 2.0);
+        assert_eq!(OperatorMixValue::from_sync(p.get_value()).get(), 2.0);
     }
 
     #[test]

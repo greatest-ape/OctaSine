@@ -4,9 +4,9 @@ use iced_baseview::{
 };
 
 use crate::parameters::values::{
-    OperatorAdditiveValue, OperatorFeedbackValue, OperatorFrequencyFineValue,
+    OperatorFeedbackValue, OperatorFrequencyFineValue,
     OperatorFrequencyFreeValue, OperatorFrequencyRatioValue, OperatorModulationIndexValue,
-    OperatorPanningValue, OperatorVolumeValue, OperatorWaveTypeValue,
+    OperatorPanningValue, OperatorMixValue, OperatorWaveTypeValue,
 };
 use crate::GuiSyncHandle;
 
@@ -19,15 +19,14 @@ use super::{Message, FONT_SIZE, FONT_VERY_BOLD, LINE_HEIGHT};
 pub struct OperatorWidgets {
     index: usize,
     style: Theme,
-    pub volume: OctaSineKnob<OperatorVolumeValue>,
+    pub mix: OctaSineKnob<OperatorMixValue>,
     pub panning: OctaSineKnob<OperatorPanningValue>,
     pub wave_type: BooleanPicker<OperatorWaveTypeValue>,
-    pub mod_index: OctaSineKnob<OperatorModulationIndexValue>,
+    pub mod_index: Option<OctaSineKnob<OperatorModulationIndexValue>>,
     pub feedback: OctaSineKnob<OperatorFeedbackValue>,
     pub frequency_ratio: OctaSineKnob<OperatorFrequencyRatioValue>,
     pub frequency_free: OctaSineKnob<OperatorFrequencyFreeValue>,
     pub frequency_fine: OctaSineKnob<OperatorFrequencyFineValue>,
-    pub additive: Option<OctaSineKnob<OperatorAdditiveValue>>,
     pub envelope: Envelope,
     pub zoom_in: button::State,
     pub zoom_out: button::State,
@@ -37,33 +36,32 @@ pub struct OperatorWidgets {
 
 impl OperatorWidgets {
     pub fn new<H: GuiSyncHandle>(sync_handle: &H, operator_index: usize, style: Theme) -> Self {
-        let (volume, panning, wave, additive, mod_index, feedback, ratio, free, fine) =
+        let (mix, panning, wave, mod_index, feedback, ratio, free, fine) =
             match operator_index {
-                0 => (2, 3, 4, 0, 5, 6, 7, 8, 9),
-                1 => (15, 16, 17, 18, 19, 20, 21, 22, 23),
-                2 => (29, 30, 31, 32, 34, 35, 36, 37, 38),
-                3 => (44, 45, 46, 47, 49, 50, 51, 52, 53),
+                0 => (2, 3, 4, 0, 5, 6, 7, 8),
+                1 => (14, 15, 16, 18, 19, 20, 21, 22),
+                2 => (28, 29, 30, 32, 33, 34, 35, 36),
+                3 => (42, 43, 44, 46, 47, 48, 49, 50),
                 _ => unreachable!(),
             };
-
-        let additive_knob = if operator_index == 0 {
-            None
+        
+        let mod_index = if operator_index != 0 {
+            Some(knob::operator_mod_index(sync_handle, mod_index, style))
         } else {
-            Some(knob::operator_additive(sync_handle, additive, style))
+            None
         };
 
         Self {
             index: operator_index,
             style,
-            volume: knob::operator_volume(sync_handle, volume, operator_index, style),
+            mix: knob::operator_mix(sync_handle, mix, operator_index, style),
             panning: knob::operator_panning(sync_handle, panning, style),
             wave_type: boolean_picker::wave_type(sync_handle, wave, style),
-            mod_index: knob::operator_mod_index(sync_handle, mod_index, style),
+            mod_index,
             feedback: knob::operator_feedback(sync_handle, feedback, style),
             frequency_ratio: knob::operator_frequency_ratio(sync_handle, ratio, style),
             frequency_free: knob::operator_frequency_free(sync_handle, free, style),
             frequency_fine: knob::operator_frequency_fine(sync_handle, fine, style),
-            additive: additive_knob,
             envelope: Envelope::new(sync_handle, operator_index, style),
             zoom_in: button::State::default(),
             zoom_out: button::State::default(),
@@ -74,17 +72,16 @@ impl OperatorWidgets {
 
     pub fn set_style(&mut self, style: Theme) {
         self.style = style;
-        self.volume.style = style;
+        self.mix.style = style;
         self.panning.style = style;
         self.wave_type.style = style;
-        self.mod_index.style = style;
+        if let Some(mod_index) = self.mod_index.as_mut() {
+            mod_index.style = style;
+        }
         self.feedback.style = style;
         self.frequency_ratio.style = style;
         self.frequency_free.style = style;
         self.frequency_fine.style = style;
-        if let Some(additive) = self.additive.as_mut() {
-            additive.style = style;
-        }
         self.envelope.set_style(style);
     }
 
@@ -105,21 +102,20 @@ impl OperatorWidgets {
             )
             // .push(Space::with_width(Length::Units(LINE_HEIGHT)))
             .push(self.wave_type.view())
-            .push(self.volume.view())
+            .push(self.mix.view())
             .push(self.panning.view());
-
-        if let Some(additive) = self.additive.as_mut() {
-            row = row.push(additive.view())
-        } else {
-            row = row.push(Space::with_width(Length::Units(LINE_HEIGHT * 4)))
-        }
 
         row = row
             .push(
                 Container::new(Rule::vertical(LINE_HEIGHT)).height(Length::Units(LINE_HEIGHT * 6)),
             )
-            .push(self.mod_index.view())
             .push(self.feedback.view());
+
+        if let Some(mod_index) = self.mod_index.as_mut() {
+            row = row.push(mod_index.view())
+        } else {
+            row = row.push(Space::with_width(Length::Units(LINE_HEIGHT * 4)))
+        }
 
         row = row
             .push(

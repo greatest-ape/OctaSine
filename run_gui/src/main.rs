@@ -16,17 +16,5 @@ fn main() {
         settings: Settings::load().unwrap_or_default(),
     });
 
-    // Set envelope data for easier testing
-    GuiSyncHandle::set_parameter(&sync_state, 10, 1.0);
-    GuiSyncHandle::set_parameter(&sync_state, 12, 1.0);
-    GuiSyncHandle::set_parameter(&sync_state, 14, 1.0);
-
-    // Operator 4 additive
-    GuiSyncHandle::set_parameter(&sync_state, 47, 0.7);
-
-    // Feedback
-    GuiSyncHandle::set_parameter(&sync_state, 6, 1.0);
-    GuiSyncHandle::set_parameter(&sync_state, 20, 0.9);
-
     Gui::open_blocking(sync_state);
 }

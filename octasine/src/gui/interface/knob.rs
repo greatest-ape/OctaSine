@@ -5,9 +5,9 @@ use iced_baseview::{
 
 use crate::parameters::values::{
     LfoAmountValue, LfoFrequencyFreeValue, LfoFrequencyRatioValue, MasterFrequencyValue,
-    MasterVolumeValue, OperatorAdditiveValue, OperatorFeedbackValue, OperatorFrequencyFineValue,
+    MasterVolumeValue, OperatorFeedbackValue, OperatorFrequencyFineValue,
     OperatorFrequencyFreeValue, OperatorFrequencyRatioValue, OperatorModulationIndexValue,
-    OperatorPanningValue, OperatorVolumeValue, ParameterValue,
+    OperatorPanningValue, OperatorMixValue, ParameterValue,
 };
 use crate::GuiSyncHandle;
 
@@ -51,18 +51,18 @@ pub fn master_frequency<H: GuiSyncHandle>(
     )
 }
 
-pub fn operator_volume<H: GuiSyncHandle>(
+pub fn operator_mix<H: GuiSyncHandle>(
     sync_handle: &H,
     parameter_index: usize,
     operator_index: usize,
     style: Theme,
-) -> OctaSineKnob<OperatorVolumeValue> {
+) -> OctaSineKnob<OperatorMixValue> {
     OctaSineKnob::new_with_default_sync_value(
         sync_handle,
         parameter_index,
-        "VOLUME",
+        "MIX",
         TickMarkType::MinMaxAndDefault,
-        OperatorVolumeValue::new(operator_index).to_sync(),
+        OperatorMixValue::new(operator_index).to_sync(),
         style,
     )
 }
@@ -77,20 +77,6 @@ pub fn operator_panning<H: GuiSyncHandle>(
         parameter_index,
         "PAN",
         TickMarkType::MinMaxAndDefault,
-        style,
-    )
-}
-
-pub fn operator_additive<H: GuiSyncHandle>(
-    sync_handle: &H,
-    parameter_index: usize,
-    style: Theme,
-) -> OctaSineKnob<OperatorAdditiveValue> {
-    OctaSineKnob::new(
-        sync_handle,
-        parameter_index,
-        "ADDITIVE",
-        TickMarkType::MinMax,
         style,
     )
 }

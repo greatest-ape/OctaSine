@@ -40,68 +40,74 @@ impl ProcessingParameters {
         match index {
             0 => self.master_volume.set_from_sync(value),
             1 => self.master_frequency.set_from_sync(value),
-            2 => self.operators[0].volume.set_from_sync(value),
+            2 => self.operators[0].mix.set_from_sync(value),
             3 => self.operators[0].panning.set_from_sync(value),
             4 => self.operators[0].wave_type.set_from_sync(value),
-            5 => self.operators[0].modulation_index.set_from_sync(value),
-            6 => self.operators[0].feedback.set_from_sync(value),
-            7 => self.operators[0].frequency_ratio.set_from_sync(value),
-            8 => self.operators[0].frequency_free.set_from_sync(value),
-            9 => self.operators[0].frequency_fine.set_from_sync(value),
-            10 => self.operators[0]
+            5 => self.operators[0].feedback.set_from_sync(value),
+            6 => self.operators[0].frequency_ratio.set_from_sync(value),
+            7 => self.operators[0].frequency_free.set_from_sync(value),
+            8 => self.operators[0].frequency_fine.set_from_sync(value),
+            9 => self.operators[0]
                 .volume_envelope
                 .attack_duration
+                .set_from_sync(value),
+            10 => self.operators[0]
+                .volume_envelope
+                .attack_end_value
                 .set_from_sync(value),
             11 => self.operators[0]
                 .volume_envelope
-                .attack_end_value
+                .decay_duration
                 .set_from_sync(value),
             12 => self.operators[0]
                 .volume_envelope
-                .decay_duration
+                .decay_end_value
                 .set_from_sync(value),
             13 => self.operators[0]
                 .volume_envelope
-                .decay_end_value
-                .set_from_sync(value),
-            14 => self.operators[0]
-                .volume_envelope
                 .release_duration
                 .set_from_sync(value),
-            15 => self.operators[1].volume.set_from_sync(value),
-            16 => self.operators[1].panning.set_from_sync(value),
-            17 => self.operators[1].wave_type.set_from_sync(value),
-            18 => self.operators[1].additive_factor.set_from_sync(value),
-            19 => self.operators[1].modulation_index.set_from_sync(value),
-            20 => self.operators[1].feedback.set_from_sync(value),
-            21 => self.operators[1].frequency_ratio.set_from_sync(value),
-            22 => self.operators[1].frequency_free.set_from_sync(value),
-            23 => self.operators[1].frequency_fine.set_from_sync(value),
-            24 => self.operators[1]
+            14 => self.operators[1].mix.set_from_sync(value),
+            15 => self.operators[1].panning.set_from_sync(value),
+            16 => self.operators[1].wave_type.set_from_sync(value),
+            17 => {
+                use OperatorModulationTargetProcessingParameter::*;
+
+                let opt_p = self.operators[1].output_operator.as_mut();
+
+                if let Some(Two(p)) = opt_p {
+                    p.set_from_sync(value)
+                }
+            }
+            18 => if let Some(p) = self.operators[1].modulation_index.as_mut() { p.set_from_sync(value) },
+            19 => self.operators[1].feedback.set_from_sync(value),
+            20 => self.operators[1].frequency_ratio.set_from_sync(value),
+            21 => self.operators[1].frequency_free.set_from_sync(value),
+            22 => self.operators[1].frequency_fine.set_from_sync(value),
+            23 => self.operators[1]
                 .volume_envelope
                 .attack_duration
                 .set_from_sync(value),
-            25 => self.operators[1]
+            24 => self.operators[1]
                 .volume_envelope
                 .attack_end_value
                 .set_from_sync(value),
-            26 => self.operators[1]
+            25 => self.operators[1]
                 .volume_envelope
                 .decay_duration
                 .set_from_sync(value),
-            27 => self.operators[1]
+            26 => self.operators[1]
                 .volume_envelope
                 .decay_end_value
                 .set_from_sync(value),
-            28 => self.operators[1]
+            27 => self.operators[1]
                 .volume_envelope
                 .release_duration
                 .set_from_sync(value),
-            29 => self.operators[2].volume.set_from_sync(value),
-            30 => self.operators[2].panning.set_from_sync(value),
-            31 => self.operators[2].wave_type.set_from_sync(value),
-            32 => self.operators[2].additive_factor.set_from_sync(value),
-            33 => {
+            28 => self.operators[2].mix.set_from_sync(value),
+            29 => self.operators[2].panning.set_from_sync(value),
+            30 => self.operators[2].wave_type.set_from_sync(value),
+            31 => {
                 use OperatorModulationTargetProcessingParameter::*;
 
                 let opt_p = self.operators[2].output_operator.as_mut();
@@ -110,36 +116,35 @@ impl ProcessingParameters {
                     p.set_from_sync(value)
                 }
             }
-            34 => self.operators[2].modulation_index.set_from_sync(value),
-            35 => self.operators[2].feedback.set_from_sync(value),
-            36 => self.operators[2].frequency_ratio.set_from_sync(value),
-            37 => self.operators[2].frequency_free.set_from_sync(value),
-            38 => self.operators[2].frequency_fine.set_from_sync(value),
-            39 => self.operators[2]
+            32 => if let Some(p) = self.operators[2].modulation_index.as_mut() { p.set_from_sync(value) },
+            33 => self.operators[2].feedback.set_from_sync(value),
+            34 => self.operators[2].frequency_ratio.set_from_sync(value),
+            35 => self.operators[2].frequency_free.set_from_sync(value),
+            36 => self.operators[2].frequency_fine.set_from_sync(value),
+            37 => self.operators[2]
                 .volume_envelope
                 .attack_duration
                 .set_from_sync(value),
-            40 => self.operators[2]
+            38 => self.operators[2]
                 .volume_envelope
                 .attack_end_value
                 .set_from_sync(value),
-            41 => self.operators[2]
+            39 => self.operators[2]
                 .volume_envelope
                 .decay_duration
                 .set_from_sync(value),
-            42 => self.operators[2]
+            40 => self.operators[2]
                 .volume_envelope
                 .decay_end_value
                 .set_from_sync(value),
-            43 => self.operators[2]
+            41 => self.operators[2]
                 .volume_envelope
                 .release_duration
                 .set_from_sync(value),
-            44 => self.operators[3].volume.set_from_sync(value),
-            45 => self.operators[3].panning.set_from_sync(value),
-            46 => self.operators[3].wave_type.set_from_sync(value),
-            47 => self.operators[3].additive_factor.set_from_sync(value),
-            48 => {
+            42 => self.operators[3].mix.set_from_sync(value),
+            43 => self.operators[3].panning.set_from_sync(value),
+            44 => self.operators[3].wave_type.set_from_sync(value),
+            45 => {
                 use OperatorModulationTargetProcessingParameter::*;
 
                 let opt_p = self.operators[3].output_operator.as_mut();
@@ -148,59 +153,59 @@ impl ProcessingParameters {
                     p.set_from_sync(value)
                 }
             }
-            49 => self.operators[3].modulation_index.set_from_sync(value),
-            50 => self.operators[3].feedback.set_from_sync(value),
-            51 => self.operators[3].frequency_ratio.set_from_sync(value),
-            52 => self.operators[3].frequency_free.set_from_sync(value),
-            53 => self.operators[3].frequency_fine.set_from_sync(value),
-            54 => self.operators[3]
+            46 => if let Some(p) = self.operators[3].modulation_index.as_mut() { p.set_from_sync(value) },
+            47 => self.operators[3].feedback.set_from_sync(value),
+            48 => self.operators[3].frequency_ratio.set_from_sync(value),
+            49 => self.operators[3].frequency_free.set_from_sync(value),
+            50 => self.operators[3].frequency_fine.set_from_sync(value),
+            51 => self.operators[3]
                 .volume_envelope
                 .attack_duration
                 .set_from_sync(value),
-            55 => self.operators[3]
+            52 => self.operators[3]
                 .volume_envelope
                 .attack_end_value
                 .set_from_sync(value),
-            56 => self.operators[3]
+            53 => self.operators[3]
                 .volume_envelope
                 .decay_duration
                 .set_from_sync(value),
-            57 => self.operators[3]
+            54 => self.operators[3]
                 .volume_envelope
                 .decay_end_value
                 .set_from_sync(value),
-            58 => self.operators[3]
+            55 => self.operators[3]
                 .volume_envelope
                 .release_duration
                 .set_from_sync(value),
-            59 => self.lfos[0].target_parameter.set_from_sync(value),
-            60 => self.lfos[0].bpm_sync.set_from_sync(value),
-            61 => self.lfos[0].frequency_ratio.set_from_sync(value),
-            62 => self.lfos[0].frequency_free.set_from_sync(value),
-            63 => self.lfos[0].mode.set_from_sync(value),
-            64 => self.lfos[0].shape.set_from_sync(value),
-            65 => self.lfos[0].amount.set_from_sync(value),
-            66 => self.lfos[1].target_parameter.set_from_sync(value),
-            67 => self.lfos[1].bpm_sync.set_from_sync(value),
-            68 => self.lfos[1].frequency_ratio.set_from_sync(value),
-            69 => self.lfos[1].frequency_free.set_from_sync(value),
-            70 => self.lfos[1].mode.set_from_sync(value),
-            71 => self.lfos[1].shape.set_from_sync(value),
-            72 => self.lfos[1].amount.set_from_sync(value),
-            73 => self.lfos[2].target_parameter.set_from_sync(value),
-            74 => self.lfos[2].bpm_sync.set_from_sync(value),
-            75 => self.lfos[2].frequency_ratio.set_from_sync(value),
-            76 => self.lfos[2].frequency_free.set_from_sync(value),
-            77 => self.lfos[2].mode.set_from_sync(value),
-            78 => self.lfos[2].shape.set_from_sync(value),
-            79 => self.lfos[2].amount.set_from_sync(value),
-            80 => self.lfos[3].target_parameter.set_from_sync(value),
-            81 => self.lfos[3].bpm_sync.set_from_sync(value),
-            82 => self.lfos[3].frequency_ratio.set_from_sync(value),
-            83 => self.lfos[3].frequency_free.set_from_sync(value),
-            84 => self.lfos[3].mode.set_from_sync(value),
-            85 => self.lfos[3].shape.set_from_sync(value),
-            86 => self.lfos[3].amount.set_from_sync(value),
+            56 => self.lfos[0].target_parameter.set_from_sync(value),
+            57 => self.lfos[0].bpm_sync.set_from_sync(value),
+            58 => self.lfos[0].frequency_ratio.set_from_sync(value),
+            59 => self.lfos[0].frequency_free.set_from_sync(value),
+            60 => self.lfos[0].mode.set_from_sync(value),
+            61 => self.lfos[0].shape.set_from_sync(value),
+            62 => self.lfos[0].amount.set_from_sync(value),
+            63 => self.lfos[1].target_parameter.set_from_sync(value),
+            64 => self.lfos[1].bpm_sync.set_from_sync(value),
+            65 => self.lfos[1].frequency_ratio.set_from_sync(value),
+            66 => self.lfos[1].frequency_free.set_from_sync(value),
+            67 => self.lfos[1].mode.set_from_sync(value),
+            68 => self.lfos[1].shape.set_from_sync(value),
+            69 => self.lfos[1].amount.set_from_sync(value),
+            70 => self.lfos[2].target_parameter.set_from_sync(value),
+            71 => self.lfos[2].bpm_sync.set_from_sync(value),
+            72 => self.lfos[2].frequency_ratio.set_from_sync(value),
+            73 => self.lfos[2].frequency_free.set_from_sync(value),
+            74 => self.lfos[2].mode.set_from_sync(value),
+            75 => self.lfos[2].shape.set_from_sync(value),
+            76 => self.lfos[2].amount.set_from_sync(value),
+            77 => self.lfos[3].target_parameter.set_from_sync(value),
+            78 => self.lfos[3].bpm_sync.set_from_sync(value),
+            79 => self.lfos[3].frequency_ratio.set_from_sync(value),
+            80 => self.lfos[3].frequency_free.set_from_sync(value),
+            81 => self.lfos[3].mode.set_from_sync(value),
+            82 => self.lfos[3].shape.set_from_sync(value),
+            83 => self.lfos[3].amount.set_from_sync(value),
             _ => (),
         }
     }
@@ -224,41 +229,44 @@ impl ProcessingParameters {
 }
 
 pub struct ProcessingParameterOperator {
-    pub volume: OperatorVolumeProcessingParameter,
+    pub mix: OperatorMixProcessingParameter,
     pub wave_type: SimpleProcessingParameter<OperatorWaveTypeValue>,
     pub panning: OperatorPanningProcessingParameter,
-    pub additive_factor: InterpolatableProcessingParameter<OperatorAdditiveValue>,
     pub output_operator: Option<OperatorModulationTargetProcessingParameter>,
     pub frequency_ratio: SimpleProcessingParameter<OperatorFrequencyRatioValue>,
     pub frequency_free: FreeFrequencyProcessingParameter<OperatorFrequencyFreeValue>,
     pub frequency_fine: SimpleProcessingParameter<OperatorFrequencyFineValue>,
     pub feedback: InterpolatableProcessingParameter<OperatorFeedbackValue>,
-    pub modulation_index: InterpolatableProcessingParameter<OperatorModulationIndexValue>,
+    pub modulation_index: Option<InterpolatableProcessingParameter<OperatorModulationIndexValue>>,
     pub volume_envelope: OperatorEnvelopeProcessingParameter,
 }
 
 impl ProcessingParameterOperator {
     pub fn new(operator_index: usize) -> Self {
+        let modulation_index = if operator_index == 0 {
+            None
+        } else {
+            Some(Default::default())
+        };
+
         Self {
-            volume: OperatorVolumeProcessingParameter::new(operator_index),
+            mix: OperatorMixProcessingParameter::new(operator_index),
             wave_type: Default::default(),
             panning: OperatorPanningProcessingParameter::default(),
-            additive_factor: Default::default(),
             output_operator: OperatorModulationTargetProcessingParameter::opt_new(operator_index),
             frequency_ratio: Default::default(),
             frequency_free: Default::default(),
             frequency_fine: Default::default(),
             feedback: Default::default(),
-            modulation_index: Default::default(),
+            modulation_index,
             volume_envelope: Default::default(),
         }
     }
 
     pub fn advance_one_sample(&mut self) {
-        self.volume.advance_one_sample();
+        self.mix.advance_one_sample();
         self.wave_type.advance_one_sample();
         self.panning.advance_one_sample();
-        self.additive_factor.advance_one_sample();
         if let Some(ref mut output_operator) = self.output_operator {
             output_operator.advance_one_sample();
         }
@@ -266,7 +274,9 @@ impl ProcessingParameterOperator {
         self.frequency_free.advance_one_sample();
         self.frequency_fine.advance_one_sample();
         self.feedback.advance_one_sample();
-        self.modulation_index.advance_one_sample();
+        if let Some(modulation_index) = self.modulation_index.as_mut() {
+            modulation_index.advance_one_sample();
+        }
         self.volume_envelope.advance_one_sample();
     }
 }

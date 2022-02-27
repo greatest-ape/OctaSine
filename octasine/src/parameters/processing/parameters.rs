@@ -132,13 +132,13 @@ impl ProcessingParameter for MasterVolumeProcessingParameter {
 // Operator volume
 
 #[derive(Debug, Clone)]
-pub struct OperatorVolumeProcessingParameter {
+pub struct OperatorMixProcessingParameter {
     value: InterpolatableProcessingValue,
 }
 
-impl OperatorVolumeProcessingParameter {
+impl OperatorMixProcessingParameter {
     pub fn new(operator_index: usize) -> Self {
-        let value = OperatorVolumeValue::new(operator_index).get();
+        let value = OperatorMixValue::new(operator_index).get();
 
         Self {
             value: InterpolatableProcessingValue::new(value),
@@ -146,7 +146,7 @@ impl OperatorVolumeProcessingParameter {
     }
 }
 
-impl ProcessingParameter for OperatorVolumeProcessingParameter {
+impl ProcessingParameter for OperatorMixProcessingParameter {
     type Value = f64;
 
     fn advance_one_sample(&mut self) {
@@ -157,7 +157,7 @@ impl ProcessingParameter for OperatorVolumeProcessingParameter {
     }
     fn set_from_sync(&mut self, value: f64) {
         self.value
-            .set_value(OperatorVolumeValue::from_sync(value).get())
+            .set_value(OperatorMixValue::from_sync(value).get())
     }
     fn get_value_with_lfo_addition(&mut self, lfo_addition: Option<f64>) -> Self::Value {
         if let Some(lfo_addition) = lfo_addition {
@@ -207,6 +207,7 @@ where
 // Modulation target
 
 pub enum OperatorModulationTargetProcessingParameter {
+    Two(SimpleProcessingParameter<Operator2ModulationTargetValue>),
     Three(SimpleProcessingParameter<Operator3ModulationTargetValue>),
     Four(SimpleProcessingParameter<Operator4ModulationTargetValue>),
 }
@@ -214,6 +215,9 @@ pub enum OperatorModulationTargetProcessingParameter {
 impl OperatorModulationTargetProcessingParameter {
     pub fn opt_new(operator_index: usize) -> Option<Self> {
         match operator_index {
+            1 => Some(OperatorModulationTargetProcessingParameter::Two(
+                Default::default(),
+            )),
             2 => Some(OperatorModulationTargetProcessingParameter::Three(
                 Default::default(),
             )),
@@ -226,6 +230,7 @@ impl OperatorModulationTargetProcessingParameter {
 
     pub fn get_value(&mut self) -> usize {
         match self {
+            Self::Two(p) => p.get_value(),
             Self::Three(p) => p.get_value(),
             Self::Four(p) => p.get_value(),
         }
@@ -233,6 +238,7 @@ impl OperatorModulationTargetProcessingParameter {
 
     pub fn advance_one_sample(&mut self) {
         match self {
+            Self::Two(p) => p.advance_one_sample(),
             Self::Three(p) => p.advance_one_sample(),
             Self::Four(p) => p.advance_one_sample(),
         }

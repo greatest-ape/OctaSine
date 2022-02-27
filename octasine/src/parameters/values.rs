@@ -158,9 +158,9 @@ impl ParameterValue for MasterFrequencyValue {
 }
 
 #[derive(Debug, Clone, Copy)]
-pub struct OperatorVolumeValue(f64);
+pub struct OperatorMixValue(f64);
 
-impl OperatorVolumeValue {
+impl OperatorMixValue {
     pub fn new(index: usize) -> Self {
         if index == 0 {
             Self(DEFAULT_OPERATOR_VOLUME)
@@ -170,7 +170,7 @@ impl OperatorVolumeValue {
     }
 }
 
-impl ParameterValue for OperatorVolumeValue {
+impl ParameterValue for OperatorMixValue {
     type Value = f64;
 
     fn from_processing(value: Self::Value) -> Self {
@@ -193,38 +193,6 @@ impl ParameterValue for OperatorVolumeValue {
     }
     fn from_text(text: String) -> Option<Self> {
         text.parse::<f64>().map(|v| Self(v.max(0.0).min(2.0))).ok()
-    }
-}
-
-#[derive(Debug, Clone, Copy)]
-pub struct OperatorAdditiveValue(f64);
-
-impl Default for OperatorAdditiveValue {
-    fn default() -> Self {
-        Self(DEFAULT_OPERATOR_ADDITIVE_FACTOR)
-    }
-}
-
-impl ParameterValue for OperatorAdditiveValue {
-    type Value = f64;
-
-    fn from_processing(value: Self::Value) -> Self {
-        Self(value)
-    }
-    fn get(self) -> Self::Value {
-        self.0
-    }
-    fn from_sync(sync: f64) -> Self {
-        Self(sync)
-    }
-    fn to_sync(self) -> f64 {
-        self.0
-    }
-    fn format(self) -> String {
-        format!("{:.02}%", (self.0 * 100.0))
-    }
-    fn format_sync(value: f64) -> String {
-        Self::from_sync(value).format()
     }
 }
 
@@ -545,6 +513,47 @@ impl ParameterValue for OperatorPanningValue {
     }
     fn format_sync(value: f64) -> String {
         Self::from_sync(value).format()
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct Operator2ModulationTargetValue(pub usize);
+
+impl Default for Operator2ModulationTargetValue {
+    fn default() -> Self {
+        Self(DEFAULT_OPERATOR_2_MOD_TARGET)
+    }
+}
+
+impl ParameterValue for Operator2ModulationTargetValue {
+    type Value = usize;
+
+    fn from_processing(value: Self::Value) -> Self {
+        Self(value)
+    }
+    fn get(self) -> Self::Value {
+        self.0
+    }
+    fn from_sync(sync: f64) -> Self {
+        Self(0)
+    }
+    fn to_sync(self) -> f64 {
+        0.0
+    }
+    fn format(self) -> String {
+        format!("Operator {}", self.0 + 1)
+    }
+    fn format_sync(value: f64) -> String {
+        Self::from_sync(value).format()
+    }
+    fn from_text(text: String) -> Option<Self> {
+        if let Ok(value) = text.parse::<usize>() {
+            if value == 1 || value == 2 {
+                return Some(Self(value - 1));
+            }
+        }
+
+        None
     }
 }
 

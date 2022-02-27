@@ -231,10 +231,10 @@ pub struct Envelope {
 impl Envelope {
     pub fn new<H: GuiSyncHandle>(sync_handle: &H, operator_index: usize, style: Theme) -> Self {
         let (attack_dur, attack_val, decay_dur, decay_val, release_dur) = match operator_index {
-            0 => (10, 11, 12, 13, 14),
-            1 => (24, 25, 26, 27, 28),
-            2 => (39, 40, 41, 42, 43),
-            3 => (54, 55, 56, 57, 58),
+            0 => (9, 10, 11, 12, 13),
+            1 => (23, 24, 25, 26, 27),
+            2 => (37, 38, 39, 40, 41),
+            3 => (51, 52, 53, 54, 55),
             _ => unreachable!(),
         };
 
