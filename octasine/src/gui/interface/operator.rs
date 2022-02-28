@@ -102,20 +102,22 @@ impl OperatorWidgets {
             )
             // .push(Space::with_width(Length::Units(LINE_HEIGHT)))
             .push(self.wave_type.view())
-            .push(self.mix.view())
             .push(self.panning.view());
 
         row = row
             .push(
                 Container::new(Rule::vertical(LINE_HEIGHT)).height(Length::Units(LINE_HEIGHT * 6)),
             )
-            .push(self.feedback.view());
+            .push(self.mix.view());
 
         if let Some(mod_index) = self.mod_index.as_mut() {
             row = row.push(mod_index.view())
         } else {
             row = row.push(Space::with_width(Length::Units(LINE_HEIGHT * 4)))
         }
+
+        row = row
+            .push(self.feedback.view());
 
         row = row
             .push(

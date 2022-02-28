@@ -60,7 +60,7 @@ pub fn operator_mix<H: GuiSyncHandle>(
     OctaSineKnob::new_with_default_sync_value(
         sync_handle,
         parameter_index,
-        "ADDITIVE",
+        "MIX OUT",
         TickMarkType::MinMaxAndDefault,
         OperatorMixValue::new(operator_index).to_sync(),
         style,
@@ -89,7 +89,7 @@ pub fn operator_mod_index<H: GuiSyncHandle>(
     OctaSineKnob::new(
         sync_handle,
         parameter_index,
-        "MOD",
+        "MOD OUT",
         TickMarkType::MinMaxAndDefault,
         style,
     )
