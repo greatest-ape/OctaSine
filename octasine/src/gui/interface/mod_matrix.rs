@@ -131,10 +131,9 @@ impl OperatorBox {
 
     fn get_parameter_index(&self) -> usize {
         match self.index {
-            0 => 2,
-            1 => 15,
-            2 => 29,
-            3 => 44,
+            1 => 18,
+            2 => 32,
+            3 => 46,
             _ => unreachable!(),
         }
     }
@@ -145,6 +144,10 @@ impl OperatorBox {
         event: event::Event,
         value: f64,
     ) -> ModulationBoxChange {
+        if self.index == 0 {
+            return ModulationBoxChange::None;
+        }
+
         match event {
             event::Event::Mouse(mouse::Event::CursorMoved {
                 position: Point { x, y },
@@ -397,7 +400,6 @@ impl AdditiveLine {
         from: Point,
         to_y: f32,
         additive: f64,
-        volume: f64,
         style_sheet: Box<dyn StyleSheet>,
     ) -> Self {
         let mut to = from;
@@ -411,20 +413,20 @@ impl AdditiveLine {
             stroke: Stroke::default(),
         };
 
-        line.update(additive, volume, style_sheet);
+        line.update(additive, style_sheet);
 
         line
     }
 
-    fn update(&mut self, additive: f64, volume: f64, style_sheet: Box<dyn StyleSheet>) {
+    fn update(&mut self, additive: f64, style_sheet: Box<dyn StyleSheet>) {
         let c = style_sheet.active().line_max_color;
 
-        let opacity = (additive * volume.min(0.5) * 2.0) as f32;
+        let opacity = additive as f32;
         let gradient = Gradient::new(vec![
             LinSrgba::new(0.0, 0.25, 0.0, opacity),
             LinSrgba::new(c.r, c.g, c.b, opacity),
         ]);
-        let mix_factor = (volume as f32 - 0.5).max(0.0) * 2.0;
+        let mix_factor = (additive as f32 - 0.5).max(0.0) * 2.0;
         let color = gradient.get(mix_factor);
 
         self.stroke = Stroke::default()
@@ -447,8 +449,7 @@ impl ModulationLine {
         from: Point,
         through: Point,
         to: Point,
-        additive: f64,
-        volume: f64,
+        mod_index: f64,
         style_sheet: Box<dyn StyleSheet>,
     ) -> Self {
         let mut builder = path::Builder::new();
@@ -460,12 +461,12 @@ impl ModulationLine {
         let path = builder.build();
 
         let c = style_sheet.active().line_max_color;
-        let opacity = ((1.0 - additive) * volume.min(0.5) * 2.0) as f32;
+        let opacity = mod_index as f32;
         let gradient = Gradient::new(vec![
             LinSrgba::new(0.0, 0.25, 0.0, opacity),
             LinSrgba::new(c.r, c.g, c.b, opacity),
         ]);
-        let mix_factor = (volume as f32 - 0.5).max(0.0) * 2.0;
+        let mix_factor = mod_index as f32;
         let color = gradient.get(mix_factor);
 
         let stroke = Stroke::default()
@@ -483,38 +484,39 @@ impl ModulationLine {
 struct ModulationMatrixParameters {
     operator_3_target: usize,
     operator_4_target: usize,
-    operator_2_additive: f64,
-    operator_3_additive: f64,
-    operator_4_additive: f64,
-    operator_1_volume: f64,
-    operator_2_volume: f64,
-    operator_3_volume: f64,
-    operator_4_volume: f64,
+    operator_1_mix: f64,
+    operator_2_mix: f64,
+    operator_3_mix: f64,
+    operator_4_mix: f64,
+    operator_2_mod: f64,
+    operator_3_mod: f64,
+    operator_4_mod: f64,
 }
 
 impl ModulationMatrixParameters {
     fn new<H: GuiSyncHandle>(sync_handle: &H) -> Self {
-        let operator_3_target = Self::convert_operator_3_target(sync_handle.get_parameter(33));
-        let operator_4_target = Self::convert_operator_4_target(sync_handle.get_parameter(48));
-        let operator_2_additive = sync_handle.get_parameter(18);
-        let operator_3_additive = sync_handle.get_parameter(32);
-        let operator_4_additive = sync_handle.get_parameter(47);
+        let operator_3_target = Self::convert_operator_3_target(sync_handle.get_parameter(31));
+        let operator_4_target = Self::convert_operator_4_target(sync_handle.get_parameter(45));
 
-        let operator_1_volume = sync_handle.get_parameter(2);
-        let operator_2_volume = sync_handle.get_parameter(15);
-        let operator_3_volume = sync_handle.get_parameter(29);
-        let operator_4_volume = sync_handle.get_parameter(44);
+        let operator_1_mix = sync_handle.get_parameter(2);
+        let operator_2_mix = sync_handle.get_parameter(14);
+        let operator_3_mix = sync_handle.get_parameter(28);
+        let operator_4_mix = sync_handle.get_parameter(42);
+
+        let operator_2_mod = sync_handle.get_parameter(18);
+        let operator_3_mod = sync_handle.get_parameter(32);
+        let operator_4_mod = sync_handle.get_parameter(46);
 
         Self {
             operator_3_target,
             operator_4_target,
-            operator_2_additive,
-            operator_3_additive,
-            operator_4_additive,
-            operator_1_volume,
-            operator_2_volume,
-            operator_3_volume,
-            operator_4_volume,
+            operator_1_mix,
+            operator_2_mix,
+            operator_3_mix,
+            operator_4_mix,
+            operator_2_mod,
+            operator_3_mod,
+            operator_4_mod,
         }
     }
 
@@ -560,35 +562,35 @@ impl ModulationMatrixComponents {
             3,
             2,
             parameters.operator_4_target == 2,
-            Some(Message::ChangeSingleParameterImmediate(48, 1.0)),
+            Some(Message::ChangeSingleParameterImmediate(45, 1.0)),
         );
         let operator_4_mod_2_box = ModulationBox::new(
             bounds,
             3,
             1,
             parameters.operator_4_target == 1,
-            Some(Message::ChangeSingleParameterImmediate(48, 0.5)),
+            Some(Message::ChangeSingleParameterImmediate(45, 0.5)),
         );
         let operator_4_mod_1_box = ModulationBox::new(
             bounds,
             3,
             0,
             parameters.operator_4_target == 0,
-            Some(Message::ChangeSingleParameterImmediate(48, 0.0)),
+            Some(Message::ChangeSingleParameterImmediate(45, 0.0)),
         );
         let operator_3_mod_2_box = ModulationBox::new(
             bounds,
             2,
             1,
             parameters.operator_3_target == 1,
-            Some(Message::ChangeSingleParameterImmediate(33, 1.0)),
+            Some(Message::ChangeSingleParameterImmediate(31, 1.0)),
         );
         let operator_3_mod_1_box = ModulationBox::new(
             bounds,
             2,
             0,
             parameters.operator_3_target == 0,
-            Some(Message::ChangeSingleParameterImmediate(33, 0.0)),
+            Some(Message::ChangeSingleParameterImmediate(31, 0.0)),
         );
         let operator_2_mod_1_box = ModulationBox::new(bounds, 1, 0, true, None);
 
@@ -597,29 +599,25 @@ impl ModulationMatrixComponents {
         let operator_4_additive_line = AdditiveLine::new(
             operator_4_box.center,
             output_box.y,
-            parameters.operator_4_additive,
-            parameters.operator_4_volume,
+            parameters.operator_4_mix,
             style.into(),
         );
         let operator_3_additive_line = AdditiveLine::new(
             operator_3_box.center,
             output_box.y,
-            parameters.operator_3_additive,
-            parameters.operator_3_volume,
+            parameters.operator_3_mix,
             style.into(),
         );
         let operator_2_additive_line = AdditiveLine::new(
             operator_2_box.center,
             output_box.y,
-            parameters.operator_2_additive,
-            parameters.operator_2_volume,
+            parameters.operator_2_mix,
             style.into(),
         );
         let operator_1_additive_line = AdditiveLine::new(
             operator_1_box.center,
             output_box.y,
-            1.0,
-            parameters.operator_1_volume,
+            parameters.operator_1_mix,
             style.into(),
         );
 
@@ -635,8 +633,7 @@ impl ModulationMatrixComponents {
                 operator_4_box.center,
                 through,
                 to,
-                parameters.operator_4_additive,
-                parameters.operator_4_volume,
+                parameters.operator_4_mod,
                 style.into(),
             )
         };
@@ -652,8 +649,7 @@ impl ModulationMatrixComponents {
                 operator_3_box.center,
                 through,
                 to,
-                parameters.operator_3_additive,
-                parameters.operator_3_volume,
+                parameters.operator_3_mod,
                 style.into(),
             )
         };
@@ -662,8 +658,7 @@ impl ModulationMatrixComponents {
             operator_2_box.center,
             operator_2_mod_1_box.center,
             operator_1_box.center,
-            parameters.operator_2_additive,
-            parameters.operator_2_volume,
+            parameters.operator_2_mod,
             style.into(),
         );
 
@@ -697,23 +692,20 @@ impl ModulationMatrixComponents {
         self.operator_3_mod_1_box.active = parameters.operator_3_target == 0;
 
         self.operator_4_additive_line.update(
-            parameters.operator_4_additive,
-            parameters.operator_4_volume,
+            parameters.operator_4_mix,
             style.into(),
         );
 
         self.operator_3_additive_line.update(
-            parameters.operator_3_additive,
-            parameters.operator_3_volume,
+            parameters.operator_3_mix,
             style.into(),
         );
         self.operator_2_additive_line.update(
-            parameters.operator_2_additive,
-            parameters.operator_2_volume,
+            parameters.operator_2_mix,
             style.into(),
         );
         self.operator_1_additive_line
-            .update(1.0, parameters.operator_1_volume, style.into());
+            .update(parameters.operator_1_mix, style.into());
 
         self.operator_4_modulation_line = {
             let (through, to) = match parameters.operator_4_target {
@@ -727,8 +719,7 @@ impl ModulationMatrixComponents {
                 self.operator_4_box.center,
                 through,
                 to,
-                parameters.operator_4_additive,
-                parameters.operator_4_volume,
+                parameters.operator_4_mod,
                 style.into(),
             )
         };
@@ -744,8 +735,7 @@ impl ModulationMatrixComponents {
                 self.operator_3_box.center,
                 through,
                 to,
-                parameters.operator_3_additive,
-                parameters.operator_3_volume,
+                parameters.operator_3_mod,
                 style.into(),
             )
         };
@@ -754,8 +744,7 @@ impl ModulationMatrixComponents {
             self.operator_2_box.center,
             self.operator_2_mod_1_box.center,
             self.operator_1_box.center,
-            parameters.operator_2_additive,
-            parameters.operator_2_volume,
+            parameters.operator_2_mod,
             style.into(),
         );
     }
@@ -830,44 +819,44 @@ impl ModulationMatrix {
         self.update_components();
     }
 
-    pub fn set_operator_4_additive(&mut self, value: f64) {
-        self.parameters.operator_4_additive = value;
+    pub fn set_operator_4_mod(&mut self, value: f64) {
+        self.parameters.operator_4_mod = value;
 
         self.update_components();
     }
 
-    pub fn set_operator_3_additive(&mut self, value: f64) {
-        self.parameters.operator_3_additive = value;
+    pub fn set_operator_3_mod(&mut self, value: f64) {
+        self.parameters.operator_3_mod = value;
 
         self.update_components();
     }
 
-    pub fn set_operator_2_additive(&mut self, value: f64) {
-        self.parameters.operator_2_additive = value;
+    pub fn set_operator_2_mod(&mut self, value: f64) {
+        self.parameters.operator_2_mod = value;
 
         self.update_components();
     }
 
-    pub fn set_operator_4_volume(&mut self, value: f64) {
-        self.parameters.operator_4_volume = value;
+    pub fn set_operator_4_mix(&mut self, value: f64) {
+        self.parameters.operator_4_mix = value;
 
         self.update_components();
     }
 
-    pub fn set_operator_3_volume(&mut self, value: f64) {
-        self.parameters.operator_3_volume = value;
+    pub fn set_operator_3_mix(&mut self, value: f64) {
+        self.parameters.operator_3_mix = value;
 
         self.update_components();
     }
 
-    pub fn set_operator_2_volume(&mut self, value: f64) {
-        self.parameters.operator_2_volume = value;
+    pub fn set_operator_2_mix(&mut self, value: f64) {
+        self.parameters.operator_2_mix = value;
 
         self.update_components();
     }
 
-    pub fn set_operator_1_volume(&mut self, value: f64) {
-        self.parameters.operator_1_volume = value;
+    pub fn set_operator_1_mix(&mut self, value: f64) {
+        self.parameters.operator_1_mix = value;
 
         self.update_components();
     }
@@ -946,19 +935,19 @@ impl Program<Message> for ModulationMatrix {
         let operator_boxes = vec![
             (
                 &mut self.components.operator_1_box,
-                self.parameters.operator_1_volume,
+                0.0
             ),
             (
                 &mut self.components.operator_2_box,
-                self.parameters.operator_2_volume,
+                self.parameters.operator_2_mod,
             ),
             (
                 &mut self.components.operator_3_box,
-                self.parameters.operator_3_volume,
+                self.parameters.operator_3_mod,
             ),
             (
                 &mut self.components.operator_4_box,
-                self.parameters.operator_4_volume,
+                self.parameters.operator_4_mod,
             ),
         ];
 

@@ -116,7 +116,7 @@ impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {
             1 => self.master_frequency.set_value(v),
             2 => {
                 self.operator_1.mix.set_value(v);
-                self.modulation_matrix.set_operator_1_volume(value);
+                self.modulation_matrix.set_operator_1_mix(value);
             }
             3 => self.operator_1.panning.set_value(v),
             4 => self.operator_1.wave_type.set_value(v),
@@ -131,7 +131,7 @@ impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {
             13 => self.operator_1.envelope.set_release_duration(v),
             14 => {
                 self.operator_2.mix.set_value(v);
-                self.modulation_matrix.set_operator_2_volume(value);
+                self.modulation_matrix.set_operator_2_mix(value);
             }
             15 => self.operator_2.panning.set_value(v),
             16 => self.operator_2.wave_type.set_value(v),
@@ -142,6 +142,7 @@ impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {
                 if let Some(mod_index) = self.operator_2.mod_index.as_mut() {
                     mod_index.set_value(v)
                 }
+                self.modulation_matrix.set_operator_2_mod(v);
             },
             19 => self.operator_2.feedback.set_value(v),
             20 => self.operator_2.frequency_ratio.set_value(v),
@@ -153,7 +154,7 @@ impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {
             26 => self.operator_2.envelope.set_decay_end_value(v),
             27 => self.operator_2.envelope.set_release_duration(v),
             28 => {
-                self.modulation_matrix.set_operator_3_volume(value);
+                self.modulation_matrix.set_operator_3_mix(value);
                 self.operator_3.mix.set_value(v);
             }
             29 => self.operator_3.panning.set_value(v),
@@ -163,6 +164,7 @@ impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {
                 if let Some(mod_index) = self.operator_3.mod_index.as_mut() {
                     mod_index.set_value(v)
                 }
+                self.modulation_matrix.set_operator_3_mod(v);
             }
             33 => self.operator_3.feedback.set_value(v),
             34 => self.operator_3.frequency_ratio.set_value(v),
@@ -175,7 +177,7 @@ impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {
             41 => self.operator_3.envelope.set_release_duration(v),
             42 => {
                 self.operator_4.mix.set_value(v);
-                self.modulation_matrix.set_operator_4_volume(value);
+                self.modulation_matrix.set_operator_4_mix(value);
             }
             43 => self.operator_4.panning.set_value(v),
             44 => self.operator_4.wave_type.set_value(v),
@@ -184,6 +186,7 @@ impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {
                 if let Some(mod_index) = self.operator_4.mod_index.as_mut() {
                     mod_index.set_value(v)
                 }
+                self.modulation_matrix.set_operator_4_mod(v);
             },
             47 => self.operator_4.feedback.set_value(v),
             48 => self.operator_4.frequency_ratio.set_value(v),
