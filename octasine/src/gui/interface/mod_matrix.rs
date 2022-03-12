@@ -396,12 +396,7 @@ struct AdditiveLine {
 }
 
 impl AdditiveLine {
-    fn new(
-        from: Point,
-        to_y: f32,
-        additive: f64,
-        style_sheet: Box<dyn StyleSheet>,
-    ) -> Self {
+    fn new(from: Point, to_y: f32, additive: f64, style_sheet: Box<dyn StyleSheet>) -> Self {
         let mut to = from;
 
         to.y = to_y;
@@ -691,19 +686,13 @@ impl ModulationMatrixComponents {
         self.operator_3_mod_2_box.active = parameters.operator_3_target == 1;
         self.operator_3_mod_1_box.active = parameters.operator_3_target == 0;
 
-        self.operator_4_additive_line.update(
-            parameters.operator_4_mix,
-            style.into(),
-        );
+        self.operator_4_additive_line
+            .update(parameters.operator_4_mix, style.into());
 
-        self.operator_3_additive_line.update(
-            parameters.operator_3_mix,
-            style.into(),
-        );
-        self.operator_2_additive_line.update(
-            parameters.operator_2_mix,
-            style.into(),
-        );
+        self.operator_3_additive_line
+            .update(parameters.operator_3_mix, style.into());
+        self.operator_2_additive_line
+            .update(parameters.operator_2_mix, style.into());
         self.operator_1_additive_line
             .update(parameters.operator_1_mix, style.into());
 
@@ -933,10 +922,7 @@ impl Program<Message> for ModulationMatrix {
         }
 
         let operator_boxes = vec![
-            (
-                &mut self.components.operator_1_box,
-                0.0
-            ),
+            (&mut self.components.operator_1_box, 0.0),
             (
                 &mut self.components.operator_2_box,
                 self.parameters.operator_2_mod,

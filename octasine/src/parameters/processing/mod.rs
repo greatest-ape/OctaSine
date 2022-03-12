@@ -79,7 +79,11 @@ impl ProcessingParameters {
                     p.set_from_sync(value)
                 }
             }
-            18 => if let Some(p) = self.operators[1].modulation_index.as_mut() { p.set_from_sync(value) },
+            18 => {
+                if let Some(p) = self.operators[1].modulation_index.as_mut() {
+                    p.set_from_sync(value)
+                }
+            }
             19 => self.operators[1].feedback.set_from_sync(value),
             20 => self.operators[1].frequency_ratio.set_from_sync(value),
             21 => self.operators[1].frequency_free.set_from_sync(value),
@@ -116,7 +120,11 @@ impl ProcessingParameters {
                     p.set_from_sync(value)
                 }
             }
-            32 => if let Some(p) = self.operators[2].modulation_index.as_mut() { p.set_from_sync(value) },
+            32 => {
+                if let Some(p) = self.operators[2].modulation_index.as_mut() {
+                    p.set_from_sync(value)
+                }
+            }
             33 => self.operators[2].feedback.set_from_sync(value),
             34 => self.operators[2].frequency_ratio.set_from_sync(value),
             35 => self.operators[2].frequency_free.set_from_sync(value),
@@ -153,7 +161,11 @@ impl ProcessingParameters {
                     p.set_from_sync(value)
                 }
             }
-            46 => if let Some(p) = self.operators[3].modulation_index.as_mut() { p.set_from_sync(value) },
+            46 => {
+                if let Some(p) = self.operators[3].modulation_index.as_mut() {
+                    p.set_from_sync(value)
+                }
+            }
             47 => self.operators[3].feedback.set_from_sync(value),
             48 => self.operators[3].frequency_ratio.set_from_sync(value),
             49 => self.operators[3].frequency_free.set_from_sync(value),

@@ -315,22 +315,22 @@ mod gen {
             envelope_volume,
         );
 
-        let volume = operator.mix.get_value_with_lfo_addition(lfo_values.get(
-            LfoTargetParameter::Operator(operator_index, LfoTargetOperatorParameter::Volume),
-        ));
+        let volume =
+            operator
+                .mix
+                .get_value_with_lfo_addition(lfo_values.get(LfoTargetParameter::Operator(
+                    operator_index,
+                    LfoTargetOperatorParameter::Volume,
+                )));
 
         set_value_for_both_channels(&mut voice_data.mixes, sample_index, volume);
 
-        let modulation_index =
-            operator
-                .modulation_index
-                .as_mut()
-                .map_or(0.0, |p| {
-                    p.get_value_with_lfo_addition(lfo_values.get(LfoTargetParameter::Operator(
-                        operator_index,
-                        LfoTargetOperatorParameter::ModulationIndex,
-                    )))
-                });
+        let modulation_index = operator.modulation_index.as_mut().map_or(0.0, |p| {
+            p.get_value_with_lfo_addition(lfo_values.get(LfoTargetParameter::Operator(
+                operator_index,
+                LfoTargetOperatorParameter::ModulationIndex,
+            )))
+        });
 
         set_value_for_both_channels(
             &mut voice_data.modulation_indices,
@@ -514,10 +514,7 @@ mod gen {
                 S::pd_fast_sin(phase),
             );
 
-            S::pd_fast_sin(S::pd_add(
-                phase,
-                S::pd_add(feedback, modulation_in),
-            ))
+            S::pd_fast_sin(S::pd_add(phase, S::pd_add(feedback, modulation_in)))
         };
 
         let sample = {
@@ -542,8 +539,7 @@ mod gen {
         let mut operator_modulation_index_zero = [false; 4];
 
         for operator_index in 0..4 {
-            let operator_mix =
-                S::pd_loadu(voice_data.operators[operator_index].mixes.as_ptr());
+            let operator_mix = S::pd_loadu(voice_data.operators[operator_index].mixes.as_ptr());
             let modulation_index = S::pd_loadu(
                 voice_data.operators[operator_index]
                     .modulation_indices

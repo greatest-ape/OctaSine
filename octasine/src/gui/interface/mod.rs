@@ -139,13 +139,13 @@ impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {
             16 => self.operator_2.wave_type.set_value(v),
             17 => {
                 // self.modulation_matrix.set_operator_2_target(v) // FIXME
-            },
+            }
             18 => {
                 if let Some(mod_index) = self.operator_2.mod_index.as_mut() {
                     mod_index.set_value(v)
                 }
                 self.modulation_matrix.set_operator_2_mod(v);
-            },
+            }
             19 => self.operator_2.feedback.set_value(v),
             20 => self.operator_2.frequency_ratio.set_value(v),
             21 => self.operator_2.frequency_free.set_value(v),
@@ -164,10 +164,10 @@ impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {
             31 => {
                 match self.operator_3.mod_target.as_mut() {
                     Some(ModTargetPicker::Operator3(p)) => p.set_value(v),
-                    _ => {},
+                    _ => {}
                 }
                 self.modulation_matrix.set_operator_3_target(v);
-            },
+            }
             32 => {
                 if let Some(mod_index) = self.operator_3.mod_index.as_mut() {
                     mod_index.set_value(v)
@@ -192,7 +192,7 @@ impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {
             45 => {
                 match self.operator_4.mod_target.as_mut() {
                     Some(ModTargetPicker::Operator4(p)) => p.set_value(v),
-                    _ => {},
+                    _ => {}
                 }
                 self.modulation_matrix.set_operator_4_target(v);
             }
@@ -201,7 +201,7 @@ impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {
                     mod_index.set_value(v)
                 }
                 self.modulation_matrix.set_operator_4_mod(v);
-            },
+            }
             47 => self.operator_4.feedback.set_value(v),
             48 => self.operator_4.frequency_ratio.set_value(v),
             49 => self.operator_4.frequency_free.set_value(v),

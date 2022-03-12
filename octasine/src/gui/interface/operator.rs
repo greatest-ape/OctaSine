@@ -4,9 +4,9 @@ use iced_baseview::{
 };
 
 use crate::parameters::values::{
-    OperatorFeedbackValue, OperatorFrequencyFineValue,
-    OperatorFrequencyFreeValue, OperatorFrequencyRatioValue, OperatorModulationIndexValue,
-    OperatorPanningValue, OperatorMixValue, OperatorWaveTypeValue, Operator4ModulationTargetValue, Operator3ModulationTargetValue,
+    Operator3ModulationTargetValue, Operator4ModulationTargetValue, OperatorFeedbackValue,
+    OperatorFrequencyFineValue, OperatorFrequencyFreeValue, OperatorFrequencyRatioValue,
+    OperatorMixValue, OperatorModulationIndexValue, OperatorPanningValue, OperatorWaveTypeValue,
 };
 use crate::GuiSyncHandle;
 
@@ -50,7 +50,7 @@ impl OperatorWidgets {
                 3 => (42, 43, 44, 45, 46, 47, 48, 49, 50),
                 _ => unreachable!(),
             };
-        
+
         let mod_index = if operator_index != 0 {
             Some(knob::operator_mod_index(sync_handle, mod_index, style))
         } else {
@@ -58,8 +58,12 @@ impl OperatorWidgets {
         };
 
         let mod_target = match operator_index {
-            3 => Some(ModTargetPicker::Operator4(boolean_picker::operator_4_target(sync_handle, mod_target, style))),
-            2 => Some(ModTargetPicker::Operator3(boolean_picker::operator_3_target(sync_handle, mod_target, style))),
+            3 => Some(ModTargetPicker::Operator4(
+                boolean_picker::operator_4_target(sync_handle, mod_target, style),
+            )),
+            2 => Some(ModTargetPicker::Operator3(
+                boolean_picker::operator_3_target(sync_handle, mod_target, style),
+            )),
             _ => None,
         };
 
@@ -130,19 +134,12 @@ impl OperatorWidgets {
         }
 
         match self.mod_target.as_mut() {
-            Some(ModTargetPicker::Operator3(picker)) => {
-                row = row.push(picker.view())
-            },
-            Some(ModTargetPicker::Operator4(picker)) => {
-                row = row.push(picker.view())
-            },
-            None => {
-                row = row.push(Space::with_width(Length::Units(LINE_HEIGHT * 4)))
-            }
+            Some(ModTargetPicker::Operator3(picker)) => row = row.push(picker.view()),
+            Some(ModTargetPicker::Operator4(picker)) => row = row.push(picker.view()),
+            None => row = row.push(Space::with_width(Length::Units(LINE_HEIGHT * 4))),
         }
 
-        row = row
-            .push(self.feedback.view());
+        row = row.push(self.feedback.view());
 
         row = row
             .push(

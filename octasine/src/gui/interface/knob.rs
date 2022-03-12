@@ -6,8 +6,8 @@ use iced_baseview::{
 use crate::parameters::values::{
     LfoAmountValue, LfoFrequencyFreeValue, LfoFrequencyRatioValue, MasterFrequencyValue,
     MasterVolumeValue, OperatorFeedbackValue, OperatorFrequencyFineValue,
-    OperatorFrequencyFreeValue, OperatorFrequencyRatioValue, OperatorModulationIndexValue,
-    OperatorPanningValue, OperatorMixValue, ParameterValue,
+    OperatorFrequencyFreeValue, OperatorFrequencyRatioValue, OperatorMixValue,
+    OperatorModulationIndexValue, OperatorPanningValue, ParameterValue,
 };
 use crate::GuiSyncHandle;
 
