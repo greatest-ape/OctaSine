@@ -2,7 +2,7 @@ use iced_baseview::{Alignment, Column, Element, Horizontal, Length, Radio, Space
 
 use crate::common::*;
 use crate::parameters::values::{
-    LfoBpmSyncValue, LfoModeValue, OperatorWaveTypeValue, ParameterValue,
+    LfoBpmSyncValue, LfoModeValue, OperatorWaveTypeValue, ParameterValue, Operator4ModulationTargetValue, Operator3ModulationTargetValue,
 };
 use crate::GuiSyncHandle;
 
@@ -47,6 +47,34 @@ pub fn lfo_mode<H: GuiSyncHandle>(
         parameter_index,
         "MODE",
         vec![LfoMode::Forever, LfoMode::Once],
+        style,
+    )
+}
+
+pub fn operator_3_target<H: GuiSyncHandle>(
+    sync_handle: &H,
+    parameter_index: usize,
+    style: Theme,
+) -> BooleanPicker<Operator3ModulationTargetValue> {
+    BooleanPicker::new(
+        sync_handle,
+        parameter_index,
+        "TARGET",
+        vec![1, 0],
+        style,
+    )
+}
+
+pub fn operator_4_target<H: GuiSyncHandle>(
+    sync_handle: &H,
+    parameter_index: usize,
+    style: Theme,
+) -> BooleanPicker<Operator4ModulationTargetValue> {
+    BooleanPicker::new(
+        sync_handle,
+        parameter_index,
+        "TARGET",
+        vec![2, 1, 0],
         style,
     )
 }

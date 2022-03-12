@@ -6,7 +6,7 @@ use iced_baseview::{
 use crate::parameters::values::{
     OperatorFeedbackValue, OperatorFrequencyFineValue,
     OperatorFrequencyFreeValue, OperatorFrequencyRatioValue, OperatorModulationIndexValue,
-    OperatorPanningValue, OperatorMixValue, OperatorWaveTypeValue,
+    OperatorPanningValue, OperatorMixValue, OperatorWaveTypeValue, Operator4ModulationTargetValue, Operator3ModulationTargetValue,
 };
 use crate::GuiSyncHandle;
 
@@ -16,6 +16,11 @@ use super::knob::{self, OctaSineKnob};
 use super::style::Theme;
 use super::{Message, FONT_SIZE, FONT_VERY_BOLD, LINE_HEIGHT};
 
+pub enum ModTargetPicker {
+    Operator4(BooleanPicker<Operator4ModulationTargetValue>),
+    Operator3(BooleanPicker<Operator3ModulationTargetValue>),
+}
+
 pub struct OperatorWidgets {
     index: usize,
     style: Theme,
@@ -23,6 +28,7 @@ pub struct OperatorWidgets {
     pub panning: OctaSineKnob<OperatorPanningValue>,
     pub wave_type: BooleanPicker<OperatorWaveTypeValue>,
     pub mod_index: Option<OctaSineKnob<OperatorModulationIndexValue>>,
+    pub mod_target: Option<ModTargetPicker>,
     pub feedback: OctaSineKnob<OperatorFeedbackValue>,
     pub frequency_ratio: OctaSineKnob<OperatorFrequencyRatioValue>,
     pub frequency_free: OctaSineKnob<OperatorFrequencyFreeValue>,
@@ -36,12 +42,12 @@ pub struct OperatorWidgets {
 
 impl OperatorWidgets {
     pub fn new<H: GuiSyncHandle>(sync_handle: &H, operator_index: usize, style: Theme) -> Self {
-        let (mix, panning, wave, mod_index, feedback, ratio, free, fine) =
+        let (mix, panning, wave, mod_target, mod_index, feedback, ratio, free, fine) =
             match operator_index {
-                0 => (2, 3, 4, 0, 5, 6, 7, 8),
-                1 => (14, 15, 16, 18, 19, 20, 21, 22),
-                2 => (28, 29, 30, 32, 33, 34, 35, 36),
-                3 => (42, 43, 44, 46, 47, 48, 49, 50),
+                0 => (2, 3, 4, 0, 0, 5, 6, 7, 8),
+                1 => (14, 15, 16, 17, 18, 19, 20, 21, 22),
+                2 => (28, 29, 30, 31, 32, 33, 34, 35, 36),
+                3 => (42, 43, 44, 45, 46, 47, 48, 49, 50),
                 _ => unreachable!(),
             };
         
@@ -51,6 +57,12 @@ impl OperatorWidgets {
             None
         };
 
+        let mod_target = match operator_index {
+            3 => Some(ModTargetPicker::Operator4(boolean_picker::operator_4_target(sync_handle, mod_target, style))),
+            2 => Some(ModTargetPicker::Operator3(boolean_picker::operator_3_target(sync_handle, mod_target, style))),
+            _ => None,
+        };
+
         Self {
             index: operator_index,
             style,
@@ -58,6 +70,7 @@ impl OperatorWidgets {
             panning: knob::operator_panning(sync_handle, panning, style),
             wave_type: boolean_picker::wave_type(sync_handle, wave, style),
             mod_index,
+            mod_target,
             feedback: knob::operator_feedback(sync_handle, feedback, style),
             frequency_ratio: knob::operator_frequency_ratio(sync_handle, ratio, style),
             frequency_free: knob::operator_frequency_free(sync_handle, free, style),
@@ -114,6 +127,18 @@ impl OperatorWidgets {
             row = row.push(mod_index.view())
         } else {
             row = row.push(Space::with_width(Length::Units(LINE_HEIGHT * 4)))
+        }
+
+        match self.mod_target.as_mut() {
+            Some(ModTargetPicker::Operator3(picker)) => {
+                row = row.push(picker.view())
+            },
+            Some(ModTargetPicker::Operator4(picker)) => {
+                row = row.push(picker.view())
+            },
+            None => {
+                row = row.push(Space::with_width(Length::Units(LINE_HEIGHT * 4)))
+            }
         }
 
         row = row

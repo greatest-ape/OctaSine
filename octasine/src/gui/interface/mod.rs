@@ -25,6 +25,8 @@ use operator::OperatorWidgets;
 use preset_picker::PresetPicker;
 use style::Theme;
 
+use self::operator::ModTargetPicker;
+
 use super::GuiSettings;
 use crate::settings::Settings;
 
@@ -159,7 +161,13 @@ impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {
             }
             29 => self.operator_3.panning.set_value(v),
             30 => self.operator_3.wave_type.set_value(v),
-            31 => self.modulation_matrix.set_operator_3_target(v),
+            31 => {
+                match self.operator_3.mod_target.as_mut() {
+                    Some(ModTargetPicker::Operator3(p)) => p.set_value(v),
+                    _ => {},
+                }
+                self.modulation_matrix.set_operator_3_target(v);
+            },
             32 => {
                 if let Some(mod_index) = self.operator_3.mod_index.as_mut() {
                     mod_index.set_value(v)
@@ -181,7 +189,13 @@ impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {
             }
             43 => self.operator_4.panning.set_value(v),
             44 => self.operator_4.wave_type.set_value(v),
-            45 => self.modulation_matrix.set_operator_4_target(v),
+            45 => {
+                match self.operator_4.mod_target.as_mut() {
+                    Some(ModTargetPicker::Operator4(p)) => p.set_value(v),
+                    _ => {},
+                }
+                self.modulation_matrix.set_operator_4_target(v);
+            }
             46 => {
                 if let Some(mod_index) = self.operator_4.mod_index.as_mut() {
                     mod_index.set_value(v)

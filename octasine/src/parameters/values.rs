@@ -544,7 +544,7 @@ impl ParameterValue for Operator2ModulationTargetValue {
         0.0
     }
     fn format(self) -> String {
-        format!("Operator {}", self.0 + 1)
+        format!("{}", self.0 + 1)
     }
     fn format_sync(value: f64) -> String {
         Self::from_sync(value).format()
@@ -585,7 +585,7 @@ impl ParameterValue for Operator3ModulationTargetValue {
         map_step_to_parameter_value(&[0, 1], self.0)
     }
     fn format(self) -> String {
-        format!("Operator {}", self.0 + 1)
+        format!("{}", self.0 + 1)
     }
     fn format_sync(value: f64) -> String {
         Self::from_sync(value).format()
@@ -626,7 +626,7 @@ impl ParameterValue for Operator4ModulationTargetValue {
         map_step_to_parameter_value(&[0, 1, 2], self.0)
     }
     fn format(self) -> String {
-        format!("Operator {}", self.0 + 1)
+        format!("{}", self.0 + 1)
     }
     fn format_sync(value: f64) -> String {
         Self::from_sync(value).format()
