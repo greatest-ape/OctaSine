@@ -275,10 +275,10 @@ impl Envelope {
 
     fn get_attack_parameter_indices(&self) -> (usize, usize) {
         let (dur, val) = match self.operator_index {
-            0 => (10, 11),
-            1 => (24, 25),
-            2 => (39, 40),
-            3 => (54, 55),
+            0 => (9, 10),
+            1 => (23, 24),
+            2 => (37, 38),
+            3 => (51, 52),
             _ => unreachable!(),
         };
 
@@ -287,10 +287,10 @@ impl Envelope {
 
     fn get_decay_parameter_indices(&self) -> (usize, usize) {
         let (dur, val) = match self.operator_index {
-            0 => (12, 13),
-            1 => (26, 27),
-            2 => (41, 42),
-            3 => (56, 57),
+            0 => (11, 12),
+            1 => (25, 26),
+            2 => (39, 40),
+            3 => (53, 54),
             _ => unreachable!(),
         };
 
@@ -299,10 +299,10 @@ impl Envelope {
 
     fn get_release_dur_parameter_index(&self) -> usize {
         match self.operator_index {
-            0 => 14,
-            1 => 28,
-            2 => 43,
-            3 => 58,
+            0 => 13,
+            1 => 27,
+            2 => 41,
+            3 => 55,
             _ => unreachable!(),
         }
     }
