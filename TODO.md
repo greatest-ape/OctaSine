@@ -3,21 +3,12 @@
 ## High priority
 
 * Consider
-  * make feedback range much higher
-  * change mod index to be "mod out", which would only exist for
-    operator 2, 3 and 4
-  * consider making volume only affect additive output. In this case,
-    they could be brought into one single parameter, maybe called "mix"
-  * enable turning off mod target. possibly, enable multiple mod targets,
+  * enable turning off mod target? possibly, enable multiple mod targets,
     where possible values are defined as static array of static slices (?)
-  * consider adding per-operator mod target (mod tgt) widgets, like
-    clickable boxes with possible targets
   * consider easing fine tuning of mod out / changing steps
   * toggle operator on/off (maybe green number for active operators)
   * modulation matrix
-    * number boxes control should control mod out, with color linear to
-      sync parameter
-    * clicking selected routing again deselects
+    * green color doesn't make sense for mod out
     * new boxes at bottom for controlling mix?
 
 ## Medium priority
