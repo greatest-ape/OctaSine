@@ -95,6 +95,15 @@ impl OperatorWidgets {
         if let Some(mod_index) = self.mod_index.as_mut() {
             mod_index.style = style;
         }
+        match self.mod_target.as_mut() {
+            Some(ModTargetPicker::Operator3(p)) => {
+                p.style = style;
+            }
+            Some(ModTargetPicker::Operator4(p)) => {
+                p.style = style;
+            }
+            None => {}
+        }
         self.feedback.style = style;
         self.frequency_ratio.style = style;
         self.frequency_free.style = style;
