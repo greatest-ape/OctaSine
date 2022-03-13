@@ -537,7 +537,7 @@ impl ParameterValue for Operator2ModulationTargetValue {
     fn get(self) -> Self::Value {
         self.0
     }
-    fn from_sync(sync: f64) -> Self {
+    fn from_sync(_sync: f64) -> Self {
         Self(0)
     }
     fn to_sync(self) -> f64 {
