@@ -9,6 +9,17 @@ how patches sound.
 
 ### Changed
 
+#### Routing changes
+
+- Set modulation index (mod out) in modulator, not carrier
+- Increase range of feedback parameter to match modulation index
+- Remove volume parameter
+- Replace additive factor with mix out parameter, which doesn't
+affect modulation output
+- Add per-operator modulation target picker to GUI
+ 
+#### LFO changes
+
 - Use a more traditional LFO design that oscillates around the base value, not
   in a single direction.
 - Scale LFO effect linearly and bypass normal parameter limits when targeting
