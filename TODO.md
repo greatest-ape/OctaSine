@@ -8,7 +8,6 @@
   * consider easing fine tuning of mod out / changing steps
   * toggle operator on/off (maybe green number for active operators)
   * modulation matrix
-    * green color doesn't make sense for mod out
     * new boxes at bottom for controlling mix?
 
 ## Medium priority
