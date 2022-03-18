@@ -1,4 +1,6 @@
-use iced_baseview::{Alignment, Column, Element, Horizontal, Length, Radio, Space, Text};
+use iced_baseview::{
+    alignment::Horizontal, Alignment, Column, Element, Length, Radio, Space, Text,
+};
 
 use crate::common::*;
 use crate::parameters::values::{

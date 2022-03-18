@@ -1,5 +1,8 @@
 use iced_baseview::widget::{pick_list, PickList};
-use iced_baseview::{Alignment, Column, Element, Horizontal, Length, Row, Space, Text, Vertical};
+use iced_baseview::{
+    alignment::Horizontal, alignment::Vertical, Alignment, Column, Element, Length, Row, Space,
+    Text,
+};
 
 use super::{style::Theme, GuiSyncHandle, Message, FONT_SIZE, FONT_VERY_BOLD, LINE_HEIGHT};
 

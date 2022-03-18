@@ -392,7 +392,8 @@ impl OutputBox {
 
 struct AdditiveLine {
     path: Path,
-    stroke: Stroke,
+    additive: f64,
+    color: Color,
 }
 
 impl AdditiveLine {
@@ -405,7 +406,8 @@ impl AdditiveLine {
 
         let mut line = Self {
             path,
-            stroke: Stroke::default(),
+            additive,
+            color: style_sheet.active().line_max_color,
         };
 
         line.update(additive, style_sheet);
@@ -414,29 +416,33 @@ impl AdditiveLine {
     }
 
     fn update(&mut self, additive: f64, style_sheet: Box<dyn StyleSheet>) {
-        let c = style_sheet.active().line_max_color;
+        self.color = style_sheet.active().line_max_color;
+        self.additive = additive;
+    }
 
-        let opacity = additive as f32;
+    fn draw(&self, frame: &mut Frame) {
+        let c = self.color;
+
+        let opacity = self.additive as f32;
         let gradient = Gradient::new(vec![
             LinSrgba::new(0.0, 0.25, 0.0, opacity),
             LinSrgba::new(c.r, c.g, c.b, opacity),
         ]);
-        let mix_factor = (additive as f32 - 0.5).max(0.0) * 2.0;
+        let mix_factor = (self.additive as f32 - 0.5).max(0.0) * 2.0;
         let color = gradient.get(mix_factor);
 
-        self.stroke = Stroke::default()
+        let stroke = Stroke::default()
             .with_width(3.0)
             .with_color(Color::from(palette::Srgba::from_linear(color)));
-    }
 
-    fn draw(&self, frame: &mut Frame) {
-        frame.stroke(&self.path, self.stroke);
+        frame.stroke(&self.path, stroke);
     }
 }
 
 struct ModulationLine {
     path: Path,
-    stroke: Stroke,
+    color: Color,
+    mod_index: f64,
 }
 
 impl ModulationLine {
@@ -455,24 +461,31 @@ impl ModulationLine {
 
         let path = builder.build();
 
-        let c = style_sheet.active().line_max_color;
-        let opacity = mod_index as f32;
+        let color = style_sheet.active().line_max_color;
+
+        Self {
+            path,
+            color,
+            mod_index,
+        }
+    }
+
+    fn draw(&self, frame: &mut Frame) {
+        let c = self.color;
+        let opacity = self.mod_index as f32;
+
         let gradient = Gradient::new(vec![
             LinSrgba::new(0.0, 0.25, 0.0, opacity),
             LinSrgba::new(c.r, c.g, c.b, opacity),
         ]);
-        let mix_factor = mod_index as f32;
+        let mix_factor = self.mod_index as f32;
         let color = gradient.get(mix_factor);
 
         let stroke = Stroke::default()
             .with_width(3.0)
             .with_color(Color::from(palette::Srgba::from_linear(color)));
 
-        Self { path, stroke }
-    }
-
-    fn draw(&self, frame: &mut Frame) {
-        frame.stroke(&self.path, self.stroke);
+        frame.stroke(&self.path, stroke);
     }
 }
 

@@ -1,6 +1,6 @@
 use iced_baseview::{
-    button, renderer, Button, Color, Column, Container, Element, Font, Horizontal, Length, Point,
-    Row, Rule, Space, Text, Vertical, WindowQueue,
+    alignment::Horizontal, alignment::Vertical, button, Button, Color, Column, Container, Element,
+    Font, Length, Point, Row, Rule, Space, Text, WindowQueue,
 };
 use iced_baseview::{executor, Alignment, Application, Command, Subscription, WindowSubs};
 
@@ -331,42 +331,25 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
     }
 
     #[cfg(feature = "gui_wgpu")]
-    fn renderer_settings() -> renderer::Settings {
-        renderer::Settings {
+    fn renderer_settings() -> iced_wgpu::settings::Settings {
+        iced_wgpu::settings::Settings {
             present_mode: iced_wgpu::wgpu::PresentMode::Immediate,
             default_font: Some(FONT_REGULAR),
             default_text_size: FONT_SIZE,
-            antialiasing: Some(renderer::Antialiasing::MSAAx4),
+            antialiasing: Some(iced_wgpu::settings::Antialiasing::MSAAx4),
             ..Default::default()
         }
     }
 
     /// Renderer settings with glow
-    ///
-    /// On non-Windows platforms, AA settings will be overridden because of
-    /// use_max_aa_samples = true.  Windows, however, doesn't support
-    /// recreating OpenGL contexts for same window, so we have to set a fixed
-    /// antialiasing count.
     #[cfg(feature = "gui_glow")]
-    fn renderer_settings() -> (raw_gl_context::GlConfig, iced_glow::settings::Settings) {
-        (
-            raw_gl_context::GlConfig {
-                #[cfg(target_os = "windows")]
-                samples: Some(8),
-                ..Default::default()
-            },
-            renderer::Settings {
-                default_font: Some(FONT_REGULAR),
-                default_text_size: FONT_SIZE,
-                // Windows doesn't support recreating OpenGL context for same
-                // window, so use_max_aa_samples won't work.
-                #[cfg(target_os = "windows")]
-                antialiasing: Some(renderer::settings::Antialiasing::MSAAx8),
-                #[cfg(not(target_os = "windows"))]
-                antialiasing: None,
-                text_multithreading: false,
-            },
-        )
+    fn renderer_settings() -> iced_glow::settings::Settings {
+        iced_glow::settings::Settings {
+            default_font: Some(FONT_REGULAR),
+            default_text_size: FONT_SIZE,
+            antialiasing: Some(iced_glow::settings::Antialiasing::MSAAx4),
+            text_multithreading: false,
+        }
     }
 
     fn update(

@@ -40,6 +40,7 @@ impl radio::StyleSheet for Radio {
         radio::Style {
             background: SURFACE.into(),
             dot_color: TEXT_FG,
+            text_color: Some(TEXT_FG),
             border_width: 1.0,
             border_color: BORDER,
         }

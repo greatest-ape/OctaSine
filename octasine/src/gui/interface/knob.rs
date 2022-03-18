@@ -1,6 +1,6 @@
 use iced_audio::{knob, text_marks, tick_marks, Normal, NormalParam};
 use iced_baseview::{
-    keyboard::Modifiers, Alignment, Column, Element, Horizontal, Length, Space, Text,
+    alignment::Horizontal, keyboard::Modifiers, Alignment, Column, Element, Length, Space, Text,
 };
 
 use crate::parameters::values::{

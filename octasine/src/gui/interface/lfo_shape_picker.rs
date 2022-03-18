@@ -2,7 +2,8 @@ use iced_baseview::canvas::{
     event, path, Cache, Canvas, Cursor, Frame, Geometry, Path, Program, Stroke,
 };
 use iced_baseview::{
-    Alignment, Color, Column, Element, Horizontal, Length, Point, Rectangle, Size, Space, Text,
+    alignment::Horizontal, Alignment, Color, Column, Element, Length, Point, Rectangle, Size,
+    Space, Text,
 };
 
 use crate::common::{LfoShape, Phase};
