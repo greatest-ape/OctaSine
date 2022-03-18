@@ -45,7 +45,7 @@ impl<H: GuiSyncHandle> Gui<H> {
                 scale: WindowScalePolicy::ScaleFactor(1.0),
                 title: PLUGIN_NAME.to_string(),
                 gl_config: Some(GlConfig {
-                    samples: Some(4),
+                    samples: Some(8),
                     ..Default::default()
                 }),
             },

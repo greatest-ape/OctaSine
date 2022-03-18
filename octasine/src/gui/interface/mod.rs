@@ -336,7 +336,7 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
             present_mode: iced_wgpu::wgpu::PresentMode::Immediate,
             default_font: Some(FONT_REGULAR),
             default_text_size: FONT_SIZE,
-            antialiasing: Some(iced_wgpu::settings::Antialiasing::MSAAx4),
+            antialiasing: Some(iced_wgpu::settings::Antialiasing::MSAAx8),
             ..Default::default()
         }
     }
@@ -347,7 +347,7 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
         iced_glow::settings::Settings {
             default_font: Some(FONT_REGULAR),
             default_text_size: FONT_SIZE,
-            antialiasing: Some(iced_glow::settings::Antialiasing::MSAAx4),
+            antialiasing: Some(iced_glow::settings::Antialiasing::MSAAx8),
             text_multithreading: false,
         }
     }
