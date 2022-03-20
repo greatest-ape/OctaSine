@@ -24,7 +24,7 @@ jobs:
     - name: Install baseview dependencies
       run: |
         sudo apt update
-        sudo apt install libx11-xcb-dev libxcb-dri2-0-dev libgl1-mesa-dev libxcb-icccm4-dev libxcursor-dev
+        sudo apt install libgl-dev libx11-xcb-dev libxcb1-dev libxcb-dri2-0-dev libxcb-icccm4-dev libxcursor-dev libxkbcommon-dev libxcb-shape0-dev libxcb-xfixes0-dev
       if: contains(matrix.os, 'ubuntu')
 
     # Required for bindgen on Windows, see https://github.com/rust-lang/rust-bindgen/issues/1797
