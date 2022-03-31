@@ -428,9 +428,9 @@ cfg_if::cfg_if! {
 }
 
 fn init_logging() -> anyhow::Result<()> {
-    let log_folder = dirs::home_dir()
-        .ok_or(anyhow::anyhow!("Couldn't extract home dir"))?
-        .join("tmp");
+    let log_folder = dirs::cache_dir()
+        .ok_or(anyhow::anyhow!("Couldn't extract cache dir"))?
+        .join("octasine");
 
     // Ignore any creation error
     let _ = ::std::fs::create_dir(log_folder.clone());
