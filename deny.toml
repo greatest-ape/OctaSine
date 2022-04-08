@@ -17,7 +17,6 @@
 # this list would mean the nix crate, as well as any of its exclusive
 # dependencies not shared by any other crates, would be ignored, as the target
 # list here is effectively saying which targets you are building for.
-targets = [
     # The triple can be any string, but only the target triples built in to
     # rustc (as of 1.40) can be checked against actual config expressions
     #{ triple = "x86_64-unknown-linux-musl" },
@@ -81,6 +80,7 @@ allow = [
     "OFL-1.1",
     "Zlib",
     "AGPL-3.0",
+    "BSL-1.0"
     #"Apache-2.0 WITH LLVM-exception",
 ]
 # List of explictly disallowed licenses
