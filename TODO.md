@@ -12,8 +12,6 @@
 
 ## Medium priority
 
-* Use directories crate to choose paths for log and settings files
-
 * GUI
   * Scrolling in dropdowns
     * iced 0.4: https://github.com/hecrj/iced/pull/872

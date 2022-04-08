@@ -11,10 +11,12 @@ pub mod voices;
 pub mod gui;
 
 use std::collections::VecDeque;
+use std::path::PathBuf;
 use std::sync::Arc;
 
 use approximations::Log10Table;
 use array_init::array_init;
+use directories::ProjectDirs;
 use fastrand::Rng;
 
 use gen::VoiceData;
@@ -428,14 +430,15 @@ cfg_if::cfg_if! {
 }
 
 fn init_logging() -> anyhow::Result<()> {
-    let log_folder = dirs::home_dir()
+    let log_folder: PathBuf = get_project_dirs()
         .ok_or(anyhow::anyhow!("Couldn't extract home dir"))?
-        .join("tmp");
+        .cache_dir()
+        .into();
 
     // Ignore any creation error
     let _ = ::std::fs::create_dir(log_folder.clone());
 
-    let log_file = ::std::fs::File::create(log_folder.join(format!("{}.log", PLUGIN_NAME)))?;
+    let log_file = ::std::fs::File::create(log_folder.join("OctaSine.log"))?;
 
     let log_config = simplelog::ConfigBuilder::new()
         .set_time_to_local(true)
@@ -499,6 +502,10 @@ fn get_version_info() -> String {
     info.push_str(" (gl)");
 
     info
+}
+
+fn get_project_dirs() -> Option<ProjectDirs> {
+    ProjectDirs::from("com", "OctaSine", "OctaSine")
 }
 
 #[cfg(test)]
