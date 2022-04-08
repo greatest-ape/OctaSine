@@ -24,7 +24,7 @@
     # particular target. target_features are currently not validated against
     # the actual valid features supported by the target architecture.
     #{ triple = "wasm32-unknown-unknown", features = ["atomics"] },
-]
+#]
 
 # This section is considered when running `cargo deny check advisories`
 # More documentation for the advisories section can be found here:
@@ -80,7 +80,7 @@ allow = [
     "OFL-1.1",
     "Zlib",
     "AGPL-3.0",
-    "BSL-1.0"
+    "BSL-1.0",
     #"Apache-2.0 WITH LLVM-exception",
 ]
 # List of explictly disallowed licenses
