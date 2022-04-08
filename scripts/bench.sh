@@ -1,3 +1,3 @@
 #!/bin/sh
 
-cargo +nightly run --release -p bench_process --features "simd"
+cargo +nightly run --profile "release-debug" -p bench_process --features "simd"
