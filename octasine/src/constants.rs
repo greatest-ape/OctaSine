@@ -1,7 +1,7 @@
 use crate::common::*;
 
 pub const PLUGIN_NAME: &str = "OctaSine";
-pub const PLUGIN_UNIQUE_ID: i32 = 1_438_048_623;
+pub const PLUGIN_UNIQUE_ID: i32 = 1_438_048_624;
 
 pub const NUM_OPERATORS: usize = 4;
 pub const NUM_LFOS: usize = 4;
