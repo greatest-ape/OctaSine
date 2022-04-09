@@ -2,8 +2,6 @@
 
 ## High priority
 
-* bench_process hashes do not match
-
 * Consider
   * enable turning off mod target? possibly, enable multiple mod targets,
     where possible values are defined as static array of static slices (?)
@@ -13,6 +11,10 @@
     * new boxes at bottom for controlling mix?
 
 ## Medium priority
+
+* bench_process
+  * Is it a cause for concern that not keeping wave type fixed has different
+    effect depending on SIMD width?
 
 * GUI
   * Scrolling in dropdowns
