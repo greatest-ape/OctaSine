@@ -104,9 +104,8 @@ fn main() {
 fn benchmark<A: AudioGen + Simd>(name: &str, expected_hash: &str) -> (bool, f32) {
     let mut octasine = OctaSine::default();
 
-    let envelope_duration_parameters = [10i32, 12, 14, 24, 26, 28, 39, 41, 43, 54, 56, 58];
-
-    let wave_type_parameters = [4i32, 17, 31, 46];
+    let envelope_duration_parameters = [9i32, 11, 13, 23, 25, 27, 37, 39, 41, 51, 53, 55];
+    let wave_type_parameters = [4i32, 16, 30, 44];
 
     const SIZE: usize = 256;
 
