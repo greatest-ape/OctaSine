@@ -3,7 +3,7 @@ pub mod simd;
 
 use std::f64::consts::TAU;
 
-use duplicate::duplicate;
+use duplicate::duplicate_item;
 use vst::buffer::AudioBuffer;
 
 use crate::approximations::Log10Table;
@@ -127,7 +127,7 @@ pub fn process_f32_runtime_select(octasine: &mut OctaSine, audio_buffer: &mut Au
     }
 }
 
-#[duplicate(
+#[duplicate_item(
     [
         S [ FallbackStd ]
         target_feature_enable [ cfg(not(feature = "fake-feature")) ]

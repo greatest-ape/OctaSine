@@ -25,7 +25,7 @@ array-init = "2"
 arrayvec = "0.7"
 cfg-if = "1"
 directories = "4"
-duplicate = "0.3"
+duplicate = "0.4"
 fastrand = "1"
 git-testament = "0.2"
 log = { version = "0.4", default-features = false }
