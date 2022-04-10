@@ -2,15 +2,23 @@
 
 ## High priority
 
+* Add operator volume parameters. They should have the same LFO addition logic
+  as current mix out parameters, which should in turn be modified to use similar
+  logic as mod out parameters.
+* Add operator (volume) toggle parameters: interpolatable, but either on or off.
+  Maybe green number for active operators? Mute button or similar might be better.
+* Consider multiple modulation targets
+* Look at other/better operator ratio parameter values
+* LFO: mode with bpm and beat sync (= starts at beat start) but no key sync
+
+## Medium priority
+
 * Consider
-  * enable turning off mod target? possibly, enable multiple mod targets,
-    where possible values are defined as static array of static slices (?)
   * consider easing fine tuning of mod out / changing steps
-  * toggle operator on/off (maybe green number for active operators)
   * modulation matrix
     * new boxes at bottom for controlling mix?
 
-## Medium priority
+* Mode to lock together envelopes so changes affect all
 
 * bench_process
   * Is it a cause for concern that not keeping wave type fixed has different
