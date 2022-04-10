@@ -535,43 +535,29 @@ mod gen {
     #[target_feature_enable]
     unsafe fn run_operator_dependency_analysis(voice_data: &VoiceData) -> [bool; 4] {
         let mut operator_generate_audio = [true; 4];
-        let mut operator_mix_zero = [false; 4];
-        let mut operator_modulation_index_zero = [false; 4];
+        let mut operator_mix_out_active = [false; 4];
+        let mut operator_mod_out_active = [false; 4];
 
         for operator_index in 0..4 {
-            let operator_mix = S::pd_loadu(voice_data.operators[operator_index].mixes.as_ptr());
-            let modulation_index = S::pd_loadu(
+            let mix_out = S::pd_loadu(voice_data.operators[operator_index].mixes.as_ptr());
+            let mod_out = S::pd_loadu(
                 voice_data.operators[operator_index]
                     .modulation_indices
                     .as_ptr(),
             );
 
-            let mix_active = S::pd_any_over_zero(operator_mix);
-            let modulation_active = S::pd_any_over_zero(modulation_index);
+            operator_mix_out_active[operator_index] = S::pd_any_over_zero(mix_out);
+            operator_mod_out_active[operator_index] = S::pd_any_over_zero(mod_out);
 
-            operator_generate_audio[operator_index] = mix_active | modulation_active;
-
-            operator_modulation_index_zero[operator_index] = modulation_active;
-            operator_mix_zero[operator_index] = mix_active;
+            operator_generate_audio[operator_index] =
+                operator_mix_out_active[operator_index] | operator_mod_out_active[operator_index];
         }
 
         for _ in 0..3 {
             for operator_index in 1..4 {
-                let modulation_target = voice_data.operators[operator_index].modulation_target;
+                let mod_target = voice_data.operators[operator_index].modulation_target;
 
-                // Skip generation if operator was previously determined to be skippable OR
-                #[rustfmt::skip]
-                let skip_condition = !operator_generate_audio[operator_index] | (
-                    // Operator mix is 0.0 AND
-                    operator_mix_zero[operator_index] & (
-                        // Modulation target was previously determined to be skippable OR
-                        !operator_generate_audio[modulation_target] |
-                        // Modulation target is white noise OR
-                        (voice_data.operators[modulation_target].wave_type == WaveType::WhiteNoise)
-                    )
-                );
-
-                if skip_condition {
+                if !operator_mix_out_active[operator_index] & !operator_generate_audio[mod_target] {
                     operator_generate_audio[operator_index] = false;
                 }
             }
