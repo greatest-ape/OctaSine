@@ -320,7 +320,7 @@ mod gen {
                 .mix
                 .get_value_with_lfo_addition(lfo_values.get(LfoTargetParameter::Operator(
                     operator_index,
-                    LfoTargetOperatorParameter::Volume,
+                    LfoTargetOperatorParameter::MixOut,
                 )));
 
         set_value_for_both_channels(&mut voice_data.mixes, sample_index, volume);
@@ -328,7 +328,7 @@ mod gen {
         let modulation_index = operator.modulation_index.as_mut().map_or(0.0, |p| {
             p.get_value_with_lfo_addition(lfo_values.get(LfoTargetParameter::Operator(
                 operator_index,
-                LfoTargetOperatorParameter::ModulationIndex,
+                LfoTargetOperatorParameter::ModOut,
             )))
         });
 

@@ -61,10 +61,9 @@ pub enum LfoTargetMasterParameter {
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub enum LfoTargetOperatorParameter {
-    Volume,
     Panning,
-    Additive,
-    ModulationIndex,
+    MixOut,
+    ModOut,
     Feedback,
     FrequencyRatio,
     FrequencyFree,
@@ -96,10 +95,9 @@ impl std::fmt::Display for LfoTargetParameter {
                 use LfoTargetOperatorParameter::*;
 
                 let p = match p {
-                    Volume => "vol",
                     Panning => "pan",
-                    Additive => "additive",
-                    ModulationIndex => "mod index",
+                    MixOut => "mix out",
+                    ModOut => "mod out",
                     Feedback => "feedback",
                     FrequencyRatio => "freq ratio",
                     FrequencyFree => "freq free",
@@ -144,10 +142,10 @@ pub enum LfoMode {
 
 pub fn get_lfo_target_parameters(lfo_index: usize) -> &'static [LfoTargetParameter] {
     let end = match lfo_index {
-        0 => 33,
-        1 => 37,
-        2 => 41,
-        3 => 45,
+        0 => 29,
+        1 => 33,
+        2 => 37,
+        3 => 41,
         _ => unreachable!(),
     };
 
