@@ -132,9 +132,9 @@ impl OperatorBox {
 
     fn get_parameter_index(&self) -> usize {
         match self.index {
-            1 => 18,
-            2 => 32,
-            3 => 46,
+            1 => 22,
+            2 => 38,
+            3 => 54,
             _ => unreachable!(),
         }
     }
@@ -497,17 +497,17 @@ struct ModulationMatrixParameters {
 
 impl ModulationMatrixParameters {
     fn new<H: GuiSyncHandle>(sync_handle: &H) -> Self {
-        let operator_3_target = Self::convert_operator_3_target(sync_handle.get_parameter(31));
-        let operator_4_target = Self::convert_operator_4_target(sync_handle.get_parameter(45));
+        let operator_3_target = Self::convert_operator_3_target(sync_handle.get_parameter(37));
+        let operator_4_target = Self::convert_operator_4_target(sync_handle.get_parameter(53));
 
-        let operator_1_mix = sync_handle.get_parameter(2);
-        let operator_2_mix = sync_handle.get_parameter(14);
-        let operator_3_mix = sync_handle.get_parameter(28);
-        let operator_4_mix = sync_handle.get_parameter(42);
+        let operator_1_mix = sync_handle.get_parameter(4);
+        let operator_2_mix = sync_handle.get_parameter(18);
+        let operator_3_mix = sync_handle.get_parameter(34);
+        let operator_4_mix = sync_handle.get_parameter(50);
 
-        let operator_2_mod = sync_handle.get_parameter(18);
-        let operator_3_mod = sync_handle.get_parameter(32);
-        let operator_4_mod = sync_handle.get_parameter(46);
+        let operator_2_mod = sync_handle.get_parameter(22);
+        let operator_3_mod = sync_handle.get_parameter(38);
+        let operator_4_mod = sync_handle.get_parameter(54);
 
         Self {
             operator_3_target,
@@ -564,35 +564,35 @@ impl ModulationMatrixComponents {
             3,
             2,
             parameters.operator_4_target == 2,
-            Some(Message::ChangeSingleParameterImmediate(45, 1.0)),
+            Some(Message::ChangeSingleParameterImmediate(53, 1.0)),
         );
         let operator_4_mod_2_box = ModulationBox::new(
             bounds,
             3,
             1,
             parameters.operator_4_target == 1,
-            Some(Message::ChangeSingleParameterImmediate(45, 0.5)),
+            Some(Message::ChangeSingleParameterImmediate(53, 0.5)),
         );
         let operator_4_mod_1_box = ModulationBox::new(
             bounds,
             3,
             0,
             parameters.operator_4_target == 0,
-            Some(Message::ChangeSingleParameterImmediate(45, 0.0)),
+            Some(Message::ChangeSingleParameterImmediate(53, 0.0)),
         );
         let operator_3_mod_2_box = ModulationBox::new(
             bounds,
             2,
             1,
             parameters.operator_3_target == 1,
-            Some(Message::ChangeSingleParameterImmediate(31, 1.0)),
+            Some(Message::ChangeSingleParameterImmediate(37, 1.0)),
         );
         let operator_3_mod_1_box = ModulationBox::new(
             bounds,
             2,
             0,
             parameters.operator_3_target == 0,
-            Some(Message::ChangeSingleParameterImmediate(31, 0.0)),
+            Some(Message::ChangeSingleParameterImmediate(37, 0.0)),
         );
         let operator_2_mod_1_box = ModulationBox::new(bounds, 1, 0, true, None);
 

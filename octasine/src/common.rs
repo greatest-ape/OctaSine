@@ -61,6 +61,7 @@ pub enum LfoTargetMasterParameter {
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub enum LfoTargetOperatorParameter {
+    Volume,
     Panning,
     MixOut,
     ModOut,
@@ -95,6 +96,7 @@ impl std::fmt::Display for LfoTargetParameter {
                 use LfoTargetOperatorParameter::*;
 
                 let p = match p {
+                    Volume => "volume",
                     Panning => "pan",
                     MixOut => "mix out",
                     ModOut => "mod out",

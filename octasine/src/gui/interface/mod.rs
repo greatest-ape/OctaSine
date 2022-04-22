@@ -116,129 +116,137 @@ impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {
         match parameter_index {
             0 => self.master_volume.set_value(v),
             1 => self.master_frequency.set_value(v),
-            2 => {
+            2 => self.operator_1.volume.set_value(v),
+            3 => self.operator_1.volume_toggle.set_value(v),
+            4 => {
                 self.operator_1.mix.set_value(v);
                 self.modulation_matrix.set_operator_1_mix(value);
             }
-            3 => self.operator_1.panning.set_value(v),
-            4 => self.operator_1.wave_type.set_value(v),
-            5 => self.operator_1.feedback.set_value(v),
-            6 => self.operator_1.frequency_ratio.set_value(v),
-            7 => self.operator_1.frequency_free.set_value(v),
-            8 => self.operator_1.frequency_fine.set_value(v),
-            9 => self.operator_1.envelope.set_attack_duration(v),
-            10 => self.operator_1.envelope.set_attack_end_value(v),
-            11 => self.operator_1.envelope.set_decay_duration(v),
-            12 => self.operator_1.envelope.set_decay_end_value(v),
-            13 => self.operator_1.envelope.set_release_duration(v),
-            14 => {
+            5 => self.operator_1.panning.set_value(v),
+            6 => self.operator_1.wave_type.set_value(v),
+            7 => self.operator_1.feedback.set_value(v),
+            8 => self.operator_1.frequency_ratio.set_value(v),
+            9 => self.operator_1.frequency_free.set_value(v),
+            10 => self.operator_1.frequency_fine.set_value(v),
+            11 => self.operator_1.envelope.set_attack_duration(v),
+            12 => self.operator_1.envelope.set_attack_end_value(v),
+            13 => self.operator_1.envelope.set_decay_duration(v),
+            14 => self.operator_1.envelope.set_decay_end_value(v),
+            15 => self.operator_1.envelope.set_release_duration(v),
+            16 => self.operator_2.volume.set_value(v),
+            17 => self.operator_2.volume_toggle.set_value(v),
+            18 => {
                 self.operator_2.mix.set_value(v);
                 self.modulation_matrix.set_operator_2_mix(value);
             }
-            15 => self.operator_2.panning.set_value(v),
-            16 => self.operator_2.wave_type.set_value(v),
-            17 => {
+            19 => self.operator_2.panning.set_value(v),
+            20 => self.operator_2.wave_type.set_value(v),
+            21 => {
                 // self.modulation_matrix.set_operator_2_target(v) // FIXME
             }
-            18 => {
+            22 => {
                 if let Some(mod_index) = self.operator_2.mod_index.as_mut() {
                     mod_index.set_value(v)
                 }
                 self.modulation_matrix.set_operator_2_mod(v);
             }
-            19 => self.operator_2.feedback.set_value(v),
-            20 => self.operator_2.frequency_ratio.set_value(v),
-            21 => self.operator_2.frequency_free.set_value(v),
-            22 => self.operator_2.frequency_fine.set_value(v),
-            23 => self.operator_2.envelope.set_attack_duration(v),
-            24 => self.operator_2.envelope.set_attack_end_value(v),
-            25 => self.operator_2.envelope.set_decay_duration(v),
-            26 => self.operator_2.envelope.set_decay_end_value(v),
-            27 => self.operator_2.envelope.set_release_duration(v),
-            28 => {
+            23 => self.operator_2.feedback.set_value(v),
+            24 => self.operator_2.frequency_ratio.set_value(v),
+            25 => self.operator_2.frequency_free.set_value(v),
+            26 => self.operator_2.frequency_fine.set_value(v),
+            27 => self.operator_2.envelope.set_attack_duration(v),
+            28 => self.operator_2.envelope.set_attack_end_value(v),
+            29 => self.operator_2.envelope.set_decay_duration(v),
+            30 => self.operator_2.envelope.set_decay_end_value(v),
+            31 => self.operator_2.envelope.set_release_duration(v),
+            32 => self.operator_3.volume.set_value(v),
+            33 => self.operator_3.volume_toggle.set_value(v),
+            34 => {
                 self.modulation_matrix.set_operator_3_mix(value);
                 self.operator_3.mix.set_value(v);
             }
-            29 => self.operator_3.panning.set_value(v),
-            30 => self.operator_3.wave_type.set_value(v),
-            31 => {
+            35 => self.operator_3.panning.set_value(v),
+            36 => self.operator_3.wave_type.set_value(v),
+            37 => {
                 match self.operator_3.mod_target.as_mut() {
                     Some(ModTargetPicker::Operator3(p)) => p.set_value(v),
                     _ => {}
                 }
                 self.modulation_matrix.set_operator_3_target(v);
             }
-            32 => {
+            38 => {
                 if let Some(mod_index) = self.operator_3.mod_index.as_mut() {
                     mod_index.set_value(v)
                 }
                 self.modulation_matrix.set_operator_3_mod(v);
             }
-            33 => self.operator_3.feedback.set_value(v),
-            34 => self.operator_3.frequency_ratio.set_value(v),
-            35 => self.operator_3.frequency_free.set_value(v),
-            36 => self.operator_3.frequency_fine.set_value(v),
-            37 => self.operator_3.envelope.set_attack_duration(v),
-            38 => self.operator_3.envelope.set_attack_end_value(v),
-            39 => self.operator_3.envelope.set_decay_duration(v),
-            40 => self.operator_3.envelope.set_decay_end_value(v),
-            41 => self.operator_3.envelope.set_release_duration(v),
-            42 => {
+            39 => self.operator_3.feedback.set_value(v),
+            40 => self.operator_3.frequency_ratio.set_value(v),
+            41 => self.operator_3.frequency_free.set_value(v),
+            42 => self.operator_3.frequency_fine.set_value(v),
+            43 => self.operator_3.envelope.set_attack_duration(v),
+            44 => self.operator_3.envelope.set_attack_end_value(v),
+            45 => self.operator_3.envelope.set_decay_duration(v),
+            46 => self.operator_3.envelope.set_decay_end_value(v),
+            47 => self.operator_3.envelope.set_release_duration(v),
+            48 => self.operator_4.volume.set_value(v),
+            49 => self.operator_4.volume_toggle.set_value(v),
+            50 => {
                 self.operator_4.mix.set_value(v);
                 self.modulation_matrix.set_operator_4_mix(value);
             }
-            43 => self.operator_4.panning.set_value(v),
-            44 => self.operator_4.wave_type.set_value(v),
-            45 => {
+            51 => self.operator_4.panning.set_value(v),
+            52 => self.operator_4.wave_type.set_value(v),
+            53 => {
                 match self.operator_4.mod_target.as_mut() {
                     Some(ModTargetPicker::Operator4(p)) => p.set_value(v),
                     _ => {}
                 }
                 self.modulation_matrix.set_operator_4_target(v);
             }
-            46 => {
+            54 => {
                 if let Some(mod_index) = self.operator_4.mod_index.as_mut() {
                     mod_index.set_value(v)
                 }
                 self.modulation_matrix.set_operator_4_mod(v);
             }
-            47 => self.operator_4.feedback.set_value(v),
-            48 => self.operator_4.frequency_ratio.set_value(v),
-            49 => self.operator_4.frequency_free.set_value(v),
-            50 => self.operator_4.frequency_fine.set_value(v),
-            51 => self.operator_4.envelope.set_attack_duration(v),
-            52 => self.operator_4.envelope.set_attack_end_value(v),
-            53 => self.operator_4.envelope.set_decay_duration(v),
-            54 => self.operator_4.envelope.set_decay_end_value(v),
-            55 => self.operator_4.envelope.set_release_duration(v),
-            56 => self.lfo_1.target.set_value(v),
-            57 => self.lfo_1.bpm_sync.set_value(v),
-            58 => self.lfo_1.frequency_ratio.set_value(v),
-            59 => self.lfo_1.frequency_free.set_value(v),
-            60 => self.lfo_1.mode.set_value(v),
-            61 => self.lfo_1.shape.set_value(v),
-            62 => self.lfo_1.amount.set_value(v),
-            63 => self.lfo_2.target.set_value(v),
-            64 => self.lfo_2.bpm_sync.set_value(v),
-            65 => self.lfo_2.frequency_ratio.set_value(v),
-            66 => self.lfo_2.frequency_free.set_value(v),
-            67 => self.lfo_2.mode.set_value(v),
-            68 => self.lfo_2.shape.set_value(v),
-            69 => self.lfo_2.amount.set_value(v),
-            70 => self.lfo_3.target.set_value(v),
-            71 => self.lfo_3.bpm_sync.set_value(v),
-            72 => self.lfo_3.frequency_ratio.set_value(v),
-            73 => self.lfo_3.frequency_free.set_value(v),
-            74 => self.lfo_3.mode.set_value(v),
-            75 => self.lfo_3.shape.set_value(v),
-            76 => self.lfo_3.amount.set_value(v),
-            77 => self.lfo_4.target.set_value(v),
-            78 => self.lfo_4.bpm_sync.set_value(v),
-            79 => self.lfo_4.frequency_ratio.set_value(v),
-            80 => self.lfo_4.frequency_free.set_value(v),
-            81 => self.lfo_4.mode.set_value(v),
-            82 => self.lfo_4.shape.set_value(v),
-            83 => self.lfo_4.amount.set_value(v),
+            55 => self.operator_4.feedback.set_value(v),
+            56 => self.operator_4.frequency_ratio.set_value(v),
+            57 => self.operator_4.frequency_free.set_value(v),
+            58 => self.operator_4.frequency_fine.set_value(v),
+            59 => self.operator_4.envelope.set_attack_duration(v),
+            60 => self.operator_4.envelope.set_attack_end_value(v),
+            61 => self.operator_4.envelope.set_decay_duration(v),
+            62 => self.operator_4.envelope.set_decay_end_value(v),
+            63 => self.operator_4.envelope.set_release_duration(v),
+            64 => self.lfo_1.target.set_value(v),
+            65 => self.lfo_1.bpm_sync.set_value(v),
+            66 => self.lfo_1.frequency_ratio.set_value(v),
+            67 => self.lfo_1.frequency_free.set_value(v),
+            68 => self.lfo_1.mode.set_value(v),
+            69 => self.lfo_1.shape.set_value(v),
+            70 => self.lfo_1.amount.set_value(v),
+            71 => self.lfo_2.target.set_value(v),
+            72 => self.lfo_2.bpm_sync.set_value(v),
+            73 => self.lfo_2.frequency_ratio.set_value(v),
+            74 => self.lfo_2.frequency_free.set_value(v),
+            75 => self.lfo_2.mode.set_value(v),
+            76 => self.lfo_2.shape.set_value(v),
+            77 => self.lfo_2.amount.set_value(v),
+            78 => self.lfo_3.target.set_value(v),
+            79 => self.lfo_3.bpm_sync.set_value(v),
+            80 => self.lfo_3.frequency_ratio.set_value(v),
+            81 => self.lfo_3.frequency_free.set_value(v),
+            82 => self.lfo_3.mode.set_value(v),
+            83 => self.lfo_3.shape.set_value(v),
+            84 => self.lfo_3.amount.set_value(v),
+            85 => self.lfo_4.target.set_value(v),
+            86 => self.lfo_4.bpm_sync.set_value(v),
+            87 => self.lfo_4.frequency_ratio.set_value(v),
+            88 => self.lfo_4.frequency_free.set_value(v),
+            89 => self.lfo_4.mode.set_value(v),
+            90 => self.lfo_4.shape.set_value(v),
+            91 => self.lfo_4.amount.set_value(v),
             _ => (),
         }
     }

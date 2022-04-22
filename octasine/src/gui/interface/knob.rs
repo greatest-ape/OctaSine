@@ -7,7 +7,7 @@ use crate::parameters::values::{
     LfoAmountValue, LfoFrequencyFreeValue, LfoFrequencyRatioValue, MasterFrequencyValue,
     MasterVolumeValue, OperatorFeedbackValue, OperatorFrequencyFineValue,
     OperatorFrequencyFreeValue, OperatorFrequencyRatioValue, OperatorMixValue,
-    OperatorModulationIndexValue, OperatorPanningValue, ParameterValue,
+    OperatorModulationIndexValue, OperatorPanningValue, OperatorVolumeValue, ParameterValue,
 };
 use crate::GuiSyncHandle;
 
@@ -47,6 +47,21 @@ pub fn master_frequency<H: GuiSyncHandle>(
         parameter_index,
         "FREQ",
         TickMarkType::MinMaxAndDefault,
+        style,
+    )
+}
+
+pub fn operator_volume<H: GuiSyncHandle>(
+    sync_handle: &H,
+    parameter_index: usize,
+    style: Theme,
+) -> OctaSineKnob<OperatorVolumeValue> {
+    OctaSineKnob::new_with_default_sync_value(
+        sync_handle,
+        parameter_index,
+        "VOL",
+        TickMarkType::MinMaxAndDefault,
+        OperatorVolumeValue::default().to_sync(),
         style,
     )
 }

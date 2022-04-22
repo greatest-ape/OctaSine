@@ -132,6 +132,74 @@ impl ProcessingParameter for MasterVolumeProcessingParameter {
 // Operator volume
 
 #[derive(Debug, Clone)]
+pub struct OperatorVolumeProcessingParameter {
+    value: InterpolatableProcessingValue,
+}
+
+impl Default for OperatorVolumeProcessingParameter {
+    fn default() -> Self {
+        let default = OperatorVolumeValue::default().get();
+
+        Self {
+            value: InterpolatableProcessingValue::new(default),
+        }
+    }
+}
+
+impl ProcessingParameter for OperatorVolumeProcessingParameter {
+    type Value = f64;
+
+    fn advance_one_sample(&mut self) {
+        self.value.advance_one_sample(&mut |_| ())
+    }
+    fn get_value(&self) -> Self::Value {
+        self.value.get_value()
+    }
+    fn set_from_sync(&mut self, value: f64) {
+        self.value
+            .set_value(OperatorVolumeValue::from_sync(value).get())
+    }
+    fn get_value_with_lfo_addition(&mut self, lfo_addition: Option<f64>) -> Self::Value {
+        if let Some(lfo_addition) = lfo_addition {
+            self.get_value() * 2.0f64.powf(lfo_addition)
+        } else {
+            self.get_value()
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct OperatorVolumeToggleProcessingParameter {
+    value: InterpolatableProcessingValue,
+}
+
+impl Default for OperatorVolumeToggleProcessingParameter {
+    fn default() -> Self {
+        Self {
+            value: InterpolatableProcessingValue::new(1.0),
+        }
+    }
+}
+
+impl ProcessingParameter for OperatorVolumeToggleProcessingParameter {
+    type Value = f64;
+
+    fn advance_one_sample(&mut self) {
+        self.value.advance_one_sample(&mut |_| ())
+    }
+    fn get_value(&self) -> Self::Value {
+        self.value.get_value()
+    }
+    fn set_from_sync(&mut self, value: f64) {
+        self.value
+            .set_value(OperatorVolumeValue::from_sync(value).get())
+    }
+    fn get_value_with_lfo_addition(&mut self, _lfo_addition: Option<f64>) -> Self::Value {
+        self.get_value()
+    }
+}
+
+#[derive(Debug, Clone)]
 pub struct OperatorMixProcessingParameter {
     value: InterpolatableProcessingValue,
 }
@@ -161,7 +229,9 @@ impl ProcessingParameter for OperatorMixProcessingParameter {
     }
     fn get_value_with_lfo_addition(&mut self, lfo_addition: Option<f64>) -> Self::Value {
         if let Some(lfo_addition) = lfo_addition {
-            self.get_value() * 2.0f64.powf(lfo_addition)
+            let sync_value = OperatorMixValue::from_processing(self.get_value()).to_sync();
+
+            OperatorMixValue::from_sync((sync_value + lfo_addition).min(1.0).max(0.0)).get()
         } else {
             self.get_value()
         }

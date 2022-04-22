@@ -28,7 +28,7 @@ pub struct LfoWidgets {
 
 impl LfoWidgets {
     pub fn new<H: GuiSyncHandle>(sync_handle: &H, lfo_index: usize, style: Theme) -> Self {
-        let offset = 56 + lfo_index * 7;
+        let offset = 64 + lfo_index * 7;
         let target = offset + 0;
         let bpm_sync = offset + 1;
         let ratio = offset + 2;

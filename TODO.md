@@ -2,11 +2,8 @@
 
 ## High priority
 
-* Add operator volume parameters. They should have the same LFO addition logic
-  as current mix out parameters, which should in turn be modified to use similar
-  logic as mod out parameters.
-* Add operator (volume) toggle parameters: interpolatable, but either on or off.
-  Maybe green number for active operators? Mute button or similar might be better.
+* Add way to interact with operator volume toggle parameters. Maybe green
+  number for active operators? Mute button or similar might be better.
 * Consider multiple modulation targets
 * Look at other/better operator ratio parameter values
 * LFO: mode with bpm and beat sync (= starts at beat start) but no key sync

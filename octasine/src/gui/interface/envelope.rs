@@ -231,10 +231,10 @@ pub struct Envelope {
 impl Envelope {
     pub fn new<H: GuiSyncHandle>(sync_handle: &H, operator_index: usize, style: Theme) -> Self {
         let (attack_dur, attack_val, decay_dur, decay_val, release_dur) = match operator_index {
-            0 => (9, 10, 11, 12, 13),
-            1 => (23, 24, 25, 26, 27),
-            2 => (37, 38, 39, 40, 41),
-            3 => (51, 52, 53, 54, 55),
+            0 => (11, 12, 13, 14, 15),
+            1 => (27, 28, 29, 30, 31),
+            2 => (43, 44, 45, 46, 47),
+            3 => (59, 60, 61, 62, 63),
             _ => unreachable!(),
         };
 
@@ -275,10 +275,10 @@ impl Envelope {
 
     fn get_attack_parameter_indices(&self) -> (usize, usize) {
         let (dur, val) = match self.operator_index {
-            0 => (9, 10),
-            1 => (23, 24),
-            2 => (37, 38),
-            3 => (51, 52),
+            0 => (11, 12),
+            1 => (27, 28),
+            2 => (43, 44),
+            3 => (57, 58),
             _ => unreachable!(),
         };
 
@@ -287,10 +287,10 @@ impl Envelope {
 
     fn get_decay_parameter_indices(&self) -> (usize, usize) {
         let (dur, val) = match self.operator_index {
-            0 => (11, 12),
-            1 => (25, 26),
-            2 => (39, 40),
-            3 => (53, 54),
+            0 => (13, 14),
+            1 => (29, 30),
+            2 => (45, 46),
+            3 => (61, 62),
             _ => unreachable!(),
         };
 
@@ -299,10 +299,10 @@ impl Envelope {
 
     fn get_release_dur_parameter_index(&self) -> usize {
         match self.operator_index {
-            0 => 13,
-            1 => 27,
-            2 => 41,
-            3 => 55,
+            0 => 15,
+            1 => 31,
+            2 => 47,
+            3 => 63,
             _ => unreachable!(),
         }
     }

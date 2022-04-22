@@ -6,7 +6,8 @@ use iced_baseview::{
 use crate::parameters::values::{
     Operator3ModulationTargetValue, Operator4ModulationTargetValue, OperatorFeedbackValue,
     OperatorFrequencyFineValue, OperatorFrequencyFreeValue, OperatorFrequencyRatioValue,
-    OperatorMixValue, OperatorModulationIndexValue, OperatorPanningValue, OperatorWaveTypeValue,
+    OperatorMixValue, OperatorModulationIndexValue, OperatorPanningValue,
+    OperatorVolumeToggleValue, OperatorVolumeValue, OperatorWaveTypeValue,
 };
 use crate::GuiSyncHandle;
 
@@ -24,6 +25,8 @@ pub enum ModTargetPicker {
 pub struct OperatorWidgets {
     index: usize,
     style: Theme,
+    pub volume: OctaSineKnob<OperatorVolumeValue>,
+    pub volume_toggle: OperatorVolumeToggler,
     pub mix: OctaSineKnob<OperatorMixValue>,
     pub panning: OctaSineKnob<OperatorPanningValue>,
     pub wave_type: BooleanPicker<OperatorWaveTypeValue>,
@@ -42,14 +45,25 @@ pub struct OperatorWidgets {
 
 impl OperatorWidgets {
     pub fn new<H: GuiSyncHandle>(sync_handle: &H, operator_index: usize, style: Theme) -> Self {
-        let (mix, panning, wave, mod_target, mod_index, feedback, ratio, free, fine) =
-            match operator_index {
-                0 => (2, 3, 4, 0, 0, 5, 6, 7, 8),
-                1 => (14, 15, 16, 17, 18, 19, 20, 21, 22),
-                2 => (28, 29, 30, 31, 32, 33, 34, 35, 36),
-                3 => (42, 43, 44, 45, 46, 47, 48, 49, 50),
-                _ => unreachable!(),
-            };
+        let (
+            volume,
+            volume_toggle,
+            mix,
+            panning,
+            wave,
+            mod_target,
+            mod_index,
+            feedback,
+            ratio,
+            free,
+            fine,
+        ) = match operator_index {
+            0 => (2, 3, 4, 5, 6, 0, 0, 7, 8, 9, 10),
+            1 => (16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26),
+            2 => (32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42),
+            3 => (48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58),
+            _ => unreachable!(),
+        };
 
         let mod_index = if operator_index != 0 {
             Some(knob::operator_mod_index(sync_handle, mod_index, style))
@@ -70,6 +84,8 @@ impl OperatorWidgets {
         Self {
             index: operator_index,
             style,
+            volume: knob::operator_volume(sync_handle, volume, style),
+            volume_toggle: OperatorVolumeToggler(1.0),
             mix: knob::operator_mix(sync_handle, mix, operator_index, style),
             panning: knob::operator_panning(sync_handle, panning, style),
             wave_type: boolean_picker::wave_type(sync_handle, wave, style),
@@ -89,6 +105,7 @@ impl OperatorWidgets {
 
     pub fn set_style(&mut self, style: Theme) {
         self.style = style;
+        self.volume.style = style;
         self.mix.style = style;
         self.panning.style = style;
         self.wave_type.style = style;
@@ -128,6 +145,7 @@ impl OperatorWidgets {
             )
             // .push(Space::with_width(Length::Units(LINE_HEIGHT)))
             .push(self.wave_type.view())
+            .push(self.volume.view())
             .push(self.panning.view());
 
         row = row
@@ -209,5 +227,14 @@ impl OperatorWidgets {
             );
 
         row.into()
+    }
+}
+
+// FIXME
+pub struct OperatorVolumeToggler(f64);
+
+impl OperatorVolumeToggler {
+    pub fn set_value(&mut self, value: f64) {
+        self.0 = value;
     }
 }

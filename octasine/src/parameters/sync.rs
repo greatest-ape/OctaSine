@@ -7,6 +7,8 @@ pub fn create_parameters() -> Vec<SyncParameter> {
         master_volume(),
         master_frequency(),
         // Operator 1
+        operator_volume(0),
+        operator_volume_toggle(0),
         operator_mix(0),
         operator_panning(0),
         operator_wave_type(0),
@@ -20,6 +22,8 @@ pub fn create_parameters() -> Vec<SyncParameter> {
         operator_decay_volume(0),
         operator_release_duration(0),
         // Operator 2
+        operator_volume(1),
+        operator_volume_toggle(1),
         operator_mix(1),
         operator_panning(1),
         operator_wave_type(1),
@@ -35,6 +39,8 @@ pub fn create_parameters() -> Vec<SyncParameter> {
         operator_decay_volume(1),
         operator_release_duration(1),
         // Operator 3
+        operator_volume(2),
+        operator_volume_toggle(2),
         operator_mix(2),
         operator_panning(2),
         operator_wave_type(2),
@@ -50,6 +56,8 @@ pub fn create_parameters() -> Vec<SyncParameter> {
         operator_decay_volume(2),
         operator_release_duration(2),
         // Operator 4
+        operator_volume(3),
+        operator_volume_toggle(3),
         operator_mix(3),
         operator_panning(3),
         operator_wave_type(3),
@@ -87,6 +95,20 @@ fn master_volume() -> SyncParameter {
 
 fn master_frequency() -> SyncParameter {
     SyncParameter::new("Master frequency", MasterFrequencyValue::default())
+}
+
+fn operator_volume(index: usize) -> SyncParameter {
+    SyncParameter::new(
+        &format!("Op. {} vol", index + 1),
+        OperatorVolumeValue::default(),
+    )
+}
+
+fn operator_volume_toggle(index: usize) -> SyncParameter {
+    SyncParameter::new(
+        &format!("Op. {} toggle", index + 1),
+        OperatorVolumeToggleValue::default(),
+    )
 }
 
 fn operator_mix(index: usize) -> SyncParameter {
