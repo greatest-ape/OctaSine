@@ -6,7 +6,6 @@
   number for active operators? Mute button or similar might be better.
 * Consider multiple modulation targets
 * Look at other/better operator ratio parameter values
-* LFO: mode with bpm and beat sync (= starts at beat start) but no key sync
 
 ## Medium priority
 
@@ -77,6 +76,7 @@
 
 ## Don't do
 
+* Free LFO mode. Difficult to sensibly combine with per-voice LFOs
 * Cache sync value in interpolatable parameters too? Don't do this, it seems
   to hurt performance.
 * proper beta scaling - double with doubling modulator frequency: too late now
