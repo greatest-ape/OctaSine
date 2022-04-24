@@ -76,11 +76,13 @@ impl<P: 'static + OperatorModulationTargetValue> ModTargetPicker<P> {
 
         for index in self.choices.iter().copied() {
             let active = self.v.index_active(index);
+            let label = format!("{}", index + 1);
             let v = self.v;
             let parameter_index = self.parameter_index;
 
-            let checkbox = Checkbox::new(active, format!("{}", index + 1), move |active| {
+            let checkbox = Checkbox::new(active, label, move |active| {
                 let mut v = v;
+
                 v.set_index(index, active);
 
                 Message::ChangeSingleParameterImmediate(parameter_index, v.to_sync())

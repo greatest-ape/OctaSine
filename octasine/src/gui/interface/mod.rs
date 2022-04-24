@@ -143,6 +143,10 @@ impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {
             19 => self.operator_2.panning.set_value(v),
             20 => self.operator_2.wave_type.set_value(v),
             21 => {
+                match self.operator_2.mod_target.as_mut() {
+                    Some(ModTargetPicker::Operator2(p)) => p.set_value(v),
+                    _ => {}
+                }
                 // self.modulation_matrix.set_operator_2_target(v) // FIXME
             }
             22 => {

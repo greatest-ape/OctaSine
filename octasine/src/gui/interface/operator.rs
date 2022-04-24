@@ -4,10 +4,10 @@ use iced_baseview::{
 };
 
 use crate::parameters::values::{
-    Operator3ModulationTargetValue, Operator4ModulationTargetValue, OperatorFeedbackValue,
-    OperatorFrequencyFineValue, OperatorFrequencyFreeValue, OperatorFrequencyRatioValue,
-    OperatorMixValue, OperatorModulationIndexValue, OperatorPanningValue,
-    OperatorVolumeToggleValue, OperatorVolumeValue, OperatorWaveTypeValue,
+    Operator2ModulationTargetValue, Operator3ModulationTargetValue, Operator4ModulationTargetValue,
+    OperatorFeedbackValue, OperatorFrequencyFineValue, OperatorFrequencyFreeValue,
+    OperatorFrequencyRatioValue, OperatorMixValue, OperatorModulationIndexValue,
+    OperatorPanningValue, OperatorVolumeToggleValue, OperatorVolumeValue, OperatorWaveTypeValue,
 };
 use crate::GuiSyncHandle;
 
@@ -21,6 +21,7 @@ use super::{Message, FONT_SIZE, FONT_VERY_BOLD, LINE_HEIGHT};
 pub enum ModTargetPicker {
     Operator4(mod_target_picker::ModTargetPicker<Operator4ModulationTargetValue>),
     Operator3(mod_target_picker::ModTargetPicker<Operator3ModulationTargetValue>),
+    Operator2(mod_target_picker::ModTargetPicker<Operator2ModulationTargetValue>),
 }
 
 pub struct OperatorWidgets {
@@ -79,6 +80,9 @@ impl OperatorWidgets {
             2 => Some(ModTargetPicker::Operator3(
                 mod_target_picker::operator_3_target(sync_handle, mod_target, style),
             )),
+            1 => Some(ModTargetPicker::Operator2(
+                mod_target_picker::operator_2_target(sync_handle, mod_target, style),
+            )),
             _ => None,
         };
 
@@ -114,6 +118,9 @@ impl OperatorWidgets {
             mod_index.style = style;
         }
         match self.mod_target.as_mut() {
+            Some(ModTargetPicker::Operator2(p)) => {
+                p.style = style;
+            }
             Some(ModTargetPicker::Operator3(p)) => {
                 p.style = style;
             }
@@ -162,6 +169,7 @@ impl OperatorWidgets {
         }
 
         match self.mod_target.as_mut() {
+            Some(ModTargetPicker::Operator2(picker)) => row = row.push(picker.view()),
             Some(ModTargetPicker::Operator3(picker)) => row = row.push(picker.view()),
             Some(ModTargetPicker::Operator4(picker)) => row = row.push(picker.view()),
             None => row = row.push(Space::with_width(Length::Units(LINE_HEIGHT * 4))),
