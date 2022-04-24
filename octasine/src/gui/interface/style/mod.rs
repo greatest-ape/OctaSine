@@ -6,6 +6,7 @@ use iced_baseview::{
     rule::{self, FillMode},
     Color,
 };
+use iced_style::checkbox;
 use serde::{Deserialize, Serialize};
 
 use super::{envelope, lfo_shape_picker, mod_matrix};
@@ -82,6 +83,15 @@ impl<'a> From<Theme> for Box<dyn radio::StyleSheet + 'a> {
         match theme {
             Theme::Light => light::Radio.into(),
             Theme::Dark => dark::Radio.into(),
+        }
+    }
+}
+
+impl<'a> From<Theme> for Box<dyn checkbox::StyleSheet + 'a> {
+    fn from(theme: Theme) -> Self {
+        match theme {
+            Theme::Light => light::Checkbox.into(),
+            Theme::Dark => dark::Checkbox.into(),
         }
     }
 }

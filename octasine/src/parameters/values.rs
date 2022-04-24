@@ -587,17 +587,29 @@ impl ParameterValue for OperatorPanningValue {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
-pub struct Operator2ModulationTargetValue(pub usize);
+pub trait OperatorModulationTargetValue: ParameterValue + Copy {
+    fn as_iter(&self) -> Box<dyn Iterator<Item = bool>>;
+    fn index_active(&self, index: usize) -> bool;
+    fn set_index(&mut self, index: usize, active: bool);
+}
 
-impl Default for Operator2ModulationTargetValue {
-    fn default() -> Self {
-        Self(DEFAULT_OPERATOR_2_MOD_TARGET)
+#[derive(Debug, Clone, Copy, Default)]
+pub struct Operator2ModulationTargetValue(ModTargets<1>);
+
+impl OperatorModulationTargetValue for Operator2ModulationTargetValue {
+    fn as_iter(&self) -> Box<dyn Iterator<Item = bool>> {
+        self.0.as_iter()
+    }
+    fn index_active(&self, index: usize) -> bool {
+        self.0.index_active(index)
+    }
+    fn set_index(&mut self, index: usize, active: bool) {
+        self.0.set_index(index, active);
     }
 }
 
 impl ParameterValue for Operator2ModulationTargetValue {
-    type Value = usize;
+    type Value = ModTargets<1>;
 
     fn from_processing(value: Self::Value) -> Self {
         Self(value)
@@ -605,40 +617,40 @@ impl ParameterValue for Operator2ModulationTargetValue {
     fn get(self) -> Self::Value {
         self.0
     }
-    fn from_sync(_sync: f64) -> Self {
-        Self(0)
+    fn from_sync(sync: f64) -> Self {
+        Self(map_parameter_value_to_step(
+            Self::Value::permutations(),
+            sync,
+        ))
     }
     fn to_sync(self) -> f64 {
-        0.0
+        map_step_to_parameter_value(Self::Value::permutations(), self.0)
     }
     fn format(self) -> String {
-        format!("{}", self.0 + 1)
+        self.0.as_string()
     }
     fn format_sync(value: f64) -> String {
         Self::from_sync(value).format()
     }
-    fn from_text(text: String) -> Option<Self> {
-        if let Ok(value) = text.parse::<usize>() {
-            if value == 1 || value == 2 {
-                return Some(Self(value - 1));
-            }
-        }
-
-        None
-    }
 }
 
-#[derive(Debug, Clone, Copy)]
-pub struct Operator3ModulationTargetValue(pub usize);
+#[derive(Debug, Clone, Copy, Default)]
+pub struct Operator3ModulationTargetValue(ModTargets<2>);
 
-impl Default for Operator3ModulationTargetValue {
-    fn default() -> Self {
-        Self(DEFAULT_OPERATOR_3_MOD_TARGET)
+impl OperatorModulationTargetValue for Operator3ModulationTargetValue {
+    fn as_iter(&self) -> Box<dyn Iterator<Item = bool>> {
+        self.0.as_iter()
+    }
+    fn index_active(&self, index: usize) -> bool {
+        self.0.index_active(index)
+    }
+    fn set_index(&mut self, index: usize, active: bool) {
+        self.0.set_index(index, active);
     }
 }
 
 impl ParameterValue for Operator3ModulationTargetValue {
-    type Value = usize;
+    type Value = ModTargets<2>;
 
     fn from_processing(value: Self::Value) -> Self {
         Self(value)
@@ -647,39 +659,39 @@ impl ParameterValue for Operator3ModulationTargetValue {
         self.0
     }
     fn from_sync(sync: f64) -> Self {
-        Self(map_parameter_value_to_step(&[0, 1], sync))
+        Self(map_parameter_value_to_step(
+            Self::Value::permutations(),
+            sync,
+        ))
     }
     fn to_sync(self) -> f64 {
-        map_step_to_parameter_value(&[0, 1], self.0)
+        map_step_to_parameter_value(Self::Value::permutations(), self.0)
     }
     fn format(self) -> String {
-        format!("{}", self.0 + 1)
+        self.0.as_string()
     }
     fn format_sync(value: f64) -> String {
         Self::from_sync(value).format()
     }
-    fn from_text(text: String) -> Option<Self> {
-        if let Ok(value) = text.parse::<usize>() {
-            if value == 1 || value == 2 {
-                return Some(Self(value - 1));
-            }
-        }
-
-        None
-    }
 }
 
-#[derive(Debug, Clone, Copy)]
-pub struct Operator4ModulationTargetValue(usize);
+#[derive(Debug, Clone, Copy, Default)]
+pub struct Operator4ModulationTargetValue(ModTargets<3>);
 
-impl Default for Operator4ModulationTargetValue {
-    fn default() -> Self {
-        Self(DEFAULT_OPERATOR_4_MOD_TARGET)
+impl OperatorModulationTargetValue for Operator4ModulationTargetValue {
+    fn as_iter(&self) -> Box<dyn Iterator<Item = bool>> {
+        self.0.as_iter()
+    }
+    fn index_active(&self, index: usize) -> bool {
+        self.0.index_active(index)
+    }
+    fn set_index(&mut self, index: usize, active: bool) {
+        self.0.set_index(index, active);
     }
 }
 
 impl ParameterValue for Operator4ModulationTargetValue {
-    type Value = usize;
+    type Value = ModTargets<3>;
 
     fn from_processing(value: Self::Value) -> Self {
         Self(value)
@@ -688,25 +700,19 @@ impl ParameterValue for Operator4ModulationTargetValue {
         self.0
     }
     fn from_sync(sync: f64) -> Self {
-        Self(map_parameter_value_to_step(&[0, 1, 2], sync))
+        Self(map_parameter_value_to_step(
+            Self::Value::permutations(),
+            sync,
+        ))
     }
     fn to_sync(self) -> f64 {
-        map_step_to_parameter_value(&[0, 1, 2], self.0)
+        map_step_to_parameter_value(Self::Value::permutations(), self.0)
     }
     fn format(self) -> String {
-        format!("{}", self.0 + 1)
+        self.0.as_string()
     }
     fn format_sync(value: f64) -> String {
         Self::from_sync(value).format()
-    }
-    fn from_text(text: String) -> Option<Self> {
-        if let Ok(value) = text.parse::<usize>() {
-            if value == 1 || value == 2 || value == 3 {
-                return Some(Self(value - 1));
-            }
-        }
-
-        None
     }
 }
 

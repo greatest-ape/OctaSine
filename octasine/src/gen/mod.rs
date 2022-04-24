@@ -3,6 +3,7 @@ pub mod simd;
 
 use std::f64::consts::TAU;
 
+use arrayvec::ArrayVec;
 use duplicate::duplicate_item;
 use vst::buffer::AudioBuffer;
 
@@ -56,7 +57,7 @@ pub struct OperatorVoiceData {
     pub envelope_volumes: [f64; MAX_PD_WIDTH],
     pub phases: [f64; MAX_PD_WIDTH],
     pub wave_type: crate::WaveType,
-    pub modulation_target: usize,
+    pub modulation_targets: ArrayVec<usize, 3>,
     pub volume_factors: [f64; MAX_PD_WIDTH],
 }
 
@@ -303,7 +304,16 @@ mod gen {
         voice_data.wave_type = operator.wave_type.value;
 
         if let Some(p) = &mut operator.output_operator {
-            voice_data.modulation_target = p.get_value();
+            voice_data.modulation_targets.clear();
+            voice_data
+                .modulation_targets
+                .extend(p.get_values().enumerate().filter_map(|(index, active)| {
+                    if active {
+                        Some(index)
+                    } else {
+                        None
+                    }
+                }));
         }
 
         let envelope_volume = voice_operator
@@ -442,11 +452,11 @@ mod gen {
                     S::pd_mul(additive_out, volume_factors),
                 );
 
-                // Add modulation output to target operator's modulation inputs
-                voice_modulation_inputs[operator_voice_data.modulation_target] = S::pd_add(
-                    voice_modulation_inputs[operator_voice_data.modulation_target],
-                    modulation_out,
-                );
+                // Add modulation output to target operators' modulation inputs
+                for target in operator_voice_data.modulation_targets.iter().copied() {
+                    voice_modulation_inputs[target] =
+                        S::pd_add(voice_modulation_inputs[target], modulation_out);
+                }
             }
         }
 
@@ -571,10 +581,16 @@ mod gen {
 
         for _ in 0..3 {
             for operator_index in 1..4 {
-                let mod_target = voice_data.operators[operator_index].modulation_target;
-
-                if !operator_mix_out_active[operator_index] & !operator_generate_audio[mod_target] {
-                    operator_generate_audio[operator_index] = false;
+                for mod_target in voice_data.operators[operator_index]
+                    .modulation_targets
+                    .iter()
+                    .copied()
+                {
+                    if !operator_mix_out_active[operator_index]
+                        & !operator_generate_audio[mod_target]
+                    {
+                        operator_generate_audio[operator_index] = false;
+                    }
                 }
             }
         }

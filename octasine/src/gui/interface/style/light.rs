@@ -1,4 +1,5 @@
 use iced_baseview::{button, container, pick_list, radio, Color};
+use iced_style::checkbox;
 
 use super::{envelope, lfo_shape_picker, mod_matrix};
 
@@ -50,6 +51,28 @@ impl radio::StyleSheet for Radio {
         radio::Style {
             background: SURFACE_DARK.into(),
             ..self.active()
+        }
+    }
+}
+
+pub struct Checkbox;
+
+impl checkbox::StyleSheet for Checkbox {
+    fn active(&self, bla: bool) -> checkbox::Style {
+        checkbox::Style {
+            background: SURFACE.into(),
+            checkmark_color: TEXT_FG,
+            text_color: Some(TEXT_FG),
+            border_width: 1.0,
+            border_color: BORDER,
+            border_radius: 1.0, // FIXME
+        }
+    }
+
+    fn hovered(&self, bla: bool) -> checkbox::Style {
+        checkbox::Style {
+            background: SURFACE_DARK.into(),
+            ..self.active(bla)
         }
     }
 }

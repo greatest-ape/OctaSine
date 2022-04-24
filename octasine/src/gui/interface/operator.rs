@@ -14,12 +14,13 @@ use crate::GuiSyncHandle;
 use super::boolean_picker::{self, BooleanPicker};
 use super::envelope::Envelope;
 use super::knob::{self, OctaSineKnob};
+use super::mod_target_picker;
 use super::style::Theme;
 use super::{Message, FONT_SIZE, FONT_VERY_BOLD, LINE_HEIGHT};
 
 pub enum ModTargetPicker {
-    Operator4(BooleanPicker<Operator4ModulationTargetValue>),
-    Operator3(BooleanPicker<Operator3ModulationTargetValue>),
+    Operator4(mod_target_picker::ModTargetPicker<Operator4ModulationTargetValue>),
+    Operator3(mod_target_picker::ModTargetPicker<Operator3ModulationTargetValue>),
 }
 
 pub struct OperatorWidgets {
@@ -73,10 +74,10 @@ impl OperatorWidgets {
 
         let mod_target = match operator_index {
             3 => Some(ModTargetPicker::Operator4(
-                boolean_picker::operator_4_target(sync_handle, mod_target, style),
+                mod_target_picker::operator_4_target(sync_handle, mod_target, style),
             )),
             2 => Some(ModTargetPicker::Operator3(
-                boolean_picker::operator_3_target(sync_handle, mod_target, style),
+                mod_target_picker::operator_3_target(sync_handle, mod_target, style),
             )),
             _ => None,
         };

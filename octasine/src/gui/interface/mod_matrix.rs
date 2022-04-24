@@ -6,7 +6,8 @@ use palette::gradient::Gradient;
 use palette::Srgba;
 
 use crate::parameters::values::{
-    Operator3ModulationTargetValue, Operator4ModulationTargetValue, ParameterValue,
+    Operator3ModulationTargetValue, Operator4ModulationTargetValue, OperatorModulationTargetValue,
+    ParameterValue,
 };
 use crate::GuiSyncHandle;
 
@@ -523,11 +524,23 @@ impl ModulationMatrixParameters {
     }
 
     fn convert_operator_3_target(value: f64) -> usize {
-        Operator3ModulationTargetValue::from_sync(value).0
+        /*
+        Operator3ModulationTargetValue::from_sync(value).as_iter().enumerate().filter_map(|(index, active)| {
+            if active {
+                Some(index)
+            } else {
+                None
+            }
+        })
+        */
+
+        0 // FIXME
     }
 
     fn convert_operator_4_target(value: f64) -> usize {
-        Operator4ModulationTargetValue::from_sync(value).get()
+        // Operator4ModulationTargetValue::from_sync(value).get()
+
+        0 // FIXME
     }
 }
 

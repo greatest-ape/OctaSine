@@ -307,34 +307,6 @@ mod tests {
     }
 
     #[test]
-    fn test_set_output_operator_text() {
-        let p = operator_modulation_target_3();
-
-        assert!(!p.set_from_text("abc".to_string()));
-        assert!(!p.set_from_text("0".to_string()));
-        assert!(!p.set_from_text("0.5".to_string()));
-        assert!(!p.set_from_text("4".to_string()));
-
-        assert!(p.set_from_text("1".to_string()));
-        assert_eq!(
-            Operator4ModulationTargetValue::from_sync(p.get_value()).get(),
-            0
-        );
-
-        assert!(p.set_from_text("2".to_string()));
-        assert_eq!(
-            Operator4ModulationTargetValue::from_sync(p.get_value()).get(),
-            1
-        );
-
-        assert!(p.set_from_text("3".to_string()));
-        assert_eq!(
-            Operator4ModulationTargetValue::from_sync(p.get_value()).get(),
-            2
-        );
-    }
-
-    #[test]
     fn test_set_frequency_ratio_text() {
         let p = operator_frequency_ratio(3);
 

@@ -298,11 +298,11 @@ impl OperatorModulationTargetProcessingParameter {
         }
     }
 
-    pub fn get_value(&mut self) -> usize {
+    pub fn get_values(&mut self) -> Box<dyn Iterator<Item = bool>> {
         match self {
-            Self::Two(p) => p.get_value(),
-            Self::Three(p) => p.get_value(),
-            Self::Four(p) => p.get_value(),
+            Self::Two(p) => p.get_value().as_iter(),
+            Self::Three(p) => p.get_value().as_iter(),
+            Self::Four(p) => p.get_value().as_iter(),
         }
     }
 

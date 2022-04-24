@@ -31,6 +31,92 @@ impl Default for BeatsPerMinute {
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct ModTargets<const N: usize>([bool; N]);
+
+impl ModTargets<1> {
+    pub fn permutations() -> &'static [Self] {
+        &[ModTargets([true]), ModTargets([false])]
+    }
+}
+
+impl ModTargets<2> {
+    pub fn permutations() -> &'static [Self] {
+        &[
+            ModTargets([false, false]),
+            ModTargets([true, false]),
+            ModTargets([false, true]),
+            ModTargets([true, true]),
+        ]
+    }
+}
+
+impl ModTargets<3> {
+    pub fn permutations() -> &'static [Self] {
+        &[
+            ModTargets([true, false, false]),
+            ModTargets([true, true, false]),
+            ModTargets([true, false, true]),
+            ModTargets([true, true, true]),
+            ModTargets([false, true, false]),
+            ModTargets([false, false, true]),
+            ModTargets([false, true, true]),
+            ModTargets([false, false, true]),
+            ModTargets([false, false, false]),
+        ]
+    }
+}
+
+impl Default for ModTargets<1> {
+    fn default() -> Self {
+        Self([true])
+    }
+}
+
+impl Default for ModTargets<2> {
+    fn default() -> Self {
+        Self([false, true])
+    }
+}
+
+impl Default for ModTargets<3> {
+    fn default() -> Self {
+        Self([false, false, true])
+    }
+}
+
+impl<const N: usize> ModTargets<N> {
+    pub fn set_index(&mut self, index: usize, value: bool) {
+        self.0[index] = value;
+    }
+
+    pub fn index_active(&self, index: usize) -> bool {
+        self.0[index]
+    }
+
+    pub fn as_string(&self) -> String {
+        let mut output = String::new();
+
+        for (index, active) in self.0.into_iter().enumerate() {
+            if active {
+                let operator_number = index + 1;
+
+                if output.is_empty() {
+                    output.push_str(&format!("{}", operator_number))
+                } else {
+                    output.push_str(&format!(", {}", operator_number))
+                }
+            }
+        }
+
+        output
+    }
+
+    pub fn as_iter(&self) -> Box<dyn Iterator<Item = bool>> {
+        Box::new(self.0.into_iter())
+    }
+}
+
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum EnvelopeStage {
     Attack,
