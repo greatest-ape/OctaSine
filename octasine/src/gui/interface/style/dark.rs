@@ -56,21 +56,21 @@ impl radio::StyleSheet for Radio {
 pub struct Checkbox;
 
 impl checkbox::StyleSheet for Checkbox {
-    fn active(&self, bla: bool) -> checkbox::Style {
+    fn active(&self, _is_checked: bool) -> checkbox::Style {
         checkbox::Style {
             background: SURFACE.into(),
             checkmark_color: TEXT_FG,
             text_color: Some(TEXT_FG),
             border_width: 1.0,
             border_color: TEXT_FG,
-            border_radius: 1.0, // FIXME
+            border_radius: 5.0,
         }
     }
 
-    fn hovered(&self, bla: bool) -> checkbox::Style {
+    fn hovered(&self, is_checked: bool) -> checkbox::Style {
         checkbox::Style {
             border_color: HOVERED,
-            ..self.active(bla)
+            ..self.active(is_checked)
         }
     }
 }
