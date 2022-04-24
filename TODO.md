@@ -2,9 +2,11 @@
 
 ## High priority
 
+* Multiple modulation targets
+  * Check audio gen, including dependency analysis
+  * Fix mod matrix
 * Add way to interact with operator volume toggle parameters. Maybe green
   number for active operators? Mute button or similar might be better.
-* Consider multiple modulation targets
 * Look at other/better operator ratio parameter values
 
 ## Medium priority
