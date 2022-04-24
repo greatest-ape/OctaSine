@@ -147,7 +147,7 @@ impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {
                     Some(ModTargetPicker::Operator2(p)) => p.set_value(v),
                     _ => {}
                 }
-                // self.modulation_matrix.set_operator_2_target(v) // FIXME
+                self.modulation_matrix.set_operator_2_target(v);
             }
             22 => {
                 if let Some(mod_index) = self.operator_2.mod_index.as_mut() {

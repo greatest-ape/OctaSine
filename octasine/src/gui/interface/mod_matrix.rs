@@ -1,3 +1,5 @@
+use std::marker::PhantomData;
+
 use iced_baseview::canvas::{
     event, path, Cache, Canvas, Cursor, Frame, Geometry, Path, Program, Stroke, Text,
 };
@@ -5,6 +7,11 @@ use iced_baseview::{mouse, Color, Element, Length, Point, Rectangle, Size, Vecto
 use palette::gradient::Gradient;
 use palette::Srgba;
 
+use crate::common::{ModTarget, ModTargetStorage};
+use crate::parameters::values::{
+    Operator2ModulationTargetValue, Operator3ModulationTargetValue, Operator4ModulationTargetValue,
+    ParameterValue,
+};
 use crate::GuiSyncHandle;
 
 use super::style::Theme;
@@ -136,14 +143,9 @@ impl OperatorBox {
         }
     }
 
-    fn update(
-        &mut self,
-        bounds: Rectangle,
-        event: event::Event,
-        value: f64,
-    ) -> ModulationBoxChange {
+    fn update(&mut self, bounds: Rectangle, event: event::Event, value: f64) -> OperatorBoxChange {
         if self.index == 0 {
-            return ModulationBoxChange::None;
+            return OperatorBoxChange::None;
         }
 
         match event {
@@ -160,12 +162,12 @@ impl OperatorBox {
                     BoxStatus::Normal if hit => {
                         self.status = BoxStatus::Hover;
 
-                        return ModulationBoxChange::ClearCache(None);
+                        return OperatorBoxChange::ClearCache(None);
                     }
                     BoxStatus::Hover if !hit => {
                         self.status = BoxStatus::Normal;
 
-                        return ModulationBoxChange::ClearCache(None);
+                        return OperatorBoxChange::ClearCache(None);
                     }
                     BoxStatus::Dragging {
                         from,
@@ -173,12 +175,10 @@ impl OperatorBox {
                     } => {
                         let change = -(cursor.y - from.y) as f64 / 100.0;
 
-                        return ModulationBoxChange::Update(
-                            Message::ChangeSingleParameterSetValue(
-                                self.get_parameter_index(),
-                                (original_value + change).max(0.0).min(1.0),
-                            ),
-                        );
+                        return OperatorBoxChange::Update(Message::ChangeSingleParameterSetValue(
+                            self.get_parameter_index(),
+                            (original_value + change).max(0.0).min(1.0),
+                        ));
                     }
                     _ => (),
                 }
@@ -190,7 +190,7 @@ impl OperatorBox {
                         original_value: value,
                     };
 
-                    return ModulationBoxChange::ClearCache(Some(
+                    return OperatorBoxChange::ClearCache(Some(
                         Message::ChangeSingleParameterBegin(self.get_parameter_index()),
                     ));
                 }
@@ -203,15 +203,15 @@ impl OperatorBox {
                         self.status = BoxStatus::Normal;
                     }
 
-                    return ModulationBoxChange::ClearCache(Some(
-                        Message::ChangeSingleParameterEnd(self.get_parameter_index()),
-                    ));
+                    return OperatorBoxChange::ClearCache(Some(Message::ChangeSingleParameterEnd(
+                        self.get_parameter_index(),
+                    )));
                 }
             }
             _ => (),
         }
 
-        ModulationBoxChange::None
+        OperatorBoxChange::None
     }
 
     fn draw(&self, frame: &mut Frame, style_sheet: Box<dyn StyleSheet>) {
@@ -239,18 +239,41 @@ enum ModulationBoxChange {
     None,
 }
 
-struct ModulationBox {
+enum OperatorBoxChange {
+    Update(Message),
+    ClearCache(Option<Message>),
+    None,
+}
+
+trait ModulationBoxUpdate {
+    fn update(&mut self, bounds: Rectangle, event: event::Event) -> ModulationBoxChange;
+}
+
+struct ModulationBox<P, V> {
     path: Path,
     center: Point,
     rect: Rectangle,
-    active: bool,
     hover: bool,
     click_started: bool,
-    message: Option<Message>,
+    parameter_index: usize,
+    target_index: usize,
+    v: V,
+    _phantom_data: PhantomData<P>,
 }
 
-impl ModulationBox {
-    fn new(bounds: Size, from: usize, to: usize, active: bool, message: Option<Message>) -> Self {
+impl<P, V> ModulationBox<P, V>
+where
+    P: ParameterValue<Value = V>,
+    V: ModTarget,
+{
+    fn new(
+        bounds: Size,
+        from: usize,
+        to: usize,
+        parameter_index: usize,
+        target_index: usize,
+        v: V,
+    ) -> Self {
         let (x, y) = match (from, to) {
             (3, 2) => (2, 0),
             (3, 1) => (4, 0),
@@ -279,52 +302,17 @@ impl ModulationBox {
             path,
             center,
             rect,
-            active,
             hover: false,
             click_started: false,
-            message,
+            parameter_index,
+            target_index,
+            v,
+            _phantom_data: Default::default(),
         }
     }
 
-    fn update(&mut self, bounds: Rectangle, event: event::Event) -> ModulationBoxChange {
-        if let Some(message) = self.message.as_ref() {
-            match event {
-                event::Event::Mouse(mouse::Event::CursorMoved {
-                    position: Point { x, y },
-                }) => {
-                    let cursor = Point::new(x - bounds.x, y - bounds.y);
-
-                    match (self.hover, self.rect.contains(cursor)) {
-                        (false, true) => {
-                            self.hover = true;
-
-                            return ModulationBoxChange::ClearCache(None);
-                        }
-                        (true, false) => {
-                            self.hover = false;
-
-                            return ModulationBoxChange::ClearCache(None);
-                        }
-                        _ => (),
-                    }
-                }
-                event::Event::Mouse(mouse::Event::ButtonPressed(_)) => {
-                    if self.hover {
-                        self.click_started = true;
-                    }
-                }
-                event::Event::Mouse(mouse::Event::ButtonReleased(_)) => {
-                    if self.hover && self.click_started {
-                        self.click_started = false;
-
-                        return ModulationBoxChange::Update(message.clone());
-                    }
-                }
-                _ => (),
-            }
-        }
-
-        ModulationBoxChange::None
+    fn active(&self) -> bool {
+        self.v.index_active(self.target_index)
     }
 
     fn draw(&self, frame: &mut Frame, style_sheet: Box<dyn StyleSheet>) {
@@ -334,13 +322,64 @@ impl ModulationBox {
             .with_color(style.box_border_color)
             .with_width(1.0);
 
-        if self.active || self.hover {
+        if self.active() || self.hover {
             frame.fill(&self.path, style.modulation_box_color_active);
         } else {
             frame.fill(&self.path, style.modulation_box_color_inactive);
         }
 
         frame.stroke(&self.path, stroke);
+    }
+}
+
+impl<P, V> ModulationBoxUpdate for ModulationBox<P, V>
+where
+    P: ParameterValue<Value = V>,
+    V: ModTarget,
+{
+    fn update(&mut self, bounds: Rectangle, event: event::Event) -> ModulationBoxChange {
+        match event {
+            event::Event::Mouse(mouse::Event::CursorMoved {
+                position: Point { x, y },
+            }) => {
+                let cursor = Point::new(x - bounds.x, y - bounds.y);
+
+                match (self.hover, self.rect.contains(cursor)) {
+                    (false, true) => {
+                        self.hover = true;
+
+                        return ModulationBoxChange::ClearCache(None);
+                    }
+                    (true, false) => {
+                        self.hover = false;
+
+                        return ModulationBoxChange::ClearCache(None);
+                    }
+                    _ => (),
+                }
+            }
+            event::Event::Mouse(mouse::Event::ButtonPressed(_)) => {
+                if self.hover {
+                    self.click_started = true;
+                }
+            }
+            event::Event::Mouse(mouse::Event::ButtonReleased(_)) => {
+                if self.hover && self.click_started {
+                    self.click_started = false;
+
+                    self.v.set_index(self.target_index, !self.active());
+                    let sync_value = P::from_processing(self.v).to_sync();
+
+                    return ModulationBoxChange::Update(Message::ChangeSingleParameterImmediate(
+                        self.parameter_index,
+                        sync_value,
+                    ));
+                }
+            }
+            _ => (),
+        }
+
+        ModulationBoxChange::None
     }
 }
 
@@ -438,26 +477,25 @@ impl AdditiveLine {
 }
 
 struct ModulationLine {
-    path: Path,
+    from: Point,
+    points: Vec<Point>,
     color: Color,
 }
 
 impl ModulationLine {
-    fn new(
-        from: Point,
-        through: Point,
-        to: Point,
-        mod_index: f64,
-        style_sheet: Box<dyn StyleSheet>,
-    ) -> Self {
-        let mut builder = path::Builder::new();
+    fn new(from: Point, mod_index: f64, style_sheet: Box<dyn StyleSheet>) -> Self {
+        let mut line = Self {
+            from,
+            points: vec![],
+            color: Color::TRANSPARENT,
+        };
 
-        builder.move_to(from.snap());
-        builder.line_to(through.snap());
-        builder.line_to(to.snap());
+        line.update(vec![], style_sheet, mod_index);
 
-        let path = builder.build();
+        line
+    }
 
+    fn update(&mut self, points: Vec<Point>, style_sheet: Box<dyn StyleSheet>, mod_index: f64) {
         let bg = style_sheet.active().background_color;
         let c = style_sheet.active().line_max_color;
 
@@ -470,19 +508,31 @@ impl ModulationLine {
         let color = gradient.get(mod_index as f32);
         let color = Color::from(Srgba::from_linear(color));
 
-        Self { path, color }
+        self.points = points;
+        self.color = color;
     }
 
     fn draw(&self, frame: &mut Frame) {
         let stroke = Stroke::default().with_width(3.0).with_color(self.color);
 
-        frame.stroke(&self.path, stroke);
+        let mut builder = path::Builder::new();
+
+        builder.move_to(self.from.snap());
+
+        for point in self.points.iter() {
+            builder.line_to(point.snap());
+        }
+
+        let path = builder.build();
+
+        frame.stroke(&path, stroke);
     }
 }
 
 struct ModulationMatrixParameters {
-    operator_3_target: usize,
-    operator_4_target: usize,
+    operator_2_targets: ModTargetStorage<1>,
+    operator_3_targets: ModTargetStorage<2>,
+    operator_4_targets: ModTargetStorage<3>,
     operator_1_mix: f64,
     operator_2_mix: f64,
     operator_3_mix: f64,
@@ -494,8 +544,12 @@ struct ModulationMatrixParameters {
 
 impl ModulationMatrixParameters {
     fn new<H: GuiSyncHandle>(sync_handle: &H) -> Self {
-        let operator_3_target = Self::convert_operator_3_target(sync_handle.get_parameter(37));
-        let operator_4_target = Self::convert_operator_4_target(sync_handle.get_parameter(53));
+        let operator_2_targets =
+            Operator2ModulationTargetValue::from_sync(sync_handle.get_parameter(21)).get();
+        let operator_3_targets =
+            Operator3ModulationTargetValue::from_sync(sync_handle.get_parameter(37)).get();
+        let operator_4_targets =
+            Operator4ModulationTargetValue::from_sync(sync_handle.get_parameter(53)).get();
 
         let operator_1_mix = sync_handle.get_parameter(4);
         let operator_2_mix = sync_handle.get_parameter(18);
@@ -507,8 +561,9 @@ impl ModulationMatrixParameters {
         let operator_4_mod = sync_handle.get_parameter(54);
 
         Self {
-            operator_3_target,
-            operator_4_target,
+            operator_2_targets,
+            operator_3_targets,
+            operator_4_targets,
             operator_1_mix,
             operator_2_mix,
             operator_3_mix,
@@ -518,26 +573,6 @@ impl ModulationMatrixParameters {
             operator_4_mod,
         }
     }
-
-    fn convert_operator_3_target(value: f64) -> usize {
-        /*
-        Operator3ModulationTargetValue::from_sync(value).as_iter().enumerate().filter_map(|(index, active)| {
-            if active {
-                Some(index)
-            } else {
-                None
-            }
-        })
-        */
-
-        0 // FIXME
-    }
-
-    fn convert_operator_4_target(value: f64) -> usize {
-        // Operator4ModulationTargetValue::from_sync(value).get()
-
-        0 // FIXME
-    }
 }
 
 struct ModulationMatrixComponents {
@@ -545,12 +580,12 @@ struct ModulationMatrixComponents {
     operator_2_box: OperatorBox,
     operator_3_box: OperatorBox,
     operator_4_box: OperatorBox,
-    operator_4_mod_3_box: ModulationBox,
-    operator_4_mod_2_box: ModulationBox,
-    operator_4_mod_1_box: ModulationBox,
-    operator_3_mod_2_box: ModulationBox,
-    operator_3_mod_1_box: ModulationBox,
-    operator_2_mod_1_box: ModulationBox,
+    operator_4_mod_3_box: ModulationBox<Operator4ModulationTargetValue, ModTargetStorage<3>>,
+    operator_4_mod_2_box: ModulationBox<Operator4ModulationTargetValue, ModTargetStorage<3>>,
+    operator_4_mod_1_box: ModulationBox<Operator4ModulationTargetValue, ModTargetStorage<3>>,
+    operator_3_mod_2_box: ModulationBox<Operator3ModulationTargetValue, ModTargetStorage<2>>,
+    operator_3_mod_1_box: ModulationBox<Operator3ModulationTargetValue, ModTargetStorage<2>>,
+    operator_2_mod_1_box: ModulationBox<Operator2ModulationTargetValue, ModTargetStorage<1>>,
     output_box: OutputBox,
     operator_4_additive_line: AdditiveLine,
     operator_3_additive_line: AdditiveLine,
@@ -568,42 +603,18 @@ impl ModulationMatrixComponents {
         let operator_3_box = OperatorBox::new(bounds, 2, style.into());
         let operator_4_box = OperatorBox::new(bounds, 3, style.into());
 
-        let operator_4_mod_3_box = ModulationBox::new(
-            bounds,
-            3,
-            2,
-            parameters.operator_4_target == 2,
-            Some(Message::ChangeSingleParameterImmediate(53, 1.0)),
-        );
-        let operator_4_mod_2_box = ModulationBox::new(
-            bounds,
-            3,
-            1,
-            parameters.operator_4_target == 1,
-            Some(Message::ChangeSingleParameterImmediate(53, 0.5)),
-        );
-        let operator_4_mod_1_box = ModulationBox::new(
-            bounds,
-            3,
-            0,
-            parameters.operator_4_target == 0,
-            Some(Message::ChangeSingleParameterImmediate(53, 0.0)),
-        );
-        let operator_3_mod_2_box = ModulationBox::new(
-            bounds,
-            2,
-            1,
-            parameters.operator_3_target == 1,
-            Some(Message::ChangeSingleParameterImmediate(37, 1.0)),
-        );
-        let operator_3_mod_1_box = ModulationBox::new(
-            bounds,
-            2,
-            0,
-            parameters.operator_3_target == 0,
-            Some(Message::ChangeSingleParameterImmediate(37, 0.0)),
-        );
-        let operator_2_mod_1_box = ModulationBox::new(bounds, 1, 0, true, None);
+        let operator_4_mod_3_box =
+            ModulationBox::new(bounds, 3, 2, 53, 2, parameters.operator_4_targets);
+        let operator_4_mod_2_box =
+            ModulationBox::new(bounds, 3, 1, 53, 1, parameters.operator_4_targets);
+        let operator_4_mod_1_box =
+            ModulationBox::new(bounds, 3, 0, 53, 0, parameters.operator_4_targets);
+        let operator_3_mod_2_box =
+            ModulationBox::new(bounds, 2, 1, 37, 1, parameters.operator_3_targets);
+        let operator_3_mod_1_box =
+            ModulationBox::new(bounds, 2, 0, 37, 0, parameters.operator_3_targets);
+        let operator_2_mod_1_box =
+            ModulationBox::new(bounds, 1, 0, 21, 0, parameters.operator_2_targets);
 
         let output_box = OutputBox::new(bounds);
 
@@ -632,48 +643,23 @@ impl ModulationMatrixComponents {
             style.into(),
         );
 
-        let operator_4_modulation_line = {
-            let (through, to) = match parameters.operator_4_target {
-                0 => (operator_4_mod_1_box.center, operator_1_box.center),
-                1 => (operator_4_mod_2_box.center, operator_2_box.center),
-                2 => (operator_4_mod_3_box.center, operator_3_box.center),
-                _ => unreachable!(),
-            };
-
-            ModulationLine::new(
-                operator_4_box.center,
-                through,
-                to,
-                parameters.operator_4_mod,
-                style.into(),
-            )
-        };
-
-        let operator_3_modulation_line = {
-            let (through, to) = match parameters.operator_3_target {
-                0 => (operator_3_mod_1_box.center, operator_1_box.center),
-                1 => (operator_3_mod_2_box.center, operator_2_box.center),
-                _ => unreachable!(),
-            };
-
-            ModulationLine::new(
-                operator_3_box.center,
-                through,
-                to,
-                parameters.operator_3_mod,
-                style.into(),
-            )
-        };
-
+        let operator_4_modulation_line = ModulationLine::new(
+            operator_4_box.center,
+            parameters.operator_4_mod,
+            style.into(),
+        );
+        let operator_3_modulation_line = ModulationLine::new(
+            operator_3_box.center,
+            parameters.operator_3_mod,
+            style.into(),
+        );
         let operator_2_modulation_line = ModulationLine::new(
             operator_2_box.center,
-            operator_2_mod_1_box.center,
-            operator_1_box.center,
             parameters.operator_2_mod,
             style.into(),
         );
 
-        Self {
+        let mut components = Self {
             operator_1_box,
             operator_2_box,
             operator_3_box,
@@ -692,15 +678,19 @@ impl ModulationMatrixComponents {
             operator_4_modulation_line,
             operator_3_modulation_line,
             operator_2_modulation_line,
-        }
+        };
+
+        components.update(parameters, style);
+
+        components
     }
 
     fn update(&mut self, parameters: &ModulationMatrixParameters, style: Theme) {
-        self.operator_4_mod_3_box.active = parameters.operator_4_target == 2;
-        self.operator_4_mod_2_box.active = parameters.operator_4_target == 1;
-        self.operator_4_mod_1_box.active = parameters.operator_4_target == 0;
-        self.operator_3_mod_2_box.active = parameters.operator_3_target == 1;
-        self.operator_3_mod_1_box.active = parameters.operator_3_target == 0;
+        self.operator_4_mod_3_box.v = parameters.operator_4_targets;
+        self.operator_4_mod_2_box.v = parameters.operator_4_targets;
+        self.operator_4_mod_1_box.v = parameters.operator_4_targets;
+        self.operator_3_mod_2_box.v = parameters.operator_3_targets;
+        self.operator_3_mod_1_box.v = parameters.operator_3_targets;
 
         self.operator_4_additive_line
             .update(parameters.operator_4_mix, style.into());
@@ -712,46 +702,62 @@ impl ModulationMatrixComponents {
         self.operator_1_additive_line
             .update(parameters.operator_1_mix, style.into());
 
-        self.operator_4_modulation_line = {
-            let (through, to) = match parameters.operator_4_target {
-                0 => (self.operator_4_mod_1_box.center, self.operator_1_box.center),
-                1 => (self.operator_4_mod_2_box.center, self.operator_2_box.center),
-                2 => (self.operator_4_mod_3_box.center, self.operator_3_box.center),
-                _ => unreachable!(),
-            };
+        {
+            let mut points = Vec::new();
 
-            ModulationLine::new(
-                self.operator_4_box.center,
-                through,
-                to,
-                parameters.operator_4_mod,
-                style.into(),
-            )
+            for mod_target in parameters.operator_4_targets.active_indices() {
+                let (mod_box, operator_box) = match mod_target {
+                    0 => (self.operator_4_mod_1_box.center, self.operator_1_box.center),
+                    1 => (self.operator_4_mod_2_box.center, self.operator_2_box.center),
+                    2 => (self.operator_4_mod_3_box.center, self.operator_3_box.center),
+                    _ => unreachable!(),
+                };
+
+                points.push(mod_box);
+                points.push(operator_box);
+                points.push(mod_box);
+            }
+
+            self.operator_4_modulation_line
+                .update(points, style.into(), parameters.operator_4_mod);
+        }
+
+        {
+            let mut points = Vec::new();
+
+            for mod_target in parameters.operator_3_targets.active_indices() {
+                let (mod_box, operator_box) = match mod_target {
+                    0 => (self.operator_3_mod_1_box.center, self.operator_1_box.center),
+                    1 => (self.operator_3_mod_2_box.center, self.operator_2_box.center),
+                    _ => unreachable!(),
+                };
+
+                points.push(mod_box);
+                points.push(operator_box);
+                points.push(mod_box);
+            }
+
+            self.operator_3_modulation_line
+                .update(points, style.into(), parameters.operator_3_mod);
         };
 
-        self.operator_3_modulation_line = {
-            let (through, to) = match parameters.operator_3_target {
-                0 => (self.operator_3_mod_1_box.center, self.operator_1_box.center),
-                1 => (self.operator_3_mod_2_box.center, self.operator_2_box.center),
-                _ => unreachable!(),
-            };
+        {
+            let mut points = Vec::new();
 
-            ModulationLine::new(
-                self.operator_3_box.center,
-                through,
-                to,
-                parameters.operator_3_mod,
-                style.into(),
-            )
-        };
+            for mod_target in parameters.operator_2_targets.active_indices() {
+                let (mod_box, operator_box) = match mod_target {
+                    0 => (self.operator_2_mod_1_box.center, self.operator_1_box.center),
+                    _ => unreachable!(),
+                };
 
-        self.operator_2_modulation_line = ModulationLine::new(
-            self.operator_2_box.center,
-            self.operator_2_mod_1_box.center,
-            self.operator_1_box.center,
-            parameters.operator_2_mod,
-            style.into(),
-        );
+                points.push(mod_box);
+                points.push(operator_box);
+                points.push(mod_box);
+            }
+
+            self.operator_2_modulation_line
+                .update(points, style.into(), parameters.operator_2_mod);
+        }
     }
 
     fn draw_lines(&self, frame: &mut Frame) {
@@ -810,16 +816,20 @@ impl ModulationMatrix {
         self.cache.clear();
     }
 
+    pub fn set_operator_2_target(&mut self, value: f64) {
+        self.parameters.operator_2_targets = Operator2ModulationTargetValue::from_sync(value).get();
+
+        self.update_components();
+    }
+
     pub fn set_operator_3_target(&mut self, value: f64) {
-        self.parameters.operator_3_target =
-            ModulationMatrixParameters::convert_operator_3_target(value);
+        self.parameters.operator_3_targets = Operator3ModulationTargetValue::from_sync(value).get();
 
         self.update_components();
     }
 
     pub fn set_operator_4_target(&mut self, value: f64) {
-        self.parameters.operator_4_target =
-            ModulationMatrixParameters::convert_operator_4_target(value);
+        self.parameters.operator_4_targets = Operator4ModulationTargetValue::from_sync(value).get();
 
         self.update_components();
     }
@@ -915,27 +925,28 @@ impl Program<Message> for ModulationMatrix {
         bounds: Rectangle,
         _cursor: Cursor,
     ) -> (event::Status, Option<Message>) {
-        let mod_boxes = vec![
-            &mut self.components.operator_4_mod_3_box,
-            &mut self.components.operator_4_mod_2_box,
-            &mut self.components.operator_4_mod_1_box,
-            &mut self.components.operator_3_mod_2_box,
-            &mut self.components.operator_3_mod_1_box,
-        ];
+        macro_rules! update_mod_box {
+            ($mod_box:expr) => {
+                match $mod_box.update(bounds, event) {
+                    ModulationBoxChange::Update(message) => {
+                        return (event::Status::Captured, Some(message));
+                    }
+                    ModulationBoxChange::ClearCache(opt_message) => {
+                        self.cache.clear();
 
-        for mod_box in mod_boxes.into_iter() {
-            match mod_box.update(bounds, event) {
-                ModulationBoxChange::Update(message) => {
-                    return (event::Status::Captured, Some(message));
+                        return (event::Status::Ignored, opt_message);
+                    }
+                    ModulationBoxChange::None => (),
                 }
-                ModulationBoxChange::ClearCache(opt_message) => {
-                    self.cache.clear();
-
-                    return (event::Status::Ignored, opt_message);
-                }
-                _ => (),
-            }
+            };
         }
+
+        update_mod_box!(self.components.operator_4_mod_3_box);
+        update_mod_box!(self.components.operator_4_mod_2_box);
+        update_mod_box!(self.components.operator_4_mod_1_box);
+        update_mod_box!(self.components.operator_3_mod_2_box);
+        update_mod_box!(self.components.operator_3_mod_1_box);
+        update_mod_box!(self.components.operator_2_mod_1_box);
 
         let operator_boxes = vec![
             (&mut self.components.operator_1_box, 0.0),
@@ -955,10 +966,10 @@ impl Program<Message> for ModulationMatrix {
 
         for (operator_box, value) in operator_boxes.into_iter() {
             match operator_box.update(bounds, event, value) {
-                ModulationBoxChange::Update(message) => {
+                OperatorBoxChange::Update(message) => {
                     return (event::Status::Captured, Some(message));
                 }
-                ModulationBoxChange::ClearCache(opt_message) => {
+                OperatorBoxChange::ClearCache(opt_message) => {
                     self.cache.clear();
 
                     return (event::Status::Ignored, opt_message);

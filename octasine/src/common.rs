@@ -31,11 +31,18 @@ impl Default for BeatsPerMinute {
     }
 }
 
-pub trait ModTarget {
+pub trait ModTarget: Copy {
     fn set_index(&mut self, index: usize, value: bool);
     fn index_active(&self, index: usize) -> bool;
     fn as_string(&self) -> String;
     fn as_iter(&self) -> Box<dyn Iterator<Item = bool>>;
+    fn active_indices(&self) -> Box<dyn Iterator<Item = usize>> {
+        Box::new(
+            self.as_iter()
+                .enumerate()
+                .filter_map(|(index, active)| if active { Some(index) } else { None }),
+        )
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
