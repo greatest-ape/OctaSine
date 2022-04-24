@@ -587,29 +587,11 @@ impl ParameterValue for OperatorPanningValue {
     }
 }
 
-pub trait OperatorModulationTargetValue: ParameterValue + Copy {
-    fn as_iter(&self) -> Box<dyn Iterator<Item = bool>>;
-    fn index_active(&self, index: usize) -> bool;
-    fn set_index(&mut self, index: usize, active: bool);
-}
-
 #[derive(Debug, Clone, Copy, Default)]
-pub struct Operator2ModulationTargetValue(ModTargets<1>);
-
-impl OperatorModulationTargetValue for Operator2ModulationTargetValue {
-    fn as_iter(&self) -> Box<dyn Iterator<Item = bool>> {
-        self.0.as_iter()
-    }
-    fn index_active(&self, index: usize) -> bool {
-        self.0.index_active(index)
-    }
-    fn set_index(&mut self, index: usize, active: bool) {
-        self.0.set_index(index, active);
-    }
-}
+pub struct Operator2ModulationTargetValue(ModTargetStorage<1>);
 
 impl ParameterValue for Operator2ModulationTargetValue {
-    type Value = ModTargets<1>;
+    type Value = ModTargetStorage<1>;
 
     fn from_processing(value: Self::Value) -> Self {
         Self(value)
@@ -635,22 +617,10 @@ impl ParameterValue for Operator2ModulationTargetValue {
 }
 
 #[derive(Debug, Clone, Copy, Default)]
-pub struct Operator3ModulationTargetValue(ModTargets<2>);
-
-impl OperatorModulationTargetValue for Operator3ModulationTargetValue {
-    fn as_iter(&self) -> Box<dyn Iterator<Item = bool>> {
-        self.0.as_iter()
-    }
-    fn index_active(&self, index: usize) -> bool {
-        self.0.index_active(index)
-    }
-    fn set_index(&mut self, index: usize, active: bool) {
-        self.0.set_index(index, active);
-    }
-}
+pub struct Operator3ModulationTargetValue(ModTargetStorage<2>);
 
 impl ParameterValue for Operator3ModulationTargetValue {
-    type Value = ModTargets<2>;
+    type Value = ModTargetStorage<2>;
 
     fn from_processing(value: Self::Value) -> Self {
         Self(value)
@@ -676,22 +646,10 @@ impl ParameterValue for Operator3ModulationTargetValue {
 }
 
 #[derive(Debug, Clone, Copy, Default)]
-pub struct Operator4ModulationTargetValue(ModTargets<3>);
-
-impl OperatorModulationTargetValue for Operator4ModulationTargetValue {
-    fn as_iter(&self) -> Box<dyn Iterator<Item = bool>> {
-        self.0.as_iter()
-    }
-    fn index_active(&self, index: usize) -> bool {
-        self.0.index_active(index)
-    }
-    fn set_index(&mut self, index: usize, active: bool) {
-        self.0.set_index(index, active);
-    }
-}
+pub struct Operator4ModulationTargetValue(ModTargetStorage<3>);
 
 impl ParameterValue for Operator4ModulationTargetValue {
-    type Value = ModTargets<3>;
+    type Value = ModTargetStorage<3>;
 
     fn from_processing(value: Self::Value) -> Self {
         Self(value)

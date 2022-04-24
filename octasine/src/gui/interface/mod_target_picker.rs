@@ -2,9 +2,10 @@ use iced_baseview::{
     alignment::Horizontal, Alignment, Checkbox, Column, Element, Length, Space, Text,
 };
 
+use crate::common::ModTarget;
 use crate::parameters::values::{
     Operator2ModulationTargetValue, Operator3ModulationTargetValue, Operator4ModulationTargetValue,
-    OperatorModulationTargetValue,
+    ParameterValue,
 };
 use crate::GuiSyncHandle;
 
@@ -36,15 +37,19 @@ pub fn operator_4_target<H: GuiSyncHandle>(
 }
 
 #[derive(Debug, Clone)]
-pub struct ModTargetPicker<P: OperatorModulationTargetValue> {
+pub struct ModTargetPicker<P> {
     title: String,
     parameter_index: usize,
     pub style: Theme,
     choices: Vec<usize>,
-    v: P,
+    parameter_value: P,
 }
 
-impl<P: 'static + OperatorModulationTargetValue> ModTargetPicker<P> {
+impl<P> ModTargetPicker<P>
+where
+    P: 'static + ParameterValue + Copy,
+    P::Value: ModTarget,
+{
     fn new<H: GuiSyncHandle>(
         sync_handle: &H,
         parameter_index: usize,
@@ -59,12 +64,12 @@ impl<P: 'static + OperatorModulationTargetValue> ModTargetPicker<P> {
             parameter_index,
             style,
             choices,
-            v: P::from_sync(sync_value),
+            parameter_value: P::from_sync(sync_value),
         }
     }
 
     pub fn set_value(&mut self, value: f64) {
-        self.v = P::from_sync(value);
+        self.parameter_value = P::from_sync(value);
     }
 
     pub fn view(&mut self) -> Element<Message> {
@@ -75,9 +80,9 @@ impl<P: 'static + OperatorModulationTargetValue> ModTargetPicker<P> {
         let mut checkboxes = Column::new().spacing(4);
 
         for index in self.choices.iter().copied() {
-            let active = self.v.index_active(index);
+            let active = self.parameter_value.get().index_active(index);
             let label = format!("{}", index + 1);
-            let v = self.v;
+            let v = self.parameter_value.get();
             let parameter_index = self.parameter_index;
 
             let checkbox = Checkbox::new(active, label, move |active| {
@@ -85,7 +90,9 @@ impl<P: 'static + OperatorModulationTargetValue> ModTargetPicker<P> {
 
                 v.set_index(index, active);
 
-                Message::ChangeSingleParameterImmediate(parameter_index, v.to_sync())
+                let sync = P::from_processing(v).to_sync();
+
+                Message::ChangeSingleParameterImmediate(parameter_index, sync)
             })
             .size(FONT_SIZE)
             .text_size(FONT_SIZE)

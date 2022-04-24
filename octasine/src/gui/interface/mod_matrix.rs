@@ -5,10 +5,6 @@ use iced_baseview::{mouse, Color, Element, Length, Point, Rectangle, Size, Vecto
 use palette::gradient::Gradient;
 use palette::Srgba;
 
-use crate::parameters::values::{
-    Operator3ModulationTargetValue, Operator4ModulationTargetValue, OperatorModulationTargetValue,
-    ParameterValue,
-};
 use crate::GuiSyncHandle;
 
 use super::style::Theme;
