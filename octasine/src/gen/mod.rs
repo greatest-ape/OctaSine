@@ -305,15 +305,12 @@ mod gen {
 
         if let Some(p) = &mut operator.output_operator {
             voice_data.modulation_targets.clear();
-            voice_data
-                .modulation_targets
-                .extend(p.get_values().enumerate().filter_map(|(index, active)| {
-                    if active {
-                        Some(index)
-                    } else {
-                        None
-                    }
-                }));
+
+            for (index, active) in p.get_values().enumerate() {
+                if active {
+                    voice_data.modulation_targets.push(index);
+                }
+            }
         }
 
         let envelope_volume = voice_operator
@@ -559,7 +556,6 @@ mod gen {
     unsafe fn run_operator_dependency_analysis(voice_data: &VoiceData) -> [bool; 4] {
         let mut operator_generate_audio = [true; 4];
         let mut operator_mix_out_active = [false; 4];
-        let mut operator_mod_out_active = [false; 4];
 
         for operator_index in 0..4 {
             let volume = S::pd_loadu(voice_data.operators[operator_index].volumes.as_ptr());
@@ -570,28 +566,23 @@ mod gen {
                     .as_ptr(),
             );
 
-            let any_volume_active = S::pd_any_over_zero(volume);
-            operator_mix_out_active[operator_index] = S::pd_any_over_zero(mix_out);
-            operator_mod_out_active[operator_index] = S::pd_any_over_zero(mod_out);
+            let volume_active = S::pd_any_over_zero(volume);
+            let mix_out_active = S::pd_any_over_zero(mix_out);
+            let mod_out_active = S::pd_any_over_zero(mod_out);
 
-            operator_generate_audio[operator_index] = any_volume_active
-                & (operator_mix_out_active[operator_index]
-                    | operator_mod_out_active[operator_index]);
+            operator_generate_audio[operator_index] =
+                volume_active & (mod_out_active | mix_out_active);
+            operator_mix_out_active[operator_index] = mix_out_active;
         }
 
-        for _ in 0..3 {
-            for operator_index in 1..4 {
-                for mod_target in voice_data.operators[operator_index]
-                    .modulation_targets
-                    .iter()
-                    .copied()
-                {
-                    if !operator_mix_out_active[operator_index]
-                        & !operator_generate_audio[mod_target]
-                    {
-                        operator_generate_audio[operator_index] = false;
-                    }
-                }
+        for operator_index in 1..4 {
+            let all_targets_inactive = voice_data.operators[operator_index]
+                .modulation_targets
+                .iter()
+                .all(|mod_target| !operator_generate_audio[*mod_target]);
+
+            if all_targets_inactive & !operator_mix_out_active[operator_index] {
+                operator_generate_audio[operator_index] = false;
             }
         }
 
