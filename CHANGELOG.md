@@ -11,9 +11,9 @@ how patches sound.
 
 #### Routing changes
 
+- Allow operators to modulate multiple carriers
 - Set modulation index (mod out) in modulator, not carrier
 - Increase range of feedback parameter to match modulation index
-- Remove volume parameter
 - Replace additive factor with mix out parameter, which doesn't
 affect modulation output
 - Add per-operator modulation target picker to GUI
@@ -28,6 +28,18 @@ affect modulation output
 - Make LFO triangle wave type start at value 0.0
 - Add LFO wave types reverse triangle, sine and reverse sine
 - Replace the LFO shape knob with a custom widget that displays the waveform
+
+#### GUI changes
+
+- Control mix output with modulation matrix operator boxes instead of
+  modulation output
+
+#### Other changes
+
+- Bump plugin unique ID to allow using this version in parallel with previous
+  versions
+- Use directories crate to determine where to save preference and log files
+- Update multiple dependencies, notably iced and baseview
 
 ### Fixed
 
