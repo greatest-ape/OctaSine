@@ -98,9 +98,10 @@ impl OperatorBox {
 
     fn get_parameter_index(&self) -> usize {
         match self.index {
-            1 => 22,
-            2 => 38,
-            3 => 54,
+            0 => 4,
+            1 => 18,
+            2 => 34,
+            3 => 50,
             _ => unreachable!(),
         }
     }
@@ -111,10 +112,6 @@ impl OperatorBox {
         event: event::Event,
         value: f64,
     ) -> OperatorBoxChange {
-        if self.index == 0 {
-            return OperatorBoxChange::None;
-        }
-
         match event {
             event::Event::Mouse(mouse::Event::CursorMoved {
                 position: Point { x, y },

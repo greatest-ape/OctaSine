@@ -463,18 +463,21 @@ impl Program<Message> for ModulationMatrix {
         update_mod_box!(self.components.operator_2_mod_1_box);
 
         let operator_boxes = vec![
-            (&mut self.components.operator_1_box, 0.0),
+            (
+                &mut self.components.operator_1_box,
+                self.parameters.operator_1_mix,
+            ),
             (
                 &mut self.components.operator_2_box,
-                self.parameters.operator_2_mod,
+                self.parameters.operator_2_mix,
             ),
             (
                 &mut self.components.operator_3_box,
-                self.parameters.operator_3_mod,
+                self.parameters.operator_3_mix,
             ),
             (
                 &mut self.components.operator_4_box,
-                self.parameters.operator_4_mod,
+                self.parameters.operator_4_mix,
             ),
         ];
 
