@@ -439,29 +439,6 @@ impl Program<Message> for ModulationMatrix {
         bounds: Rectangle,
         _cursor: Cursor,
     ) -> (event::Status, Option<Message>) {
-        macro_rules! update_mod_box {
-            ($mod_box:expr) => {
-                match $mod_box.update(bounds, event) {
-                    ModulationBoxChange::Update(message) => {
-                        return (event::Status::Captured, Some(message));
-                    }
-                    ModulationBoxChange::ClearCache(opt_message) => {
-                        self.cache.clear();
-
-                        return (event::Status::Ignored, opt_message);
-                    }
-                    ModulationBoxChange::None => (),
-                }
-            };
-        }
-
-        update_mod_box!(self.components.operator_4_mod_3_box);
-        update_mod_box!(self.components.operator_4_mod_2_box);
-        update_mod_box!(self.components.operator_4_mod_1_box);
-        update_mod_box!(self.components.operator_3_mod_2_box);
-        update_mod_box!(self.components.operator_3_mod_1_box);
-        update_mod_box!(self.components.operator_2_mod_1_box);
-
         let operator_boxes = vec![
             (
                 &mut self.components.operator_1_box,
@@ -494,6 +471,29 @@ impl Program<Message> for ModulationMatrix {
                 _ => (),
             }
         }
+
+        macro_rules! update_mod_box {
+            ($mod_box:expr) => {
+                match $mod_box.update(bounds, event) {
+                    ModulationBoxChange::Update(message) => {
+                        return (event::Status::Captured, Some(message));
+                    }
+                    ModulationBoxChange::ClearCache(opt_message) => {
+                        self.cache.clear();
+
+                        return (event::Status::Ignored, opt_message);
+                    }
+                    ModulationBoxChange::None => (),
+                }
+            };
+        }
+
+        update_mod_box!(self.components.operator_4_mod_3_box);
+        update_mod_box!(self.components.operator_4_mod_2_box);
+        update_mod_box!(self.components.operator_4_mod_1_box);
+        update_mod_box!(self.components.operator_3_mod_2_box);
+        update_mod_box!(self.components.operator_3_mod_1_box);
+        update_mod_box!(self.components.operator_2_mod_1_box);
 
         (event::Status::Ignored, None)
     }
