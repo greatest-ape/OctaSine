@@ -244,10 +244,10 @@ pub enum LfoMode {
 
 pub fn get_lfo_target_parameters(lfo_index: usize) -> &'static [LfoTargetParameter] {
     let end = match lfo_index {
-        0 => 29,
-        1 => 33,
-        2 => 37,
-        3 => 41,
+        0 => 33,
+        1 => 37,
+        2 => 41,
+        3 => 45,
         _ => unreachable!(),
     };
 
