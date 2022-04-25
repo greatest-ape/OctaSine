@@ -2,6 +2,7 @@
 
 ## High priority
 
+* GUI mod matrix: operator boxes should control mix out
 * Add way to interact with operator volume toggle parameters. Maybe green
   number for active operators? Mute button or similar might be better.
 * Look at other/better operator ratio parameter values
