@@ -39,7 +39,6 @@
 
 ## Very low priority
 
-* Consider defaulting to wgpu on Linux
 * Manual under info button?
   * Presets are exported/imported through DAW
 * Process benchmark output not same on Windows as on macOS/Linux
