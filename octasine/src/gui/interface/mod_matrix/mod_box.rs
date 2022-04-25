@@ -25,6 +25,7 @@ pub struct ModulationBox<P: ParameterValue> {
     rect: Rectangle,
     hover: bool,
     click_started: bool,
+    mouse_left_after_click: bool,
     parameter_index: usize,
     target_index: usize,
     pub v: P::Value,
@@ -73,6 +74,7 @@ where
             rect,
             hover: false,
             click_started: false,
+            mouse_left_after_click: true,
             parameter_index,
             target_index,
             v,
@@ -90,12 +92,14 @@ where
             .with_color(style.box_border_color)
             .with_width(1.0);
 
-        if self.active() || self.hover {
-            frame.fill(&self.path, style.modulation_box_color_active);
-        } else {
-            frame.fill(&self.path, style.modulation_box_color_inactive);
-        }
+        let fill_color = match (self.active(), self.hover) {
+            (true, false) => style.modulation_box_color_active,
+            (true, true) => style.modulation_box_color_hover,
+            (false, false) => style.modulation_box_color_inactive,
+            (false, true) => style.modulation_box_color_hover,
+        };
 
+        frame.fill(&self.path, fill_color);
         frame.stroke(&self.path, stroke);
     }
 }
@@ -120,6 +124,7 @@ where
                     }
                     (true, false) => {
                         self.hover = false;
+                        self.mouse_left_after_click = true;
 
                         return ModulationBoxChange::ClearCache(None);
                     }
@@ -134,6 +139,7 @@ where
             event::Event::Mouse(mouse::Event::ButtonReleased(_)) => {
                 if self.hover && self.click_started {
                     self.click_started = false;
+                    self.mouse_left_after_click = false;
 
                     self.v.set_index(self.target_index, !self.active());
                     let sync_value = P::from_processing(self.v).to_sync();

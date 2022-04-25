@@ -49,6 +49,7 @@ pub struct Style {
     pub operator_box_color_dragging: Color,
     pub modulation_box_color_active: Color,
     pub modulation_box_color_inactive: Color,
+    pub modulation_box_color_hover: Color,
     pub line_max_color: Color,
     pub mod_out_line_color: Color,
 }

@@ -2,9 +2,6 @@
 
 ## High priority
 
-* Mod matrix multiple modulation targets compatibility
-  * Target switching hover color handling
-  * Line transparency handling
 * Add way to interact with operator volume toggle parameters. Maybe green
   number for active operators? Mute button or similar might be better.
 * Look at other/better operator ratio parameter values

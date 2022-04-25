@@ -236,6 +236,7 @@ impl mod_matrix::StyleSheet for ModulationMatrix {
             operator_box_color_dragging: hex_gray!(0xC0),
             modulation_box_color_active: TEXT_BG,
             modulation_box_color_inactive: SURFACE,
+            modulation_box_color_hover: SURFACE_DARK,
             line_max_color: Color::BLACK,
             mod_out_line_color: Color::new(0.25, 0.5, 1.0, 1.0),
         }
