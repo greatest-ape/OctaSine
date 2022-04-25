@@ -7,12 +7,12 @@ use crate::gui::interface::SnapPoint;
 
 use super::StyleSheet;
 
-pub struct AdditiveLine {
+pub struct MixOutLine {
     path: Path,
     color: Color,
 }
 
-impl AdditiveLine {
+impl MixOutLine {
     pub fn new(from: Point, to_y: f32, additive: f64, style_sheet: Box<dyn StyleSheet>) -> Self {
         let mut to = from;
 

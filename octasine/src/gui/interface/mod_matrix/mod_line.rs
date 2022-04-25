@@ -7,13 +7,13 @@ use crate::gui::interface::SnapPoint;
 
 use super::StyleSheet;
 
-pub struct ModulationLine {
+pub struct ModOutLine {
     from: Point,
     points: Vec<Point>,
     color: Color,
 }
 
-impl ModulationLine {
+impl ModOutLine {
     pub fn new(from: Point, mod_index: f64, style_sheet: Box<dyn StyleSheet>) -> Self {
         let mut line = Self {
             from,

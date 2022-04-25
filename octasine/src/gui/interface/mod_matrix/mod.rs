@@ -15,9 +15,9 @@ use crate::parameters::values::{
 };
 use crate::GuiSyncHandle;
 
-use self::mix_line::AdditiveLine;
+use self::mix_line::MixOutLine;
 use self::mod_box::{ModulationBox, ModulationBoxChange, ModulationBoxUpdate};
-use self::mod_line::ModulationLine;
+use self::mod_line::ModOutLine;
 use self::operator_box::{OperatorBox, OperatorBoxChange};
 use self::output_box::OutputBox;
 
@@ -107,20 +107,20 @@ struct ModulationMatrixComponents {
     operator_2_box: OperatorBox,
     operator_3_box: OperatorBox,
     operator_4_box: OperatorBox,
-    operator_4_mod_3_box: ModulationBox<Operator4ModulationTargetValue, ModTargetStorage<3>>,
-    operator_4_mod_2_box: ModulationBox<Operator4ModulationTargetValue, ModTargetStorage<3>>,
-    operator_4_mod_1_box: ModulationBox<Operator4ModulationTargetValue, ModTargetStorage<3>>,
-    operator_3_mod_2_box: ModulationBox<Operator3ModulationTargetValue, ModTargetStorage<2>>,
-    operator_3_mod_1_box: ModulationBox<Operator3ModulationTargetValue, ModTargetStorage<2>>,
-    operator_2_mod_1_box: ModulationBox<Operator2ModulationTargetValue, ModTargetStorage<1>>,
+    operator_4_mod_3_box: ModulationBox<Operator4ModulationTargetValue>,
+    operator_4_mod_2_box: ModulationBox<Operator4ModulationTargetValue>,
+    operator_4_mod_1_box: ModulationBox<Operator4ModulationTargetValue>,
+    operator_3_mod_2_box: ModulationBox<Operator3ModulationTargetValue>,
+    operator_3_mod_1_box: ModulationBox<Operator3ModulationTargetValue>,
+    operator_2_mod_1_box: ModulationBox<Operator2ModulationTargetValue>,
     output_box: OutputBox,
-    operator_4_additive_line: AdditiveLine,
-    operator_3_additive_line: AdditiveLine,
-    operator_2_additive_line: AdditiveLine,
-    operator_1_additive_line: AdditiveLine,
-    operator_4_modulation_line: ModulationLine,
-    operator_3_modulation_line: ModulationLine,
-    operator_2_modulation_line: ModulationLine,
+    operator_4_mix_out_line: MixOutLine,
+    operator_3_mix_out_line: MixOutLine,
+    operator_2_mix_out_line: MixOutLine,
+    operator_1_mix_out_line: MixOutLine,
+    operator_4_mod_out_line: ModOutLine,
+    operator_3_mod_out_line: ModOutLine,
+    operator_2_mod_out_line: ModOutLine,
 }
 
 impl ModulationMatrixComponents {
@@ -145,42 +145,42 @@ impl ModulationMatrixComponents {
 
         let output_box = OutputBox::new(bounds);
 
-        let operator_4_additive_line = AdditiveLine::new(
+        let operator_4_mix_out_line = MixOutLine::new(
             operator_4_box.center,
             output_box.y,
             parameters.operator_4_mix,
             style.into(),
         );
-        let operator_3_additive_line = AdditiveLine::new(
+        let operator_3_mix_out_line = MixOutLine::new(
             operator_3_box.center,
             output_box.y,
             parameters.operator_3_mix,
             style.into(),
         );
-        let operator_2_additive_line = AdditiveLine::new(
+        let operator_2_mix_out_line = MixOutLine::new(
             operator_2_box.center,
             output_box.y,
             parameters.operator_2_mix,
             style.into(),
         );
-        let operator_1_additive_line = AdditiveLine::new(
+        let operator_1_mix_out_line = MixOutLine::new(
             operator_1_box.center,
             output_box.y,
             parameters.operator_1_mix,
             style.into(),
         );
 
-        let operator_4_modulation_line = ModulationLine::new(
+        let operator_4_mod_out_line = ModOutLine::new(
             operator_4_box.center,
             parameters.operator_4_mod,
             style.into(),
         );
-        let operator_3_modulation_line = ModulationLine::new(
+        let operator_3_mod_out_line = ModOutLine::new(
             operator_3_box.center,
             parameters.operator_3_mod,
             style.into(),
         );
-        let operator_2_modulation_line = ModulationLine::new(
+        let operator_2_mod_out_line = ModOutLine::new(
             operator_2_box.center,
             parameters.operator_2_mod,
             style.into(),
@@ -198,13 +198,13 @@ impl ModulationMatrixComponents {
             operator_3_mod_1_box,
             operator_2_mod_1_box,
             output_box,
-            operator_4_additive_line,
-            operator_3_additive_line,
-            operator_2_additive_line,
-            operator_1_additive_line,
-            operator_4_modulation_line,
-            operator_3_modulation_line,
-            operator_2_modulation_line,
+            operator_4_mix_out_line,
+            operator_3_mix_out_line,
+            operator_2_mix_out_line,
+            operator_1_mix_out_line,
+            operator_4_mod_out_line,
+            operator_3_mod_out_line,
+            operator_2_mod_out_line,
         };
 
         components.update(parameters, style);
@@ -219,14 +219,14 @@ impl ModulationMatrixComponents {
         self.operator_3_mod_2_box.v = parameters.operator_3_targets;
         self.operator_3_mod_1_box.v = parameters.operator_3_targets;
 
-        self.operator_4_additive_line
+        self.operator_4_mix_out_line
             .update(parameters.operator_4_mix, style.into());
 
-        self.operator_3_additive_line
+        self.operator_3_mix_out_line
             .update(parameters.operator_3_mix, style.into());
-        self.operator_2_additive_line
+        self.operator_2_mix_out_line
             .update(parameters.operator_2_mix, style.into());
-        self.operator_1_additive_line
+        self.operator_1_mix_out_line
             .update(parameters.operator_1_mix, style.into());
 
         {
@@ -245,7 +245,7 @@ impl ModulationMatrixComponents {
                 points.push(mod_box);
             }
 
-            self.operator_4_modulation_line
+            self.operator_4_mod_out_line
                 .update(points, style.into(), parameters.operator_4_mod);
         }
 
@@ -264,7 +264,7 @@ impl ModulationMatrixComponents {
                 points.push(mod_box);
             }
 
-            self.operator_3_modulation_line
+            self.operator_3_mod_out_line
                 .update(points, style.into(), parameters.operator_3_mod);
         };
 
@@ -282,20 +282,20 @@ impl ModulationMatrixComponents {
                 points.push(mod_box);
             }
 
-            self.operator_2_modulation_line
+            self.operator_2_mod_out_line
                 .update(points, style.into(), parameters.operator_2_mod);
         }
     }
 
     fn draw_lines(&self, frame: &mut Frame) {
-        self.operator_4_additive_line.draw(frame);
-        self.operator_3_additive_line.draw(frame);
-        self.operator_2_additive_line.draw(frame);
-        self.operator_1_additive_line.draw(frame);
+        self.operator_4_mix_out_line.draw(frame);
+        self.operator_3_mix_out_line.draw(frame);
+        self.operator_2_mix_out_line.draw(frame);
+        self.operator_1_mix_out_line.draw(frame);
 
-        self.operator_4_modulation_line.draw(frame);
-        self.operator_3_modulation_line.draw(frame);
-        self.operator_2_modulation_line.draw(frame);
+        self.operator_4_mod_out_line.draw(frame);
+        self.operator_3_mod_out_line.draw(frame);
+        self.operator_2_mod_out_line.draw(frame);
     }
 
     fn draw_boxes(&self, frame: &mut Frame, style: Theme) {

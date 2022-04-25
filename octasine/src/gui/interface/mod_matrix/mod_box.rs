@@ -1,5 +1,3 @@
-use std::marker::PhantomData;
-
 use iced_baseview::canvas::{event, Frame, Path, Stroke};
 use iced_baseview::{mouse, Point, Rectangle, Size};
 
@@ -21,7 +19,7 @@ pub trait ModulationBoxUpdate {
     fn update(&mut self, bounds: Rectangle, event: event::Event) -> ModulationBoxChange;
 }
 
-pub struct ModulationBox<P, V> {
+pub struct ModulationBox<P: ParameterValue> {
     path: Path,
     pub center: Point,
     rect: Rectangle,
@@ -29,11 +27,10 @@ pub struct ModulationBox<P, V> {
     click_started: bool,
     parameter_index: usize,
     target_index: usize,
-    pub v: V,
-    _phantom_data: PhantomData<P>,
+    pub v: P::Value,
 }
 
-impl<P, V> ModulationBox<P, V>
+impl<P, V> ModulationBox<P>
 where
     P: ParameterValue<Value = V>,
     V: ModTarget,
@@ -79,7 +76,6 @@ where
             parameter_index,
             target_index,
             v,
-            _phantom_data: Default::default(),
         }
     }
 
@@ -104,7 +100,7 @@ where
     }
 }
 
-impl<P, V> ModulationBoxUpdate for ModulationBox<P, V>
+impl<P, V> ModulationBoxUpdate for ModulationBox<P>
 where
     P: ParameterValue<Value = V>,
     V: ModTarget,
