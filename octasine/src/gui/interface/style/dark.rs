@@ -244,6 +244,7 @@ impl mod_matrix::StyleSheet for ModulationMatrix {
             modulation_box_color_active: TEXT_FG,
             modulation_box_color_inactive: SURFACE,
             line_max_color: Color::WHITE,
+            mod_out_line_color: Color::new(0.25, 0.5, 1.0, 1.0),
         }
     }
 }

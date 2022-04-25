@@ -50,6 +50,7 @@ pub struct Style {
     pub modulation_box_color_active: Color,
     pub modulation_box_color_inactive: Color,
     pub line_max_color: Color,
+    pub mod_out_line_color: Color,
 }
 
 pub trait StyleSheet {
@@ -170,21 +171,9 @@ impl ModulationMatrixComponents {
             style.into(),
         );
 
-        let operator_4_mod_out_line = ModOutLine::new(
-            operator_4_box.center,
-            parameters.operator_4_mod,
-            style.into(),
-        );
-        let operator_3_mod_out_line = ModOutLine::new(
-            operator_3_box.center,
-            parameters.operator_3_mod,
-            style.into(),
-        );
-        let operator_2_mod_out_line = ModOutLine::new(
-            operator_2_box.center,
-            parameters.operator_2_mod,
-            style.into(),
-        );
+        let operator_4_mod_out_line = ModOutLine::new(operator_4_box.center, style.into());
+        let operator_3_mod_out_line = ModOutLine::new(operator_3_box.center, style.into());
+        let operator_2_mod_out_line = ModOutLine::new(operator_2_box.center, style.into());
 
         let mut components = Self {
             operator_1_box,
@@ -245,8 +234,7 @@ impl ModulationMatrixComponents {
                 points.push(mod_box);
             }
 
-            self.operator_4_mod_out_line
-                .update(points, style.into(), parameters.operator_4_mod);
+            self.operator_4_mod_out_line.update(points, style.into());
         }
 
         {
@@ -264,8 +252,7 @@ impl ModulationMatrixComponents {
                 points.push(mod_box);
             }
 
-            self.operator_3_mod_out_line
-                .update(points, style.into(), parameters.operator_3_mod);
+            self.operator_3_mod_out_line.update(points, style.into());
         };
 
         {
@@ -282,8 +269,7 @@ impl ModulationMatrixComponents {
                 points.push(mod_box);
             }
 
-            self.operator_2_mod_out_line
-                .update(points, style.into(), parameters.operator_2_mod);
+            self.operator_2_mod_out_line.update(points, style.into());
         }
     }
 
