@@ -43,18 +43,20 @@ pub trait ModTarget: Copy {
     fn set_index(&mut self, index: usize, value: bool);
     fn index_active(&self, index: usize) -> bool;
     fn as_string(&self) -> String;
-    fn as_iter(&self) -> Box<dyn Iterator<Item = bool>>;
-    fn active_indices(&self) -> Box<dyn Iterator<Item = usize>> {
-        Box::new(
-            self.as_iter()
-                .enumerate()
-                .filter_map(|(index, active)| if active { Some(index) } else { None }),
-        )
-    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct ModTargetStorage<const N: usize>([bool; N]);
+
+impl<const N: usize> ModTargetStorage<N> {
+    pub fn active_indices(&self) -> impl Iterator<Item = usize> + '_ {
+        self.0
+            .iter()
+            .copied()
+            .enumerate()
+            .filter_map(|(index, active)| if active { Some(index) } else { None })
+    }
+}
 
 impl ModTargetStorage<1> {
     pub fn permutations() -> &'static [Self] {
@@ -132,10 +134,6 @@ impl<const N: usize> ModTarget for ModTargetStorage<N> {
         }
 
         output
-    }
-
-    fn as_iter(&self) -> Box<dyn Iterator<Item = bool>> {
-        Box::new(self.0.into_iter())
     }
 }
 

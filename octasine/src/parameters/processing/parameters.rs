@@ -1,5 +1,7 @@
 use std::{f64::consts::FRAC_PI_2, marker::PhantomData};
 
+use arrayvec::ArrayVec;
+
 use crate::common::*;
 use crate::constants::*;
 use crate::parameters::values::*;
@@ -298,12 +300,16 @@ impl OperatorModulationTargetProcessingParameter {
         }
     }
 
-    pub fn get_values(&mut self) -> Box<dyn Iterator<Item = bool>> {
+    pub fn get_active_indices(&self) -> ArrayVec<usize, 3> {
+        let mut indices = ArrayVec::default();
+
         match self {
-            Self::Two(p) => p.get_value().as_iter(),
-            Self::Three(p) => p.get_value().as_iter(),
-            Self::Four(p) => p.get_value().as_iter(),
+            Self::Two(p) => indices.extend(p.get_value().active_indices()),
+            Self::Three(p) => indices.extend(p.get_value().active_indices()),
+            Self::Four(p) => indices.extend(p.get_value().active_indices()),
         }
+
+        indices
     }
 
     pub fn advance_one_sample(&mut self) {

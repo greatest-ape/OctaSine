@@ -304,13 +304,7 @@ mod gen {
         voice_data.wave_type = operator.wave_type.value;
 
         if let Some(p) = &mut operator.output_operator {
-            voice_data.modulation_targets.clear();
-
-            for (index, active) in p.get_values().enumerate() {
-                if active {
-                    voice_data.modulation_targets.push(index);
-                }
-            }
+            voice_data.modulation_targets = p.get_active_indices();
         }
 
         let envelope_volume = voice_operator
