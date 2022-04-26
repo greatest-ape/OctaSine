@@ -35,6 +35,7 @@ pub trait StyleSheet {
 
 pub struct WavePicker<P: ParameterValue> {
     parameter_index: usize,
+    title: String,
     cache: Cache,
     bounds_path: Path,
     cursor_within_bounds: bool,
@@ -49,7 +50,12 @@ where
     P: ParameterValue + Copy + 'static,
     P::Value: CalculateCurve,
 {
-    pub fn new<H: GuiSyncHandle>(sync_handle: &H, parameter_index: usize, style: Theme) -> Self {
+    pub fn new<H: GuiSyncHandle>(
+        sync_handle: &H,
+        parameter_index: usize,
+        style: Theme,
+        title: &str,
+    ) -> Self {
         let value = P::from_sync(sync_handle.get_parameter(parameter_index));
         let shape = value.get();
         let value_text = value.format();
@@ -60,6 +66,7 @@ where
 
         Self {
             parameter_index,
+            title: title.into(),
             cache: Cache::new(),
             bounds_path,
             cursor_within_bounds: false,
@@ -71,7 +78,7 @@ where
     }
 
     pub fn view(&mut self) -> Element<Message> {
-        let title = Text::new("SHAPE")
+        let title = Text::new(&self.title)
             .horizontal_alignment(Horizontal::Center)
             .font(FONT_BOLD);
 

@@ -11,11 +11,11 @@ use crate::parameters::values::{
 };
 use crate::GuiSyncHandle;
 
-use super::boolean_picker::{self, BooleanPicker};
 use super::envelope::Envelope;
 use super::knob::{self, OctaSineKnob};
 use super::mod_target_picker;
 use super::style::Theme;
+use super::wave_picker::WavePicker;
 use super::{Message, FONT_SIZE, FONT_VERY_BOLD, LINE_HEIGHT};
 
 pub enum ModTargetPicker {
@@ -31,7 +31,7 @@ pub struct OperatorWidgets {
     pub volume_toggle: OperatorVolumeToggler,
     pub mix: OctaSineKnob<OperatorMixValue>,
     pub panning: OctaSineKnob<OperatorPanningValue>,
-    pub wave_type: BooleanPicker<OperatorWaveTypeValue>,
+    pub wave_type: WavePicker<OperatorWaveTypeValue>,
     pub mod_index: Option<OctaSineKnob<OperatorModulationIndexValue>>,
     pub mod_target: Option<ModTargetPicker>,
     pub feedback: OctaSineKnob<OperatorFeedbackValue>,
@@ -93,7 +93,7 @@ impl OperatorWidgets {
             volume_toggle: OperatorVolumeToggler(1.0),
             mix: knob::operator_mix(sync_handle, mix, operator_index, style),
             panning: knob::operator_panning(sync_handle, panning, style),
-            wave_type: boolean_picker::wave_type(sync_handle, wave, style),
+            wave_type: WavePicker::new(sync_handle, wave, style, "WAVE"),
             mod_index,
             mod_target,
             feedback: knob::operator_feedback(sync_handle, feedback, style),
@@ -113,7 +113,7 @@ impl OperatorWidgets {
         self.volume.style = style;
         self.mix.style = style;
         self.panning.style = style;
-        self.wave_type.style = style;
+        self.wave_type.set_style(style);
         if let Some(mod_index) = self.mod_index.as_mut() {
             mod_index.style = style;
         }

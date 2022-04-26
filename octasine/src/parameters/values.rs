@@ -474,8 +474,8 @@ impl ParameterValue for OperatorWaveTypeValue {
     }
     fn format(self) -> String {
         match self.0 {
-            WaveType::Sine => "Sine".to_string(),
-            WaveType::WhiteNoise => "Noise".to_string(),
+            WaveType::Sine => "SINE".to_string(),
+            WaveType::WhiteNoise => "NOISE".to_string(),
         }
     }
     fn format_sync(value: f64) -> String {

@@ -237,13 +237,13 @@ fn square(phase: Phase) -> f64 {
 
 cfg_if::cfg_if! {
     if #[cfg(feature = "simd")] {
-        fn sine(phase: Phase) -> f64 {
+        pub fn sine(phase: Phase) -> f64 {
             unsafe {
                 ::sleef_sys::Sleef_cinz_sind1_u35purec(phase.0 * TAU)
             }
         }
     } else {
-        fn sine(phase: Phase) -> f64 {
+        pub fn sine(phase: Phase) -> f64 {
             (phase.0 * TAU).sin()
         }
     }

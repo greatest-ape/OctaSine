@@ -42,7 +42,7 @@ impl LfoWidgets {
             index: lfo_index,
             style,
             target: LfoTargetPicker::new(sync_handle, lfo_index, target, style),
-            shape: WavePicker::new(sync_handle, shape, style),
+            shape: WavePicker::new(sync_handle, shape, style, "SHAPE"),
             mode: boolean_picker::lfo_mode(sync_handle, mode, style),
             bpm_sync: boolean_picker::bpm_sync(sync_handle, bpm_sync, style),
             frequency_ratio: knob::lfo_frequency_ratio(sync_handle, ratio, style),
