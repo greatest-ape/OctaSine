@@ -1,4 +1,4 @@
-use crate::{constants::NUM_LFOS, preset_bank::SyncParameter};
+use crate::{common::NUM_LFOS, preset_bank::SyncParameter};
 
 use super::values::*;
 

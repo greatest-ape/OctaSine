@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use vst::editor::Editor;
 
 use super::GuiSyncHandle;
-use crate::constants::PLUGIN_NAME;
+use crate::PLUGIN_NAME;
 
 mod interface;
 

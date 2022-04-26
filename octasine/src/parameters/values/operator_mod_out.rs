@@ -1,6 +1,5 @@
 use super::ParameterValue;
-use crate::constants::*;
-use crate::parameters::utils::*;
+use crate::{common::OPERATOR_MOD_INDEX_STEPS, parameters::utils::*};
 
 #[derive(Debug, Clone, Copy)]
 pub struct OperatorModulationIndexValue(f64);

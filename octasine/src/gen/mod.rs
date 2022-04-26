@@ -9,7 +9,6 @@ use vst::buffer::AudioBuffer;
 
 use crate::approximations::Log10Table;
 use crate::common::*;
-use crate::constants::*;
 use crate::parameters::processing::{ProcessingParameter, ProcessingParameterOperator};
 use crate::parameters::values::lfo_target::*;
 use crate::parameters::values::operator_wave_type::WaveType;

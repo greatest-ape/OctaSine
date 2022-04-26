@@ -1,6 +1,5 @@
 pub mod approximations;
 pub mod common;
-pub mod constants;
 pub mod gen;
 pub mod parameters;
 pub mod preset_bank;
@@ -26,11 +25,13 @@ use vst::host::Host;
 use vst::plugin::{CanDo, Category, HostCallback, Info, Plugin, PluginParameters};
 
 use common::*;
-use constants::*;
 use parameters::processing::*;
 use preset_bank::PresetBank;
 use settings::Settings;
 use voices::*;
+
+pub const PLUGIN_NAME: &str = "OctaSine";
+pub const PLUGIN_UNIQUE_ID: i32 = 1_438_048_624;
 
 pub struct OctaSine {
     pub processing: ProcessingState,

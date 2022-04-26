@@ -1,7 +1,6 @@
 use array_init::array_init;
 
 use crate::common::*;
-use crate::constants::*;
 
 pub mod envelopes;
 pub mod lfos;

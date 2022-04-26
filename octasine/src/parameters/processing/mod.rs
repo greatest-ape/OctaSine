@@ -3,8 +3,9 @@ use array_init::array_init;
 mod interpolatable_value;
 pub mod parameters;
 
+use crate::common::{NUM_LFOS, NUM_OPERATORS};
+
 use super::values::*;
-use crate::constants::*;
 use parameters::*;
 
 pub trait ProcessingParameter {
