@@ -1,15 +1,15 @@
 use super::ParameterValue;
 
 #[derive(Debug, Clone, Copy)]
-pub struct OperatorVolumeToggleValue(f64);
+pub struct OperatorActiveValue(f64);
 
-impl Default for OperatorVolumeToggleValue {
+impl Default for OperatorActiveValue {
     fn default() -> Self {
         Self(1.0)
     }
 }
 
-impl ParameterValue for OperatorVolumeToggleValue {
+impl ParameterValue for OperatorActiveValue {
     type Value = f64;
 
     fn from_processing(value: Self::Value) -> Self {

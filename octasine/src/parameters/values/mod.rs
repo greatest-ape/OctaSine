@@ -29,7 +29,7 @@ pub use lfo_shape::LfoShapeValue;
 pub use lfo_target::*;
 pub use master_frequency::MasterFrequencyValue;
 pub use master_volume::MasterVolumeValue;
-pub use operator_active::OperatorVolumeToggleValue;
+pub use operator_active::OperatorActiveValue;
 pub use operator_envelope::*;
 pub use operator_feedback::OperatorFeedbackValue;
 pub use operator_frequency_fine::OperatorFrequencyFineValue;

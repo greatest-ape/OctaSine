@@ -43,7 +43,7 @@ impl ProcessingParameters {
             1 => self.master_frequency.set_from_sync(value),
             // Operator 1
             2 => self.operators[0].volume.set_from_sync(value),
-            3 => self.operators[0].volume_toggle.set_from_sync(value),
+            3 => self.operators[0].active.set_from_sync(value),
             4 => self.operators[0].mix.set_from_sync(value),
             5 => self.operators[0].panning.set_from_sync(value),
             6 => self.operators[0].wave_type.set_from_sync(value),
@@ -73,7 +73,7 @@ impl ProcessingParameters {
                 .set_from_sync(value),
             // Operator 2
             16 => self.operators[1].volume.set_from_sync(value),
-            17 => self.operators[1].volume_toggle.set_from_sync(value),
+            17 => self.operators[1].active.set_from_sync(value),
             18 => self.operators[1].mix.set_from_sync(value),
             19 => self.operators[1].panning.set_from_sync(value),
             20 => self.operators[1].wave_type.set_from_sync(value),
@@ -117,7 +117,7 @@ impl ProcessingParameters {
                 .set_from_sync(value),
             // Operator 3
             32 => self.operators[2].volume.set_from_sync(value),
-            33 => self.operators[2].volume_toggle.set_from_sync(value),
+            33 => self.operators[2].active.set_from_sync(value),
             34 => self.operators[2].mix.set_from_sync(value),
             35 => self.operators[2].panning.set_from_sync(value),
             36 => self.operators[2].wave_type.set_from_sync(value),
@@ -161,7 +161,7 @@ impl ProcessingParameters {
                 .set_from_sync(value),
             // Operator 4
             48 => self.operators[3].volume.set_from_sync(value),
-            49 => self.operators[3].volume_toggle.set_from_sync(value),
+            49 => self.operators[3].active.set_from_sync(value),
             50 => self.operators[3].mix.set_from_sync(value),
             51 => self.operators[3].panning.set_from_sync(value),
             52 => self.operators[3].wave_type.set_from_sync(value),
@@ -256,7 +256,7 @@ impl ProcessingParameters {
 
 pub struct ProcessingParameterOperator {
     pub volume: OperatorVolumeProcessingParameter,
-    pub volume_toggle: InterpolatableProcessingParameter<OperatorVolumeToggleValue>,
+    pub active: InterpolatableProcessingParameter<OperatorActiveValue>,
     pub mix: OperatorMixProcessingParameter,
     pub wave_type: SimpleProcessingParameter<OperatorWaveTypeValue>,
     pub panning: OperatorPanningProcessingParameter,
@@ -279,7 +279,7 @@ impl ProcessingParameterOperator {
 
         Self {
             volume: Default::default(),
-            volume_toggle: Default::default(),
+            active: Default::default(),
             mix: OperatorMixProcessingParameter::new(operator_index),
             wave_type: Default::default(),
             panning: OperatorPanningProcessingParameter::default(),
@@ -295,7 +295,7 @@ impl ProcessingParameterOperator {
 
     pub fn advance_one_sample(&mut self) {
         self.volume.advance_one_sample();
-        self.volume_toggle.advance_one_sample();
+        self.active.advance_one_sample();
         self.mix.advance_one_sample();
         self.wave_type.advance_one_sample();
         self.panning.advance_one_sample();

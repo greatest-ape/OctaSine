@@ -323,12 +323,12 @@ mod gen {
             LfoTargetParameter::Operator(operator_index, LfoTargetOperatorParameter::Volume),
         ));
 
-        let volume_toggle = operator.volume_toggle.get_value();
+        let volume_active = operator.active.get_value();
 
         set_value_for_both_channels(
             &mut voice_data.volumes,
             sample_index,
-            volume * volume_toggle,
+            volume * volume_active,
         );
 
         let mix =

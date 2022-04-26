@@ -5,7 +5,7 @@ use iced_baseview::canvas::{
 use iced_baseview::{Color, Element, Length, Point, Rectangle, Size};
 
 use crate::{
-    parameters::values::{OperatorVolumeToggleValue, ParameterValue},
+    parameters::values::{OperatorActiveValue, ParameterValue},
     GuiSyncHandle,
 };
 
@@ -57,7 +57,7 @@ impl OperatorMuteButton {
     }
 
     fn volume_on(sync_value: f64) -> bool {
-        OperatorVolumeToggleValue::from_sync(sync_value).get() > 0.5
+        OperatorActiveValue::from_sync(sync_value).get() > 0.5
     }
 
     pub fn set_value(&mut self, value: f64) {
