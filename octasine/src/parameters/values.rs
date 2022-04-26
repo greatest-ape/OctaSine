@@ -609,7 +609,7 @@ impl ParameterValue for Operator2ModulationTargetValue {
         map_step_to_parameter_value(Self::Value::permutations(), self.0)
     }
     fn format(self) -> String {
-        self.0.as_string()
+        self.0.to_string()
     }
     fn format_sync(value: f64) -> String {
         Self::from_sync(value).format()
@@ -638,7 +638,7 @@ impl ParameterValue for Operator3ModulationTargetValue {
         map_step_to_parameter_value(Self::Value::permutations(), self.0)
     }
     fn format(self) -> String {
-        self.0.as_string()
+        self.0.to_string()
     }
     fn format_sync(value: f64) -> String {
         Self::from_sync(value).format()
@@ -667,7 +667,7 @@ impl ParameterValue for Operator4ModulationTargetValue {
         map_step_to_parameter_value(Self::Value::permutations(), self.0)
     }
     fn format(self) -> String {
-        self.0.as_string()
+        self.0.to_string()
     }
     fn format_sync(value: f64) -> String {
         Self::from_sync(value).format()

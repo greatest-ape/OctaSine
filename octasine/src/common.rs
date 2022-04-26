@@ -39,10 +39,9 @@ impl Default for BeatsPerMinute {
     }
 }
 
-pub trait ModTarget: Copy {
+pub trait ModTarget: Copy + std::fmt::Display {
     fn set_index(&mut self, index: usize, value: bool);
     fn index_active(&self, index: usize) -> bool;
-    fn as_string(&self) -> String;
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -55,6 +54,20 @@ impl<const N: usize> ModTargetStorage<N> {
             .copied()
             .enumerate()
             .filter_map(|(index, active)| if active { Some(index) } else { None })
+    }
+}
+
+impl<const N: usize> std::fmt::Display for ModTargetStorage<N> {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        for (n, index) in self.active_indices().enumerate() {
+            if n == 0 {
+                write!(f, "{}", index + 1)?;
+            } else {
+                write!(f, ", {}", index + 1)?;
+            }
+        }
+
+        Ok(())
     }
 }
 
@@ -116,24 +129,6 @@ impl<const N: usize> ModTarget for ModTargetStorage<N> {
 
     fn index_active(&self, index: usize) -> bool {
         self.0[index]
-    }
-
-    fn as_string(&self) -> String {
-        let mut output = String::new();
-
-        for (index, active) in self.0.into_iter().enumerate() {
-            if active {
-                let operator_number = index + 1;
-
-                if output.is_empty() {
-                    output.push_str(&format!("{}", operator_number))
-                } else {
-                    output.push_str(&format!(", {}", operator_number))
-                }
-            }
-        }
-
-        output
     }
 }
 
