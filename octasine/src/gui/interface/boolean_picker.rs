@@ -3,27 +3,11 @@ use iced_baseview::{
 };
 
 use crate::common::*;
-use crate::parameters::values::{
-    LfoBpmSyncValue, LfoModeValue, OperatorWaveTypeValue, ParameterValue,
-};
+use crate::parameters::values::{LfoBpmSyncValue, LfoModeValue, ParameterValue};
 use crate::GuiSyncHandle;
 
 use super::style::Theme;
 use super::{Message, FONT_BOLD, FONT_SIZE, LINE_HEIGHT};
-
-pub fn wave_type<H: GuiSyncHandle>(
-    sync_handle: &H,
-    parameter_index: usize,
-    style: Theme,
-) -> BooleanPicker<OperatorWaveTypeValue> {
-    BooleanPicker::new(
-        sync_handle,
-        parameter_index,
-        "WAVE",
-        vec![WaveType::Sine, WaveType::WhiteNoise],
-        style,
-    )
-}
 
 pub fn bpm_sync<H: GuiSyncHandle>(
     sync_handle: &H,

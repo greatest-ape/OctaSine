@@ -8,7 +8,7 @@ mod output_box;
 use iced_baseview::canvas::{event, Cache, Canvas, Cursor, Frame, Geometry, Path, Program, Stroke};
 use iced_baseview::{Color, Element, Length, Point, Rectangle, Size};
 
-use crate::common::{ModTarget, ModTargetStorage};
+use crate::common::ModTargetStorage;
 use crate::parameters::values::{
     Operator2ModulationTargetValue, Operator3ModulationTargetValue, Operator4ModulationTargetValue,
     ParameterValue,
