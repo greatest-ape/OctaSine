@@ -1,7 +1,7 @@
 use iced_baseview::{button, container, pick_list, radio, Color};
 use iced_style::checkbox;
 
-use super::{envelope, lfo_shape_picker, mod_matrix};
+use super::{envelope, mod_matrix, wave_picker};
 
 macro_rules! hex_gray {
     ($hex:literal) => {
@@ -252,9 +252,9 @@ impl mod_matrix::StyleSheet for ModulationMatrix {
 
 pub struct LfoShapePicker;
 
-impl lfo_shape_picker::StyleSheet for LfoShapePicker {
-    fn active(&self) -> lfo_shape_picker::Style {
-        lfo_shape_picker::Style {
+impl wave_picker::StyleSheet for LfoShapePicker {
+    fn active(&self) -> wave_picker::Style {
+        wave_picker::Style {
             background_color: SURFACE,
             border_color_active: TEXT_FG,
             border_color_hovered: HOVERED,

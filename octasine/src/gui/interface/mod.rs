@@ -11,13 +11,13 @@ mod boolean_picker;
 mod envelope;
 mod knob;
 mod lfo;
-mod lfo_shape_picker;
 mod lfo_target_picker;
 mod mod_matrix;
 mod mod_target_picker;
 mod operator;
 mod preset_picker;
 pub mod style;
+mod wave_picker;
 
 use knob::OctaSineKnob;
 use lfo::LfoWidgets;

@@ -6,10 +6,8 @@ use iced_baseview::{
     Space, Text,
 };
 
-use crate::common::{LfoShape, Phase};
-use crate::constants::LFO_SHAPE_STEPS;
-use crate::parameters::values::{LfoShapeValue, ParameterValue};
-use crate::voices::lfos::VoiceLfo;
+use crate::common::{CalculateCurve, Phase};
+use crate::parameters::values::ParameterValue;
 use crate::GuiSyncHandle;
 
 use super::style::Theme;
@@ -35,20 +33,24 @@ pub trait StyleSheet {
     fn active(&self) -> Style;
 }
 
-pub struct LfoShapePicker {
+pub struct WavePicker<P: ParameterValue> {
     parameter_index: usize,
     cache: Cache,
     bounds_path: Path,
     cursor_within_bounds: bool,
     click_started: bool,
     style: Theme,
-    shape: LfoShape,
+    shape: P::Value,
     value_text: String,
 }
 
-impl LfoShapePicker {
+impl<P> WavePicker<P>
+where
+    P: ParameterValue + Copy + 'static,
+    P::Value: CalculateCurve,
+{
     pub fn new<H: GuiSyncHandle>(sync_handle: &H, parameter_index: usize, style: Theme) -> Self {
-        let value = LfoShapeValue::from_sync(sync_handle.get_parameter(parameter_index));
+        let value = P::from_sync(sync_handle.get_parameter(parameter_index));
         let shape = value.get();
         let value_text = value.format();
         let bounds_path = Path::rectangle(
@@ -96,7 +98,7 @@ impl LfoShapePicker {
     }
 
     pub fn set_value(&mut self, value: f64) {
-        let value = LfoShapeValue::from_sync(value);
+        let value = P::from_sync(value);
         let shape = value.get();
 
         if self.shape != shape {
@@ -146,7 +148,7 @@ impl LfoShapePicker {
 
         for i in 0..WIDTH - 1 {
             let phase = Phase((i as f64) / (WIDTH - 1) as f64);
-            let y = VoiceLfo::calculate_curve(self.shape, phase) as f32;
+            let y = CalculateCurve::calculate(self.shape, phase) as f32;
 
             let visual_y = HEIGHT_MIDDLE - y * SHAPE_HEIGHT_RANGE;
             let visual_x = 0.5 + i as f32;
@@ -172,7 +174,11 @@ impl LfoShapePicker {
     }
 }
 
-impl Program<Message> for LfoShapePicker {
+impl<P> Program<Message> for WavePicker<P>
+where
+    P: ParameterValue + Copy + 'static,
+    P::Value: CalculateCurve,
+{
     fn draw(&self, bounds: Rectangle, _cursor: Cursor) -> Vec<Geometry> {
         let geometry = self.cache.draw(bounds.size(), |frame| {
             self.draw_background(frame, self.style.into());
@@ -213,24 +219,24 @@ impl Program<Message> for LfoShapePicker {
                 button @ (iced_baseview::mouse::Button::Left | iced_baseview::mouse::Button::Right),
             )) if self.click_started => {
                 if self.cursor_within_bounds {
-                    let shape_index = LFO_SHAPE_STEPS
+                    let shape_index = P::Value::steps()
                         .iter()
                         .position(|s| *s == self.shape)
                         .unwrap();
 
                     let new_shape_index = match button {
                         iced_baseview::mouse::Button::Left => {
-                            (shape_index + 1) % LFO_SHAPE_STEPS.len()
+                            (shape_index + 1) % P::Value::steps().len()
                         }
                         iced_baseview::mouse::Button::Right if shape_index == 0 => {
-                            LFO_SHAPE_STEPS.len() - 1
+                            P::Value::steps().len() - 1
                         }
                         iced_baseview::mouse::Button::Right => shape_index - 1,
                         _ => unreachable!(),
                     };
 
-                    let new_shape = LFO_SHAPE_STEPS[new_shape_index];
-                    let new_value = LfoShapeValue::from_processing(new_shape).to_sync();
+                    let new_shape = P::Value::steps()[new_shape_index];
+                    let new_value = P::from_processing(new_shape).to_sync();
 
                     self.set_value(new_value);
                     self.click_started = false;

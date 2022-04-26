@@ -1,4 +1,12 @@
-use crate::constants::LFO_TARGET_CONTEXT_STEPS;
+use crate::{
+    constants::{LFO_SHAPE_STEPS, LFO_TARGET_CONTEXT_STEPS},
+    voices::lfos::VoiceLfo,
+};
+
+pub trait CalculateCurve: PartialEq + Copy {
+    fn calculate(self, phase: Phase) -> f64;
+    fn steps() -> &'static [Self];
+}
 
 /// Phase. value >= 0.0 && value < 1.0
 #[derive(Debug, Copy, Clone)]
@@ -234,6 +242,15 @@ pub enum LfoShape {
     ReverseSquare,
     Sine,
     ReverseSine,
+}
+
+impl CalculateCurve for LfoShape {
+    fn calculate(self, phase: Phase) -> f64 {
+        VoiceLfo::calculate_curve(self, phase)
+    }
+    fn steps() -> &'static [Self] {
+        &LFO_SHAPE_STEPS
+    }
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
