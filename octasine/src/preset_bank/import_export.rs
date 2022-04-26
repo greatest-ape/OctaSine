@@ -69,6 +69,7 @@ pub(super) struct SerdePresetParameter {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub(super) struct SerdePreset {
+    octasine_version: String,
     pub(super) name: String,
     pub(super) parameters: Vec<SerdePresetParameter>,
 }
@@ -92,6 +93,7 @@ impl SerdePreset {
         }
 
         Self {
+            octasine_version: crate::get_version_info(),
             name: preset.get_name(),
             parameters,
         }
@@ -100,12 +102,14 @@ impl SerdePreset {
 
 #[derive(Serialize, Deserialize)]
 pub(super) struct SerdePresetBank {
+    octasine_version: String,
     pub(super) presets: Vec<SerdePreset>,
 }
 
 impl SerdePresetBank {
     pub(super) fn new(preset_bank: &PresetBank) -> Self {
         Self {
+            octasine_version: crate::get_version_info(),
             presets: preset_bank
                 .presets
                 .iter()

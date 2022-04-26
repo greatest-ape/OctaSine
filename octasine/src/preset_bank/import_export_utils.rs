@@ -1,28 +1,45 @@
-use serde::{Deserialize, Serialize};
+use flate2::{read::GzDecoder, write::GzEncoder, Compression};
+use serde::{de::DeserializeOwned, Serialize};
 
-const DATA_START_BYTES: &[u8] = b"\n\n| vst2 preset data below | format version: 2 |\n\n";
+const PREFIX: &[u8] = b"\n\nOCTASINE-GZ-DATA-V1-BEGIN\n\n";
+const SUFFIX: &[u8] = b"\n\nOCTASINE-GZ-DATA-V1-END\n\n";
 
-pub fn to_bytes<T: Serialize>(t: &T) -> Vec<u8> {
-    let mut bytes = Vec::from(DATA_START_BYTES);
+pub fn to_bytes<T: Serialize>(t: &T) -> anyhow::Result<Vec<u8>> {
+    let mut bytes = Vec::from(PREFIX);
 
-    bytes.extend_from_slice(
-        &serde_json::to_vec_pretty(t).expect("presets module: couldn't serialize"),
-    );
+    let mut encoder = GzEncoder::new(&mut bytes, Compression::best());
 
-    bytes
+    serde_json::to_writer(&mut encoder, t)?;
+
+    encoder.finish()?;
+
+    bytes.extend_from_slice(&SUFFIX);
+
+    Ok(bytes)
 }
 
-pub fn from_bytes<'a, T: Deserialize<'a>>(
+pub fn from_bytes<'a, T: DeserializeOwned>(
     mut bytes: &'a [u8],
 ) -> Result<T, impl ::std::error::Error> {
-    bytes = split_off_slice_prefix(bytes, DATA_START_BYTES);
+    bytes = split_off_slice_prefix(bytes, PREFIX);
+    bytes = split_off_slice_suffix(bytes, SUFFIX);
 
-    serde_json::from_slice(bytes)
+    let mut decoder = GzDecoder::new(bytes);
+
+    serde_json::from_reader(&mut decoder)
 }
 
 fn split_off_slice_prefix<'a>(mut bytes: &'a [u8], prefix: &[u8]) -> &'a [u8] {
     if let Some(index) = find_in_slice(bytes, prefix) {
         bytes = &bytes[index + prefix.len()..];
+    }
+
+    bytes
+}
+
+fn split_off_slice_suffix<'a>(mut bytes: &'a [u8], suffix: &[u8]) -> &'a [u8] {
+    if let Some(index) = find_in_slice(bytes, suffix) {
+        bytes = &bytes[..index];
     }
 
     bytes

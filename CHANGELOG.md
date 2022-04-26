@@ -39,6 +39,7 @@ affect modulation output
 - Bump plugin unique ID to allow using this version in parallel with previous
   versions
 - Use directories crate to determine where to save preference and log files
+- Use gzip compression on exported patches and patch banks
 - Update multiple dependencies, notably iced and baseview
 
 ### Fixed
