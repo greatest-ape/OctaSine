@@ -7,13 +7,14 @@ use crate::parameters::values::{
     Operator2ModulationTargetValue, Operator3ModulationTargetValue, Operator4ModulationTargetValue,
     OperatorFeedbackValue, OperatorFrequencyFineValue, OperatorFrequencyFreeValue,
     OperatorFrequencyRatioValue, OperatorMixValue, OperatorModulationIndexValue,
-    OperatorPanningValue, OperatorVolumeToggleValue, OperatorVolumeValue, OperatorWaveTypeValue,
+    OperatorPanningValue, OperatorVolumeValue, OperatorWaveTypeValue,
 };
 use crate::GuiSyncHandle;
 
 use super::envelope::Envelope;
 use super::knob::{self, OctaSineKnob};
 use super::mod_target_picker;
+use super::mute_button::OperatorMuteButton;
 use super::style::Theme;
 use super::wave_picker::WavePicker;
 use super::{Message, FONT_SIZE, FONT_VERY_BOLD, LINE_HEIGHT};
@@ -28,7 +29,7 @@ pub struct OperatorWidgets {
     index: usize,
     style: Theme,
     pub volume: OctaSineKnob<OperatorVolumeValue>,
-    pub volume_toggle: OperatorVolumeToggler,
+    pub mute_button: OperatorMuteButton,
     pub mix: OctaSineKnob<OperatorMixValue>,
     pub panning: OctaSineKnob<OperatorPanningValue>,
     pub wave_type: WavePicker<OperatorWaveTypeValue>,
@@ -90,7 +91,7 @@ impl OperatorWidgets {
             index: operator_index,
             style,
             volume: knob::operator_volume(sync_handle, volume, style),
-            volume_toggle: OperatorVolumeToggler(1.0),
+            mute_button: OperatorMuteButton::new(sync_handle, volume_toggle, style),
             mix: knob::operator_mix(sync_handle, mix, operator_index, style),
             panning: knob::operator_panning(sync_handle, panning, style),
             wave_type: WavePicker::new(sync_handle, wave, style, "WAVE"),
@@ -110,6 +111,7 @@ impl OperatorWidgets {
 
     pub fn set_style(&mut self, style: Theme) {
         self.style = style;
+        self.mute_button.set_style(style);
         self.volume.style = style;
         self.mix.style = style;
         self.panning.style = style;
@@ -143,9 +145,17 @@ impl OperatorWidgets {
             .color(self.style.heading_color())
             .horizontal_alignment(Horizontal::Center);
 
+        let mute_button = self.mute_button.view();
+
+        let operator_number_column = Column::new()
+            .width(Length::Fill)
+            .align_items(Alignment::Center)
+            .push(operator_number)
+            .push(mute_button);
+
         let mut row = Row::new()
             .push(
-                Container::new(operator_number)
+                Container::new(operator_number_column)
                     .width(Length::Units(LINE_HEIGHT * 4))
                     .height(Length::Units(LINE_HEIGHT * 6))
                     .align_x(Horizontal::Center)
@@ -236,14 +246,5 @@ impl OperatorWidgets {
             );
 
         row.into()
-    }
-}
-
-// FIXME
-pub struct OperatorVolumeToggler(f64);
-
-impl OperatorVolumeToggler {
-    pub fn set_value(&mut self, value: f64) {
-        self.0 = value;
     }
 }

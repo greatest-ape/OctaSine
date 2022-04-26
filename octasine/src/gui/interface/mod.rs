@@ -14,6 +14,7 @@ mod lfo;
 mod lfo_target_picker;
 mod mod_matrix;
 mod mod_target_picker;
+mod mute_button;
 mod operator;
 mod preset_picker;
 pub mod style;
@@ -118,7 +119,7 @@ impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {
             0 => self.master_volume.set_value(v),
             1 => self.master_frequency.set_value(v),
             2 => self.operator_1.volume.set_value(v),
-            3 => self.operator_1.volume_toggle.set_value(v),
+            3 => self.operator_1.mute_button.set_value(v),
             4 => {
                 self.operator_1.mix.set_value(v);
                 self.modulation_matrix.set_operator_1_mix(value);
@@ -135,7 +136,7 @@ impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {
             14 => self.operator_1.envelope.set_decay_end_value(v),
             15 => self.operator_1.envelope.set_release_duration(v),
             16 => self.operator_2.volume.set_value(v),
-            17 => self.operator_2.volume_toggle.set_value(v),
+            17 => self.operator_2.mute_button.set_value(v),
             18 => {
                 self.operator_2.mix.set_value(v);
                 self.modulation_matrix.set_operator_2_mix(value);
@@ -165,7 +166,7 @@ impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {
             30 => self.operator_2.envelope.set_decay_end_value(v),
             31 => self.operator_2.envelope.set_release_duration(v),
             32 => self.operator_3.volume.set_value(v),
-            33 => self.operator_3.volume_toggle.set_value(v),
+            33 => self.operator_3.mute_button.set_value(v),
             34 => {
                 self.modulation_matrix.set_operator_3_mix(value);
                 self.operator_3.mix.set_value(v);
@@ -195,7 +196,7 @@ impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {
             46 => self.operator_3.envelope.set_decay_end_value(v),
             47 => self.operator_3.envelope.set_release_duration(v),
             48 => self.operator_4.volume.set_value(v),
-            49 => self.operator_4.volume_toggle.set_value(v),
+            49 => self.operator_4.mute_button.set_value(v),
             50 => {
                 self.operator_4.mix.set_value(v);
                 self.modulation_matrix.set_operator_4_mix(value);
