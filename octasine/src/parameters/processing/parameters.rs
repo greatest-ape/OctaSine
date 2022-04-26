@@ -2,8 +2,6 @@ use std::{f64::consts::FRAC_PI_2, marker::PhantomData};
 
 use arrayvec::ArrayVec;
 
-use crate::common::*;
-use crate::constants::*;
 use crate::parameters::values::*;
 
 use super::interpolatable_value::*;
@@ -383,7 +381,7 @@ impl ProcessingParameter for OperatorPanningProcessingParameter {
 
 impl Default for OperatorPanningProcessingParameter {
     fn default() -> Self {
-        let default = DEFAULT_OPERATOR_PANNING;
+        let default = OperatorPanningValue::default().get();
 
         Self {
             value: InterpolatableProcessingValue::new(default),

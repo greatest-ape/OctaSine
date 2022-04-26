@@ -1,5 +1,4 @@
 use super::ParameterValue;
-use crate::constants::*;
 
 #[derive(Debug, Clone, Copy)]
 pub struct OperatorMixValue(f64);
@@ -7,7 +6,7 @@ pub struct OperatorMixValue(f64);
 impl OperatorMixValue {
     pub fn new(index: usize) -> Self {
         if index == 0 {
-            Self(DEFAULT_OPERATOR_VOLUME)
+            Self(1.0)
         } else {
             Self(0.0)
         }

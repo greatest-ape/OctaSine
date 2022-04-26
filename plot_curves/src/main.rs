@@ -1,4 +1,6 @@
 use octasine::approximations::Log10Table;
+use octasine::parameters::values::lfo_mode::LfoMode;
+use octasine::parameters::values::lfo_shape::LfoShape;
 use plotlib::page::Page;
 use plotlib::repr::Plot;
 use plotlib::style::{LineStyle, PointMarker, PointStyle};

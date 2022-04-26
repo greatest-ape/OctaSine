@@ -1,13 +1,17 @@
 use super::ParameterValue;
-use crate::constants::*;
 use crate::parameters::utils::*;
+
+pub const OPERATOR_FINE_STEPS: [f64; 17] = [
+    0.8, 0.85, 0.9, 0.95, 0.97, 0.98, 0.99, 0.995, 1.0, 1.005, 1.01, 1.02, 1.03, 1.05, 1.1, 1.15,
+    1.2,
+];
 
 #[derive(Debug, Clone, Copy)]
 pub struct OperatorFrequencyFineValue(f64);
 
 impl Default for OperatorFrequencyFineValue {
     fn default() -> Self {
-        Self(DEFAULT_OPERATOR_FREQUENCY_FINE)
+        Self(1.0)
     }
 }
 

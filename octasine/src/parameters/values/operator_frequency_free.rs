@@ -1,13 +1,16 @@
 use super::ParameterValue;
-use crate::constants::*;
 use crate::parameters::utils::*;
+
+pub const OPERATOR_FREE_STEPS: [f64; 14] = [
+    0.001, 0.0625, 0.125, 0.25, 0.5, 0.75, 1.0, 1.5, 2.0, 3.0, 4.0, 16.0, 64.0, 256.0,
+];
 
 #[derive(Debug, Clone, Copy)]
 pub struct OperatorFrequencyFreeValue(f64);
 
 impl Default for OperatorFrequencyFreeValue {
     fn default() -> Self {
-        Self(DEFAULT_OPERATOR_FREQUENCY_FREE)
+        Self(1.0)
     }
 }
 

@@ -4,7 +4,7 @@ use iced_baseview::canvas::{
 use iced_baseview::{Color, Element, Length, Point, Rectangle, Size, Vector};
 
 use crate::approximations::Log10Table;
-use crate::constants::{ENVELOPE_MAX_DURATION, ENVELOPE_MIN_DURATION};
+use crate::parameters::values::operator_envelope::{ENVELOPE_MAX_DURATION, ENVELOPE_MIN_DURATION};
 use crate::voices::envelopes::VoiceOperatorVolumeEnvelope;
 use crate::GuiSyncHandle;
 

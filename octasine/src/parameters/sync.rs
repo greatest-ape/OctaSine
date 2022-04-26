@@ -268,10 +268,8 @@ fn lfo_amount(index: usize) -> SyncParameter {
 #[allow(clippy::float_cmp)]
 #[cfg(test)]
 mod tests {
-    // use assert_approx_eq::assert_approx_eq;
-
-    use crate::common::*;
-    use crate::constants::*;
+    use crate::parameters::values::operator_frequency_ratio::OPERATOR_RATIO_STEPS;
+    use crate::parameters::values::operator_wave_type::WaveType;
 
     use super::*;
 

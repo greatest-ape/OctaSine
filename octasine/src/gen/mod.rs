@@ -11,6 +11,8 @@ use crate::approximations::Log10Table;
 use crate::common::*;
 use crate::constants::*;
 use crate::parameters::processing::{ProcessingParameter, ProcessingParameterOperator};
+use crate::parameters::values::lfo_target::*;
+use crate::parameters::values::operator_wave_type::WaveType;
 use crate::{OctaSine, ProcessingState};
 
 use lfo::*;
@@ -56,7 +58,7 @@ pub struct OperatorVoiceData {
     pub constant_power_pannings: [f64; MAX_PD_WIDTH],
     pub envelope_volumes: [f64; MAX_PD_WIDTH],
     pub phases: [f64; MAX_PD_WIDTH],
-    pub wave_type: crate::WaveType,
+    pub wave_type: WaveType,
     pub modulation_targets: ArrayVec<usize, 3>,
     pub volume_factors: [f64; MAX_PD_WIDTH],
 }

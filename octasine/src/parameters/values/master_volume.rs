@@ -1,12 +1,11 @@
 use super::ParameterValue;
-use crate::constants::*;
 
 #[derive(Debug, Clone, Copy)]
 pub struct MasterVolumeValue(f64);
 
 impl Default for MasterVolumeValue {
     fn default() -> Self {
-        Self(DEFAULT_MASTER_VOLUME)
+        Self(1.0)
     }
 }
 

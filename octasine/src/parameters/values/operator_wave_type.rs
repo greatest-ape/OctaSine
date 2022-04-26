@@ -1,16 +1,39 @@
 use crate::common::*;
-use crate::constants::*;
 
 use super::ParameterValue;
 
-#[derive(Debug, Clone, Copy)]
-pub struct OperatorWaveTypeValue(pub WaveType);
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+pub enum WaveType {
+    Sine,
+    WhiteNoise,
+}
 
-impl Default for OperatorWaveTypeValue {
+impl Default for WaveType {
     fn default() -> Self {
-        Self(DEFAULT_OPERATOR_WAVE_TYPE)
+        Self::Sine
     }
 }
+impl CalculateCurve for WaveType {
+    fn calculate(self, phase: Phase) -> f64 {
+        match self {
+            Self::Sine => crate::parameters::values::lfo_shape::sine(phase),
+            Self::WhiteNoise => {
+                // Ensure same numbers are generated each time for GUI
+                // consistency. This will however break if fastrand changes
+                // its algorithm.
+                let seed = phase.0.to_bits() + 2;
+
+                (fastrand::Rng::with_seed(seed).f64() - 0.5) * 2.0
+            }
+        }
+    }
+    fn steps() -> &'static [Self] {
+        &[Self::Sine, Self::WhiteNoise]
+    }
+}
+
+#[derive(Debug, Clone, Copy, Default)]
+pub struct OperatorWaveTypeValue(pub WaveType);
 
 impl ParameterValue for OperatorWaveTypeValue {
     type Value = WaveType;

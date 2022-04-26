@@ -1,8 +1,7 @@
 use iced_baseview::canvas::{event, Frame, Path, Stroke};
 use iced_baseview::{mouse, Point, Rectangle, Size};
 
-use crate::common::ModTarget;
-use crate::parameters::values::ParameterValue;
+use crate::parameters::values::{ModTarget, ParameterValue};
 
 use crate::gui::interface::{Message, SnapPoint};
 

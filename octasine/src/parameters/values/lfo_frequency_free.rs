@@ -1,6 +1,7 @@
 use super::ParameterValue;
-use crate::constants::*;
 use crate::parameters::utils::*;
+
+const LFO_FREQUENCY_FREE_STEPS: [f64; 7] = [1.0 / 16.0, 0.5, 0.9, 1.0, 1.1, 2.0, 16.0];
 
 #[derive(Debug, Clone, Copy)]
 pub struct LfoFrequencyFreeValue(pub f64);

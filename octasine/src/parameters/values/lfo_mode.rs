@@ -1,16 +1,22 @@
 use super::ParameterValue;
-use crate::common::*;
-use crate::constants::*;
 use crate::parameters::utils::*;
 
-#[derive(Debug, Clone, Copy)]
-pub struct LfoModeValue(pub LfoMode);
+const LFO_MODE_STEPS: [LfoMode; 2] = [LfoMode::Forever, LfoMode::Once];
 
-impl Default for LfoModeValue {
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+pub enum LfoMode {
+    Once,
+    Forever,
+}
+
+impl Default for LfoMode {
     fn default() -> Self {
-        Self(DEFAULT_LFO_MODE)
+        Self::Forever
     }
 }
+
+#[derive(Debug, Clone, Copy, Default)]
+pub struct LfoModeValue(pub LfoMode);
 
 impl ParameterValue for LfoModeValue {
     type Value = LfoMode;

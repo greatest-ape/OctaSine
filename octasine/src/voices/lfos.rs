@@ -1,6 +1,7 @@
-use std::f64::consts::TAU;
-
-use crate::common::*;
+use crate::{
+    common::*,
+    parameters::values::{lfo_mode::LfoMode, lfo_shape::LfoShape},
+};
 
 const INTERPOLATION_SAMPLES: usize = 128;
 
@@ -145,9 +146,9 @@ impl VoiceLfo {
             } => {
                 let progress = samples_done as f64 / INTERPOLATION_SAMPLES as f64;
 
-                progress * Self::calculate_curve(shape, self.phase) + (1.0 - progress) * from_value
+                progress * shape.calculate(self.phase) + (1.0 - progress) * from_value
             }
-            LfoStage::Running => Self::calculate_curve(shape, self.phase),
+            LfoStage::Running => shape.calculate(self.phase),
             LfoStage::Stopping {
                 from_value,
                 samples_done,
@@ -164,19 +165,6 @@ impl VoiceLfo {
         self.last_value = value;
 
         value * amount
-    }
-
-    pub fn calculate_curve(shape: LfoShape, phase: Phase) -> f64 {
-        match shape {
-            LfoShape::Saw => saw(phase),
-            LfoShape::ReverseSaw => -saw(phase),
-            LfoShape::Triangle => triangle(phase),
-            LfoShape::ReverseTriangle => -triangle(phase),
-            LfoShape::Square => square(phase),
-            LfoShape::ReverseSquare => -square(phase),
-            LfoShape::Sine => sine(phase),
-            LfoShape::ReverseSine => -sine(phase),
-        }
     }
 
     pub fn restart(&mut self) {
@@ -205,46 +193,5 @@ impl VoiceLfo {
 
     pub fn is_stopped(&self) -> bool {
         matches!(self.stage, LfoStage::Stopped)
-    }
-}
-
-fn triangle(phase: Phase) -> f64 {
-    if phase.0 <= 0.25 {
-        4.0 * phase.0
-    } else if phase.0 <= 0.75 {
-        1.0 - 4.0 * (phase.0 - 0.25)
-    } else {
-        -1.0 + 4.0 * (phase.0 - 0.75)
-    }
-}
-
-fn saw(phase: Phase) -> f64 {
-    (phase.0 - 0.5) * 2.0
-}
-
-fn square(phase: Phase) -> f64 {
-    let peak_end = 32.0 / 64.0;
-    let base_start = 33.0 / 64.0;
-
-    if phase.0 <= peak_end {
-        1.0
-    } else if phase.0 <= base_start {
-        1.0 - 2.0 * ((phase.0 - peak_end) / (base_start - peak_end))
-    } else {
-        -1.0
-    }
-}
-
-cfg_if::cfg_if! {
-    if #[cfg(feature = "simd")] {
-        pub fn sine(phase: Phase) -> f64 {
-            unsafe {
-                ::sleef_sys::Sleef_cinz_sind1_u35purec(phase.0 * TAU)
-            }
-        }
-    } else {
-        pub fn sine(phase: Phase) -> f64 {
-            (phase.0 * TAU).sin()
-        }
     }
 }

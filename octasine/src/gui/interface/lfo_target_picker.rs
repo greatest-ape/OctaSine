@@ -1,10 +1,9 @@
 use iced_baseview::widget::{pick_list, PickList};
 use iced_baseview::{Alignment, Column, Element, Length};
 
-use crate::common::*;
 use crate::parameters::values::{
-    Lfo1TargetParameterValue, Lfo2TargetParameterValue, Lfo3TargetParameterValue,
-    Lfo4TargetParameterValue, ParameterValue,
+    get_lfo_target_parameters, Lfo1TargetParameterValue, Lfo2TargetParameterValue,
+    Lfo3TargetParameterValue, Lfo4TargetParameterValue, LfoTargetParameter, ParameterValue,
 };
 
 use super::{style::Theme, GuiSyncHandle, Message, FONT_SIZE, LINE_HEIGHT};

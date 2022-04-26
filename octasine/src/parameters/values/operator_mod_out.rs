@@ -7,7 +7,7 @@ pub struct OperatorModulationIndexValue(f64);
 
 impl Default for OperatorModulationIndexValue {
     fn default() -> Self {
-        Self(DEFAULT_OPERATOR_MODULATION_INDEX)
+        Self(0.0)
     }
 }
 
@@ -22,12 +22,12 @@ impl ParameterValue for OperatorModulationIndexValue {
     }
     fn from_sync(sync: f64) -> Self {
         Self(map_parameter_value_to_value_with_steps(
-            &OPERATOR_BETA_STEPS[..],
+            &OPERATOR_MOD_INDEX_STEPS[..],
             sync,
         ))
     }
     fn to_sync(self) -> f64 {
-        map_value_to_parameter_value_with_steps(&OPERATOR_BETA_STEPS[..], self.0)
+        map_value_to_parameter_value_with_steps(&OPERATOR_MOD_INDEX_STEPS[..], self.0)
     }
     fn format(self) -> String {
         format!("{:.04}", self.0)

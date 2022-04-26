@@ -1,5 +1,18 @@
 use super::ParameterValue;
-use crate::constants::*;
+
+pub const ENVELOPE_MAX_DURATION: f64 = 4.0;
+pub const ENVELOPE_MIN_DURATION: f64 = 0.004;
+
+/// After this duration, the envelope slope does not get mixed with linear
+/// slope at all
+pub const ENVELOPE_CURVE_TAKEOVER: f64 = ENVELOPE_MIN_DURATION * 10.0;
+pub const ENVELOPE_CURVE_TAKEOVER_RECIP: f64 = 1.0 / ENVELOPE_CURVE_TAKEOVER;
+
+const DEFAULT_ENVELOPE_ATTACK_DURATION: f64 = ENVELOPE_MIN_DURATION;
+const DEFAULT_ENVELOPE_ATTACK_VOLUME: f64 = 1.0;
+const DEFAULT_ENVELOPE_DECAY_DURATION: f64 = ENVELOPE_MIN_DURATION;
+const DEFAULT_ENVELOPE_DECAY_VOLUME: f64 = 1.0;
+const DEFAULT_ENVELOPE_RELEASE_DURATION: f64 = 0.25;
 
 macro_rules! impl_envelope_duration_value_conversion {
     ($struct_name:ident) => {

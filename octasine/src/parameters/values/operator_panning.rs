@@ -1,12 +1,11 @@
 use super::ParameterValue;
-use crate::constants::*;
 
 #[derive(Debug, Clone, Copy)]
 pub struct OperatorPanningValue(f64);
 
 impl Default for OperatorPanningValue {
     fn default() -> Self {
-        Self(DEFAULT_OPERATOR_PANNING)
+        Self(0.5)
     }
 }
 

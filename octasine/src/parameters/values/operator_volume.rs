@@ -1,12 +1,11 @@
 use super::ParameterValue;
-use crate::constants::*;
 
 #[derive(Debug, Clone, Copy)]
 pub struct OperatorVolumeValue(f64);
 
 impl Default for OperatorVolumeValue {
     fn default() -> Self {
-        Self(DEFAULT_OPERATOR_VOLUME)
+        Self(1.0)
     }
 }
 

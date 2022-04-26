@@ -1,13 +1,17 @@
 use super::ParameterValue;
-use crate::constants::*;
 use crate::parameters::utils::*;
+
+pub const OPERATOR_RATIO_STEPS: [f64; 28] = [
+    0.0625, 0.125, 0.2, 0.25, 0.33, 0.5, 0.55, 0.66, 0.6896, 0.8, 0.8333, 1.0, 1.2, 1.25, 1.33,
+    1.45, 1.5, 1.8, 1.875, 2.0, 2.5, 3.0, 3.5, 4.0, 8.0, 16.0, 32.0, 64.0,
+];
 
 #[derive(Debug, Clone, Copy)]
 pub struct OperatorFrequencyRatioValue(f64);
 
 impl Default for OperatorFrequencyRatioValue {
     fn default() -> Self {
-        Self(DEFAULT_OPERATOR_FREQUENCY_RATIO)
+        Self(1.0)
     }
 }
 

@@ -1,6 +1,17 @@
 use super::ParameterValue;
-use crate::constants::*;
 use crate::parameters::utils::*;
+
+const LFO_FREQUENCY_RATIO_STEPS: [f64; 9] = [
+    1.0 / 16.0,
+    1.0 / 8.0,
+    1.0 / 4.0,
+    1.0 / 2.0,
+    1.0,
+    2.0,
+    4.0,
+    8.0,
+    16.0,
+];
 
 #[derive(Debug, Clone, Copy)]
 pub struct LfoFrequencyRatioValue(pub f64);

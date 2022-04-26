@@ -1,7 +1,7 @@
 use crate::approximations::Log10Table;
 use crate::common::*;
-use crate::constants::ENVELOPE_CURVE_TAKEOVER_RECIP;
 use crate::parameters::processing::OperatorEnvelopeProcessingParameter;
+use crate::parameters::values::ENVELOPE_CURVE_TAKEOVER_RECIP;
 
 use super::VoiceDuration;
 
@@ -168,7 +168,7 @@ mod tests {
     use assert_approx_eq::assert_approx_eq;
     use quickcheck::{quickcheck, TestResult};
 
-    use crate::constants::*;
+    use crate::parameters::values::ENVELOPE_MAX_DURATION;
 
     use super::*;
 
