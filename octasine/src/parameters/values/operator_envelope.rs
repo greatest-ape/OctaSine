@@ -54,7 +54,6 @@ macro_rules! impl_envelope_duration_value_conversion {
     };
 }
 
-#[macro_export]
 macro_rules! impl_identity_value_conversion {
     ($struct_name:ident) => {
         impl ParameterValue for $struct_name {
@@ -125,7 +124,7 @@ impl Default for OperatorAttackVolumeValue {
     }
 }
 
-crate::impl_identity_value_conversion!(OperatorAttackVolumeValue);
+impl_identity_value_conversion!(OperatorAttackVolumeValue);
 
 #[derive(Debug, Clone, Copy)]
 pub struct OperatorDecayVolumeValue(f64);
