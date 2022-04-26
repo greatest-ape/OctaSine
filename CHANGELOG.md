@@ -17,6 +17,7 @@ how patches sound.
 - Replace additive factor with mix out parameter, which doesn't
 affect modulation output
 - Add per-operator modulation target picker to GUI
+- Add per-operator mute button
  
 #### LFO changes
 
