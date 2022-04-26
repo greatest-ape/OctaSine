@@ -2,26 +2,29 @@
 
 ## High priority
 
-* Add way to interact with operator volume toggle parameters. Maybe green
-  number for active operators? Mute button or similar might be better.
 * Look at other/better operator ratio parameter values
 
 ## Medium priority
 
-* Consider
-  * consider easing fine tuning of mod out / changing steps
-
+* Preset exports/imports
+  * Add prefix and suffix to data
+  * Compress
+  * Serialize version and commit
 * Mode to lock together envelopes so changes affect all
-
 * bench_process
   * Is it a cause for concern that not keeping wave type fixed has different
     effect depending on SIMD width?
-
 * GUI
   * Scrolling in dropdowns
     * iced 0.4: https://github.com/hecrj/iced/pull/872
     * Does scrolling (including touch) need to be added to baseview
       macOS code? What about other platforms?
+* Consider
+  * consider easing fine tuning of mod out / changing steps
+* Manual under info button?
+  * Double-click to reset knobs
+  * Shift-drag knobs for fine tuning
+  * Presets are exported/imported through DAW
 
 ## Low priority
 
@@ -39,8 +42,6 @@
 
 ## Very low priority
 
-* Manual under info button?
-  * Presets are exported/imported through DAW
 * Process benchmark output not same on Windows as on macOS/Linux
 * Record video of workflow, upload to YouTube
 * Consider updating envelope and lfo values in process benchmark too. This
