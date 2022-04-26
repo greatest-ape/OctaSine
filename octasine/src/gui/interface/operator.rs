@@ -1,6 +1,6 @@
 use iced_baseview::{
-    alignment::Horizontal, alignment::Vertical, button, Alignment, Button, Column, Container,
-    Element, Length, Row, Rule, Space, Text,
+    alignment::Horizontal, button, Alignment, Button, Column, Container, Element, Length, Row,
+    Rule, Space, Text,
 };
 
 use crate::parameters::values::{
@@ -145,21 +145,20 @@ impl OperatorWidgets {
             .color(self.style.heading_color())
             .horizontal_alignment(Horizontal::Center);
 
-        let mute_button = self.mute_button.view();
-
         let operator_number_column = Column::new()
             .width(Length::Fill)
             .align_items(Alignment::Center)
+            .spacing(0)
+            .push(Space::with_height(Length::Units(LINE_HEIGHT * 2)))
             .push(operator_number)
-            .push(mute_button);
+            .push(self.mute_button.view());
 
         let mut row = Row::new()
             .push(
                 Container::new(operator_number_column)
                     .width(Length::Units(LINE_HEIGHT * 4))
                     .height(Length::Units(LINE_HEIGHT * 6))
-                    .align_x(Horizontal::Center)
-                    .align_y(Vertical::Center),
+                    .align_x(Horizontal::Center),
             )
             // .push(Space::with_width(Length::Units(LINE_HEIGHT)))
             .push(self.wave_type.view())

@@ -1,6 +1,8 @@
 use iced_baseview::{button, container, pick_list, radio, Color};
 use iced_style::checkbox;
 
+use crate::gui::interface::mute_button;
+
 use super::{envelope, mod_matrix, wave_picker};
 
 macro_rules! hex_gray {
@@ -21,6 +23,8 @@ pub const TEXT_FG: Color = hex_gray!(0x00);
 pub const BORDER: Color = hex_gray!(0xA0);
 pub const CONTRAST: Color = hex_gray!(0xD9);
 pub const CONTRAST_DARK: Color = hex_gray!(0xC0);
+
+pub const RED: Color = Color::from_rgb(0.765, 0.067, 0.176);
 
 pub struct Container;
 
@@ -254,6 +258,32 @@ impl wave_picker::StyleSheet for LfoShapePicker {
             middle_line_color: Color::from_rgb(0.7, 0.7, 0.7),
             shape_line_color_active: TEXT_FG,
             shape_line_color_hovered: TEXT_FG,
+        }
+    }
+}
+
+pub struct MuteButton;
+
+impl mute_button::StyleSheet for MuteButton {
+    fn volume_on(&self) -> mute_button::Style {
+        mute_button::Style {
+            background_color: SURFACE,
+            border_color: BORDER,
+            text_color: TEXT_FG,
+        }
+    }
+    fn volume_off(&self) -> mute_button::Style {
+        mute_button::Style {
+            background_color: SURFACE,
+            border_color: BORDER,
+            text_color: RED,
+        }
+    }
+    fn hovered(&self) -> mute_button::Style {
+        mute_button::Style {
+            background_color: SURFACE,
+            border_color: BORDER,
+            text_color: TEXT_FG,
         }
     }
 }
