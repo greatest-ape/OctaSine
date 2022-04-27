@@ -57,18 +57,18 @@ impl SyncParameter {
     }
 }
 
-struct Preset {
+struct Patch {
     name: ArcSwap<String>,
     parameters: Vec<SyncParameter>,
 }
 
-impl Default for Preset {
+impl Default for Patch {
     fn default() -> Self {
         Self::new("-".to_string(), create_parameters())
     }
 }
 
-impl Preset {
+impl Patch {
     fn new(name: String, parameters: Vec<SyncParameter>) -> Self {
         Self {
             name: ArcSwap::new(Arc::new(name)),
@@ -85,7 +85,7 @@ impl Preset {
     }
 
     fn import_bytes(&self, bytes: &[u8]) -> bool {
-        let res_serde_preset: Result<SerdePreset, _> = from_bytes(bytes);
+        let res_serde_preset: Result<SerdePatch, _> = from_bytes(bytes);
 
         if let Ok(serde_preset) = res_serde_preset {
             self.import_serde_preset(&serde_preset);
@@ -96,7 +96,7 @@ impl Preset {
         }
     }
 
-    fn import_serde_preset(&self, serde_preset: &SerdePreset) {
+    fn import_serde_preset(&self, serde_preset: &SerdePatch) {
         self.set_name(serde_preset.name.clone());
 
         for (index, parameter) in self.parameters.iter().enumerate() {
@@ -110,44 +110,44 @@ impl Preset {
         to_bytes(&self.export_serde_preset()).expect("serialize preset")
     }
 
-    fn export_serde_preset(&self) -> SerdePreset {
-        SerdePreset::new(self)
+    fn export_serde_preset(&self) -> SerdePatch {
+        SerdePatch::new(self)
     }
 }
 
-pub struct PresetBank {
-    presets: [Preset; 128],
-    preset_index: AtomicUsize,
+pub struct PatchBank {
+    patches: [Patch; 128],
+    patch_index: AtomicUsize,
     parameter_change_info_audio: ParameterChangeInfo,
     parameter_change_info_gui: ParameterChangeInfo,
-    presets_changed: AtomicBool,
+    patches_changed: AtomicBool,
 }
 
-impl Default for PresetBank {
+impl Default for PatchBank {
     fn default() -> Self {
         Self::new(create_parameters)
     }
 }
 
-impl PresetBank {
+impl PatchBank {
     pub fn new(parameters: fn() -> Vec<SyncParameter>) -> Self {
         Self {
-            presets: array_init(|i| Preset::new(format!("{:03}", i + 1), parameters())),
-            preset_index: AtomicUsize::new(0),
+            patches: array_init(|i| Patch::new(format!("{:03}", i + 1), parameters())),
+            patch_index: AtomicUsize::new(0),
             parameter_change_info_audio: ParameterChangeInfo::default(),
             parameter_change_info_gui: ParameterChangeInfo::default(),
-            presets_changed: AtomicBool::new(false),
+            patches_changed: AtomicBool::new(false),
         }
     }
 
     // Utils
 
     fn get_parameter(&self, index: usize) -> Option<&SyncParameter> {
-        self.get_current_preset().parameters.get(index)
+        self.get_current_patch().parameters.get(index)
     }
 
-    fn get_current_preset(&self) -> &Preset {
-        &self.presets[self.get_preset_index()]
+    fn get_current_patch(&self) -> &Patch {
+        &self.patches[self.get_patch_index()]
     }
 
     fn mark_parameters_as_changed(&self) {
@@ -155,92 +155,92 @@ impl PresetBank {
         self.parameter_change_info_gui.mark_all_as_changed();
     }
 
-    // Number of presets / parameters
+    // Number of patches / parameters
 
-    pub fn num_presets(&self) -> usize {
-        self.presets.len()
+    pub fn num_patches(&self) -> usize {
+        self.patches.len()
     }
 
     pub fn num_parameters(&self) -> usize {
-        self.get_current_preset().parameters.len()
+        self.get_current_patch().parameters.len()
     }
 
-    // Manage presets
+    // Manage patches
 
-    pub fn get_preset_index(&self) -> usize {
-        self.preset_index.load(Ordering::SeqCst)
+    pub fn get_patch_index(&self) -> usize {
+        self.patch_index.load(Ordering::SeqCst)
     }
 
-    pub fn set_preset_index(&self, index: usize) {
-        if index >= self.presets.len() {
+    pub fn set_patch_index(&self, index: usize) {
+        if index >= self.patches.len() {
             return;
         }
 
-        self.preset_index.store(index, Ordering::SeqCst);
-        self.presets_changed.store(true, Ordering::SeqCst);
+        self.patch_index.store(index, Ordering::SeqCst);
+        self.patches_changed.store(true, Ordering::SeqCst);
         self.mark_parameters_as_changed();
     }
 
-    pub fn get_preset_name(&self, index: usize) -> Option<String> {
-        self.presets
+    pub fn get_patch_name(&self, index: usize) -> Option<String> {
+        self.patches
             .get(index as usize)
             .map(|p| (*p.name.load_full()).clone())
     }
 
-    pub fn get_preset_names(&self) -> Vec<String> {
-        self.presets
+    pub fn get_patch_names(&self) -> Vec<String> {
+        self.patches
             .iter()
             .map(|p| (*p.name.load_full()).clone())
             .collect()
     }
 
-    pub fn set_preset_name(&self, name: String) {
-        self.get_current_preset().name.store(Arc::new(name));
-        self.presets_changed.store(true, Ordering::SeqCst);
+    pub fn set_patch_name(&self, name: String) {
+        self.get_current_patch().name.store(Arc::new(name));
+        self.patches_changed.store(true, Ordering::SeqCst);
     }
 
     /// Only used from GUI
-    pub fn have_presets_changed(&self) -> bool {
-        self.presets_changed.fetch_and(false, Ordering::SeqCst)
+    pub fn have_patches_changed(&self) -> bool {
+        self.patches_changed.fetch_and(false, Ordering::SeqCst)
     }
 
     // Get parameter changes
 
     pub fn get_changed_parameters_from_audio(&self) -> Option<[Option<f64>; MAX_NUM_PARAMETERS]> {
         self.parameter_change_info_audio
-            .get_changed_parameters(&self.get_current_preset().parameters)
+            .get_changed_parameters(&self.get_current_patch().parameters)
     }
 
     pub fn get_changed_parameters_from_gui(&self) -> Option<[Option<f64>; MAX_NUM_PARAMETERS]> {
         self.parameter_change_info_gui
-            .get_changed_parameters(&self.get_current_preset().parameters)
+            .get_changed_parameters(&self.get_current_patch().parameters)
     }
 
     // Get parameter values
 
     pub fn get_parameter_value(&self, index: usize) -> Option<f64> {
-        self.get_current_preset()
+        self.get_current_patch()
             .parameters
             .get(index)
             .map(|p| p.value.get())
     }
 
     pub fn get_parameter_value_text(&self, index: usize) -> Option<String> {
-        self.get_current_preset()
+        self.get_current_patch()
             .parameters
             .get(index)
             .map(|p| (p.format_sync)(p.value.get()))
     }
 
     pub fn get_parameter_name(&self, index: usize) -> Option<String> {
-        self.get_current_preset()
+        self.get_current_patch()
             .parameters
             .get(index)
             .map(|p| p.name.clone())
     }
 
     pub fn format_parameter_value(&self, index: usize, value: f64) -> Option<String> {
-        self.get_current_preset()
+        self.get_current_patch()
             .parameters
             .get(index)
             .map(|p| (p.format_sync)(value))
@@ -288,14 +288,14 @@ impl PresetBank {
 
     /// Import bytes into current bank, set sync parameters
     pub fn import_bank_from_bytes(&self, bytes: &[u8]) -> Result<(), impl ::std::error::Error> {
-        let res_serde_preset_bank: Result<SerdePresetBank, _> = from_bytes(bytes);
+        let res_serde_preset_bank: Result<SerdePatchBank, _> = from_bytes(bytes);
 
         match res_serde_preset_bank {
             Ok(serde_preset_bank) => {
-                let default_serde_preset = Preset::default().export_serde_preset();
+                let default_serde_preset = Patch::default().export_serde_preset();
 
-                for (index, preset) in self.presets.iter().enumerate() {
-                    if let Some(serde_preset) = serde_preset_bank.presets.get(index) {
+                for (index, preset) in self.patches.iter().enumerate() {
+                    if let Some(serde_preset) = serde_preset_bank.patches.get(index) {
                         preset.import_serde_preset(serde_preset);
                     } else {
                         preset.import_serde_preset(&default_serde_preset);
@@ -303,9 +303,9 @@ impl PresetBank {
                     }
                 }
 
-                self.set_preset_index(0);
+                self.set_patch_index(0);
                 self.mark_parameters_as_changed();
-                self.presets_changed.store(true, Ordering::SeqCst);
+                self.patches_changed.store(true, Ordering::SeqCst);
 
                 Ok(())
             }
@@ -313,19 +313,19 @@ impl PresetBank {
         }
     }
 
-    pub fn import_bytes_into_current_preset(&self, bytes: &[u8]) {
-        if self.get_current_preset().import_bytes(bytes) {
+    pub fn import_bytes_into_current_patch(&self, bytes: &[u8]) {
+        if self.get_current_patch().import_bytes(bytes) {
             self.mark_parameters_as_changed();
-            self.presets_changed.store(true, Ordering::SeqCst);
+            self.patches_changed.store(true, Ordering::SeqCst);
         }
     }
 
     pub fn export_bank_as_bytes(&self) -> Vec<u8> {
-        to_bytes(&SerdePresetBank::new(self)).expect("serialize preset bank")
+        to_bytes(&SerdePatchBank::new(self)).expect("serialize preset bank")
     }
 
-    pub fn export_current_preset_bytes(&self) -> Vec<u8> {
-        self.get_current_preset().export_bytes()
+    pub fn export_current_patch_bytes(&self) -> Vec<u8> {
+        self.get_current_patch().export_bytes()
     }
 
     pub fn new_from_bytes(bytes: &[u8]) -> Self {
@@ -341,7 +341,7 @@ impl PresetBank {
 
 #[cfg(test)]
 pub mod tests {
-    use crate::sync::built_in_preset_bank;
+    use crate::sync::built_in_patch_bank;
 
     use super::*;
 
@@ -350,14 +350,14 @@ pub mod tests {
     #[allow(clippy::float_cmp)]
     pub fn test_export_import() {
         for _ in 0..20 {
-            let bank_1 = PresetBank::default();
+            let bank_1 = PatchBank::default();
 
-            for preset_index in 0..bank_1.num_presets() {
-                bank_1.set_preset_index(preset_index);
+            for preset_index in 0..bank_1.num_patches() {
+                bank_1.set_patch_index(preset_index);
 
-                assert_eq!(bank_1.get_preset_index(), preset_index);
+                assert_eq!(bank_1.get_patch_index(), preset_index);
 
-                let current_preset = bank_1.get_current_preset();
+                let current_preset = bank_1.get_current_patch();
 
                 for parameter_index in 0..current_preset.parameters.len() {
                     let parameter = current_preset.parameters.get(parameter_index).unwrap();
@@ -370,18 +370,18 @@ pub mod tests {
                 }
             }
 
-            let bank_2 = PresetBank::default();
+            let bank_2 = PatchBank::default();
 
             bank_2
                 .import_bank_from_bytes(&bank_1.export_bank_as_bytes())
                 .unwrap();
 
-            for preset_index in 0..bank_1.num_presets() {
-                bank_1.set_preset_index(preset_index);
-                bank_2.set_preset_index(preset_index);
+            for preset_index in 0..bank_1.num_patches() {
+                bank_1.set_patch_index(preset_index);
+                bank_2.set_patch_index(preset_index);
 
-                let current_preset_1 = bank_1.get_current_preset();
-                let current_preset_2 = bank_2.get_current_preset();
+                let current_preset_1 = bank_1.get_current_patch();
+                let current_preset_2 = bank_2.get_current_patch();
 
                 for parameter_index in 0..current_preset_1.parameters.len() {
                     let parameter_1 = current_preset_1.parameters.get(parameter_index).unwrap();
@@ -395,8 +395,8 @@ pub mod tests {
     }
 
     #[test]
-    fn test_load_built_in_presets() {
-        let preset_bank = built_in_preset_bank();
+    fn test_load_built_in_patches() {
+        let preset_bank = built_in_patch_bank();
 
         // Hopefully prevent compiler from optimizing away code above (if it
         // actually ever did.)

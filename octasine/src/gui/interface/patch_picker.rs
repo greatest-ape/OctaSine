@@ -7,32 +7,32 @@ use iced_baseview::{
 use super::{style::Theme, GuiSyncHandle, Message, FONT_SIZE, FONT_VERY_BOLD, LINE_HEIGHT};
 
 #[derive(Clone, PartialEq, Eq)]
-struct Preset {
+struct Patch {
     index: usize,
     title: String,
 }
 
-impl ToString for Preset {
+impl ToString for Patch {
     fn to_string(&self) -> String {
         self.title.clone()
     }
 }
 
-pub struct PresetPicker {
-    state: pick_list::State<Preset>,
-    options: Vec<Preset>,
+pub struct PatchPicker {
+    state: pick_list::State<Patch>,
+    options: Vec<Patch>,
     selected: usize,
     pub style: Theme,
 }
 
-impl PresetPicker {
+impl PatchPicker {
     pub fn new<H: GuiSyncHandle>(sync_handle: &H, style: Theme) -> Self {
-        let (selected, names) = sync_handle.get_presets();
+        let (selected, names) = sync_handle.get_patches();
 
         let options = names
             .into_iter()
             .enumerate()
-            .map(|(index, title)| Preset { index, title })
+            .map(|(index, title)| Patch { index, title })
             .collect();
 
         Self {
@@ -53,7 +53,7 @@ impl PresetPicker {
             &mut self.state,
             &self.options[..],
             Some(self.options[self.selected].clone()),
-            |option| Message::PresetChange(option.index),
+            |option| Message::PatchChange(option.index),
         )
         .text_size(FONT_SIZE)
         .style(self.style)

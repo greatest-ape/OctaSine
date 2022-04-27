@@ -72,7 +72,7 @@ impl OctaSine {
     }
 
     pub fn update_audio_parameters(&mut self) {
-        let changed_sync_parameters = self.sync.presets.get_changed_parameters_from_audio();
+        let changed_sync_parameters = self.sync.patches.get_changed_parameters_from_audio();
 
         if let Some(indeces) = changed_sync_parameters {
             for (index, opt_new_value) in indeces.iter().enumerate() {
@@ -105,8 +105,8 @@ impl Plugin for OctaSine {
             category: Category::Synth,
             inputs: 0,
             outputs: 2,
-            presets: self.sync.presets.num_presets() as i32,
-            parameters: self.sync.presets.num_parameters() as i32,
+            presets: self.sync.patches.num_patches() as i32,
+            parameters: self.sync.patches.num_parameters() as i32,
             initial_delay: 0,
             preset_chunks: true,
             f64_precision: false,

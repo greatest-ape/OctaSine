@@ -1,11 +1,11 @@
 use serde::{Deserialize, Serialize};
 
-use super::{Preset, PresetBank};
+use super::{Patch, PatchBank};
 
 #[derive(Serialize, Debug)]
-pub(super) struct SerdePresetParameterValue(String);
+pub(super) struct SerdePatchParameterValue(String);
 
-impl SerdePresetParameterValue {
+impl SerdePatchParameterValue {
     pub fn from_f64(value: f64) -> Self {
         Self(format!("{:.}", value))
     }
@@ -23,7 +23,7 @@ impl SerdePresetParameterValue {
         struct V;
 
         impl<'de> ::serde::de::Visitor<'de> for V {
-            type Value = SerdePresetParameterValue;
+            type Value = SerdePatchParameterValue;
 
             fn expecting(&self, formatter: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
                 formatter.write_str("f64 or string")
@@ -33,7 +33,7 @@ impl SerdePresetParameterValue {
             where
                 E: ::serde::de::Error,
             {
-                Ok(SerdePresetParameterValue(value.to_owned()))
+                Ok(SerdePatchParameterValue(value.to_owned()))
             }
 
             // Backwards compatibility with f64
@@ -41,7 +41,7 @@ impl SerdePresetParameterValue {
             where
                 E: ::serde::de::Error,
             {
-                Ok(SerdePresetParameterValue::from_f64(value))
+                Ok(SerdePatchParameterValue::from_f64(value))
             }
         }
 
@@ -57,34 +57,34 @@ impl SerdePresetParameterValue {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-pub(super) struct SerdePresetParameter {
+pub(super) struct SerdePatchParameter {
     pub(super) name: String,
     #[serde(
-        deserialize_with = "SerdePresetParameterValue::deserialize",
-        serialize_with = "SerdePresetParameterValue::serialize"
+        deserialize_with = "SerdePatchParameterValue::deserialize",
+        serialize_with = "SerdePatchParameterValue::serialize"
     )]
-    pub(super) value_float: SerdePresetParameterValue,
+    pub(super) value_float: SerdePatchParameterValue,
     pub(super) value_text: String,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-pub(super) struct SerdePreset {
+pub(super) struct SerdePatch {
     octasine_version: String,
     pub(super) name: String,
-    pub(super) parameters: Vec<SerdePresetParameter>,
+    pub(super) parameters: Vec<SerdePatchParameter>,
 }
 
-impl SerdePreset {
-    pub(super) fn new(preset: &Preset) -> Self {
+impl SerdePatch {
+    pub(super) fn new(preset: &Patch) -> Self {
         let mut parameters = Vec::new();
 
         for i in 0..preset.parameters.len() {
             if let Some(parameter) = preset.parameters.get(i) {
                 let value = parameter.value.get();
 
-                let value_float = SerdePresetParameterValue::from_f64(value);
+                let value_float = SerdePatchParameterValue::from_f64(value);
 
-                parameters.push(SerdePresetParameter {
+                parameters.push(SerdePatchParameter {
                     name: parameter.name.clone(),
                     value_float,
                     value_text: (parameter.format_sync)(value),
@@ -101,19 +101,19 @@ impl SerdePreset {
 }
 
 #[derive(Serialize, Deserialize)]
-pub(super) struct SerdePresetBank {
+pub(super) struct SerdePatchBank {
     octasine_version: String,
-    pub(super) presets: Vec<SerdePreset>,
+    pub(super) patches: Vec<SerdePatch>,
 }
 
-impl SerdePresetBank {
-    pub(super) fn new(preset_bank: &PresetBank) -> Self {
+impl SerdePatchBank {
+    pub(super) fn new(patch_bank: &PatchBank) -> Self {
         Self {
             octasine_version: crate::get_version_info(),
-            presets: preset_bank
-                .presets
+            patches: patch_bank
+                .patches
                 .iter()
-                .map(Preset::export_serde_preset)
+                .map(Patch::export_serde_preset)
                 .collect(),
         }
     }

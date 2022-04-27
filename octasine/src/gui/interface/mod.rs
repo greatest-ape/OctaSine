@@ -16,7 +16,7 @@ mod mod_matrix;
 mod mod_target_picker;
 mod mute_button;
 mod operator;
-mod preset_picker;
+mod patch_picker;
 pub mod style;
 mod wave_picker;
 
@@ -24,7 +24,7 @@ use knob::OctaSineKnob;
 use lfo::LfoWidgets;
 use mod_matrix::ModulationMatrix;
 use operator::OperatorWidgets;
-use preset_picker::PresetPicker;
+use patch_picker::PatchPicker;
 use style::Theme;
 
 use self::operator::ModTargetPicker;
@@ -83,7 +83,7 @@ pub enum Message {
     ChangeTwoParametersEnd((usize, usize)),
     ChangeTwoParametersSetValues((usize, f64), (usize, f64)),
     ToggleInfo,
-    PresetChange(usize),
+    PatchChange(usize),
     EnvelopeZoomIn(usize),
     EnvelopeZoomOut(usize),
     EnvelopeZoomToFit(usize),
@@ -100,7 +100,7 @@ pub struct OctaSineIcedApplication<H: GuiSyncHandle> {
     master_volume: OctaSineKnob<MasterVolumeValue>,
     master_frequency: OctaSineKnob<MasterFrequencyValue>,
     modulation_matrix: ModulationMatrix,
-    preset_picker: PresetPicker,
+    patch_picker: PatchPicker,
     operator_1: OperatorWidgets,
     operator_2: OperatorWidgets,
     operator_3: OperatorWidgets,
@@ -300,7 +300,7 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
         let master_volume = knob::master_volume(&sync_handle, style);
         let master_frequency = knob::master_frequency(&sync_handle, style);
         let modulation_matrix = ModulationMatrix::new(&sync_handle, style);
-        let preset_picker = PresetPicker::new(&sync_handle, style);
+        let patch_picker = PatchPicker::new(&sync_handle, style);
 
         let operator_1 = OperatorWidgets::new(&sync_handle, 0, style);
         let operator_2 = OperatorWidgets::new(&sync_handle, 1, style);
@@ -321,7 +321,7 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
             master_volume,
             master_frequency,
             modulation_matrix,
-            preset_picker,
+            patch_picker,
             operator_1,
             operator_2,
             operator_3,
@@ -373,8 +373,8 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
     ) -> Command<Self::Message> {
         match message {
             Message::Frame => {
-                if self.sync_handle.have_presets_changed() {
-                    self.preset_picker = PresetPicker::new(&self.sync_handle, self.style);
+                if self.sync_handle.have_patches_changed() {
+                    self.patch_picker = PatchPicker::new(&self.sync_handle, self.style);
                 }
                 self.update_widgets_from_parameters();
             }
@@ -452,8 +452,8 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                 self.sync_handle.set_parameter(index_1, value_1);
                 self.sync_handle.set_parameter(index_2, value_2);
             }
-            Message::PresetChange(index) => {
-                self.sync_handle.set_preset_index(index);
+            Message::PatchChange(index) => {
+                self.sync_handle.set_patch_index(index);
             }
             Message::ToggleColorMode => {
                 let style = if let Theme::Light = self.style {
@@ -466,7 +466,7 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                 self.master_volume.style = style;
                 self.master_frequency.style = style;
                 self.modulation_matrix.set_style(style);
-                self.preset_picker.style = style;
+                self.patch_picker.style = style;
                 self.operator_1.set_style(style);
                 self.operator_2.set_style(style);
                 self.operator_3.set_style(style);
@@ -487,7 +487,7 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
         let master_volume = self.master_volume.view();
         let master_frequency = self.master_frequency.view();
         let modulation_matrix = self.modulation_matrix.view();
-        let preset_picker = self.preset_picker.view();
+        let patch_picker = self.patch_picker.view();
         let operator_1 = self.operator_1.view();
         let operator_2 = self.operator_2.view();
         let operator_3 = self.operator_3.view();
@@ -567,7 +567,7 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                             .push(Space::with_height(Length::Units(LINE_HEIGHT)))
                             .push(
                                 Row::new()
-                                    .push(preset_picker)
+                                    .push(patch_picker)
                                     .push(Space::with_width(Length::Units(LINE_HEIGHT))),
                             ),
                     ),
