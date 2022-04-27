@@ -52,11 +52,7 @@ impl OctaSine {
             }
         };
 
-        let sync = Arc::new(SyncState {
-            host,
-            presets: sync::built_in_preset_bank(),
-            settings,
-        });
+        let sync = Arc::new(SyncState::new(host, settings));
 
         #[cfg(feature = "gui")]
         let editor = crate::gui::Gui::new(sync.clone());

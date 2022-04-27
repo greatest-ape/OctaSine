@@ -21,6 +21,14 @@ pub struct SyncState {
 }
 
 impl SyncState {
+    pub fn new(host: Option<HostCallback>, settings: Settings) -> Self {
+        Self {
+            host,
+            presets: built_in_preset_bank(),
+            settings,
+        }
+    }
+
     pub fn get_bpm_from_host(&self) -> Option<BeatsPerMinute> {
         // Use TEMPO_VALID constant content as mask directly because
         // of problems with using TimeInfoFlags
@@ -203,6 +211,6 @@ cfg_if::cfg_if! {
     }
 }
 
-pub fn built_in_preset_bank() -> PresetBank {
+fn built_in_preset_bank() -> PresetBank {
     PresetBank::default()
 }
