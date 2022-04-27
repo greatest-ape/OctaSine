@@ -9,15 +9,14 @@ how patches sound.
 
 ### Changed
 
-#### Routing changes
+#### Operator changes
 
 - Allow operators to modulate multiple carriers
 - Set modulation index (mod out) in modulator, not carrier
 - Increase range of feedback parameter to match modulation index
 - Replace additive factor with mix out parameter, which doesn't
 affect modulation output
-- Add per-operator modulation target picker to GUI
-- Add per-operator mute button
+- Update frequency ratios, adding both harmonic and disharmonic ones
  
 #### LFO changes
 
@@ -28,12 +27,15 @@ affect modulation output
   LFO amount (magnitude) or LFO free frequency parameters
 - Make LFO triangle wave type start at value 0.0
 - Add LFO wave types reverse triangle, sine and reverse sine
-- Replace the LFO shape knob with a custom widget that displays the waveform
 
 #### GUI changes
 
 - Control mix output with modulation matrix operator boxes instead of
   modulation output
+- Replace operator wave type picker with a custom widget that displays the waveform
+- Replace the LFO shape knob with a custom widget that displays the waveform
+- Add per-operator modulation target picker
+- Add per-operator mute button
 
 #### Other changes
 
@@ -42,6 +44,7 @@ affect modulation output
 - Use directories crate to determine where to save preference and log files
 - Use gzip compression on exported patches and patch banks
 - Update multiple dependencies, notably iced and baseview
+- Do large code refactoring
 
 ### Fixed
 
