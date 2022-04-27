@@ -44,12 +44,23 @@ impl Settings {
         Ok(())
     }
 
-    pub fn load() -> anyhow::Result<Self> {
+    fn load() -> anyhow::Result<Self> {
         let path = Self::get_config_file_path()?;
         let file = ::std::fs::File::open(path)?;
 
         let settings = ::serde_json::from_reader(file)?;
 
         Ok(settings)
+    }
+
+    pub fn load_or_default() -> Self {
+        match Self::load() {
+            Ok(settings) => settings,
+            Err(err) => {
+                ::log::info!("Couldn't load settings: {}", err);
+
+                Settings::default()
+            }
+        }
     }
 }

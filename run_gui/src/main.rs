@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use octasine::{gui::Gui, settings::Settings, sync::SyncState};
+use octasine::{gui::Gui, sync::SyncState};
 use simplelog::{ConfigBuilder, LevelFilter, SimpleLogger};
 
 fn main() {
@@ -10,7 +10,7 @@ fn main() {
     )
     .unwrap();
 
-    let sync_state = Arc::new(SyncState::new(None, Settings::load().unwrap_or_default()));
+    let sync_state = Arc::new(SyncState::new(None));
 
     Gui::open_blocking(sync_state);
 }

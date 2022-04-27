@@ -19,7 +19,6 @@ use vst::event::Event;
 use vst::plugin::{CanDo, Category, HostCallback, Info, Plugin, PluginParameters};
 
 use common::*;
-use settings::Settings;
 
 pub const PLUGIN_NAME: &str = "OctaSine";
 pub const PLUGIN_UNIQUE_ID: i32 = 1_438_048_624;
@@ -43,16 +42,7 @@ impl OctaSine {
         // we shouldn't panic
         let _ = init_logging();
 
-        let settings = match Settings::load() {
-            Ok(settings) => settings,
-            Err(err) => {
-                ::log::info!("Couldn't load settings: {}", err);
-
-                Settings::default()
-            }
-        };
-
-        let sync = Arc::new(SyncState::new(host, settings));
+        let sync = Arc::new(SyncState::new(host));
 
         #[cfg(feature = "gui")]
         let editor = crate::gui::Gui::new(sync.clone());

@@ -24,11 +24,11 @@ pub struct SyncState {
 }
 
 impl SyncState {
-    pub fn new(host: Option<HostCallback>, settings: Settings) -> Self {
+    pub fn new(host: Option<HostCallback>) -> Self {
         Self {
             host,
             patches: built_in_patch_bank(),
-            settings,
+            settings: Settings::load_or_default(),
         }
     }
 
