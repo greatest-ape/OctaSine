@@ -44,16 +44,33 @@ pub use operator_volume::OperatorVolumeValue;
 pub use operator_wave_type::OperatorWaveTypeValue;
 
 pub trait ParameterValue: Sized {
+    /// Value as used in audio generation
     type Value: Copy;
 
+    /// Create new ParameterValue
     fn from_audio(value: Self::Value) -> Self;
-    /// Get inner (audio gen) value
-    fn get(self) -> Self::Value;
-    fn from_sync(value: f64) -> Self;
-    fn to_sync(self) -> f64;
-    fn format(self) -> String;
-    fn format_sync(value: f64) -> String;
+    /// Create new ParameterValue from text
     fn from_text(_text: String) -> Option<Self> {
         None
+    }
+
+    /// Get inner (audio gen) value
+    fn get(self) -> Self::Value;
+    /// Get inner value, formatted to a String
+    fn get_formatted(self) -> String;
+
+    /// Create new ParameterValue from patch value
+    fn from_patch(value: f64) -> Self;
+    /// Convert ParameterValue to patch value
+    fn to_patch(self) -> f64;
+
+    fn convert_patch_to_audio_formatted(value: f64) -> String {
+        Self::from_patch(value).get_formatted()
+    }
+    fn convert_patch_to_audio(value: f64) -> Self::Value {
+        Self::from_patch(value).get()
+    }
+    fn convert_audio_to_patch(value: Self::Value) -> f64 {
+        Self::from_audio(value).to_patch()
     }
 }

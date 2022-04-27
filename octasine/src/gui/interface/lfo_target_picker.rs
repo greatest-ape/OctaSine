@@ -60,10 +60,10 @@ impl LfoTargetPicker {
 
     fn get_index_from_sync(lfo_index: usize, sync_value: f64) -> usize {
         let target = match lfo_index {
-            0 => Lfo1TargetParameterValue::from_sync(sync_value).0,
-            1 => Lfo2TargetParameterValue::from_sync(sync_value).0,
-            2 => Lfo3TargetParameterValue::from_sync(sync_value).0,
-            3 => Lfo4TargetParameterValue::from_sync(sync_value).0,
+            0 => Lfo1TargetParameterValue::from_patch(sync_value).0,
+            1 => Lfo2TargetParameterValue::from_patch(sync_value).0,
+            2 => Lfo3TargetParameterValue::from_patch(sync_value).0,
+            3 => Lfo4TargetParameterValue::from_patch(sync_value).0,
             _ => unreachable!(),
         };
 
@@ -92,10 +92,10 @@ impl LfoTargetPicker {
             Some(self.options[self.selected].clone()),
             move |option| {
                 let sync = match lfo_index {
-                    0 => Lfo1TargetParameterValue::from_audio(option.value).to_sync(),
-                    1 => Lfo2TargetParameterValue::from_audio(option.value).to_sync(),
-                    2 => Lfo3TargetParameterValue::from_audio(option.value).to_sync(),
-                    3 => Lfo4TargetParameterValue::from_audio(option.value).to_sync(),
+                    0 => Lfo1TargetParameterValue::from_audio(option.value).to_patch(),
+                    1 => Lfo2TargetParameterValue::from_audio(option.value).to_patch(),
+                    2 => Lfo3TargetParameterValue::from_audio(option.value).to_patch(),
+                    3 => Lfo4TargetParameterValue::from_audio(option.value).to_patch(),
                     _ => unreachable!(),
                 };
 

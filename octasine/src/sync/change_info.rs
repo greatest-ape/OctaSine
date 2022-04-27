@@ -2,7 +2,7 @@ use std::sync::atomic::{AtomicU64, Ordering};
 
 use array_init::array_init;
 
-use super::parameters::SyncParameter;
+use super::parameters::PatchParameter;
 
 const NUM_ATOMIC_U64S: usize = 2;
 pub const MAX_NUM_PARAMETERS: usize = NUM_ATOMIC_U64S * 64;
@@ -46,7 +46,7 @@ impl ParameterChangeInfo {
     /// Get all changed parameters
     pub fn get_changed_parameters(
         &self,
-        parameters: &[SyncParameter],
+        parameters: &[PatchParameter],
     ) -> Option<[Option<f64>; MAX_NUM_PARAMETERS]> {
         let mut no_changes = true;
         let mut changed = [0u64; NUM_ATOMIC_U64S];
@@ -97,7 +97,7 @@ mod tests {
 
     use quickcheck::{quickcheck, TestResult};
 
-    use crate::sync::parameters::create_parameters;
+    use crate::sync::parameters::patch_parameters;
 
     use super::*;
 
@@ -106,7 +106,7 @@ mod tests {
         let c = ParameterChangeInfo::default();
 
         // Not checked
-        let preset_parameters = create_parameters();
+        let preset_parameters = patch_parameters();
 
         assert!(c.get_changed_parameters(&preset_parameters).is_none());
 
@@ -169,7 +169,7 @@ mod tests {
     #[test]
     fn test_changed_parameters_quickcheck() {
         fn prop(data: Vec<(usize, f64)>) -> TestResult {
-            let preset_parameters = create_parameters();
+            let preset_parameters = patch_parameters();
 
             for (i, v) in data.iter() {
                 if *i > 63 || *v < 0.0 || v.is_nan() {
@@ -179,7 +179,7 @@ mod tests {
 
             fn f(
                 c: &ParameterChangeInfo,
-                preset_parameters: &Vec<SyncParameter>,
+                preset_parameters: &Vec<PatchParameter>,
                 data: &[(usize, f64)],
             ) -> bool {
                 let mut set_parameters = HashMap::new();

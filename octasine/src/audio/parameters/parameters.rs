@@ -40,13 +40,13 @@ where
         self.value.get_value()
     }
     fn set_from_sync(&mut self, value: f64) {
-        self.value.set_value(P::from_sync(value).get())
+        self.value.set_value(P::from_patch(value).get())
     }
     fn get_value_with_lfo_addition(&mut self, lfo_addition: Option<f64>) -> Self::Value {
         if let Some(lfo_addition) = lfo_addition {
-            let sync_value = P::from_audio(self.get_value()).to_sync();
+            let sync_value = P::from_audio(self.get_value()).to_patch();
 
-            P::from_sync((sync_value + lfo_addition).min(1.0).max(0.0)).get()
+            P::from_patch((sync_value + lfo_addition).min(1.0).max(0.0)).get()
         } else {
             self.get_value()
         }
@@ -62,7 +62,7 @@ impl<P: ParameterValue + Default> Default for SimpleAudioParameter<P> {
     fn default() -> Self {
         Self {
             value: P::default().get(),
-            sync_cache: P::default().to_sync(),
+            sync_cache: P::default().to_patch(),
         }
     }
 }
@@ -79,11 +79,11 @@ where
     }
     fn set_from_sync(&mut self, value: f64) {
         self.sync_cache = value;
-        self.value = P::from_sync(value).get();
+        self.value = P::from_patch(value).get();
     }
     fn get_value_with_lfo_addition(&mut self, lfo_addition: Option<f64>) -> Self::Value {
         if let Some(lfo_addition) = lfo_addition {
-            P::from_sync((self.sync_cache + lfo_addition).min(1.0).max(0.0)).get()
+            P::from_patch((self.sync_cache + lfo_addition).min(1.0).max(0.0)).get()
         } else {
             self.get_value()
         }
@@ -118,7 +118,7 @@ impl AudioParameter for MasterVolumeAudioParameter {
     }
     fn set_from_sync(&mut self, value: f64) {
         self.value
-            .set_value(MasterVolumeValue::from_sync(value).get())
+            .set_value(MasterVolumeValue::from_patch(value).get())
     }
     fn get_value_with_lfo_addition(&mut self, lfo_addition: Option<f64>) -> Self::Value {
         if let Some(lfo_addition) = lfo_addition {
@@ -157,7 +157,7 @@ impl AudioParameter for OperatorVolumeAudioParameter {
     }
     fn set_from_sync(&mut self, value: f64) {
         self.value
-            .set_value(OperatorVolumeValue::from_sync(value).get())
+            .set_value(OperatorVolumeValue::from_patch(value).get())
     }
     fn get_value_with_lfo_addition(&mut self, lfo_addition: Option<f64>) -> Self::Value {
         if let Some(lfo_addition) = lfo_addition {
@@ -192,7 +192,7 @@ impl AudioParameter for OperatorVolumeToggleAudioParameter {
     }
     fn set_from_sync(&mut self, value: f64) {
         self.value
-            .set_value(OperatorVolumeValue::from_sync(value).get())
+            .set_value(OperatorVolumeValue::from_patch(value).get())
     }
     fn get_value_with_lfo_addition(&mut self, _lfo_addition: Option<f64>) -> Self::Value {
         self.get_value()
@@ -225,13 +225,13 @@ impl AudioParameter for OperatorMixAudioParameter {
     }
     fn set_from_sync(&mut self, value: f64) {
         self.value
-            .set_value(OperatorMixValue::from_sync(value).get())
+            .set_value(OperatorMixValue::from_patch(value).get())
     }
     fn get_value_with_lfo_addition(&mut self, lfo_addition: Option<f64>) -> Self::Value {
         if let Some(lfo_addition) = lfo_addition {
-            let sync_value = OperatorMixValue::from_audio(self.get_value()).to_sync();
+            let sync_value = OperatorMixValue::from_audio(self.get_value()).to_patch();
 
-            OperatorMixValue::from_sync((sync_value + lfo_addition).min(1.0).max(0.0)).get()
+            OperatorMixValue::from_patch((sync_value + lfo_addition).min(1.0).max(0.0)).get()
         } else {
             self.get_value()
         }
@@ -263,7 +263,7 @@ where
         self.value
     }
     fn set_from_sync(&mut self, value: f64) {
-        self.value = P::from_sync(value).get();
+        self.value = P::from_patch(value).get();
     }
     fn get_value_with_lfo_addition(&mut self, lfo_addition: Option<f64>) -> Self::Value {
         if let Some(lfo_addition) = lfo_addition {
@@ -359,14 +359,14 @@ impl AudioParameter for OperatorPanningAudioParameter {
     }
     fn set_from_sync(&mut self, value: f64) {
         self.value
-            .set_value(OperatorPanningValue::from_sync(value).get())
+            .set_value(OperatorPanningValue::from_patch(value).get())
     }
     fn get_value_with_lfo_addition(&mut self, lfo_addition: Option<f64>) -> Self::Value {
         if let Some(lfo_addition) = lfo_addition {
-            let sync_value = OperatorPanningValue::from_audio(self.get_value()).to_sync();
+            let sync_value = OperatorPanningValue::from_audio(self.get_value()).to_patch();
 
             let new_panning =
-                OperatorPanningValue::from_sync((sync_value + lfo_addition).min(1.0).max(0.0))
+                OperatorPanningValue::from_patch((sync_value + lfo_addition).min(1.0).max(0.0))
                     .get();
 
             self.left_and_right = Self::calculate_left_and_right(new_panning);
@@ -466,7 +466,8 @@ impl AudioParameter for LfoAmountAudioParameter {
         self.value.get_value()
     }
     fn set_from_sync(&mut self, value: f64) {
-        self.value.set_value(LfoAmountValue::from_sync(value).get())
+        self.value
+            .set_value(LfoAmountValue::from_patch(value).get())
     }
     fn get_value_with_lfo_addition(&mut self, lfo_addition: Option<f64>) -> Self::Value {
         if let Some(lfo_addition) = lfo_addition {

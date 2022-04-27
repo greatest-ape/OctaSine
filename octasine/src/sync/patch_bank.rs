@@ -7,23 +7,23 @@ use arc_swap::ArcSwap;
 use array_init::array_init;
 
 use super::change_info::{ParameterChangeInfo, MAX_NUM_PARAMETERS};
-use super::parameters::create_parameters;
-use super::parameters::SyncParameter;
+use super::parameters::patch_parameters;
+use super::parameters::PatchParameter;
 use super::serde::*;
 
 pub struct Patch {
     name: ArcSwap<String>,
-    pub parameters: Vec<SyncParameter>,
+    pub parameters: Vec<PatchParameter>,
 }
 
 impl Default for Patch {
     fn default() -> Self {
-        Self::new("-".to_string(), create_parameters())
+        Self::new("-".to_string(), patch_parameters())
     }
 }
 
 impl Patch {
-    pub fn new(name: String, parameters: Vec<SyncParameter>) -> Self {
+    pub fn new(name: String, parameters: Vec<PatchParameter>) -> Self {
         Self {
             name: ArcSwap::new(Arc::new(name)),
             parameters,
@@ -79,12 +79,12 @@ pub struct PatchBank {
 
 impl Default for PatchBank {
     fn default() -> Self {
-        Self::new(create_parameters)
+        Self::new(patch_parameters)
     }
 }
 
 impl PatchBank {
-    pub fn new(parameters: fn() -> Vec<SyncParameter>) -> Self {
+    pub fn new(parameters: fn() -> Vec<PatchParameter>) -> Self {
         Self {
             patches: array_init(|i| Patch::new(format!("{:03}", i + 1), parameters())),
             patch_index: AtomicUsize::new(0),
@@ -96,7 +96,7 @@ impl PatchBank {
 
     // Utils
 
-    fn get_parameter(&self, index: usize) -> Option<&SyncParameter> {
+    fn get_parameter(&self, index: usize) -> Option<&PatchParameter> {
         self.get_current_patch().parameters.get(index)
     }
 
@@ -197,7 +197,7 @@ impl PatchBank {
         self.get_current_patch()
             .parameters
             .get(index)
-            .map(|p| (p.format_sync)(value))
+            .map(|p| (p.format)(value))
     }
 
     // Set parameters

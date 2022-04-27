@@ -58,7 +58,7 @@ where
         style: Theme,
     ) -> Self {
         let sync_value = sync_handle.get_parameter(parameter_index);
-        let selected = P::from_sync(sync_value).get();
+        let selected = P::from_patch(sync_value).get();
 
         Self {
             title: title.into(),
@@ -70,7 +70,7 @@ where
     }
 
     pub fn set_value(&mut self, value: f64) {
-        self.selected = P::from_sync(value).get();
+        self.selected = P::from_patch(value).get();
     }
 
     pub fn view(&mut self) -> Element<Message> {
@@ -85,12 +85,12 @@ where
 
             let radio = Radio::new(
                 choice,
-                P::from_audio(choice).format().to_uppercase(),
+                P::from_audio(choice).get_formatted().to_uppercase(),
                 Some(self.selected),
                 move |choice| {
                     Message::ChangeSingleParameterImmediate(
                         parameter_index,
-                        P::from_audio(choice).to_sync(),
+                        P::from_audio(choice).to_patch(),
                     )
                 },
             )

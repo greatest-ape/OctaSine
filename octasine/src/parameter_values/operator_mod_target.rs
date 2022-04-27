@@ -106,20 +106,20 @@ impl ParameterValue for Operator2ModulationTargetValue {
     fn get(self) -> Self::Value {
         self.0
     }
-    fn from_sync(sync: f64) -> Self {
+    fn from_patch(sync: f64) -> Self {
         Self(map_parameter_value_to_step(
             Self::Value::permutations(),
             sync,
         ))
     }
-    fn to_sync(self) -> f64 {
+    fn to_patch(self) -> f64 {
         map_step_to_parameter_value(Self::Value::permutations(), self.0)
     }
-    fn format(self) -> String {
+    fn get_formatted(self) -> String {
         self.0.to_string()
     }
-    fn format_sync(value: f64) -> String {
-        Self::from_sync(value).format()
+    fn convert_patch_to_audio_formatted(value: f64) -> String {
+        Self::from_patch(value).get_formatted()
     }
 }
 
@@ -135,20 +135,20 @@ impl ParameterValue for Operator3ModulationTargetValue {
     fn get(self) -> Self::Value {
         self.0
     }
-    fn from_sync(sync: f64) -> Self {
+    fn from_patch(sync: f64) -> Self {
         Self(map_parameter_value_to_step(
             Self::Value::permutations(),
             sync,
         ))
     }
-    fn to_sync(self) -> f64 {
+    fn to_patch(self) -> f64 {
         map_step_to_parameter_value(Self::Value::permutations(), self.0)
     }
-    fn format(self) -> String {
+    fn get_formatted(self) -> String {
         self.0.to_string()
     }
-    fn format_sync(value: f64) -> String {
-        Self::from_sync(value).format()
+    fn convert_patch_to_audio_formatted(value: f64) -> String {
+        Self::from_patch(value).get_formatted()
     }
 }
 
@@ -164,19 +164,19 @@ impl ParameterValue for Operator4ModulationTargetValue {
     fn get(self) -> Self::Value {
         self.0
     }
-    fn from_sync(sync: f64) -> Self {
+    fn from_patch(sync: f64) -> Self {
         Self(map_parameter_value_to_step(
             Self::Value::permutations(),
             sync,
         ))
     }
-    fn to_sync(self) -> f64 {
+    fn to_patch(self) -> f64 {
         map_step_to_parameter_value(Self::Value::permutations(), self.0)
     }
-    fn format(self) -> String {
+    fn get_formatted(self) -> String {
         self.0.to_string()
     }
-    fn format_sync(value: f64) -> String {
-        Self::from_sync(value).format()
+    fn convert_patch_to_audio_formatted(value: f64) -> String {
+        Self::from_patch(value).get_formatted()
     }
 }

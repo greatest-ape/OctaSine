@@ -61,7 +61,7 @@ pub fn operator_volume<H: GuiSyncHandle>(
         parameter_index,
         "VOL",
         TickMarkType::MinMaxAndDefault,
-        OperatorVolumeValue::default().to_sync(),
+        OperatorVolumeValue::default().to_patch(),
         style,
     )
 }
@@ -77,7 +77,7 @@ pub fn operator_mix<H: GuiSyncHandle>(
         parameter_index,
         "MIX OUT",
         TickMarkType::MinMaxAndDefault,
-        OperatorMixValue::new(operator_index).to_sync(),
+        OperatorMixValue::new(operator_index).to_patch(),
         style,
     )
 }
@@ -233,7 +233,7 @@ impl<P: ParameterValue + Default> OctaSineKnob<P> {
             parameter_index,
             title,
             tick_mark_type,
-            P::default().to_sync(),
+            P::default().to_patch(),
             style,
         )
     }
@@ -249,7 +249,7 @@ impl<P: ParameterValue> OctaSineKnob<P> {
         style: Theme,
     ) -> Self {
         let sync_value = sync_handle.get_parameter(parameter_index);
-        let value_text = P::from_sync(sync_value).format();
+        let value_text = P::from_patch(sync_value).get_formatted();
 
         let knob_state = knob::State::new(NormalParam {
             value: Normal::new(sync_value as f32),
@@ -278,7 +278,7 @@ impl<P: ParameterValue> OctaSineKnob<P> {
             self.knob_state.set_normal(Normal::new(value as f32));
         }
 
-        self.value_text = P::from_sync(value).format();
+        self.value_text = P::from_patch(value).get_formatted();
     }
 
     pub fn view(&mut self) -> Element<Message> {

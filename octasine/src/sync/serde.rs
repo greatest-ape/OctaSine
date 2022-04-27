@@ -91,7 +91,7 @@ impl SerdePatch {
                 parameters.push(SerdePatchParameter {
                     name: parameter.name.clone(),
                     value_float,
-                    value_text: (parameter.format_sync)(value),
+                    value_text: (parameter.format)(value),
                 });
             }
         }

@@ -18,13 +18,13 @@ impl ParameterValue for OperatorPanningValue {
     fn get(self) -> Self::Value {
         self.0
     }
-    fn from_sync(sync: f64) -> Self {
+    fn from_patch(sync: f64) -> Self {
         Self(sync)
     }
-    fn to_sync(self) -> f64 {
+    fn to_patch(self) -> f64 {
         self.0
     }
-    fn format(self) -> String {
+    fn get_formatted(self) -> String {
         let pan = ((self.0 - 0.5) * 100.0) as isize;
 
         match pan.cmp(&0) {
@@ -33,7 +33,7 @@ impl ParameterValue for OperatorPanningValue {
             std::cmp::Ordering::Equal => "C".to_string(),
         }
     }
-    fn format_sync(value: f64) -> String {
-        Self::from_sync(value).format()
+    fn convert_patch_to_audio_formatted(value: f64) -> String {
+        Self::from_patch(value).get_formatted()
     }
 }

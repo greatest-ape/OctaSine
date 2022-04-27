@@ -73,11 +73,11 @@ struct ModulationMatrixParameters {
 impl ModulationMatrixParameters {
     fn new<H: GuiSyncHandle>(sync_handle: &H) -> Self {
         let operator_2_targets =
-            Operator2ModulationTargetValue::from_sync(sync_handle.get_parameter(21)).get();
+            Operator2ModulationTargetValue::from_patch(sync_handle.get_parameter(21)).get();
         let operator_3_targets =
-            Operator3ModulationTargetValue::from_sync(sync_handle.get_parameter(37)).get();
+            Operator3ModulationTargetValue::from_patch(sync_handle.get_parameter(37)).get();
         let operator_4_targets =
-            Operator4ModulationTargetValue::from_sync(sync_handle.get_parameter(53)).get();
+            Operator4ModulationTargetValue::from_patch(sync_handle.get_parameter(53)).get();
 
         let operator_1_mix = sync_handle.get_parameter(4);
         let operator_2_mix = sync_handle.get_parameter(18);
@@ -330,19 +330,22 @@ impl ModulationMatrix {
     }
 
     pub fn set_operator_2_target(&mut self, value: f64) {
-        self.parameters.operator_2_targets = Operator2ModulationTargetValue::from_sync(value).get();
+        self.parameters.operator_2_targets =
+            Operator2ModulationTargetValue::from_patch(value).get();
 
         self.update_components();
     }
 
     pub fn set_operator_3_target(&mut self, value: f64) {
-        self.parameters.operator_3_targets = Operator3ModulationTargetValue::from_sync(value).get();
+        self.parameters.operator_3_targets =
+            Operator3ModulationTargetValue::from_patch(value).get();
 
         self.update_components();
     }
 
     pub fn set_operator_4_target(&mut self, value: f64) {
-        self.parameters.operator_4_targets = Operator4ModulationTargetValue::from_sync(value).get();
+        self.parameters.operator_4_targets =
+            Operator4ModulationTargetValue::from_patch(value).get();
 
         self.update_components();
     }

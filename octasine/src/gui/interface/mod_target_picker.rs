@@ -63,12 +63,12 @@ where
             parameter_index,
             style,
             choices,
-            parameter_value: P::from_sync(sync_value),
+            parameter_value: P::from_patch(sync_value),
         }
     }
 
     pub fn set_value(&mut self, value: f64) {
-        self.parameter_value = P::from_sync(value);
+        self.parameter_value = P::from_patch(value);
     }
 
     pub fn view(&mut self) -> Element<Message> {
@@ -89,7 +89,7 @@ where
 
                 v.set_index(index, active);
 
-                let sync = P::from_audio(v).to_sync();
+                let sync = P::from_audio(v).to_patch();
 
                 Message::ChangeSingleParameterImmediate(parameter_index, sync)
             })

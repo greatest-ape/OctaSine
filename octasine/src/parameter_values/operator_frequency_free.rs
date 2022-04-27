@@ -23,19 +23,19 @@ impl ParameterValue for OperatorFrequencyFreeValue {
     fn get(self) -> Self::Value {
         self.0
     }
-    fn from_sync(sync: f64) -> Self {
+    fn from_patch(sync: f64) -> Self {
         Self(map_parameter_value_to_value_with_steps(
             &OPERATOR_FREE_STEPS,
             sync,
         ))
     }
-    fn to_sync(self) -> f64 {
+    fn to_patch(self) -> f64 {
         map_value_to_parameter_value_with_steps(&OPERATOR_FREE_STEPS, self.0)
     }
-    fn format(self) -> String {
+    fn get_formatted(self) -> String {
         format!("{:.04}", self.0)
     }
-    fn format_sync(value: f64) -> String {
-        Self::from_sync(value).format()
+    fn convert_patch_to_audio_formatted(value: f64) -> String {
+        Self::from_patch(value).get_formatted()
     }
 }
