@@ -1,7 +1,43 @@
 use crate::common::NUM_LFOS;
-
-use super::patch_bank::SyncParameter;
 use crate::parameter_values::*;
+
+use super::atomic_double::AtomicPositiveDouble;
+
+pub struct SyncParameter {
+    pub(super) value: AtomicPositiveDouble,
+    pub(super) name: String,
+    pub(super) sync_from_text: fn(String) -> Option<f64>,
+    pub(super) format_sync: fn(f64) -> String,
+}
+
+impl SyncParameter {
+    pub fn new<V: ParameterValue>(name: &str, default: V) -> Self {
+        Self {
+            name: name.to_string(),
+            value: AtomicPositiveDouble::new(default.to_sync()),
+            sync_from_text: |v| V::from_text(v).map(|v| v.to_sync()),
+            format_sync: |v| V::from_sync(v).format(),
+        }
+    }
+
+    pub fn get_value(&self) -> f64 {
+        self.value.get()
+    }
+
+    pub fn get_value_text(&self) -> String {
+        (self.format_sync)(self.value.get())
+    }
+
+    pub fn set_from_text(&self, text: String) -> bool {
+        if let Some(value) = (self.sync_from_text)(text) {
+            self.value.set(value);
+
+            true
+        } else {
+            false
+        }
+    }
+}
 
 pub fn create_parameters() -> Vec<SyncParameter> {
     let mut parameters = vec![
@@ -271,7 +307,7 @@ fn lfo_amount(index: usize) -> SyncParameter {
 mod tests {
     use crate::parameter_values::operator_frequency_ratio::OPERATOR_RATIO_STEPS;
     use crate::parameter_values::operator_wave_type::WaveType;
-    use crate::sync::patch_bank::MAX_NUM_PARAMETERS;
+    use crate::sync::change_info::MAX_NUM_PARAMETERS;
 
     use super::*;
 

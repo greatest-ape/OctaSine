@@ -1,8 +1,3 @@
-mod atomic_double;
-mod change_info;
-mod import_export;
-mod import_export_utils;
-
 use std::sync::{
     atomic::{AtomicBool, AtomicUsize, Ordering},
     Arc,
@@ -11,55 +6,14 @@ use std::sync::{
 use arc_swap::ArcSwap;
 use array_init::array_init;
 
+use super::change_info::{ParameterChangeInfo, MAX_NUM_PARAMETERS};
 use super::parameters::create_parameters;
-use crate::parameter_values::ParameterValue;
+use super::parameters::SyncParameter;
+use super::serde::*;
 
-use atomic_double::AtomicPositiveDouble;
-use change_info::ParameterChangeInfo;
-use import_export::*;
-use import_export_utils::*;
-
-pub use change_info::MAX_NUM_PARAMETERS;
-
-pub struct SyncParameter {
-    value: AtomicPositiveDouble,
-    name: String,
-    sync_from_text: fn(String) -> Option<f64>,
-    format_sync: fn(f64) -> String,
-}
-
-impl SyncParameter {
-    pub fn new<V: ParameterValue>(name: &str, default: V) -> Self {
-        Self {
-            name: name.to_string(),
-            value: AtomicPositiveDouble::new(default.to_sync()),
-            sync_from_text: |v| V::from_text(v).map(|v| v.to_sync()),
-            format_sync: |v| V::from_sync(v).format(),
-        }
-    }
-
-    pub fn get_value(&self) -> f64 {
-        self.value.get()
-    }
-
-    pub fn get_value_text(&self) -> String {
-        (self.format_sync)(self.value.get())
-    }
-
-    pub fn set_from_text(&self, text: String) -> bool {
-        if let Some(value) = (self.sync_from_text)(text) {
-            self.value.set(value);
-
-            true
-        } else {
-            false
-        }
-    }
-}
-
-struct Patch {
-    name: ArcSwap<String>,
-    parameters: Vec<SyncParameter>,
+pub struct Patch {
+    pub(super) name: ArcSwap<String>,
+    pub(super) parameters: Vec<SyncParameter>,
 }
 
 impl Default for Patch {
@@ -69,22 +23,22 @@ impl Default for Patch {
 }
 
 impl Patch {
-    fn new(name: String, parameters: Vec<SyncParameter>) -> Self {
+    pub(super) fn new(name: String, parameters: Vec<SyncParameter>) -> Self {
         Self {
             name: ArcSwap::new(Arc::new(name)),
             parameters,
         }
     }
 
-    fn get_name(&self) -> String {
+    pub(super) fn get_name(&self) -> String {
         (*self.name.load_full()).clone()
     }
 
-    fn set_name(&self, name: String) {
+    pub(super) fn set_name(&self, name: String) {
         self.name.store(Arc::new(name));
     }
 
-    fn import_bytes(&self, bytes: &[u8]) -> bool {
+    pub(super) fn import_bytes(&self, bytes: &[u8]) -> bool {
         let res_serde_preset: Result<SerdePatch, _> = from_bytes(bytes);
 
         if let Ok(serde_preset) = res_serde_preset {
@@ -96,7 +50,7 @@ impl Patch {
         }
     }
 
-    fn import_serde_preset(&self, serde_preset: &SerdePatch) {
+    pub(super) fn import_serde_preset(&self, serde_preset: &SerdePatch) {
         self.set_name(serde_preset.name.clone());
 
         for (index, parameter) in self.parameters.iter().enumerate() {
@@ -106,17 +60,17 @@ impl Patch {
         }
     }
 
-    fn export_bytes(&self) -> Vec<u8> {
+    pub(super) fn export_bytes(&self) -> Vec<u8> {
         to_bytes(&self.export_serde_preset()).expect("serialize preset")
     }
 
-    fn export_serde_preset(&self) -> SerdePatch {
+    pub(super) fn export_serde_preset(&self) -> SerdePatch {
         SerdePatch::new(self)
     }
 }
 
 pub struct PatchBank {
-    patches: [Patch; 128],
+    pub(super) patches: [Patch; 128],
     patch_index: AtomicUsize,
     parameter_change_info_audio: ParameterChangeInfo,
     parameter_change_info_gui: ParameterChangeInfo,

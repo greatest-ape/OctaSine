@@ -2,7 +2,7 @@ use std::sync::atomic::{AtomicU64, Ordering};
 
 use array_init::array_init;
 
-use super::SyncParameter;
+use super::parameters::SyncParameter;
 
 const NUM_ATOMIC_U64S: usize = 2;
 pub const MAX_NUM_PARAMETERS: usize = NUM_ATOMIC_U64S * 64;
