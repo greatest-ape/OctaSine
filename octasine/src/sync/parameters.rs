@@ -306,110 +306,14 @@ fn lfo_amount(index: usize) -> PatchParameter {
     )
 }
 
-#[allow(clippy::float_cmp)]
 #[cfg(test)]
 mod tests {
-    use crate::parameter_values::operator_wave_type::WaveType;
     use crate::sync::change_info::MAX_NUM_PARAMETERS;
 
-    use super::*;
+    use super::patch_parameters;
 
     #[test]
     fn test_sync_parameters_len() {
         assert!(patch_parameters().len() <= MAX_NUM_PARAMETERS);
-    }
-
-    #[test]
-    fn test_set_volume_text() {
-        let p = operator_mix(3);
-
-        assert!(p.set_from_text("-1.0".to_string()));
-        assert_eq!(OperatorMixValue::new_from_patch(p.get_value()).get(), 0.0);
-
-        assert!(p.set_from_text("0".to_string()));
-        assert_eq!(OperatorMixValue::new_from_patch(p.get_value()).get(), 0.0);
-
-        assert!(p.set_from_text("0.0".to_string()));
-        assert_eq!(OperatorMixValue::new_from_patch(p.get_value()).get(), 0.0);
-
-        assert!(p.set_from_text("1.0".to_string()));
-        assert_eq!(OperatorMixValue::new_from_patch(p.get_value()).get(), 1.0);
-
-        assert!(p.set_from_text("1.2".to_string()));
-        assert_eq!(OperatorMixValue::new_from_patch(p.get_value()).get(), 1.2);
-
-        assert!(p.set_from_text("2.0".to_string()));
-        assert_eq!(OperatorMixValue::new_from_patch(p.get_value()).get(), 2.0);
-
-        assert!(p.set_from_text("3.0".to_string()));
-        assert_eq!(OperatorMixValue::new_from_patch(p.get_value()).get(), 2.0);
-    }
-
-    /*
-    #[test]
-    fn test_set_frequency_free_text(){
-        let p = operator_frequency_free(3);
-
-        assert!(p.set_from_text("1.0".to_string()));
-        assert_eq!(OperatorFrequencyFree::from_sync(p.get_value()).get(), 1.0);
-
-        assert!(p.set_from_text("1".to_string()));
-        assert_eq!(OperatorFrequencyFree::from_sync(p.get_value()).get(), 1.0);
-
-        assert!(p.set_from_text("0.0".to_string()));
-        assert_approx_eq!(OperatorFrequencyFree::from_sync(p.get_value()).get(), OPERATOR_FREE_STEPS[0]);
-
-        assert!(p.set_from_text("4.0".to_string()));
-        assert_approx_eq!(OperatorFrequencyFree::from_sync(p.get_value()).get(), 4.0);
-
-        assert!(p.set_from_text("256.0".to_string()));
-        assert_approx_eq!(OperatorFrequencyFree::from_sync(p.get_value()).get(), OPERATOR_FREE_STEPS.last().unwrap());
-
-        for step in OPERATOR_FREE_STEPS.iter() {
-            let s = format!("{:.04}", step);
-            assert!(p.set_from_text(s.clone()));
-            assert_eq!(p.get_value_text(), s.clone());
-        }
-    }
-    */
-
-    #[test]
-    fn test_set_wave_type_text() {
-        let p = operator_wave_type(3);
-
-        assert!(p.set_from_text("sine".to_string()));
-        assert_eq!(
-            OperatorWaveTypeValue::new_from_patch(p.get_value()).get(),
-            WaveType::Sine
-        );
-
-        assert!(p.set_from_text("noise".to_string()));
-        assert_eq!(
-            OperatorWaveTypeValue::new_from_patch(p.get_value()).get(),
-            WaveType::WhiteNoise
-        );
-    }
-
-    #[test]
-    fn test_set_attack_duration_text() {
-        let p = operator_attack_duration(3);
-
-        assert!(p.set_from_text("0.0".to_string()));
-        assert_eq!(
-            OperatorAttackDurationValue::new_from_patch(p.get_value()).get(),
-            ENVELOPE_MIN_DURATION
-        );
-
-        assert!(p.set_from_text("1.0".to_string()));
-        assert_eq!(
-            OperatorAttackDurationValue::new_from_patch(p.get_value()).get(),
-            1.0
-        );
-
-        assert!(p.set_from_text("10".to_string()));
-        assert_eq!(
-            OperatorAttackDurationValue::new_from_patch(p.get_value()).get(),
-            ENVELOPE_MAX_DURATION
-        );
     }
 }
