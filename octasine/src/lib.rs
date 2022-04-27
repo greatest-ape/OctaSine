@@ -77,7 +77,7 @@ impl OctaSine {
         if let Some(indeces) = changed_sync_parameters {
             for (index, opt_new_value) in indeces.iter().enumerate() {
                 if let Some(new_value) = opt_new_value {
-                    self.audio.parameters.set_from_sync(index, *new_value);
+                    self.audio.parameters.set_from_patch(index, *new_value);
                 }
             }
         }
