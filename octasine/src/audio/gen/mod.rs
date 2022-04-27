@@ -29,24 +29,6 @@ pub trait AudioGen {
     );
 }
 
-enum RemainingSamples {
-    TwoOrMore,
-    One,
-    Zero,
-}
-
-impl RemainingSamples {
-    fn new(remaining_samples: usize) -> Self {
-        if remaining_samples >= 2 {
-            Self::TwoOrMore
-        } else if remaining_samples == 1 {
-            Self::One
-        } else {
-            Self::Zero
-        }
-    }
-}
-
 #[derive(Debug, Default)]
 pub struct OperatorVoiceData {
     volumes: [f64; MAX_PD_WIDTH],
@@ -82,46 +64,48 @@ pub fn process_f32_runtime_select(
     let mut position = 0;
 
     loop {
+        let num_remaining_samples = (num_samples - position) as u64;
+
         unsafe {
-            match RemainingSamples::new(num_samples - position) {
+            match num_remaining_samples {
                 #[cfg(all(feature = "simd", target_arch = "x86_64"))]
-                RemainingSamples::TwoOrMore if is_x86_feature_detected!("avx") => {
-                    let end_position = position + 2;
+                (2..) if is_x86_feature_detected!("avx") => {
+                    let new_position = position + 2;
 
                     Avx::process_f32(
                         processing,
-                        &mut lefts[position..end_position],
-                        &mut rights[position..end_position],
+                        &mut lefts[position..new_position],
+                        &mut rights[position..new_position],
                         position,
                     );
 
-                    position = end_position;
+                    position = new_position;
                 }
-                RemainingSamples::One | RemainingSamples::TwoOrMore => {
-                    let end_position = position + 1;
+                1.. => {
+                    let new_position = position + 1;
 
                     cfg_if::cfg_if!(
                         if #[cfg(all(feature = "simd", target_arch = "x86_64"))] {
                             // SSE2 is always supported on x86_64
                             Sse2::process_f32(
                                 processing,
-                                &mut lefts[position..end_position],
-                                &mut rights[position..end_position],
+                                &mut lefts[position..new_position],
+                                &mut rights[position..new_position],
                                 position,
                             );
                         } else {
                             FallbackStd::process_f32(
                                 processing,
-                                &mut lefts[position..end_position],
-                                &mut rights[position..end_position],
+                                &mut lefts[position..new_position],
+                                &mut rights[position..new_position],
                                 position,
                             );
                         }
                     );
 
-                    position = end_position;
+                    position = new_position;
                 }
-                RemainingSamples::Zero => {
+                0 => {
                     break;
                 }
             }
