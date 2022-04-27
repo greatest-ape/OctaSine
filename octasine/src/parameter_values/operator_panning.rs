@@ -18,8 +18,8 @@ impl ParameterValue for OperatorPanningValue {
     fn get(self) -> Self::Value {
         self.0
     }
-    fn new_from_patch(sync: f64) -> Self {
-        Self(sync)
+    fn new_from_patch(value: f64) -> Self {
+        Self(value)
     }
     fn to_patch(self) -> f64 {
         self.0

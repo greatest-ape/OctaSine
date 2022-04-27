@@ -31,10 +31,10 @@ impl ParameterValue for LfoFrequencyRatioValue {
     fn get(self) -> Self::Value {
         self.0
     }
-    fn new_from_patch(sync: f64) -> Self {
+    fn new_from_patch(value: f64) -> Self {
         Self(map_parameter_value_to_step(
             &LFO_FREQUENCY_RATIO_STEPS,
-            sync,
+            value,
         ))
     }
     fn to_patch(self) -> f64 {

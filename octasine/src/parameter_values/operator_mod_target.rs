@@ -106,10 +106,10 @@ impl ParameterValue for Operator2ModulationTargetValue {
     fn get(self) -> Self::Value {
         self.0
     }
-    fn new_from_patch(sync: f64) -> Self {
+    fn new_from_patch(value: f64) -> Self {
         Self(map_parameter_value_to_step(
             Self::Value::permutations(),
-            sync,
+            value,
         ))
     }
     fn to_patch(self) -> f64 {
@@ -132,10 +132,10 @@ impl ParameterValue for Operator3ModulationTargetValue {
     fn get(self) -> Self::Value {
         self.0
     }
-    fn new_from_patch(sync: f64) -> Self {
+    fn new_from_patch(value: f64) -> Self {
         Self(map_parameter_value_to_step(
             Self::Value::permutations(),
-            sync,
+            value,
         ))
     }
     fn to_patch(self) -> f64 {
@@ -158,10 +158,10 @@ impl ParameterValue for Operator4ModulationTargetValue {
     fn get(self) -> Self::Value {
         self.0
     }
-    fn new_from_patch(sync: f64) -> Self {
+    fn new_from_patch(value: f64) -> Self {
         Self(map_parameter_value_to_step(
             Self::Value::permutations(),
-            sync,
+            value,
         ))
     }
     fn to_patch(self) -> f64 {

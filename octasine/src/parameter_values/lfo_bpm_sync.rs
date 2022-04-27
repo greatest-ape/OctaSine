@@ -18,8 +18,8 @@ impl ParameterValue for LfoBpmSyncValue {
     fn get(self) -> Self::Value {
         self.0
     }
-    fn new_from_patch(sync: f64) -> Self {
-        Self(sync <= 0.5)
+    fn new_from_patch(value: f64) -> Self {
+        Self(value <= 0.5)
     }
     fn to_patch(self) -> f64 {
         if self.0 {

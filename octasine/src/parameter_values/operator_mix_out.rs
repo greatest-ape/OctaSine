@@ -22,8 +22,8 @@ impl ParameterValue for OperatorMixValue {
     fn get(self) -> Self::Value {
         self.0
     }
-    fn new_from_patch(sync: f64) -> Self {
-        Self(sync * 2.0)
+    fn new_from_patch(value: f64) -> Self {
+        Self(value * 2.0)
     }
     fn to_patch(self) -> f64 {
         self.0 / 2.0

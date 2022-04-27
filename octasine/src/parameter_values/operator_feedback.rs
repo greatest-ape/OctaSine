@@ -19,10 +19,10 @@ impl ParameterValue for OperatorFeedbackValue {
     fn get(self) -> Self::Value {
         self.0
     }
-    fn new_from_patch(sync: f64) -> Self {
+    fn new_from_patch(value: f64) -> Self {
         Self(map_parameter_value_to_value_with_steps(
             &OPERATOR_MOD_INDEX_STEPS[..],
-            sync,
+            value,
         ))
     }
     fn to_patch(self) -> f64 {

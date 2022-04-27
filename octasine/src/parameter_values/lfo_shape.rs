@@ -63,8 +63,8 @@ impl ParameterValue for LfoShapeValue {
     fn get(self) -> Self::Value {
         self.0
     }
-    fn new_from_patch(sync: f64) -> Self {
-        Self(map_parameter_value_to_step(&LFO_SHAPE_STEPS[..], sync))
+    fn new_from_patch(value: f64) -> Self {
+        Self(map_parameter_value_to_step(&LFO_SHAPE_STEPS[..], value))
     }
     fn to_patch(self) -> f64 {
         map_step_to_parameter_value(&LFO_SHAPE_STEPS[..], self.0)

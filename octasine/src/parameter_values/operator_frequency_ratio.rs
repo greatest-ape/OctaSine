@@ -24,8 +24,11 @@ impl ParameterValue for OperatorFrequencyRatioValue {
     fn get(self) -> Self::Value {
         self.0
     }
-    fn new_from_patch(sync: f64) -> Self {
-        Self(map_parameter_value_to_step(&OPERATOR_RATIO_STEPS[..], sync))
+    fn new_from_patch(value: f64) -> Self {
+        Self(map_parameter_value_to_step(
+            &OPERATOR_RATIO_STEPS[..],
+            value,
+        ))
     }
     fn to_patch(self) -> f64 {
         map_step_to_parameter_value(&OPERATOR_RATIO_STEPS[..], self.0)
