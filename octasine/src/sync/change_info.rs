@@ -110,8 +110,8 @@ mod tests {
 
         assert!(c.get_changed_parameters(&preset_parameters).is_none());
 
-        preset_parameters.get(0).unwrap().value.set(1.0);
-        preset_parameters.get(10).unwrap().value.set(1.0);
+        preset_parameters.get(0).unwrap().set_value(1.0);
+        preset_parameters.get(10).unwrap().set_value(1.0);
         c.mark_as_changed(0);
         c.mark_as_changed(10);
 
@@ -136,9 +136,9 @@ mod tests {
         assert!(indeces[0] == 0);
         assert!(indeces[1] == 10);
 
-        preset_parameters.get(1).unwrap().value.set(1.0);
-        preset_parameters.get(4).unwrap().value.set(1.0);
-        preset_parameters.get(5).unwrap().value.set(1.0);
+        preset_parameters.get(1).unwrap().set_value(1.0);
+        preset_parameters.get(4).unwrap().set_value(1.0);
+        preset_parameters.get(5).unwrap().set_value(1.0);
         c.mark_as_changed(1);
         c.mark_as_changed(4);
         c.mark_as_changed(5);
@@ -186,9 +186,9 @@ mod tests {
 
                 for (index, value) in data.iter() {
                     if let Some(p) = preset_parameters.get(*index) {
-                        p.value.set(*value + 1.43432);
-                        p.value.set(*value + 5.55);
-                        p.value.set(*value);
+                        p.set_value(*value + 1.43432);
+                        p.set_value(*value + 5.55);
+                        p.set_value(*value);
 
                         set_parameters.insert(*index, *value);
                     }

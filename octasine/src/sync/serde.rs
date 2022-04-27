@@ -7,7 +7,7 @@ const PREFIX: &[u8] = b"\n\nOCTASINE-GZ-DATA-V1-BEGIN\n\n";
 const SUFFIX: &[u8] = b"\n\nOCTASINE-GZ-DATA-V1-END\n\n";
 
 #[derive(Serialize, Debug)]
-pub(super) struct SerdePatchParameterValue(String);
+pub struct SerdePatchParameterValue(String);
 
 impl SerdePatchParameterValue {
     pub fn from_f64(value: f64) -> Self {
@@ -61,30 +61,30 @@ impl SerdePatchParameterValue {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-pub(super) struct SerdePatchParameter {
-    pub(super) name: String,
+pub struct SerdePatchParameter {
+    pub name: String,
     #[serde(
         deserialize_with = "SerdePatchParameterValue::deserialize",
         serialize_with = "SerdePatchParameterValue::serialize"
     )]
-    pub(super) value_float: SerdePatchParameterValue,
-    pub(super) value_text: String,
+    pub value_float: SerdePatchParameterValue,
+    pub value_text: String,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-pub(super) struct SerdePatch {
+pub struct SerdePatch {
     octasine_version: String,
-    pub(super) name: String,
-    pub(super) parameters: Vec<SerdePatchParameter>,
+    pub name: String,
+    pub parameters: Vec<SerdePatchParameter>,
 }
 
 impl SerdePatch {
-    pub(super) fn new(preset: &Patch) -> Self {
+    pub fn new(preset: &Patch) -> Self {
         let mut parameters = Vec::new();
 
         for i in 0..preset.parameters.len() {
             if let Some(parameter) = preset.parameters.get(i) {
-                let value = parameter.value.get();
+                let value = parameter.get_value();
 
                 let value_float = SerdePatchParameterValue::from_f64(value);
 
@@ -105,13 +105,13 @@ impl SerdePatch {
 }
 
 #[derive(Serialize, Deserialize)]
-pub(super) struct SerdePatchBank {
+pub struct SerdePatchBank {
     octasine_version: String,
-    pub(super) patches: Vec<SerdePatch>,
+    pub patches: Vec<SerdePatch>,
 }
 
 impl SerdePatchBank {
-    pub(super) fn new(patch_bank: &PatchBank) -> Self {
+    pub fn new(patch_bank: &PatchBank) -> Self {
         Self {
             octasine_version: crate::get_version_info(),
             patches: patch_bank

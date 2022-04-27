@@ -4,10 +4,10 @@ use crate::parameter_values::*;
 use super::atomic_double::AtomicPositiveDouble;
 
 pub struct SyncParameter {
-    pub(super) value: AtomicPositiveDouble,
-    pub(super) name: String,
-    pub(super) sync_from_text: fn(String) -> Option<f64>,
-    pub(super) format_sync: fn(f64) -> String,
+    value: AtomicPositiveDouble,
+    pub name: String,
+    sync_from_text: fn(String) -> Option<f64>,
+    pub format_sync: fn(f64) -> String,
 }
 
 impl SyncParameter {
@@ -18,6 +18,10 @@ impl SyncParameter {
             sync_from_text: |v| V::from_text(v).map(|v| v.to_sync()),
             format_sync: |v| V::from_sync(v).format(),
         }
+    }
+
+    pub fn set_value(&self, value: f64) {
+        self.value.set(value);
     }
 
     pub fn get_value(&self) -> f64 {

@@ -12,8 +12,8 @@ use super::parameters::SyncParameter;
 use super::serde::*;
 
 pub struct Patch {
-    pub(super) name: ArcSwap<String>,
-    pub(super) parameters: Vec<SyncParameter>,
+    name: ArcSwap<String>,
+    pub parameters: Vec<SyncParameter>,
 }
 
 impl Default for Patch {
@@ -23,22 +23,22 @@ impl Default for Patch {
 }
 
 impl Patch {
-    pub(super) fn new(name: String, parameters: Vec<SyncParameter>) -> Self {
+    pub fn new(name: String, parameters: Vec<SyncParameter>) -> Self {
         Self {
             name: ArcSwap::new(Arc::new(name)),
             parameters,
         }
     }
 
-    pub(super) fn get_name(&self) -> String {
+    pub fn get_name(&self) -> String {
         (*self.name.load_full()).clone()
     }
 
-    pub(super) fn set_name(&self, name: String) {
+    pub fn set_name(&self, name: String) {
         self.name.store(Arc::new(name));
     }
 
-    pub(super) fn import_bytes(&self, bytes: &[u8]) -> bool {
+    pub fn import_bytes(&self, bytes: &[u8]) -> bool {
         let res_serde_preset: Result<SerdePatch, _> = from_bytes(bytes);
 
         if let Ok(serde_preset) = res_serde_preset {
@@ -50,27 +50,27 @@ impl Patch {
         }
     }
 
-    pub(super) fn import_serde_preset(&self, serde_preset: &SerdePatch) {
+    pub fn import_serde_preset(&self, serde_preset: &SerdePatch) {
         self.set_name(serde_preset.name.clone());
 
         for (index, parameter) in self.parameters.iter().enumerate() {
             if let Some(import_parameter) = serde_preset.parameters.get(index) {
-                parameter.value.set(import_parameter.value_float.as_f64())
+                parameter.set_value(import_parameter.value_float.as_f64())
             }
         }
     }
 
-    pub(super) fn export_bytes(&self) -> Vec<u8> {
+    pub fn export_bytes(&self) -> Vec<u8> {
         to_bytes(&self.export_serde_preset()).expect("serialize preset")
     }
 
-    pub(super) fn export_serde_preset(&self) -> SerdePatch {
+    pub fn export_serde_preset(&self) -> SerdePatch {
         SerdePatch::new(self)
     }
 }
 
 pub struct PatchBank {
-    pub(super) patches: [Patch; 128],
+    pub patches: [Patch; 128],
     patch_index: AtomicUsize,
     parameter_change_info_audio: ParameterChangeInfo,
     parameter_change_info_gui: ParameterChangeInfo,
@@ -176,14 +176,14 @@ impl PatchBank {
         self.get_current_patch()
             .parameters
             .get(index)
-            .map(|p| p.value.get())
+            .map(|p| p.get_value())
     }
 
     pub fn get_parameter_value_text(&self, index: usize) -> Option<String> {
         self.get_current_patch()
             .parameters
             .get(index)
-            .map(|p| (p.format_sync)(p.value.get()))
+            .map(|p| (p.get_value_text()))
     }
 
     pub fn get_parameter_name(&self, index: usize) -> Option<String> {
@@ -206,7 +206,7 @@ impl PatchBank {
         let opt_parameter = self.get_parameter(index);
 
         if let Some(parameter) = opt_parameter {
-            parameter.value.set(value.min(1.0).max(0.0));
+            parameter.set_value(value.min(1.0).max(0.0));
 
             self.parameter_change_info_audio.mark_as_changed(index);
         }
@@ -216,7 +216,7 @@ impl PatchBank {
         let opt_parameter = self.get_parameter(index);
 
         if let Some(parameter) = opt_parameter {
-            parameter.value.set(value as f64);
+            parameter.set_value(value as f64);
 
             self.parameter_change_info_audio.mark_as_changed(index);
             self.parameter_change_info_gui.mark_as_changed(index);
@@ -318,9 +318,9 @@ pub mod tests {
 
                     let value = fastrand::f64();
 
-                    parameter.value.set(value);
+                    parameter.set_value(value);
 
-                    assert_eq!(parameter.value.get(), value);
+                    assert_eq!(parameter.get_value(), value);
                 }
             }
 
@@ -342,7 +342,7 @@ pub mod tests {
 
                     let parameter_2 = current_preset_2.parameters.get(parameter_index).unwrap();
 
-                    assert_eq!(parameter_1.value.get(), parameter_2.value.get(),);
+                    assert_eq!(parameter_1.get_value(), parameter_2.get_value());
                 }
             }
         }
