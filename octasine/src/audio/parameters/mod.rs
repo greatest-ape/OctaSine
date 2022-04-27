@@ -5,7 +5,8 @@ pub mod parameters;
 
 use crate::common::{NUM_LFOS, NUM_OPERATORS};
 
-use super::values::*;
+use crate::parameters::values::*;
+
 use parameters::*;
 
 pub trait ProcessingParameter {

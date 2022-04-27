@@ -6,7 +6,7 @@ use crate::parameters::values::{
     ModTarget, Operator2ModulationTargetValue, Operator3ModulationTargetValue,
     Operator4ModulationTargetValue, ParameterValue,
 };
-use crate::GuiSyncHandle;
+use crate::sync::GuiSyncHandle;
 
 use super::style::Theme;
 use super::{Message, FONT_BOLD, FONT_SIZE, LINE_HEIGHT};

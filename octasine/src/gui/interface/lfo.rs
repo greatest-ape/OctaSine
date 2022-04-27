@@ -6,7 +6,7 @@ use crate::parameters::values::{
     LfoAmountValue, LfoBpmSyncValue, LfoFrequencyFreeValue, LfoFrequencyRatioValue, LfoModeValue,
     LfoShapeValue,
 };
-use crate::GuiSyncHandle;
+use crate::sync::GuiSyncHandle;
 
 use super::boolean_picker::{self, BooleanPicker};
 use super::knob::{self, OctaSineKnob};

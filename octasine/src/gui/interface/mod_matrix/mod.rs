@@ -12,7 +12,7 @@ use crate::parameters::values::{
     ModTargetStorage, Operator2ModulationTargetValue, Operator3ModulationTargetValue,
     Operator4ModulationTargetValue, ParameterValue,
 };
-use crate::GuiSyncHandle;
+use crate::sync::GuiSyncHandle;
 
 use self::mix_line::MixOutLine;
 use self::mod_box::{ModulationBox, ModulationBoxChange, ModulationBoxUpdate};

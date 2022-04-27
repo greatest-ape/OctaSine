@@ -97,7 +97,7 @@ mod tests {
 
     use quickcheck::{quickcheck, TestResult};
 
-    use crate::parameters::sync::create_parameters;
+    use crate::sync::parameters::create_parameters;
 
     use super::*;
 

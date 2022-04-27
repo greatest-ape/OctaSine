@@ -19,6 +19,7 @@ pub mod operator_mod_target;
 pub mod operator_panning;
 pub mod operator_volume;
 pub mod operator_wave_type;
+pub mod utils;
 
 pub use lfo_amount::LfoAmountValue;
 pub use lfo_bpm_sync::LfoBpmSyncValue;

@@ -1,5 +1,5 @@
+use super::utils::*;
 use super::ParameterValue;
-use crate::parameters::utils::*;
 
 const MASTER_FREQUENCY_STEPS: [f64; 12] = [
     20.0, 110.0, 220.0, 400.0, 435.0, 438.0, 440.0, 442.0, 445.0, 480.0, 880.0, 20_000.0,

@@ -5,7 +5,7 @@ use iced_baseview::{
 use iced_baseview::{executor, Alignment, Application, Command, Subscription, WindowSubs};
 
 use crate::parameters::values::{MasterFrequencyValue, MasterVolumeValue};
-use crate::{get_version_info, GuiSyncHandle};
+use crate::{get_version_info, sync::GuiSyncHandle};
 
 mod boolean_picker;
 mod envelope;

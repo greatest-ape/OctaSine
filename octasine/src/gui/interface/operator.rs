@@ -9,7 +9,7 @@ use crate::parameters::values::{
     OperatorFrequencyRatioValue, OperatorMixValue, OperatorModulationIndexValue,
     OperatorPanningValue, OperatorVolumeValue, OperatorWaveTypeValue,
 };
-use crate::GuiSyncHandle;
+use crate::sync::GuiSyncHandle;
 
 use super::envelope::Envelope;
 use super::knob::{self, OctaSineKnob};

@@ -1,8 +1,8 @@
 use std::f64::consts::TAU;
 
+use super::utils::*;
 use super::ParameterValue;
 use crate::common::*;
-use crate::parameters::utils::*;
 
 pub const LFO_SHAPE_STEPS: [LfoShape; 8] = [
     LfoShape::Triangle,

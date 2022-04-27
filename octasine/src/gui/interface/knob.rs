@@ -9,7 +9,7 @@ use crate::parameters::values::{
     OperatorFrequencyFreeValue, OperatorFrequencyRatioValue, OperatorMixValue,
     OperatorModulationIndexValue, OperatorPanningValue, OperatorVolumeValue, ParameterValue,
 };
-use crate::GuiSyncHandle;
+use crate::sync::GuiSyncHandle;
 
 use super::style::Theme;
 use super::{Message, FONT_BOLD, LINE_HEIGHT};

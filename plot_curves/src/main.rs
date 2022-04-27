@@ -1,15 +1,15 @@
-use octasine::approximations::Log10Table;
-use octasine::parameters::values::lfo_mode::LfoMode;
-use octasine::parameters::values::lfo_shape::LfoShape;
 use plotlib::page::Page;
 use plotlib::repr::Plot;
 use plotlib::style::{LineStyle, PointMarker, PointStyle};
 use plotlib::view::ContinuousView;
 
+use octasine::audio::parameters::OperatorEnvelopeProcessingParameter;
+use octasine::audio::voices::envelopes::VoiceOperatorVolumeEnvelope;
+use octasine::audio::voices::lfos::*;
+use octasine::audio::voices::log10_table::Log10Table;
 use octasine::common::*;
-use octasine::parameters::processing::OperatorEnvelopeProcessingParameter;
-use octasine::voices::envelopes::VoiceOperatorVolumeEnvelope;
-use octasine::voices::lfos::*;
+use octasine::parameters::values::lfo_mode::LfoMode;
+use octasine::parameters::values::lfo_shape::LfoShape;
 
 #[allow(dead_code)]
 fn plot_envelope_stage(length: f64, start_volume: f64, end_volume: f64, filename: &str) {

@@ -1,9 +1,10 @@
+pub mod envelopes;
+pub mod lfos;
+pub mod log10_table;
+
 use array_init::array_init;
 
 use crate::common::*;
-
-pub mod envelopes;
-pub mod lfos;
 
 use envelopes::*;
 use lfos::*;

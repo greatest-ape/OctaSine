@@ -4,7 +4,7 @@ use iced_baseview::{
 
 use crate::parameters::values::lfo_mode::LfoMode;
 use crate::parameters::values::{LfoBpmSyncValue, LfoModeValue, ParameterValue};
-use crate::GuiSyncHandle;
+use crate::sync::GuiSyncHandle;
 
 use super::style::Theme;
 use super::{Message, FONT_BOLD, FONT_SIZE, LINE_HEIGHT};

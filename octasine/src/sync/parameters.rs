@@ -1,6 +1,7 @@
-use crate::{common::NUM_LFOS, preset_bank::SyncParameter};
+use crate::common::NUM_LFOS;
 
-use super::values::*;
+use super::preset_bank::SyncParameter;
+use crate::parameters::values::*;
 
 pub fn create_parameters() -> Vec<SyncParameter> {
     let mut parameters = vec![
@@ -270,12 +271,13 @@ fn lfo_amount(index: usize) -> SyncParameter {
 mod tests {
     use crate::parameters::values::operator_frequency_ratio::OPERATOR_RATIO_STEPS;
     use crate::parameters::values::operator_wave_type::WaveType;
+    use crate::sync::preset_bank::MAX_NUM_PARAMETERS;
 
     use super::*;
 
     #[test]
     fn test_preset_parameters_len() {
-        assert!(create_parameters().len() <= crate::preset_bank::MAX_NUM_PARAMETERS);
+        assert!(create_parameters().len() <= MAX_NUM_PARAMETERS);
     }
 
     #[test]

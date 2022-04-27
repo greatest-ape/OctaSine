@@ -4,7 +4,7 @@ use raw_window_handle::{HasRawWindowHandle, RawWindowHandle};
 use serde::{Deserialize, Serialize};
 use vst::editor::Editor;
 
-use super::GuiSyncHandle;
+use crate::sync::GuiSyncHandle;
 use crate::PLUGIN_NAME;
 
 mod interface;

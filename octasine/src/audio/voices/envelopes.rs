@@ -1,8 +1,8 @@
-use crate::approximations::Log10Table;
+use crate::audio::parameters::OperatorEnvelopeProcessingParameter;
 use crate::common::*;
-use crate::parameters::processing::OperatorEnvelopeProcessingParameter;
 use crate::parameters::values::ENVELOPE_CURVE_TAKEOVER_RECIP;
 
+use super::log10_table::Log10Table;
 use super::VoiceDuration;
 
 const RESTART_DURATION: f64 = 0.01;

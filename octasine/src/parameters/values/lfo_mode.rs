@@ -1,5 +1,5 @@
+use super::utils::*;
 use super::ParameterValue;
-use crate::parameters::utils::*;
 
 const LFO_MODE_STEPS: [LfoMode; 2] = [LfoMode::Forever, LfoMode::Once];
 

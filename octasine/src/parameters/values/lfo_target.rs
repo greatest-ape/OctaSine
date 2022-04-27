@@ -1,5 +1,5 @@
+use super::utils::*;
 use super::ParameterValue;
-use crate::parameters::utils::*;
 
 // When adjusting this, remember to also modify get_lfo_target_parameters
 pub const LFO_TARGET_CONTEXT_STEPS: &[LfoTargetParameter] = &[

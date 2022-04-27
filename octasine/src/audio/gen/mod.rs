@@ -7,9 +7,9 @@ use arrayvec::ArrayVec;
 use duplicate::duplicate_item;
 use vst::buffer::AudioBuffer;
 
-use crate::approximations::Log10Table;
+use crate::audio::parameters::{ProcessingParameter, ProcessingParameterOperator};
+use crate::audio::voices::log10_table::Log10Table;
 use crate::common::*;
-use crate::parameters::processing::{ProcessingParameter, ProcessingParameterOperator};
 use crate::parameters::values::lfo_target::*;
 use crate::parameters::values::operator_wave_type::WaveType;
 use crate::{OctaSine, ProcessingState};
@@ -296,7 +296,7 @@ mod gen {
         sample_index: usize,
         operator_index: usize,
         operator: &mut ProcessingParameterOperator,
-        voice_operator: &mut crate::voices::VoiceOperator,
+        voice_operator: &mut crate::audio::voices::VoiceOperator,
         voice_data: &mut OperatorVoiceData,
         lfo_values: &LfoTargetValues,
         time_per_sample: TimePerSample,

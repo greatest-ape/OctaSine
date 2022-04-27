@@ -1,5 +1,5 @@
+use super::utils::*;
 use super::ParameterValue;
-use crate::parameters::utils::*;
 
 const LFO_FREQUENCY_RATIO_STEPS: [f64; 9] = [
     1.0 / 16.0,

@@ -5,8 +5,8 @@ use sha2::{Digest, Sha256};
 use vst::event::MidiEvent;
 use vst::plugin::PluginParameters;
 
-use octasine::gen::simd::Simd;
-use octasine::gen::AudioGen;
+use octasine::audio::gen::simd::Simd;
+use octasine::audio::gen::AudioGen;
 use octasine::OctaSine;
 
 /// Benchmark OctaSine process functions and check sample-accurate output
@@ -58,8 +58,10 @@ fn main() {
     // Ignore success status here, since output differs across platforms
     // depending on std sine implementation
     #[allow(unused_variables)]
-    let (_, fallback_std) =
-        benchmark::<octasine::gen::simd::FallbackStd>("fallback (std)", "96 b7 56 65 dd 52 96 3d ");
+    let (_, fallback_std) = benchmark::<octasine::audio::gen::simd::FallbackStd>(
+        "fallback (std)",
+        "96 b7 56 65 dd 52 96 3d ",
+    );
 
     #[allow(unused_variables, unused_mut)]
     let mut all_sleef_hashes_match = true;
@@ -71,7 +73,7 @@ fn main() {
 
         {
             let (success, r) =
-                benchmark::<octasine::gen::simd::FallbackSleef>("fallback (sleef)", hash);
+                benchmark::<octasine::audio::gen::simd::FallbackSleef>("fallback (sleef)", hash);
 
             all_sleef_hashes_match &= success;
 
@@ -79,14 +81,14 @@ fn main() {
         }
 
         if is_x86_feature_detected!("sse2") {
-            let (success, r) = benchmark::<octasine::gen::simd::Sse2>("sse2", hash);
+            let (success, r) = benchmark::<octasine::audio::gen::simd::Sse2>("sse2", hash);
 
             all_sleef_hashes_match &= success;
 
             println!("Speed compared to std fallback: {}x", fallback_std / r);
         }
         if is_x86_feature_detected!("avx") {
-            let (success, r) = benchmark::<octasine::gen::simd::Avx>("avx", hash);
+            let (success, r) = benchmark::<octasine::audio::gen::simd::Avx>("avx", hash);
 
             all_sleef_hashes_match &= success;
 

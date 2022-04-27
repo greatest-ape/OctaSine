@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use octasine::{built_in_preset_bank, gui::Gui, settings::Settings, SyncState};
+use octasine::{gui::Gui, settings::Settings, sync::built_in_preset_bank, sync::SyncState};
 use simplelog::{ConfigBuilder, LevelFilter, SimpleLogger};
 
 fn main() {

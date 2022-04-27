@@ -11,7 +11,7 @@ use std::sync::{
 use arc_swap::ArcSwap;
 use array_init::array_init;
 
-use crate::parameters::sync::create_parameters;
+use super::parameters::create_parameters;
 use crate::parameters::values::ParameterValue;
 
 use atomic_double::AtomicPositiveDouble;
@@ -343,7 +343,7 @@ impl PresetBank {
 
 #[cfg(test)]
 pub mod tests {
-    use crate::built_in_preset_bank;
+    use crate::sync::built_in_preset_bank;
 
     use super::*;
 

@@ -1,9 +1,9 @@
 use arrayvec::ArrayVec;
 
+use crate::audio::parameters::*;
+use crate::audio::voices::lfos::VoiceLfo;
 use crate::common::*;
-use crate::parameters::processing::*;
 use crate::parameters::values::lfo_target::*;
-use crate::voices::lfos::VoiceLfo;
 
 #[derive(Default)]
 pub struct LfoTargetValues(ArrayVec<(LfoTargetParameter, f64), NUM_LFOS>);

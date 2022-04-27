@@ -3,10 +3,10 @@ use iced_baseview::canvas::{
 };
 use iced_baseview::{Color, Element, Length, Point, Rectangle, Size, Vector};
 
-use crate::approximations::Log10Table;
+use crate::audio::voices::envelopes::VoiceOperatorVolumeEnvelope;
+use crate::audio::voices::log10_table::Log10Table;
 use crate::parameters::values::operator_envelope::{ENVELOPE_MAX_DURATION, ENVELOPE_MIN_DURATION};
-use crate::voices::envelopes::VoiceOperatorVolumeEnvelope;
-use crate::GuiSyncHandle;
+use crate::sync::GuiSyncHandle;
 
 use super::style::Theme;
 use super::{Message, SnapPoint, FONT_SIZE, LINE_HEIGHT};

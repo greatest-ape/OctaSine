@@ -1,5 +1,5 @@
+use super::utils::*;
 use super::ParameterValue;
-use crate::parameters::utils::*;
 
 pub trait ModTarget: Copy + std::fmt::Display {
     fn set_index(&mut self, index: usize, value: bool);
