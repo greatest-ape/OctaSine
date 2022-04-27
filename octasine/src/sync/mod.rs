@@ -18,9 +18,9 @@ use patch_bank::PatchBank;
 pub struct SyncState {
     /// Host should always be set when running as real plugin, but having the
     /// option of leaving this field empty is useful when benchmarking.
-    pub host: Option<HostCallback>,
+    host: Option<HostCallback>,
     pub patches: PatchBank,
-    pub settings: Settings,
+    settings: Settings,
 }
 
 impl SyncState {
