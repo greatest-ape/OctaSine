@@ -12,7 +12,7 @@ impl Default for OperatorVolumeValue {
 impl ParameterValue for OperatorVolumeValue {
     type Value = f64;
 
-    fn from_processing(value: Self::Value) -> Self {
+    fn from_audio(value: Self::Value) -> Self {
         Self(value)
     }
     fn get(self) -> Self::Value {

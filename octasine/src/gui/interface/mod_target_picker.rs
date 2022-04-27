@@ -89,7 +89,7 @@ where
 
                 v.set_index(index, active);
 
-                let sync = P::from_processing(v).to_sync();
+                let sync = P::from_audio(v).to_sync();
 
                 Message::ChangeSingleParameterImmediate(parameter_index, sync)
             })

@@ -13,7 +13,7 @@ impl Default for OperatorModulationIndexValue {
 impl ParameterValue for OperatorModulationIndexValue {
     type Value = f64;
 
-    fn from_processing(value: Self::Value) -> Self {
+    fn from_audio(value: Self::Value) -> Self {
         Self(value)
     }
     fn get(self) -> Self::Value {

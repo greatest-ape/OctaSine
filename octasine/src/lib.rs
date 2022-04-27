@@ -10,7 +10,7 @@ pub mod gui;
 use std::path::PathBuf;
 use std::sync::Arc;
 
-use audio::ProcessingState;
+use audio::AudioState;
 use directories::ProjectDirs;
 
 use sync::SyncState;
@@ -25,7 +25,7 @@ pub const PLUGIN_NAME: &str = "OctaSine";
 pub const PLUGIN_UNIQUE_ID: i32 = 1_438_048_624;
 
 pub struct OctaSine {
-    pub processing: ProcessingState,
+    pub audio: AudioState,
     pub sync: Arc<SyncState>,
     #[cfg(feature = "gui")]
     editor: Option<crate::gui::Gui<Arc<SyncState>>>,
@@ -58,7 +58,7 @@ impl OctaSine {
         let editor = crate::gui::Gui::new(sync.clone());
 
         Self {
-            processing: Default::default(),
+            audio: Default::default(),
             sync,
             #[cfg(feature = "gui")]
             editor: Some(editor),
@@ -67,17 +67,17 @@ impl OctaSine {
 
     fn update_bpm(&mut self) {
         if let Some(bpm) = self.sync.get_bpm_from_host() {
-            self.processing.bpm = bpm;
+            self.audio.bpm = bpm;
         }
     }
 
-    pub fn update_processing_parameters(&mut self) {
-        let changed_sync_parameters = self.sync.presets.get_changed_parameters_from_processing();
+    pub fn update_audio_parameters(&mut self) {
+        let changed_sync_parameters = self.sync.presets.get_changed_parameters_from_audio();
 
         if let Some(indeces) = changed_sync_parameters {
             for (index, opt_new_value) in indeces.iter().enumerate() {
                 if let Some(new_value) = opt_new_value {
-                    self.processing.parameters.set_from_sync(index, *new_value);
+                    self.audio.parameters.set_from_sync(index, *new_value);
                 }
             }
         }
@@ -86,10 +86,10 @@ impl OctaSine {
 
 impl Plugin for OctaSine {
     fn process(&mut self, buffer: &mut vst::buffer::AudioBuffer<f32>) {
-        self.update_processing_parameters();
+        self.update_audio_parameters();
         self.update_bpm();
 
-        audio::gen::process_f32_runtime_select(&mut self.processing, buffer);
+        audio::gen::process_f32_runtime_select(&mut self.audio, buffer);
     }
 
     fn new(host: HostCallback) -> Self {
@@ -115,7 +115,7 @@ impl Plugin for OctaSine {
     }
 
     fn process_events(&mut self, events: &Events) {
-        self.processing
+        self.audio
             .enqueue_midi_events(events.events().filter_map(|event| {
                 if let Event::Midi(event) = event {
                     Some(event)
@@ -126,7 +126,7 @@ impl Plugin for OctaSine {
     }
 
     fn set_sample_rate(&mut self, rate: f32) {
-        self.processing.time_per_sample = SampleRate(f64::from(rate)).into();
+        self.audio.time_per_sample = SampleRate(f64::from(rate)).into();
     }
 
     fn can_do(&self, can_do: CanDo) -> Supported {

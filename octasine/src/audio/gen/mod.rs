@@ -7,9 +7,9 @@ use arrayvec::ArrayVec;
 use duplicate::duplicate_item;
 use vst::buffer::AudioBuffer;
 
-use crate::audio::parameters::{ProcessingParameter, ProcessingParameterOperator};
+use crate::audio::parameters::{AudioParameter, AudioParameterOperator};
 use crate::audio::voices::log10_table::Log10Table;
-use crate::audio::ProcessingState;
+use crate::audio::AudioState;
 use crate::common::*;
 use crate::parameters::values::lfo_target::*;
 use crate::parameters::values::operator_wave_type::WaveType;
@@ -22,7 +22,7 @@ const MAX_PD_WIDTH: usize = 4;
 pub trait AudioGen {
     #[allow(clippy::missing_safety_doc)]
     unsafe fn process_f32(
-        octasine: &mut ProcessingState,
+        octasine: &mut AudioState,
         lefts: &mut [f32],
         rights: &mut [f32],
         position: usize,
@@ -71,7 +71,7 @@ pub struct VoiceData {
 
 #[inline]
 pub fn process_f32_runtime_select(
-    processing: &mut ProcessingState,
+    audio_state: &mut AudioState,
     audio_buffer: &mut AudioBuffer<f32>,
 ) {
     let num_samples = audio_buffer.samples();
@@ -90,7 +90,7 @@ pub fn process_f32_runtime_select(
                     let end_position = position + 2;
 
                     Avx::process_f32(
-                        processing,
+                        audio_state,
                         &mut lefts[position..end_position],
                         &mut rights[position..end_position],
                         position,
@@ -105,14 +105,14 @@ pub fn process_f32_runtime_select(
                         if #[cfg(all(feature = "simd", target_arch = "x86_64"))] {
                             // SSE2 is always supported on x86_64
                             Sse2::process_f32(
-                                processing,
+                                audio_state,
                                 &mut lefts[position..end_position],
                                 &mut rights[position..end_position],
                                 position,
                             );
                         } else {
                             FallbackStd::process_f32(
-                                processing,
+                                audio_state,
                                 &mut lefts[position..end_position],
                                 &mut rights[position..end_position],
                                 position,
@@ -160,7 +160,7 @@ mod gen {
     impl AudioGen for S {
         #[target_feature_enable]
         unsafe fn process_f32(
-            processing: &mut ProcessingState,
+            audio_state: &mut AudioState,
             lefts: &mut [f32],
             rights: &mut [f32],
             position: usize,
@@ -168,8 +168,8 @@ mod gen {
             assert_eq!(lefts.len(), S::SAMPLES);
             assert_eq!(rights.len(), S::SAMPLES);
 
-            if processing.pending_midi_events.is_empty()
-                && !processing.voices.iter().any(|v| v.active)
+            if audio_state.pending_midi_events.is_empty()
+                && !audio_state.voices.iter().any(|v| v.active)
             {
                 for (l, r) in lefts.iter_mut().zip(rights.iter_mut()) {
                     *l = 0.0;
@@ -179,10 +179,10 @@ mod gen {
                 return;
             }
 
-            extract_voice_data(processing, position);
+            extract_voice_data(audio_state, position);
             gen_audio(
-                &mut processing.rng,
-                &processing.audio_gen_voice_data,
+                &mut audio_state.rng,
+                &audio_state.audio_gen_voice_data,
                 lefts,
                 rights,
             );
@@ -191,23 +191,23 @@ mod gen {
 
     #[feature_gate]
     #[target_feature_enable]
-    unsafe fn extract_voice_data(processing: &mut ProcessingState, position: usize) {
-        for voice_data in processing.audio_gen_voice_data.iter_mut() {
+    unsafe fn extract_voice_data(audio_state: &mut AudioState, position: usize) {
+        for voice_data in audio_state.audio_gen_voice_data.iter_mut() {
             voice_data.active = false;
         }
 
         for sample_index in 0..S::SAMPLES {
-            let time_per_sample = processing.time_per_sample;
+            let time_per_sample = audio_state.time_per_sample;
 
-            processing.parameters.advance_one_sample();
-            processing.process_events_for_sample(position + sample_index);
+            audio_state.parameters.advance_one_sample();
+            audio_state.process_events_for_sample(position + sample_index);
 
-            let operators = &mut processing.parameters.operators;
+            let operators = &mut audio_state.parameters.operators;
 
-            for (voice, voice_data) in processing
+            for (voice, voice_data) in audio_state
                 .voices
                 .iter_mut()
-                .zip(processing.audio_gen_voice_data.iter_mut())
+                .zip(audio_state.audio_gen_voice_data.iter_mut())
                 .filter(|(voice, _)| voice.active)
             {
                 for (operator_index, operator) in operators.iter_mut().enumerate() {
@@ -236,10 +236,10 @@ mod gen {
                 }
 
                 let lfo_values = get_lfo_target_values(
-                    &mut processing.parameters.lfos,
+                    &mut audio_state.parameters.lfos,
                     &mut voice.lfos,
                     time_per_sample,
-                    processing.bpm,
+                    audio_state.bpm,
                 );
 
                 let voice_volume_factor = {
@@ -247,7 +247,7 @@ mod gen {
                         LfoTargetParameter::Master(LfoTargetMasterParameter::Volume);
                     let lfo_addition = lfo_values.get(lfo_parameter);
 
-                    let master_volume = processing
+                    let master_volume = audio_state
                         .parameters
                         .master_volume
                         .get_value_with_lfo_addition(lfo_addition);
@@ -264,7 +264,7 @@ mod gen {
                 );
 
                 let voice_base_frequency = voice.midi_pitch.get_frequency(
-                    processing
+                    audio_state
                         .parameters
                         .master_frequency
                         .get_value_with_lfo_addition(lfo_values.get(LfoTargetParameter::Master(
@@ -274,7 +274,7 @@ mod gen {
 
                 for (operator_index, operator) in operators.iter_mut().enumerate() {
                     extract_voice_operator_data(
-                        &processing.log10table,
+                        &audio_state.log10table,
                         sample_index,
                         operator_index,
                         operator,
@@ -295,7 +295,7 @@ mod gen {
         log10table: &Log10Table,
         sample_index: usize,
         operator_index: usize,
-        operator: &mut ProcessingParameterOperator,
+        operator: &mut AudioParameterOperator,
         voice_operator: &mut crate::audio::voices::VoiceOperator,
         voice_data: &mut OperatorVoiceData,
         lfo_values: &LfoTargetValues,

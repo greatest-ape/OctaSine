@@ -5,15 +5,15 @@ use arrayvec::ArrayVec;
 use crate::parameters::values::*;
 
 use super::interpolatable_value::*;
-use super::ProcessingParameter;
+use super::AudioParameter;
 
 #[derive(Debug, Clone)]
-pub struct InterpolatableProcessingParameter<P: ParameterValue> {
-    value: InterpolatableProcessingValue,
+pub struct InterpolatableAudioParameter<P: ParameterValue> {
+    value: InterpolatableAudioValue,
     phantom_data: PhantomData<P>,
 }
 
-impl<P> Default for InterpolatableProcessingParameter<P>
+impl<P> Default for InterpolatableAudioParameter<P>
 where
     P: ParameterValue<Value = f64> + Default,
 {
@@ -21,13 +21,13 @@ where
         let default = P::default().get();
 
         Self {
-            value: InterpolatableProcessingValue::new(default),
+            value: InterpolatableAudioValue::new(default),
             phantom_data: PhantomData::default(),
         }
     }
 }
 
-impl<P> ProcessingParameter for InterpolatableProcessingParameter<P>
+impl<P> AudioParameter for InterpolatableAudioParameter<P>
 where
     P: ParameterValue<Value = f64>,
 {
@@ -44,7 +44,7 @@ where
     }
     fn get_value_with_lfo_addition(&mut self, lfo_addition: Option<f64>) -> Self::Value {
         if let Some(lfo_addition) = lfo_addition {
-            let sync_value = P::from_processing(self.get_value()).to_sync();
+            let sync_value = P::from_audio(self.get_value()).to_sync();
 
             P::from_sync((sync_value + lfo_addition).min(1.0).max(0.0)).get()
         } else {
@@ -53,12 +53,12 @@ where
     }
 }
 
-pub struct SimpleProcessingParameter<P: ParameterValue> {
+pub struct SimpleAudioParameter<P: ParameterValue> {
     pub value: <P as ParameterValue>::Value,
     sync_cache: f64,
 }
 
-impl<P: ParameterValue + Default> Default for SimpleProcessingParameter<P> {
+impl<P: ParameterValue + Default> Default for SimpleAudioParameter<P> {
     fn default() -> Self {
         Self {
             value: P::default().get(),
@@ -67,7 +67,7 @@ impl<P: ParameterValue + Default> Default for SimpleProcessingParameter<P> {
     }
 }
 
-impl<P> ProcessingParameter for SimpleProcessingParameter<P>
+impl<P> AudioParameter for SimpleAudioParameter<P>
 where
     P: ParameterValue,
 {
@@ -93,21 +93,21 @@ where
 // Master volume
 
 #[derive(Debug, Clone)]
-pub struct MasterVolumeProcessingParameter {
-    value: InterpolatableProcessingValue,
+pub struct MasterVolumeAudioParameter {
+    value: InterpolatableAudioValue,
 }
 
-impl Default for MasterVolumeProcessingParameter {
+impl Default for MasterVolumeAudioParameter {
     fn default() -> Self {
         let default = MasterVolumeValue::default().get();
 
         Self {
-            value: InterpolatableProcessingValue::new(default),
+            value: InterpolatableAudioValue::new(default),
         }
     }
 }
 
-impl ProcessingParameter for MasterVolumeProcessingParameter {
+impl AudioParameter for MasterVolumeAudioParameter {
     type Value = f64;
 
     fn advance_one_sample(&mut self) {
@@ -132,21 +132,21 @@ impl ProcessingParameter for MasterVolumeProcessingParameter {
 // Operator volume
 
 #[derive(Debug, Clone)]
-pub struct OperatorVolumeProcessingParameter {
-    value: InterpolatableProcessingValue,
+pub struct OperatorVolumeAudioParameter {
+    value: InterpolatableAudioValue,
 }
 
-impl Default for OperatorVolumeProcessingParameter {
+impl Default for OperatorVolumeAudioParameter {
     fn default() -> Self {
         let default = OperatorVolumeValue::default().get();
 
         Self {
-            value: InterpolatableProcessingValue::new(default),
+            value: InterpolatableAudioValue::new(default),
         }
     }
 }
 
-impl ProcessingParameter for OperatorVolumeProcessingParameter {
+impl AudioParameter for OperatorVolumeAudioParameter {
     type Value = f64;
 
     fn advance_one_sample(&mut self) {
@@ -169,19 +169,19 @@ impl ProcessingParameter for OperatorVolumeProcessingParameter {
 }
 
 #[derive(Debug, Clone)]
-pub struct OperatorVolumeToggleProcessingParameter {
-    value: InterpolatableProcessingValue,
+pub struct OperatorVolumeToggleAudioParameter {
+    value: InterpolatableAudioValue,
 }
 
-impl Default for OperatorVolumeToggleProcessingParameter {
+impl Default for OperatorVolumeToggleAudioParameter {
     fn default() -> Self {
         Self {
-            value: InterpolatableProcessingValue::new(1.0),
+            value: InterpolatableAudioValue::new(1.0),
         }
     }
 }
 
-impl ProcessingParameter for OperatorVolumeToggleProcessingParameter {
+impl AudioParameter for OperatorVolumeToggleAudioParameter {
     type Value = f64;
 
     fn advance_one_sample(&mut self) {
@@ -200,21 +200,21 @@ impl ProcessingParameter for OperatorVolumeToggleProcessingParameter {
 }
 
 #[derive(Debug, Clone)]
-pub struct OperatorMixProcessingParameter {
-    value: InterpolatableProcessingValue,
+pub struct OperatorMixAudioParameter {
+    value: InterpolatableAudioValue,
 }
 
-impl OperatorMixProcessingParameter {
+impl OperatorMixAudioParameter {
     pub fn new(operator_index: usize) -> Self {
         let value = OperatorMixValue::new(operator_index).get();
 
         Self {
-            value: InterpolatableProcessingValue::new(value),
+            value: InterpolatableAudioValue::new(value),
         }
     }
 }
 
-impl ProcessingParameter for OperatorMixProcessingParameter {
+impl AudioParameter for OperatorMixAudioParameter {
     type Value = f64;
 
     fn advance_one_sample(&mut self) {
@@ -229,7 +229,7 @@ impl ProcessingParameter for OperatorMixProcessingParameter {
     }
     fn get_value_with_lfo_addition(&mut self, lfo_addition: Option<f64>) -> Self::Value {
         if let Some(lfo_addition) = lfo_addition {
-            let sync_value = OperatorMixValue::from_processing(self.get_value()).to_sync();
+            let sync_value = OperatorMixValue::from_audio(self.get_value()).to_sync();
 
             OperatorMixValue::from_sync((sync_value + lfo_addition).min(1.0).max(0.0)).get()
         } else {
@@ -240,11 +240,11 @@ impl ProcessingParameter for OperatorMixProcessingParameter {
 
 // Master / operator / lfo free frequency parameters with special lfo value handling
 
-pub struct FreeFrequencyProcessingParameter<P: ParameterValue<Value = f64>> {
+pub struct FreeFrequencyAudioParameter<P: ParameterValue<Value = f64>> {
     pub value: <P as ParameterValue>::Value,
 }
 
-impl<P: ParameterValue<Value = f64> + Default> Default for FreeFrequencyProcessingParameter<P> {
+impl<P: ParameterValue<Value = f64> + Default> Default for FreeFrequencyAudioParameter<P> {
     fn default() -> Self {
         Self {
             value: P::default().get(),
@@ -252,7 +252,7 @@ impl<P: ParameterValue<Value = f64> + Default> Default for FreeFrequencyProcessi
     }
 }
 
-impl<P> ProcessingParameter for FreeFrequencyProcessingParameter<P>
+impl<P> AudioParameter for FreeFrequencyAudioParameter<P>
 where
     P: ParameterValue<Value = f64>,
 {
@@ -276,22 +276,22 @@ where
 
 // Modulation target
 
-pub enum OperatorModulationTargetProcessingParameter {
-    Two(SimpleProcessingParameter<Operator2ModulationTargetValue>),
-    Three(SimpleProcessingParameter<Operator3ModulationTargetValue>),
-    Four(SimpleProcessingParameter<Operator4ModulationTargetValue>),
+pub enum OperatorModulationTargetAudioParameter {
+    Two(SimpleAudioParameter<Operator2ModulationTargetValue>),
+    Three(SimpleAudioParameter<Operator3ModulationTargetValue>),
+    Four(SimpleAudioParameter<Operator4ModulationTargetValue>),
 }
 
-impl OperatorModulationTargetProcessingParameter {
+impl OperatorModulationTargetAudioParameter {
     pub fn opt_new(operator_index: usize) -> Option<Self> {
         match operator_index {
-            1 => Some(OperatorModulationTargetProcessingParameter::Two(
+            1 => Some(OperatorModulationTargetAudioParameter::Two(
                 Default::default(),
             )),
-            2 => Some(OperatorModulationTargetProcessingParameter::Three(
+            2 => Some(OperatorModulationTargetAudioParameter::Three(
                 Default::default(),
             )),
-            3 => Some(OperatorModulationTargetProcessingParameter::Four(
+            3 => Some(OperatorModulationTargetAudioParameter::Four(
                 Default::default(),
             )),
             _ => None,
@@ -322,13 +322,13 @@ impl OperatorModulationTargetProcessingParameter {
 // Panning
 
 #[derive(Debug, Clone)]
-pub struct OperatorPanningProcessingParameter {
-    value: InterpolatableProcessingValue,
+pub struct OperatorPanningAudioParameter {
+    value: InterpolatableAudioValue,
     pub left_and_right: [f64; 2],
     pub lfo_active: bool,
 }
 
-impl OperatorPanningProcessingParameter {
+impl OperatorPanningAudioParameter {
     pub fn calculate_left_and_right(panning: f64) -> [f64; 2] {
         let pan_phase = panning * FRAC_PI_2;
 
@@ -336,7 +336,7 @@ impl OperatorPanningProcessingParameter {
     }
 }
 
-impl ProcessingParameter for OperatorPanningProcessingParameter {
+impl AudioParameter for OperatorPanningAudioParameter {
     type Value = f64;
 
     fn advance_one_sample(&mut self) {
@@ -363,7 +363,7 @@ impl ProcessingParameter for OperatorPanningProcessingParameter {
     }
     fn get_value_with_lfo_addition(&mut self, lfo_addition: Option<f64>) -> Self::Value {
         if let Some(lfo_addition) = lfo_addition {
-            let sync_value = OperatorPanningValue::from_processing(self.get_value()).to_sync();
+            let sync_value = OperatorPanningValue::from_audio(self.get_value()).to_sync();
 
             let new_panning =
                 OperatorPanningValue::from_sync((sync_value + lfo_addition).min(1.0).max(0.0))
@@ -379,12 +379,12 @@ impl ProcessingParameter for OperatorPanningProcessingParameter {
     }
 }
 
-impl Default for OperatorPanningProcessingParameter {
+impl Default for OperatorPanningAudioParameter {
     fn default() -> Self {
         let default = OperatorPanningValue::default().get();
 
         Self {
-            value: InterpolatableProcessingValue::new(default),
+            value: InterpolatableAudioValue::new(default),
             left_and_right: Self::calculate_left_and_right(default),
             lfo_active: false,
         }
@@ -393,14 +393,14 @@ impl Default for OperatorPanningProcessingParameter {
 
 // LFO target parameter
 
-pub enum LfoTargetProcessingParameter {
-    One(SimpleProcessingParameter<Lfo1TargetParameterValue>),
-    Two(SimpleProcessingParameter<Lfo2TargetParameterValue>),
-    Three(SimpleProcessingParameter<Lfo3TargetParameterValue>),
-    Four(SimpleProcessingParameter<Lfo4TargetParameterValue>),
+pub enum LfoTargetAudioParameter {
+    One(SimpleAudioParameter<Lfo1TargetParameterValue>),
+    Two(SimpleAudioParameter<Lfo2TargetParameterValue>),
+    Three(SimpleAudioParameter<Lfo3TargetParameterValue>),
+    Four(SimpleAudioParameter<Lfo4TargetParameterValue>),
 }
 
-impl LfoTargetProcessingParameter {
+impl LfoTargetAudioParameter {
     pub fn new(lfo_index: usize) -> Self {
         match lfo_index {
             0 => Self::One(Default::default()),
@@ -442,21 +442,21 @@ impl LfoTargetProcessingParameter {
 // LFO amount
 
 #[derive(Debug, Clone)]
-pub struct LfoAmountProcessingParameter {
-    value: InterpolatableProcessingValue,
+pub struct LfoAmountAudioParameter {
+    value: InterpolatableAudioValue,
 }
 
-impl Default for LfoAmountProcessingParameter {
+impl Default for LfoAmountAudioParameter {
     fn default() -> Self {
         let default = LfoAmountValue::default().get();
 
         Self {
-            value: InterpolatableProcessingValue::new(default),
+            value: InterpolatableAudioValue::new(default),
         }
     }
 }
 
-impl ProcessingParameter for LfoAmountProcessingParameter {
+impl AudioParameter for LfoAmountAudioParameter {
     type Value = f64;
 
     fn advance_one_sample(&mut self) {

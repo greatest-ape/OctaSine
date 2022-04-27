@@ -19,7 +19,7 @@ macro_rules! impl_envelope_duration_value_conversion {
         impl ParameterValue for $struct_name {
             type Value = f64;
 
-            fn from_processing(value: Self::Value) -> Self {
+            fn from_audio(value: Self::Value) -> Self {
                 Self(value)
             }
 
@@ -59,7 +59,7 @@ macro_rules! impl_identity_value_conversion {
         impl ParameterValue for $struct_name {
             type Value = f64;
 
-            fn from_processing(value: Self::Value) -> Self {
+            fn from_audio(value: Self::Value) -> Self {
                 Self(value)
             }
 

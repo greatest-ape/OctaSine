@@ -154,11 +154,11 @@ fn benchmark<A: AudioGen + Simd>(name: &str, expected_hash: &str) -> (bool, f32)
     for i in 0..iterations {
         if i % 1024 == 0 {
             octasine
-                .processing
+                .audio
                 .enqueue_midi_events(key_on_events.iter().copied());
         } else if i % 1024 == 512 {
             octasine
-                .processing
+                .audio
                 .enqueue_midi_events(key_off_events.iter().copied());
         }
 
@@ -170,7 +170,7 @@ fn benchmark<A: AudioGen + Simd>(name: &str, expected_hash: &str) -> (bool, f32)
             octasine.sync.set_parameter(j, (i % 64) as f32 / 64.0);
         }
 
-        octasine.update_processing_parameters();
+        octasine.update_audio_parameters();
 
         let mut position = 0usize;
 
@@ -179,7 +179,7 @@ fn benchmark<A: AudioGen + Simd>(name: &str, expected_hash: &str) -> (bool, f32)
             .zip(rights.chunks_exact_mut(A::SAMPLES))
         {
             unsafe {
-                A::process_f32(&mut octasine.processing, lefts, rights, position);
+                A::process_f32(&mut octasine.audio, lefts, rights, position);
             }
 
             position += A::SAMPLES;

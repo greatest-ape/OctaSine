@@ -46,8 +46,8 @@ pub use operator_wave_type::OperatorWaveTypeValue;
 pub trait ParameterValue: Sized {
     type Value: Copy;
 
-    fn from_processing(value: Self::Value) -> Self;
-    /// Get inner (processing) value
+    fn from_audio(value: Self::Value) -> Self;
+    /// Get inner (audio gen) value
     fn get(self) -> Self::Value;
     fn from_sync(value: f64) -> Self;
     fn to_sync(self) -> f64;

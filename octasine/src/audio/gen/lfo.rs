@@ -33,7 +33,7 @@ impl LfoTargetValues {
 }
 
 pub fn get_lfo_target_values(
-    lfo_parameters: &mut [ProcessingParameterLfo; NUM_LFOS],
+    lfo_parameters: &mut [AudioParameterLfo; NUM_LFOS],
     voice_lfos: &mut [VoiceLfo; NUM_LFOS],
     time_per_sample: TimePerSample,
     bpm: BeatsPerMinute,

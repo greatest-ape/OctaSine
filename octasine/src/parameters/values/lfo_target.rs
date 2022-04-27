@@ -145,7 +145,7 @@ impl Default for Lfo1TargetParameterValue {
 impl ParameterValue for Lfo1TargetParameterValue {
     type Value = LfoTargetParameter;
 
-    fn from_processing(value: Self::Value) -> Self {
+    fn from_audio(value: Self::Value) -> Self {
         Self(value)
     }
     fn get(self) -> Self::Value {
@@ -180,7 +180,7 @@ impl Default for Lfo2TargetParameterValue {
 impl ParameterValue for Lfo2TargetParameterValue {
     type Value = LfoTargetParameter;
 
-    fn from_processing(value: Self::Value) -> Self {
+    fn from_audio(value: Self::Value) -> Self {
         Self(value)
     }
     fn get(self) -> Self::Value {
@@ -215,7 +215,7 @@ impl Default for Lfo3TargetParameterValue {
 impl ParameterValue for Lfo3TargetParameterValue {
     type Value = LfoTargetParameter;
 
-    fn from_processing(value: Self::Value) -> Self {
+    fn from_audio(value: Self::Value) -> Self {
         Self(value)
     }
     fn get(self) -> Self::Value {
@@ -250,7 +250,7 @@ impl Default for Lfo4TargetParameterValue {
 impl ParameterValue for Lfo4TargetParameterValue {
     type Value = LfoTargetParameter;
 
-    fn from_processing(value: Self::Value) -> Self {
+    fn from_audio(value: Self::Value) -> Self {
         Self(value)
     }
     fn get(self) -> Self::Value {

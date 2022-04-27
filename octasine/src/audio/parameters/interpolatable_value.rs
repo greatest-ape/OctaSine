@@ -2,13 +2,13 @@ pub const INTERPOLATION_STEPS: usize = 32;
 pub const INTERPOLATION_STEPS_FLOAT: f64 = INTERPOLATION_STEPS as f64;
 
 #[derive(Debug, Copy, Clone)]
-pub struct InterpolatableProcessingValue {
+pub struct InterpolatableAudioValue {
     value: f64,
     step_size: f64,
     steps_remaining: usize,
 }
 
-impl InterpolatableProcessingValue {
+impl InterpolatableAudioValue {
     pub fn new(value: f64) -> Self {
         Self {
             value,

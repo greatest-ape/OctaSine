@@ -21,7 +21,7 @@ pub struct LfoModeValue(pub LfoMode);
 impl ParameterValue for LfoModeValue {
     type Value = LfoMode;
 
-    fn from_processing(value: Self::Value) -> Self {
+    fn from_audio(value: Self::Value) -> Self {
         Self(value)
     }
     fn get(self) -> Self::Value {

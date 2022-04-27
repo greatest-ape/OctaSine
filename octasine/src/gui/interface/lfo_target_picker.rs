@@ -92,10 +92,10 @@ impl LfoTargetPicker {
             Some(self.options[self.selected].clone()),
             move |option| {
                 let sync = match lfo_index {
-                    0 => Lfo1TargetParameterValue::from_processing(option.value).to_sync(),
-                    1 => Lfo2TargetParameterValue::from_processing(option.value).to_sync(),
-                    2 => Lfo3TargetParameterValue::from_processing(option.value).to_sync(),
-                    3 => Lfo4TargetParameterValue::from_processing(option.value).to_sync(),
+                    0 => Lfo1TargetParameterValue::from_audio(option.value).to_sync(),
+                    1 => Lfo2TargetParameterValue::from_audio(option.value).to_sync(),
+                    2 => Lfo3TargetParameterValue::from_audio(option.value).to_sync(),
+                    3 => Lfo4TargetParameterValue::from_audio(option.value).to_sync(),
                     _ => unreachable!(),
                 };
 

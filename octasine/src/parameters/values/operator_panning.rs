@@ -12,7 +12,7 @@ impl Default for OperatorPanningValue {
 impl ParameterValue for OperatorPanningValue {
     type Value = f64;
 
-    fn from_processing(value: Self::Value) -> Self {
+    fn from_audio(value: Self::Value) -> Self {
         Self(value)
     }
     fn get(self) -> Self::Value {

@@ -38,7 +38,7 @@ pub struct OperatorWaveTypeValue(pub WaveType);
 impl ParameterValue for OperatorWaveTypeValue {
     type Value = WaveType;
 
-    fn from_processing(value: Self::Value) -> Self {
+    fn from_audio(value: Self::Value) -> Self {
         Self(value)
     }
     fn get(self) -> Self::Value {

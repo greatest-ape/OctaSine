@@ -243,7 +243,7 @@ where
                     };
 
                     let new_shape = P::Value::steps()[new_shape_index];
-                    let new_value = P::from_processing(new_shape).to_sync();
+                    let new_value = P::from_audio(new_shape).to_sync();
 
                     self.set_value(new_value);
                     self.click_started = false;

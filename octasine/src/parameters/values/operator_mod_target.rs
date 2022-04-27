@@ -100,7 +100,7 @@ pub struct Operator2ModulationTargetValue(ModTargetStorage<1>);
 impl ParameterValue for Operator2ModulationTargetValue {
     type Value = ModTargetStorage<1>;
 
-    fn from_processing(value: Self::Value) -> Self {
+    fn from_audio(value: Self::Value) -> Self {
         Self(value)
     }
     fn get(self) -> Self::Value {
@@ -129,7 +129,7 @@ pub struct Operator3ModulationTargetValue(ModTargetStorage<2>);
 impl ParameterValue for Operator3ModulationTargetValue {
     type Value = ModTargetStorage<2>;
 
-    fn from_processing(value: Self::Value) -> Self {
+    fn from_audio(value: Self::Value) -> Self {
         Self(value)
     }
     fn get(self) -> Self::Value {
@@ -158,7 +158,7 @@ pub struct Operator4ModulationTargetValue(ModTargetStorage<3>);
 impl ParameterValue for Operator4ModulationTargetValue {
     type Value = ModTargetStorage<3>;
 
-    fn from_processing(value: Self::Value) -> Self {
+    fn from_audio(value: Self::Value) -> Self {
         Self(value)
     }
     fn get(self) -> Self::Value {

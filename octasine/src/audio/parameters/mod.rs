@@ -9,7 +9,7 @@ use crate::parameters::values::*;
 
 use parameters::*;
 
-pub trait ProcessingParameter {
+pub trait AudioParameter {
     type Value;
 
     fn advance_one_sample(&mut self);
@@ -18,26 +18,26 @@ pub trait ProcessingParameter {
     fn get_value_with_lfo_addition(&mut self, lfo_addition: Option<f64>) -> Self::Value;
 }
 
-pub struct ProcessingParameters {
-    pub master_volume: MasterVolumeProcessingParameter,
-    pub master_frequency: FreeFrequencyProcessingParameter<MasterFrequencyValue>,
-    pub operators: [ProcessingParameterOperator; NUM_OPERATORS],
-    pub lfos: [ProcessingParameterLfo; NUM_LFOS],
+pub struct AudioParameters {
+    pub master_volume: MasterVolumeAudioParameter,
+    pub master_frequency: FreeFrequencyAudioParameter<MasterFrequencyValue>,
+    pub operators: [AudioParameterOperator; NUM_OPERATORS],
+    pub lfos: [AudioParameterLfo; NUM_LFOS],
 }
 
-impl Default for ProcessingParameters {
+impl Default for AudioParameters {
     fn default() -> Self {
         Self {
             master_volume: Default::default(),
             master_frequency: Default::default(),
-            operators: array_init(ProcessingParameterOperator::new),
-            lfos: array_init(ProcessingParameterLfo::new),
+            operators: array_init(AudioParameterOperator::new),
+            lfos: array_init(AudioParameterLfo::new),
         }
     }
 }
 
 #[allow(clippy::len_without_is_empty)]
-impl ProcessingParameters {
+impl AudioParameters {
     pub fn set_from_sync(&mut self, index: usize, value: f64) {
         match index {
             // Master parameters
@@ -80,7 +80,7 @@ impl ProcessingParameters {
             19 => self.operators[1].panning.set_from_sync(value),
             20 => self.operators[1].wave_type.set_from_sync(value),
             21 => {
-                use OperatorModulationTargetProcessingParameter::*;
+                use OperatorModulationTargetAudioParameter::*;
 
                 let opt_p = self.operators[1].output_operator.as_mut();
 
@@ -124,7 +124,7 @@ impl ProcessingParameters {
             35 => self.operators[2].panning.set_from_sync(value),
             36 => self.operators[2].wave_type.set_from_sync(value),
             37 => {
-                use OperatorModulationTargetProcessingParameter::*;
+                use OperatorModulationTargetAudioParameter::*;
 
                 let opt_p = self.operators[2].output_operator.as_mut();
 
@@ -168,7 +168,7 @@ impl ProcessingParameters {
             51 => self.operators[3].panning.set_from_sync(value),
             52 => self.operators[3].wave_type.set_from_sync(value),
             53 => {
-                use OperatorModulationTargetProcessingParameter::*;
+                use OperatorModulationTargetAudioParameter::*;
 
                 let opt_p = self.operators[3].output_operator.as_mut();
 
@@ -256,22 +256,22 @@ impl ProcessingParameters {
     }
 }
 
-pub struct ProcessingParameterOperator {
-    pub volume: OperatorVolumeProcessingParameter,
-    pub active: InterpolatableProcessingParameter<OperatorActiveValue>,
-    pub mix: OperatorMixProcessingParameter,
-    pub wave_type: SimpleProcessingParameter<OperatorWaveTypeValue>,
-    pub panning: OperatorPanningProcessingParameter,
-    pub output_operator: Option<OperatorModulationTargetProcessingParameter>,
-    pub frequency_ratio: SimpleProcessingParameter<OperatorFrequencyRatioValue>,
-    pub frequency_free: FreeFrequencyProcessingParameter<OperatorFrequencyFreeValue>,
-    pub frequency_fine: SimpleProcessingParameter<OperatorFrequencyFineValue>,
-    pub feedback: InterpolatableProcessingParameter<OperatorFeedbackValue>,
-    pub modulation_index: Option<InterpolatableProcessingParameter<OperatorModulationIndexValue>>,
-    pub volume_envelope: OperatorEnvelopeProcessingParameter,
+pub struct AudioParameterOperator {
+    pub volume: OperatorVolumeAudioParameter,
+    pub active: InterpolatableAudioParameter<OperatorActiveValue>,
+    pub mix: OperatorMixAudioParameter,
+    pub wave_type: SimpleAudioParameter<OperatorWaveTypeValue>,
+    pub panning: OperatorPanningAudioParameter,
+    pub output_operator: Option<OperatorModulationTargetAudioParameter>,
+    pub frequency_ratio: SimpleAudioParameter<OperatorFrequencyRatioValue>,
+    pub frequency_free: FreeFrequencyAudioParameter<OperatorFrequencyFreeValue>,
+    pub frequency_fine: SimpleAudioParameter<OperatorFrequencyFineValue>,
+    pub feedback: InterpolatableAudioParameter<OperatorFeedbackValue>,
+    pub modulation_index: Option<InterpolatableAudioParameter<OperatorModulationIndexValue>>,
+    pub volume_envelope: OperatorEnvelopeAudioParameter,
 }
 
-impl ProcessingParameterOperator {
+impl AudioParameterOperator {
     pub fn new(operator_index: usize) -> Self {
         let modulation_index = if operator_index == 0 {
             None
@@ -282,10 +282,10 @@ impl ProcessingParameterOperator {
         Self {
             volume: Default::default(),
             active: Default::default(),
-            mix: OperatorMixProcessingParameter::new(operator_index),
+            mix: OperatorMixAudioParameter::new(operator_index),
             wave_type: Default::default(),
-            panning: OperatorPanningProcessingParameter::default(),
-            output_operator: OperatorModulationTargetProcessingParameter::opt_new(operator_index),
+            panning: OperatorPanningAudioParameter::default(),
+            output_operator: OperatorModulationTargetAudioParameter::opt_new(operator_index),
             frequency_ratio: Default::default(),
             frequency_free: Default::default(),
             frequency_fine: Default::default(),
@@ -316,15 +316,15 @@ impl ProcessingParameterOperator {
 }
 
 #[derive(Default)]
-pub struct OperatorEnvelopeProcessingParameter {
-    pub attack_duration: SimpleProcessingParameter<OperatorAttackDurationValue>,
-    pub attack_end_value: SimpleProcessingParameter<OperatorAttackVolumeValue>,
-    pub decay_duration: SimpleProcessingParameter<OperatorDecayDurationValue>,
-    pub decay_end_value: SimpleProcessingParameter<OperatorDecayVolumeValue>,
-    pub release_duration: SimpleProcessingParameter<OperatorReleaseDurationValue>,
+pub struct OperatorEnvelopeAudioParameter {
+    pub attack_duration: SimpleAudioParameter<OperatorAttackDurationValue>,
+    pub attack_end_value: SimpleAudioParameter<OperatorAttackVolumeValue>,
+    pub decay_duration: SimpleAudioParameter<OperatorDecayDurationValue>,
+    pub decay_end_value: SimpleAudioParameter<OperatorDecayVolumeValue>,
+    pub release_duration: SimpleAudioParameter<OperatorReleaseDurationValue>,
 }
 
-impl OperatorEnvelopeProcessingParameter {
+impl OperatorEnvelopeAudioParameter {
     fn advance_one_sample(&mut self) {
         self.attack_duration.advance_one_sample();
         self.attack_end_value.advance_one_sample();
@@ -334,20 +334,20 @@ impl OperatorEnvelopeProcessingParameter {
     }
 }
 
-pub struct ProcessingParameterLfo {
-    pub target_parameter: LfoTargetProcessingParameter,
-    pub bpm_sync: SimpleProcessingParameter<LfoBpmSyncValue>,
-    pub frequency_ratio: SimpleProcessingParameter<LfoFrequencyRatioValue>,
-    pub frequency_free: FreeFrequencyProcessingParameter<LfoFrequencyFreeValue>,
-    pub mode: SimpleProcessingParameter<LfoModeValue>,
-    pub shape: SimpleProcessingParameter<LfoShapeValue>,
-    pub amount: LfoAmountProcessingParameter,
+pub struct AudioParameterLfo {
+    pub target_parameter: LfoTargetAudioParameter,
+    pub bpm_sync: SimpleAudioParameter<LfoBpmSyncValue>,
+    pub frequency_ratio: SimpleAudioParameter<LfoFrequencyRatioValue>,
+    pub frequency_free: FreeFrequencyAudioParameter<LfoFrequencyFreeValue>,
+    pub mode: SimpleAudioParameter<LfoModeValue>,
+    pub shape: SimpleAudioParameter<LfoShapeValue>,
+    pub amount: LfoAmountAudioParameter,
 }
 
-impl ProcessingParameterLfo {
+impl AudioParameterLfo {
     fn new(lfo_index: usize) -> Self {
         Self {
-            target_parameter: LfoTargetProcessingParameter::new(lfo_index),
+            target_parameter: LfoTargetAudioParameter::new(lfo_index),
             bpm_sync: Default::default(),
             frequency_ratio: Default::default(),
             frequency_free: Default::default(),
@@ -377,7 +377,7 @@ mod tests {
         use super::interpolatable_value::INTERPOLATION_STEPS;
         use super::*;
 
-        let mut operator = OperatorPanningProcessingParameter::default();
+        let mut operator = OperatorPanningAudioParameter::default();
 
         let mut value = operator.get_value();
 

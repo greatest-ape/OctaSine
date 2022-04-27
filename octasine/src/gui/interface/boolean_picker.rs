@@ -85,12 +85,12 @@ where
 
             let radio = Radio::new(
                 choice,
-                P::from_processing(choice).format().to_uppercase(),
+                P::from_audio(choice).format().to_uppercase(),
                 Some(self.selected),
                 move |choice| {
                     Message::ChangeSingleParameterImmediate(
                         parameter_index,
-                        P::from_processing(choice).to_sync(),
+                        P::from_audio(choice).to_sync(),
                     )
                 },
             )

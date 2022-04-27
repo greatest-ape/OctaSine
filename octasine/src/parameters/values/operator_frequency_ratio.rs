@@ -18,7 +18,7 @@ impl Default for OperatorFrequencyRatioValue {
 impl ParameterValue for OperatorFrequencyRatioValue {
     type Value = f64;
 
-    fn from_processing(value: Self::Value) -> Self {
+    fn from_audio(value: Self::Value) -> Self {
         Self(value)
     }
     fn get(self) -> Self::Value {

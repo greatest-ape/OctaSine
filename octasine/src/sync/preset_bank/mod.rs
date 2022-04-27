@@ -118,7 +118,7 @@ impl Preset {
 pub struct PresetBank {
     presets: [Preset; 128],
     preset_index: AtomicUsize,
-    parameter_change_info_processing: ParameterChangeInfo,
+    parameter_change_info_audio: ParameterChangeInfo,
     parameter_change_info_gui: ParameterChangeInfo,
     presets_changed: AtomicBool,
 }
@@ -134,7 +134,7 @@ impl PresetBank {
         Self {
             presets: array_init(|i| Preset::new(format!("{:03}", i + 1), parameters())),
             preset_index: AtomicUsize::new(0),
-            parameter_change_info_processing: ParameterChangeInfo::default(),
+            parameter_change_info_audio: ParameterChangeInfo::default(),
             parameter_change_info_gui: ParameterChangeInfo::default(),
             presets_changed: AtomicBool::new(false),
         }
@@ -151,7 +151,7 @@ impl PresetBank {
     }
 
     fn mark_parameters_as_changed(&self) {
-        self.parameter_change_info_processing.mark_all_as_changed();
+        self.parameter_change_info_audio.mark_all_as_changed();
         self.parameter_change_info_gui.mark_all_as_changed();
     }
 
@@ -206,10 +206,8 @@ impl PresetBank {
 
     // Get parameter changes
 
-    pub fn get_changed_parameters_from_processing(
-        &self,
-    ) -> Option<[Option<f64>; MAX_NUM_PARAMETERS]> {
-        self.parameter_change_info_processing
+    pub fn get_changed_parameters_from_audio(&self) -> Option<[Option<f64>; MAX_NUM_PARAMETERS]> {
+        self.parameter_change_info_audio
             .get_changed_parameters(&self.get_current_preset().parameters)
     }
 
@@ -256,7 +254,7 @@ impl PresetBank {
         if let Some(parameter) = opt_parameter {
             parameter.value.set(value.min(1.0).max(0.0));
 
-            self.parameter_change_info_processing.mark_as_changed(index);
+            self.parameter_change_info_audio.mark_as_changed(index);
         }
     }
 
@@ -266,7 +264,7 @@ impl PresetBank {
         if let Some(parameter) = opt_parameter {
             parameter.value.set(value as f64);
 
-            self.parameter_change_info_processing.mark_as_changed(index);
+            self.parameter_change_info_audio.mark_as_changed(index);
             self.parameter_change_info_gui.mark_as_changed(index);
         }
     }
@@ -276,7 +274,7 @@ impl PresetBank {
 
         if let Some(parameter) = opt_parameter {
             if parameter.set_from_text(value) {
-                self.parameter_change_info_processing.mark_as_changed(index);
+                self.parameter_change_info_audio.mark_as_changed(index);
                 self.parameter_change_info_gui.mark_as_changed(index);
 
                 return true;

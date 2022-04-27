@@ -17,18 +17,18 @@ use voices::*;
 
 use self::voices::log10_table::Log10Table;
 
-pub struct ProcessingState {
+pub struct AudioState {
     pub time_per_sample: TimePerSample,
     pub bpm: BeatsPerMinute,
     pub rng: Rng,
     pub log10table: Log10Table,
     pub voices: [Voice; 128],
-    pub parameters: ProcessingParameters,
+    pub parameters: AudioParameters,
     pub pending_midi_events: VecDeque<MidiEvent>,
     pub audio_gen_voice_data: [VoiceData; 128],
 }
 
-impl Default for ProcessingState {
+impl Default for AudioState {
     fn default() -> Self {
         Self {
             time_per_sample: SampleRate::default().into(),
@@ -36,7 +36,7 @@ impl Default for ProcessingState {
             rng: Rng::new(),
             log10table: Default::default(),
             voices: array_init(|i| Voice::new(MidiPitch::new(i as u8))),
-            parameters: ProcessingParameters::default(),
+            parameters: AudioParameters::default(),
             // Start with some capacity to cut down on later allocations
             pending_midi_events: VecDeque::with_capacity(128),
             audio_gen_voice_data: array_init::array_init(|_| VoiceData::default()),
@@ -44,7 +44,7 @@ impl Default for ProcessingState {
     }
 }
 
-impl ProcessingState {
+impl AudioState {
     pub fn enqueue_midi_events<I: Iterator<Item = MidiEvent>>(&mut self, events: I) {
         for event in events {
             self.pending_midi_events.push_back(event);

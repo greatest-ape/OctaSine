@@ -12,7 +12,7 @@ impl Default for LfoBpmSyncValue {
 impl ParameterValue for LfoBpmSyncValue {
     type Value = bool;
 
-    fn from_processing(value: Self::Value) -> Self {
+    fn from_audio(value: Self::Value) -> Self {
         Self(value)
     }
     fn get(self) -> Self::Value {

@@ -57,7 +57,7 @@ pub struct LfoShapeValue(pub LfoShape);
 impl ParameterValue for LfoShapeValue {
     type Value = LfoShape;
 
-    fn from_processing(value: Self::Value) -> Self {
+    fn from_audio(value: Self::Value) -> Self {
         Self(value)
     }
     fn get(self) -> Self::Value {
