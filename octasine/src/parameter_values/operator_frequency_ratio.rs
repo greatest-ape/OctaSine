@@ -1,38 +1,57 @@
 use std::f64::consts::PI;
+use std::str::FromStr;
 
+use arrayvec::ArrayString;
 use once_cell::sync::Lazy;
 
 use super::utils::*;
 use super::ParameterValue;
 
-pub static OPERATOR_RATIO_STEPS: Lazy<Vec<f64>> = Lazy::new(|| {
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct Ratio {
+    pub name: ArrayString<16>,
+    pub value: f64,
+}
+
+impl Ratio {
+    fn new<N>(value: f64, name: N) -> Self
+    where
+        String: From<N>,
+    {
+        let name = ArrayString::from_str(&String::from(name)).unwrap();
+
+        Self { name, value }
+    }
+}
+
+static OPERATOR_RATIO_STEPS: Lazy<Vec<Ratio>> = Lazy::new(|| {
     let mut ratios = vec![
-        1.0 / 8.0, // 0.125
-        1.0 / 6.0, // 0.167
-        1.0 / 5.0, // 0.20
-        1.0 / 4.0, // 0.25
-        1.0 / 3.0, // 0.33 (perfect 5th)
-        3.0 / 8.0, // 0.375 (perfect 4th)
-        1.0 / 2.0, // 0.50
-        2.0 / 3.0, // 0.67 (perfect 5th)
-        3.0 / 4.0, // 0.75 (perfect 4th)
-        4.0 / 5.0, // 0.80
-        5.0 / 6.0, // 0.83
-        1.0,
-        75. / 64., // 1.17 (just augmented second)
-        6.0 / 5.0, // 1.20 (minor 3rd)
-        5.0 / 4.0, // 1.25 (major 3rd)
-        4.0 / 3.0, // 1.33 (perfect 4th)
-        3.0 / 2.0, // 1.50 (perfect 5th)
-        5.0 / 3.0, // 1.67 (major 6th)
-        2.0,       // 2.00
-        5.0 / 2.0, // 2.50 (major 3rd)
-        3.0,       // 3.00
-        10. / 3.0, // 3.33 (major 6th)
-        4.0,       // 4.00
-        5.0 / 1.0, // 5.00 (major 3rd)
-        6.0,       // 6.00
-        8.0,       // 8.00
+        Ratio::new(1.0 / 8.0, "1/8"), // 0.125
+        Ratio::new(1.0 / 6.0, "1/6"), // 0.167
+        Ratio::new(1.0 / 5.0, "1/5"), // 0.20
+        Ratio::new(1.0 / 4.0, "1/4"), // 0.25
+        Ratio::new(1.0 / 3.0, "1/3"), // 0.33 (perfect 5th)
+        Ratio::new(3.0 / 8.0, "3/8"), // 0.375 (perfect 4th)
+        Ratio::new(1.0 / 2.0, "1/2"), // 0.50
+        Ratio::new(2.0 / 3.0, "2/3"), // 0.67 (perfect 5th)
+        Ratio::new(3.0 / 4.0, "3/4"), // 0.75 (perfect 4th)
+        Ratio::new(4.0 / 5.0, "4/5"), // 0.80
+        Ratio::new(5.0 / 6.0, "5/6"), // 0.83
+        Ratio::new(1.0, "1"),
+        Ratio::new(75. / 64., "75/64"), // 1.17 (just augmented second)
+        Ratio::new(6.0 / 5.0, "6/5"),   // 1.20 (minor 3rd)
+        Ratio::new(5.0 / 4.0, "5/4"),   // 1.25 (major 3rd)
+        Ratio::new(4.0 / 3.0, "4/3"),   // 1.33 (perfect 4th)
+        Ratio::new(3.0 / 2.0, "3/2"),   // 1.50 (perfect 5th)
+        Ratio::new(5.0 / 3.0, "5/3"),   // 1.67 (major 6th)
+        Ratio::new(2.0, "2"),
+        Ratio::new(5.0 / 2.0, "5/2"), // 2.50 (major 3rd)
+        Ratio::new(3.0, "3"),
+        Ratio::new(10. / 3., "10/3"), // 3.33 (major 6th)
+        Ratio::new(4.0, "4"),
+        Ratio::new(5.0 / 1.0, "5"), // 5.00 (major 3rd)
+        Ratio::new(6.0, "6"),
+        Ratio::new(8.0, "8"),
     ];
 
     // Add DX ratios
@@ -41,35 +60,53 @@ pub static OPERATOR_RATIO_STEPS: Lazy<Vec<f64>> = Lazy::new(|| {
         let factor = if i == 0 { 0.5 } else { f64::from(i) };
 
         if i != 5 && i != 15 {
-            ratios.push(factor * 2.0f64.sqrt());
+            let value = factor * 2.0f64.sqrt();
+            ratios.push(Ratio::new(value, format!("{:.04}", value)));
         }
-        ratios.push(factor * 3.0f64.sqrt());
+
+        let value = factor * 3.0f64.sqrt();
+        ratios.push(Ratio::new(value, format!("{:.04}", value)));
     }
 
     for i in 1..8 {
-        ratios.push(f64::from(i) * PI);
+        let factor = f64::from(i);
+
+        let name = if i == 1 {
+            String::from("π")
+        } else {
+            format!("{}π", factor)
+        };
+
+        ratios.push(Ratio::new(factor * PI, name));
     }
 
     for i in [1, 2, 6, 9, 10, 14, 18, 22, 26, 27, 30] {
-        ratios.push(f64::from(i) * PI / 4.0);
+        let factor = f64::from(i) / 4.0;
+
+        ratios.push(Ratio::new(factor * PI, format!("{}π", factor)));
     }
 
-    ratios.sort_by(|a, b| a.partial_cmp(b).unwrap());
+    ratios.sort_by(|a, b| a.value.partial_cmp(&b.value).unwrap());
 
     ratios
 });
 
 #[derive(Debug, Clone, Copy)]
-pub struct OperatorFrequencyRatioValue(f64);
+pub struct OperatorFrequencyRatioValue(Ratio);
 
 impl Default for OperatorFrequencyRatioValue {
     fn default() -> Self {
-        Self(1.0)
+        Self(
+            *OPERATOR_RATIO_STEPS
+                .iter()
+                .find(|r| r.value == 1.0)
+                .unwrap(),
+        )
     }
 }
 
 impl ParameterValue for OperatorFrequencyRatioValue {
-    type Value = f64;
+    type Value = Ratio;
 
     fn new_from_audio(value: Self::Value) -> Self {
         Self(value)
@@ -87,12 +124,7 @@ impl ParameterValue for OperatorFrequencyRatioValue {
         map_step_to_parameter_value(&OPERATOR_RATIO_STEPS[..], self.0)
     }
     fn get_formatted(self) -> String {
-        format!("{:.04}", self.0)
-    }
-    fn new_from_text(text: String) -> Option<Self> {
-        text.parse::<f64>()
-            .ok()
-            .map(|value| Self(round_to_step(&OPERATOR_RATIO_STEPS[..], value)))
+        self.0.name.as_str().to_owned()
     }
 }
 
@@ -101,7 +133,10 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_instantiate_ratios() {
-        assert!(!OPERATOR_RATIO_STEPS.is_empty());
+    fn test_ratios() {
+        let ratios = &OPERATOR_RATIO_STEPS;
+
+        assert!(!ratios.is_empty());
+        assert!(ratios.contains(&OperatorFrequencyRatioValue::default().get()));
     }
 }

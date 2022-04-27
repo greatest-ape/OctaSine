@@ -379,7 +379,8 @@ mod gen {
                 LfoTargetOperatorParameter::FrequencyFine,
             )));
 
-        let frequency = voice_base_frequency * frequency_ratio * frequency_free * frequency_fine;
+        let frequency =
+            voice_base_frequency * frequency_ratio.value * frequency_free * frequency_fine;
         let new_phase = voice_operator.last_phase.0 + frequency * time_per_sample.0;
 
         set_value_for_both_channels(&mut voice_data.phases, sample_index, new_phase);

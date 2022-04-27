@@ -309,7 +309,6 @@ fn lfo_amount(index: usize) -> PatchParameter {
 #[allow(clippy::float_cmp)]
 #[cfg(test)]
 mod tests {
-    use crate::parameter_values::operator_frequency_ratio::OPERATOR_RATIO_STEPS;
     use crate::parameter_values::operator_wave_type::WaveType;
     use crate::sync::change_info::MAX_NUM_PARAMETERS;
 
@@ -344,53 +343,6 @@ mod tests {
 
         assert!(p.set_from_text("3.0".to_string()));
         assert_eq!(OperatorMixValue::new_from_patch(p.get_value()).get(), 2.0);
-    }
-
-    #[test]
-    fn test_set_frequency_ratio_text() {
-        let p = operator_frequency_ratio(3);
-
-        assert!(p.set_from_text("0.0".to_string()));
-        assert_eq!(
-            OperatorFrequencyRatioValue::new_from_patch(p.get_value()).get(),
-            OPERATOR_RATIO_STEPS[0]
-        );
-
-        assert!(p.set_from_text("10000000.0".to_string()));
-        assert_eq!(
-            OperatorFrequencyRatioValue::new_from_patch(p.get_value()).get(),
-            *OPERATOR_RATIO_STEPS.last().unwrap()
-        );
-
-        assert!(p.set_from_text("1.0".to_string()));
-        assert_eq!(
-            OperatorFrequencyRatioValue::new_from_patch(p.get_value()).get(),
-            1.0
-        );
-
-        assert!(p.set_from_text("0.99".to_string()));
-        assert_eq!(
-            OperatorFrequencyRatioValue::new_from_patch(p.get_value()).get(),
-            1.0
-        );
-
-        assert!(p.set_from_text("0.5".to_string()));
-        assert_eq!(
-            OperatorFrequencyRatioValue::new_from_patch(p.get_value()).get(),
-            0.5
-        );
-
-        assert!(p.set_from_text("0.51".to_string()));
-        assert_eq!(
-            OperatorFrequencyRatioValue::new_from_patch(p.get_value()).get(),
-            0.5
-        );
-
-        for step in OPERATOR_RATIO_STEPS.iter() {
-            let s = format!("{:.04}", step);
-            assert!(p.set_from_text(s.clone()));
-            assert_eq!(p.get_value_text(), s.clone());
-        }
     }
 
     /*
