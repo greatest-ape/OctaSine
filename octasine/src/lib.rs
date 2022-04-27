@@ -72,9 +72,7 @@ impl OctaSine {
     }
 
     pub fn update_audio_parameters(&mut self) {
-        let changed_sync_parameters = self.sync.patches.get_changed_parameters_from_audio();
-
-        if let Some(indeces) = changed_sync_parameters {
+        if let Some(indeces) = self.sync.patches.get_changed_parameters_from_audio() {
             for (index, opt_new_value) in indeces.iter().enumerate() {
                 if let Some(new_value) = opt_new_value {
                     self.audio.parameters.set_from_patch(index, *new_value);
