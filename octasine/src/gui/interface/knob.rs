@@ -18,7 +18,6 @@ const KNOB_SIZE: Length = Length::Units(LINE_HEIGHT * 2);
 
 enum TickMarkType {
     MinMaxAndDefault,
-    MinMax,
 }
 
 pub fn master_volume<H: GuiSyncHandle>(
@@ -258,7 +257,6 @@ impl<P: ParameterValue> OctaSineKnob<P> {
 
         let tick_marks = match tick_mark_type {
             TickMarkType::MinMaxAndDefault => tick_marks_from_min_max_and_value(default_sync_value),
-            TickMarkType::MinMax => tick_marks::Group::min_max(tick_marks::Tier::Two),
         };
 
         Self {
