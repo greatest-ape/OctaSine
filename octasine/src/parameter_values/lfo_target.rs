@@ -163,9 +163,6 @@ impl ParameterValue for Lfo1TargetParameterValue {
     fn get_formatted(self) -> String {
         self.0.to_string()
     }
-    fn convert_patch_to_audio_formatted(value: f64) -> String {
-        Self::from_patch(value).get_formatted()
-    }
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -197,9 +194,6 @@ impl ParameterValue for Lfo2TargetParameterValue {
     }
     fn get_formatted(self) -> String {
         self.0.to_string()
-    }
-    fn convert_patch_to_audio_formatted(value: f64) -> String {
-        Self::from_patch(value).get_formatted()
     }
 }
 
@@ -233,9 +227,6 @@ impl ParameterValue for Lfo3TargetParameterValue {
     fn get_formatted(self) -> String {
         self.0.to_string()
     }
-    fn convert_patch_to_audio_formatted(value: f64) -> String {
-        Self::from_patch(value).get_formatted()
-    }
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -267,8 +258,5 @@ impl ParameterValue for Lfo4TargetParameterValue {
     }
     fn get_formatted(self) -> String {
         self.0.to_string()
-    }
-    fn convert_patch_to_audio_formatted(value: f64) -> String {
-        Self::from_patch(value).get_formatted()
     }
 }

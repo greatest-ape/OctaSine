@@ -64,9 +64,6 @@ pub trait ParameterValue: Sized {
     /// Convert ParameterValue to patch value
     fn to_patch(self) -> f64;
 
-    fn convert_patch_to_audio_formatted(value: f64) -> String {
-        Self::from_patch(value).get_formatted()
-    }
     fn convert_patch_to_audio(value: f64) -> Self::Value {
         Self::from_patch(value).get()
     }

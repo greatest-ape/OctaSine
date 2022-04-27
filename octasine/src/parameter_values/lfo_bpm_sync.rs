@@ -35,9 +35,6 @@ impl ParameterValue for LfoBpmSyncValue {
             "Off".to_string()
         }
     }
-    fn convert_patch_to_audio_formatted(value: f64) -> String {
-        Self::from_patch(value).get_formatted()
-    }
     fn from_text(text: String) -> Option<Self> {
         match text.to_lowercase().as_ref() {
             "true" | "on" => Some(Self(true)),

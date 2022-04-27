@@ -118,9 +118,6 @@ impl ParameterValue for Operator2ModulationTargetValue {
     fn get_formatted(self) -> String {
         self.0.to_string()
     }
-    fn convert_patch_to_audio_formatted(value: f64) -> String {
-        Self::from_patch(value).get_formatted()
-    }
 }
 
 #[derive(Debug, Clone, Copy, Default)]
@@ -147,9 +144,6 @@ impl ParameterValue for Operator3ModulationTargetValue {
     fn get_formatted(self) -> String {
         self.0.to_string()
     }
-    fn convert_patch_to_audio_formatted(value: f64) -> String {
-        Self::from_patch(value).get_formatted()
-    }
 }
 
 #[derive(Debug, Clone, Copy, Default)]
@@ -175,8 +169,5 @@ impl ParameterValue for Operator4ModulationTargetValue {
     }
     fn get_formatted(self) -> String {
         self.0.to_string()
-    }
-    fn convert_patch_to_audio_formatted(value: f64) -> String {
-        Self::from_patch(value).get_formatted()
     }
 }

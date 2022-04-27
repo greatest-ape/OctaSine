@@ -63,9 +63,6 @@ impl ParameterValue for OperatorWaveTypeValue {
             WaveType::WhiteNoise => "NOISE".to_string(),
         }
     }
-    fn convert_patch_to_audio_formatted(value: f64) -> String {
-        Self::from_patch(value).get_formatted()
-    }
     fn from_text(text: String) -> Option<Self> {
         let value = text.to_lowercase();
 

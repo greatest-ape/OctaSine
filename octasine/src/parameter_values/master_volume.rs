@@ -27,7 +27,4 @@ impl ParameterValue for MasterVolumeValue {
     fn get_formatted(self) -> String {
         format!("{:.2} dB", 20.0 * self.0.log10())
     }
-    fn convert_patch_to_audio_formatted(value: f64) -> String {
-        Self::from_patch(value).get_formatted()
-    }
 }

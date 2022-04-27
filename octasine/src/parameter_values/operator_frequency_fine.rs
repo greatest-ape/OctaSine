@@ -36,7 +36,4 @@ impl ParameterValue for OperatorFrequencyFineValue {
     fn get_formatted(self) -> String {
         format!("{:.04}", self.0)
     }
-    fn convert_patch_to_audio_formatted(value: f64) -> String {
-        Self::from_patch(value).get_formatted()
-    }
 }
