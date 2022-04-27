@@ -1,6 +1,6 @@
 use crate::{
     common::*,
-    parameters::values::{lfo_mode::LfoMode, lfo_shape::LfoShape},
+    parameter_values::{lfo_mode::LfoMode, lfo_shape::LfoShape},
 };
 
 const INTERPOLATION_SAMPLES: usize = 128;

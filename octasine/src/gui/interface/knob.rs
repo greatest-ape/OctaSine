@@ -3,7 +3,7 @@ use iced_baseview::{
     alignment::Horizontal, keyboard::Modifiers, Alignment, Column, Element, Length, Space, Text,
 };
 
-use crate::parameters::values::{
+use crate::parameter_values::{
     LfoAmountValue, LfoFrequencyFreeValue, LfoFrequencyRatioValue, MasterFrequencyValue,
     MasterVolumeValue, OperatorFeedbackValue, OperatorFrequencyFineValue,
     OperatorFrequencyFreeValue, OperatorFrequencyRatioValue, OperatorMixValue,

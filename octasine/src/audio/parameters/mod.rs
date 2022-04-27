@@ -5,7 +5,7 @@ pub mod parameters;
 
 use crate::common::{NUM_LFOS, NUM_OPERATORS};
 
-use crate::parameters::values::*;
+use crate::parameter_values::*;
 
 use parameters::*;
 

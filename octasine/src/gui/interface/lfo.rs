@@ -2,7 +2,7 @@ use iced_baseview::{
     alignment::Horizontal, alignment::Vertical, Column, Element, Length, Row, Space, Text,
 };
 
-use crate::parameters::values::{
+use crate::parameter_values::{
     LfoAmountValue, LfoBpmSyncValue, LfoFrequencyFreeValue, LfoFrequencyRatioValue, LfoModeValue,
     LfoShapeValue,
 };

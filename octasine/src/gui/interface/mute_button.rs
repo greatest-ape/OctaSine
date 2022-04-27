@@ -5,7 +5,7 @@ use iced_baseview::canvas::{
 use iced_baseview::{Color, Element, Length, Point, Rectangle, Size};
 
 use crate::{
-    parameters::values::{OperatorActiveValue, ParameterValue},
+    parameter_values::{OperatorActiveValue, ParameterValue},
     sync::GuiSyncHandle,
 };
 

@@ -1,7 +1,7 @@
 use crate::common::NUM_LFOS;
 
 use super::patch_bank::SyncParameter;
-use crate::parameters::values::*;
+use crate::parameter_values::*;
 
 pub fn create_parameters() -> Vec<SyncParameter> {
     let mut parameters = vec![
@@ -269,8 +269,8 @@ fn lfo_amount(index: usize) -> SyncParameter {
 #[allow(clippy::float_cmp)]
 #[cfg(test)]
 mod tests {
-    use crate::parameters::values::operator_frequency_ratio::OPERATOR_RATIO_STEPS;
-    use crate::parameters::values::operator_wave_type::WaveType;
+    use crate::parameter_values::operator_frequency_ratio::OPERATOR_RATIO_STEPS;
+    use crate::parameter_values::operator_wave_type::WaveType;
     use crate::sync::patch_bank::MAX_NUM_PARAMETERS;
 
     use super::*;

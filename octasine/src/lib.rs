@@ -1,6 +1,6 @@
 pub mod audio;
 pub mod common;
-pub mod parameters;
+pub mod parameter_values;
 pub mod settings;
 pub mod sync;
 

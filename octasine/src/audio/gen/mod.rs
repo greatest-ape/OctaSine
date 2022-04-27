@@ -11,8 +11,8 @@ use crate::audio::parameters::{AudioParameter, AudioParameterOperator};
 use crate::audio::voices::log10_table::Log10Table;
 use crate::audio::AudioState;
 use crate::common::*;
-use crate::parameters::values::lfo_target::*;
-use crate::parameters::values::operator_wave_type::WaveType;
+use crate::parameter_values::lfo_target::*;
+use crate::parameter_values::operator_wave_type::WaveType;
 
 use lfo::*;
 use simd::*;

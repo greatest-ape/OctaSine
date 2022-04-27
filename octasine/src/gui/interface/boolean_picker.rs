@@ -2,8 +2,8 @@ use iced_baseview::{
     alignment::Horizontal, Alignment, Column, Element, Length, Radio, Space, Text,
 };
 
-use crate::parameters::values::lfo_mode::LfoMode;
-use crate::parameters::values::{LfoBpmSyncValue, LfoModeValue, ParameterValue};
+use crate::parameter_values::lfo_mode::LfoMode;
+use crate::parameter_values::{LfoBpmSyncValue, LfoModeValue, ParameterValue};
 use crate::sync::GuiSyncHandle;
 
 use super::style::Theme;

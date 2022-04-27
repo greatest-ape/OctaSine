@@ -12,7 +12,7 @@ use arc_swap::ArcSwap;
 use array_init::array_init;
 
 use super::parameters::create_parameters;
-use crate::parameters::values::ParameterValue;
+use crate::parameter_values::ParameterValue;
 
 use atomic_double::AtomicPositiveDouble;
 use change_info::ParameterChangeInfo;

@@ -3,7 +3,7 @@ use iced_baseview::{
     Rule, Space, Text,
 };
 
-use crate::parameters::values::{
+use crate::parameter_values::{
     Operator2ModulationTargetValue, Operator3ModulationTargetValue, Operator4ModulationTargetValue,
     OperatorFeedbackValue, OperatorFrequencyFineValue, OperatorFrequencyFreeValue,
     OperatorFrequencyRatioValue, OperatorMixValue, OperatorModulationIndexValue,

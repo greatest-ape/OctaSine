@@ -2,7 +2,7 @@ use std::{f64::consts::FRAC_PI_2, marker::PhantomData};
 
 use arrayvec::ArrayVec;
 
-use crate::parameters::values::*;
+use crate::parameter_values::*;
 
 use super::interpolatable_value::*;
 use super::AudioParameter;

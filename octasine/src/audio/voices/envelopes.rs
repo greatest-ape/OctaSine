@@ -1,6 +1,6 @@
 use crate::audio::parameters::OperatorEnvelopeAudioParameter;
 use crate::common::*;
-use crate::parameters::values::ENVELOPE_CURVE_TAKEOVER_RECIP;
+use crate::parameter_values::ENVELOPE_CURVE_TAKEOVER_RECIP;
 
 use super::log10_table::Log10Table;
 use super::VoiceDuration;
@@ -168,7 +168,7 @@ mod tests {
     use assert_approx_eq::assert_approx_eq;
     use quickcheck::{quickcheck, TestResult};
 
-    use crate::parameters::values::ENVELOPE_MAX_DURATION;
+    use crate::parameter_values::ENVELOPE_MAX_DURATION;
 
     use super::*;
 
