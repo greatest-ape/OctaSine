@@ -1584,6 +1584,7 @@ dependencies = [
  "iced_wgpu",
  "log",
  "log-panics",
+ "once_cell",
  "os_info",
  "palette",
  "quickcheck",
