@@ -86,7 +86,10 @@ impl OctaSine {
 
 impl Plugin for OctaSine {
     fn process(&mut self, buffer: &mut vst::buffer::AudioBuffer<f32>) {
-        audio::gen::process_f32_runtime_select(self, buffer);
+        self.update_processing_parameters();
+        self.update_bpm();
+
+        audio::gen::process_f32_runtime_select(&mut self.processing, buffer);
     }
 
     fn new(host: HostCallback) -> Self {

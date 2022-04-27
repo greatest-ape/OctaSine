@@ -9,10 +9,10 @@ use vst::buffer::AudioBuffer;
 
 use crate::audio::parameters::{ProcessingParameter, ProcessingParameterOperator};
 use crate::audio::voices::log10_table::Log10Table;
+use crate::audio::ProcessingState;
 use crate::common::*;
 use crate::parameters::values::lfo_target::*;
 use crate::parameters::values::operator_wave_type::WaveType;
-use crate::{OctaSine, ProcessingState};
 
 use lfo::*;
 use simd::*;
@@ -70,10 +70,10 @@ pub struct VoiceData {
 }
 
 #[inline]
-pub fn process_f32_runtime_select(octasine: &mut OctaSine, audio_buffer: &mut AudioBuffer<f32>) {
-    octasine.update_processing_parameters();
-    octasine.update_bpm();
-
+pub fn process_f32_runtime_select(
+    processing: &mut ProcessingState,
+    audio_buffer: &mut AudioBuffer<f32>,
+) {
     let num_samples = audio_buffer.samples();
 
     let mut outputs = audio_buffer.split().1;
@@ -90,7 +90,7 @@ pub fn process_f32_runtime_select(octasine: &mut OctaSine, audio_buffer: &mut Au
                     let end_position = position + 2;
 
                     Avx::process_f32(
-                        &mut octasine.processing,
+                        processing,
                         &mut lefts[position..end_position],
                         &mut rights[position..end_position],
                         position,
@@ -105,14 +105,14 @@ pub fn process_f32_runtime_select(octasine: &mut OctaSine, audio_buffer: &mut Au
                         if #[cfg(all(feature = "simd", target_arch = "x86_64"))] {
                             // SSE2 is always supported on x86_64
                             Sse2::process_f32(
-                                &mut octasine.processing,
+                                processing,
                                 &mut lefts[position..end_position],
                                 &mut rights[position..end_position],
                                 position,
                             );
                         } else {
                             FallbackStd::process_f32(
-                                &mut octasine.processing,
+                                processing,
                                 &mut lefts[position..end_position],
                                 &mut rights[position..end_position],
                                 position,
