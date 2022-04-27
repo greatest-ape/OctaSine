@@ -170,10 +170,8 @@ dependencies = [
 name = "bench_process"
 version = "0.5.4"
 dependencies = [
- "assert_approx_eq",
  "colored",
  "octasine",
- "quickcheck",
  "sha2",
  "vst",
 ]
