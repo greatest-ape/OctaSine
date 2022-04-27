@@ -11,4 +11,4 @@ glow = ["octasine/gui_glow"]
 
 [dependencies]
 octasine = { path = "../octasine", default-features = false }
-simplelog = { version = "0.11", default-features = false }
+simplelog = { version = "0.12", default-features = false, features = ["local-offset"] }

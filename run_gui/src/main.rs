@@ -6,7 +6,10 @@ use simplelog::{ConfigBuilder, LevelFilter, SimpleLogger};
 fn main() {
     SimpleLogger::init(
         LevelFilter::Info,
-        ConfigBuilder::new().set_time_to_local(true).build(),
+        ConfigBuilder::new()
+            .set_time_offset_to_local()
+            .unwrap()
+            .build(),
     )
     .unwrap();
 

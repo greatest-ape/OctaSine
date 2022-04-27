@@ -152,9 +152,10 @@ fn init_logging() -> anyhow::Result<()> {
 
     let log_file = ::std::fs::File::create(log_folder.join("OctaSine.log"))?;
 
-    let log_config = simplelog::ConfigBuilder::new()
-        .set_time_to_local(true)
-        .build();
+    let log_config = match simplelog::ConfigBuilder::new().set_time_offset_to_local() {
+        Ok(builder) => builder.build(),
+        Err(builder) => builder.build(),
+    };
 
     simplelog::WriteLogger::init(simplelog::LevelFilter::Info, log_config, log_file)?;
 
