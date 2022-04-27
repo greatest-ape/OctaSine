@@ -20,12 +20,12 @@ use self::voices::log10_table::Log10Table;
 pub struct AudioState {
     pub time_per_sample: TimePerSample,
     pub bpm: BeatsPerMinute,
-    pub rng: Rng,
-    pub log10table: Log10Table,
-    pub voices: [Voice; 128],
     pub parameters: AudioParameters,
-    pub pending_midi_events: VecDeque<MidiEvent>,
-    pub audio_gen_voice_data: [VoiceData; 128],
+    rng: Rng,
+    log10table: Log10Table,
+    voices: [Voice; 128],
+    pending_midi_events: VecDeque<MidiEvent>,
+    audio_gen_voice_data: [VoiceData; 128],
 }
 
 impl Default for AudioState {
@@ -33,10 +33,10 @@ impl Default for AudioState {
         Self {
             time_per_sample: SampleRate::default().into(),
             bpm: Default::default(),
+            parameters: AudioParameters::default(),
             rng: Rng::new(),
             log10table: Default::default(),
             voices: array_init(|i| Voice::new(MidiPitch::new(i as u8))),
-            parameters: AudioParameters::default(),
             // Start with some capacity to cut down on later allocations
             pending_midi_events: VecDeque::with_capacity(128),
             audio_gen_voice_data: array_init::array_init(|_| VoiceData::default()),
