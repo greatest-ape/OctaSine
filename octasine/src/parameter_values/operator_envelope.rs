@@ -130,3 +130,32 @@ impl Default for OperatorDecayVolumeValue {
 }
 
 impl_identity_value_conversion!(OperatorDecayVolumeValue);
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_attack_duration_from_text() {
+        assert_eq!(
+            OperatorAttackDurationValue::new_from_text("0.0".into())
+                .unwrap()
+                .get(),
+            ENVELOPE_MIN_DURATION
+        );
+
+        assert_eq!(
+            OperatorAttackDurationValue::new_from_text("1.0".into())
+                .unwrap()
+                .get(),
+            1.0
+        );
+
+        assert_eq!(
+            OperatorAttackDurationValue::new_from_text("10.0".into())
+                .unwrap()
+                .get(),
+            ENVELOPE_MAX_DURATION
+        );
+    }
+}
