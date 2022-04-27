@@ -12,13 +12,13 @@ impl Default for OperatorPanningValue {
 impl ParameterValue for OperatorPanningValue {
     type Value = f64;
 
-    fn from_audio(value: Self::Value) -> Self {
+    fn new_from_audio(value: Self::Value) -> Self {
         Self(value)
     }
     fn get(self) -> Self::Value {
         self.0
     }
-    fn from_patch(sync: f64) -> Self {
+    fn new_from_patch(sync: f64) -> Self {
         Self(sync)
     }
     fn to_patch(self) -> f64 {

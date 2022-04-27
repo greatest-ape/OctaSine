@@ -57,7 +57,7 @@ impl OperatorMuteButton {
     }
 
     fn volume_on(sync_value: f64) -> bool {
-        OperatorActiveValue::from_patch(sync_value).get() > 0.5
+        OperatorActiveValue::new_from_patch(sync_value).get() > 0.5
     }
 
     pub fn set_value(&mut self, value: f64) {

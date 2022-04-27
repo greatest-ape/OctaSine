@@ -145,13 +145,13 @@ impl Default for Lfo1TargetParameterValue {
 impl ParameterValue for Lfo1TargetParameterValue {
     type Value = LfoTargetParameter;
 
-    fn from_audio(value: Self::Value) -> Self {
+    fn new_from_audio(value: Self::Value) -> Self {
         Self(value)
     }
     fn get(self) -> Self::Value {
         self.0
     }
-    fn from_patch(sync: f64) -> Self {
+    fn new_from_patch(sync: f64) -> Self {
         Self(map_parameter_value_to_step(
             get_lfo_target_parameters(0),
             sync,
@@ -177,13 +177,13 @@ impl Default for Lfo2TargetParameterValue {
 impl ParameterValue for Lfo2TargetParameterValue {
     type Value = LfoTargetParameter;
 
-    fn from_audio(value: Self::Value) -> Self {
+    fn new_from_audio(value: Self::Value) -> Self {
         Self(value)
     }
     fn get(self) -> Self::Value {
         self.0
     }
-    fn from_patch(sync: f64) -> Self {
+    fn new_from_patch(sync: f64) -> Self {
         Self(map_parameter_value_to_step(
             get_lfo_target_parameters(1),
             sync,
@@ -209,13 +209,13 @@ impl Default for Lfo3TargetParameterValue {
 impl ParameterValue for Lfo3TargetParameterValue {
     type Value = LfoTargetParameter;
 
-    fn from_audio(value: Self::Value) -> Self {
+    fn new_from_audio(value: Self::Value) -> Self {
         Self(value)
     }
     fn get(self) -> Self::Value {
         self.0
     }
-    fn from_patch(sync: f64) -> Self {
+    fn new_from_patch(sync: f64) -> Self {
         Self(map_parameter_value_to_step(
             get_lfo_target_parameters(2),
             sync,
@@ -241,13 +241,13 @@ impl Default for Lfo4TargetParameterValue {
 impl ParameterValue for Lfo4TargetParameterValue {
     type Value = LfoTargetParameter;
 
-    fn from_audio(value: Self::Value) -> Self {
+    fn new_from_audio(value: Self::Value) -> Self {
         Self(value)
     }
     fn get(self) -> Self::Value {
         self.0
     }
-    fn from_patch(sync: f64) -> Self {
+    fn new_from_patch(sync: f64) -> Self {
         Self(map_parameter_value_to_step(
             get_lfo_target_parameters(3),
             sync,

@@ -19,14 +19,14 @@ macro_rules! impl_envelope_duration_value_conversion {
         impl ParameterValue for $struct_name {
             type Value = f64;
 
-            fn from_audio(value: Self::Value) -> Self {
+            fn new_from_audio(value: Self::Value) -> Self {
                 Self(value)
             }
 
             fn get(self) -> Self::Value {
                 self.0
             }
-            fn from_patch(value: f64) -> Self {
+            fn new_from_patch(value: f64) -> Self {
                 // Force some decay to avoid clicks
                 Self((value * ENVELOPE_MAX_DURATION).max(ENVELOPE_MIN_DURATION))
             }
@@ -38,7 +38,7 @@ macro_rules! impl_envelope_duration_value_conversion {
                 format!("{:.02}", self.0)
             }
 
-            fn from_text(text: String) -> Option<Self> {
+            fn new_from_text(text: String) -> Option<Self> {
                 text.parse::<f64>()
                     .map(|v| {
                         let v = v.min(ENVELOPE_MAX_DURATION).max(ENVELOPE_MIN_DURATION);
@@ -56,14 +56,14 @@ macro_rules! impl_identity_value_conversion {
         impl ParameterValue for $struct_name {
             type Value = f64;
 
-            fn from_audio(value: Self::Value) -> Self {
+            fn new_from_audio(value: Self::Value) -> Self {
                 Self(value)
             }
 
             fn get(self) -> Self::Value {
                 self.0
             }
-            fn from_patch(value: f64) -> Self {
+            fn new_from_patch(value: f64) -> Self {
                 Self(value)
             }
             fn to_patch(self) -> f64 {

@@ -15,8 +15,8 @@ impl PatchParameter {
         Self {
             name: name.to_string(),
             value: AtomicPositiveDouble::new(default.to_patch()),
-            value_from_text: |v| V::from_text(v).map(|v| v.to_patch()),
-            format: |v| V::from_patch(v).get_formatted(),
+            value_from_text: |v| V::new_from_text(v).map(|v| v.to_patch()),
+            format: |v| V::new_from_patch(v).get_formatted(),
         }
     }
 
@@ -325,25 +325,25 @@ mod tests {
         let p = operator_mix(3);
 
         assert!(p.set_from_text("-1.0".to_string()));
-        assert_eq!(OperatorMixValue::from_patch(p.get_value()).get(), 0.0);
+        assert_eq!(OperatorMixValue::new_from_patch(p.get_value()).get(), 0.0);
 
         assert!(p.set_from_text("0".to_string()));
-        assert_eq!(OperatorMixValue::from_patch(p.get_value()).get(), 0.0);
+        assert_eq!(OperatorMixValue::new_from_patch(p.get_value()).get(), 0.0);
 
         assert!(p.set_from_text("0.0".to_string()));
-        assert_eq!(OperatorMixValue::from_patch(p.get_value()).get(), 0.0);
+        assert_eq!(OperatorMixValue::new_from_patch(p.get_value()).get(), 0.0);
 
         assert!(p.set_from_text("1.0".to_string()));
-        assert_eq!(OperatorMixValue::from_patch(p.get_value()).get(), 1.0);
+        assert_eq!(OperatorMixValue::new_from_patch(p.get_value()).get(), 1.0);
 
         assert!(p.set_from_text("1.2".to_string()));
-        assert_eq!(OperatorMixValue::from_patch(p.get_value()).get(), 1.2);
+        assert_eq!(OperatorMixValue::new_from_patch(p.get_value()).get(), 1.2);
 
         assert!(p.set_from_text("2.0".to_string()));
-        assert_eq!(OperatorMixValue::from_patch(p.get_value()).get(), 2.0);
+        assert_eq!(OperatorMixValue::new_from_patch(p.get_value()).get(), 2.0);
 
         assert!(p.set_from_text("3.0".to_string()));
-        assert_eq!(OperatorMixValue::from_patch(p.get_value()).get(), 2.0);
+        assert_eq!(OperatorMixValue::new_from_patch(p.get_value()).get(), 2.0);
     }
 
     #[test]
@@ -352,37 +352,37 @@ mod tests {
 
         assert!(p.set_from_text("0.0".to_string()));
         assert_eq!(
-            OperatorFrequencyRatioValue::from_patch(p.get_value()).get(),
+            OperatorFrequencyRatioValue::new_from_patch(p.get_value()).get(),
             OPERATOR_RATIO_STEPS[0]
         );
 
         assert!(p.set_from_text("10000000.0".to_string()));
         assert_eq!(
-            OperatorFrequencyRatioValue::from_patch(p.get_value()).get(),
+            OperatorFrequencyRatioValue::new_from_patch(p.get_value()).get(),
             *OPERATOR_RATIO_STEPS.last().unwrap()
         );
 
         assert!(p.set_from_text("1.0".to_string()));
         assert_eq!(
-            OperatorFrequencyRatioValue::from_patch(p.get_value()).get(),
+            OperatorFrequencyRatioValue::new_from_patch(p.get_value()).get(),
             1.0
         );
 
         assert!(p.set_from_text("0.99".to_string()));
         assert_eq!(
-            OperatorFrequencyRatioValue::from_patch(p.get_value()).get(),
+            OperatorFrequencyRatioValue::new_from_patch(p.get_value()).get(),
             1.0
         );
 
         assert!(p.set_from_text("0.5".to_string()));
         assert_eq!(
-            OperatorFrequencyRatioValue::from_patch(p.get_value()).get(),
+            OperatorFrequencyRatioValue::new_from_patch(p.get_value()).get(),
             0.5
         );
 
         assert!(p.set_from_text("0.51".to_string()));
         assert_eq!(
-            OperatorFrequencyRatioValue::from_patch(p.get_value()).get(),
+            OperatorFrequencyRatioValue::new_from_patch(p.get_value()).get(),
             0.5
         );
 
@@ -427,13 +427,13 @@ mod tests {
 
         assert!(p.set_from_text("sine".to_string()));
         assert_eq!(
-            OperatorWaveTypeValue::from_patch(p.get_value()).get(),
+            OperatorWaveTypeValue::new_from_patch(p.get_value()).get(),
             WaveType::Sine
         );
 
         assert!(p.set_from_text("noise".to_string()));
         assert_eq!(
-            OperatorWaveTypeValue::from_patch(p.get_value()).get(),
+            OperatorWaveTypeValue::new_from_patch(p.get_value()).get(),
             WaveType::WhiteNoise
         );
     }
@@ -444,19 +444,19 @@ mod tests {
 
         assert!(p.set_from_text("0.0".to_string()));
         assert_eq!(
-            OperatorAttackDurationValue::from_patch(p.get_value()).get(),
+            OperatorAttackDurationValue::new_from_patch(p.get_value()).get(),
             ENVELOPE_MIN_DURATION
         );
 
         assert!(p.set_from_text("1.0".to_string()));
         assert_eq!(
-            OperatorAttackDurationValue::from_patch(p.get_value()).get(),
+            OperatorAttackDurationValue::new_from_patch(p.get_value()).get(),
             1.0
         );
 
         assert!(p.set_from_text("10".to_string()));
         assert_eq!(
-            OperatorAttackDurationValue::from_patch(p.get_value()).get(),
+            OperatorAttackDurationValue::new_from_patch(p.get_value()).get(),
             ENVELOPE_MAX_DURATION
         );
     }

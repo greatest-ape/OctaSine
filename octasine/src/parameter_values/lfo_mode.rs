@@ -21,13 +21,13 @@ pub struct LfoModeValue(pub LfoMode);
 impl ParameterValue for LfoModeValue {
     type Value = LfoMode;
 
-    fn from_audio(value: Self::Value) -> Self {
+    fn new_from_audio(value: Self::Value) -> Self {
         Self(value)
     }
     fn get(self) -> Self::Value {
         self.0
     }
-    fn from_patch(sync: f64) -> Self {
+    fn new_from_patch(sync: f64) -> Self {
         Self(map_parameter_value_to_step(&LFO_MODE_STEPS[..], sync))
     }
     fn to_patch(self) -> f64 {
@@ -39,7 +39,7 @@ impl ParameterValue for LfoModeValue {
             LfoMode::Forever => "LOOP".to_string(),
         }
     }
-    fn from_text(text: String) -> Option<Self> {
+    fn new_from_text(text: String) -> Option<Self> {
         match text.to_lowercase().as_ref() {
             "once" => Some(Self(LfoMode::Once)),
             "forever" => Some(Self(LfoMode::Forever)),

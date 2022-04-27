@@ -38,13 +38,13 @@ pub struct OperatorWaveTypeValue(pub WaveType);
 impl ParameterValue for OperatorWaveTypeValue {
     type Value = WaveType;
 
-    fn from_audio(value: Self::Value) -> Self {
+    fn new_from_audio(value: Self::Value) -> Self {
         Self(value)
     }
     fn get(self) -> Self::Value {
         self.0
     }
-    fn from_patch(sync: f64) -> Self {
+    fn new_from_patch(sync: f64) -> Self {
         if sync <= 0.5 {
             Self(WaveType::Sine)
         } else {
@@ -63,7 +63,7 @@ impl ParameterValue for OperatorWaveTypeValue {
             WaveType::WhiteNoise => "NOISE".to_string(),
         }
     }
-    fn from_text(text: String) -> Option<Self> {
+    fn new_from_text(text: String) -> Option<Self> {
         let value = text.to_lowercase();
 
         if value.contains("sin") {

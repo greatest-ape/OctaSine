@@ -12,13 +12,13 @@ impl Default for OperatorVolumeValue {
 impl ParameterValue for OperatorVolumeValue {
     type Value = f64;
 
-    fn from_audio(value: Self::Value) -> Self {
+    fn new_from_audio(value: Self::Value) -> Self {
         Self(value)
     }
     fn get(self) -> Self::Value {
         self.0
     }
-    fn from_patch(value: f64) -> Self {
+    fn new_from_patch(value: f64) -> Self {
         Self(value * 2.0)
     }
     fn to_patch(self) -> f64 {

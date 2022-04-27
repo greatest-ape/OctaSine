@@ -100,13 +100,13 @@ pub struct Operator2ModulationTargetValue(ModTargetStorage<1>);
 impl ParameterValue for Operator2ModulationTargetValue {
     type Value = ModTargetStorage<1>;
 
-    fn from_audio(value: Self::Value) -> Self {
+    fn new_from_audio(value: Self::Value) -> Self {
         Self(value)
     }
     fn get(self) -> Self::Value {
         self.0
     }
-    fn from_patch(sync: f64) -> Self {
+    fn new_from_patch(sync: f64) -> Self {
         Self(map_parameter_value_to_step(
             Self::Value::permutations(),
             sync,
@@ -126,13 +126,13 @@ pub struct Operator3ModulationTargetValue(ModTargetStorage<2>);
 impl ParameterValue for Operator3ModulationTargetValue {
     type Value = ModTargetStorage<2>;
 
-    fn from_audio(value: Self::Value) -> Self {
+    fn new_from_audio(value: Self::Value) -> Self {
         Self(value)
     }
     fn get(self) -> Self::Value {
         self.0
     }
-    fn from_patch(sync: f64) -> Self {
+    fn new_from_patch(sync: f64) -> Self {
         Self(map_parameter_value_to_step(
             Self::Value::permutations(),
             sync,
@@ -152,13 +152,13 @@ pub struct Operator4ModulationTargetValue(ModTargetStorage<3>);
 impl ParameterValue for Operator4ModulationTargetValue {
     type Value = ModTargetStorage<3>;
 
-    fn from_audio(value: Self::Value) -> Self {
+    fn new_from_audio(value: Self::Value) -> Self {
         Self(value)
     }
     fn get(self) -> Self::Value {
         self.0
     }
-    fn from_patch(sync: f64) -> Self {
+    fn new_from_patch(sync: f64) -> Self {
         Self(map_parameter_value_to_step(
             Self::Value::permutations(),
             sync,

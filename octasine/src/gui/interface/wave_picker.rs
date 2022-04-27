@@ -56,7 +56,7 @@ where
         style: Theme,
         title: &str,
     ) -> Self {
-        let value = P::from_patch(sync_handle.get_parameter(parameter_index));
+        let value = P::new_from_patch(sync_handle.get_parameter(parameter_index));
         let shape = value.get();
         let value_text = value.get_formatted();
         let bounds_path = Path::rectangle(
@@ -105,7 +105,7 @@ where
     }
 
     pub fn set_value(&mut self, value: f64) {
-        let value = P::from_patch(value);
+        let value = P::new_from_patch(value);
         let shape = value.get();
 
         if self.shape != shape {
@@ -243,7 +243,7 @@ where
                     };
 
                     let new_shape = P::Value::steps()[new_shape_index];
-                    let new_value = P::from_audio(new_shape).to_patch();
+                    let new_value = P::new_from_audio(new_shape).to_patch();
 
                     self.set_value(new_value);
                     self.click_started = false;

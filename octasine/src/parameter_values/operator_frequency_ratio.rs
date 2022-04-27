@@ -18,13 +18,13 @@ impl Default for OperatorFrequencyRatioValue {
 impl ParameterValue for OperatorFrequencyRatioValue {
     type Value = f64;
 
-    fn from_audio(value: Self::Value) -> Self {
+    fn new_from_audio(value: Self::Value) -> Self {
         Self(value)
     }
     fn get(self) -> Self::Value {
         self.0
     }
-    fn from_patch(sync: f64) -> Self {
+    fn new_from_patch(sync: f64) -> Self {
         Self(map_parameter_value_to_step(&OPERATOR_RATIO_STEPS[..], sync))
     }
     fn to_patch(self) -> f64 {
@@ -33,7 +33,7 @@ impl ParameterValue for OperatorFrequencyRatioValue {
     fn get_formatted(self) -> String {
         format!("{:.04}", self.0)
     }
-    fn from_text(text: String) -> Option<Self> {
+    fn new_from_text(text: String) -> Option<Self> {
         text.parse::<f64>()
             .ok()
             .map(|value| Self(round_to_step(&OPERATOR_RATIO_STEPS[..], value)))

@@ -12,13 +12,13 @@ impl Default for LfoBpmSyncValue {
 impl ParameterValue for LfoBpmSyncValue {
     type Value = bool;
 
-    fn from_audio(value: Self::Value) -> Self {
+    fn new_from_audio(value: Self::Value) -> Self {
         Self(value)
     }
     fn get(self) -> Self::Value {
         self.0
     }
-    fn from_patch(sync: f64) -> Self {
+    fn new_from_patch(sync: f64) -> Self {
         Self(sync <= 0.5)
     }
     fn to_patch(self) -> f64 {
@@ -35,7 +35,7 @@ impl ParameterValue for LfoBpmSyncValue {
             "Off".to_string()
         }
     }
-    fn from_text(text: String) -> Option<Self> {
+    fn new_from_text(text: String) -> Option<Self> {
         match text.to_lowercase().as_ref() {
             "true" | "on" => Some(Self(true)),
             "false" | "off" => Some(Self(false)),

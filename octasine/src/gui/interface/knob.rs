@@ -249,7 +249,7 @@ impl<P: ParameterValue> OctaSineKnob<P> {
         style: Theme,
     ) -> Self {
         let sync_value = sync_handle.get_parameter(parameter_index);
-        let value_text = P::from_patch(sync_value).get_formatted();
+        let value_text = P::new_from_patch(sync_value).get_formatted();
 
         let knob_state = knob::State::new(NormalParam {
             value: Normal::new(sync_value as f32),
@@ -278,7 +278,7 @@ impl<P: ParameterValue> OctaSineKnob<P> {
             self.knob_state.set_normal(Normal::new(value as f32));
         }
 
-        self.value_text = P::from_patch(value).get_formatted();
+        self.value_text = P::new_from_patch(value).get_formatted();
     }
 
     pub fn view(&mut self) -> Element<Message> {

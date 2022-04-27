@@ -141,7 +141,7 @@ where
                     self.mouse_left_after_click = false;
 
                     self.v.set_index(self.target_index, !self.active());
-                    let sync_value = P::from_audio(self.v).to_patch();
+                    let sync_value = P::new_from_audio(self.v).to_patch();
 
                     return ModulationBoxChange::Update(Message::ChangeSingleParameterImmediate(
                         self.parameter_index,
