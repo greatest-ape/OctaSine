@@ -63,7 +63,7 @@ jobs:
     - name: Create release file (macOS)
       run: |
         bash ./scripts/macos/bundle.sh "./target/release/liboctasine.dylib" "OctaSine-$OCTASINE_SEMVER_VERSION"
-        bash ./scripts/unix/package.sh "OctaSine.vst" "../releases/OctaSine-${{ steps.get_version.outputs.VERSION }}-macOS-Intel"
+        bash ./scripts/unix/package.sh "OctaSine-$OCTASINE_SEMVER_VERSION.vst" "../releases/OctaSine-${{ steps.get_version.outputs.VERSION }}-macOS-Intel"
       if: contains(matrix.os, 'macos')
   
     - name: Create release file (Windows)
