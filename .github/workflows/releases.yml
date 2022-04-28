@@ -49,6 +49,10 @@ jobs:
     - name: Check licenses of dependencies
       run: cargo deny --workspace --all-features check licenses
 
+    - name: Setup MSVC shell (Windows)
+      uses: ilammy/msvc-dev-cmd@v1
+      if: contains(matrix.os, 'windows')
+
     - name: Build plugin in release mode
       run: cargo +nightly build --release --features "simd" -p octasine_vst2_plugin --verbose
 
