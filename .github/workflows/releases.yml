@@ -10,11 +10,20 @@ env:
   OCTASINE_SEMVER_VERSION: "v0.6"
 
 jobs:
+  cargo-deny:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: EmbarkStudios/cargo-deny-action@v1
+      with:
+        log-level: warn
+        command: check licenses
+        arguments: --all-features --workspace
   build:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-latest, ubuntu-latest, windows-latest]
+        os: [macos-latest, ubuntu-latest, windows-2019]
 
     steps:
     - uses: actions/checkout@v2
@@ -41,13 +50,6 @@ jobs:
       with:
           toolchain: nightly
           override: true
-          components: clippy
-
-    - name: Install cargo-deny
-      run: cargo install --locked cargo-deny
-
-    - name: Check licenses of dependencies
-      run: cargo deny --workspace --all-features check licenses
 
     - name: Setup MSVC shell (Windows)
       uses: ilammy/msvc-dev-cmd@v1
