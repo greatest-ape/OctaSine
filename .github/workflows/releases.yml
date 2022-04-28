@@ -7,6 +7,7 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
+  OCTASINE_SEMVER_VERSION: "v0.6"
 
 jobs:
   build:
@@ -61,7 +62,7 @@ jobs:
 
     - name: Create release file (macOS)
       run: |
-        bash ./scripts/macos/bundle.sh "./target/release/liboctasine.dylib"
+        bash ./scripts/macos/bundle.sh "./target/release/liboctasine.dylib" "OctaSine-$OCTASINE_SEMVER_VERSION"
         bash ./scripts/unix/package.sh "OctaSine.vst" "../releases/OctaSine-${{ steps.get_version.outputs.VERSION }}-macOS-Intel"
       if: contains(matrix.os, 'macos')
   
@@ -69,15 +70,15 @@ jobs:
       run: |
         New-Item "tmp\OctaSine" -ItemType Directory -ea 0
         Copy-Item "LICENSE" -Destination "tmp\OctaSine\LICENSE.txt"
-        Copy-Item "target\release\octasine.dll" -Destination "tmp\OctaSine\OctaSine.dll"
+        Copy-Item "target\release\octasine.dll" -Destination "tmp\OctaSine\OctaSine-$OCTASINE_SEMVER_VERSION.dll"
         Compress-Archive -Path "tmp\OctaSine" -DestinationPath releases\OctaSine-${{ steps.get_version.outputs.VERSION }}-Windows.zip -CompressionLevel Optimal
       if: contains(matrix.os, 'windows')
 
     - name: Create release file (Linux)
       run: |
         mkdir -p tmp
-        cp "./target/release/liboctasine.so" "tmp/OctaSine.so"
-        bash ./scripts/unix/package.sh "OctaSine.so" "../releases/OctaSine-${{ steps.get_version.outputs.VERSION }}-Ubuntu-20_04"
+        cp "./target/release/liboctasine.so" "tmp/OctaSine-$OCTASINE_SEMVER_VERSION.so"
+        bash ./scripts/unix/package.sh "OctaSine-$OCTASINE_SEMVER_VERSION.so" "../releases/OctaSine-${{ steps.get_version.outputs.VERSION }}-Ubuntu-20_04"
       if: contains(matrix.os, 'ubuntu')
 
     - uses: ncipollo/release-action@v1
