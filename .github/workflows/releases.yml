@@ -76,7 +76,8 @@ jobs:
       run: |
         New-Item "tmp\OctaSine" -ItemType Directory -ea 0
         Copy-Item "LICENSE" -Destination "tmp\OctaSine\LICENSE.txt"
-        Copy-Item "target\release\octasine.dll" -Destination "tmp\OctaSine\OctaSine $OCTASINE_SEMVER_VERSION.dll"
+        $version = $env:OCTASINE_SEMVER_VERSION
+        Copy-Item "target\release\octasine.dll" -Destination "tmp\OctaSine\OctaSine $version.dll"
         Compress-Archive -Path "tmp\OctaSine" -DestinationPath releases\OctaSine-${{ steps.get_version.outputs.VERSION }}-Windows.zip -CompressionLevel Optimal
       if: contains(matrix.os, 'windows')
 
