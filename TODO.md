@@ -4,9 +4,12 @@
 
 * Consider easing fine tuning of mod out / changing steps. More room where
   sounds are the most interesting.
+* Include license info on all dependencies in releases
+* Release v0.7.0 eventually
 
 ## Medium priority
 
+* Consider creating PR in cargo-deny-action
 * Mode to lock together envelopes so changes affect all
 * bench_process
   * Is it a cause for concern that not keeping wave type fixed has different
