@@ -12,11 +12,20 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
+  cargo-deny:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: EmbarkStudios/cargo-deny-action@v1
+      with:
+        log-level: warn
+        command: check licenses
+        arguments: --all-features --workspace
   build:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-10.15, ubuntu-18.04, ubuntu-20.04, windows-latest]
+        os: [macos-10.15, macos-latest, ubuntu-latest, windows-latest]
 
     steps:
     - uses: actions/checkout@v2
@@ -28,14 +37,19 @@ jobs:
       if: contains(matrix.os, 'ubuntu')
 
     # Required for bindgen on Windows, see https://github.com/rust-lang/rust-bindgen/issues/1797
-    - name: Install LLVM and Clang
+    - name: Install LLVM and Clang (Windows)
       uses: KyleMayes/install-llvm-action@v1
       if: contains(matrix.os, 'windows')
       with:
-        version: "11.0"
+        version: "14.0"
         directory: ${{ runner.temp }}/llvm
-    - name: Set LIBCLANG_PATH
+
+    - name: Set LIBCLANG_PATH (Windows)
       run: echo "LIBCLANG_PATH=$((gcm clang).source -replace "clang.exe")" >> $env:GITHUB_ENV
+      if: contains(matrix.os, 'windows')
+
+    - name: Setup MSVC shell (Windows)
+      uses: ilammy/msvc-dev-cmd@v1
       if: contains(matrix.os, 'windows')
 
     - name: Install latest nightly Rust
@@ -43,15 +57,6 @@ jobs:
       with:
           toolchain: nightly
           override: true
-          components: clippy
-
-    # Speed up builds
-    - name: Deactivate lto and debug symbols (Unix)
-      run: sed -i'.backup' -e 's/^lto = true$//g' Cargo.toml && sed -i'.backup' -e 's/^debug = true$//g' Cargo.toml
-      if: contains(matrix.os, 'ubuntu') || contains(matrix.os, 'macos')
-    - name: Deactivate lto and debug symbols (Windows)
-      run: (Get-Content Cargo.toml) -replace '(lto|debug) = true', '' | Out-File -encoding ASCII Cargo.toml
-      if: contains(matrix.os, 'windows')
 
     - name: Run tests
       run: cargo +nightly test --workspace --features "simd" --verbose
