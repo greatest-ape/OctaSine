@@ -4,8 +4,6 @@
 
 * Consider easing fine tuning of mod out / changing steps. More room where
   sounds are the most interesting.
-* Create v0.6.1 with PLUGIN_NAME set to OctaSine v0.6 and release action
-  updated to create filename OctaSine-v0.6.vst
 
 ## Medium priority
 
