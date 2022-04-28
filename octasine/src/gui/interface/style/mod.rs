@@ -6,9 +6,10 @@ use iced_baseview::{
     rule::{self, FillMode},
     Color,
 };
+use iced_style::checkbox;
 use serde::{Deserialize, Serialize};
 
-use super::{envelope, lfo_shape_picker, mod_matrix};
+use super::{envelope, mod_matrix, mute_button, wave_picker};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
@@ -86,6 +87,15 @@ impl<'a> From<Theme> for Box<dyn radio::StyleSheet + 'a> {
     }
 }
 
+impl<'a> From<Theme> for Box<dyn checkbox::StyleSheet + 'a> {
+    fn from(theme: Theme) -> Self {
+        match theme {
+            Theme::Light => light::Checkbox.into(),
+            Theme::Dark => dark::Checkbox.into(),
+        }
+    }
+}
+
 impl<'a> From<Theme> for Box<dyn button::StyleSheet + 'a> {
     fn from(theme: Theme) -> Self {
         match theme {
@@ -131,13 +141,20 @@ impl<'a> From<Theme> for Box<dyn mod_matrix::StyleSheet + 'a> {
     }
 }
 
-impl<'a> From<Theme> for Box<dyn lfo_shape_picker::StyleSheet + 'a> {
+impl<'a> From<Theme> for Box<dyn wave_picker::StyleSheet + 'a> {
     fn from(theme: Theme) -> Self {
         match theme {
-            Theme::Light => {
-                Box::new(light::LfoShapePicker) as Box<dyn lfo_shape_picker::StyleSheet>
-            }
-            Theme::Dark => Box::new(dark::LfoShapePicker) as Box<dyn lfo_shape_picker::StyleSheet>,
+            Theme::Light => Box::new(light::LfoShapePicker) as Box<dyn wave_picker::StyleSheet>,
+            Theme::Dark => Box::new(dark::LfoShapePicker) as Box<dyn wave_picker::StyleSheet>,
+        }
+    }
+}
+
+impl<'a> From<Theme> for Box<dyn mute_button::StyleSheet + 'a> {
+    fn from(theme: Theme) -> Self {
+        match theme {
+            Theme::Light => Box::new(light::MuteButton) as Box<dyn mute_button::StyleSheet>,
+            Theme::Dark => Box::new(dark::MuteButton) as Box<dyn mute_button::StyleSheet>,
         }
     }
 }

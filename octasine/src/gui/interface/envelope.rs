@@ -3,10 +3,10 @@ use iced_baseview::canvas::{
 };
 use iced_baseview::{Color, Element, Length, Point, Rectangle, Size, Vector};
 
-use crate::approximations::Log10Table;
-use crate::constants::{ENVELOPE_MAX_DURATION, ENVELOPE_MIN_DURATION};
-use crate::voices::envelopes::VoiceOperatorVolumeEnvelope;
-use crate::GuiSyncHandle;
+use crate::audio::voices::envelopes::VoiceOperatorVolumeEnvelope;
+use crate::audio::voices::log10_table::Log10Table;
+use crate::parameter_values::operator_envelope::{ENVELOPE_MAX_DURATION, ENVELOPE_MIN_DURATION};
+use crate::sync::GuiSyncHandle;
 
 use super::style::Theme;
 use super::{Message, SnapPoint, FONT_SIZE, LINE_HEIGHT};
@@ -230,14 +230,8 @@ pub struct Envelope {
 
 impl Envelope {
     pub fn new<H: GuiSyncHandle>(sync_handle: &H, operator_index: usize, style: Theme) -> Self {
-        let (attack_dur, attack_val, decay_dur, decay_val, release_dur) = match operator_index {
-            0 => (10, 11, 12, 13, 14),
-            1 => (24, 25, 26, 27, 28),
-            2 => (39, 40, 41, 42, 43),
-            3 => (54, 55, 56, 57, 58),
-            _ => unreachable!(),
-        };
-
+        let (attack_dur, attack_val, decay_dur, decay_val, release_dur) =
+            Self::get_parameter_indices(operator_index);
         let attack_duration =
             Self::process_envelope_duration(sync_handle.get_parameter(attack_dur));
         let decay_duration = Self::process_envelope_duration(sync_handle.get_parameter(decay_dur));
@@ -273,38 +267,30 @@ impl Envelope {
         envelope
     }
 
-    fn get_attack_parameter_indices(&self) -> (usize, usize) {
-        let (dur, val) = match self.operator_index {
-            0 => (10, 11),
-            1 => (24, 25),
-            2 => (39, 40),
-            3 => (54, 55),
+    fn get_parameter_indices(operator_index: usize) -> (usize, usize, usize, usize, usize) {
+        match operator_index {
+            0 => (11, 12, 13, 14, 15),
+            1 => (27, 28, 29, 30, 31),
+            2 => (43, 44, 45, 46, 47),
+            3 => (59, 60, 61, 62, 63),
             _ => unreachable!(),
-        };
+        }
+    }
 
-        (dur, val)
+    fn get_attack_parameter_indices(&self) -> (usize, usize) {
+        let indices = Self::get_parameter_indices(self.operator_index);
+
+        (indices.0, indices.1)
     }
 
     fn get_decay_parameter_indices(&self) -> (usize, usize) {
-        let (dur, val) = match self.operator_index {
-            0 => (12, 13),
-            1 => (26, 27),
-            2 => (41, 42),
-            3 => (56, 57),
-            _ => unreachable!(),
-        };
+        let indices = Self::get_parameter_indices(self.operator_index);
 
-        (dur, val)
+        (indices.2, indices.3)
     }
 
     fn get_release_dur_parameter_index(&self) -> usize {
-        match self.operator_index {
-            0 => 14,
-            1 => 28,
-            2 => 43,
-            3 => 58,
-            _ => unreachable!(),
-        }
+        Self::get_parameter_indices(self.operator_index).4
     }
 
     fn zoom_in_to_fit(&mut self) {

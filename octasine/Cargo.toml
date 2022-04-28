@@ -1,14 +1,14 @@
 [package]
 name = "octasine"
-version = "0.6.0"
+version = "0.6.1"
 authors = ["Joakim Frostegård <joakim.frostegard@gmail.com>"]
 license = "AGPL-3.0"
 edition = "2021"
 
 [features]
 simd = ["sleef-sys"]
-gui_glow = ["gui", "iced_glow", "raw-gl-context", "iced_baseview/with-glow", "iced_baseview/with-glow-canvas"]
-gui_wgpu = ["gui", "iced_wgpu", "iced_baseview/with-wgpu", "iced_baseview/with-wgpu-canvas"]
+gui_glow = ["gui", "iced_glow", "iced_baseview/glow", "iced_baseview/glow_canvas"]
+gui_wgpu = ["gui", "iced_wgpu", "iced_baseview/wgpu", "iced_baseview/wgpu_canvas"]
 gui = ["baseview", "iced_baseview", "iced_style", "iced_audio", "palette", "raw-window-handle"]
 
 [lib]
@@ -24,33 +24,34 @@ arc-swap = "1"
 array-init = "2"
 arrayvec = "0.7"
 cfg-if = "1"
-dirs = "4"
-duplicate = "0.3"
+directories = "4"
+duplicate = "0.4"
 fastrand = "1"
+flate2 = "1"
 git-testament = "0.2"
 log = { version = "0.4", default-features = false }
 log-panics = "2"
+once_cell = "1"
 os_info = "3"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-simplelog = { version = "0.11", default-features = false }
+simplelog = { version = "0.12", default-features = false, features = ["local-offset"] }
 vst = { git = "https://github.com/RustAudio/vst-rs.git", rev = "b5f342c" }
 
 # GUI
 
-iced_glow = { git = "https://github.com/iced-rs/iced.git", rev = "26d053a", optional = true }
-iced_wgpu = { git = "https://github.com/iced-rs/iced.git", rev = "26d053a", optional = true }
-iced_style = { git = "https://github.com/iced-rs/iced.git", rev = "26d053a", optional = true }
-raw-gl-context = { version = "0.1", optional = true }
+iced_glow = { git = "https://github.com/iced-rs/iced.git", rev = "a53fa91e0ddf374bbeb66d5e831b79127ed47a9d", optional = true }
+iced_wgpu = { git = "https://github.com/iced-rs/iced.git", rev = "a53fa91e0ddf374bbeb66d5e831b79127ed47a9d", optional = true }
+iced_style = { git = "https://github.com/iced-rs/iced.git", rev = "a53fa91e0ddf374bbeb66d5e831b79127ed47a9d", optional = true }
 raw-window-handle = { version = "0.4", optional = true }
 
 [dependencies.baseview]
 git = "https://github.com/rustaudio/baseview.git"
-rev = "004065e9a43e79751040879c572d95b9b63e0edc"
+rev = "b3712638bacb3fdf2883cb5aa3f6caed0e91ac8c"
 optional = true
 
 [dependencies.iced_audio]
-git = "https://github.com/iced-rs/iced_audio.git"
+git = "https://github.com/greatest-ape/iced_audio.git"
 branch = "iced_git"
 optional = true
 
@@ -58,7 +59,7 @@ optional = true
 git = "https://github.com/BillyDM/iced_baseview.git"
 branch = "iced_git"
 default-features = false
-features = ["with-palette"]
+features = ["palette"]
 optional = true
 
 [dependencies.palette]

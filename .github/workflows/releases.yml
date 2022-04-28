@@ -7,31 +7,41 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
+  OCTASINE_SEMVER_VERSION: "v0.6"
 
 jobs:
+  cargo-deny:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: EmbarkStudios/cargo-deny-action@v1
+      with:
+        log-level: warn
+        command: check licenses
+        arguments: --all-features --workspace
   build:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-10.15, ubuntu-20.04, windows-latest]
+        os: [macos-latest, ubuntu-latest, windows-latest]
 
     steps:
     - uses: actions/checkout@v2
 
-    - name: Install baseview dependencies
+    - name: Install baseview dependencies (Linux)
       run: |
         sudo apt update
-        sudo apt install libx11-xcb-dev libxcb-dri2-0-dev libgl1-mesa-dev libxcb-icccm4-dev libxcursor-dev
+        sudo apt install libgl-dev libx11-xcb-dev libxcb1-dev libxcb-dri2-0-dev libxcb-icccm4-dev libxcursor-dev libxkbcommon-dev libxcb-shape0-dev libxcb-xfixes0-dev
       if: contains(matrix.os, 'ubuntu')
 
     # Required for bindgen on Windows, see https://github.com/rust-lang/rust-bindgen/issues/1797
-    - name: Install LLVM and Clang
+    - name: Install LLVM and Clang (Windows)
       uses: KyleMayes/install-llvm-action@v1
       if: contains(matrix.os, 'windows')
       with:
-        version: "11.0"
+        version: "14.0"
         directory: ${{ runner.temp }}/llvm
-    - name: Set LIBCLANG_PATH
+    - name: Set LIBCLANG_PATH (Windows)
       run: echo "LIBCLANG_PATH=$((gcm clang).source -replace "clang.exe")" >> $env:GITHUB_ENV
       if: contains(matrix.os, 'windows')
 
@@ -40,13 +50,10 @@ jobs:
       with:
           toolchain: nightly
           override: true
-          components: clippy
 
-    - name: Install cargo-deny
-      run: cargo install --locked cargo-deny
-
-    - name: Check licenses of dependencies
-      run: cargo deny --workspace --all-features check licenses
+    - name: Setup MSVC shell (Windows)
+      uses: ilammy/msvc-dev-cmd@v1
+      if: contains(matrix.os, 'windows')
 
     - name: Build plugin in release mode
       run: cargo +nightly build --release --features "simd" -p octasine_vst2_plugin --verbose
@@ -61,23 +68,24 @@ jobs:
 
     - name: Create release file (macOS)
       run: |
-        bash ./scripts/macos/bundle.sh "./target/release/liboctasine.dylib"
-        bash ./scripts/unix/package.sh "OctaSine.vst" "../releases/OctaSine-${{ steps.get_version.outputs.VERSION }}-macOS-Intel"
+        bash ./scripts/macos/bundle.sh "./target/release/liboctasine.dylib" "OctaSine $OCTASINE_SEMVER_VERSION"
+        bash ./scripts/unix/package.sh "OctaSine $OCTASINE_SEMVER_VERSION.vst" "../releases/OctaSine-${{ steps.get_version.outputs.VERSION }}-macOS-Intel"
       if: contains(matrix.os, 'macos')
   
     - name: Create release file (Windows)
       run: |
         New-Item "tmp\OctaSine" -ItemType Directory -ea 0
         Copy-Item "LICENSE" -Destination "tmp\OctaSine\LICENSE.txt"
-        Copy-Item "target\release\octasine.dll" -Destination "tmp\OctaSine\OctaSine.dll"
+        $version = $env:OCTASINE_SEMVER_VERSION
+        Copy-Item "target\release\octasine.dll" -Destination "tmp\OctaSine\OctaSine $version.dll"
         Compress-Archive -Path "tmp\OctaSine" -DestinationPath releases\OctaSine-${{ steps.get_version.outputs.VERSION }}-Windows.zip -CompressionLevel Optimal
       if: contains(matrix.os, 'windows')
 
     - name: Create release file (Linux)
       run: |
         mkdir -p tmp
-        cp "./target/release/liboctasine.so" "tmp/OctaSine.so"
-        bash ./scripts/unix/package.sh "OctaSine.so" "../releases/OctaSine-${{ steps.get_version.outputs.VERSION }}-Ubuntu-20_04"
+        cp "./target/release/liboctasine.so" "tmp/OctaSine $OCTASINE_SEMVER_VERSION.so"
+        bash ./scripts/unix/package.sh "OctaSine $OCTASINE_SEMVER_VERSION.so" "../releases/OctaSine-${{ steps.get_version.outputs.VERSION }}-Ubuntu-20_04"
       if: contains(matrix.os, 'ubuntu')
 
     - uses: ncipollo/release-action@v1

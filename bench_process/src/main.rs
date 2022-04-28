@@ -5,8 +5,8 @@ use sha2::{Digest, Sha256};
 use vst::event::MidiEvent;
 use vst::plugin::PluginParameters;
 
-use octasine::gen::simd::Simd;
-use octasine::gen::AudioGen;
+use octasine::audio::gen::simd::Simd;
+use octasine::audio::gen::AudioGen;
 use octasine::OctaSine;
 
 /// Benchmark OctaSine process functions and check sample-accurate output
@@ -58,8 +58,10 @@ fn main() {
     // Ignore success status here, since output differs across platforms
     // depending on std sine implementation
     #[allow(unused_variables)]
-    let (_, fallback_std) =
-        benchmark::<octasine::gen::simd::FallbackStd>("fallback (std)", "96 b7 56 65 dd 52 96 3d ");
+    let (_, fallback_std) = benchmark::<octasine::audio::gen::simd::FallbackStd>(
+        "fallback (std)",
+        "96 b7 56 65 dd 52 96 3d ",
+    );
 
     #[allow(unused_variables, unused_mut)]
     let mut all_sleef_hashes_match = true;
@@ -71,7 +73,7 @@ fn main() {
 
         {
             let (success, r) =
-                benchmark::<octasine::gen::simd::FallbackSleef>("fallback (sleef)", hash);
+                benchmark::<octasine::audio::gen::simd::FallbackSleef>("fallback (sleef)", hash);
 
             all_sleef_hashes_match &= success;
 
@@ -79,14 +81,14 @@ fn main() {
         }
 
         if is_x86_feature_detected!("sse2") {
-            let (success, r) = benchmark::<octasine::gen::simd::Sse2>("sse2", hash);
+            let (success, r) = benchmark::<octasine::audio::gen::simd::Sse2>("sse2", hash);
 
             all_sleef_hashes_match &= success;
 
             println!("Speed compared to std fallback: {}x", fallback_std / r);
         }
         if is_x86_feature_detected!("avx") {
-            let (success, r) = benchmark::<octasine::gen::simd::Avx>("avx", hash);
+            let (success, r) = benchmark::<octasine::audio::gen::simd::Avx>("avx", hash);
 
             all_sleef_hashes_match &= success;
 
@@ -104,9 +106,8 @@ fn main() {
 fn benchmark<A: AudioGen + Simd>(name: &str, expected_hash: &str) -> (bool, f32) {
     let mut octasine = OctaSine::default();
 
-    let envelope_duration_parameters = [10i32, 12, 14, 24, 26, 28, 39, 41, 43, 54, 56, 58];
-
-    let wave_type_parameters = [4i32, 17, 31, 46];
+    let envelope_duration_parameters = [9i32, 11, 13, 23, 25, 27, 37, 39, 41, 51, 53, 55];
+    let wave_type_parameters = [4i32, 16, 30, 44];
 
     const SIZE: usize = 256;
 
@@ -153,11 +154,11 @@ fn benchmark<A: AudioGen + Simd>(name: &str, expected_hash: &str) -> (bool, f32)
     for i in 0..iterations {
         if i % 1024 == 0 {
             octasine
-                .processing
+                .audio
                 .enqueue_midi_events(key_on_events.iter().copied());
         } else if i % 1024 == 512 {
             octasine
-                .processing
+                .audio
                 .enqueue_midi_events(key_off_events.iter().copied());
         }
 
@@ -169,7 +170,7 @@ fn benchmark<A: AudioGen + Simd>(name: &str, expected_hash: &str) -> (bool, f32)
             octasine.sync.set_parameter(j, (i % 64) as f32 / 64.0);
         }
 
-        octasine.update_processing_parameters();
+        octasine.update_audio_parameters();
 
         let mut position = 0usize;
 
@@ -178,7 +179,7 @@ fn benchmark<A: AudioGen + Simd>(name: &str, expected_hash: &str) -> (bool, f32)
             .zip(rights.chunks_exact_mut(A::SAMPLES))
         {
             unsafe {
-                A::process_f32(&mut octasine.processing, lefts, rights, position);
+                A::process_f32(&mut octasine.audio, lefts, rights, position);
             }
 
             position += A::SAMPLES;

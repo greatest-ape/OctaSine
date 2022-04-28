@@ -1,17 +1,17 @@
-use baseview::{Size, WindowOpenOptions, WindowScalePolicy};
+use baseview::{gl::GlConfig, Size, WindowOpenOptions, WindowScalePolicy};
 use iced_baseview::{IcedWindow, Settings};
 use raw_window_handle::{HasRawWindowHandle, RawWindowHandle};
 use serde::{Deserialize, Serialize};
 use vst::editor::Editor;
 
-use super::GuiSyncHandle;
-use crate::constants::PLUGIN_NAME;
+use crate::sync::GuiSyncHandle;
+use crate::PLUGIN_NAME;
 
 mod interface;
 
 use interface::OctaSineIcedApplication;
 
-pub const GUI_WIDTH: usize = 12 * 66;
+pub const GUI_WIDTH: usize = 12 * 70;
 pub const GUI_HEIGHT: usize = 12 * 61;
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
@@ -44,12 +44,15 @@ impl<H: GuiSyncHandle> Gui<H> {
                 #[cfg(target_os = "windows")]
                 scale: WindowScalePolicy::ScaleFactor(1.0),
                 title: PLUGIN_NAME.to_string(),
+                gl_config: Some(GlConfig {
+                    samples: Some(8),
+                    ..Default::default()
+                }),
             },
-            #[cfg(all(feature = "gui_glow", target_os = "windows"))]
-            use_max_aa_samples: false,
-            #[cfg(all(feature = "gui_glow", not(target_os = "windows")))]
-            use_max_aa_samples: true,
-            ignore_non_modifier_keys: true,
+            iced_baseview: iced_baseview::IcedBaseviewSettings {
+                ignore_non_modifier_keys: true,
+                always_redraw: true,
+            },
             flags: sync_handle,
         }
     }

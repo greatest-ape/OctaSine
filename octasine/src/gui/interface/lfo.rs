@@ -1,22 +1,25 @@
-use iced_baseview::{Column, Element, Horizontal, Length, Row, Space, Text, Vertical};
-
-use crate::parameters::values::{
-    LfoAmountValue, LfoBpmSyncValue, LfoFrequencyFreeValue, LfoFrequencyRatioValue, LfoModeValue,
+use iced_baseview::{
+    alignment::Horizontal, alignment::Vertical, Column, Element, Length, Row, Space, Text,
 };
-use crate::GuiSyncHandle;
+
+use crate::parameter_values::{
+    LfoAmountValue, LfoBpmSyncValue, LfoFrequencyFreeValue, LfoFrequencyRatioValue, LfoModeValue,
+    LfoShapeValue,
+};
+use crate::sync::GuiSyncHandle;
 
 use super::boolean_picker::{self, BooleanPicker};
 use super::knob::{self, OctaSineKnob};
-use super::lfo_shape_picker::LfoShapePicker;
 use super::lfo_target_picker::LfoTargetPicker;
 use super::style::Theme;
+use super::wave_picker::WavePicker;
 use super::{Message, FONT_SIZE, FONT_VERY_BOLD, LINE_HEIGHT};
 
 pub struct LfoWidgets {
     index: usize,
     style: Theme,
     pub target: LfoTargetPicker,
-    pub shape: LfoShapePicker,
+    pub shape: WavePicker<LfoShapeValue>,
     pub mode: BooleanPicker<LfoModeValue>,
     pub bpm_sync: BooleanPicker<LfoBpmSyncValue>,
     pub frequency_ratio: OctaSineKnob<LfoFrequencyRatioValue>,
@@ -26,7 +29,7 @@ pub struct LfoWidgets {
 
 impl LfoWidgets {
     pub fn new<H: GuiSyncHandle>(sync_handle: &H, lfo_index: usize, style: Theme) -> Self {
-        let offset = 59 + lfo_index * 7;
+        let offset = 64 + lfo_index * 7;
         let target = offset + 0;
         let bpm_sync = offset + 1;
         let ratio = offset + 2;
@@ -39,7 +42,7 @@ impl LfoWidgets {
             index: lfo_index,
             style,
             target: LfoTargetPicker::new(sync_handle, lfo_index, target, style),
-            shape: LfoShapePicker::new(sync_handle, shape, style),
+            shape: WavePicker::new(sync_handle, shape, style, "SHAPE"),
             mode: boolean_picker::lfo_mode(sync_handle, mode, style),
             bpm_sync: boolean_picker::bpm_sync(sync_handle, bpm_sync, style),
             frequency_ratio: knob::lfo_frequency_ratio(sync_handle, ratio, style),

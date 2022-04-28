@@ -1,6 +1,9 @@
 use iced_baseview::{button, container, pick_list, radio, Color};
+use iced_style::checkbox;
 
-use super::{envelope, lfo_shape_picker, mod_matrix};
+use crate::gui::interface::mute_button;
+
+use super::{envelope, mod_matrix, wave_picker};
 
 macro_rules! hex_gray {
     ($hex:literal) => {
@@ -18,6 +21,8 @@ pub const TEXT_BG: Color = hex_gray!(0x90);
 pub const TEXT_FG: Color = hex_gray!(0xBB);
 pub const HOVERED: Color = hex_gray!(0xDD);
 pub const CONTRAST: Color = hex_gray!(0x30);
+
+pub const RED: Color = Color::from_rgb(0.765, 0.067, 0.176);
 
 pub struct Container;
 
@@ -38,6 +43,7 @@ impl radio::StyleSheet for Radio {
         radio::Style {
             background: SURFACE.into(),
             dot_color: TEXT_FG,
+            text_color: Some(TEXT_FG),
             border_width: 1.0,
             border_color: TEXT_FG,
         }
@@ -47,6 +53,28 @@ impl radio::StyleSheet for Radio {
         radio::Style {
             border_color: HOVERED,
             ..self.active()
+        }
+    }
+}
+
+pub struct Checkbox;
+
+impl checkbox::StyleSheet for Checkbox {
+    fn active(&self, _is_checked: bool) -> checkbox::Style {
+        checkbox::Style {
+            background: SURFACE.into(),
+            checkmark_color: TEXT_FG,
+            text_color: Some(TEXT_FG),
+            border_width: 1.0,
+            border_color: TEXT_FG,
+            border_radius: 5.0,
+        }
+    }
+
+    fn hovered(&self, is_checked: bool) -> checkbox::Style {
+        checkbox::Style {
+            border_color: HOVERED,
+            ..self.active(is_checked)
         }
     }
 }
@@ -218,23 +246,51 @@ impl mod_matrix::StyleSheet for ModulationMatrix {
             operator_box_color_hover: HOVERED,
             operator_box_color_dragging: HOVERED,
             modulation_box_color_active: TEXT_FG,
-            modulation_box_color_inactive: SURFACE,
+            modulation_box_color_inactive: Color::TRANSPARENT,
+            modulation_box_color_hover: HOVERED,
             line_max_color: Color::WHITE,
+            mod_out_line_color: Color::new(0.25, 0.5, 1.0, 1.0),
         }
     }
 }
 
 pub struct LfoShapePicker;
 
-impl lfo_shape_picker::StyleSheet for LfoShapePicker {
-    fn active(&self) -> lfo_shape_picker::Style {
-        lfo_shape_picker::Style {
+impl wave_picker::StyleSheet for LfoShapePicker {
+    fn active(&self) -> wave_picker::Style {
+        wave_picker::Style {
             background_color: SURFACE,
             border_color_active: TEXT_FG,
             border_color_hovered: HOVERED,
             middle_line_color: Color::from_rgb(0.3, 0.3, 0.3),
             shape_line_color_active: TEXT_FG,
             shape_line_color_hovered: HOVERED,
+        }
+    }
+}
+
+pub struct MuteButton;
+
+impl mute_button::StyleSheet for MuteButton {
+    fn volume_on(&self) -> mute_button::Style {
+        mute_button::Style {
+            background_color: SURFACE,
+            border_color: TEXT_BG,
+            text_color: TEXT_FG,
+        }
+    }
+    fn volume_off(&self) -> mute_button::Style {
+        mute_button::Style {
+            background_color: SURFACE,
+            border_color: RED,
+            text_color: RED,
+        }
+    }
+    fn hovered(&self) -> mute_button::Style {
+        mute_button::Style {
+            background_color: SURFACE,
+            border_color: HOVERED,
+            text_color: HOVERED,
         }
     }
 }

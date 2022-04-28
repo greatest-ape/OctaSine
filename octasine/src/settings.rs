@@ -2,6 +2,8 @@ use std::path::PathBuf;
 
 use serde::{Deserialize, Serialize};
 
+use crate::get_project_dirs;
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Settings {
     pub schema_version: usize,
@@ -21,9 +23,9 @@ impl Default for Settings {
 
 impl Settings {
     fn get_config_dir() -> anyhow::Result<PathBuf> {
-        ::dirs::config_dir()
-            .map(|path| path.join("OctaSine"))
-            .ok_or(anyhow::anyhow!("Couldn't locate config dir"))
+        get_project_dirs()
+            .ok_or_else(|| anyhow::anyhow!("Could not extract project directory"))
+            .map(|dirs| dirs.preference_dir().into())
     }
 
     fn get_config_file_path() -> anyhow::Result<PathBuf> {
@@ -42,12 +44,23 @@ impl Settings {
         Ok(())
     }
 
-    pub fn load() -> anyhow::Result<Self> {
+    fn load() -> anyhow::Result<Self> {
         let path = Self::get_config_file_path()?;
         let file = ::std::fs::File::open(path)?;
 
         let settings = ::serde_json::from_reader(file)?;
 
         Ok(settings)
+    }
+
+    pub fn load_or_default() -> Self {
+        match Self::load() {
+            Ok(settings) => settings,
+            Err(err) => {
+                ::log::info!("Couldn't load settings: {}", err);
+
+                Settings::default()
+            }
+        }
     }
 }

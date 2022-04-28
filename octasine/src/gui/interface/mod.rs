@@ -1,29 +1,33 @@
 use iced_baseview::{
-    button, renderer, Button, Color, Column, Container, Element, Font, Horizontal, Length, Point,
-    Row, Rule, Space, Text, Vertical, WindowQueue,
+    alignment::Horizontal, alignment::Vertical, button, Button, Color, Column, Container, Element,
+    Font, Length, Point, Row, Rule, Space, Text, WindowQueue,
 };
 use iced_baseview::{executor, Alignment, Application, Command, Subscription, WindowSubs};
 
-use crate::parameters::values::{MasterFrequencyValue, MasterVolumeValue};
-use crate::{get_version_info, GuiSyncHandle};
+use crate::parameter_values::{MasterFrequencyValue, MasterVolumeValue};
+use crate::{get_version_info, sync::GuiSyncHandle};
 
 mod boolean_picker;
 mod envelope;
 mod knob;
 mod lfo;
-mod lfo_shape_picker;
 mod lfo_target_picker;
 mod mod_matrix;
+mod mod_target_picker;
+mod mute_button;
 mod operator;
-mod preset_picker;
+mod patch_picker;
 pub mod style;
+mod wave_picker;
 
 use knob::OctaSineKnob;
 use lfo::LfoWidgets;
 use mod_matrix::ModulationMatrix;
 use operator::OperatorWidgets;
-use preset_picker::PresetPicker;
+use patch_picker::PatchPicker;
 use style::Theme;
+
+use self::operator::ModTargetPicker;
 
 use super::GuiSettings;
 use crate::settings::Settings;
@@ -79,7 +83,7 @@ pub enum Message {
     ChangeTwoParametersEnd((usize, usize)),
     ChangeTwoParametersSetValues((usize, f64), (usize, f64)),
     ToggleInfo,
-    PresetChange(usize),
+    PatchChange(usize),
     EnvelopeZoomIn(usize),
     EnvelopeZoomOut(usize),
     EnvelopeZoomToFit(usize),
@@ -96,7 +100,7 @@ pub struct OctaSineIcedApplication<H: GuiSyncHandle> {
     master_volume: OctaSineKnob<MasterVolumeValue>,
     master_frequency: OctaSineKnob<MasterFrequencyValue>,
     modulation_matrix: ModulationMatrix,
-    preset_picker: PresetPicker,
+    patch_picker: PatchPicker,
     operator_1: OperatorWidgets,
     operator_2: OperatorWidgets,
     operator_3: OperatorWidgets,
@@ -114,112 +118,141 @@ impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {
         match parameter_index {
             0 => self.master_volume.set_value(v),
             1 => self.master_frequency.set_value(v),
-            2 => {
-                self.operator_1.volume.set_value(v);
-                self.modulation_matrix.set_operator_1_volume(value);
+            2 => self.operator_1.volume.set_value(v),
+            3 => self.operator_1.mute_button.set_value(v),
+            4 => {
+                self.operator_1.mix.set_value(v);
+                self.modulation_matrix.set_operator_1_mix(value);
             }
-            3 => self.operator_1.panning.set_value(v),
-            4 => self.operator_1.wave_type.set_value(v),
-            5 => self.operator_1.mod_index.set_value(v),
-            6 => self.operator_1.feedback.set_value(v),
-            7 => self.operator_1.frequency_ratio.set_value(v),
-            8 => self.operator_1.frequency_free.set_value(v),
-            9 => self.operator_1.frequency_fine.set_value(v),
-            10 => self.operator_1.envelope.set_attack_duration(v),
-            11 => self.operator_1.envelope.set_attack_end_value(v),
-            12 => self.operator_1.envelope.set_decay_duration(v),
-            13 => self.operator_1.envelope.set_decay_end_value(v),
-            14 => self.operator_1.envelope.set_release_duration(v),
-            15 => {
-                self.operator_2.volume.set_value(v);
-                self.modulation_matrix.set_operator_2_volume(value);
-            }
-            16 => self.operator_2.panning.set_value(v),
-            17 => self.operator_2.wave_type.set_value(v),
+            5 => self.operator_1.panning.set_value(v),
+            6 => self.operator_1.wave_type.set_value(v),
+            7 => self.operator_1.feedback.set_value(v),
+            8 => self.operator_1.frequency_ratio.set_value(v),
+            9 => self.operator_1.frequency_free.set_value(v),
+            10 => self.operator_1.frequency_fine.set_value(v),
+            11 => self.operator_1.envelope.set_attack_duration(v),
+            12 => self.operator_1.envelope.set_attack_end_value(v),
+            13 => self.operator_1.envelope.set_decay_duration(v),
+            14 => self.operator_1.envelope.set_decay_end_value(v),
+            15 => self.operator_1.envelope.set_release_duration(v),
+            16 => self.operator_2.volume.set_value(v),
+            17 => self.operator_2.mute_button.set_value(v),
             18 => {
-                self.operator_2.additive.as_mut().unwrap().set_value(v);
-                self.modulation_matrix.set_operator_2_additive(v);
+                self.operator_2.mix.set_value(v);
+                self.modulation_matrix.set_operator_2_mix(value);
             }
-            19 => self.operator_2.mod_index.set_value(v),
-            20 => self.operator_2.feedback.set_value(v),
-            21 => self.operator_2.frequency_ratio.set_value(v),
-            22 => self.operator_2.frequency_free.set_value(v),
-            23 => self.operator_2.frequency_fine.set_value(v),
-            24 => self.operator_2.envelope.set_attack_duration(v),
-            25 => self.operator_2.envelope.set_attack_end_value(v),
-            26 => self.operator_2.envelope.set_decay_duration(v),
-            27 => self.operator_2.envelope.set_decay_end_value(v),
-            28 => self.operator_2.envelope.set_release_duration(v),
-            29 => {
-                self.modulation_matrix.set_operator_3_volume(value);
-                self.operator_3.volume.set_value(v);
+            19 => self.operator_2.panning.set_value(v),
+            20 => self.operator_2.wave_type.set_value(v),
+            21 => {
+                match self.operator_2.mod_target.as_mut() {
+                    Some(ModTargetPicker::Operator2(p)) => p.set_value(v),
+                    _ => {}
+                }
+                self.modulation_matrix.set_operator_2_target(v);
             }
-            30 => self.operator_3.panning.set_value(v),
-            31 => self.operator_3.wave_type.set_value(v),
-            32 => {
-                self.operator_3.additive.as_mut().unwrap().set_value(v);
-                self.modulation_matrix.set_operator_3_additive(v);
+            22 => {
+                if let Some(mod_index) = self.operator_2.mod_index.as_mut() {
+                    mod_index.set_value(v)
+                }
+                self.modulation_matrix.set_operator_2_mod(v);
             }
-            33 => self.modulation_matrix.set_operator_3_target(v),
-            34 => self.operator_3.mod_index.set_value(v),
-            35 => self.operator_3.feedback.set_value(v),
-            36 => self.operator_3.frequency_ratio.set_value(v),
-            37 => self.operator_3.frequency_free.set_value(v),
-            38 => self.operator_3.frequency_fine.set_value(v),
-            39 => self.operator_3.envelope.set_attack_duration(v),
-            40 => self.operator_3.envelope.set_attack_end_value(v),
-            41 => self.operator_3.envelope.set_decay_duration(v),
-            42 => self.operator_3.envelope.set_decay_end_value(v),
-            43 => self.operator_3.envelope.set_release_duration(v),
-            44 => {
-                self.operator_4.volume.set_value(v);
-                self.modulation_matrix.set_operator_4_volume(value);
+            23 => self.operator_2.feedback.set_value(v),
+            24 => self.operator_2.frequency_ratio.set_value(v),
+            25 => self.operator_2.frequency_free.set_value(v),
+            26 => self.operator_2.frequency_fine.set_value(v),
+            27 => self.operator_2.envelope.set_attack_duration(v),
+            28 => self.operator_2.envelope.set_attack_end_value(v),
+            29 => self.operator_2.envelope.set_decay_duration(v),
+            30 => self.operator_2.envelope.set_decay_end_value(v),
+            31 => self.operator_2.envelope.set_release_duration(v),
+            32 => self.operator_3.volume.set_value(v),
+            33 => self.operator_3.mute_button.set_value(v),
+            34 => {
+                self.modulation_matrix.set_operator_3_mix(value);
+                self.operator_3.mix.set_value(v);
             }
-            45 => self.operator_4.panning.set_value(v),
-            46 => self.operator_4.wave_type.set_value(v),
-            47 => {
-                self.operator_4.additive.as_mut().unwrap().set_value(v);
-                self.modulation_matrix.set_operator_4_additive(v);
+            35 => self.operator_3.panning.set_value(v),
+            36 => self.operator_3.wave_type.set_value(v),
+            37 => {
+                match self.operator_3.mod_target.as_mut() {
+                    Some(ModTargetPicker::Operator3(p)) => p.set_value(v),
+                    _ => {}
+                }
+                self.modulation_matrix.set_operator_3_target(v);
             }
-            48 => self.modulation_matrix.set_operator_4_target(v),
-            49 => self.operator_4.mod_index.set_value(v),
-            50 => self.operator_4.feedback.set_value(v),
-            51 => self.operator_4.frequency_ratio.set_value(v),
-            52 => self.operator_4.frequency_free.set_value(v),
-            53 => self.operator_4.frequency_fine.set_value(v),
-            54 => self.operator_4.envelope.set_attack_duration(v),
-            55 => self.operator_4.envelope.set_attack_end_value(v),
-            56 => self.operator_4.envelope.set_decay_duration(v),
-            57 => self.operator_4.envelope.set_decay_end_value(v),
-            58 => self.operator_4.envelope.set_release_duration(v),
-            59 => self.lfo_1.target.set_value(v),
-            60 => self.lfo_1.bpm_sync.set_value(v),
-            61 => self.lfo_1.frequency_ratio.set_value(v),
-            62 => self.lfo_1.frequency_free.set_value(v),
-            63 => self.lfo_1.mode.set_value(v),
-            64 => self.lfo_1.shape.set_value(v),
-            65 => self.lfo_1.amount.set_value(v),
-            66 => self.lfo_2.target.set_value(v),
-            67 => self.lfo_2.bpm_sync.set_value(v),
-            68 => self.lfo_2.frequency_ratio.set_value(v),
-            69 => self.lfo_2.frequency_free.set_value(v),
-            70 => self.lfo_2.mode.set_value(v),
-            71 => self.lfo_2.shape.set_value(v),
-            72 => self.lfo_2.amount.set_value(v),
-            73 => self.lfo_3.target.set_value(v),
-            74 => self.lfo_3.bpm_sync.set_value(v),
-            75 => self.lfo_3.frequency_ratio.set_value(v),
-            76 => self.lfo_3.frequency_free.set_value(v),
-            77 => self.lfo_3.mode.set_value(v),
-            78 => self.lfo_3.shape.set_value(v),
-            79 => self.lfo_3.amount.set_value(v),
-            80 => self.lfo_4.target.set_value(v),
-            81 => self.lfo_4.bpm_sync.set_value(v),
-            82 => self.lfo_4.frequency_ratio.set_value(v),
-            83 => self.lfo_4.frequency_free.set_value(v),
-            84 => self.lfo_4.mode.set_value(v),
-            85 => self.lfo_4.shape.set_value(v),
-            86 => self.lfo_4.amount.set_value(v),
+            38 => {
+                if let Some(mod_index) = self.operator_3.mod_index.as_mut() {
+                    mod_index.set_value(v)
+                }
+                self.modulation_matrix.set_operator_3_mod(v);
+            }
+            39 => self.operator_3.feedback.set_value(v),
+            40 => self.operator_3.frequency_ratio.set_value(v),
+            41 => self.operator_3.frequency_free.set_value(v),
+            42 => self.operator_3.frequency_fine.set_value(v),
+            43 => self.operator_3.envelope.set_attack_duration(v),
+            44 => self.operator_3.envelope.set_attack_end_value(v),
+            45 => self.operator_3.envelope.set_decay_duration(v),
+            46 => self.operator_3.envelope.set_decay_end_value(v),
+            47 => self.operator_3.envelope.set_release_duration(v),
+            48 => self.operator_4.volume.set_value(v),
+            49 => self.operator_4.mute_button.set_value(v),
+            50 => {
+                self.operator_4.mix.set_value(v);
+                self.modulation_matrix.set_operator_4_mix(value);
+            }
+            51 => self.operator_4.panning.set_value(v),
+            52 => self.operator_4.wave_type.set_value(v),
+            53 => {
+                match self.operator_4.mod_target.as_mut() {
+                    Some(ModTargetPicker::Operator4(p)) => p.set_value(v),
+                    _ => {}
+                }
+                self.modulation_matrix.set_operator_4_target(v);
+            }
+            54 => {
+                if let Some(mod_index) = self.operator_4.mod_index.as_mut() {
+                    mod_index.set_value(v)
+                }
+                self.modulation_matrix.set_operator_4_mod(v);
+            }
+            55 => self.operator_4.feedback.set_value(v),
+            56 => self.operator_4.frequency_ratio.set_value(v),
+            57 => self.operator_4.frequency_free.set_value(v),
+            58 => self.operator_4.frequency_fine.set_value(v),
+            59 => self.operator_4.envelope.set_attack_duration(v),
+            60 => self.operator_4.envelope.set_attack_end_value(v),
+            61 => self.operator_4.envelope.set_decay_duration(v),
+            62 => self.operator_4.envelope.set_decay_end_value(v),
+            63 => self.operator_4.envelope.set_release_duration(v),
+            64 => self.lfo_1.target.set_value(v),
+            65 => self.lfo_1.bpm_sync.set_value(v),
+            66 => self.lfo_1.frequency_ratio.set_value(v),
+            67 => self.lfo_1.frequency_free.set_value(v),
+            68 => self.lfo_1.mode.set_value(v),
+            69 => self.lfo_1.shape.set_value(v),
+            70 => self.lfo_1.amount.set_value(v),
+            71 => self.lfo_2.target.set_value(v),
+            72 => self.lfo_2.bpm_sync.set_value(v),
+            73 => self.lfo_2.frequency_ratio.set_value(v),
+            74 => self.lfo_2.frequency_free.set_value(v),
+            75 => self.lfo_2.mode.set_value(v),
+            76 => self.lfo_2.shape.set_value(v),
+            77 => self.lfo_2.amount.set_value(v),
+            78 => self.lfo_3.target.set_value(v),
+            79 => self.lfo_3.bpm_sync.set_value(v),
+            80 => self.lfo_3.frequency_ratio.set_value(v),
+            81 => self.lfo_3.frequency_free.set_value(v),
+            82 => self.lfo_3.mode.set_value(v),
+            83 => self.lfo_3.shape.set_value(v),
+            84 => self.lfo_3.amount.set_value(v),
+            85 => self.lfo_4.target.set_value(v),
+            86 => self.lfo_4.bpm_sync.set_value(v),
+            87 => self.lfo_4.frequency_ratio.set_value(v),
+            88 => self.lfo_4.frequency_free.set_value(v),
+            89 => self.lfo_4.mode.set_value(v),
+            90 => self.lfo_4.shape.set_value(v),
+            91 => self.lfo_4.amount.set_value(v),
             _ => (),
         }
     }
@@ -267,7 +300,7 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
         let master_volume = knob::master_volume(&sync_handle, style);
         let master_frequency = knob::master_frequency(&sync_handle, style);
         let modulation_matrix = ModulationMatrix::new(&sync_handle, style);
-        let preset_picker = PresetPicker::new(&sync_handle, style);
+        let patch_picker = PatchPicker::new(&sync_handle, style);
 
         let operator_1 = OperatorWidgets::new(&sync_handle, 0, style);
         let operator_2 = OperatorWidgets::new(&sync_handle, 1, style);
@@ -288,7 +321,7 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
             master_volume,
             master_frequency,
             modulation_matrix,
-            preset_picker,
+            patch_picker,
             operator_1,
             operator_2,
             operator_3,
@@ -312,42 +345,25 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
     }
 
     #[cfg(feature = "gui_wgpu")]
-    fn renderer_settings() -> renderer::Settings {
-        renderer::Settings {
+    fn renderer_settings() -> iced_wgpu::settings::Settings {
+        iced_wgpu::settings::Settings {
             present_mode: iced_wgpu::wgpu::PresentMode::Immediate,
             default_font: Some(FONT_REGULAR),
             default_text_size: FONT_SIZE,
-            antialiasing: Some(renderer::Antialiasing::MSAAx4),
+            antialiasing: Some(iced_wgpu::settings::Antialiasing::MSAAx8),
             ..Default::default()
         }
     }
 
     /// Renderer settings with glow
-    ///
-    /// On non-Windows platforms, AA settings will be overridden because of
-    /// use_max_aa_samples = true.  Windows, however, doesn't support
-    /// recreating OpenGL contexts for same window, so we have to set a fixed
-    /// antialiasing count.
     #[cfg(feature = "gui_glow")]
-    fn renderer_settings() -> (raw_gl_context::GlConfig, iced_glow::settings::Settings) {
-        (
-            raw_gl_context::GlConfig {
-                #[cfg(target_os = "windows")]
-                samples: Some(8),
-                ..Default::default()
-            },
-            renderer::Settings {
-                default_font: Some(FONT_REGULAR),
-                default_text_size: FONT_SIZE,
-                // Windows doesn't support recreating OpenGL context for same
-                // window, so use_max_aa_samples won't work.
-                #[cfg(target_os = "windows")]
-                antialiasing: Some(renderer::settings::Antialiasing::MSAAx8),
-                #[cfg(not(target_os = "windows"))]
-                antialiasing: None,
-                text_multithreading: false,
-            },
-        )
+    fn renderer_settings() -> iced_glow::settings::Settings {
+        iced_glow::settings::Settings {
+            default_font: Some(FONT_REGULAR),
+            default_text_size: FONT_SIZE,
+            antialiasing: Some(iced_glow::settings::Antialiasing::MSAAx8),
+            text_multithreading: false,
+        }
     }
 
     fn update(
@@ -357,8 +373,8 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
     ) -> Command<Self::Message> {
         match message {
             Message::Frame => {
-                if self.sync_handle.have_presets_changed() {
-                    self.preset_picker = PresetPicker::new(&self.sync_handle, self.style);
+                if self.sync_handle.have_patches_changed() {
+                    self.patch_picker = PatchPicker::new(&self.sync_handle, self.style);
                 }
                 self.update_widgets_from_parameters();
             }
@@ -436,8 +452,8 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                 self.sync_handle.set_parameter(index_1, value_1);
                 self.sync_handle.set_parameter(index_2, value_2);
             }
-            Message::PresetChange(index) => {
-                self.sync_handle.set_preset_index(index);
+            Message::PatchChange(index) => {
+                self.sync_handle.set_patch_index(index);
             }
             Message::ToggleColorMode => {
                 let style = if let Theme::Light = self.style {
@@ -450,7 +466,7 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                 self.master_volume.style = style;
                 self.master_frequency.style = style;
                 self.modulation_matrix.set_style(style);
-                self.preset_picker.style = style;
+                self.patch_picker.style = style;
                 self.operator_1.set_style(style);
                 self.operator_2.set_style(style);
                 self.operator_3.set_style(style);
@@ -471,7 +487,7 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
         let master_volume = self.master_volume.view();
         let master_frequency = self.master_frequency.view();
         let modulation_matrix = self.modulation_matrix.view();
-        let preset_picker = self.preset_picker.view();
+        let patch_picker = self.patch_picker.view();
         let operator_1 = self.operator_1.view();
         let operator_2 = self.operator_2.view();
         let operator_3 = self.operator_3.view();
@@ -551,7 +567,7 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                             .push(Space::with_height(Length::Units(LINE_HEIGHT)))
                             .push(
                                 Row::new()
-                                    .push(preset_picker)
+                                    .push(patch_picker)
                                     .push(Space::with_width(Length::Units(LINE_HEIGHT))),
                             ),
                     ),

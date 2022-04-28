@@ -9,6 +9,17 @@ how patches sound.
 
 ### Changed
 
+#### Operator changes
+
+- Allow operators to modulate multiple carriers
+- Set modulation index (mod out) in modulator, not carrier
+- Increase range of feedback parameter to match modulation index
+- Replace additive factor with mix out parameter, which doesn't
+affect modulation output
+- Update frequency ratios, adding both harmonic and disharmonic ones
+ 
+#### LFO changes
+
 - Use a more traditional LFO design that oscillates around the base value, not
   in a single direction.
 - Scale LFO effect linearly and bypass normal parameter limits when targeting
@@ -16,11 +27,35 @@ how patches sound.
   LFO amount (magnitude) or LFO free frequency parameters
 - Make LFO triangle wave type start at value 0.0
 - Add LFO wave types reverse triangle, sine and reverse sine
+
+#### GUI changes
+
+- Control mix output with modulation matrix operator boxes instead of
+  modulation output
+- Replace operator wave type picker with a custom widget that displays the waveform
 - Replace the LFO shape knob with a custom widget that displays the waveform
+- Add per-operator modulation target picker
+- Add per-operator mute button
+
+#### Other changes
+
+- Bump plugin unique ID to allow using this version in parallel with previous
+  versions
+- Use directories crate to determine where to save preference and log files
+- Use gzip compression on exported patches and patch banks
+- Update multiple dependencies, notably iced and baseview
+- Do large code refactoring
 
 ### Fixed
 
 - Fetch BPM once per process call instead of each sample
+
+## 0.6.1 - 2022-04-28
+
+### Changed
+
+- Include semver-compatible version information in plugin name (e.g.,
+  "OctaSine v0.6") to ease using multiple releases alongside each other.
 
 ## 0.6.0 - 2022-01-08
 

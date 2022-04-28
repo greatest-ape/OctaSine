@@ -31,9 +31,12 @@ If applicable, add screenshots to help explain your problem.
 **Additional context**
 Add any other context about the problem here.
 
-**Log file contents***
-Please include the contents of the OctaSine log file. It is a file called `OctaSine.log` in a folder called `tmp` inside of your home folder. Your home folder is the one which typically contains folders such as `Downloads` and `Documents`.
+**Log file contents**
+Please include the contents of the OctaSine log file (`OctaSine.log`). Its location depends on your operating system (replace __Alice__ with your username):
+- _On macOS_: /Users/__Alice__/Library/Caches/com.OctaSine.OctaSine/OctaSine.log
+- _On Windows_: C:\\Users\\__Alice__\\AppData\\Local\\OctaSine\\OctaSine\\cache\\OctaSine.log
+- _On Linux_: /home/__Alice__/.cache/octasine/OctaSine.log
 
 ```
-Please replace this text with the log file contents.
+Please replace this text with the log file contents. If there is a lot of text, please attach the file instead.
 ```

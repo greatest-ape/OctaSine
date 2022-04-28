@@ -1,15 +1,15 @@
 use iced_audio::{knob, text_marks, tick_marks, Normal, NormalParam};
 use iced_baseview::{
-    keyboard::Modifiers, Alignment, Column, Element, Horizontal, Length, Space, Text,
+    alignment::Horizontal, keyboard::Modifiers, Alignment, Column, Element, Length, Space, Text,
 };
 
-use crate::parameters::values::{
+use crate::parameter_values::{
     LfoAmountValue, LfoFrequencyFreeValue, LfoFrequencyRatioValue, MasterFrequencyValue,
-    MasterVolumeValue, OperatorAdditiveValue, OperatorFeedbackValue, OperatorFrequencyFineValue,
-    OperatorFrequencyFreeValue, OperatorFrequencyRatioValue, OperatorModulationIndexValue,
-    OperatorPanningValue, OperatorVolumeValue, ParameterValue,
+    MasterVolumeValue, OperatorFeedbackValue, OperatorFrequencyFineValue,
+    OperatorFrequencyFreeValue, OperatorFrequencyRatioValue, OperatorMixValue,
+    OperatorModulationIndexValue, OperatorPanningValue, OperatorVolumeValue, ParameterValue,
 };
-use crate::GuiSyncHandle;
+use crate::sync::GuiSyncHandle;
 
 use super::style::Theme;
 use super::{Message, FONT_BOLD, LINE_HEIGHT};
@@ -18,7 +18,6 @@ const KNOB_SIZE: Length = Length::Units(LINE_HEIGHT * 2);
 
 enum TickMarkType {
     MinMaxAndDefault,
-    MinMax,
 }
 
 pub fn master_volume<H: GuiSyncHandle>(
@@ -54,15 +53,30 @@ pub fn master_frequency<H: GuiSyncHandle>(
 pub fn operator_volume<H: GuiSyncHandle>(
     sync_handle: &H,
     parameter_index: usize,
-    operator_index: usize,
     style: Theme,
 ) -> OctaSineKnob<OperatorVolumeValue> {
     OctaSineKnob::new_with_default_sync_value(
         sync_handle,
         parameter_index,
-        "VOLUME",
+        "VOL",
         TickMarkType::MinMaxAndDefault,
-        OperatorVolumeValue::new(operator_index).to_sync(),
+        OperatorVolumeValue::default().to_patch(),
+        style,
+    )
+}
+
+pub fn operator_mix<H: GuiSyncHandle>(
+    sync_handle: &H,
+    parameter_index: usize,
+    operator_index: usize,
+    style: Theme,
+) -> OctaSineKnob<OperatorMixValue> {
+    OctaSineKnob::new_with_default_sync_value(
+        sync_handle,
+        parameter_index,
+        "MIX OUT",
+        TickMarkType::MinMaxAndDefault,
+        OperatorMixValue::new(operator_index).to_patch(),
         style,
     )
 }
@@ -81,20 +95,6 @@ pub fn operator_panning<H: GuiSyncHandle>(
     )
 }
 
-pub fn operator_additive<H: GuiSyncHandle>(
-    sync_handle: &H,
-    parameter_index: usize,
-    style: Theme,
-) -> OctaSineKnob<OperatorAdditiveValue> {
-    OctaSineKnob::new(
-        sync_handle,
-        parameter_index,
-        "ADDITIVE",
-        TickMarkType::MinMax,
-        style,
-    )
-}
-
 pub fn operator_mod_index<H: GuiSyncHandle>(
     sync_handle: &H,
     parameter_index: usize,
@@ -103,7 +103,7 @@ pub fn operator_mod_index<H: GuiSyncHandle>(
     OctaSineKnob::new(
         sync_handle,
         parameter_index,
-        "MOD",
+        "MOD OUT",
         TickMarkType::MinMaxAndDefault,
         style,
     )
@@ -232,7 +232,7 @@ impl<P: ParameterValue + Default> OctaSineKnob<P> {
             parameter_index,
             title,
             tick_mark_type,
-            P::default().to_sync(),
+            P::default().to_patch(),
             style,
         )
     }
@@ -248,7 +248,7 @@ impl<P: ParameterValue> OctaSineKnob<P> {
         style: Theme,
     ) -> Self {
         let sync_value = sync_handle.get_parameter(parameter_index);
-        let value_text = P::from_sync(sync_value).format();
+        let value_text = P::new_from_patch(sync_value).get_formatted();
 
         let knob_state = knob::State::new(NormalParam {
             value: Normal::new(sync_value as f32),
@@ -257,7 +257,6 @@ impl<P: ParameterValue> OctaSineKnob<P> {
 
         let tick_marks = match tick_mark_type {
             TickMarkType::MinMaxAndDefault => tick_marks_from_min_max_and_value(default_sync_value),
-            TickMarkType::MinMax => tick_marks::Group::min_max(tick_marks::Tier::Two),
         };
 
         Self {
@@ -277,7 +276,7 @@ impl<P: ParameterValue> OctaSineKnob<P> {
             self.knob_state.set_normal(Normal::new(value as f32));
         }
 
-        self.value_text = P::from_sync(value).format();
+        self.value_text = P::new_from_patch(value).get_formatted();
     }
 
     pub fn view(&mut self) -> Element<Message> {

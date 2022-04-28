@@ -1,27 +1,13 @@
-use iced_baseview::{Alignment, Column, Element, Horizontal, Length, Radio, Space, Text};
-
-use crate::common::*;
-use crate::parameters::values::{
-    LfoBpmSyncValue, LfoModeValue, OperatorWaveTypeValue, ParameterValue,
+use iced_baseview::{
+    alignment::Horizontal, Alignment, Column, Element, Length, Radio, Space, Text,
 };
-use crate::GuiSyncHandle;
+
+use crate::parameter_values::lfo_mode::LfoMode;
+use crate::parameter_values::{LfoBpmSyncValue, LfoModeValue, ParameterValue};
+use crate::sync::GuiSyncHandle;
 
 use super::style::Theme;
 use super::{Message, FONT_BOLD, FONT_SIZE, LINE_HEIGHT};
-
-pub fn wave_type<H: GuiSyncHandle>(
-    sync_handle: &H,
-    parameter_index: usize,
-    style: Theme,
-) -> BooleanPicker<OperatorWaveTypeValue> {
-    BooleanPicker::new(
-        sync_handle,
-        parameter_index,
-        "WAVE",
-        vec![WaveType::Sine, WaveType::WhiteNoise],
-        style,
-    )
-}
 
 pub fn bpm_sync<H: GuiSyncHandle>(
     sync_handle: &H,
@@ -72,7 +58,7 @@ where
         style: Theme,
     ) -> Self {
         let sync_value = sync_handle.get_parameter(parameter_index);
-        let selected = P::from_sync(sync_value).get();
+        let selected = P::new_from_patch(sync_value).get();
 
         Self {
             title: title.into(),
@@ -84,7 +70,7 @@ where
     }
 
     pub fn set_value(&mut self, value: f64) {
-        self.selected = P::from_sync(value).get();
+        self.selected = P::new_from_patch(value).get();
     }
 
     pub fn view(&mut self) -> Element<Message> {
@@ -99,12 +85,12 @@ where
 
             let radio = Radio::new(
                 choice,
-                P::from_processing(choice).format().to_uppercase(),
+                P::new_from_audio(choice).get_formatted().to_uppercase(),
                 Some(self.selected),
                 move |choice| {
                     Message::ChangeSingleParameterImmediate(
                         parameter_index,
-                        P::from_processing(choice).to_sync(),
+                        P::new_from_audio(choice).to_patch(),
                     )
                 },
             )
