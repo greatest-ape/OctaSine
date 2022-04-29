@@ -1,8 +1,10 @@
 use iced_audio::{knob, text_marks, tick_marks, Normal, NormalParam};
+use iced_baseview::Container;
 use iced_baseview::{
     alignment::Horizontal, keyboard::Modifiers, Alignment, Column, Element, Length, Space, Text,
 };
 
+use crate::hex_gray;
 use crate::parameter_values::{
     LfoAmountValue, LfoFrequencyFreeValue, LfoFrequencyRatioValue, MasterFrequencyValue,
     MasterVolumeValue, OperatorFeedbackValue, OperatorFrequencyFineValue,
@@ -11,6 +13,7 @@ use crate::parameter_values::{
 };
 use crate::sync::GuiSyncHandle;
 
+use super::common::container_l2;
 use super::style::Theme;
 use super::{Message, FONT_BOLD, LINE_HEIGHT};
 

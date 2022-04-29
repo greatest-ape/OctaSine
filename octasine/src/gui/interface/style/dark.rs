@@ -5,9 +5,10 @@ use crate::gui::interface::mute_button;
 
 use super::{envelope, mod_matrix, wave_picker};
 
+#[macro_export]
 macro_rules! hex_gray {
     ($hex:literal) => {
-        Color::from_rgb(
+        ::iced_baseview::Color::from_rgb(
             $hex as f32 / 255.0,
             $hex as f32 / 255.0,
             $hex as f32 / 255.0,

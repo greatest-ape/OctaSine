@@ -8,6 +8,7 @@ use crate::parameter_values::{MasterFrequencyValue, MasterVolumeValue};
 use crate::{get_version_info, sync::GuiSyncHandle};
 
 mod boolean_picker;
+mod common;
 mod envelope;
 mod knob;
 mod lfo;
@@ -27,6 +28,7 @@ use operator::OperatorWidgets;
 use patch_picker::PatchPicker;
 use style::Theme;
 
+use self::common::{container_l1, container_l2};
 use self::operator::ModTargetPicker;
 
 use super::GuiSettings;
@@ -574,76 +576,55 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
             )
             .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
             .push(operator_4)
-            .push(Space::with_height(Length::Units(LINE_HEIGHT * 2)))
+            .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
             .push(operator_3)
-            .push(Space::with_height(Length::Units(LINE_HEIGHT * 2)))
+            .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
             .push(operator_2)
-            .push(Space::with_height(Length::Units(LINE_HEIGHT * 2)))
+            .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
             .push(operator_1)
-            .push(Space::with_height(Length::Units(LINE_HEIGHT * 2)))
+            .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
             .push(
                 Row::new()
                     .push(Space::with_width(Length::Units(LINE_HEIGHT)))
                     .push(lfo_1)
                     .push(
-                        Column::new()
-                            .push(Space::with_height(Length::Units(LINE_HEIGHT * 3)))
-                            .push(
-                                Container::new(Rule::vertical(1).style(self.style))
-                                    .align_x(Horizontal::Center)
-                                    .width(Length::Units(LINE_HEIGHT * 2))
-                                    .height(Length::Units(LINE_HEIGHT * 17)),
-                            ),
+                        Space::with_width(Length::Units(LINE_HEIGHT * 1))
                     )
                     .push(lfo_2)
                     .push(
-                        Column::new()
-                            .push(Space::with_height(Length::Units(LINE_HEIGHT * 3)))
-                            .push(
-                                Container::new(Rule::vertical(1).style(self.style))
-                                    .align_x(Horizontal::Center)
-                                    .width(Length::Units(LINE_HEIGHT * 2))
-                                    .height(Length::Units(LINE_HEIGHT * 17)),
-                            ),
+                        Space::with_width(Length::Units(LINE_HEIGHT * 1))
                     )
                     .push(lfo_3)
                     .push(
-                        Column::new()
-                            .push(Space::with_height(Length::Units(LINE_HEIGHT * 3)))
-                            .push(
-                                Container::new(Rule::vertical(1).style(self.style))
-                                    .align_x(Horizontal::Center)
-                                    .width(Length::Units(LINE_HEIGHT * 2))
-                                    .height(Length::Units(LINE_HEIGHT * 17)),
-                            ),
+                        Space::with_width(Length::Units(LINE_HEIGHT * 1))
                     )
                     .push(lfo_4)
                     .push(
-                        Column::new()
-                            .push(Space::with_height(Length::Units(LINE_HEIGHT * 3)))
-                            .push(
-                                Container::new(Rule::vertical(1).style(self.style))
-                                    .align_x(Horizontal::Center)
-                                    .width(Length::Units(LINE_HEIGHT * 2))
-                                    .height(Length::Units(LINE_HEIGHT * 17)),
-                            ),
+                        Space::with_width(Length::Units(LINE_HEIGHT * 1))
                     )
                     .push(
-                        Column::new()
-                            .width(Length::Units(LINE_HEIGHT * 8))
-                            .push(
-                                Row::new().push(
-                                    Container::new(master_title)
-                                        .width(Length::Units(LINE_HEIGHT * 8))
-                                        .height(Length::Units(LINE_HEIGHT * 2))
-                                        .align_x(Horizontal::Center)
-                                        .align_y(Vertical::Center),
-                                ),
-                            )
-                            .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
-                            .push(Row::new().push(master_volume).push(master_frequency))
-                            .push(Space::with_height(Length::Units(LINE_HEIGHT * 4)))
-                            .push(Row::new().push(modulation_matrix)),
+                        container_l1(
+                            Column::new()
+                                .width(Length::Units(LINE_HEIGHT * 11))
+                                .push(
+                                    Row::new().push(
+                                        Container::new(master_title)
+                                            .width(Length::Units(LINE_HEIGHT * 11))
+                                            .height(Length::Units(LINE_HEIGHT * 2))
+                                            .align_x(Horizontal::Center)
+                                            .align_y(Vertical::Center),
+                                    ),
+                                )
+                                .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
+                                .push(container_l2(
+                                    Row::new()
+                                        .push(master_volume)
+                                        .push(Space::with_width(Length::Units(LINE_HEIGHT)))
+                                        .push(master_frequency)
+                                    ))
+                                .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
+                                .push(container_l2(modulation_matrix))
+                            , LINE_HEIGHT)
                     ),
             );
 

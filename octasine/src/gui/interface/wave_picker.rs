@@ -1,3 +1,4 @@
+use iced_baseview::Container;
 use iced_baseview::canvas::{
     event, path, Cache, Canvas, Cursor, Frame, Geometry, Path, Program, Stroke,
 };
@@ -7,9 +8,11 @@ use iced_baseview::{
 };
 
 use crate::common::{CalculateCurve, Phase};
+use crate::hex_gray;
 use crate::parameter_values::ParameterValue;
 use crate::sync::GuiSyncHandle;
 
+use super::common::container_l2;
 use super::style::Theme;
 use super::{Message, FONT_BOLD, LINE_HEIGHT};
 

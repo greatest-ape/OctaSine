@@ -6,6 +6,7 @@ use crate::parameter_values::{
     Lfo3TargetParameterValue, Lfo4TargetParameterValue, LfoTargetParameter, ParameterValue,
 };
 
+use super::common::container_l2;
 use super::{style::Theme, GuiSyncHandle, Message, FONT_SIZE, LINE_HEIGHT};
 
 #[derive(Clone, PartialEq, Eq)]
@@ -104,10 +105,10 @@ impl LfoTargetPicker {
         )
         .text_size(FONT_SIZE)
         .style(self.style)
-        .width(Length::Units(LINE_HEIGHT * 12 - 3));
+        .width(Length::Units(LINE_HEIGHT * 11 - 3));
 
         Column::new()
-            .width(Length::Units(LINE_HEIGHT * 12))
+            .width(Length::Units(LINE_HEIGHT * 11))
             .align_items(Alignment::Center)
             .push(list)
             .into()

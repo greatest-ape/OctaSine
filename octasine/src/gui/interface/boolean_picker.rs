@@ -1,11 +1,14 @@
+use iced_baseview::Container;
 use iced_baseview::{
     alignment::Horizontal, Alignment, Column, Element, Length, Radio, Space, Text,
 };
 
+use crate::hex_gray;
 use crate::parameter_values::lfo_mode::LfoMode;
 use crate::parameter_values::{LfoBpmSyncValue, LfoModeValue, ParameterValue};
 use crate::sync::GuiSyncHandle;
 
+use super::common::container_l2;
 use super::style::Theme;
 use super::{Message, FONT_BOLD, FONT_SIZE, LINE_HEIGHT};
 

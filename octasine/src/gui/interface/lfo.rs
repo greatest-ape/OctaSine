@@ -9,6 +9,7 @@ use crate::parameter_values::{
 use crate::sync::GuiSyncHandle;
 
 use super::boolean_picker::{self, BooleanPicker};
+use super::common::{container_l1, container_l2};
 use super::knob::{self, OctaSineKnob};
 use super::lfo_target_picker::LfoTargetPicker;
 use super::style::Theme;
@@ -66,32 +67,37 @@ impl LfoWidgets {
         let title = Text::new(format!("LFO {}", self.index + 1))
             .size((FONT_SIZE * 3) / 2)
             .height(Length::Units(LINE_HEIGHT * 2))
-            .width(Length::Units(LINE_HEIGHT * 12))
+            .width(Length::Units(LINE_HEIGHT * 11))
             .font(FONT_VERY_BOLD)
             .color(self.style.heading_color())
             .horizontal_alignment(Horizontal::Center)
             .vertical_alignment(Vertical::Center);
 
-        Column::new()
+        let c = Column::new()
             .push(Row::new().push(title))
             .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
-            .push(Row::new().push(self.target.view()))
+            .push(self.target.view())
             .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
-            .push(
+            .push(container_l2(
                 Row::new()
-                    .push(self.bpm_sync.view())
+                    // .push(self.bpm_sync.view())
+                    // .push(Space::with_width(Length::Units(LINE_HEIGHT)))
                     .push(self.frequency_ratio.view())
+                    .push(Space::with_width(Length::Units(LINE_HEIGHT)))
                     .push(self.frequency_free.view()),
-            )
+            ))
             .push(Space::with_height(Length::Units(
-                LINE_HEIGHT * 1 + LINE_HEIGHT / 1,
+                LINE_HEIGHT,
             )))
-            .push(
+            .push(container_l2(
                 Row::new()
-                    .push(self.mode.view())
+                    // .push(self.mode.view())
+                    // .push(Space::with_width(Length::Units(LINE_HEIGHT)))
                     .push(self.shape.view())
+                    .push(Space::with_width(Length::Units(LINE_HEIGHT)))
                     .push(self.amount.view()),
-            )
-            .into()
+            ));
+
+        container_l1(c, LINE_HEIGHT).into()
     }
 }
