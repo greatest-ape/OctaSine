@@ -585,47 +585,41 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
             .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
             .push(
                 Row::new()
+                    .push(
+                        Column::new()
+                            .push(lfo_1)
+                            .push(Space::with_height(Length::Units(LINE_HEIGHT)))
+                            .push(lfo_2)
+                    )
                     .push(Space::with_width(Length::Units(LINE_HEIGHT)))
-                    .push(lfo_1)
                     .push(
-                        Space::with_width(Length::Units(LINE_HEIGHT * 1))
+                        Column::new()
+                            .push(lfo_3)
+                            .push(Space::with_height(Length::Units(LINE_HEIGHT)))
+                            .push(lfo_4)
                     )
-                    .push(lfo_2)
-                    .push(
-                        Space::with_width(Length::Units(LINE_HEIGHT * 1))
-                    )
-                    .push(lfo_3)
-                    .push(
-                        Space::with_width(Length::Units(LINE_HEIGHT * 1))
-                    )
-                    .push(lfo_4)
-                    .push(
-                        Space::with_width(Length::Units(LINE_HEIGHT * 1))
-                    )
+                    .push(Space::with_width(Length::Units(LINE_HEIGHT)))
                     .push(
                         container_l1(
-                            Column::new()
-                                .width(Length::Units(LINE_HEIGHT * 11))
-                                .push(
-                                    Row::new().push(
+                            container_l2(
+                                Column::new()
+                                    .push(
+                                        /*
                                         Container::new(master_title)
                                             .width(Length::Units(LINE_HEIGHT * 11))
                                             .height(Length::Units(LINE_HEIGHT * 2))
                                             .align_x(Horizontal::Center)
                                             .align_y(Vertical::Center),
-                                    ),
-                                )
-                                .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
-                                .push(container_l2(
-                                    Row::new()
-                                        .push(master_volume)
-                                        .push(Space::with_width(Length::Units(LINE_HEIGHT)))
-                                        .push(master_frequency)
-                                    ))
-                                .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
-                                .push(container_l2(modulation_matrix))
-                            , LINE_HEIGHT)
-                    ),
+                                        */
+                                        Row::new()
+                                            .push(master_volume)
+                                            .push(Space::with_width(Length::Units(LINE_HEIGHT)))
+                                            .push(master_frequency)
+                                    )
+                                    .push(Space::with_height(Length::Units(LINE_HEIGHT * 2)))
+                                    .push(modulation_matrix)
+                            )
+                    , 0))
             );
 
         Container::new(all)

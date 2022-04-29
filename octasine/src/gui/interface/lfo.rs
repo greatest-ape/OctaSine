@@ -67,37 +67,37 @@ impl LfoWidgets {
         let title = Text::new(format!("LFO {}", self.index + 1))
             .size((FONT_SIZE * 3) / 2)
             .height(Length::Units(LINE_HEIGHT * 2))
-            .width(Length::Units(LINE_HEIGHT * 11))
+            .width(Length::Units(LINE_HEIGHT * 9))
             .font(FONT_VERY_BOLD)
             .color(self.style.heading_color())
             .horizontal_alignment(Horizontal::Center)
             .vertical_alignment(Vertical::Center);
 
-        let c = Column::new()
-            .push(Row::new().push(title))
-            .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
-            .push(self.target.view())
-            .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
-            .push(container_l2(
-                Row::new()
-                    // .push(self.bpm_sync.view())
-                    // .push(Space::with_width(Length::Units(LINE_HEIGHT)))
-                    .push(self.frequency_ratio.view())
-                    .push(Space::with_width(Length::Units(LINE_HEIGHT)))
-                    .push(self.frequency_free.view()),
-            ))
-            .push(Space::with_height(Length::Units(
-                LINE_HEIGHT,
-            )))
+        let c = Row::new()
+            .push(Space::with_width(Length::Units(LINE_HEIGHT)))
+            .push(
+                Column::new()
+                    .push(Space::with_height(Length::Units(LINE_HEIGHT * 2)))
+                    .push(Row::new().push(title))
+                    .push(Space::with_height(Length::Units(LINE_HEIGHT * 0)))
+                    .push(self.target.view())
+            )
+            .push(Space::with_width(Length::Units(LINE_HEIGHT * 1)))
             .push(container_l2(
                 Row::new()
                     // .push(self.mode.view())
                     // .push(Space::with_width(Length::Units(LINE_HEIGHT)))
+                    // .push(self.bpm_sync.view())
+                    // .push(Space::with_width(Length::Units(LINE_HEIGHT)))
                     .push(self.shape.view())
                     .push(Space::with_width(Length::Units(LINE_HEIGHT)))
-                    .push(self.amount.view()),
+                    .push(self.amount.view())
+                    .push(Space::with_width(Length::Units(LINE_HEIGHT)))
+                    .push(self.frequency_ratio.view())
+                    .push(Space::with_width(Length::Units(LINE_HEIGHT)))
+                    .push(self.frequency_free.view()),
             ));
 
-        container_l1(c, LINE_HEIGHT).into()
+        container_l1(c, 0).into()
     }
 }

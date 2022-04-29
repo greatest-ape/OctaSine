@@ -1,7 +1,7 @@
 use iced_baseview::canvas::{
     event, path, Cache, Canvas, Cursor, Frame, Geometry, Path, Program, Stroke, Text,
 };
-use iced_baseview::{Color, Element, Length, Point, Rectangle, Size, Vector};
+use iced_baseview::{Color, Element, Length, Point, Rectangle, Size, Vector, Container};
 
 use crate::audio::voices::envelopes::VoiceOperatorVolumeEnvelope;
 use crate::audio::voices::log10_table::Log10Table;
@@ -466,10 +466,11 @@ impl Envelope {
     }
 
     pub fn view(&mut self) -> Element<Message> {
-        Canvas::new(self)
-            .width(Length::Units(WIDTH))
-            .height(Length::Units(HEIGHT))
-            .into()
+        Container::new(
+            Canvas::new(self)
+                .width(Length::Units(WIDTH))
+                .height(Length::Units(HEIGHT))
+        ).height(Length::Units(LINE_HEIGHT * 6)).into()
     }
 
     fn draw_time_markers(&self, frame: &mut Frame, style_sheet: Box<dyn StyleSheet>) {
