@@ -28,7 +28,7 @@ use operator::OperatorWidgets;
 use patch_picker::PatchPicker;
 use style::Theme;
 
-use self::common::{container_l1, container_l2};
+use self::common::{container_l1, container_l2, container_l3};
 use self::operator::ModTargetPicker;
 
 use super::GuiSettings;
@@ -612,12 +612,11 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                                             .align_y(Vertical::Center),
                                         */
                                         Row::new()
-                                            .push(master_volume)
+                                            .push(container_l3(master_volume))
                                             .push(Space::with_width(Length::Units(LINE_HEIGHT)))
-                                            .push(master_frequency)
+                                            .push(container_l3(master_frequency))
                                     )
-                                    .push(Space::with_height(Length::Units(LINE_HEIGHT * 2)))
-                                    .push(modulation_matrix)
+                                    .push(container_l3(modulation_matrix))
                             )
                     , 0))
             );

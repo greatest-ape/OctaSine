@@ -9,7 +9,7 @@ use crate::parameter_values::{
 use crate::sync::GuiSyncHandle;
 
 use super::boolean_picker::{self, BooleanPicker};
-use super::common::{container_l1, container_l2};
+use super::common::{container_l1, container_l2, container_l3};
 use super::knob::{self, OctaSineKnob};
 use super::lfo_target_picker::LfoTargetPicker;
 use super::style::Theme;
@@ -89,13 +89,13 @@ impl LfoWidgets {
                     // .push(Space::with_width(Length::Units(LINE_HEIGHT)))
                     // .push(self.bpm_sync.view())
                     // .push(Space::with_width(Length::Units(LINE_HEIGHT)))
-                    .push(self.shape.view())
+                    .push(container_l3(self.shape.view()))
                     .push(Space::with_width(Length::Units(LINE_HEIGHT)))
-                    .push(self.amount.view())
+                    .push(container_l3(self.amount.view()))
                     .push(Space::with_width(Length::Units(LINE_HEIGHT)))
-                    .push(self.frequency_ratio.view())
+                    .push(container_l3(self.frequency_ratio.view()))
                     .push(Space::with_width(Length::Units(LINE_HEIGHT)))
-                    .push(self.frequency_free.view()),
+                    .push(container_l3(self.frequency_free.view())),
             ));
 
         container_l1(c, 0).into()

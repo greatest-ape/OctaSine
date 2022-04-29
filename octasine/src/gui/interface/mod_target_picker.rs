@@ -106,6 +106,7 @@ where
 
         Column::new()
             .width(Length::Units(LINE_HEIGHT * 4))
+            .height(Length::Units(LINE_HEIGHT * 6))
             .align_items(Alignment::Center)
             .push(title)
             .push(Space::with_height(Length::Units(LINE_HEIGHT)))
