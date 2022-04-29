@@ -65,7 +65,7 @@ impl LfoWidgets {
 
     pub fn view(&mut self) -> Element<Message> {
         let title = Text::new(format!("LFO {}", self.index + 1))
-            .size((FONT_SIZE * 3) / 2)
+            .size((FONT_SIZE * 2))
             .height(Length::Units(LINE_HEIGHT * 2))
             .width(Length::Units(LINE_HEIGHT * 9))
             .font(FONT_VERY_BOLD)

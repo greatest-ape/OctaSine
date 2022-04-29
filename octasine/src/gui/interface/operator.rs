@@ -142,7 +142,7 @@ impl OperatorWidgets {
 
     pub fn view(&mut self) -> Element<Message> {
         let operator_number = Text::new(format!("OP {}", self.index + 1))
-            .size(FONT_SIZE * 2 - FONT_SIZE / 2)
+            .size(FONT_SIZE * 2)
             .font(FONT_VERY_BOLD)
             .color(self.style.heading_color())
             .horizontal_alignment(Horizontal::Center);
@@ -158,7 +158,7 @@ impl OperatorWidgets {
         let mut row = Row::new()
             .push(
                 Container::new(operator_number_column)
-                    .width(Length::Units(LINE_HEIGHT * 6))
+                    .width(Length::Units(LINE_HEIGHT * 8))
                     .height(Length::Units(LINE_HEIGHT * 7))
             )
             //.push(Space::with_width(Length::Units(LINE_HEIGHT * 2)))
