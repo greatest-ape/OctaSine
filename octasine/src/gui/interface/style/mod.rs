@@ -9,6 +9,10 @@ use iced_baseview::{
 use iced_style::checkbox;
 use serde::{Deserialize, Serialize};
 
+use crate::hex_gray;
+
+use self::dark::RED;
+
 use super::{envelope, mod_matrix, mute_button, wave_picker};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -53,6 +57,7 @@ impl rule::StyleSheet for Rule {
     fn style(&self) -> rule::Style {
         let default: Box<dyn rule::StyleSheet> = Default::default();
         let color = default.style().color;
+        let color = hex_gray!(0x30);
 
         rule::Style {
             color,

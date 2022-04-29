@@ -9,7 +9,7 @@ use crate::parameter_values::{
 use crate::sync::GuiSyncHandle;
 
 use super::boolean_picker::{self, BooleanPicker};
-use super::common::{container_l1, container_l2, container_l3};
+use super::common::{container_l1, container_l2, container_l3, space_l3};
 use super::knob::{self, OctaSineKnob};
 use super::lfo_target_picker::LfoTargetPicker;
 use super::style::Theme;
@@ -65,7 +65,7 @@ impl LfoWidgets {
 
     pub fn view(&mut self) -> Element<Message> {
         let title = Text::new(format!("LFO {}", self.index + 1))
-            .size((FONT_SIZE * 2))
+            .size(FONT_SIZE + FONT_SIZE / 2)
             .height(Length::Units(LINE_HEIGHT * 2))
             .width(Length::Units(LINE_HEIGHT * 9))
             .font(FONT_VERY_BOLD)
@@ -90,11 +90,11 @@ impl LfoWidgets {
                     // .push(self.bpm_sync.view())
                     // .push(Space::with_width(Length::Units(LINE_HEIGHT)))
                     .push(container_l3(self.shape.view()))
-                    .push(Space::with_width(Length::Units(LINE_HEIGHT)))
+                    .push(space_l3())
                     .push(container_l3(self.amount.view()))
-                    .push(Space::with_width(Length::Units(LINE_HEIGHT)))
+                    .push(space_l3())
                     .push(container_l3(self.frequency_ratio.view()))
-                    .push(Space::with_width(Length::Units(LINE_HEIGHT)))
+                    .push(space_l3())
                     .push(container_l3(self.frequency_free.view())),
             ));
 
