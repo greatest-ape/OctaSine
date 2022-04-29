@@ -9,7 +9,7 @@ struct ContainerL1;
 impl iced_baseview::container::StyleSheet for ContainerL1 {
 	fn style(&self) -> iced_baseview::container::Style {
 	iced_baseview::container::Style {
-		background: Some(hex_gray!(0x30).into()),
+		background: Some(hex_gray!(0x12).into()),
 		border_radius: 4.0,
 		..Default::default()
 	}
@@ -22,7 +22,7 @@ struct ContainerL2;
 impl iced_baseview::container::StyleSheet for ContainerL2 {
 	fn style(&self) -> iced_baseview::container::Style {
 	iced_baseview::container::Style {
-		background: Some(hex_gray!(0x30).into()),
+		background: Some(hex_gray!(0x12).into()),
 		border_radius: 4.0,
 		..Default::default()
 	}
@@ -34,7 +34,7 @@ struct ContainerL3;
 impl iced_baseview::container::StyleSheet for ContainerL3 {
 	fn style(&self) -> iced_baseview::container::Style {
 	iced_baseview::container::Style {
-		background: Some(hex_gray!(0x40).into()),
+		background: Some(hex_gray!(0x20).into()),
 		border_radius: 4.0,
 		..Default::default()
 	}

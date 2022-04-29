@@ -95,7 +95,7 @@ impl LfoWidgets {
                     .push(space_l3())
                     .push(container_l3(self.frequency_ratio.view()))
                     .push(space_l3())
-                    .push(container_l3(self.frequency_free.view())),
+                    .push(container_l3(self.frequency_free.view()))
             ));
 
         container_l1(c, 0).into()
