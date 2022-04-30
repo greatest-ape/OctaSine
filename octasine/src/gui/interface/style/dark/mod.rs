@@ -81,7 +81,7 @@ impl button::StyleSheet for Button {
 
     fn hovered(&self) -> button::Style {
         button::Style {
-            // background: SURFACE_HOVER.into(),
+            background: SURFACE_HOVER.into(),
             text_color: HOVERED,
             ..self.active()
         }
@@ -98,7 +98,7 @@ impl pick_list::StyleSheet for PickList {
     fn menu(&self) -> iced_style::menu::Style {
         iced_style::menu::Style {
             background: GRAY_300.into(),
-            selected_background: SURFACE.into(),
+            selected_background: SURFACE_HOVER.into(),
             text_color: TEXT_FG,
             selected_text_color: HOVERED,
             border_width: 0.0,
@@ -116,6 +116,7 @@ impl pick_list::StyleSheet for PickList {
     }
     fn hovered(&self) -> pick_list::Style {
         pick_list::Style {
+            background: SURFACE_HOVER.into(),
             text_color: HOVERED,
             ..self.active()
         }
