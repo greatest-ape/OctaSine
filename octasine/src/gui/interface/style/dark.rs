@@ -16,7 +16,7 @@ macro_rules! hex_gray {
     };
 }
 
-pub const BACKGROUND: Color = Color::BLACK;
+pub const BACKGROUND: Color = hex_gray!(0x00);
 pub const SURFACE: Color = hex_gray!(0x20);
 pub const TEXT_BG: Color = hex_gray!(0x90);
 pub const TEXT_FG: Color = hex_gray!(0xBB);
