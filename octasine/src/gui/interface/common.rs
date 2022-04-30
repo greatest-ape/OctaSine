@@ -1,4 +1,4 @@
-use iced_baseview::{alignment::Horizontal, Column, Container, Element, Length, Row, Rule, Space};
+use iced_baseview::{Column, Container, Element, Length, Row, Space};
 
 use crate::gui::interface::LINE_HEIGHT;
 
@@ -11,23 +11,25 @@ pub fn container_l1<'a, T>(theme: Theme, contents: T) -> Container<'a, Message>
 where
     T: Into<Element<'a, Message>>,
 {
-    Container::new(contents)
-        .padding(0)
-        .style(theme.container_l1())
+    Container::new(contents).style(theme.container_l1())
 }
 
 pub fn container_l2<'a, T>(theme: Theme, contents: T) -> Container<'a, Message>
 where
     T: Into<Element<'a, Message>>,
 {
+    let padding_x = LINE_HEIGHT;
+    let padding_y = 0;
+
     let contents = Row::new()
-        .push(Space::with_width(Length::Units(LINE_HEIGHT)))
+        .push(Space::with_width(Length::Units(padding_x)))
         .push(
             Column::new()
-                // .push(Space::with_height(Length::Units(LINE_HEIGHT / 2)))
-                .push(contents), // .push(Space::with_height(Length::Units(LINE_HEIGHT / 2)))
+                .push(Space::with_height(Length::Units(padding_y)))
+                .push(contents)
+                .push(Space::with_height(Length::Units(padding_y))),
         )
-        .push(Space::with_width(Length::Units(LINE_HEIGHT)));
+        .push(Space::with_width(Length::Units(padding_x)));
 
     Container::new(contents)
         .padding(0)
