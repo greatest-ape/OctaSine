@@ -595,33 +595,6 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                     .push(Space::with_width(Length::Units(LINE_HEIGHT)))
                     .push(
                         Column::new()
-                            .push(container_l1(
-                                self.style,
-                                Row::new()
-                                    .push(
-                                        Container::new(
-                                            Text::new("Master")
-                                                .size(FONT_SIZE * 3 / 2)
-                                                .height(Length::Units(LINE_HEIGHT * 8))
-                                                .font(FONT_VERY_BOLD)
-                                                .color(self.style.heading_color())
-                                                .horizontal_alignment(Horizontal::Center)
-                                                .vertical_alignment(Vertical::Center),
-                                        )
-                                        .width(Length::Units(LINE_HEIGHT * 8))
-                                        .height(Length::Units(LINE_HEIGHT * 8))
-                                        .align_x(Horizontal::Center)
-                                        .align_y(Vertical::Center),
-                                    )
-                                    .push(container_l2(
-                                        self.style,
-                                        Row::new()
-                                            .push(container_l3(self.style, master_volume))
-                                            .push(space_l3())
-                                            .push(container_l3(self.style, master_frequency)),
-                                    )),
-                            ))
-                            .push(Space::with_height(Length::Units(LINE_HEIGHT)))
                             .push(
                                 Row::new()
                                     .push(container_l1(
@@ -700,6 +673,28 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                                             .height(Length::Units(LINE_HEIGHT * 8))
                                             .align_x(Horizontal::Center)
                                             .align_y(Vertical::Center),
+                                        ),
+                                    )),
+                            )
+                            .push(Space::with_height(Length::Units(LINE_HEIGHT)))
+                            .push(
+                                Row::new()
+                                    .push(container_l1(
+                                        self.style,
+                                        container_l2(
+                                            self.style,
+                                            container_l3(self.style, modulation_matrix),
+                                        ),
+                                    ))
+                                    .push(Space::with_width(Length::Units(LINE_HEIGHT)))
+                                    .push(container_l1(
+                                        self.style,
+                                        container_l2(
+                                            self.style,
+                                            Row::new()
+                                                .push(container_l3(self.style, master_volume))
+                                                .push(space_l3())
+                                                .push(container_l3(self.style, master_frequency)),
                                         ),
                                     )),
                             ),
