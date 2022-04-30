@@ -190,7 +190,7 @@ impl OperatorWidgets {
             Some(ModTargetPicker::Operator2(picker)) => group = group.push(container_l3(picker.view())),
             Some(ModTargetPicker::Operator3(picker)) => group = group.push(container_l3(picker.view())),
             Some(ModTargetPicker::Operator4(picker)) => group = group.push(container_l3(picker.view())),
-            None => group = group.push(Space::with_width(Length::Units(LINE_HEIGHT * 5))),
+            None => group = group.push(Space::with_width(Length::Units(LINE_HEIGHT * 3))),
         }
 
         group = group.push(space_l3());

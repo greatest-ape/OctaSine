@@ -9,7 +9,7 @@ struct ContainerL1;
 impl iced_baseview::container::StyleSheet for ContainerL1 {
 	fn style(&self) -> iced_baseview::container::Style {
 	iced_baseview::container::Style {
-		background: Some(hex_gray!(0x12).into()),
+		background: Some(hex_gray!(0x20).into()),
 		border_radius: 4.0,
 		..Default::default()
 	}
@@ -22,7 +22,7 @@ struct ContainerL2;
 impl iced_baseview::container::StyleSheet for ContainerL2 {
 	fn style(&self) -> iced_baseview::container::Style {
 	iced_baseview::container::Style {
-		background: Some(hex_gray!(0x12).into()),
+		background: Some(hex_gray!(0x2A).into()),
 		border_radius: 4.0,
 		..Default::default()
 	}
@@ -34,7 +34,7 @@ struct ContainerL3;
 impl iced_baseview::container::StyleSheet for ContainerL3 {
 	fn style(&self) -> iced_baseview::container::Style {
 	iced_baseview::container::Style {
-		background: Some(hex_gray!(0x20).into()),
+		background: None, //Some(hex_gray!(0x20).into()),
 		border_radius: 4.0,
 		..Default::default()
 	}
@@ -48,35 +48,38 @@ pub fn container_l1<'a, T>(contents: T, padding: u16) -> Container<'a, Message> 
 
 pub fn container_l2<'a, T>(contents: T) -> Container<'a, Message> where T: Into<Element<'a, Message>>,{
 	let contents = Row::new()
-	    // .push(Space::with_width(Length::Units(LINE_HEIGHT / 2)))
+	    .push(Space::with_width(Length::Units(LINE_HEIGHT)))
 	    .push(
 		Column::new()
-			.push(Space::with_height(Length::Units(LINE_HEIGHT / 2)))
+			// .push(Space::with_height(Length::Units(LINE_HEIGHT / 2)))
 			.push(contents)
-			.push(Space::with_height(Length::Units(LINE_HEIGHT / 2)))
-	    );
-	    // .push(Space::with_width(Length::Units(LINE_HEIGHT / 2)))
+			// .push(Space::with_height(Length::Units(LINE_HEIGHT / 2)))
+	    )
+	    .push(Space::with_width(Length::Units(LINE_HEIGHT)));
 	
         Container::new(contents).padding(0).style(ContainerL2).into()
 }
 
 pub fn container_l3<'a, T>(contents: T) -> Container<'a, Message> where T: Into<Element<'a, Message>>,{
+	let padding_x = 0;
+	let padding_y = LINE_HEIGHT;
+
 	let contents = Row::new()
-	    .push(Space::with_width(Length::Units(LINE_HEIGHT / 2)))
+	    .push(Space::with_width(Length::Units(padding_x)))
 	    .push(
 		Column::new()
-			.push(Space::with_height(Length::Units(LINE_HEIGHT / 2)))
+			.push(Space::with_height(Length::Units(padding_y)))
 			.push(contents)
-			.push(Space::with_height(Length::Units(LINE_HEIGHT / 2)))
+			.push(Space::with_height(Length::Units(padding_y)))
 	    )
-	    .push(Space::with_width(Length::Units(LINE_HEIGHT / 2)))
+	    .push(Space::with_width(Length::Units(padding_x)))
 	    ;
 
         Container::new(contents).padding(0).style(ContainerL3).into()
 }
 
 pub fn space_l2<'a>() -> Container<'a, Message> {
-	Container::new(Space::with_width(Length::Units(LINE_HEIGHT + LINE_HEIGHT ))) // FIXME: grid (compensate for space_l3 unevenness)
+	Container::new(Space::with_width(Length::Units(LINE_HEIGHT)))
 }
 
 pub fn space_l3<'a>() -> Container<'a, Message> {
@@ -102,5 +105,5 @@ pub fn space_l3<'a>() -> Container<'a, Message> {
 	.align_x(Horizontal::Center);
 	*/
 
-	Container::new(Space::with_width(Length::Units(LINE_HEIGHT / 2)))
+	Container::new(Space::with_width(Length::Units(0)))
 }
