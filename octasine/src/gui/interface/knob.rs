@@ -32,7 +32,7 @@ where
         "VOLUME",
         TickMarkType::MinMaxAndDefault,
         style,
-        |theme| theme.knob_bipolar(),
+        |theme| theme.knob_regular(),
     )
 }
 
