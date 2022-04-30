@@ -15,11 +15,36 @@ use self::dark::RED;
 
 use super::{envelope, mod_matrix, mute_button, wave_picker};
 
+pub trait Style {
+    // fn container_l0<S: iced_style::container::StyleSheet>() -> S;
+    // fn container_l1<S: iced_style::container::StyleSheet>() -> S;
+    // fn container_l2<S: iced_style::container::StyleSheet>() -> S;
+    // fn container_l3<S: iced_style::container::StyleSheet>() -> S;
+    fn knob_regular(&self) -> Box<dyn iced_audio::knob::StyleSheet>;
+    fn knob_pan(&self) -> Box<dyn iced_audio::knob::StyleSheet>;
+    // fn knob_volume(&self) -> Box<dyn iced_audio::knob::StyleSheet>;
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum Theme {
     Light,
     Dark,
+}
+
+impl Style for Theme {
+    fn knob_regular(&self) -> Box<dyn iced_audio::knob::StyleSheet> {
+        match self {
+            Self::Light => Box::new(light::knob::Knob),
+            Self::Dark => Box::new(dark::knob::Knob),
+        }
+    }
+    fn knob_pan(&self) -> Box<dyn iced_audio::knob::StyleSheet> {
+        match self {
+            Self::Light => Box::new(light::knob::Knob),
+            Self::Dark => Box::new(dark::knob::Knob),
+        }
+    }
 }
 
 impl Theme {
