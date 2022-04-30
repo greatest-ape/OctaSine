@@ -16,6 +16,17 @@ macro_rules! hex_gray {
     };
 }
 
+#[macro_export]
+macro_rules! hex{
+    ($r:literal, $g:literal, $b:literal) => {
+        ::iced_baseview::Color::from_rgb(
+            $r as f32 / 255.0,
+            $g as f32 / 255.0,
+            $b as f32 / 255.0,
+        )
+    };
+}
+
 pub const BACKGROUND: Color = hex_gray!(0x00);
 pub const SURFACE: Color = hex_gray!(0x20);
 pub const TEXT_BG: Color = hex_gray!(0x90);
@@ -23,7 +34,9 @@ pub const TEXT_FG: Color = hex_gray!(0xBB);
 pub const HOVERED: Color = hex_gray!(0xDD);
 pub const CONTRAST: Color = hex_gray!(0x30);
 
-pub const RED: Color = Color::from_rgb(0.765, 0.067, 0.176);
+pub const RED: Color = hex!(0xEF, 0x53, 0x50);
+pub const BLUE: Color = hex!(0x50, 0x9D, 0xEF);
+pub const GREEN: Color = hex!(0x50, 0xEF, 0x2a);
 
 pub struct Container;
 
@@ -138,6 +151,7 @@ impl pick_list::StyleSheet for PickList {
 }
 
 pub(super) mod knob {
+    use super::*;
     use iced_audio::{knob::*, style::tick_marks};
 
     const NOTCH_STYLE: LineNotch = LineNotch {
@@ -151,7 +165,7 @@ pub(super) mod knob {
     const ARC_STYLE: ArcStyle = ArcStyle {
         width: StyleLength::Units(2.0),
         empty_color: hex_gray!(0x70),
-        filled_color: hex_gray!(0xB0),
+        filled_color: BLUE, // hex_gray!(0xB0),
         cap: LineCap::Square,
         notch: NotchShape::Line(NOTCH_STYLE),
     };
