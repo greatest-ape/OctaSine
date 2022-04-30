@@ -220,47 +220,51 @@ impl OperatorWidgets {
         };
         let zoom_to_fit_message = Message::EnvelopeZoomToFit(self.index);
 
-        row = row
-            .push(space_l2())
-            .push(container_l2(container_l3((self.envelope.view()))))
-            .push(
-                Column::new()
-                    .width(Length::Units(LINE_HEIGHT * 3))
-                    .align_items(Alignment::End)
-                    .push(
-                        Row::new()
-                            .push(
-                                Button::new(
-                                    &mut self.zoom_out,
-                                    Text::new("−").font(FONT_VERY_BOLD),
+        row = row.push(space_l2()).push(container_l2(
+            Row::new()
+                .push(container_l3((self.envelope.view())))
+                .push(container_l3(
+                    Column::new()
+                        .width(Length::Units(LINE_HEIGHT * 3))
+                        .align_items(Alignment::End)
+                        .push(
+                            Row::new()
+                                .push(
+                                    Button::new(
+                                        &mut self.zoom_out,
+                                        Text::new("−").font(FONT_VERY_BOLD),
+                                    )
+                                    .on_press(Message::EnvelopeZoomOut(self.index))
+                                    .style(self.style),
                                 )
-                                .on_press(Message::EnvelopeZoomOut(self.index))
-                                .style(self.style),
-                            )
-                            .push(Space::with_width(Length::Units(3)))
-                            .push(
-                                Button::new(&mut self.zoom_in, Text::new("+").font(FONT_VERY_BOLD))
+                                .push(Space::with_width(Length::Units(3)))
+                                .push(
+                                    Button::new(
+                                        &mut self.zoom_in,
+                                        Text::new("+").font(FONT_VERY_BOLD),
+                                    )
                                     .on_press(Message::EnvelopeZoomIn(self.index))
                                     .style(self.style),
+                                ),
+                        )
+                        .push(Space::with_height(Length::Units(LINE_HEIGHT * 1 - 10)))
+                        .push(
+                            Row::new().push(
+                                Button::new(&mut self.zoom_to_fit, Text::new("FIT"))
+                                    .on_press(zoom_to_fit_message)
+                                    .style(self.style),
                             ),
-                    )
-                    .push(Space::with_height(Length::Units(LINE_HEIGHT * 1 - 10)))
-                    .push(
-                        Row::new().push(
-                            Button::new(&mut self.zoom_to_fit, Text::new("FIT"))
-                                .on_press(zoom_to_fit_message)
-                                .style(self.style),
+                        )
+                        .push(Space::with_height(Length::Units(LINE_HEIGHT * 1 - 10)))
+                        .push(
+                            Row::new().push(
+                                Button::new(&mut self.sync_viewport, Text::new("DIST"))
+                                    .on_press(sync_viewports_message)
+                                    .style(self.style),
+                            ),
                         ),
-                    )
-                    .push(Space::with_height(Length::Units(LINE_HEIGHT * 1 - 10)))
-                    .push(
-                        Row::new().push(
-                            Button::new(&mut self.sync_viewport, Text::new("DIST"))
-                                .on_press(sync_viewports_message)
-                                .style(self.style),
-                        ),
-                    ),
-            );
+                )),
+        ));
 
         container_l1(row, 0).into()
     }

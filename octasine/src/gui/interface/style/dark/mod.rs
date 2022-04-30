@@ -110,7 +110,6 @@ impl pick_list::StyleSheet for PickList {
             background: SURFACE.into(),
             text_color: TEXT_FG,
             border_color: TEXT_BG,
-            border_radius: 0.0,
             border_width: 0.0,
             ..Default::default()
         }
@@ -128,7 +127,7 @@ pub struct Envelope;
 impl envelope::StyleSheet for Envelope {
     fn active(&self) -> envelope::Style {
         envelope::Style {
-            background_color: Color::BLACK,
+            background_color: GRAY_200,
             border_color: Color::from_rgb(0.5, 0.5, 0.5),
             text_color: TEXT_BG,
             time_marker_minor_color: Color::from_rgb(0.3, 0.3, 0.3),
