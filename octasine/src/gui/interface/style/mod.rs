@@ -21,8 +21,7 @@ pub trait Style {
     // fn container_l2<S: iced_style::container::StyleSheet>() -> S;
     // fn container_l3<S: iced_style::container::StyleSheet>() -> S;
     fn knob_regular(&self) -> Box<dyn iced_audio::knob::StyleSheet>;
-    fn knob_pan(&self) -> Box<dyn iced_audio::knob::StyleSheet>;
-    // fn knob_volume(&self) -> Box<dyn iced_audio::knob::StyleSheet>;
+    fn knob_bipolar(&self) -> Box<dyn iced_audio::knob::StyleSheet>;
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -36,13 +35,13 @@ impl Style for Theme {
     fn knob_regular(&self) -> Box<dyn iced_audio::knob::StyleSheet> {
         match self {
             Self::Light => Box::new(light::knob::Knob),
-            Self::Dark => Box::new(dark::knob::Knob),
+            Self::Dark => Box::new(dark::knob::KnobRegular),
         }
     }
-    fn knob_pan(&self) -> Box<dyn iced_audio::knob::StyleSheet> {
+    fn knob_bipolar(&self) -> Box<dyn iced_audio::knob::StyleSheet> {
         match self {
             Self::Light => Box::new(light::knob::Knob),
-            Self::Dark => Box::new(dark::knob::Knob),
+            Self::Dark => Box::new(dark::knob::KnobBilpolar),
         }
     }
 }
@@ -148,7 +147,7 @@ impl<'a> From<Theme> for Box<dyn iced_audio::knob::StyleSheet + 'a> {
     fn from(theme: Theme) -> Self {
         match theme {
             Theme::Light => light::knob::Knob.into(),
-            Theme::Dark => dark::knob::Knob.into(),
+            Theme::Dark => dark::knob::KnobRegular.into(),
         }
     }
 }

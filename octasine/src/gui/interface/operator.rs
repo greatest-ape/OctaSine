@@ -12,7 +12,7 @@ use crate::parameter_values::{
 };
 use crate::sync::GuiSyncHandle;
 
-use super::common::{container_l1, container_l2, container_l3, space_l3, space_l2};
+use super::common::{container_l1, container_l2, container_l3, space_l2, space_l3};
 use super::envelope::Envelope;
 use super::knob::{self, OctaSineKnob};
 use super::mod_target_picker;
@@ -159,7 +159,7 @@ impl OperatorWidgets {
             .push(
                 Container::new(operator_number_column)
                     .width(Length::Units(LINE_HEIGHT * 8))
-                    .height(Length::Units(LINE_HEIGHT * 7))
+                    .height(Length::Units(LINE_HEIGHT * 7)),
             )
             //.push(Space::with_width(Length::Units(LINE_HEIGHT * 2)))
             .push(container_l2(
@@ -170,10 +170,10 @@ impl OperatorWidgets {
                     .push(container_l3(self.volume.view()))
                     // .push(Space::with_width(Length::Units(LINE_HEIGHT)))
                     .push(space_l3())
-                    .push(container_l3(self.panning.view()))
+                    .push(container_l3(self.panning.view())),
             ))
             .push(space_l2());
-        
+
         let mut group = Row::new()
             .push(container_l3(self.mix.view()))
             .push(space_l3());
@@ -187,9 +187,15 @@ impl OperatorWidgets {
         group = group.push(space_l3());
 
         match self.mod_target.as_mut() {
-            Some(ModTargetPicker::Operator2(picker)) => group = group.push(container_l3(picker.view())),
-            Some(ModTargetPicker::Operator3(picker)) => group = group.push(container_l3(picker.view())),
-            Some(ModTargetPicker::Operator4(picker)) => group = group.push(container_l3(picker.view())),
+            Some(ModTargetPicker::Operator2(picker)) => {
+                group = group.push(container_l3(picker.view()))
+            }
+            Some(ModTargetPicker::Operator3(picker)) => {
+                group = group.push(container_l3(picker.view()))
+            }
+            Some(ModTargetPicker::Operator4(picker)) => {
+                group = group.push(container_l3(picker.view()))
+            }
             None => group = group.push(Space::with_width(Length::Units(LINE_HEIGHT * 3))),
         }
 
@@ -205,7 +211,7 @@ impl OperatorWidgets {
                     .push(space_l3())
                     .push(container_l3(self.frequency_free.view()))
                     .push(space_l3())
-                    .push(container_l3(self.frequency_fine.view()))
+                    .push(container_l3(self.frequency_fine.view())),
             ));
 
         let sync_viewports_message = Message::EnvelopeSyncViewports {
@@ -255,7 +261,7 @@ impl OperatorWidgets {
                         ),
                     ),
             );
-        
+
         container_l1(row, 0).into()
     }
 }

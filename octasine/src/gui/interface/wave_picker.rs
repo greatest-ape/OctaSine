@@ -1,7 +1,7 @@
-use iced_baseview::Container;
 use iced_baseview::canvas::{
     event, path, Cache, Canvas, Cursor, Frame, Geometry, Path, Program, Stroke,
 };
+use iced_baseview::Container;
 use iced_baseview::{
     alignment::Horizontal, Alignment, Color, Column, Element, Length, Point, Rectangle, Size,
     Space, Text,

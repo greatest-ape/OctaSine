@@ -589,36 +589,36 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                         Column::new()
                             .push(lfo_1)
                             .push(Space::with_height(Length::Units(LINE_HEIGHT)))
-                            .push(lfo_2)
+                            .push(lfo_2),
                     )
                     .push(Space::with_width(Length::Units(LINE_HEIGHT)))
                     .push(
                         Column::new()
                             .push(lfo_3)
                             .push(Space::with_height(Length::Units(LINE_HEIGHT)))
-                            .push(lfo_4)
+                            .push(lfo_4),
                     )
                     .push(Space::with_width(Length::Units(LINE_HEIGHT)))
-                    .push(
-                        container_l1(
-                            container_l2(
-                                Column::new()
-                                    .push(
-                                        /*
-                                        Container::new(master_title)
-                                            .width(Length::Units(LINE_HEIGHT * 11))
-                                            .height(Length::Units(LINE_HEIGHT * 2))
-                                            .align_x(Horizontal::Center)
-                                            .align_y(Vertical::Center),
-                                        */
-                                        Row::new()
-                                            .push(container_l3(master_volume))
-                                            .push(space_l3())
-                                            .push(container_l3(master_frequency))
-                                    )
-                                    .push(container_l3(modulation_matrix))
-                            )
-                    , 0))
+                    .push(container_l1(
+                        container_l2(
+                            Column::new()
+                                .push(
+                                    /*
+                                    Container::new(master_title)
+                                        .width(Length::Units(LINE_HEIGHT * 11))
+                                        .height(Length::Units(LINE_HEIGHT * 2))
+                                        .align_x(Horizontal::Center)
+                                        .align_y(Vertical::Center),
+                                    */
+                                    Row::new()
+                                        .push(container_l3(master_volume))
+                                        .push(space_l3())
+                                        .push(container_l3(master_frequency)),
+                                )
+                                .push(container_l3(modulation_matrix)),
+                        ),
+                        0,
+                    )),
             );
 
         Container::new(all)

@@ -79,7 +79,7 @@ impl LfoWidgets {
                     .push(Space::with_height(Length::Units(LINE_HEIGHT * 2)))
                     .push(Row::new().push(title))
                     .push(Space::with_height(Length::Units(LINE_HEIGHT * 0)))
-                    .push(self.target.view())
+                    .push(self.target.view()),
             )
             // .push(Space::with_width(Length::Units(LINE_HEIGHT * 1)))
             .push(container_l2(
@@ -94,7 +94,7 @@ impl LfoWidgets {
                     .push(space_l3())
                     .push(container_l3(self.frequency_ratio.view()))
                     .push(space_l3())
-                    .push(container_l3(self.frequency_free.view()))
+                    .push(container_l3(self.frequency_free.view())),
             ));
 
         container_l1(c, 0).into()

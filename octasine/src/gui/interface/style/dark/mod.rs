@@ -1,3 +1,5 @@
+pub mod knob;
+
 use iced_baseview::{button, container, pick_list, radio, Color};
 use iced_style::checkbox;
 
@@ -17,13 +19,9 @@ macro_rules! hex_gray {
 }
 
 #[macro_export]
-macro_rules! hex{
+macro_rules! hex {
     ($r:literal, $g:literal, $b:literal) => {
-        ::iced_baseview::Color::from_rgb(
-            $r as f32 / 255.0,
-            $g as f32 / 255.0,
-            $b as f32 / 255.0,
-        )
+        ::iced_baseview::Color::from_rgb($r as f32 / 255.0, $g as f32 / 255.0, $b as f32 / 255.0)
     };
 }
 
@@ -146,57 +144,6 @@ impl pick_list::StyleSheet for PickList {
             text_color: HOVERED,
             border_color: HOVERED,
             ..self.active()
-        }
-    }
-}
-
-pub(super) mod knob {
-    use super::*;
-    use iced_audio::{knob::*, style::tick_marks};
-
-    const NOTCH_STYLE: LineNotch = LineNotch {
-        color: hex_gray!(0xB0),
-        width: StyleLength::Units(2.0),
-        length: StyleLength::Units(6.0),
-        cap: LineCap::Round,
-        offset: StyleLength::Units(3.0),
-    };
-
-    const ARC_STYLE: ArcStyle = ArcStyle {
-        width: StyleLength::Units(2.0),
-        empty_color: hex_gray!(0x70),
-        filled_color: BLUE, // hex_gray!(0xB0),
-        cap: LineCap::Square,
-        notch: NotchShape::Line(NOTCH_STYLE),
-    };
-
-    const TICK_MARK_STYLE: tick_marks::Style = tick_marks::Style {
-        tier_1: tick_marks::Shape::Line { length: 3.0, width: 2.0, color: hex_gray!(0x70) },
-        tier_2: tick_marks::Shape::Line { length: 3.0, width: 2.0, color: hex_gray!(0x70) },
-        tier_3: tick_marks::Shape::Line { length: 3.0, width: 2.0, color: hex_gray!(0x70) },
-    };
-
-    pub struct Knob;
-
-    impl iced_audio::knob::StyleSheet for Knob {
-        fn active(&self) -> iced_audio::knob::Style {
-            Style::Arc(ARC_STYLE)
-        }
-        fn hovered(&self) -> iced_audio::knob::Style {
-            Style::Arc(ArcStyle {
-                ..ARC_STYLE
-            })
-        }
-        fn dragging(&self) -> iced_audio::knob::Style {
-            Style::Arc(ArcStyle {
-                ..ARC_STYLE
-            })
-        }
-        fn tick_marks_style(&self) -> Option<TickMarksStyle> {
-            Some(TickMarksStyle {
-                style: TICK_MARK_STYLE,
-                offset: 3.0,
-            })
         }
     }
 }
