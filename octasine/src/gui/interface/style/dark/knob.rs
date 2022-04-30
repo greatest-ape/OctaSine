@@ -1,11 +1,12 @@
-
-use crate::hex_gray;
-
 use super::*;
 use iced_audio::{knob::*, style::tick_marks};
 
+const COLOR_TICK_MARKS: Color = GRAY_600;
+const COLOR_EMPTY: Color = GRAY_700;
+const COLOR_NOTCH: Color = GRAY_900;
+
 const NOTCH_STYLE: LineNotch = LineNotch {
-    color: hex_gray!(0xB0),
+    color: COLOR_NOTCH,
     width: StyleLength::Units(2.0),
     length: StyleLength::Units(6.0),
     cap: LineCap::Round,
@@ -14,8 +15,8 @@ const NOTCH_STYLE: LineNotch = LineNotch {
 
 const ARC_STYLE: ArcStyle = ArcStyle {
     width: StyleLength::Units(2.0),
-    empty_color: hex_gray!(0x70),
-    filled_color: BLUE, // hex_gray!(0xB0),
+    empty_color: COLOR_EMPTY,
+    filled_color: BLUE,
     cap: LineCap::Square,
     notch: NotchShape::Line(NOTCH_STYLE),
 };
@@ -24,17 +25,17 @@ const TICK_MARK_STYLE: tick_marks::Style = tick_marks::Style {
     tier_1: tick_marks::Shape::Line {
         length: 3.0,
         width: 2.0,
-        color: hex_gray!(0x70),
+        color: COLOR_TICK_MARKS,
     },
     tier_2: tick_marks::Shape::Line {
         length: 3.0,
         width: 2.0,
-        color: hex_gray!(0x70),
+        color: COLOR_TICK_MARKS,
     },
     tier_3: tick_marks::Shape::Line {
         length: 3.0,
         width: 2.0,
-        color: hex_gray!(0x70),
+        color: COLOR_TICK_MARKS,
     },
 };
 
@@ -60,9 +61,9 @@ impl iced_audio::knob::StyleSheet for KnobRegular {
 
 const ARC_BIPOLAR_STYLE: ArcBipolarStyle = ArcBipolarStyle {
     width: StyleLength::Units(2.0),
-    empty_color: hex_gray!(0x70),
-    left_filled_color: BLUE,  // hex_gray!(0xB0),
-    right_filled_color: BLUE, // hex_gray!(0xB0),
+    empty_color: COLOR_EMPTY,
+    left_filled_color: BLUE,
+    right_filled_color: BLUE,
     cap: LineCap::Square,
     notch_center: NotchShape::Line(NOTCH_STYLE),
     notch_left_right: None,

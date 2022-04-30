@@ -11,8 +11,6 @@ use serde::{Deserialize, Serialize};
 
 use crate::hex_gray;
 
-use self::dark::RED;
-
 use super::{envelope, mod_matrix, mute_button, wave_picker};
 
 pub trait Style {
@@ -51,19 +49,19 @@ impl Theme {
 
     pub fn background_color(&self) -> Color {
         match self {
-            Theme::Dark => dark::BACKGROUND,
+            Theme::Dark => dark::colors::BACKGROUND,
             Theme::Light => Color::WHITE,
         }
     }
     pub fn text_color(&self) -> Color {
         match self {
-            Theme::Dark => dark::TEXT_BG,
+            Theme::Dark => dark::colors::TEXT_FG,
             Theme::Light => Color::BLACK,
         }
     }
     pub fn heading_color(&self) -> Color {
         match self {
-            Theme::Dark => dark::TEXT_FG,
+            Theme::Dark => dark::colors::TEXT_FG,
             Theme::Light => Color::BLACK,
         }
     }
