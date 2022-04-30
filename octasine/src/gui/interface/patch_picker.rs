@@ -44,7 +44,7 @@ impl PatchPicker {
     }
 
     pub fn view(&mut self) -> Element<Message> {
-        let title = Text::new("PRESET")
+        let title = Text::new("PATCH")
             .horizontal_alignment(Horizontal::Center)
             .vertical_alignment(Vertical::Center)
             .font(FONT_VERY_BOLD);
@@ -59,18 +59,13 @@ impl PatchPicker {
         .style(self.style)
         // Will be limited by parent, but setting a size here ensures that
         // it doesn't shrink too much when choice strings are short.
-        .width(Length::Units(LINE_HEIGHT * 12 - 3));
+        .width(Length::Units(LINE_HEIGHT * 8 - 3));
 
         Column::new()
-            .width(Length::Units(LINE_HEIGHT * 12))
             .align_items(Alignment::Center)
-            .push(
-                Row::new()
-                    .align_items(Alignment::Center)
-                    .push(title)
-                    .push(Space::with_width(Length::Units(LINE_HEIGHT / 2)))
-                    .push(list),
-            )
+            // .push(title)
+            // .push(Space::with_height(Length::Units(LINE_HEIGHT)))
+            .push(list)
             .into()
     }
 }

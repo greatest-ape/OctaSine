@@ -499,15 +499,6 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
         let lfo_3 = self.lfo_3.view();
         let lfo_4 = self.lfo_4.view();
 
-        let master_title = Text::new("Master")
-            .size(FONT_SIZE * 3 / 2)
-            .height(Length::Units(LINE_HEIGHT * 2))
-            .width(Length::Units(LINE_HEIGHT * 8))
-            .font(FONT_VERY_BOLD)
-            .color(self.style.heading_color())
-            .horizontal_alignment(Horizontal::Center)
-            .vertical_alignment(Vertical::Center);
-
         let info_text_color = if self.show_version {
             self.style.text_color()
         } else {
@@ -515,6 +506,7 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
         };
 
         let all = Column::new()
+            /*
             .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
             .push(
                 Row::new()
@@ -574,6 +566,7 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                             ),
                     ),
             )
+            */
             .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
             .push(operator_4)
             .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
@@ -599,27 +592,117 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                             .push(lfo_4),
                     )
                     .push(Space::with_width(Length::Units(LINE_HEIGHT)))
-                    .push(container_l1(
-                        self.style,
-                        container_l2(
-                            self.style,
-                            Column::new()
-                                .push(
-                                    /*
-                                    Container::new(master_title)
-                                        .width(Length::Units(LINE_HEIGHT * 11))
-                                        .height(Length::Units(LINE_HEIGHT * 2))
+                    .push(
+                        Column::new()
+                            .push(container_l1(
+                                self.style,
+                                Row::new()
+                                    .push(
+                                        Container::new(
+                                            Text::new("Master")
+                                                .size(FONT_SIZE * 3 / 2)
+                                                .height(Length::Units(LINE_HEIGHT * 8))
+                                                .width(Length::Units(LINE_HEIGHT * 8))
+                                                .font(FONT_VERY_BOLD)
+                                                .color(self.style.heading_color())
+                                                .horizontal_alignment(Horizontal::Center)
+                                                .vertical_alignment(Vertical::Center),
+                                        )
+                                        .width(Length::Units(LINE_HEIGHT * 8))
+                                        .height(Length::Units(LINE_HEIGHT * 8))
                                         .align_x(Horizontal::Center)
                                         .align_y(Vertical::Center),
-                                    */
-                                    Row::new()
-                                        .push(container_l3(self.style, master_volume))
-                                        .push(space_l3())
-                                        .push(container_l3(self.style, master_frequency)),
-                                )
-                                .push(container_l3(self.style, modulation_matrix)),
-                        ),
-                    )),
+                                    )
+                                    .push(container_l2(
+                                        self.style,
+                                        Row::new()
+                                            .push(container_l3(self.style, master_volume))
+                                            .push(space_l3())
+                                            .push(container_l3(self.style, master_frequency)),
+                                    )),
+                            ))
+                            .push(Space::with_height(Length::Units(LINE_HEIGHT)))
+                            .push(
+                                Row::new()
+                                    .push(container_l1(
+                                        self.style,
+                                        Row::new().push(
+                                            Container::new(
+                                                Column::new()
+                                                    .push(
+                                                        Text::new("Patch")
+                                                            .size(FONT_SIZE * 3 / 2)
+                                                            .width(Length::Units(LINE_HEIGHT * 8))
+                                                            .font(FONT_VERY_BOLD)
+                                                            .color(self.style.heading_color())
+                                                            .horizontal_alignment(
+                                                                Horizontal::Center,
+                                                            )
+                                                            .vertical_alignment(Vertical::Center),
+                                                    )
+                                                    .push(Space::with_height(Length::Units(
+                                                        LINE_HEIGHT,
+                                                    )))
+                                                    .push(patch_picker),
+                                            )
+                                            .width(Length::Units(LINE_HEIGHT * 8))
+                                            .height(Length::Units(LINE_HEIGHT * 8))
+                                            .align_x(Horizontal::Center)
+                                            .align_y(Vertical::Center),
+                                        ),
+                                    ))
+                                    .push(Space::with_width(Length::Units(LINE_HEIGHT)))
+                                    .push(container_l1(
+                                        self.style,
+                                        Row::new().push(
+                                            Container::new(
+                                                Column::new()
+                                                    .align_items(Alignment::Center)
+                                                    .push(
+                                                        Text::new("OctaSine")
+                                                            .size(FONT_SIZE * 3 / 2)
+                                                            .width(Length::Units(LINE_HEIGHT * 8))
+                                                            .font(FONT_VERY_BOLD)
+                                                            .color(self.style.heading_color())
+                                                            .horizontal_alignment(
+                                                                Horizontal::Center,
+                                                            )
+                                                            .vertical_alignment(Vertical::Center),
+                                                    )
+                                                    .push(Space::with_height(Length::Units(
+                                                        LINE_HEIGHT,
+                                                    )))
+                                                    .push(
+                                                        Row::new()
+                                                            .push(
+                                                                Button::new(
+                                                                    &mut self.toggle_info_state,
+                                                                    Text::new("INFO"),
+                                                                )
+                                                                .on_press(Message::ToggleInfo)
+                                                                .style(self.style),
+                                                            )
+                                                            .push(Space::with_width(Length::Units(
+                                                                LINE_HEIGHT / 2,
+                                                            )))
+                                                            .push(
+                                                                Button::new(
+                                                                    &mut self.toggle_style_state,
+                                                                    Text::new("THEME"),
+                                                                )
+                                                                .on_press(Message::ToggleColorMode)
+                                                                .style(self.style),
+                                                            ),
+                                                    ),
+                                            )
+                                            .width(Length::Units(LINE_HEIGHT * 8))
+                                            .height(Length::Units(LINE_HEIGHT * 8))
+                                            .align_x(Horizontal::Center)
+                                            .align_y(Vertical::Center),
+                                        ),
+                                    )),
+                            ),
+                    ),
             );
 
         Container::new(all)
