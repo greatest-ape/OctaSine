@@ -70,9 +70,9 @@ pub struct Button;
 impl button::StyleSheet for Button {
     fn active(&self) -> button::Style {
         button::Style {
-            background: CONTRAST.into(),
+            background: SURFACE.into(),
             border_radius: 3.0,
-            border_width: 1.0,
+            border_width: 0.0,
             border_color: TEXT_BG,
             text_color: TEXT_FG,
             ..button::Style::default()
@@ -81,7 +81,7 @@ impl button::StyleSheet for Button {
 
     fn hovered(&self) -> button::Style {
         button::Style {
-            border_color: HOVERED,
+            // background: SURFACE_HOVER.into(),
             text_color: HOVERED,
             ..self.active()
         }
@@ -97,26 +97,27 @@ pub struct PickList;
 impl pick_list::StyleSheet for PickList {
     fn menu(&self) -> iced_style::menu::Style {
         iced_style::menu::Style {
-            background: GRAY_200.into(),
-            selected_background: CONTRAST.into(),
+            background: GRAY_300.into(),
+            selected_background: SURFACE.into(),
             text_color: TEXT_FG,
             selected_text_color: HOVERED,
+            border_width: 0.0,
             ..Default::default()
         }
     }
     fn active(&self) -> pick_list::Style {
         pick_list::Style {
-            background: CONTRAST.into(),
+            background: SURFACE.into(),
             text_color: TEXT_FG,
             border_color: TEXT_BG,
             border_radius: 0.0,
+            border_width: 0.0,
             ..Default::default()
         }
     }
     fn hovered(&self) -> pick_list::Style {
         pick_list::Style {
             text_color: HOVERED,
-            border_color: HOVERED,
             ..self.active()
         }
     }

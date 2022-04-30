@@ -45,7 +45,13 @@ impl MixOutLine {
         let gradient = Gradient::new(vec![
             Srgba::new(bg.r, bg.g, bg.b, 1.0).into_linear(),
             // Srgba::new(0.23, 0.69, 0.06, 1.0).into_linear(),
-            Srgba::new(self.line_color.r, self.line_color.g, self.line_color.b, self.line_color.a).into_linear(),
+            Srgba::new(
+                self.line_color.r,
+                self.line_color.g,
+                self.line_color.b,
+                self.line_color.a,
+            )
+            .into_linear(),
             Srgba::new(c.r, c.g, c.b, 1.0).into_linear(),
         ]);
 
@@ -55,7 +61,9 @@ impl MixOutLine {
     }
 
     pub fn draw(&self, frame: &mut Frame) {
-        let stroke = Stroke::default().with_width(3.0).with_color(self.calculated_color);
+        let stroke = Stroke::default()
+            .with_width(3.0)
+            .with_color(self.calculated_color);
 
         frame.stroke(&self.path, stroke);
     }
