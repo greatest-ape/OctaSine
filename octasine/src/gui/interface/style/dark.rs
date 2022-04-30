@@ -138,79 +138,50 @@ impl pick_list::StyleSheet for PickList {
 }
 
 pub(super) mod knob {
-    use super::*;
-    use iced_audio::knob::*;
+    use iced_audio::{knob::*, style::tick_marks};
 
-    pub const TICK_TIER_1: Color = Color {
-        r: 0.56,
-        g: 0.56,
-        b: 0.56,
-        a: 0.93,
-    };
-    pub const TICK_TIER_2: Color = Color {
-        r: 0.56,
-        g: 0.56,
-        b: 0.56,
-        a: 0.83,
-    };
-    pub const TICK_TIER_3: Color = Color {
-        r: 0.56,
-        g: 0.56,
-        b: 0.56,
-        a: 0.65,
+    const NOTCH_STYLE: LineNotch = LineNotch {
+        color: hex_gray!(0xB0),
+        width: StyleLength::Units(2.0),
+        length: StyleLength::Units(6.0),
+        cap: LineCap::Round,
+        offset: StyleLength::Units(3.0),
     };
 
-    const ACTIVE_CIRCLE_NOTCH_STYLE: CircleNotch = CircleNotch {
-        color: TEXT_FG,
-        border_width: 0.0,
-        border_color: Color::TRANSPARENT,
-        diameter: StyleLength::Scaled(0.17),
-        offset: StyleLength::Scaled(0.15),
+    const ARC_STYLE: ArcStyle = ArcStyle {
+        width: StyleLength::Units(2.0),
+        empty_color: hex_gray!(0x70),
+        filled_color: hex_gray!(0xB0),
+        cap: LineCap::Square,
+        notch: NotchShape::Line(NOTCH_STYLE),
     };
 
-    const ACTIVE_CIRCLE_STYLE: CircleStyle = CircleStyle {
-        color: SURFACE,
-        border_width: 1.0,
-        border_color: TEXT_FG,
-        notch: NotchShape::Circle(ACTIVE_CIRCLE_NOTCH_STYLE),
+    const TICK_MARK_STYLE: tick_marks::Style = tick_marks::Style {
+        tier_1: tick_marks::Shape::Line { length: 3.0, width: 2.0, color: hex_gray!(0x70) },
+        tier_2: tick_marks::Shape::Line { length: 3.0, width: 2.0, color: hex_gray!(0x70) },
+        tier_3: tick_marks::Shape::Line { length: 3.0, width: 2.0, color: hex_gray!(0x70) },
     };
 
     pub struct Knob;
 
     impl iced_audio::knob::StyleSheet for Knob {
         fn active(&self) -> iced_audio::knob::Style {
-            Style::Circle(ACTIVE_CIRCLE_STYLE)
+            Style::Arc(ARC_STYLE)
         }
         fn hovered(&self) -> iced_audio::knob::Style {
-            Style::Circle(CircleStyle {
-                border_color: HOVERED,
-                notch: NotchShape::Circle(CircleNotch {
-                    color: HOVERED,
-                    ..ACTIVE_CIRCLE_NOTCH_STYLE
-                }),
-                ..ACTIVE_CIRCLE_STYLE
+            Style::Arc(ArcStyle {
+                ..ARC_STYLE
             })
         }
         fn dragging(&self) -> iced_audio::knob::Style {
-            self.hovered()
+            Style::Arc(ArcStyle {
+                ..ARC_STYLE
+            })
         }
         fn tick_marks_style(&self) -> Option<TickMarksStyle> {
             Some(TickMarksStyle {
-                style: iced_audio::tick_marks::Style {
-                    tier_1: iced_audio::tick_marks::Shape::Circle {
-                        diameter: 4.0,
-                        color: TICK_TIER_1,
-                    },
-                    tier_2: iced_audio::tick_marks::Shape::Circle {
-                        diameter: 2.0,
-                        color: TICK_TIER_2,
-                    },
-                    tier_3: iced_audio::tick_marks::Shape::Circle {
-                        diameter: 2.0,
-                        color: TICK_TIER_3,
-                    },
-                },
-                offset: 3.5,
+                style: TICK_MARK_STYLE,
+                offset: 3.0,
             })
         }
     }
