@@ -51,6 +51,7 @@ pub struct Style {
     pub modulation_box_color_hover: Color,
     pub line_max_color: Color,
     pub mod_out_line_color: Color,
+    pub mix_out_line_color: Color,
 }
 
 pub trait StyleSheet {

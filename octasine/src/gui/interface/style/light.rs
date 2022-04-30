@@ -243,6 +243,7 @@ impl mod_matrix::StyleSheet for ModulationMatrix {
             modulation_box_color_hover: SURFACE_DARK,
             line_max_color: Color::BLACK,
             mod_out_line_color: Color::new(0.25, 0.5, 1.0, 1.0),
+            mix_out_line_color: Color::new(0.25, 0.5, 1.0, 1.0),
         }
     }
 }

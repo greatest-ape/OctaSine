@@ -156,7 +156,8 @@ impl mod_matrix::StyleSheet for ModulationMatrix {
             modulation_box_color_inactive: Color::TRANSPARENT,
             modulation_box_color_hover: HOVERED,
             line_max_color: Color::WHITE,
-            mod_out_line_color: Color::new(0.25, 0.5, 1.0, 1.0),
+            mod_out_line_color: BLUE,
+            mix_out_line_color: GREEN,
         }
     }
 }
