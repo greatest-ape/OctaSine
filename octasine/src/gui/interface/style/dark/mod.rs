@@ -10,7 +10,6 @@ use super::{envelope, mod_matrix, wave_picker};
 
 use colors::*;
 
-
 pub struct Container;
 
 impl container::StyleSheet for Container {
