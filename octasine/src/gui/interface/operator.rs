@@ -163,23 +163,24 @@ impl OperatorWidgets {
             )
             //.push(Space::with_width(Length::Units(LINE_HEIGHT * 2)))
             .push(container_l2(
+                self.style,
                 Row::new()
-                    .push(container_l3(self.wave_type.view()))
+                    .push(container_l3(self.style, self.wave_type.view()))
                     // .push(Space::with_width(Length::Units(LINE_HEIGHT)))
                     .push(space_l3())
-                    .push(container_l3(self.volume.view()))
+                    .push(container_l3(self.style, self.volume.view()))
                     // .push(Space::with_width(Length::Units(LINE_HEIGHT)))
                     .push(space_l3())
-                    .push(container_l3(self.panning.view())),
+                    .push(container_l3(self.style, self.panning.view())),
             ))
             .push(space_l2());
 
         let mut group = Row::new()
-            .push(container_l3(self.mix.view()))
+            .push(container_l3(self.style, self.mix.view()))
             .push(space_l3());
 
         if let Some(mod_index) = self.mod_index.as_mut() {
-            group = group.push(container_l3(mod_index.view()));
+            group = group.push(container_l3(self.style, mod_index.view()));
         } else {
             group = group.push(Space::with_width(Length::Units(LINE_HEIGHT * 5)));
         }
@@ -188,30 +189,31 @@ impl OperatorWidgets {
 
         match self.mod_target.as_mut() {
             Some(ModTargetPicker::Operator2(picker)) => {
-                group = group.push(container_l3(picker.view()))
+                group = group.push(container_l3(self.style, picker.view()))
             }
             Some(ModTargetPicker::Operator3(picker)) => {
-                group = group.push(container_l3(picker.view()))
+                group = group.push(container_l3(self.style, picker.view()))
             }
             Some(ModTargetPicker::Operator4(picker)) => {
-                group = group.push(container_l3(picker.view()))
+                group = group.push(container_l3(self.style, picker.view()))
             }
             None => group = group.push(Space::with_width(Length::Units(LINE_HEIGHT * 3))),
         }
 
         group = group.push(space_l3());
-        group = group.push(container_l3(self.feedback.view()));
+        group = group.push(container_l3(self.style, self.feedback.view()));
 
         row = row
-            .push(container_l2(group))
+            .push(container_l2(self.style, group))
             .push(space_l2())
             .push(container_l2(
+                self.style,
                 Row::new()
-                    .push(container_l3(self.frequency_ratio.view()))
+                    .push(container_l3(self.style, self.frequency_ratio.view()))
                     .push(space_l3())
-                    .push(container_l3(self.frequency_free.view()))
+                    .push(container_l3(self.style, self.frequency_free.view()))
                     .push(space_l3())
-                    .push(container_l3(self.frequency_fine.view())),
+                    .push(container_l3(self.style, self.frequency_fine.view())),
             ));
 
         let sync_viewports_message = Message::EnvelopeSyncViewports {
@@ -221,9 +223,11 @@ impl OperatorWidgets {
         let zoom_to_fit_message = Message::EnvelopeZoomToFit(self.index);
 
         row = row.push(space_l2()).push(container_l2(
+            self.style,
             Row::new()
-                .push(container_l3((self.envelope.view())))
+                .push(container_l3(self.style, (self.envelope.view())))
                 .push(container_l3(
+                    self.style,
                     Column::new()
                         .width(Length::Units(LINE_HEIGHT * 3))
                         .align_items(Alignment::End)
@@ -266,6 +270,6 @@ impl OperatorWidgets {
                 )),
         ));
 
-        container_l1(row, 0).into()
+        container_l1(self.style, row).into()
     }
 }

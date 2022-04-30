@@ -83,20 +83,21 @@ impl LfoWidgets {
             )
             // .push(Space::with_width(Length::Units(LINE_HEIGHT * 1)))
             .push(container_l2(
+                self.style,
                 Row::new()
                     // .push(container_l3(self.mode.view()))
                     // .push(space_l3())
                     // .push(container_l3(self.bpm_sync.view()))
                     // .push(space_l3())
-                    .push(container_l3(self.shape.view()))
+                    .push(container_l3(self.style, self.shape.view()))
                     .push(space_l3())
-                    .push(container_l3(self.amount.view()))
+                    .push(container_l3(self.style, self.amount.view()))
                     .push(space_l3())
-                    .push(container_l3(self.frequency_ratio.view()))
+                    .push(container_l3(self.style, self.frequency_ratio.view()))
                     .push(space_l3())
-                    .push(container_l3(self.frequency_free.view())),
+                    .push(container_l3(self.style, self.frequency_free.view())),
             ));
 
-        container_l1(c, 0).into()
+        container_l1(self.style, c).into()
     }
 }

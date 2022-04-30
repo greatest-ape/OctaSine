@@ -14,10 +14,9 @@ use crate::hex_gray;
 use super::{envelope, mod_matrix, mute_button, wave_picker};
 
 pub trait Style {
-    // fn container_l0<S: iced_style::container::StyleSheet>() -> S;
-    // fn container_l1<S: iced_style::container::StyleSheet>() -> S;
-    // fn container_l2<S: iced_style::container::StyleSheet>() -> S;
-    // fn container_l3<S: iced_style::container::StyleSheet>() -> S;
+    fn container_l1(&self) -> Box<dyn iced_style::container::StyleSheet>;
+    fn container_l2(&self) -> Box<dyn iced_style::container::StyleSheet>;
+    fn container_l3(&self) -> Box<dyn iced_style::container::StyleSheet>;
     fn knob_regular(&self) -> Box<dyn iced_audio::knob::StyleSheet>;
     fn knob_bipolar(&self) -> Box<dyn iced_audio::knob::StyleSheet>;
 }
@@ -30,6 +29,24 @@ pub enum Theme {
 }
 
 impl Style for Theme {
+    fn container_l1(&self) -> Box<dyn iced_style::container::StyleSheet> {
+        match self {
+            Self::Light => Box::new(dark::ContainerL1),
+            Self::Dark => Box::new(dark::ContainerL1),
+        }
+    }
+    fn container_l2(&self) -> Box<dyn iced_style::container::StyleSheet> {
+        match self {
+            Self::Light => Box::new(dark::ContainerL2),
+            Self::Dark => Box::new(dark::ContainerL2),
+        }
+    }
+    fn container_l3(&self) -> Box<dyn iced_style::container::StyleSheet> {
+        match self {
+            Self::Light => Box::new(dark::ContainerL3),
+            Self::Dark => Box::new(dark::ContainerL3),
+        }
+    }
     fn knob_regular(&self) -> Box<dyn iced_audio::knob::StyleSheet> {
         match self {
             Self::Light => Box::new(light::knob::Knob),

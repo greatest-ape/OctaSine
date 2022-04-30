@@ -1,53 +1,22 @@
 use iced_baseview::{alignment::Horizontal, Column, Container, Element, Length, Row, Rule, Space};
 
-use crate::{gui::interface::LINE_HEIGHT, hex_gray};
+use crate::gui::interface::LINE_HEIGHT;
 
-use super::Message;
+use super::{
+    style::{Style, Theme},
+    Message,
+};
 
-struct ContainerL1;
-
-impl iced_baseview::container::StyleSheet for ContainerL1 {
-    fn style(&self) -> iced_baseview::container::Style {
-        iced_baseview::container::Style {
-            background: Some(hex_gray!(0x20).into()),
-            border_radius: 4.0,
-            ..Default::default()
-        }
-    }
-}
-
-struct ContainerL2;
-
-impl iced_baseview::container::StyleSheet for ContainerL2 {
-    fn style(&self) -> iced_baseview::container::Style {
-        iced_baseview::container::Style {
-            background: Some(hex_gray!(0x2A).into()),
-            border_radius: 4.0,
-            ..Default::default()
-        }
-    }
-}
-
-struct ContainerL3;
-
-impl iced_baseview::container::StyleSheet for ContainerL3 {
-    fn style(&self) -> iced_baseview::container::Style {
-        iced_baseview::container::Style {
-            background: None, //Some(hex_gray!(0x20).into()),
-            border_radius: 4.0,
-            ..Default::default()
-        }
-    }
-}
-
-pub fn container_l1<'a, T>(contents: T, padding: u16) -> Container<'a, Message>
+pub fn container_l1<'a, T>(theme: Theme, contents: T) -> Container<'a, Message>
 where
     T: Into<Element<'a, Message>>,
 {
-    Container::new(contents).padding(padding).style(ContainerL1)
+    Container::new(contents)
+        .padding(0)
+        .style(theme.container_l1())
 }
 
-pub fn container_l2<'a, T>(contents: T) -> Container<'a, Message>
+pub fn container_l2<'a, T>(theme: Theme, contents: T) -> Container<'a, Message>
 where
     T: Into<Element<'a, Message>>,
 {
@@ -62,11 +31,11 @@ where
 
     Container::new(contents)
         .padding(0)
-        .style(ContainerL2)
+        .style(theme.container_l2())
         .into()
 }
 
-pub fn container_l3<'a, T>(contents: T) -> Container<'a, Message>
+pub fn container_l3<'a, T>(theme: Theme, contents: T) -> Container<'a, Message>
 where
     T: Into<Element<'a, Message>>,
 {
@@ -85,7 +54,7 @@ where
 
     Container::new(contents)
         .padding(0)
-        .style(ContainerL3)
+        .style(theme.container_l3())
         .into()
 }
 
@@ -94,27 +63,5 @@ pub fn space_l2<'a>() -> Container<'a, Message> {
 }
 
 pub fn space_l3<'a>() -> Container<'a, Message> {
-    /*
-    pub struct Bla;
-
-    impl iced_baseview::rule::StyleSheet for Bla {
-        fn style(&self) -> iced_baseview::rule::Style {
-            iced_baseview::rule::Style {
-            color: hex_gray!(0x30),
-            width: 1,
-            radius: 4.0,
-            fill_mode: iced_baseview::rule::FillMode::Full,
-            }
-        }
-    }
-    Container::new(
-        Rule::vertical(2).style(Bla)
-    )
-    .style(ContainerL3)
-    .width(Length::Units(LINE_HEIGHT / 2))
-    .height(Length::Units(LINE_HEIGHT * 8))
-    .align_x(Horizontal::Center);
-    */
-
     Container::new(Space::with_width(Length::Units(0)))
 }

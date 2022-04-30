@@ -202,3 +202,39 @@ impl mute_button::StyleSheet for MuteButton {
         }
     }
 }
+
+pub struct ContainerL1;
+
+impl iced_baseview::container::StyleSheet for ContainerL1 {
+    fn style(&self) -> iced_baseview::container::Style {
+        iced_baseview::container::Style {
+            background: Some(GRAY_100.into()),
+            border_radius: 4.0,
+            ..Default::default()
+        }
+    }
+}
+
+pub struct ContainerL2;
+
+impl iced_baseview::container::StyleSheet for ContainerL2 {
+    fn style(&self) -> iced_baseview::container::Style {
+        iced_baseview::container::Style {
+            background: Some(GRAY_200.into()),
+            border_radius: 4.0,
+            ..Default::default()
+        }
+    }
+}
+
+pub struct ContainerL3;
+
+impl iced_baseview::container::StyleSheet for ContainerL3 {
+    fn style(&self) -> iced_baseview::container::Style {
+        iced_baseview::container::Style {
+            background: None, //Some(hex_gray!(0x20).into()),
+            border_radius: 4.0,
+            ..Default::default()
+        }
+    }
+}
