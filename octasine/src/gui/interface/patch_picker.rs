@@ -61,11 +61,6 @@ impl PatchPicker {
         // it doesn't shrink too much when choice strings are short.
         .width(Length::Units(LINE_HEIGHT * 8 - 3));
 
-        Column::new()
-            .align_items(Alignment::Center)
-            // .push(title)
-            // .push(Space::with_height(Length::Units(LINE_HEIGHT)))
-            .push(list)
-            .into()
+        list.into()
     }
 }

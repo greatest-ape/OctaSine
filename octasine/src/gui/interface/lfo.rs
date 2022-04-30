@@ -1,3 +1,4 @@
+use iced_baseview::Alignment;
 use iced_baseview::{
     alignment::Horizontal, alignment::Vertical, Column, Element, Length, Row, Space, Text,
 };
@@ -67,7 +68,7 @@ impl LfoWidgets {
         let title = Text::new(format!("LFO {}", self.index + 1))
             .size(FONT_SIZE + FONT_SIZE / 2)
             .height(Length::Units(LINE_HEIGHT * 2))
-            .width(Length::Units(LINE_HEIGHT * 12))
+            .width(Length::Units(LINE_HEIGHT * 10))
             .font(FONT_VERY_BOLD)
             .color(self.style.heading_color())
             .horizontal_alignment(Horizontal::Center)

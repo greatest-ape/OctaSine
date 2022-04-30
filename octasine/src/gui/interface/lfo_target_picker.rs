@@ -105,10 +105,10 @@ impl LfoTargetPicker {
         )
         .text_size(FONT_SIZE)
         .style(self.style)
-        .width(Length::Units(LINE_HEIGHT * 10 - 3));
+        .width(Length::Units(LINE_HEIGHT * 8 - 3));
 
         Column::new()
-            .width(Length::Units(LINE_HEIGHT * 12))
+            .width(Length::Units(LINE_HEIGHT * 10))
             .align_items(Alignment::Center)
             .push(list)
             .into()

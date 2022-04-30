@@ -30,6 +30,7 @@ use style::Theme;
 
 use self::common::{container_l1, container_l2, container_l3, space_l3};
 use self::operator::ModTargetPicker;
+use self::style::Style;
 
 use super::GuiSettings;
 use crate::settings::Settings;
@@ -602,7 +603,6 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                                             Text::new("Master")
                                                 .size(FONT_SIZE * 3 / 2)
                                                 .height(Length::Units(LINE_HEIGHT * 8))
-                                                .width(Length::Units(LINE_HEIGHT * 8))
                                                 .font(FONT_VERY_BOLD)
                                                 .color(self.style.heading_color())
                                                 .horizontal_alignment(Horizontal::Center)
@@ -629,10 +629,11 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                                         Row::new().push(
                                             Container::new(
                                                 Column::new()
+                                                    .align_items(Alignment::Center)
                                                     .push(
                                                         Text::new("Patch")
                                                             .size(FONT_SIZE * 3 / 2)
-                                                            .width(Length::Units(LINE_HEIGHT * 8))
+                                                            .width(Length::Units(LINE_HEIGHT * 10))
                                                             .font(FONT_VERY_BOLD)
                                                             .color(self.style.heading_color())
                                                             .horizontal_alignment(
@@ -645,7 +646,7 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                                                     )))
                                                     .push(patch_picker),
                                             )
-                                            .width(Length::Units(LINE_HEIGHT * 8))
+                                            .width(Length::Units(LINE_HEIGHT * 10))
                                             .height(Length::Units(LINE_HEIGHT * 8))
                                             .align_x(Horizontal::Center)
                                             .align_y(Vertical::Center),
@@ -695,7 +696,7 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                                                             ),
                                                     ),
                                             )
-                                            .width(Length::Units(LINE_HEIGHT * 8))
+                                            .width(Length::Units(LINE_HEIGHT * 10))
                                             .height(Length::Units(LINE_HEIGHT * 8))
                                             .align_x(Horizontal::Center)
                                             .align_y(Vertical::Center),
