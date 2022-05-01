@@ -128,7 +128,7 @@ pub struct Envelope;
 impl envelope::StyleSheet for Envelope {
     fn active(&self) -> envelope::Style {
         envelope::Style {
-            background_color: hex_gray!(0xF0).into(),
+            background_color: hex_gray!(0xFF).into(),
             border_color: BORDER,
             text_color: TEXT_FG,
             time_marker_minor_color: Color::from_rgb(0.9, 0.9, 0.9),
