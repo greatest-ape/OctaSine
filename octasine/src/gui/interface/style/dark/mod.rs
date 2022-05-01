@@ -138,7 +138,7 @@ impl pick_list::StyleSheet for PickList {
             text_color: TEXT_FG,
             selected_text_color: HOVERED,
             border_width: 0.0,
-            ..Default::default()
+            border_color: TEXT_BG,
         }
     }
     fn active(&self) -> pick_list::Style {
@@ -147,7 +147,9 @@ impl pick_list::StyleSheet for PickList {
             text_color: TEXT_FG,
             border_color: TEXT_BG,
             border_width: 0.0,
-            ..Default::default()
+            border_radius: 3.0,
+            icon_size: 0.6,
+            placeholder_color: SURFACE,
         }
     }
     fn hovered(&self) -> pick_list::Style {
