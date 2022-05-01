@@ -112,7 +112,7 @@ impl std::fmt::Display for LfoTargetParameter {
                 use LfoTargetOperatorParameter::*;
 
                 let p = match p {
-                    Volume => "volume",
+                    Volume => "vol",
                     Panning => "pan",
                     MixOut => "mix out",
                     ModOut => "mod out",
