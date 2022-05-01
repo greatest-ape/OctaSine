@@ -2,12 +2,14 @@
 
 ## High priority
 
+* New widgets for LFO BPM sync and oneshot mode
+* Option to disable LFOs / set no target
+* Thicker text in light mode
+* In mod target widget, use space element instead of horizontal centering
+* Raise default volume (and maybe hard limit limit)
+* Display patch index independently of patch name, use - or similar as default patch name: "001: -"
 * Consider easing fine tuning of mod out / changing steps. More room where
   sounds are the most interesting.
-* Raise default volume (and maybe hard limit limit)
-* Option to disable LFOs / set no target
-* Display patch index independently of patch name, use - or similar as default patch name: "001: -"
-* GUI: change "mode" to "theme" or "colors"
 * Include license info on all dependencies in releases
 * Release v0.7.0 eventually
 
