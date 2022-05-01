@@ -78,7 +78,7 @@ impl CornerWidgets {
                     Text::new("Patch")
                         .size(FONT_SIZE * 3 / 2)
                         .width(Length::Units(LINE_HEIGHT * 10))
-                        .font(self.style.font_bold())
+                        .font(self.style.font_heading())
                         .color(self.style.heading_color())
                         .horizontal_alignment(Horizontal::Center),
                 )
@@ -96,7 +96,7 @@ impl CornerWidgets {
                     Text::new("OctaSine")
                         .size(FONT_SIZE * 3 / 2)
                         .width(Length::Units(LINE_HEIGHT * 8))
-                        .font(self.style.font_bold())
+                        .font(self.style.font_heading())
                         .color(self.style.heading_color())
                         .horizontal_alignment(Horizontal::Center),
                 )

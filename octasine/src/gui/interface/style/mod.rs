@@ -65,6 +65,12 @@ impl Theme {
             Theme::Light => OPEN_SANS_BOLD,
         }
     }
+    pub fn font_heading(&self) -> Font {
+        match self {
+            Theme::Dark => OPEN_SANS_BOLD,
+            Theme::Light => OPEN_SANS_BOLD,
+        }
+    }
 
     pub fn container_l0(&self) -> Box<dyn iced_style::container::StyleSheet> {
         match self {
