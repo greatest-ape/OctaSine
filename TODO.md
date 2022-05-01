@@ -5,6 +5,7 @@
 * New widgets for LFO BPM sync and oneshot mode
 * Option to disable LFOs / set no target
 * In mod target widget, use space element instead of horizontal centering
+* Envelope dragger "dragging" color
 * Raise default volume (and maybe hard limit limit)
 * Display patch index independently of patch name, use - or similar as default patch name: "001: -"
 * Consider easing fine tuning of mod out / changing steps. More room where
