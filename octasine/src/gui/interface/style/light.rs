@@ -16,7 +16,7 @@ macro_rules! hex_gray {
 }
 
 pub const BACKGROUND: Color = hex_gray!(0xD0);
-pub const SURFACE: Color = hex_gray!(0xF0);
+pub const SURFACE: Color = hex_gray!(0xFF);
 pub const SURFACE_DARK: Color = hex_gray!(0xD9);
 pub const TEXT_BG: Color = hex_gray!(0x40);
 pub const TEXT_FG: Color = hex_gray!(0x00);
@@ -112,16 +112,16 @@ pub struct PickList;
 impl pick_list::StyleSheet for PickList {
     fn menu(&self) -> iced_style::menu::Style {
         iced_style::menu::Style {
-            background: SURFACE.into(),
+            background: hex_gray!(0xE0).into(),
             text_color: TEXT_FG,
-            selected_background: hex_gray!(0x60).into(),
-            selected_text_color: Color::WHITE,
+            selected_background: CONTRAST_DARK.into(),
+            selected_text_color: TEXT_FG,
             ..Default::default()
         }
     }
     fn active(&self) -> pick_list::Style {
         pick_list::Style {
-            background: CONTRAST.into(),
+            background: SURFACE.into(),
             text_color: TEXT_FG,
             border_color: BORDER,
             border_radius: 0.0,
