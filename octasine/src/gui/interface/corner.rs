@@ -1,6 +1,6 @@
 use iced_baseview::{
-    alignment::{Horizontal, Vertical},
-    button, Alignment, Button, Column, Container, Element, Length, Row, Space, Text,
+    alignment::Horizontal, button, Alignment, Button, Column, Container, Element, Length, Row,
+    Space, Text,
 };
 
 use crate::{
@@ -69,37 +69,35 @@ impl CornerWidgets {
             ),
         );
 
-        let patch = Container::new(
+        let patch_picker = Container::new(
             Column::new()
                 .align_items(Alignment::Center)
+                .push(Space::with_height(Length::Units(LINE_HEIGHT)))
                 .push(
                     Text::new("Patch")
                         .size(FONT_SIZE * 3 / 2)
                         .width(Length::Units(LINE_HEIGHT * 10))
                         .font(FONT_VERY_BOLD)
                         .color(self.style.heading_color())
-                        .horizontal_alignment(Horizontal::Center)
-                        .vertical_alignment(Vertical::Center),
+                        .horizontal_alignment(Horizontal::Center),
                 )
                 .push(Space::with_height(Length::Units(LINE_HEIGHT)))
                 .push(self.patch_picker.view()),
         )
         .width(Length::Units(LINE_HEIGHT * 8))
-        .height(Length::Units(LINE_HEIGHT * 6))
-        .align_x(Horizontal::Center)
-        .align_y(Vertical::Center);
+        .height(Length::Units(LINE_HEIGHT * 6));
 
         let logo = Container::new(
             Column::new()
                 .align_items(Alignment::Center)
+                .push(Space::with_height(Length::Units(LINE_HEIGHT)))
                 .push(
                     Text::new("OctaSine")
                         .size(FONT_SIZE * 3 / 2)
                         .width(Length::Units(LINE_HEIGHT * 8))
                         .font(FONT_VERY_BOLD)
                         .color(self.style.heading_color())
-                        .horizontal_alignment(Horizontal::Center)
-                        .vertical_alignment(Vertical::Center),
+                        .horizontal_alignment(Horizontal::Center),
                 )
                 .push(Space::with_height(Length::Units(LINE_HEIGHT)))
                 .push(
@@ -109,7 +107,7 @@ impl CornerWidgets {
                                 .on_press(Message::ToggleInfo)
                                 .style(self.style),
                         )
-                        .push(Space::with_width(Length::Units(LINE_HEIGHT / 2)))
+                        .push(Space::with_width(Length::Units(3)))
                         .push(
                             Button::new(&mut self.toggle_style_state, Text::new("THEME"))
                                 .on_press(Message::ToggleColorMode)
@@ -118,14 +116,12 @@ impl CornerWidgets {
                 ),
         )
         .width(Length::Units(LINE_HEIGHT * 8))
-        .height(Length::Units(LINE_HEIGHT * 6))
-        .align_x(Horizontal::Center)
-        .align_y(Vertical::Center);
+        .height(Length::Units(LINE_HEIGHT * 6));
 
         Column::new()
             .push(
                 Row::new()
-                    .push(triple_container(self.style, patch))
+                    .push(triple_container(self.style, patch_picker))
                     .push(Space::with_width(Length::Units(LINE_HEIGHT)))
                     .push(triple_container(self.style, logo)),
             )

@@ -59,7 +59,7 @@ impl PatchPicker {
         .style(self.style)
         // Will be limited by parent, but setting a size here ensures that
         // it doesn't shrink too much when choice strings are short.
-        .width(Length::Units(LINE_HEIGHT * 8 - 3));
+        .width(Length::Fill);
 
         list.into()
     }
