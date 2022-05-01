@@ -129,13 +129,13 @@ impl envelope::StyleSheet for Envelope {
     fn active(&self) -> envelope::Style {
         envelope::Style {
             background_color: GRAY_200,
-            border_color: Color::from_rgb(0.5, 0.5, 0.5),
+            border_color: GRAY_700,
             text_color: TEXT_BG,
-            time_marker_minor_color: Color::from_rgb(0.3, 0.3, 0.3),
-            time_marker_color_major: Color::from_rgb(0.5, 0.5, 0.5),
+            time_marker_minor_color: GRAY_400,
+            time_marker_color_major: GRAY_600,
             path_color: TEXT_FG,
             dragger_fill_color_active: SURFACE,
-            dragger_fill_color_hover: TEXT_FG,
+            dragger_fill_color_hover: HOVERED,
             dragger_border_color: TEXT_FG,
         }
     }
@@ -146,10 +146,10 @@ pub struct ModulationMatrix;
 impl mod_matrix::StyleSheet for ModulationMatrix {
     fn active(&self) -> mod_matrix::Style {
         mod_matrix::Style {
-            background_color: Color::BLACK,
-            border_color: Color::from_rgb(0.5, 0.5, 0.5),
+            background_color: GRAY_200,
+            border_color: Color::TRANSPARENT,
             text_color: Color::BLACK,
-            box_border_color: Color::from_rgb(0.5, 0.5, 0.5),
+            box_border_color: GRAY_700,
             operator_box_color_active: TEXT_FG,
             operator_box_color_hover: HOVERED,
             operator_box_color_dragging: HOVERED,
