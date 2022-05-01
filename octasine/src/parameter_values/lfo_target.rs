@@ -99,7 +99,14 @@ impl std::fmt::Display for LfoTargetParameter {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
             LfoTargetParameter::Master(p) => {
-                write!(f, "Master {}", format!("{:?}", p).to_lowercase())
+                use LfoTargetMasterParameter::*;
+
+                let p = match p {
+                    Volume => "vol",
+                    Frequency => "freq",
+                };
+
+                write!(f, "Master {}", p)
             }
             LfoTargetParameter::Operator(n, p) => {
                 use LfoTargetOperatorParameter::*;
@@ -110,20 +117,20 @@ impl std::fmt::Display for LfoTargetParameter {
                     MixOut => "mix out",
                     ModOut => "mod out",
                     Feedback => "feedback",
-                    FrequencyRatio => "freq ratio",
-                    FrequencyFree => "freq free",
-                    FrequencyFine => "freq fine",
+                    FrequencyRatio => "ratio",
+                    FrequencyFree => "free",
+                    FrequencyFine => "fine",
                 };
 
-                write!(f, "Op. {} {}", n + 1, p)
+                write!(f, "OP {} {}", n + 1, p)
             }
             LfoTargetParameter::Lfo(n, p) => {
                 use LfoTargetLfoParameter::*;
 
                 let p = match p {
                     Shape => "shape",
-                    FrequencyRatio => "freq ratio",
-                    FrequencyFree => "freq free",
+                    FrequencyRatio => "ratio",
+                    FrequencyFree => "free",
                     Amount => "amount",
                 };
 
