@@ -57,7 +57,11 @@ impl CornerWidgets {
     }
 
     pub fn view(&mut self) -> Element<'_, Message> {
-        let mod_matrix = triple_container(self.style, self.modulation_matrix.view());
+        let mod_matrix = triple_container(
+            self.style,
+            Container::new(Row::new().push(self.modulation_matrix.view()))
+                .width(Length::Units(LINE_HEIGHT * 6)),
+        );
 
         let master = container_l1(
             self.style,
@@ -133,7 +137,7 @@ impl CornerWidgets {
                         ),
                 ),
         )
-        .width(Length::Units(LINE_HEIGHT * 8))
+        .width(Length::Units(LINE_HEIGHT * 6))
         .height(Length::Units(LINE_HEIGHT * 6));
 
         Column::new()

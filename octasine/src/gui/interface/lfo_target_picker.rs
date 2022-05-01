@@ -105,7 +105,7 @@ impl LfoTargetPicker {
         .font(self.style.font_regular())
         .text_size(FONT_SIZE)
         .style(self.style.pick_list())
-        .width(Length::Units(LINE_HEIGHT * 8 - 3))
+        .width(Length::Fill)
         .into()
     }
 }
