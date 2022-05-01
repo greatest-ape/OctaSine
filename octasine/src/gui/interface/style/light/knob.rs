@@ -3,8 +3,8 @@ use iced_audio::{knob::*, style::tick_marks};
 use super::colors::*;
 use super::*;
 
-const COLOR_TICK_MARKS: Color = hex_gray!(0xB0);
-const COLOR_EMPTY: Color = hex_gray!(0xB0);
+const COLOR_TICK_MARKS: Color = GRAY_600;
+const COLOR_EMPTY: Color = GRAY_600;
 const COLOR_NOTCH: Color = TEXT_FG;
 
 const NOTCH_STYLE: LineNotch = LineNotch {

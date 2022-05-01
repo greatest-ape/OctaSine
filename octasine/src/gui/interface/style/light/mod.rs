@@ -27,7 +27,7 @@ pub struct ContainerL1;
 impl iced_baseview::container::StyleSheet for ContainerL1 {
     fn style(&self) -> iced_baseview::container::Style {
         iced_baseview::container::Style {
-            background: Some(hex_gray!(0xEA).into()),
+            background: Some(GRAY_900.into()),
             border_radius: 4.0,
             ..Default::default()
         }
@@ -39,7 +39,7 @@ pub struct ContainerL2;
 impl iced_baseview::container::StyleSheet for ContainerL2 {
     fn style(&self) -> iced_baseview::container::Style {
         iced_baseview::container::Style {
-            background: Some(hex_gray!(0xFF).into()),
+            background: Some(Color::WHITE.into()),
             border_radius: 4.0,
             ..Default::default()
         }
@@ -51,7 +51,7 @@ pub struct ContainerL3;
 impl iced_baseview::container::StyleSheet for ContainerL3 {
     fn style(&self) -> iced_baseview::container::Style {
         iced_baseview::container::Style {
-            background: None, //Some(hex_gray!(0x20).into()),
+            background: None,
             border_radius: 4.0,
             ..Default::default()
         }
@@ -164,7 +164,7 @@ pub struct Envelope;
 impl envelope::StyleSheet for Envelope {
     fn active(&self) -> envelope::Style {
         envelope::Style {
-            background_color: hex_gray!(0xFF).into(),
+            background_color: Color::TRANSPARENT,
             border_color: BORDER,
             text_color: TEXT_FG,
             time_marker_minor_color: Color::from_rgb(0.9, 0.9, 0.9),
