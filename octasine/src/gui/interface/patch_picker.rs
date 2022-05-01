@@ -1,10 +1,7 @@
 use iced_baseview::widget::{pick_list, PickList};
-use iced_baseview::{
-    alignment::Horizontal, alignment::Vertical, Alignment, Column, Element, Length, Row, Space,
-    Text,
-};
+use iced_baseview::{Element, Length};
 
-use super::{style::Theme, GuiSyncHandle, Message, FONT_SIZE, FONT_VERY_BOLD, LINE_HEIGHT};
+use super::{style::Theme, GuiSyncHandle, Message, FONT_SIZE};
 
 #[derive(Clone, PartialEq, Eq)]
 struct Patch {
@@ -44,11 +41,6 @@ impl PatchPicker {
     }
 
     pub fn view(&mut self) -> Element<Message> {
-        let title = Text::new("PATCH")
-            .horizontal_alignment(Horizontal::Center)
-            .vertical_alignment(Vertical::Center)
-            .font(FONT_VERY_BOLD);
-
         PickList::new(
             &mut self.state,
             &self.options[..],

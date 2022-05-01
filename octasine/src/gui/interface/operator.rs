@@ -1,9 +1,8 @@
 use iced_baseview::{
     alignment::Horizontal, button, Alignment, Button, Column, Container, Element, Length, Row,
-    Rule, Space, Text,
+    Space, Text,
 };
 
-use crate::hex_gray;
 use crate::parameter_values::{
     Operator2ModulationTargetValue, Operator3ModulationTargetValue, Operator4ModulationTargetValue,
     OperatorFeedbackValue, OperatorFrequencyFineValue, OperatorFrequencyFreeValue,
@@ -225,7 +224,7 @@ impl OperatorWidgets {
         row = row.push(space_l2()).push(container_l2(
             self.style,
             Row::new()
-                .push(container_l3(self.style, (self.envelope.view())))
+                .push(container_l3(self.style, self.envelope.view()))
                 .push(container_l3(
                     self.style,
                     Column::new()

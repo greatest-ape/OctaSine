@@ -10,7 +10,6 @@ use super::StyleSheet;
 pub struct MixOutLine {
     path: Path,
     line_color: Color,
-    line_max_color: Color,
     calculated_color: Color,
 }
 
@@ -25,7 +24,6 @@ impl MixOutLine {
         let mut line = Self {
             path,
             line_color: style_sheet.active().mix_out_line_color,
-            line_max_color: style_sheet.active().line_max_color,
             calculated_color: Color::TRANSPARENT,
         };
 

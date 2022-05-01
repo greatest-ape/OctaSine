@@ -1,10 +1,8 @@
+use iced_baseview::{executor, Application, Command, Subscription, WindowSubs};
 use iced_baseview::{
-    alignment::Horizontal, alignment::Vertical, button, Button, Color, Column, Container, Element,
-    Font, Length, Point, Row, Rule, Space, Text, WindowQueue,
+    Color, Column, Container, Element, Font, Length, Point, Row, Space, WindowQueue,
 };
-use iced_baseview::{executor, Alignment, Application, Command, Subscription, WindowSubs};
 
-use crate::parameter_values::{MasterFrequencyValue, MasterVolumeValue};
 use crate::{get_version_info, sync::GuiSyncHandle};
 
 mod boolean_picker;
@@ -22,14 +20,11 @@ mod patch_picker;
 pub mod style;
 mod wave_picker;
 
-use knob::OctaSineKnob;
 use lfo::LfoWidgets;
-use mod_matrix::ModulationMatrix;
 use operator::OperatorWidgets;
 use patch_picker::PatchPicker;
 use style::Theme;
 
-use self::common::{container_l1, container_l2, container_l3, space_l3};
 use self::corner::CornerWidgets;
 use self::operator::ModTargetPicker;
 
@@ -296,11 +291,6 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
     fn new(sync_handle: Self::Flags) -> (Self, Command<Self::Message>) {
         let style = sync_handle.get_gui_settings().theme;
 
-        let master_volume = knob::master_volume(&sync_handle, style);
-        let master_frequency = knob::master_frequency(&sync_handle, style);
-        let modulation_matrix = ModulationMatrix::new(&sync_handle, style);
-        let patch_picker = PatchPicker::new(&sync_handle, style);
-
         let operator_1 = OperatorWidgets::new(&sync_handle, 0, style);
         let operator_2 = OperatorWidgets::new(&sync_handle, 1, style);
         let operator_3 = OperatorWidgets::new(&sync_handle, 2, style);
@@ -477,114 +467,44 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
     }
 
     fn view(&mut self) -> Element<'_, Self::Message> {
-        let operator_1 = self.operator_1.view();
-        let operator_2 = self.operator_2.view();
-        let operator_3 = self.operator_3.view();
-        let operator_4 = self.operator_4.view();
-        let lfo_1 = self.lfo_1.view();
-        let lfo_2 = self.lfo_2.view();
-        let lfo_3 = self.lfo_3.view();
-        let lfo_4 = self.lfo_4.view();
-
         let info_text_color = if self.show_version {
             self.style.text_color()
         } else {
             Color::TRANSPARENT
         };
 
-        let all = Column::new()
-            /*
-            .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
-            .push(
-                Row::new()
-                    .align_items(Alignment::Center)
-                    .height(Length::Units(LINE_HEIGHT * 4))
-                    .push(
-                        Column::new().width(Length::FillPortion(10)).push(
-                            Container::new(
-                                Row::new()
-                                    .push(
-                                        Button::new(
-                                            &mut self.toggle_style_state,
-                                            Text::new("MODE"),
-                                        )
-                                        .on_press(Message::ToggleColorMode)
-                                        .style(self.style),
-                                    )
-                                    .push(Space::with_width(Length::Units(3)))
-                                    .push(
-                                        Button::new(&mut self.toggle_info_state, Text::new("INFO"))
-                                            .on_press(Message::ToggleInfo)
-                                            .style(self.style),
-                                    )
-                                    .push(Space::with_width(Length::Units(LINE_HEIGHT)))
-                                    .push(
-                                        Text::new(get_info_text())
-                                            .size(LINE_HEIGHT)
-                                            .color(info_text_color)
-                                            .vertical_alignment(Vertical::Center),
-                                    ),
-                            )
-                            .height(Length::Units(LINE_HEIGHT * 4))
-                            .padding(LINE_HEIGHT)
-                            .align_y(Vertical::Center),
-                        ),
-                    )
-                    .push(
-                        Container::new(
-                            Text::new("OctaSine")
-                                .font(FONT_VERY_BOLD)
-                                .color(self.style.heading_color())
-                                .size(FONT_SIZE * 2 + FONT_SIZE / 2)
-                                .horizontal_alignment(Horizontal::Center),
+        Container::new(
+            Column::new()
+                .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
+                .push(self.operator_4.view())
+                .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
+                .push(self.operator_3.view())
+                .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
+                .push(self.operator_2.view())
+                .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
+                .push(self.operator_1.view())
+                .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
+                .push(
+                    Row::new()
+                        .push(
+                            Column::new()
+                                .push(self.lfo_1.view())
+                                .push(Space::with_height(Length::Units(LINE_HEIGHT)))
+                                .push(self.lfo_2.view()),
                         )
-                        .width(Length::FillPortion(4))
-                        .align_x(Horizontal::Center),
-                    )
-                    .push(
-                        Column::new()
-                            .width(Length::FillPortion(10))
-                            .align_items(Alignment::End)
-                            .push(Space::with_height(Length::Units(LINE_HEIGHT)))
-                            .push(
-                                Row::new()
-                                    .push(patch_picker)
-                                    .push(Space::with_width(Length::Units(LINE_HEIGHT))),
-                            ),
-                    ),
-            )
-            */
-            .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
-            .push(operator_4)
-            .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
-            .push(operator_3)
-            .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
-            .push(operator_2)
-            .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
-            .push(operator_1)
-            .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
-            .push(
-                Row::new()
-                    .push(
-                        Column::new()
-                            .push(lfo_1)
-                            .push(Space::with_height(Length::Units(LINE_HEIGHT)))
-                            .push(lfo_2),
-                    )
-                    .push(Space::with_width(Length::Units(LINE_HEIGHT)))
-                    .push(
-                        Column::new()
-                            .push(lfo_3)
-                            .push(Space::with_height(Length::Units(LINE_HEIGHT)))
-                            .push(lfo_4),
-                    )
-                    .push(Space::with_width(Length::Units(LINE_HEIGHT)))
-                    .push(self.corner.view()),
-            );
-
-        Container::new(all)
-            .height(Length::Fill)
-            .style(self.style.container_l0())
-            .into()
+                        .push(Space::with_width(Length::Units(LINE_HEIGHT)))
+                        .push(
+                            Column::new()
+                                .push(self.lfo_3.view())
+                                .push(Space::with_height(Length::Units(LINE_HEIGHT)))
+                                .push(self.lfo_4.view()),
+                        )
+                        .push(Space::with_width(Length::Units(LINE_HEIGHT)))
+                        .push(self.corner.view()),
+                ),
+        )
+        .height(Length::Fill)
+        .style(self.style.container_l0())
+        .into()
     }
 }

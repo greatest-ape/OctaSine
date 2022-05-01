@@ -127,10 +127,10 @@ struct ModulationMatrixComponents {
 
 impl ModulationMatrixComponents {
     fn new(parameters: &ModulationMatrixParameters, bounds: Size, style: Theme) -> Self {
-        let operator_1_box = OperatorBox::new(bounds, 0, style.mod_matrix());
-        let operator_2_box = OperatorBox::new(bounds, 1, style.mod_matrix());
-        let operator_3_box = OperatorBox::new(bounds, 2, style.mod_matrix());
-        let operator_4_box = OperatorBox::new(bounds, 3, style.mod_matrix());
+        let operator_1_box = OperatorBox::new(bounds, 0);
+        let operator_2_box = OperatorBox::new(bounds, 1);
+        let operator_3_box = OperatorBox::new(bounds, 2);
+        let operator_4_box = OperatorBox::new(bounds, 3);
 
         let operator_4_mod_3_box =
             ModulationBox::new(bounds, 3, 2, 53, 2, parameters.operator_4_targets);

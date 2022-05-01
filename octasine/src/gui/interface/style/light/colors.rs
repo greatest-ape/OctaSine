@@ -12,5 +12,3 @@ pub const SURFACE_HOVER: Color = hex_gray!(0xE0);
 pub const TEXT_BG: Color = hex_gray!(0x00);
 pub const TEXT_FG: Color = hex_gray!(0x00);
 pub const BORDER: Color = hex_gray!(0xA0);
-pub const CONTRAST: Color = hex_gray!(0xD9);
-pub const CONTRAST_DARK: Color = hex_gray!(0xC0);

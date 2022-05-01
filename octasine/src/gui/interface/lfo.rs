@@ -1,7 +1,7 @@
+use iced_baseview::Container;
 use iced_baseview::{
     alignment::Horizontal, alignment::Vertical, Column, Element, Length, Row, Space, Text,
 };
-use iced_baseview::{Alignment, Container};
 
 use crate::parameter_values::{
     LfoAmountValue, LfoBpmSyncValue, LfoFrequencyFreeValue, LfoFrequencyRatioValue, LfoModeValue,

@@ -34,7 +34,7 @@ pub struct OperatorBox {
 }
 
 impl OperatorBox {
-    pub fn new(bounds: Size, index: usize, style_sheet: Box<dyn StyleSheet>) -> Self {
+    pub fn new(bounds: Size, index: usize) -> Self {
         let (x, y) = match index {
             3 => (0, 0),
             2 => (2, 2),
