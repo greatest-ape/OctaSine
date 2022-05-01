@@ -206,7 +206,7 @@ pub struct ContainerL1;
 impl iced_baseview::container::StyleSheet for ContainerL1 {
     fn style(&self) -> iced_baseview::container::Style {
         iced_baseview::container::Style {
-            background: Some(hex_gray!(0xE0).into()),
+            background: Some(hex_gray!(0xEA).into()),
             border_radius: 4.0,
             ..Default::default()
         }
@@ -218,7 +218,7 @@ pub struct ContainerL2;
 impl iced_baseview::container::StyleSheet for ContainerL2 {
     fn style(&self) -> iced_baseview::container::Style {
         iced_baseview::container::Style {
-            background: Some(hex_gray!(0xF0).into()),
+            background: Some(hex_gray!(0xFF).into()),
             border_radius: 4.0,
             ..Default::default()
         }
