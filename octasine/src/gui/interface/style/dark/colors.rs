@@ -1,22 +1,6 @@
 use iced_baseview::Color;
 
-#[macro_export]
-macro_rules! hex_gray {
-    ($hex:literal) => {
-        ::iced_baseview::Color::from_rgb(
-            $hex as f32 / 255.0,
-            $hex as f32 / 255.0,
-            $hex as f32 / 255.0,
-        )
-    };
-}
-
-#[macro_export]
-macro_rules! hex {
-    ($r:literal, $g:literal, $b:literal) => {
-        ::iced_baseview::Color::from_rgb($r as f32 / 255.0, $g as f32 / 255.0, $b as f32 / 255.0)
-    };
-}
+use crate::{hex, hex_gray};
 
 pub const GRAY_100: Color = hex_gray!(0x20);
 pub const GRAY_200: Color = hex_gray!(0x2A);

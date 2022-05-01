@@ -1,5 +1,6 @@
 mod dark;
 mod light;
+mod macros;
 
 use iced_baseview::{
     button, container, pick_list, radio,
@@ -49,13 +50,13 @@ impl Style for Theme {
     }
     fn knob_regular(&self) -> Box<dyn iced_audio::knob::StyleSheet> {
         match self {
-            Self::Light => Box::new(light::knob::Knob),
+            Self::Light => Box::new(light::knob::KnobRegular),
             Self::Dark => Box::new(dark::knob::KnobRegular),
         }
     }
     fn knob_bipolar(&self) -> Box<dyn iced_audio::knob::StyleSheet> {
         match self {
-            Self::Light => Box::new(light::knob::Knob),
+            Self::Light => Box::new(light::knob::KnobBilpolar),
             Self::Dark => Box::new(dark::knob::KnobBilpolar),
         }
     }
@@ -161,7 +162,7 @@ impl<'a> From<Theme> for Box<dyn pick_list::StyleSheet + 'a> {
 impl<'a> From<Theme> for Box<dyn iced_audio::knob::StyleSheet + 'a> {
     fn from(theme: Theme) -> Self {
         match theme {
-            Theme::Light => light::knob::Knob.into(),
+            Theme::Light => light::knob::KnobRegular.into(),
             Theme::Dark => dark::knob::KnobRegular.into(),
         }
     }
