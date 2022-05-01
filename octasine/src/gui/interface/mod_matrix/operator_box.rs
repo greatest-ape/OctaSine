@@ -187,9 +187,13 @@ impl OperatorBox {
             BoxStatus::Dragging { .. } => style.operator_box_color_dragging,
         };
 
-        let stroke = Stroke::default()
-            .with_color(style.operator_box_border_color)
-            .with_width(1.0);
+        let border_color = if let Some(color) = style.operator_box_border_color {
+            color
+        } else {
+            background_color
+        };
+
+        let stroke = Stroke::default().with_color(border_color).with_width(1.0);
 
         frame.fill(&self.path, background_color);
         frame.stroke(&self.path, stroke);

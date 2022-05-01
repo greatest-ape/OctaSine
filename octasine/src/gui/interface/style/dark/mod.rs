@@ -188,7 +188,7 @@ impl mod_matrix::StyleSheet for ModulationMatrix {
             border_color: Color::TRANSPARENT,
             text_color: TEXT_FG,
             box_border_color: GRAY_500,
-            operator_box_border_color: GRAY_500,
+            operator_box_border_color: None,
             operator_box_color_active: GRAY_500,
             operator_box_color_hover: GRAY_600,
             operator_box_color_dragging: GRAY_700,
