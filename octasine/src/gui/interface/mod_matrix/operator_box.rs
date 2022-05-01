@@ -181,15 +181,16 @@ impl OperatorBox {
     pub fn draw(&self, frame: &mut Frame, style_sheet: Box<dyn StyleSheet>) {
         let style = style_sheet.active();
 
-        let stroke = Stroke::default()
-            .with_color(style.box_border_color)
-            .with_width(1.0);
-
         let background_color = match self.status {
             BoxStatus::Normal => style.operator_box_color_active,
             BoxStatus::Hover => style.operator_box_color_hover,
             BoxStatus::Dragging { .. } => style.operator_box_color_dragging,
         };
+
+        let stroke = Stroke::default()
+            // .with_color(style.box_border_color)
+            .with_color(background_color)
+            .with_width(1.0);
 
         frame.fill(&self.path, background_color);
         frame.stroke(&self.path, stroke);
