@@ -1,6 +1,6 @@
 use super::ParameterValue;
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Default, Debug, Clone, Copy)]
 pub struct OperatorMixValue(f64);
 
 impl OperatorMixValue {

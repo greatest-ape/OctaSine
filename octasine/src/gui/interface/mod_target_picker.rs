@@ -96,13 +96,14 @@ where
             .size(FONT_SIZE)
             .text_size(FONT_SIZE)
             .spacing(4)
-            .style(self.style);
+            .style(self.style.checkbox());
 
             checkboxes = checkboxes.push(checkbox);
         }
 
         Column::new()
             .width(Length::Units(LINE_HEIGHT * 4))
+            .height(Length::Units(LINE_HEIGHT * 6))
             .align_items(Alignment::Center)
             .push(title)
             .push(Space::with_height(Length::Units(LINE_HEIGHT)))

@@ -36,18 +36,18 @@ pub const LFO_TARGET_CONTEXT_STEPS: &[LfoTargetParameter] = &[
     LfoTargetParameter::Operator(3, LfoTargetOperatorParameter::FrequencyRatio),
     LfoTargetParameter::Operator(3, LfoTargetOperatorParameter::FrequencyFree),
     LfoTargetParameter::Operator(3, LfoTargetOperatorParameter::FrequencyFine),
-    LfoTargetParameter::Lfo(0, LfoTargetLfoParameter::FrequencyRatio),
-    LfoTargetParameter::Lfo(0, LfoTargetLfoParameter::FrequencyFree),
     LfoTargetParameter::Lfo(0, LfoTargetLfoParameter::Shape),
     LfoTargetParameter::Lfo(0, LfoTargetLfoParameter::Amount),
-    LfoTargetParameter::Lfo(1, LfoTargetLfoParameter::FrequencyRatio),
-    LfoTargetParameter::Lfo(1, LfoTargetLfoParameter::FrequencyFree),
+    LfoTargetParameter::Lfo(0, LfoTargetLfoParameter::FrequencyRatio),
+    LfoTargetParameter::Lfo(0, LfoTargetLfoParameter::FrequencyFree),
     LfoTargetParameter::Lfo(1, LfoTargetLfoParameter::Shape),
     LfoTargetParameter::Lfo(1, LfoTargetLfoParameter::Amount),
-    LfoTargetParameter::Lfo(2, LfoTargetLfoParameter::FrequencyRatio),
-    LfoTargetParameter::Lfo(2, LfoTargetLfoParameter::FrequencyFree),
+    LfoTargetParameter::Lfo(1, LfoTargetLfoParameter::FrequencyRatio),
+    LfoTargetParameter::Lfo(1, LfoTargetLfoParameter::FrequencyFree),
     LfoTargetParameter::Lfo(2, LfoTargetLfoParameter::Shape),
     LfoTargetParameter::Lfo(2, LfoTargetLfoParameter::Amount),
+    LfoTargetParameter::Lfo(2, LfoTargetLfoParameter::FrequencyRatio),
+    LfoTargetParameter::Lfo(2, LfoTargetLfoParameter::FrequencyFree),
 ];
 
 pub fn get_lfo_target_parameters(lfo_index: usize) -> &'static [LfoTargetParameter] {
@@ -99,31 +99,38 @@ impl std::fmt::Display for LfoTargetParameter {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
             LfoTargetParameter::Master(p) => {
-                write!(f, "Master {}", format!("{:?}", p).to_lowercase())
+                use LfoTargetMasterParameter::*;
+
+                let p = match p {
+                    Volume => "vol",
+                    Frequency => "freq",
+                };
+
+                write!(f, "Master {}", p)
             }
             LfoTargetParameter::Operator(n, p) => {
                 use LfoTargetOperatorParameter::*;
 
                 let p = match p {
-                    Volume => "volume",
+                    Volume => "vol",
                     Panning => "pan",
                     MixOut => "mix out",
                     ModOut => "mod out",
                     Feedback => "feedback",
-                    FrequencyRatio => "freq ratio",
-                    FrequencyFree => "freq free",
-                    FrequencyFine => "freq fine",
+                    FrequencyRatio => "ratio",
+                    FrequencyFree => "free",
+                    FrequencyFine => "fine",
                 };
 
-                write!(f, "Op. {} {}", n + 1, p)
+                write!(f, "OP {} {}", n + 1, p)
             }
             LfoTargetParameter::Lfo(n, p) => {
                 use LfoTargetLfoParameter::*;
 
                 let p = match p {
                     Shape => "shape",
-                    FrequencyRatio => "freq ratio",
-                    FrequencyFree => "freq free",
+                    FrequencyRatio => "ratio",
+                    FrequencyFree => "free",
                     Amount => "amount",
                 };
 

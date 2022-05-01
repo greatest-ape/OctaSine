@@ -25,7 +25,7 @@ impl BoxStatus {
 
 pub struct OperatorBox {
     index: usize,
-    text: Text,
+    text_position: Point,
     path: Path,
     pub center: Point,
     status: BoxStatus,
@@ -34,7 +34,7 @@ pub struct OperatorBox {
 }
 
 impl OperatorBox {
-    pub fn new(bounds: Size, index: usize, style_sheet: Box<dyn StyleSheet>) -> Self {
+    pub fn new(bounds: Size, index: usize) -> Self {
         let (x, y) = match index {
             3 => (0, 0),
             2 => (2, 2),
@@ -76,18 +76,9 @@ impl OperatorBox {
         text_position.x += 2.0;
         text_position.y -= 2.0;
 
-        let text = Text {
-            content: format!("{}", index + 1),
-            position: text_position,
-            font: FONT_BOLD,
-            size: FONT_SIZE as f32,
-            color: style_sheet.active().text_color,
-            ..Default::default()
-        };
-
         Self {
             index,
-            text,
+            text_position,
             path,
             center,
             status: BoxStatus::Normal,
@@ -181,9 +172,14 @@ impl OperatorBox {
     pub fn draw(&self, frame: &mut Frame, style_sheet: Box<dyn StyleSheet>) {
         let style = style_sheet.active();
 
-        let stroke = Stroke::default()
-            .with_color(style.box_border_color)
-            .with_width(1.0);
+        let text = Text {
+            content: format!("{}", self.index + 1),
+            position: self.text_position,
+            font: FONT_BOLD,
+            size: FONT_SIZE as f32,
+            color: style.text_color,
+            ..Default::default()
+        };
 
         let background_color = match self.status {
             BoxStatus::Normal => style.operator_box_color_active,
@@ -191,8 +187,16 @@ impl OperatorBox {
             BoxStatus::Dragging { .. } => style.operator_box_color_dragging,
         };
 
+        let border_color = if let Some(color) = style.operator_box_border_color {
+            color
+        } else {
+            background_color
+        };
+
+        let stroke = Stroke::default().with_color(border_color).with_width(1.0);
+
         frame.fill(&self.path, background_color);
         frame.stroke(&self.path, stroke);
-        frame.fill_text(self.text.clone());
+        frame.fill_text(text);
     }
 }

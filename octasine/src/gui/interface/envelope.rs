@@ -1,7 +1,7 @@
 use iced_baseview::canvas::{
     event, path, Cache, Canvas, Cursor, Frame, Geometry, Path, Program, Stroke, Text,
 };
-use iced_baseview::{Color, Element, Length, Point, Rectangle, Size, Vector};
+use iced_baseview::{Color, Container, Element, Length, Point, Rectangle, Size, Vector};
 
 use crate::audio::voices::envelopes::VoiceOperatorVolumeEnvelope;
 use crate::audio::voices::log10_table::Log10Table;
@@ -466,10 +466,13 @@ impl Envelope {
     }
 
     pub fn view(&mut self) -> Element<Message> {
-        Canvas::new(self)
-            .width(Length::Units(WIDTH))
-            .height(Length::Units(HEIGHT))
-            .into()
+        Container::new(
+            Canvas::new(self)
+                .width(Length::Units(WIDTH))
+                .height(Length::Units(HEIGHT)),
+        )
+        .height(Length::Units(LINE_HEIGHT * 6))
+        .into()
     }
 
     fn draw_time_markers(&self, frame: &mut Frame, style_sheet: Box<dyn StyleSheet>) {
@@ -661,12 +664,12 @@ impl Envelope {
 impl Program<Message> for Envelope {
     fn draw(&self, bounds: Rectangle, _cursor: Cursor) -> Vec<Geometry> {
         let geometry = self.cache.draw(bounds.size(), |frame| {
-            self.draw_time_markers(frame, self.style.into());
-            self.draw_stage_paths(frame, self.style.into());
+            self.draw_time_markers(frame, self.style.envelope());
+            self.draw_stage_paths(frame, self.style.envelope());
 
-            Self::draw_dragger(frame, self.style.into(), &self.attack_dragger);
-            Self::draw_dragger(frame, self.style.into(), &self.decay_dragger);
-            Self::draw_dragger(frame, self.style.into(), &self.release_dragger);
+            Self::draw_dragger(frame, self.style.envelope(), &self.attack_dragger);
+            Self::draw_dragger(frame, self.style.envelope(), &self.decay_dragger);
+            Self::draw_dragger(frame, self.style.envelope(), &self.release_dragger);
         });
 
         vec![geometry]

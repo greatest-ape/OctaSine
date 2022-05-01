@@ -130,9 +130,9 @@ impl OperatorMuteButton {
 impl Program<Message> for OperatorMuteButton {
     fn draw(&self, bounds: Rectangle, _cursor: Cursor) -> Vec<Geometry> {
         let geometry = self.cache.draw(bounds.size(), |frame| {
-            self.draw_background(frame, self.style.into());
-            self.draw_border(frame, self.style.into());
-            self.draw_text(frame, self.style.into());
+            self.draw_background(frame, self.style.mute_button());
+            self.draw_border(frame, self.style.mute_button());
+            self.draw_text(frame, self.style.mute_button());
         });
 
         vec![geometry]

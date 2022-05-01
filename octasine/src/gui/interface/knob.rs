@@ -20,10 +20,10 @@ enum TickMarkType {
     MinMaxAndDefault,
 }
 
-pub fn master_volume<H: GuiSyncHandle>(
-    sync_handle: &H,
-    style: Theme,
-) -> OctaSineKnob<MasterVolumeValue> {
+pub fn master_volume<H>(sync_handle: &H, style: Theme) -> OctaSineKnob<MasterVolumeValue>
+where
+    H: GuiSyncHandle,
+{
     let parameter_index = 0;
 
     OctaSineKnob::new(
@@ -32,13 +32,14 @@ pub fn master_volume<H: GuiSyncHandle>(
         "VOLUME",
         TickMarkType::MinMaxAndDefault,
         style,
+        |theme| theme.knob_regular(),
     )
 }
 
-pub fn master_frequency<H: GuiSyncHandle>(
-    sync_handle: &H,
-    style: Theme,
-) -> OctaSineKnob<MasterFrequencyValue> {
+pub fn master_frequency<H>(sync_handle: &H, style: Theme) -> OctaSineKnob<MasterFrequencyValue>
+where
+    H: GuiSyncHandle,
+{
     let parameter_index = 1;
 
     OctaSineKnob::new(
@@ -47,14 +48,18 @@ pub fn master_frequency<H: GuiSyncHandle>(
         "FREQ",
         TickMarkType::MinMaxAndDefault,
         style,
+        |theme| theme.knob_regular(),
     )
 }
 
-pub fn operator_volume<H: GuiSyncHandle>(
+pub fn operator_volume<H>(
     sync_handle: &H,
     parameter_index: usize,
     style: Theme,
-) -> OctaSineKnob<OperatorVolumeValue> {
+) -> OctaSineKnob<OperatorVolumeValue>
+where
+    H: GuiSyncHandle,
+{
     OctaSineKnob::new_with_default_sync_value(
         sync_handle,
         parameter_index,
@@ -62,15 +67,19 @@ pub fn operator_volume<H: GuiSyncHandle>(
         TickMarkType::MinMaxAndDefault,
         OperatorVolumeValue::default().to_patch(),
         style,
+        |theme| theme.knob_regular(),
     )
 }
 
-pub fn operator_mix<H: GuiSyncHandle>(
+pub fn operator_mix<H>(
     sync_handle: &H,
     parameter_index: usize,
     operator_index: usize,
     style: Theme,
-) -> OctaSineKnob<OperatorMixValue> {
+) -> OctaSineKnob<OperatorMixValue>
+where
+    H: GuiSyncHandle,
+{
     OctaSineKnob::new_with_default_sync_value(
         sync_handle,
         parameter_index,
@@ -78,132 +87,169 @@ pub fn operator_mix<H: GuiSyncHandle>(
         TickMarkType::MinMaxAndDefault,
         OperatorMixValue::new(operator_index).to_patch(),
         style,
+        |theme| theme.knob_regular(),
     )
 }
 
-pub fn operator_panning<H: GuiSyncHandle>(
+pub fn operator_panning<H>(
     sync_handle: &H,
     parameter_index: usize,
     style: Theme,
-) -> OctaSineKnob<OperatorPanningValue> {
+) -> OctaSineKnob<OperatorPanningValue>
+where
+    H: GuiSyncHandle,
+{
     OctaSineKnob::new(
         sync_handle,
         parameter_index,
         "PAN",
         TickMarkType::MinMaxAndDefault,
         style,
+        |theme| theme.knob_bipolar(),
     )
 }
 
-pub fn operator_mod_index<H: GuiSyncHandle>(
+pub fn operator_mod_index<H>(
     sync_handle: &H,
     parameter_index: usize,
     style: Theme,
-) -> OctaSineKnob<OperatorModulationIndexValue> {
+) -> OctaSineKnob<OperatorModulationIndexValue>
+where
+    H: GuiSyncHandle,
+{
     OctaSineKnob::new(
         sync_handle,
         parameter_index,
         "MOD OUT",
         TickMarkType::MinMaxAndDefault,
         style,
+        |theme| theme.knob_regular(),
     )
 }
 
-pub fn operator_feedback<H: GuiSyncHandle>(
+pub fn operator_feedback<H>(
     sync_handle: &H,
     parameter_index: usize,
     style: Theme,
-) -> OctaSineKnob<OperatorFeedbackValue> {
+) -> OctaSineKnob<OperatorFeedbackValue>
+where
+    H: GuiSyncHandle,
+{
     OctaSineKnob::new(
         sync_handle,
         parameter_index,
         "FEEDBACK",
         TickMarkType::MinMaxAndDefault,
         style,
+        |theme| theme.knob_regular(),
     )
 }
 
-pub fn operator_frequency_ratio<H: GuiSyncHandle>(
+pub fn operator_frequency_ratio<H>(
     sync_handle: &H,
     parameter_index: usize,
     style: Theme,
-) -> OctaSineKnob<OperatorFrequencyRatioValue> {
+) -> OctaSineKnob<OperatorFrequencyRatioValue>
+where
+    H: GuiSyncHandle,
+{
     OctaSineKnob::new(
         sync_handle,
         parameter_index,
         "RATIO",
         TickMarkType::MinMaxAndDefault,
         style,
+        |theme| theme.knob_regular(),
     )
 }
 
-pub fn operator_frequency_free<H: GuiSyncHandle>(
+pub fn operator_frequency_free<H>(
     sync_handle: &H,
     parameter_index: usize,
     style: Theme,
-) -> OctaSineKnob<OperatorFrequencyFreeValue> {
+) -> OctaSineKnob<OperatorFrequencyFreeValue>
+where
+    H: GuiSyncHandle,
+{
     OctaSineKnob::new(
         sync_handle,
         parameter_index,
         "FREE",
         TickMarkType::MinMaxAndDefault,
         style,
+        |theme| theme.knob_regular(),
     )
 }
 
-pub fn operator_frequency_fine<H: GuiSyncHandle>(
+pub fn operator_frequency_fine<H>(
     sync_handle: &H,
     parameter_index: usize,
     style: Theme,
-) -> OctaSineKnob<OperatorFrequencyFineValue> {
+) -> OctaSineKnob<OperatorFrequencyFineValue>
+where
+    H: GuiSyncHandle,
+{
     OctaSineKnob::new(
         sync_handle,
         parameter_index,
         "FINE",
         TickMarkType::MinMaxAndDefault,
         style,
+        |theme| theme.knob_regular(),
     )
 }
 
-pub fn lfo_frequency_ratio<H: GuiSyncHandle>(
+pub fn lfo_frequency_ratio<H>(
     sync_handle: &H,
     parameter_index: usize,
     style: Theme,
-) -> OctaSineKnob<LfoFrequencyRatioValue> {
+) -> OctaSineKnob<LfoFrequencyRatioValue>
+where
+    H: GuiSyncHandle,
+{
     OctaSineKnob::new(
         sync_handle,
         parameter_index,
         "RATIO",
         TickMarkType::MinMaxAndDefault,
         style,
+        |theme| theme.knob_bipolar(),
     )
 }
 
-pub fn lfo_frequency_free<H: GuiSyncHandle>(
+pub fn lfo_frequency_free<H>(
     sync_handle: &H,
     parameter_index: usize,
     style: Theme,
-) -> OctaSineKnob<LfoFrequencyFreeValue> {
+) -> OctaSineKnob<LfoFrequencyFreeValue>
+where
+    H: GuiSyncHandle,
+{
     OctaSineKnob::new(
         sync_handle,
         parameter_index,
         "FREE",
         TickMarkType::MinMaxAndDefault,
         style,
+        |theme| theme.knob_bipolar(),
     )
 }
 
-pub fn lfo_amount<H: GuiSyncHandle>(
+pub fn lfo_amount<H>(
     sync_handle: &H,
     parameter_index: usize,
     style: Theme,
-) -> OctaSineKnob<LfoAmountValue> {
+) -> OctaSineKnob<LfoAmountValue>
+where
+    H: GuiSyncHandle,
+{
     OctaSineKnob::new(
         sync_handle,
         parameter_index,
         "AMOUNT",
         TickMarkType::MinMaxAndDefault,
         style,
+        |theme| theme.knob_regular(),
     )
 }
 
@@ -217,15 +263,20 @@ pub struct OctaSineKnob<P: ParameterValue> {
     value_text: String,
     parameter_index: usize,
     phantom_data: ::std::marker::PhantomData<P>,
+    style_extractor: fn(Theme) -> Box<dyn iced_audio::knob::StyleSheet>,
 }
 
-impl<P: ParameterValue + Default> OctaSineKnob<P> {
+impl<P> OctaSineKnob<P>
+where
+    P: ParameterValue + Default,
+{
     fn new<H: GuiSyncHandle>(
         sync_handle: &H,
         parameter_index: usize,
         title: &str,
         tick_mark_type: TickMarkType,
         style: Theme,
+        style_extractor: fn(Theme) -> Box<dyn iced_audio::knob::StyleSheet>,
     ) -> Self {
         Self::new_with_default_sync_value(
             sync_handle,
@@ -234,11 +285,10 @@ impl<P: ParameterValue + Default> OctaSineKnob<P> {
             tick_mark_type,
             P::default().to_patch(),
             style,
+            style_extractor,
         )
     }
-}
 
-impl<P: ParameterValue> OctaSineKnob<P> {
     fn new_with_default_sync_value<H: GuiSyncHandle>(
         sync_handle: &H,
         parameter_index: usize,
@@ -246,6 +296,7 @@ impl<P: ParameterValue> OctaSineKnob<P> {
         tick_mark_type: TickMarkType,
         default_sync_value: f64,
         style: Theme,
+        style_extractor: fn(Theme) -> Box<dyn iced_audio::knob::StyleSheet>,
     ) -> Self {
         let sync_value = sync_handle.get_parameter(parameter_index);
         let value_text = P::new_from_patch(sync_value).get_formatted();
@@ -268,6 +319,7 @@ impl<P: ParameterValue> OctaSineKnob<P> {
             value_text,
             parameter_index,
             phantom_data: ::std::marker::PhantomData::default(),
+            style_extractor,
         }
     }
 
@@ -300,7 +352,7 @@ impl<P: ParameterValue> OctaSineKnob<P> {
         )
         .size(Length::from(KNOB_SIZE))
         .modifier_keys(modifier_keys)
-        .style(self.style);
+        .style((self.style_extractor)(self.style));
 
         if let Some(text_marks) = self.text_marks.as_ref() {
             knob = knob.text_marks(text_marks);
