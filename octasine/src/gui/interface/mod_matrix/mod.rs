@@ -23,7 +23,7 @@ use self::output_box::OutputBox;
 use super::style::Theme;
 use super::{Message, LINE_HEIGHT};
 
-pub const HEIGHT: u16 = LINE_HEIGHT * 7;
+pub const HEIGHT: u16 = LINE_HEIGHT * 6;
 const SMALL_BOX_SIZE: u16 = 8;
 const BIG_BOX_SIZE: u16 = LINE_HEIGHT;
 

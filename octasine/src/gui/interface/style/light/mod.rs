@@ -183,13 +183,13 @@ impl mod_matrix::StyleSheet for ModulationMatrix {
     fn active(&self) -> mod_matrix::Style {
         mod_matrix::Style {
             background_color: Color::WHITE,
-            border_color: BORDER,
+            border_color: Color::TRANSPARENT,
             text_color: TEXT_FG,
             box_border_color: BORDER,
             operator_box_color_active: SURFACE,
             operator_box_border_color: BORDER,
             operator_box_color_hover: SURFACE_HOVER,
-            operator_box_color_dragging: hex_gray!(0xC0),
+            operator_box_color_dragging: GRAY_700,
             modulation_box_color_active: SURFACE,
             modulation_box_color_inactive: Color::TRANSPARENT,
             modulation_box_color_hover: SURFACE_HOVER,
