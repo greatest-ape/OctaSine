@@ -6,6 +6,7 @@ pub const RED: Color = hex!(0xEF, 0x53, 0x50);
 pub const BLUE: Color = hex!(0x50, 0x9D, 0xEF);
 pub const GREEN: Color = hex!(0x50, 0xEF, 0x2a);
 
+pub const GRAY_300: Color = hex_gray!(0x60);
 pub const GRAY_500: Color = hex_gray!(0xA0);
 pub const GRAY_600: Color = hex_gray!(0xB0);
 pub const GRAY_700: Color = hex_gray!(0xD0);

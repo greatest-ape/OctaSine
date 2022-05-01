@@ -167,12 +167,12 @@ impl envelope::StyleSheet for Envelope {
             background_color: Color::TRANSPARENT,
             border_color: BORDER,
             text_color: TEXT_FG,
-            time_marker_minor_color: Color::from_rgb(0.9, 0.9, 0.9),
-            time_marker_color_major: Color::from_rgb(0.7, 0.7, 0.7),
-            path_color: TEXT_FG,
+            time_marker_minor_color: GRAY_800,
+            time_marker_color_major: GRAY_600,
+            path_color: GRAY_300,
             dragger_fill_color_active: SURFACE,
-            dragger_fill_color_hover: TEXT_FG,
-            dragger_border_color: Color::from_rgb(0.5, 0.5, 0.5),
+            dragger_fill_color_hover: SURFACE_HOVER,
+            dragger_border_color: GRAY_300,
         }
     }
 }
