@@ -15,7 +15,7 @@ macro_rules! hex_gray {
     };
 }
 
-pub const BACKGROUND: Color = hex_gray!(0xFF);
+pub const BACKGROUND: Color = hex_gray!(0xD0);
 pub const SURFACE: Color = hex_gray!(0xF0);
 pub const SURFACE_DARK: Color = hex_gray!(0xD9);
 pub const TEXT_BG: Color = hex_gray!(0x40);
@@ -285,6 +285,42 @@ impl mute_button::StyleSheet for MuteButton {
             background_color: SURFACE,
             border_color: BORDER,
             text_color: TEXT_FG,
+        }
+    }
+}
+
+pub struct ContainerL1;
+
+impl iced_baseview::container::StyleSheet for ContainerL1 {
+    fn style(&self) -> iced_baseview::container::Style {
+        iced_baseview::container::Style {
+            background: Some(hex_gray!(0xE0).into()),
+            border_radius: 4.0,
+            ..Default::default()
+        }
+    }
+}
+
+pub struct ContainerL2;
+
+impl iced_baseview::container::StyleSheet for ContainerL2 {
+    fn style(&self) -> iced_baseview::container::Style {
+        iced_baseview::container::Style {
+            background: Some(hex_gray!(0xF0).into()),
+            border_radius: 4.0,
+            ..Default::default()
+        }
+    }
+}
+
+pub struct ContainerL3;
+
+impl iced_baseview::container::StyleSheet for ContainerL3 {
+    fn style(&self) -> iced_baseview::container::Style {
+        iced_baseview::container::Style {
+            background: None, //Some(hex_gray!(0x20).into()),
+            border_radius: 4.0,
+            ..Default::default()
         }
     }
 }

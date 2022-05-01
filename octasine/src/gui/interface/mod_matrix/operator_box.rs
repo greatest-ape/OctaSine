@@ -25,7 +25,7 @@ impl BoxStatus {
 
 pub struct OperatorBox {
     index: usize,
-    text: Text,
+    text_position: Point,
     path: Path,
     pub center: Point,
     status: BoxStatus,
@@ -76,18 +76,9 @@ impl OperatorBox {
         text_position.x += 2.0;
         text_position.y -= 2.0;
 
-        let text = Text {
-            content: format!("{}", index + 1),
-            position: text_position,
-            font: FONT_BOLD,
-            size: FONT_SIZE as f32,
-            color: style_sheet.active().text_color,
-            ..Default::default()
-        };
-
         Self {
             index,
-            text,
+            text_position,
             path,
             center,
             status: BoxStatus::Normal,
@@ -181,6 +172,15 @@ impl OperatorBox {
     pub fn draw(&self, frame: &mut Frame, style_sheet: Box<dyn StyleSheet>) {
         let style = style_sheet.active();
 
+        let text = Text {
+            content: format!("{}", self.index + 1),
+            position: self.text_position,
+            font: FONT_BOLD,
+            size: FONT_SIZE as f32,
+            color: style.text_color,
+            ..Default::default()
+        };
+
         let background_color = match self.status {
             BoxStatus::Normal => style.operator_box_color_active,
             BoxStatus::Hover => style.operator_box_color_hover,
@@ -194,6 +194,6 @@ impl OperatorBox {
 
         frame.fill(&self.path, background_color);
         frame.stroke(&self.path, stroke);
-        frame.fill_text(self.text.clone());
+        frame.fill_text(text);
     }
 }

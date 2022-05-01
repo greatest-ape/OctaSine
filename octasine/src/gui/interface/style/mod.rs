@@ -31,19 +31,19 @@ pub enum Theme {
 impl Style for Theme {
     fn container_l1(&self) -> Box<dyn iced_style::container::StyleSheet> {
         match self {
-            Self::Light => Box::new(dark::ContainerL1),
+            Self::Light => Box::new(light::ContainerL1),
             Self::Dark => Box::new(dark::ContainerL1),
         }
     }
     fn container_l2(&self) -> Box<dyn iced_style::container::StyleSheet> {
         match self {
-            Self::Light => Box::new(dark::ContainerL2),
+            Self::Light => Box::new(light::ContainerL2),
             Self::Dark => Box::new(dark::ContainerL2),
         }
     }
     fn container_l3(&self) -> Box<dyn iced_style::container::StyleSheet> {
         match self {
-            Self::Light => Box::new(dark::ContainerL3),
+            Self::Light => Box::new(light::ContainerL3),
             Self::Dark => Box::new(dark::ContainerL3),
         }
     }
