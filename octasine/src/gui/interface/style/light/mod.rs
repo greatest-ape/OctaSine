@@ -53,7 +53,7 @@ impl checkbox::StyleSheet for Checkbox {
             text_color: Some(TEXT_FG),
             border_width: 1.0,
             border_color: BORDER,
-            border_radius: 5.0,
+            border_radius: 3.0,
         }
     }
 
@@ -154,8 +154,8 @@ impl mod_matrix::StyleSheet for ModulationMatrix {
             modulation_box_color_inactive: Color::TRANSPARENT,
             modulation_box_color_hover: SURFACE_DARK,
             line_max_color: Color::BLACK,
-            mod_out_line_color: Color::new(0.25, 0.5, 1.0, 1.0),
-            mix_out_line_color: Color::new(0.25, 0.5, 1.0, 1.0),
+            mod_out_line_color: BLUE,
+            mix_out_line_color: GREEN,
         }
     }
 }
@@ -188,7 +188,7 @@ impl mute_button::StyleSheet for MuteButton {
     fn volume_off(&self) -> mute_button::Style {
         mute_button::Style {
             background_color: SURFACE,
-            border_color: BORDER,
+            border_color: RED,
             text_color: RED,
         }
     }
