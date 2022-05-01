@@ -3,6 +3,8 @@
 ## High priority
 
 * Option to disable LFOs / set no target
+* Frequency knobs should be bipolar, but iced_audio can currently only do
+  bipolar knobs from center.
 * In mod target widget, use space element instead of horizontal centering
 * Envelope dragger "dragging" color
 * Raise default volume (and maybe hard limit limit)
