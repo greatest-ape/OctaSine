@@ -69,9 +69,9 @@ const ARC_BIPOLAR_STYLE: ArcBipolarStyle = ArcBipolarStyle {
     notch_left_right: None,
 };
 
-pub struct KnobBilpolar;
+pub struct KnobBipolar;
 
-impl iced_audio::knob::StyleSheet for KnobBilpolar {
+impl iced_audio::knob::StyleSheet for KnobBipolar {
     fn active(&self) -> iced_audio::knob::Style {
         Style::ArcBipolar(ARC_BIPOLAR_STYLE)
     }

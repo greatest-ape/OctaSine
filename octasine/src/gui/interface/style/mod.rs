@@ -136,8 +136,8 @@ impl Theme {
     }
     pub fn knob_bipolar(&self) -> Box<dyn iced_audio::knob::StyleSheet> {
         match self {
-            Self::Light => Box::new(light::knob::KnobBilpolar),
-            Self::Dark => Box::new(dark::knob::KnobBilpolar),
+            Self::Light => Box::new(light::knob::KnobBipolar),
+            Self::Dark => Box::new(dark::knob::KnobBipolar),
         }
     }
 
