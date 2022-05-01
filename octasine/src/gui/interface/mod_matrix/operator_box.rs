@@ -58,7 +58,7 @@ impl OperatorBox {
         let mut top_left = scale_point(bounds, top_left);
         let size = scale_size(size);
 
-        top_left.x += 1.0;
+        top_left.x -= 1.0;
         top_left = top_left.snap();
 
         let path = Path::rectangle(top_left, size);
@@ -74,7 +74,7 @@ impl OperatorBox {
 
         text_position = text_position.snap();
 
-        text_position.x += 2.0;
+        text_position.x += 0.0;
         text_position.y -= 2.0;
 
         Self {

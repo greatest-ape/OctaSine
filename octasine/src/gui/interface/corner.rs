@@ -57,11 +57,21 @@ impl CornerWidgets {
     }
 
     pub fn view(&mut self) -> Element<'_, Message> {
-        let mod_matrix = triple_container(
-            self.style,
-            Container::new(Row::new().push(self.modulation_matrix.view()))
-                .width(Length::Units(LINE_HEIGHT * 6)),
-        );
+        let mod_matrix = Container::new(
+            Column::new()
+                .push(Space::with_height(Length::Units(LINE_HEIGHT)))
+                .push(
+                    Row::new()
+                        .push(Space::with_width(Length::Units(LINE_HEIGHT)))
+                        .push(self.modulation_matrix.view())
+                        // Allow room for modulation matrix extra pixel
+                        .push(Space::with_width(Length::Units(LINE_HEIGHT - 1))),
+                )
+                .push(Space::with_height(Length::Units(LINE_HEIGHT))),
+        )
+        .height(Length::Units(LINE_HEIGHT * 8))
+        .width(Length::Units(LINE_HEIGHT * 7))
+        .style(self.style.container_l3());
 
         let master = container_l1(
             self.style,
@@ -70,7 +80,8 @@ impl CornerWidgets {
                 Row::new()
                     .push(container_l3(self.style, self.master_volume.view()))
                     .push(space_l3())
-                    .push(container_l3(self.style, self.master_frequency.view())),
+                    .push(container_l3(self.style, self.master_frequency.view()))
+                    .push(Space::with_width(Length::Units(LINE_HEIGHT))), // Extend to end
             ),
         );
 
@@ -89,7 +100,7 @@ impl CornerWidgets {
                 .push(Space::with_height(Length::Units(LINE_HEIGHT)))
                 .push(self.patch_picker.view()),
         )
-        .width(Length::Units(LINE_HEIGHT * 8))
+        .width(Length::Units(LINE_HEIGHT * 7))
         .height(Length::Units(LINE_HEIGHT * 6));
 
         // Helps with issues arising from use of different font weights
@@ -114,6 +125,15 @@ impl CornerWidgets {
                 .push(
                     Row::new()
                         .push(
+                            Button::new(
+                                &mut self.toggle_style_state,
+                                Text::new("THEME").font(self.style.font_regular()),
+                            )
+                            .on_press(Message::ToggleColorMode)
+                            .style(self.style.button()),
+                        )
+                        .push(Space::with_width(Length::Units(logo_button_space)))
+                        .push(
                             Tooltip::new(
                                 Button::new(
                                     &mut self.toggle_info_state,
@@ -125,19 +145,10 @@ impl CornerWidgets {
                                 Position::FollowCursor,
                             )
                             .style(self.style.tooltip()),
-                        )
-                        .push(Space::with_width(Length::Units(logo_button_space)))
-                        .push(
-                            Button::new(
-                                &mut self.toggle_style_state,
-                                Text::new("THEME").font(self.style.font_regular()),
-                            )
-                            .on_press(Message::ToggleColorMode)
-                            .style(self.style.button()),
                         ),
                 ),
         )
-        .width(Length::Units(LINE_HEIGHT * 6))
+        .width(Length::Units(LINE_HEIGHT * 7))
         .height(Length::Units(LINE_HEIGHT * 6));
 
         Column::new()

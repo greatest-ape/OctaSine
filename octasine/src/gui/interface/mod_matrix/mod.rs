@@ -405,7 +405,7 @@ impl ModulationMatrix {
 
     pub fn view(&mut self) -> Element<Message> {
         Canvas::new(self)
-            .width(Length::Units(WIDTH))
+            .width(Length::Units(LINE_HEIGHT * 5 + 2))
             .height(Length::Units(HEIGHT))
             .into()
     }
