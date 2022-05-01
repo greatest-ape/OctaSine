@@ -81,7 +81,7 @@ impl CornerWidgets {
                     .push(container_l3(self.style, self.master_volume.view()))
                     .push(space_l3())
                     .push(container_l3(self.style, self.master_frequency.view()))
-                    .push(Space::with_width(Length::Units(LINE_HEIGHT))), // Extend to end
+                    .push(Space::with_width(Length::Units(LINE_HEIGHT * 3))), // Extend to end
             ),
         );
 
@@ -100,7 +100,7 @@ impl CornerWidgets {
                 .push(Space::with_height(Length::Units(LINE_HEIGHT)))
                 .push(self.patch_picker.view()),
         )
-        .width(Length::Units(LINE_HEIGHT * 7))
+        .width(Length::Units(LINE_HEIGHT * 9))
         .height(Length::Units(LINE_HEIGHT * 6));
 
         // Helps with issues arising from use of different font weights

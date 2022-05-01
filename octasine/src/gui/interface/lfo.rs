@@ -94,7 +94,7 @@ impl LfoWidgets {
         let title = Text::new(format!("LFO {}", self.index + 1))
             .size(FONT_SIZE + FONT_SIZE / 2)
             .font(self.style.font_heading())
-            .width(Length::Units(LINE_HEIGHT * 6))
+            .width(Length::Units(LINE_HEIGHT * 5))
             .color(self.style.heading_color())
             .horizontal_alignment(Horizontal::Center)
             .vertical_alignment(Vertical::Center);
@@ -116,16 +116,12 @@ impl LfoWidgets {
                             .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
                             .push(self.target.view()),
                     )
-                    .width(Length::Units(LINE_HEIGHT * 10)),
+                    .width(Length::Units(LINE_HEIGHT * 9)),
                 )
                 .push(Space::with_width(Length::Units(LINE_HEIGHT)))
                 .push(container_l2(
                     self.style,
                     Row::new()
-                        // .push(container_l3(self.mode.view()))
-                        // .push(space_l3())
-                        // .push(container_l3(self.bpm_sync.view()))
-                        // .push(space_l3())
                         .push(container_l3(self.style, self.shape.view()))
                         .push(space_l3())
                         .push(container_l3(self.style, self.amount.view()))

@@ -6,7 +6,7 @@ use crate::parameter_values::{
     Lfo3TargetParameterValue, Lfo4TargetParameterValue, LfoTargetParameter, ParameterValue,
 };
 
-use super::{style::Theme, GuiSyncHandle, Message, FONT_SIZE, LINE_HEIGHT};
+use super::{style::Theme, GuiSyncHandle, Message, FONT_SIZE};
 
 #[derive(Clone, PartialEq, Eq)]
 struct LfoTarget {
