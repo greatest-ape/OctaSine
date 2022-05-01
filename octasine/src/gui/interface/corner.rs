@@ -88,6 +88,12 @@ impl CornerWidgets {
         .width(Length::Units(LINE_HEIGHT * 8))
         .height(Length::Units(LINE_HEIGHT * 6));
 
+        // Helps with issues arising from use of different font weights
+        let logo_button_space = match self.style {
+            Theme::Dark => 3,
+            Theme::Light => 2,
+        };
+
         let logo = Container::new(
             Column::new()
                 .align_items(Alignment::Center)
@@ -116,7 +122,7 @@ impl CornerWidgets {
                             )
                             .style(self.style.tooltip()),
                         )
-                        .push(Space::with_width(Length::Units(3)))
+                        .push(Space::with_width(Length::Units(logo_button_space)))
                         .push(
                             Button::new(
                                 &mut self.toggle_style_state,
