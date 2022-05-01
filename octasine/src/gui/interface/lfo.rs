@@ -1,7 +1,7 @@
-use iced_baseview::Alignment;
 use iced_baseview::{
     alignment::Horizontal, alignment::Vertical, Column, Element, Length, Row, Space, Text,
 };
+use iced_baseview::{Alignment, Container};
 
 use crate::parameter_values::{
     LfoAmountValue, LfoBpmSyncValue, LfoFrequencyFreeValue, LfoFrequencyRatioValue, LfoModeValue,
@@ -67,38 +67,43 @@ impl LfoWidgets {
     pub fn view(&mut self) -> Element<Message> {
         let title = Text::new(format!("LFO {}", self.index + 1))
             .size(FONT_SIZE + FONT_SIZE / 2)
-            .height(Length::Units(LINE_HEIGHT * 2))
-            .width(Length::Units(LINE_HEIGHT * 10))
             .font(FONT_VERY_BOLD)
+            .width(Length::Fill)
             .color(self.style.heading_color())
             .horizontal_alignment(Horizontal::Center)
             .vertical_alignment(Vertical::Center);
 
-        let c = Row::new()
-            .push(
-                Column::new()
-                    .push(Space::with_height(Length::Units(LINE_HEIGHT * 2)))
-                    .push(Row::new().push(title))
-                    .push(Space::with_height(Length::Units(LINE_HEIGHT * 0)))
-                    .push(self.target.view()),
-            )
-            // .push(Space::with_width(Length::Units(LINE_HEIGHT * 1)))
-            .push(container_l2(
-                self.style,
-                Row::new()
-                    // .push(container_l3(self.mode.view()))
-                    // .push(space_l3())
-                    // .push(container_l3(self.bpm_sync.view()))
-                    // .push(space_l3())
-                    .push(container_l3(self.style, self.shape.view()))
-                    .push(space_l3())
-                    .push(container_l3(self.style, self.amount.view()))
-                    .push(space_l3())
-                    .push(container_l3(self.style, self.frequency_ratio.view()))
-                    .push(space_l3())
-                    .push(container_l3(self.style, self.frequency_free.view())),
-            ));
-
-        container_l1(self.style, c).into()
+        container_l1(
+            self.style,
+            Row::new()
+                .push(Space::with_width(Length::Units(LINE_HEIGHT)))
+                .push(
+                    Container::new(
+                        Column::new()
+                            .push(Space::with_height(Length::Units(LINE_HEIGHT * 2)))
+                            .push(title)
+                            .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
+                            .push(self.target.view()),
+                    )
+                    .width(Length::Units(LINE_HEIGHT * 8)),
+                )
+                .push(Space::with_width(Length::Units(LINE_HEIGHT)))
+                .push(container_l2(
+                    self.style,
+                    Row::new()
+                        // .push(container_l3(self.mode.view()))
+                        // .push(space_l3())
+                        // .push(container_l3(self.bpm_sync.view()))
+                        // .push(space_l3())
+                        .push(container_l3(self.style, self.shape.view()))
+                        .push(space_l3())
+                        .push(container_l3(self.style, self.amount.view()))
+                        .push(space_l3())
+                        .push(container_l3(self.style, self.frequency_ratio.view()))
+                        .push(space_l3())
+                        .push(container_l3(self.style, self.frequency_free.view())),
+                )),
+        )
+        .into()
     }
 }

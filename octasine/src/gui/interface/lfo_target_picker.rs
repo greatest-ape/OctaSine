@@ -87,7 +87,7 @@ impl LfoTargetPicker {
         let lfo_index = self.lfo_index;
         let parameter_index = self.parameter_index;
 
-        let list = PickList::new(
+        PickList::new(
             &mut self.state,
             &self.options[..],
             Some(self.options[self.selected].clone()),
@@ -105,12 +105,7 @@ impl LfoTargetPicker {
         )
         .text_size(FONT_SIZE)
         .style(self.style)
-        .width(Length::Units(LINE_HEIGHT * 8 - 3));
-
-        Column::new()
-            .width(Length::Units(LINE_HEIGHT * 10))
-            .align_items(Alignment::Center)
-            .push(list)
-            .into()
+        .width(Length::Units(LINE_HEIGHT * 8 - 3))
+        .into()
     }
 }
