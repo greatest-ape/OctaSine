@@ -37,7 +37,7 @@ impl radio::StyleSheet for Radio {
 
     fn hovered(&self) -> radio::Style {
         radio::Style {
-            background: SURFACE_DARK.into(),
+            background: SURFACE_HOVER.into(),
             ..self.active()
         }
     }
@@ -59,7 +59,7 @@ impl checkbox::StyleSheet for Checkbox {
 
     fn hovered(&self, is_checked: bool) -> checkbox::Style {
         checkbox::Style {
-            background: SURFACE_DARK.into(),
+            background: SURFACE_HOVER.into(),
             ..self.active(is_checked)
         }
     }
@@ -70,7 +70,7 @@ pub struct Button;
 impl button::StyleSheet for Button {
     fn active(&self) -> button::Style {
         button::Style {
-            background: CONTRAST.into(),
+            background: SURFACE.into(),
             border_radius: 3.0,
             border_width: 1.0,
             border_color: BORDER,
@@ -81,7 +81,7 @@ impl button::StyleSheet for Button {
 
     fn hovered(&self) -> button::Style {
         button::Style {
-            background: CONTRAST_DARK.into(),
+            background: SURFACE_HOVER.into(),
             ..self.active()
         }
     }
@@ -96,11 +96,12 @@ pub struct PickList;
 impl pick_list::StyleSheet for PickList {
     fn menu(&self) -> iced_style::menu::Style {
         iced_style::menu::Style {
-            background: hex_gray!(0xE0).into(),
+            background: SURFACE.into(),
             text_color: TEXT_FG,
-            selected_background: CONTRAST_DARK.into(),
+            selected_background: SURFACE_HOVER.into(),
             selected_text_color: TEXT_FG,
-            ..Default::default()
+            border_width: 1.0,
+            border_color: BORDER,
         }
     }
     fn active(&self) -> pick_list::Style {
@@ -108,13 +109,15 @@ impl pick_list::StyleSheet for PickList {
             background: SURFACE.into(),
             text_color: TEXT_FG,
             border_color: BORDER,
-            border_radius: 0.0,
-            ..Default::default()
+            border_width: 1.0,
+            border_radius: 3.0,
+            placeholder_color: SURFACE,
+            icon_size: 0.6,
         }
     }
     fn hovered(&self) -> pick_list::Style {
         pick_list::Style {
-            background: CONTRAST_DARK.into(),
+            background: SURFACE_HOVER.into(),
             ..self.active()
         }
     }
@@ -148,11 +151,11 @@ impl mod_matrix::StyleSheet for ModulationMatrix {
             text_color: TEXT_FG,
             box_border_color: BORDER,
             operator_box_color_active: SURFACE,
-            operator_box_color_hover: SURFACE_DARK,
+            operator_box_color_hover: SURFACE_HOVER,
             operator_box_color_dragging: hex_gray!(0xC0),
             modulation_box_color_active: SURFACE,
             modulation_box_color_inactive: Color::TRANSPARENT,
-            modulation_box_color_hover: SURFACE_DARK,
+            modulation_box_color_hover: SURFACE_HOVER,
             line_max_color: Color::BLACK,
             mod_out_line_color: BLUE,
             mix_out_line_color: GREEN,
