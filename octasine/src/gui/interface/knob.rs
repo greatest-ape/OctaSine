@@ -11,7 +11,7 @@ use crate::parameter_values::{
 };
 use crate::sync::GuiSyncHandle;
 
-use super::style::{Style, Theme};
+use super::style::Theme;
 use super::{Message, FONT_BOLD, LINE_HEIGHT};
 
 const KNOB_SIZE: Length = Length::Units(LINE_HEIGHT * 2);

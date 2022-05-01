@@ -664,12 +664,12 @@ impl Envelope {
 impl Program<Message> for Envelope {
     fn draw(&self, bounds: Rectangle, _cursor: Cursor) -> Vec<Geometry> {
         let geometry = self.cache.draw(bounds.size(), |frame| {
-            self.draw_time_markers(frame, self.style.into());
-            self.draw_stage_paths(frame, self.style.into());
+            self.draw_time_markers(frame, self.style.envelope());
+            self.draw_stage_paths(frame, self.style.envelope());
 
-            Self::draw_dragger(frame, self.style.into(), &self.attack_dragger);
-            Self::draw_dragger(frame, self.style.into(), &self.decay_dragger);
-            Self::draw_dragger(frame, self.style.into(), &self.release_dragger);
+            Self::draw_dragger(frame, self.style.envelope(), &self.attack_dragger);
+            Self::draw_dragger(frame, self.style.envelope(), &self.decay_dragger);
+            Self::draw_dragger(frame, self.style.envelope(), &self.release_dragger);
         });
 
         vec![geometry]

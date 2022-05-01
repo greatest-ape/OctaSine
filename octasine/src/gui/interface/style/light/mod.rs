@@ -6,18 +6,54 @@ use iced_style::checkbox;
 
 use crate::{gui::interface::mute_button, hex_gray};
 
-use super::{envelope, mod_matrix, wave_picker};
+use super::super::{envelope, mod_matrix, wave_picker};
 
 use colors::*;
 
-pub struct Container;
+pub struct ContainerL0;
 
-impl container::StyleSheet for Container {
+impl container::StyleSheet for ContainerL0 {
     fn style(&self) -> container::Style {
         container::Style {
             background: BACKGROUND.into(),
             text_color: TEXT_BG.into(),
             ..container::Style::default()
+        }
+    }
+}
+
+pub struct ContainerL1;
+
+impl iced_baseview::container::StyleSheet for ContainerL1 {
+    fn style(&self) -> iced_baseview::container::Style {
+        iced_baseview::container::Style {
+            background: Some(hex_gray!(0xEA).into()),
+            border_radius: 4.0,
+            ..Default::default()
+        }
+    }
+}
+
+pub struct ContainerL2;
+
+impl iced_baseview::container::StyleSheet for ContainerL2 {
+    fn style(&self) -> iced_baseview::container::Style {
+        iced_baseview::container::Style {
+            background: Some(hex_gray!(0xFF).into()),
+            border_radius: 4.0,
+            ..Default::default()
+        }
+    }
+}
+
+pub struct ContainerL3;
+
+impl iced_baseview::container::StyleSheet for ContainerL3 {
+    fn style(&self) -> iced_baseview::container::Style {
+        iced_baseview::container::Style {
+            background: None, //Some(hex_gray!(0x20).into()),
+            border_radius: 4.0,
+            ..Default::default()
         }
     }
 }
@@ -200,42 +236,6 @@ impl mute_button::StyleSheet for MuteButton {
             background_color: SURFACE,
             border_color: BORDER,
             text_color: TEXT_FG,
-        }
-    }
-}
-
-pub struct ContainerL1;
-
-impl iced_baseview::container::StyleSheet for ContainerL1 {
-    fn style(&self) -> iced_baseview::container::Style {
-        iced_baseview::container::Style {
-            background: Some(hex_gray!(0xEA).into()),
-            border_radius: 4.0,
-            ..Default::default()
-        }
-    }
-}
-
-pub struct ContainerL2;
-
-impl iced_baseview::container::StyleSheet for ContainerL2 {
-    fn style(&self) -> iced_baseview::container::Style {
-        iced_baseview::container::Style {
-            background: Some(hex_gray!(0xFF).into()),
-            border_radius: 4.0,
-            ..Default::default()
-        }
-    }
-}
-
-pub struct ContainerL3;
-
-impl iced_baseview::container::StyleSheet for ContainerL3 {
-    fn style(&self) -> iced_baseview::container::Style {
-        iced_baseview::container::Style {
-            background: None, //Some(hex_gray!(0x20).into()),
-            border_radius: 4.0,
-            ..Default::default()
         }
     }
 }

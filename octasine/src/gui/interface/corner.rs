@@ -105,13 +105,13 @@ impl CornerWidgets {
                         .push(
                             Button::new(&mut self.toggle_info_state, Text::new("INFO"))
                                 .on_press(Message::ToggleInfo)
-                                .style(self.style),
+                                .style(self.style.button()),
                         )
                         .push(Space::with_width(Length::Units(3)))
                         .push(
                             Button::new(&mut self.toggle_style_state, Text::new("THEME"))
                                 .on_press(Message::ToggleColorMode)
-                                .style(self.style),
+                                .style(self.style.button()),
                         ),
                 ),
         )

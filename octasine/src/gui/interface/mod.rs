@@ -32,7 +32,6 @@ use style::Theme;
 use self::common::{container_l1, container_l2, container_l3, space_l3};
 use self::corner::CornerWidgets;
 use self::operator::ModTargetPicker;
-use self::style::Style;
 
 use super::GuiSettings;
 use crate::settings::Settings;
@@ -585,7 +584,7 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
 
         Container::new(all)
             .height(Length::Fill)
-            .style(self.style)
+            .style(self.style.container_l0())
             .into()
     }
 }

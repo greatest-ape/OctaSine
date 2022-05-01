@@ -2,10 +2,7 @@ use iced_baseview::{Column, Container, Element, Length, Row, Space};
 
 use crate::gui::interface::LINE_HEIGHT;
 
-use super::{
-    style::{Style, Theme},
-    Message,
-};
+use super::{style::Theme, Message};
 
 pub fn container_l1<'a, T>(theme: Theme, contents: T) -> Container<'a, Message>
 where

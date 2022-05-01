@@ -49,18 +49,15 @@ impl PatchPicker {
             .vertical_alignment(Vertical::Center)
             .font(FONT_VERY_BOLD);
 
-        let list = PickList::new(
+        PickList::new(
             &mut self.state,
             &self.options[..],
             Some(self.options[self.selected].clone()),
             |option| Message::PatchChange(option.index),
         )
         .text_size(FONT_SIZE)
-        .style(self.style)
-        // Will be limited by parent, but setting a size here ensures that
-        // it doesn't shrink too much when choice strings are short.
-        .width(Length::Fill);
-
-        list.into()
+        .style(self.style.pick_list())
+        .width(Length::Fill)
+        .into()
     }
 }

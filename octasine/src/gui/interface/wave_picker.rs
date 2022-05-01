@@ -191,10 +191,10 @@ where
 {
     fn draw(&self, bounds: Rectangle, _cursor: Cursor) -> Vec<Geometry> {
         let geometry = self.cache.draw(bounds.size(), |frame| {
-            self.draw_background(frame, self.style.into());
-            self.draw_middle_line(frame, self.style.into());
-            self.draw_shape_line(frame, self.style.into());
-            self.draw_border(frame, self.style.into());
+            self.draw_background(frame, self.style.wave_picker());
+            self.draw_middle_line(frame, self.style.wave_picker());
+            self.draw_shape_line(frame, self.style.wave_picker());
+            self.draw_border(frame, self.style.wave_picker());
         });
 
         vec![geometry]

@@ -239,7 +239,7 @@ impl OperatorWidgets {
                                         Text::new("−").font(FONT_VERY_BOLD),
                                     )
                                     .on_press(Message::EnvelopeZoomOut(self.index))
-                                    .style(self.style),
+                                    .style(self.style.button()),
                                 )
                                 .push(Space::with_width(Length::Units(3)))
                                 .push(
@@ -248,7 +248,7 @@ impl OperatorWidgets {
                                         Text::new("+").font(FONT_VERY_BOLD),
                                     )
                                     .on_press(Message::EnvelopeZoomIn(self.index))
-                                    .style(self.style),
+                                    .style(self.style.button()),
                                 ),
                         )
                         .push(Space::with_height(Length::Units(LINE_HEIGHT * 1 - 10)))
@@ -256,7 +256,7 @@ impl OperatorWidgets {
                             Row::new().push(
                                 Button::new(&mut self.zoom_to_fit, Text::new("FIT"))
                                     .on_press(zoom_to_fit_message)
-                                    .style(self.style),
+                                    .style(self.style.button()),
                             ),
                         )
                         .push(Space::with_height(Length::Units(LINE_HEIGHT * 1 - 10)))
@@ -264,7 +264,7 @@ impl OperatorWidgets {
                             Row::new().push(
                                 Button::new(&mut self.sync_viewport, Text::new("DIST"))
                                     .on_press(sync_viewports_message)
-                                    .style(self.style),
+                                    .style(self.style.button()),
                             ),
                         ),
                 )),
