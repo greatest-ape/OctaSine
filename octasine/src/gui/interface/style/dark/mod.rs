@@ -240,3 +240,15 @@ impl mute_button::StyleSheet for MuteButton {
         }
     }
 }
+
+pub struct Tooltip;
+
+impl container::StyleSheet for Tooltip {
+    fn style(&self) -> container::Style {
+        container::Style {
+            background: GRAY_200.into(),
+            text_color: TEXT_FG.into(),
+            ..container::Style::default()
+        }
+    }
+}

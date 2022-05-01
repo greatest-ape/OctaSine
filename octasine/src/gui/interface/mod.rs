@@ -1,7 +1,5 @@
 use iced_baseview::{executor, Application, Command, Subscription, WindowSubs};
-use iced_baseview::{
-    Color, Column, Container, Element, Font, Length, Point, Row, Space, WindowQueue,
-};
+use iced_baseview::{Column, Container, Element, Font, Length, Point, Row, Space, WindowQueue};
 
 use crate::{get_version_info, sync::GuiSyncHandle};
 
@@ -53,7 +51,10 @@ const OPEN_SANS_BOLD: &[u8] = include_bytes!("../../../../contrib/open-sans/Open
 
 fn get_info_text() -> String {
     format!(
-        "Copyright © 2019-2022 Joakim Frostegård\nSite: OctaSine.com. Build: {}",
+        "OctaSine frequency modulation synthesizer
+Site: OctaSine.com
+Build: {}
+Copyright © 2019-2022 Joakim Frostegård",
         get_version_info()
     )
 }
@@ -467,12 +468,6 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
     }
 
     fn view(&mut self) -> Element<'_, Self::Message> {
-        let info_text_color = if self.show_version {
-            self.style.text_color()
-        } else {
-            Color::TRANSPARENT
-        };
-
         Container::new(
             Column::new()
                 .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))

@@ -4,7 +4,7 @@ pub mod knob;
 use iced_baseview::{button, container, pick_list, radio, Color};
 use iced_style::checkbox;
 
-use crate::{gui::interface::mute_button, hex_gray};
+use crate::gui::interface::mute_button;
 
 use super::super::{envelope, mod_matrix, wave_picker};
 
@@ -237,6 +237,18 @@ impl mute_button::StyleSheet for MuteButton {
             background_color: SURFACE,
             border_color: BORDER,
             text_color: TEXT_FG,
+        }
+    }
+}
+
+pub struct Tooltip;
+
+impl container::StyleSheet for Tooltip {
+    fn style(&self) -> container::Style {
+        container::Style {
+            background: Color::WHITE.into(),
+            text_color: TEXT_FG.into(),
+            ..Default::default()
         }
     }
 }

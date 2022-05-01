@@ -1,6 +1,6 @@
 use iced_baseview::{
-    alignment::Horizontal, button, Alignment, Button, Column, Container, Element, Length, Row,
-    Space, Text,
+    alignment::Horizontal, button, tooltip::Position, Alignment, Button, Column, Container,
+    Element, Length, Row, Space, Text, Tooltip,
 };
 
 use crate::{
@@ -10,6 +10,7 @@ use crate::{
 
 use super::{
     common::{container_l1, container_l2, container_l3, space_l3, triple_container},
+    get_info_text,
     knob::{self, OctaSineKnob},
     mod_matrix::ModulationMatrix,
     patch_picker::PatchPicker,
@@ -103,9 +104,14 @@ impl CornerWidgets {
                 .push(
                     Row::new()
                         .push(
-                            Button::new(&mut self.toggle_info_state, Text::new("INFO"))
-                                .on_press(Message::ToggleInfo)
-                                .style(self.style.button()),
+                            Tooltip::new(
+                                Button::new(&mut self.toggle_info_state, Text::new("INFO"))
+                                    .on_press(Message::ToggleInfo)
+                                    .style(self.style.button()),
+                                get_info_text(),
+                                Position::FollowCursor,
+                            )
+                            .style(self.style.tooltip()),
                         )
                         .push(Space::with_width(Length::Units(3)))
                         .push(

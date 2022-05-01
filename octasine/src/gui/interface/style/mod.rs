@@ -89,6 +89,12 @@ impl Theme {
             Self::Dark => Box::new(dark::PickList),
         }
     }
+    pub fn tooltip(&self) -> Box<dyn iced_baseview::container::StyleSheet> {
+        match self {
+            Self::Light => Box::new(light::Tooltip),
+            Self::Dark => Box::new(dark::Tooltip),
+        }
+    }
 
     pub fn knob_regular(&self) -> Box<dyn iced_audio::knob::StyleSheet> {
         match self {
