@@ -121,16 +121,16 @@ impl CornerWidgets {
         Column::new()
             .push(
                 Row::new()
-                    .push(triple_container(self.style, patch_picker))
+                    .push(mod_matrix)
                     .push(Space::with_width(Length::Units(LINE_HEIGHT)))
-                    .push(triple_container(self.style, logo)),
+                    .push(master),
             )
             .push(Space::with_height(Length::Units(LINE_HEIGHT)))
             .push(
                 Row::new()
-                    .push(mod_matrix)
+                    .push(triple_container(self.style, patch_picker))
                     .push(Space::with_width(Length::Units(LINE_HEIGHT)))
-                    .push(master),
+                    .push(triple_container(self.style, logo)),
             )
             .into()
     }
