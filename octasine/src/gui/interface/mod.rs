@@ -1,5 +1,5 @@
 use iced_baseview::{executor, Application, Command, Subscription, WindowSubs};
-use iced_baseview::{Column, Container, Element, Font, Length, Point, Row, Space, WindowQueue};
+use iced_baseview::{Column, Container, Element, Length, Point, Row, Space, WindowQueue};
 
 use crate::{get_version_info, sync::GuiSyncHandle};
 
@@ -32,22 +32,12 @@ use crate::settings::Settings;
 pub const FONT_SIZE: u16 = 12;
 pub const LINE_HEIGHT: u16 = 12;
 
-const FONT_REGULAR: &[u8] = OPEN_SANS_REGULAR;
-
-const FONT_BOLD: Font = Font::External {
-    name: "Open Sans Semi Bold",
-    bytes: OPEN_SANS_SEMI_BOLD,
-};
-const FONT_VERY_BOLD: Font = Font::External {
-    name: "Open Sans Bold",
-    bytes: OPEN_SANS_BOLD,
-};
-
-const OPEN_SANS_REGULAR: &[u8] =
+const OPEN_SANS_BYTES_REGULAR: &[u8] =
     include_bytes!("../../../../contrib/open-sans/OpenSans-Regular.ttf");
-const OPEN_SANS_SEMI_BOLD: &[u8] =
+const OPEN_SANS_BYTES_SEMI_BOLD: &[u8] =
     include_bytes!("../../../../contrib/open-sans/OpenSans-SemiBold.ttf");
-const OPEN_SANS_BOLD: &[u8] = include_bytes!("../../../../contrib/open-sans/OpenSans-Bold.ttf");
+const OPEN_SANS_BYTES_BOLD: &[u8] =
+    include_bytes!("../../../../contrib/open-sans/OpenSans-Bold.ttf");
 
 fn get_info_text() -> String {
     format!(
@@ -335,7 +325,7 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
     fn renderer_settings() -> iced_wgpu::settings::Settings {
         iced_wgpu::settings::Settings {
             present_mode: iced_wgpu::wgpu::PresentMode::Immediate,
-            default_font: Some(FONT_REGULAR),
+            default_font: Some(OPEN_SANS_BYTES_REGULAR),
             default_text_size: FONT_SIZE,
             antialiasing: Some(iced_wgpu::settings::Antialiasing::MSAAx8),
             ..Default::default()
@@ -346,7 +336,7 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
     #[cfg(feature = "gui_glow")]
     fn renderer_settings() -> iced_glow::settings::Settings {
         iced_glow::settings::Settings {
-            default_font: Some(FONT_REGULAR),
+            default_font: Some(OPEN_SANS_BYTES_REGULAR),
             default_text_size: FONT_SIZE,
             antialiasing: Some(iced_glow::settings::Antialiasing::MSAAx8),
             text_multithreading: false,

@@ -15,7 +15,7 @@ use super::{
     mod_matrix::ModulationMatrix,
     patch_picker::PatchPicker,
     style::Theme,
-    Message, FONT_SIZE, FONT_VERY_BOLD, LINE_HEIGHT,
+    Message, FONT_SIZE, LINE_HEIGHT,
 };
 
 pub struct CornerWidgets {
@@ -78,7 +78,7 @@ impl CornerWidgets {
                     Text::new("Patch")
                         .size(FONT_SIZE * 3 / 2)
                         .width(Length::Units(LINE_HEIGHT * 10))
-                        .font(FONT_VERY_BOLD)
+                        .font(self.style.font_bold())
                         .color(self.style.heading_color())
                         .horizontal_alignment(Horizontal::Center),
                 )
@@ -96,7 +96,7 @@ impl CornerWidgets {
                     Text::new("OctaSine")
                         .size(FONT_SIZE * 3 / 2)
                         .width(Length::Units(LINE_HEIGHT * 8))
-                        .font(FONT_VERY_BOLD)
+                        .font(self.style.font_bold())
                         .color(self.style.heading_color())
                         .horizontal_alignment(Horizontal::Center),
                 )
@@ -105,9 +105,12 @@ impl CornerWidgets {
                     Row::new()
                         .push(
                             Tooltip::new(
-                                Button::new(&mut self.toggle_info_state, Text::new("INFO"))
-                                    .on_press(Message::ToggleInfo)
-                                    .style(self.style.button()),
+                                Button::new(
+                                    &mut self.toggle_info_state,
+                                    Text::new("INFO").font(self.style.font_regular()),
+                                )
+                                .on_press(Message::ToggleInfo)
+                                .style(self.style.button()),
                                 get_info_text(),
                                 Position::FollowCursor,
                             )
@@ -115,9 +118,12 @@ impl CornerWidgets {
                         )
                         .push(Space::with_width(Length::Units(3)))
                         .push(
-                            Button::new(&mut self.toggle_style_state, Text::new("THEME"))
-                                .on_press(Message::ToggleColorMode)
-                                .style(self.style.button()),
+                            Button::new(
+                                &mut self.toggle_style_state,
+                                Text::new("THEME").font(self.style.font_regular()),
+                            )
+                            .on_press(Message::ToggleColorMode)
+                            .style(self.style.button()),
                         ),
                 ),
         )

@@ -12,7 +12,7 @@ use crate::parameter_values::{
 use crate::sync::GuiSyncHandle;
 
 use super::style::Theme;
-use super::{Message, FONT_BOLD, LINE_HEIGHT};
+use super::{Message, LINE_HEIGHT};
 
 const KNOB_SIZE: Length = Length::Units(LINE_HEIGHT * 2);
 
@@ -334,9 +334,11 @@ where
     pub fn view(&mut self) -> Element<Message> {
         let title = Text::new(self.title.clone())
             .horizontal_alignment(Horizontal::Center)
-            .font(FONT_BOLD);
+            .font(self.style.font_bold());
 
-        let value = Text::new(self.value_text.clone()).horizontal_alignment(Horizontal::Center);
+        let value = Text::new(self.value_text.clone())
+            .horizontal_alignment(Horizontal::Center)
+            .font(self.style.font_regular());
 
         let parameter_index = self.parameter_index;
 

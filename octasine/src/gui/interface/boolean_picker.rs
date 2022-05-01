@@ -1,16 +1,13 @@
-use iced_baseview::Container;
 use iced_baseview::{
     alignment::Horizontal, Alignment, Column, Element, Length, Radio, Space, Text,
 };
 
-use crate::hex_gray;
 use crate::parameter_values::lfo_mode::LfoMode;
 use crate::parameter_values::{LfoBpmSyncValue, LfoModeValue, ParameterValue};
 use crate::sync::GuiSyncHandle;
 
-use super::common::container_l2;
 use super::style::Theme;
-use super::{Message, FONT_BOLD, FONT_SIZE, LINE_HEIGHT};
+use super::{Message, FONT_SIZE, LINE_HEIGHT};
 
 pub fn bpm_sync<H: GuiSyncHandle>(
     sync_handle: &H,
@@ -79,7 +76,7 @@ where
     pub fn view(&mut self) -> Element<Message> {
         let title = Text::new(self.title.clone())
             .horizontal_alignment(Horizontal::Center)
-            .font(FONT_BOLD);
+            .font(self.style.font_bold());
 
         let mut radios = Column::new().spacing(4);
 

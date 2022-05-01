@@ -18,7 +18,7 @@ use super::mod_target_picker;
 use super::mute_button::OperatorMuteButton;
 use super::style::Theme;
 use super::wave_picker::WavePicker;
-use super::{Message, FONT_SIZE, FONT_VERY_BOLD, LINE_HEIGHT};
+use super::{Message, FONT_SIZE, LINE_HEIGHT};
 
 pub enum ModTargetPicker {
     Operator4(mod_target_picker::ModTargetPicker<Operator4ModulationTargetValue>),
@@ -142,7 +142,7 @@ impl OperatorWidgets {
     pub fn view(&mut self) -> Element<Message> {
         let operator_number = Text::new(format!("OP {}", self.index + 1))
             .size(FONT_SIZE + FONT_SIZE / 2)
-            .font(FONT_VERY_BOLD)
+            .font(self.style.font_bold())
             .color(self.style.heading_color())
             .horizontal_alignment(Horizontal::Center);
 
@@ -235,7 +235,7 @@ impl OperatorWidgets {
                                 .push(
                                     Button::new(
                                         &mut self.zoom_out,
-                                        Text::new("−").font(FONT_VERY_BOLD),
+                                        Text::new("−").font(self.style.font_bold()),
                                     )
                                     .on_press(Message::EnvelopeZoomOut(self.index))
                                     .style(self.style.button()),
@@ -244,7 +244,7 @@ impl OperatorWidgets {
                                 .push(
                                     Button::new(
                                         &mut self.zoom_in,
-                                        Text::new("+").font(FONT_VERY_BOLD),
+                                        Text::new("+").font(self.style.font_bold()),
                                     )
                                     .on_press(Message::EnvelopeZoomIn(self.index))
                                     .style(self.style.button()),
@@ -253,17 +253,23 @@ impl OperatorWidgets {
                         .push(Space::with_height(Length::Units(LINE_HEIGHT * 1 - 10)))
                         .push(
                             Row::new().push(
-                                Button::new(&mut self.zoom_to_fit, Text::new("FIT"))
-                                    .on_press(zoom_to_fit_message)
-                                    .style(self.style.button()),
+                                Button::new(
+                                    &mut self.zoom_to_fit,
+                                    Text::new("FIT").font(self.style.font_regular()),
+                                )
+                                .on_press(zoom_to_fit_message)
+                                .style(self.style.button()),
                             ),
                         )
                         .push(Space::with_height(Length::Units(LINE_HEIGHT * 1 - 10)))
                         .push(
                             Row::new().push(
-                                Button::new(&mut self.sync_viewport, Text::new("DIST"))
-                                    .on_press(sync_viewports_message)
-                                    .style(self.style.button()),
+                                Button::new(
+                                    &mut self.sync_viewport,
+                                    Text::new("DIST").font(self.style.font_regular()),
+                                )
+                                .on_press(sync_viewports_message)
+                                .style(self.style.button()),
                             ),
                         ),
                 )),

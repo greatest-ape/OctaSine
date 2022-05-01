@@ -9,7 +9,6 @@ use crate::{
     sync::GuiSyncHandle,
 };
 
-use super::FONT_BOLD;
 use super::{style::Theme, Message, FONT_SIZE, LINE_HEIGHT};
 
 const WIDTH: u16 = LINE_HEIGHT;
@@ -116,7 +115,7 @@ impl OperatorMuteButton {
             content: "M".into(),
             color,
             size: f32::from(FONT_SIZE),
-            font: FONT_BOLD,
+            font: self.style.font_regular(),
             horizontal_alignment: Horizontal::Center,
             vertical_alignment: Vertical::Center,
             position,

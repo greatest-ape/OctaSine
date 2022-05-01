@@ -475,8 +475,9 @@ impl Envelope {
         .into()
     }
 
-    fn draw_time_markers(&self, frame: &mut Frame, style_sheet: Box<dyn StyleSheet>) {
-        let style = style_sheet.active();
+    fn draw_time_markers(&self, frame: &mut Frame, style: Theme) {
+        let font_regular = style.font_regular();
+        let style = style.envelope().active();
 
         let total_duration = self.viewport_factor * TOTAL_DURATION;
         let x_offset = self.x_offset / self.viewport_factor;
@@ -517,6 +518,7 @@ impl Envelope {
                 let text = Text {
                     content: format!("{:.1}s", time_marker_interval * 4.0 * i as f32),
                     position: scale_point_x(self.size, text_point),
+                    font: font_regular,
                     size: FONT_SIZE as f32,
                     color: style.text_color,
                     ..Default::default()
@@ -664,7 +666,7 @@ impl Envelope {
 impl Program<Message> for Envelope {
     fn draw(&self, bounds: Rectangle, _cursor: Cursor) -> Vec<Geometry> {
         let geometry = self.cache.draw(bounds.size(), |frame| {
-            self.draw_time_markers(frame, self.style.envelope());
+            self.draw_time_markers(frame, self.style);
             self.draw_stage_paths(frame, self.style.envelope());
 
             Self::draw_dragger(frame, self.style.envelope(), &self.attack_dragger);

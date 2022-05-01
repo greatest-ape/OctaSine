@@ -290,10 +290,10 @@ impl ModulationMatrixComponents {
     }
 
     fn draw_boxes(&self, frame: &mut Frame, style: Theme) {
-        self.operator_1_box.draw(frame, style.mod_matrix());
-        self.operator_2_box.draw(frame, style.mod_matrix());
-        self.operator_3_box.draw(frame, style.mod_matrix());
-        self.operator_4_box.draw(frame, style.mod_matrix());
+        self.operator_1_box.draw(frame, style);
+        self.operator_2_box.draw(frame, style);
+        self.operator_3_box.draw(frame, style);
+        self.operator_4_box.draw(frame, style);
 
         self.operator_4_mod_3_box.draw(frame, style.mod_matrix());
         self.operator_4_mod_2_box.draw(frame, style.mod_matrix());

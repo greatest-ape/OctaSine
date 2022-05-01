@@ -4,7 +4,6 @@
 
 * New widgets for LFO BPM sync and oneshot mode
 * Option to disable LFOs / set no target
-* Thicker text in light mode
 * In mod target widget, use space element instead of horizontal centering
 * Raise default volume (and maybe hard limit limit)
 * Display patch index independently of patch name, use - or similar as default patch name: "001: -"

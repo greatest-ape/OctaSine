@@ -2,8 +2,21 @@ mod dark;
 mod light;
 mod macros;
 
-use iced_baseview::Color;
+use iced_baseview::{Color, Font};
 use serde::{Deserialize, Serialize};
+
+const OPEN_SANS_REGULAR: Font = Font::External {
+    name: "Open Sans Regular",
+    bytes: super::OPEN_SANS_BYTES_REGULAR,
+};
+const OPEN_SANS_SEMI_BOLD: Font = Font::External {
+    name: "Open Sans Semi Bold",
+    bytes: super::OPEN_SANS_BYTES_SEMI_BOLD,
+};
+const OPEN_SANS_BOLD: Font = Font::External {
+    name: "Open Sans Bold",
+    bytes: super::OPEN_SANS_BYTES_BOLD,
+};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
@@ -37,6 +50,19 @@ impl Theme {
         match self {
             Theme::Dark => dark::colors::TEXT_FG,
             Theme::Light => Color::BLACK,
+        }
+    }
+
+    pub fn font_regular(&self) -> Font {
+        match self {
+            Theme::Dark => OPEN_SANS_REGULAR,
+            Theme::Light => OPEN_SANS_SEMI_BOLD,
+        }
+    }
+    pub fn font_bold(&self) -> Font {
+        match self {
+            Theme::Dark => OPEN_SANS_SEMI_BOLD,
+            Theme::Light => OPEN_SANS_BOLD,
         }
     }
 

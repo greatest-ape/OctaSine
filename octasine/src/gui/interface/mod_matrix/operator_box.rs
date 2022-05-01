@@ -1,9 +1,10 @@
-use crate::gui::interface::{Message, SnapPoint, FONT_BOLD, FONT_SIZE};
+use crate::gui::interface::style::Theme;
+use crate::gui::interface::{Message, SnapPoint, FONT_SIZE};
 use iced_baseview::canvas::{event, Frame, Path, Stroke, Text};
 use iced_baseview::{mouse, Point, Rectangle, Size};
 
 use super::common::*;
-use super::{StyleSheet, OPERATOR_BOX_SCALE};
+use super::OPERATOR_BOX_SCALE;
 
 pub enum OperatorBoxChange {
     Update(Message),
@@ -169,13 +170,14 @@ impl OperatorBox {
         OperatorBoxChange::None
     }
 
-    pub fn draw(&self, frame: &mut Frame, style_sheet: Box<dyn StyleSheet>) {
-        let style = style_sheet.active();
+    pub fn draw(&self, frame: &mut Frame, style: Theme) {
+        let font_bold = style.font_bold();
+        let style = style.mod_matrix().active();
 
         let text = Text {
             content: format!("{}", self.index + 1),
             position: self.text_position,
-            font: FONT_BOLD,
+            font: font_bold,
             size: FONT_SIZE as f32,
             color: style.text_color,
             ..Default::default()

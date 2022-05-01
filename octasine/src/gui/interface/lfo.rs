@@ -15,7 +15,7 @@ use super::knob::{self, OctaSineKnob};
 use super::lfo_target_picker::LfoTargetPicker;
 use super::style::Theme;
 use super::wave_picker::WavePicker;
-use super::{Message, FONT_SIZE, FONT_VERY_BOLD, LINE_HEIGHT};
+use super::{Message, FONT_SIZE, LINE_HEIGHT};
 
 pub struct LfoWidgets {
     index: usize,
@@ -67,7 +67,7 @@ impl LfoWidgets {
     pub fn view(&mut self) -> Element<Message> {
         let title = Text::new(format!("LFO {}", self.index + 1))
             .size(FONT_SIZE + FONT_SIZE / 2)
-            .font(FONT_VERY_BOLD)
+            .font(self.style.font_bold())
             .width(Length::Fill)
             .color(self.style.heading_color())
             .horizontal_alignment(Horizontal::Center)
