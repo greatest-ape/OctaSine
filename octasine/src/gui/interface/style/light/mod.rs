@@ -208,7 +208,7 @@ impl wave_picker::StyleSheet for LfoShapePicker {
             background_color: SURFACE,
             border_color_active: BORDER,
             border_color_hovered: BORDER,
-            middle_line_color: Color::from_rgb(0.7, 0.7, 0.7),
+            middle_line_color: GRAY_600,
             shape_line_color_active: TEXT_FG,
             shape_line_color_hovered: TEXT_FG,
         }
