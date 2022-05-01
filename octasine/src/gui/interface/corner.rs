@@ -9,7 +9,7 @@ use crate::{
 };
 
 use super::{
-    common::{container_l1, container_l2, container_l3, space_l3},
+    common::{container_l1, container_l2, container_l3, space_l3, triple_container},
     knob::{self, OctaSineKnob},
     mod_matrix::ModulationMatrix,
     patch_picker::PatchPicker,
@@ -56,13 +56,7 @@ impl CornerWidgets {
     }
 
     pub fn view(&mut self) -> Element<'_, Message> {
-        let mod_matrix = container_l1(
-            self.style,
-            container_l2(
-                self.style,
-                container_l3(self.style, self.modulation_matrix.view()),
-            ),
-        );
+        let mod_matrix = triple_container(self.style, self.modulation_matrix.view());
 
         let master = container_l1(
             self.style,
@@ -90,8 +84,8 @@ impl CornerWidgets {
                 .push(Space::with_height(Length::Units(LINE_HEIGHT)))
                 .push(self.patch_picker.view()),
         )
-        .width(Length::Units(LINE_HEIGHT * 10))
-        .height(Length::Units(LINE_HEIGHT * 8))
+        .width(Length::Units(LINE_HEIGHT * 8))
+        .height(Length::Units(LINE_HEIGHT * 6))
         .align_x(Horizontal::Center)
         .align_y(Vertical::Center);
 
@@ -123,17 +117,17 @@ impl CornerWidgets {
                         ),
                 ),
         )
-        .width(Length::Units(LINE_HEIGHT * 10))
-        .height(Length::Units(LINE_HEIGHT * 8))
+        .width(Length::Units(LINE_HEIGHT * 8))
+        .height(Length::Units(LINE_HEIGHT * 6))
         .align_x(Horizontal::Center)
         .align_y(Vertical::Center);
 
         Column::new()
             .push(
                 Row::new()
-                    .push(container_l1(self.style, Row::new().push(patch)))
+                    .push(triple_container(self.style, patch))
                     .push(Space::with_width(Length::Units(LINE_HEIGHT)))
-                    .push(container_l1(self.style, Row::new().push(logo))),
+                    .push(triple_container(self.style, logo)),
             )
             .push(Space::with_height(Length::Units(LINE_HEIGHT)))
             .push(

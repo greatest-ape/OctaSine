@@ -60,6 +60,13 @@ where
         .into()
 }
 
+pub fn triple_container<'a, T>(theme: Theme, contents: T) -> Container<'a, Message>
+where
+    T: Into<Element<'a, Message>>,
+{
+    container_l1(theme, container_l2(theme, container_l3(theme, contents)))
+}
+
 pub fn space_l2<'a>() -> Container<'a, Message> {
     Container::new(Space::with_width(Length::Units(LINE_HEIGHT)))
 }
