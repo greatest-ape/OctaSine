@@ -1,0 +1,185 @@
+use iced_baseview::alignment::{Horizontal, Vertical};
+use iced_baseview::canvas::{
+    event, Cache, Canvas, Cursor, Frame, Geometry, Path, Program, Stroke, Text,
+};
+use iced_baseview::{Color, Element, Length, Point, Rectangle, Size};
+
+use crate::sync::GuiSyncHandle;
+
+use super::{style::Theme, Message, FONT_SIZE, LINE_HEIGHT};
+
+const HEIGHT: u16 = LINE_HEIGHT * 3 / 2;
+
+#[derive(Debug, Clone)]
+pub struct Style {
+    pub background_color: Color,
+    pub border_color: Color,
+    pub text_color: Color,
+}
+
+pub trait StyleSheet {
+    fn active(&self) -> Style;
+    fn active_hover(&self) -> Style;
+    fn inactive(&self) -> Style;
+    fn inactive_hover(&self) -> Style;
+}
+
+pub struct BooleanButton {
+    parameter_index: usize,
+    on: bool,
+    style: Theme,
+    cache: Cache,
+    bounds_path: Path,
+    cursor_within_bounds: bool,
+    click_started: bool,
+    patch_value_to_is_on: fn(f64) -> bool,
+    is_on_to_patch_value: fn(bool) -> f64,
+    text: &'static str,
+    width: u16,
+}
+
+impl BooleanButton {
+    pub fn new<H: GuiSyncHandle>(
+        sync_handle: &H,
+        parameter_index: usize,
+        style: Theme,
+        text: &'static str,
+        width: u16,
+        f: fn(f64) -> bool,
+        g: fn(bool) -> f64,
+    ) -> Self {
+        let bounds_path = Path::rectangle(
+            Point::new(0.5, 0.5),
+            Size::new((width - 1) as f32, (HEIGHT - 1) as f32),
+        );
+
+        Self {
+            parameter_index,
+            on: f(sync_handle.get_parameter(parameter_index)),
+            style,
+            cache: Cache::new(),
+            bounds_path,
+            cursor_within_bounds: false,
+            click_started: false,
+            patch_value_to_is_on: f,
+            is_on_to_patch_value: g,
+            text: text.into(),
+            width,
+        }
+    }
+
+    pub fn set_value(&mut self, value: f64) {
+        self.on = (self.patch_value_to_is_on)(value);
+
+        self.cache.clear();
+    }
+
+    pub fn set_style(&mut self, style: Theme) {
+        self.style = style;
+
+        self.cache.clear();
+    }
+
+    pub fn view(&mut self) -> Element<Message> {
+        let width = self.width;
+
+        Canvas::new(self)
+            .width(Length::Units(width))
+            .height(Length::Units(HEIGHT))
+            .into()
+    }
+
+    fn style(&self) -> Style {
+        match (self.on, self.cursor_within_bounds) {
+            (true, false) => self.style.bpm_sync_button().active(),
+            (true, true) => self.style.bpm_sync_button().active_hover(),
+            (false, false) => self.style.bpm_sync_button().inactive(),
+            (false, true) => self.style.bpm_sync_button().inactive_hover(),
+        }
+    }
+
+    fn draw_background(&self, frame: &mut Frame) {
+        frame.fill(&self.bounds_path, self.style().background_color);
+    }
+
+    fn draw_border(&self, frame: &mut Frame) {
+        let stroke = Stroke::default().with_color(self.style().border_color);
+
+        frame.stroke(&self.bounds_path, stroke);
+    }
+
+    fn draw_text(&self, frame: &mut Frame) {
+        let position = Point::new(f32::from(self.width) / 2.0, f32::from(HEIGHT) / 2.0);
+
+        let text = Text {
+            content: self.text.to_string(),
+            color: self.style().text_color,
+            size: f32::from(FONT_SIZE),
+            font: self.style.font_regular(),
+            horizontal_alignment: Horizontal::Center,
+            vertical_alignment: Vertical::Center,
+            position,
+            ..Default::default()
+        };
+
+        frame.fill_text(text);
+    }
+}
+
+impl Program<Message> for BooleanButton {
+    fn draw(&self, bounds: Rectangle, _cursor: Cursor) -> Vec<Geometry> {
+        let geometry = self.cache.draw(bounds.size(), |frame| {
+            self.draw_background(frame);
+            self.draw_border(frame);
+            self.draw_text(frame);
+        });
+
+        vec![geometry]
+    }
+
+    fn update(
+        &mut self,
+        event: event::Event,
+        bounds: Rectangle,
+        _cursor: Cursor,
+    ) -> (event::Status, Option<Message>) {
+        match event {
+            event::Event::Mouse(iced_baseview::mouse::Event::CursorMoved { position }) => {
+                let cursor_within_bounds = bounds.contains(position);
+
+                if self.cursor_within_bounds != cursor_within_bounds {
+                    self.cursor_within_bounds = cursor_within_bounds;
+
+                    self.cache.clear();
+                }
+
+                (event::Status::Ignored, None)
+            }
+            event::Event::Mouse(iced_baseview::mouse::Event::ButtonPressed(
+                iced_baseview::mouse::Button::Left | iced_baseview::mouse::Button::Right,
+            )) if self.cursor_within_bounds => {
+                self.click_started = true;
+
+                (event::Status::Captured, None)
+            }
+            event::Event::Mouse(iced_baseview::mouse::Event::ButtonReleased(
+                iced_baseview::mouse::Button::Left | iced_baseview::mouse::Button::Right,
+            )) if self.click_started => {
+                if self.cursor_within_bounds {
+                    let message = {
+                        let patch_value = (self.is_on_to_patch_value)(!self.on);
+
+                        Message::ChangeSingleParameterImmediate(self.parameter_index, patch_value)
+                    };
+
+                    (event::Status::Captured, Some(message))
+                } else {
+                    self.click_started = false;
+
+                    (event::Status::Ignored, None)
+                }
+            }
+            _ => (event::Status::Ignored, None),
+        }
+    }
+}

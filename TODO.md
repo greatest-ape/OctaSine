@@ -2,7 +2,6 @@
 
 ## High priority
 
-* New widgets for LFO BPM sync and oneshot mode
 * Option to disable LFOs / set no target
 * In mod target widget, use space element instead of horizontal centering
 * Envelope dragger "dragging" color

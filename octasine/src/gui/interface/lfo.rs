@@ -3,13 +3,14 @@ use iced_baseview::{
     alignment::Horizontal, alignment::Vertical, Column, Element, Length, Row, Space, Text,
 };
 
+use crate::parameter_values::lfo_mode::LfoMode;
 use crate::parameter_values::{
     LfoAmountValue, LfoBpmSyncValue, LfoFrequencyFreeValue, LfoFrequencyRatioValue, LfoModeValue,
-    LfoShapeValue,
+    LfoShapeValue, ParameterValue,
 };
 use crate::sync::GuiSyncHandle;
 
-use super::boolean_picker::{self, BooleanPicker};
+use super::boolean_button::BooleanButton;
 use super::common::{container_l1, container_l2, container_l3, space_l3};
 use super::knob::{self, OctaSineKnob};
 use super::lfo_target_picker::LfoTargetPicker;
@@ -22,8 +23,8 @@ pub struct LfoWidgets {
     style: Theme,
     pub target: LfoTargetPicker,
     pub shape: WavePicker<LfoShapeValue>,
-    pub mode: BooleanPicker<LfoModeValue>,
-    pub bpm_sync: BooleanPicker<LfoBpmSyncValue>,
+    pub mode: BooleanButton,
+    pub bpm_sync: BooleanButton,
     pub frequency_ratio: OctaSineKnob<LfoFrequencyRatioValue>,
     pub frequency_free: OctaSineKnob<LfoFrequencyFreeValue>,
     pub amount: OctaSineKnob<LfoAmountValue>,
@@ -40,13 +41,38 @@ impl LfoWidgets {
         let shape = offset + 5;
         let amount = offset + 6;
 
+        let bpm_sync = BooleanButton::new(
+            sync_handle,
+            bpm_sync,
+            style,
+            "BPM",
+            LINE_HEIGHT * 2,
+            |v| LfoBpmSyncValue::new_from_patch(v).get(),
+            |on| LfoBpmSyncValue::new_from_audio(on).to_patch(),
+        );
+        let mode = BooleanButton::new(
+            sync_handle,
+            mode,
+            style,
+            "ONE",
+            LINE_HEIGHT * 2,
+            |v| LfoModeValue::new_from_patch(v).get() == LfoMode::Once,
+            |is_oneshot| {
+                if is_oneshot {
+                    LfoModeValue::new_from_audio(LfoMode::Once).to_patch()
+                } else {
+                    LfoModeValue::new_from_audio(LfoMode::Forever).to_patch()
+                }
+            },
+        );
+
         Self {
             index: lfo_index,
             style,
             target: LfoTargetPicker::new(sync_handle, lfo_index, target, style),
             shape: WavePicker::new(sync_handle, shape, style, "SHAPE"),
-            mode: boolean_picker::lfo_mode(sync_handle, mode, style),
-            bpm_sync: boolean_picker::bpm_sync(sync_handle, bpm_sync, style),
+            mode,
+            bpm_sync,
             frequency_ratio: knob::lfo_frequency_ratio(sync_handle, ratio, style),
             frequency_free: knob::lfo_frequency_free(sync_handle, free, style),
             amount: knob::lfo_amount(sync_handle, amount, style),
@@ -57,8 +83,8 @@ impl LfoWidgets {
         self.style = style;
         self.target.style = style;
         self.shape.set_style(style);
-        self.mode.style = style;
-        self.bpm_sync.style = style;
+        self.mode.set_style(style);
+        self.bpm_sync.set_style(style);
         self.frequency_ratio.style = style;
         self.frequency_free.style = style;
         self.amount.style = style;
@@ -68,7 +94,7 @@ impl LfoWidgets {
         let title = Text::new(format!("LFO {}", self.index + 1))
             .size(FONT_SIZE + FONT_SIZE / 2)
             .font(self.style.font_heading())
-            .width(Length::Fill)
+            .width(Length::Units(LINE_HEIGHT * 4))
             .color(self.style.heading_color())
             .horizontal_alignment(Horizontal::Center)
             .vertical_alignment(Vertical::Center);
@@ -81,7 +107,12 @@ impl LfoWidgets {
                     Container::new(
                         Column::new()
                             .push(Space::with_height(Length::Units(LINE_HEIGHT * 2)))
-                            .push(title)
+                            .push(
+                                Row::new()
+                                    .push(self.bpm_sync.view())
+                                    .push(title)
+                                    .push(self.mode.view()),
+                            )
                             .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
                             .push(self.target.view()),
                     )

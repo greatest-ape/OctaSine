@@ -6,7 +6,7 @@ use iced_style::checkbox;
 
 use crate::gui::interface::mute_button;
 
-use super::super::{envelope, mod_matrix, wave_picker};
+use super::super::{boolean_button, envelope, mod_matrix, wave_picker};
 
 use colors::*;
 
@@ -251,6 +251,35 @@ impl container::StyleSheet for Tooltip {
             background: GRAY_200.into(),
             text_color: TEXT_FG.into(),
             ..container::Style::default()
+        }
+    }
+}
+
+pub struct BooleanButton;
+
+impl boolean_button::StyleSheet for BooleanButton {
+    fn active(&self) -> boolean_button::Style {
+        boolean_button::Style {
+            background_color: Color::TRANSPARENT,
+            border_color: BLUE,
+            text_color: BLUE,
+        }
+    }
+    fn active_hover(&self) -> boolean_button::Style {
+        self.active()
+    }
+    fn inactive(&self) -> boolean_button::Style {
+        boolean_button::Style {
+            background_color: Color::TRANSPARENT,
+            border_color: GRAY_600,
+            text_color: GRAY_700,
+        }
+    }
+    fn inactive_hover(&self) -> boolean_button::Style {
+        boolean_button::Style {
+            background_color: Color::TRANSPARENT,
+            border_color: GRAY_800,
+            text_color: GRAY_900,
         }
     }
 }
