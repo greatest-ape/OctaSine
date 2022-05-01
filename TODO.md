@@ -5,6 +5,7 @@
 * Option to disable LFOs / set no target
 * Frequency knobs should be bipolar, but iced_audio can currently only do
   bipolar knobs from center.
+* Make mute button behaviour consistent with other boolean buttons
 * In mod target widget, use space element instead of horizontal centering
 * Envelope dragger "dragging" color
 * Raise default volume (and maybe hard limit limit)
@@ -18,6 +19,7 @@
 
 * Consider built-in patch browsing / saving functionality
 * Consider creating PR in cargo-deny-action
+* Text input
 * Mode to lock together envelopes so changes affect all
 * bench_process
   * Is it a cause for concern that not keeping wave type fixed has different
