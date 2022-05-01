@@ -4,7 +4,6 @@ use iced_baseview::{Column, Container, Element, Length, Point, Row, Space, Windo
 use crate::{get_version_info, sync::GuiSyncHandle};
 
 mod boolean_button;
-mod boolean_picker;
 mod common;
 mod corner;
 mod envelope;
