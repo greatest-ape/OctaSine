@@ -188,8 +188,7 @@ impl OperatorBox {
         };
 
         let stroke = Stroke::default()
-            // .with_color(style.box_border_color)
-            .with_color(background_color)
+            .with_color(style.operator_box_border_color)
             .with_width(1.0);
 
         frame.fill(&self.path, background_color);

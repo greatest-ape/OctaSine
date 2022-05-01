@@ -43,6 +43,7 @@ pub struct Style {
     pub border_color: Color,
     pub text_color: Color,
     pub box_border_color: Color,
+    pub operator_box_border_color: Color,
     pub operator_box_color_active: Color,
     pub operator_box_color_hover: Color,
     pub operator_box_color_dragging: Color,
