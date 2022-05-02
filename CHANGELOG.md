@@ -30,6 +30,8 @@ affect modulation output
 
 #### GUI changes
 
+- Major GUI redesign with layout and color changes. It is now a lot prettier
+  and easier to scan, as well as more compact
 - Control mix output with modulation matrix operator boxes instead of
   modulation output
 - Replace operator wave type picker with a custom widget that displays the waveform
