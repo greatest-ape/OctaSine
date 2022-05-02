@@ -19,7 +19,6 @@
 * Display patch index independently of patch name, use - or similar as default patch name: "001: -"
 * Consider easing fine tuning of mod out / changing steps. More room where
   sounds are the most interesting.
-* Add tests for get_lfo_target_parameters
 * Include license info on all dependencies in releases
 * Release v0.7.0 eventually
 

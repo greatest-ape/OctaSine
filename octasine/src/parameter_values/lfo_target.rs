@@ -55,7 +55,7 @@ pub fn get_lfo_target_parameters(lfo_index: usize) -> &'static [LfoTargetParamet
         0 => 33,
         1 => 37,
         2 => 41,
-        3 => 45,
+        3 => LFO_TARGET_CONTEXT_STEPS.len(),
         _ => unreachable!(),
     };
 
@@ -265,5 +265,23 @@ impl ParameterValue for Lfo4TargetParameterValue {
     }
     fn get_formatted(self) -> String {
         self.0.to_string()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{get_lfo_target_parameters, LfoTargetParameter};
+
+    #[test]
+    fn test_get_lfo_target_parameters() {
+        assert!(!get_lfo_target_parameters(0)
+            .iter()
+            .any(|t| matches!(t, LfoTargetParameter::Lfo(_, _))));
+        assert!(!get_lfo_target_parameters(1)
+            .iter()
+            .any(|t| matches!(t, LfoTargetParameter::Lfo(1.., _))));
+        assert!(!get_lfo_target_parameters(2)
+            .iter()
+            .any(|t| matches!(t, LfoTargetParameter::Lfo(2.., _))));
     }
 }
