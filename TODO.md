@@ -11,7 +11,6 @@
 * GUI
   * Frequency knobs should be bipolar, but iced_audio can currently only do
     bipolar knobs from center.
-  * Make mute button behaviour consistent with other boolean buttons
   * Envelope dragger "dragging" color
   * Consider where adding tooltips would be helpful
   * Consider own half-height container for logo. It could have a more

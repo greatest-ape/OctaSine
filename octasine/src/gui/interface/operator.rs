@@ -11,11 +11,11 @@ use crate::parameter_values::{
 };
 use crate::sync::GuiSyncHandle;
 
+use super::boolean_button::{operator_mute_button, BooleanButton};
 use super::common::{container_l1, container_l2, container_l3, space_l2, space_l3};
 use super::envelope::Envelope;
 use super::knob::{self, OctaSineKnob};
 use super::mod_target_picker;
-use super::mute_button::OperatorMuteButton;
 use super::style::Theme;
 use super::wave_picker::WavePicker;
 use super::{Message, FONT_SIZE, LINE_HEIGHT};
@@ -30,7 +30,7 @@ pub struct OperatorWidgets {
     index: usize,
     style: Theme,
     pub volume: OctaSineKnob<OperatorVolumeValue>,
-    pub mute_button: OperatorMuteButton,
+    pub mute_button: BooleanButton,
     pub mix: OctaSineKnob<OperatorMixValue>,
     pub panning: OctaSineKnob<OperatorPanningValue>,
     pub wave_type: WavePicker<OperatorWaveTypeValue>,
@@ -75,6 +75,8 @@ impl OperatorWidgets {
             None
         };
 
+        let mute_button = operator_mute_button(sync_handle, volume_toggle, style);
+
         let mod_target = match operator_index {
             3 => Some(ModTargetPicker::Operator4(
                 mod_target_picker::operator_4_target(sync_handle, mod_target, style),
@@ -92,7 +94,7 @@ impl OperatorWidgets {
             index: operator_index,
             style,
             volume: knob::operator_volume(sync_handle, volume, style),
-            mute_button: OperatorMuteButton::new(sync_handle, volume_toggle, style),
+            mute_button,
             mix: knob::operator_mix(sync_handle, mix, operator_index, style),
             panning: knob::operator_panning(sync_handle, panning, style),
             wave_type: WavePicker::new(sync_handle, wave, style, "WAVE"),

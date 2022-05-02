@@ -4,11 +4,11 @@ use iced_baseview::canvas::{
 };
 use iced_baseview::{Color, Element, Length, Point, Rectangle, Size};
 
+use crate::parameter_values::lfo_mode::LfoMode;
+use crate::parameter_values::{LfoBpmSyncValue, LfoModeValue, OperatorActiveValue, ParameterValue};
 use crate::sync::GuiSyncHandle;
 
 use super::{style::Theme, Message, FONT_SIZE, LINE_HEIGHT};
-
-const HEIGHT: u16 = LINE_HEIGHT * 3 / 2;
 
 #[derive(Debug, Clone)]
 pub struct Style {
@@ -24,6 +24,72 @@ pub trait StyleSheet {
     fn inactive_hover(&self) -> Style;
 }
 
+pub fn operator_mute_button<H: GuiSyncHandle>(
+    sync_handle: &H,
+    parameter_index: usize,
+    style: Theme,
+) -> BooleanButton {
+    BooleanButton::new(
+        sync_handle,
+        parameter_index,
+        style,
+        "M",
+        LINE_HEIGHT,
+        LINE_HEIGHT,
+        |v| OperatorActiveValue::new_from_patch(v).get() == 0.0,
+        |is_muted| {
+            if is_muted {
+                0.0
+            } else {
+                1.0
+            }
+        },
+        |theme| theme.mute_button(),
+    )
+}
+
+pub fn lfo_bpm_sync_button<H: GuiSyncHandle>(
+    sync_handle: &H,
+    parameter_index: usize,
+    style: Theme,
+) -> BooleanButton {
+    BooleanButton::new(
+        sync_handle,
+        parameter_index,
+        style,
+        "BPM",
+        LINE_HEIGHT * 2,
+        LINE_HEIGHT * 3 / 2,
+        |v| LfoBpmSyncValue::new_from_patch(v).get(),
+        |on| LfoBpmSyncValue::new_from_audio(on).to_patch(),
+        |theme| theme.bpm_sync_button(),
+    )
+}
+
+pub fn lfo_mode_button<H: GuiSyncHandle>(
+    sync_handle: &H,
+    parameter_index: usize,
+    style: Theme,
+) -> BooleanButton {
+    BooleanButton::new(
+        sync_handle,
+        parameter_index,
+        style,
+        "ONE",
+        LINE_HEIGHT * 2,
+        LINE_HEIGHT * 3 / 2,
+        |v| LfoModeValue::new_from_patch(v).get() == LfoMode::Once,
+        |is_oneshot| {
+            if is_oneshot {
+                LfoModeValue::new_from_audio(LfoMode::Once).to_patch()
+            } else {
+                LfoModeValue::new_from_audio(LfoMode::Forever).to_patch()
+            }
+        },
+        |theme| theme.bpm_sync_button(),
+    )
+}
+
 pub struct BooleanButton {
     parameter_index: usize,
     on: bool,
@@ -34,8 +100,10 @@ pub struct BooleanButton {
     click_started: bool,
     patch_value_to_is_on: fn(f64) -> bool,
     is_on_to_patch_value: fn(bool) -> f64,
+    get_stylesheet: fn(Theme) -> Box<dyn StyleSheet>,
     text: &'static str,
     width: u16,
+    height: u16,
 }
 
 impl BooleanButton {
@@ -45,12 +113,14 @@ impl BooleanButton {
         style: Theme,
         text: &'static str,
         width: u16,
+        height: u16,
         f: fn(f64) -> bool,
         g: fn(bool) -> f64,
+        h: fn(Theme) -> Box<dyn StyleSheet>,
     ) -> Self {
         let bounds_path = Path::rectangle(
             Point::new(0.5, 0.5),
-            Size::new((width - 1) as f32, (HEIGHT - 1) as f32),
+            Size::new((width - 1) as f32, (height - 1) as f32),
         );
 
         Self {
@@ -63,8 +133,10 @@ impl BooleanButton {
             click_started: false,
             patch_value_to_is_on: f,
             is_on_to_patch_value: g,
+            get_stylesheet: h,
             text: text.into(),
             width,
+            height,
         }
     }
 
@@ -82,19 +154,22 @@ impl BooleanButton {
 
     pub fn view(&mut self) -> Element<Message> {
         let width = self.width;
+        let height = self.height;
 
         Canvas::new(self)
             .width(Length::Units(width))
-            .height(Length::Units(HEIGHT))
+            .height(Length::Units(height))
             .into()
     }
 
     fn style(&self) -> Style {
+        let stylesheet = (self.get_stylesheet)(self.style);
+
         match (self.on, self.cursor_within_bounds) {
-            (true, false) => self.style.bpm_sync_button().active(),
-            (true, true) => self.style.bpm_sync_button().active_hover(),
-            (false, false) => self.style.bpm_sync_button().inactive(),
-            (false, true) => self.style.bpm_sync_button().inactive_hover(),
+            (true, false) => stylesheet.active(),
+            (true, true) => stylesheet.active_hover(),
+            (false, false) => stylesheet.inactive(),
+            (false, true) => stylesheet.inactive_hover(),
         }
     }
 
@@ -109,7 +184,7 @@ impl BooleanButton {
     }
 
     fn draw_text(&self, frame: &mut Frame) {
-        let position = Point::new(f32::from(self.width) / 2.0, f32::from(HEIGHT) / 2.0);
+        let position = Point::new(f32::from(self.width) / 2.0, f32::from(self.height) / 2.0);
 
         let text = Text {
             content: self.text.to_string(),
