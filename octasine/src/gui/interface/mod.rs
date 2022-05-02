@@ -1,8 +1,3 @@
-use iced_baseview::{executor, Application, Command, Subscription, WindowSubs};
-use iced_baseview::{Column, Container, Element, Length, Point, Row, Space, WindowQueue};
-
-use crate::{get_version_info, sync::GuiSyncHandle};
-
 mod boolean_button;
 mod common;
 mod corner;
@@ -17,6 +12,11 @@ mod operator;
 mod patch_picker;
 pub mod style;
 mod wave_picker;
+
+use iced_baseview::{executor, Application, Command, Subscription, WindowSubs};
+use iced_baseview::{Column, Container, Element, Length, Point, Row, Space, WindowQueue};
+
+use crate::sync::GuiSyncHandle;
 
 use lfo::LfoWidgets;
 use operator::OperatorWidgets;
@@ -38,16 +38,6 @@ const OPEN_SANS_BYTES_SEMI_BOLD: &[u8] =
     include_bytes!("../../../../contrib/open-sans/OpenSans-SemiBold.ttf");
 const OPEN_SANS_BYTES_BOLD: &[u8] =
     include_bytes!("../../../../contrib/open-sans/OpenSans-Bold.ttf");
-
-fn get_info_text() -> String {
-    format!(
-        "OctaSine frequency modulation synthesizer
-Site: OctaSine.com
-Build: {}
-Copyright © 2019-2022 Joakim Frostegård",
-        get_version_info()
-    )
-}
 
 pub trait SnapPoint {
     fn snap(self) -> Self;

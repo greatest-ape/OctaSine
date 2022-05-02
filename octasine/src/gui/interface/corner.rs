@@ -4,13 +4,13 @@ use iced_baseview::{
 };
 
 use crate::{
+    get_version_info,
     parameter_values::{MasterFrequencyValue, MasterVolumeValue},
     sync::GuiSyncHandle,
 };
 
 use super::{
     common::{container_l1, container_l2, container_l3, space_l3, triple_container},
-    get_info_text,
     knob::{self, OctaSineKnob},
     mod_matrix::ModulationMatrix,
     patch_picker::PatchPicker,
@@ -167,4 +167,14 @@ impl CornerWidgets {
             )
             .into()
     }
+}
+
+fn get_info_text() -> String {
+    format!(
+        "OctaSine frequency modulation synthesizer
+Site: OctaSine.com
+Build: {}
+Copyright © 2019-2022 Joakim Frostegård",
+        get_version_info()
+    )
 }
