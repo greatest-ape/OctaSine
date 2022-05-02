@@ -140,88 +140,82 @@ impl OperatorWidgets {
     }
 
     pub fn view(&mut self) -> Element<Message> {
-        let operator_number = Text::new(format!("OP {}", self.index + 1))
-            .size(FONT_SIZE + FONT_SIZE / 2)
-            .font(self.style.font_heading())
-            .color(self.style.heading_color())
-            .horizontal_alignment(Horizontal::Center);
+        let heading = Container::new(
+            Column::new()
+                .width(Length::Fill)
+                .align_items(Alignment::Center)
+                .spacing(0)
+                .push(Space::with_height(Length::Units(LINE_HEIGHT * 3)))
+                .push(
+                    Text::new(format!("OP {}", self.index + 1))
+                        .size(FONT_SIZE + FONT_SIZE / 2)
+                        .font(self.style.font_heading())
+                        .color(self.style.heading_color())
+                        .horizontal_alignment(Horizontal::Center),
+                )
+                .push(self.mute_button.view()),
+        )
+        .width(Length::Units(LINE_HEIGHT * 8))
+        .height(Length::Units(LINE_HEIGHT * 7));
 
-        let operator_number_column = Column::new()
-            .width(Length::Fill)
-            .align_items(Alignment::Center)
-            .spacing(0)
-            .push(Space::with_height(Length::Units(LINE_HEIGHT * 3)))
-            .push(operator_number)
-            .push(self.mute_button.view());
+        let group_1 = container_l2(
+            self.style,
+            Row::new()
+                .push(container_l3(self.style, self.wave_type.view()))
+                .push(space_l3())
+                .push(container_l3(self.style, self.volume.view()))
+                .push(space_l3())
+                .push(container_l3(self.style, self.panning.view())),
+        );
 
-        let mut row = Row::new()
-            .push(
-                Container::new(operator_number_column)
-                    .width(Length::Units(LINE_HEIGHT * 8))
-                    .height(Length::Units(LINE_HEIGHT * 7)),
-            )
-            //.push(Space::with_width(Length::Units(LINE_HEIGHT * 2)))
-            .push(container_l2(
-                self.style,
-                Row::new()
-                    .push(container_l3(self.style, self.wave_type.view()))
-                    // .push(Space::with_width(Length::Units(LINE_HEIGHT)))
-                    .push(space_l3())
-                    .push(container_l3(self.style, self.volume.view()))
-                    // .push(Space::with_width(Length::Units(LINE_HEIGHT)))
-                    .push(space_l3())
-                    .push(container_l3(self.style, self.panning.view())),
-            ))
-            .push(space_l2());
+        let routing_group = {
+            let mut group = Row::new()
+                .push(container_l3(self.style, self.mix.view()))
+                .push(space_l3());
 
-        let mut group = Row::new()
-            .push(container_l3(self.style, self.mix.view()))
-            .push(space_l3());
-
-        if let Some(mod_index) = self.mod_index.as_mut() {
-            group = group.push(container_l3(self.style, mod_index.view()));
-        } else {
-            group = group.push(Space::with_width(Length::Units(LINE_HEIGHT * 5)));
-        }
-
-        group = group.push(space_l3());
-
-        match self.mod_target.as_mut() {
-            Some(ModTargetPicker::Operator2(picker)) => {
-                group = group.push(container_l3(self.style, picker.view()))
+            if let Some(mod_index) = self.mod_index.as_mut() {
+                group = group.push(container_l3(self.style, mod_index.view()));
+            } else {
+                group = group.push(Space::with_width(Length::Units(LINE_HEIGHT * 5)));
             }
-            Some(ModTargetPicker::Operator3(picker)) => {
-                group = group.push(container_l3(self.style, picker.view()))
-            }
-            Some(ModTargetPicker::Operator4(picker)) => {
-                group = group.push(container_l3(self.style, picker.view()))
-            }
-            None => group = group.push(Space::with_width(Length::Units(LINE_HEIGHT * 3))),
-        }
 
-        group = group.push(space_l3());
-        group = group.push(container_l3(self.style, self.feedback.view()));
+            group = group.push(space_l3());
 
-        row = row
-            .push(container_l2(self.style, group))
-            .push(space_l2())
-            .push(container_l2(
-                self.style,
-                Row::new()
-                    .push(container_l3(self.style, self.frequency_ratio.view()))
-                    .push(space_l3())
-                    .push(container_l3(self.style, self.frequency_free.view()))
-                    .push(space_l3())
-                    .push(container_l3(self.style, self.frequency_fine.view())),
-            ));
+            match self.mod_target.as_mut() {
+                Some(ModTargetPicker::Operator2(picker)) => {
+                    group = group.push(container_l3(self.style, picker.view()))
+                }
+                Some(ModTargetPicker::Operator3(picker)) => {
+                    group = group.push(container_l3(self.style, picker.view()))
+                }
+                Some(ModTargetPicker::Operator4(picker)) => {
+                    group = group.push(container_l3(self.style, picker.view()))
+                }
+                None => group = group.push(Space::with_width(Length::Units(LINE_HEIGHT * 3))),
+            }
+
+            group = group.push(space_l3());
+            group = group.push(container_l3(self.style, self.feedback.view()));
+
+            container_l2(self.style, group)
+        };
+
+        let frequency_group = container_l2(
+            self.style,
+            Row::new()
+                .push(container_l3(self.style, self.frequency_ratio.view()))
+                .push(space_l3())
+                .push(container_l3(self.style, self.frequency_free.view()))
+                .push(space_l3())
+                .push(container_l3(self.style, self.frequency_fine.view())),
+        );
 
         let sync_viewports_message = Message::EnvelopeSyncViewports {
             viewport_factor: self.envelope.get_viewport_factor(),
             x_offset: self.envelope.get_x_offset(),
         };
-        let zoom_to_fit_message = Message::EnvelopeZoomToFit(self.index);
 
-        row = row.push(space_l2()).push(container_l2(
+        let envelope = container_l2(
             self.style,
             Row::new()
                 .push(container_l3(self.style, self.envelope.view()))
@@ -250,18 +244,18 @@ impl OperatorWidgets {
                                     .style(self.style.button()),
                                 ),
                         )
-                        .push(Space::with_height(Length::Units(LINE_HEIGHT * 1 - 10)))
+                        .push(Space::with_height(Length::Units(2)))
                         .push(
                             Row::new().push(
                                 Button::new(
                                     &mut self.zoom_to_fit,
                                     Text::new("FIT").font(self.style.font_regular()),
                                 )
-                                .on_press(zoom_to_fit_message)
+                                .on_press(Message::EnvelopeZoomToFit(self.index))
                                 .style(self.style.button()),
                             ),
                         )
-                        .push(Space::with_height(Length::Units(LINE_HEIGHT * 1 - 10)))
+                        .push(Space::with_height(Length::Units(2)))
                         .push(
                             Row::new().push(
                                 Button::new(
@@ -273,8 +267,20 @@ impl OperatorWidgets {
                             ),
                         ),
                 )),
-        ));
+        );
 
-        container_l1(self.style, row).into()
+        container_l1(
+            self.style,
+            Row::new()
+                .push(heading)
+                .push(group_1)
+                .push(space_l2())
+                .push(routing_group)
+                .push(space_l2())
+                .push(frequency_group)
+                .push(space_l2())
+                .push(envelope),
+        )
+        .into()
     }
 }
