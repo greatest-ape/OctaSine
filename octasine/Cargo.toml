@@ -40,9 +40,6 @@ vst = { git = "https://github.com/RustAudio/vst-rs.git", rev = "b5f342c" }
 
 # GUI
 
-iced_glow = { git = "https://github.com/iced-rs/iced.git", rev = "a53fa91e0ddf374bbeb66d5e831b79127ed47a9d", optional = true }
-iced_wgpu = { git = "https://github.com/iced-rs/iced.git", rev = "a53fa91e0ddf374bbeb66d5e831b79127ed47a9d", optional = true }
-iced_style = { git = "https://github.com/iced-rs/iced.git", rev = "a53fa91e0ddf374bbeb66d5e831b79127ed47a9d", optional = true }
 raw-window-handle = { version = "0.4", optional = true }
 
 [dependencies.baseview]
@@ -50,16 +47,31 @@ git = "https://github.com/rustaudio/baseview.git"
 rev = "b3712638bacb3fdf2883cb5aa3f6caed0e91ac8c"
 optional = true
 
-[dependencies.iced_audio]
-git = "https://github.com/greatest-ape/iced_audio.git"
-branch = "iced_git"
-optional = true
-
 [dependencies.iced_baseview]
 git = "https://github.com/BillyDM/iced_baseview.git"
-branch = "iced_git"
+rev = "9d1876147859a92753e82ddf2f225ceab3cf2648" # iced_git branch
 default-features = false
 features = ["palette"]
+optional = true
+
+[dependencies.iced_glow]
+git = "https://github.com/iced-rs/iced.git"
+rev = "a53fa91e0ddf374bbeb66d5e831b79127ed47a9d"
+optional = true
+
+[dependencies.iced_wgpu]
+git = "https://github.com/iced-rs/iced.git"
+rev = "a53fa91e0ddf374bbeb66d5e831b79127ed47a9d"
+optional = true
+
+[dependencies.iced_style]
+git = "https://github.com/iced-rs/iced.git"
+rev = "a53fa91e0ddf374bbeb66d5e831b79127ed47a9d"
+optional = true
+
+[dependencies.iced_audio]
+git = "https://github.com/iced-rs/iced_audio.git"
+rev = "5b67e157275a73ce2043bdfda154709bf378f112" # iced_git branch
 optional = true
 
 [dependencies.palette]
@@ -68,9 +80,9 @@ optional = true
 
 # SIMD
 
-# Fork with static linking and avx instruction generation
+# sleef-sys fork with static linking and avx instruction generation
 [dependencies.sleef-sys]
 git = 'https://github.com/greatest-ape/sleef-sys.git'
-branch = "octasine"
+rev = "9625d96e64bc83ec18202e206c5fe1e5423df35b" # octasine branch
 features = ["static"]
 optional = true

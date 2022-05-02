@@ -7,7 +7,6 @@ mod lfo;
 mod lfo_target_picker;
 mod mod_matrix;
 mod mod_target_picker;
-mod mute_button;
 mod operator;
 mod patch_picker;
 pub mod style;

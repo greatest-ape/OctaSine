@@ -4,8 +4,6 @@ pub mod knob;
 use iced_baseview::{button, container, pick_list, radio, Color};
 use iced_style::checkbox;
 
-use crate::gui::interface::mute_button;
-
 use super::super::{boolean_button, envelope, mod_matrix, wave_picker};
 
 use colors::*;
@@ -217,24 +215,31 @@ impl wave_picker::StyleSheet for LfoShapePicker {
 
 pub struct MuteButton;
 
-impl mute_button::StyleSheet for MuteButton {
-    fn volume_on(&self) -> mute_button::Style {
-        mute_button::Style {
-            background_color: SURFACE,
-            border_color: BORDER,
-            text_color: TEXT_FG,
-        }
-    }
-    fn volume_off(&self) -> mute_button::Style {
-        mute_button::Style {
+impl boolean_button::StyleSheet for MuteButton {
+    fn active(&self) -> boolean_button::Style {
+        boolean_button::Style {
             background_color: SURFACE,
             border_color: RED,
             text_color: RED,
         }
     }
-    fn hovered(&self) -> mute_button::Style {
-        mute_button::Style {
+    fn active_hover(&self) -> boolean_button::Style {
+        boolean_button::Style {
+            background_color: SURFACE_HOVER,
+            border_color: RED,
+            text_color: RED,
+        }
+    }
+    fn inactive(&self) -> boolean_button::Style {
+        boolean_button::Style {
             background_color: SURFACE,
+            border_color: BORDER,
+            text_color: TEXT_FG,
+        }
+    }
+    fn inactive_hover(&self) -> boolean_button::Style {
+        boolean_button::Style {
+            background_color: SURFACE_HOVER,
             border_color: BORDER,
             text_color: TEXT_FG,
         }

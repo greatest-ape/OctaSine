@@ -3,14 +3,12 @@ use iced_baseview::{
     alignment::Horizontal, alignment::Vertical, Column, Element, Length, Row, Space, Text,
 };
 
-use crate::parameter_values::lfo_mode::LfoMode;
 use crate::parameter_values::{
-    LfoAmountValue, LfoBpmSyncValue, LfoFrequencyFreeValue, LfoFrequencyRatioValue, LfoModeValue,
-    LfoShapeValue, ParameterValue,
+    LfoAmountValue, LfoFrequencyFreeValue, LfoFrequencyRatioValue, LfoShapeValue,
 };
 use crate::sync::GuiSyncHandle;
 
-use super::boolean_button::BooleanButton;
+use super::boolean_button::{lfo_bpm_sync_button, lfo_mode_button, BooleanButton};
 use super::common::{container_l1, container_l2, container_l3, space_l3};
 use super::knob::{self, OctaSineKnob};
 use super::lfo_target_picker::LfoTargetPicker;
@@ -41,30 +39,8 @@ impl LfoWidgets {
         let shape = offset + 5;
         let amount = offset + 6;
 
-        let bpm_sync = BooleanButton::new(
-            sync_handle,
-            bpm_sync,
-            style,
-            "BPM",
-            LINE_HEIGHT * 2,
-            |v| LfoBpmSyncValue::new_from_patch(v).get(),
-            |on| LfoBpmSyncValue::new_from_audio(on).to_patch(),
-        );
-        let mode = BooleanButton::new(
-            sync_handle,
-            mode,
-            style,
-            "ONE",
-            LINE_HEIGHT * 2,
-            |v| LfoModeValue::new_from_patch(v).get() == LfoMode::Once,
-            |is_oneshot| {
-                if is_oneshot {
-                    LfoModeValue::new_from_audio(LfoMode::Once).to_patch()
-                } else {
-                    LfoModeValue::new_from_audio(LfoMode::Forever).to_patch()
-                }
-            },
-        );
+        let bpm_sync = lfo_bpm_sync_button(sync_handle, bpm_sync, style);
+        let mode = lfo_mode_button(sync_handle, mode, style);
 
         Self {
             index: lfo_index,
