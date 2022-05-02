@@ -58,7 +58,7 @@ where
         let mut top_left = scale_point(bounds, top_left);
         let size = scale_size(size);
 
-        top_left.x += 1.0;
+        top_left.x -= 1.0;
 
         top_left = top_left.snap();
 

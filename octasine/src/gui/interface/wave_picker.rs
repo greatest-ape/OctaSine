@@ -11,7 +11,7 @@ use crate::parameter_values::ParameterValue;
 use crate::sync::GuiSyncHandle;
 
 use super::style::Theme;
-use super::{Message, FONT_BOLD, LINE_HEIGHT};
+use super::{Message, LINE_HEIGHT};
 
 const WIDTH: u16 = LINE_HEIGHT * 2;
 const HEIGHT: u16 = LINE_HEIGHT * 2;
@@ -80,9 +80,11 @@ where
     pub fn view(&mut self) -> Element<Message> {
         let title = Text::new(&self.title)
             .horizontal_alignment(Horizontal::Center)
-            .font(FONT_BOLD);
+            .font(self.style.font_bold());
 
-        let value = Text::new(self.value_text.clone()).horizontal_alignment(Horizontal::Center);
+        let value = Text::new(self.value_text.clone())
+            .horizontal_alignment(Horizontal::Center)
+            .font(self.style.font_regular());
 
         let canvas = Canvas::new(self)
             .width(Length::Units(WIDTH))
@@ -188,10 +190,10 @@ where
 {
     fn draw(&self, bounds: Rectangle, _cursor: Cursor) -> Vec<Geometry> {
         let geometry = self.cache.draw(bounds.size(), |frame| {
-            self.draw_background(frame, self.style.into());
-            self.draw_middle_line(frame, self.style.into());
-            self.draw_shape_line(frame, self.style.into());
-            self.draw_border(frame, self.style.into());
+            self.draw_background(frame, self.style.wave_picker());
+            self.draw_middle_line(frame, self.style.wave_picker());
+            self.draw_shape_line(frame, self.style.wave_picker());
+            self.draw_border(frame, self.style.wave_picker());
         });
 
         vec![geometry]

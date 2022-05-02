@@ -18,14 +18,14 @@ pub struct Patch {
 
 impl Default for Patch {
     fn default() -> Self {
-        Self::new("-".to_string(), patch_parameters())
+        Self::new("-", patch_parameters())
     }
 }
 
 impl Patch {
-    pub fn new(name: String, parameters: Vec<PatchParameter>) -> Self {
+    pub fn new(name: &str, parameters: Vec<PatchParameter>) -> Self {
         Self {
-            name: ArcSwap::new(Arc::new(name)),
+            name: ArcSwap::new(Arc::new(name.to_owned())),
             parameters,
         }
     }
@@ -86,7 +86,7 @@ impl Default for PatchBank {
 impl PatchBank {
     pub fn new(parameters: fn() -> Vec<PatchParameter>) -> Self {
         Self {
-            patches: array_init(|i| Patch::new(format!("{:03}", i + 1), parameters())),
+            patches: array_init(|_| Patch::new("-", parameters())),
             patch_index: AtomicUsize::new(0),
             parameter_change_info_audio: ParameterChangeInfo::default(),
             parameter_change_info_gui: ParameterChangeInfo::default(),
@@ -138,13 +138,14 @@ impl PatchBank {
     pub fn get_patch_name(&self, index: usize) -> Option<String> {
         self.patches
             .get(index as usize)
-            .map(|p| (*p.name.load_full()).clone())
+            .map(|p| format!("{:03}: {}", index + 1, p.name.load_full()))
     }
 
     pub fn get_patch_names(&self) -> Vec<String> {
         self.patches
             .iter()
-            .map(|p| (*p.name.load_full()).clone())
+            .enumerate()
+            .map(|(index, p)| format!("{:03}: {}", index + 1, p.name.load_full()))
             .collect()
     }
 

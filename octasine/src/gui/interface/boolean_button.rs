@@ -4,15 +4,11 @@ use iced_baseview::canvas::{
 };
 use iced_baseview::{Color, Element, Length, Point, Rectangle, Size};
 
-use crate::{
-    parameter_values::{OperatorActiveValue, ParameterValue},
-    sync::GuiSyncHandle,
-};
+use crate::sync::GuiSyncHandle;
 
 use super::{style::Theme, Message, FONT_SIZE, LINE_HEIGHT};
 
-const WIDTH: u16 = LINE_HEIGHT;
-const HEIGHT: u16 = LINE_HEIGHT;
+const HEIGHT: u16 = LINE_HEIGHT * 3 / 2;
 
 #[derive(Debug, Clone)]
 pub struct Style {
@@ -22,45 +18,58 @@ pub struct Style {
 }
 
 pub trait StyleSheet {
-    fn volume_on(&self) -> Style;
-    fn volume_off(&self) -> Style;
-    fn hovered(&self) -> Style;
+    fn active(&self) -> Style;
+    fn active_hover(&self) -> Style;
+    fn inactive(&self) -> Style;
+    fn inactive_hover(&self) -> Style;
 }
 
-pub struct OperatorMuteButton {
+pub struct BooleanButton {
     parameter_index: usize,
-    volume_on: bool,
+    on: bool,
     style: Theme,
     cache: Cache,
     bounds_path: Path,
     cursor_within_bounds: bool,
     click_started: bool,
+    patch_value_to_is_on: fn(f64) -> bool,
+    is_on_to_patch_value: fn(bool) -> f64,
+    text: &'static str,
+    width: u16,
 }
 
-impl OperatorMuteButton {
-    pub fn new<H: GuiSyncHandle>(sync_handle: &H, parameter_index: usize, style: Theme) -> Self {
+impl BooleanButton {
+    pub fn new<H: GuiSyncHandle>(
+        sync_handle: &H,
+        parameter_index: usize,
+        style: Theme,
+        text: &'static str,
+        width: u16,
+        f: fn(f64) -> bool,
+        g: fn(bool) -> f64,
+    ) -> Self {
         let bounds_path = Path::rectangle(
             Point::new(0.5, 0.5),
-            Size::new((WIDTH - 1) as f32, (HEIGHT - 1) as f32),
+            Size::new((width - 1) as f32, (HEIGHT - 1) as f32),
         );
 
         Self {
             parameter_index,
-            volume_on: Self::volume_on(sync_handle.get_parameter(parameter_index)),
+            on: f(sync_handle.get_parameter(parameter_index)),
             style,
             cache: Cache::new(),
             bounds_path,
             cursor_within_bounds: false,
             click_started: false,
+            patch_value_to_is_on: f,
+            is_on_to_patch_value: g,
+            text: text.into(),
+            width,
         }
     }
 
-    fn volume_on(sync_value: f64) -> bool {
-        OperatorActiveValue::new_from_patch(sync_value).get() > 0.5
-    }
-
     pub fn set_value(&mut self, value: f64) {
-        self.volume_on = Self::volume_on(value);
+        self.on = (self.patch_value_to_is_on)(value);
 
         self.cache.clear();
     }
@@ -72,48 +81,39 @@ impl OperatorMuteButton {
     }
 
     pub fn view(&mut self) -> Element<Message> {
+        let width = self.width;
+
         Canvas::new(self)
-            .width(Length::Units(WIDTH))
+            .width(Length::Units(width))
             .height(Length::Units(HEIGHT))
             .into()
     }
 
-    fn draw_background(&self, frame: &mut Frame, style_sheet: Box<dyn StyleSheet>) {
-        frame.fill(&self.bounds_path, style_sheet.volume_on().background_color);
+    fn style(&self) -> Style {
+        match (self.on, self.cursor_within_bounds) {
+            (true, false) => self.style.bpm_sync_button().active(),
+            (true, true) => self.style.bpm_sync_button().active_hover(),
+            (false, false) => self.style.bpm_sync_button().inactive(),
+            (false, true) => self.style.bpm_sync_button().inactive_hover(),
+        }
     }
 
-    fn draw_border(&self, frame: &mut Frame, style_sheet: Box<dyn StyleSheet>) {
-        let color = if self.volume_on {
-            if self.cursor_within_bounds {
-                style_sheet.hovered().border_color
-            } else {
-                style_sheet.volume_on().border_color
-            }
-        } else {
-            style_sheet.volume_off().border_color
-        };
+    fn draw_background(&self, frame: &mut Frame) {
+        frame.fill(&self.bounds_path, self.style().background_color);
+    }
 
-        let stroke = Stroke::default().with_color(color);
+    fn draw_border(&self, frame: &mut Frame) {
+        let stroke = Stroke::default().with_color(self.style().border_color);
 
         frame.stroke(&self.bounds_path, stroke);
     }
 
-    fn draw_text(&self, frame: &mut Frame, style_sheet: Box<dyn StyleSheet>) {
-        let color = if self.volume_on {
-            if self.cursor_within_bounds {
-                style_sheet.hovered().text_color
-            } else {
-                style_sheet.volume_on().text_color
-            }
-        } else {
-            style_sheet.volume_off().text_color
-        };
-
-        let position = Point::new(f32::from(WIDTH) / 2.0, f32::from(HEIGHT) / 2.0);
+    fn draw_text(&self, frame: &mut Frame) {
+        let position = Point::new(f32::from(self.width) / 2.0, f32::from(HEIGHT) / 2.0);
 
         let text = Text {
-            content: "M".into(),
-            color,
+            content: self.text.to_string(),
+            color: self.style().text_color,
             size: f32::from(FONT_SIZE),
             font: self.style.font_regular(),
             horizontal_alignment: Horizontal::Center,
@@ -126,12 +126,12 @@ impl OperatorMuteButton {
     }
 }
 
-impl Program<Message> for OperatorMuteButton {
+impl Program<Message> for BooleanButton {
     fn draw(&self, bounds: Rectangle, _cursor: Cursor) -> Vec<Geometry> {
         let geometry = self.cache.draw(bounds.size(), |frame| {
-            self.draw_background(frame, self.style.mute_button());
-            self.draw_border(frame, self.style.mute_button());
-            self.draw_text(frame, self.style.mute_button());
+            self.draw_background(frame);
+            self.draw_border(frame);
+            self.draw_text(frame);
         });
 
         vec![geometry]
@@ -167,9 +167,9 @@ impl Program<Message> for OperatorMuteButton {
             )) if self.click_started => {
                 if self.cursor_within_bounds {
                     let message = {
-                        let sync_value = if self.volume_on { 0.0 } else { 1.0 };
+                        let patch_value = (self.is_on_to_patch_value)(!self.on);
 
-                        Message::ChangeSingleParameterImmediate(self.parameter_index, sync_value)
+                        Message::ChangeSingleParameterImmediate(self.parameter_index, patch_value)
                     };
 
                     (event::Status::Captured, Some(message))

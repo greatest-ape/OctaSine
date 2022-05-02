@@ -23,7 +23,9 @@ use self::output_box::OutputBox;
 use super::style::Theme;
 use super::{Message, LINE_HEIGHT};
 
-pub const HEIGHT: u16 = LINE_HEIGHT * 7;
+/// Canvas width
+const WIDTH: u16 = LINE_HEIGHT * 5 + 2;
+pub const HEIGHT: u16 = LINE_HEIGHT * 6;
 const SMALL_BOX_SIZE: u16 = 8;
 const BIG_BOX_SIZE: u16 = LINE_HEIGHT;
 
@@ -35,7 +37,6 @@ const SIZE: Size = Size {
     height: HEIGHT as f32,
 };
 const OPERATOR_BOX_SCALE: f32 = BIG_BOX_SIZE as f32 / SMALL_BOX_SIZE as f32;
-const WIDTH: u16 = WIDTH_FLOAT as u16 + 2;
 
 #[derive(Debug, Clone)]
 pub struct Style {
@@ -43,6 +44,7 @@ pub struct Style {
     pub border_color: Color,
     pub text_color: Color,
     pub box_border_color: Color,
+    pub operator_box_border_color: Option<Color>,
     pub operator_box_color_active: Color,
     pub operator_box_color_hover: Color,
     pub operator_box_color_dragging: Color,
@@ -51,6 +53,7 @@ pub struct Style {
     pub modulation_box_color_hover: Color,
     pub line_max_color: Color,
     pub mod_out_line_color: Color,
+    pub mix_out_line_color: Color,
 }
 
 pub trait StyleSheet {
@@ -126,10 +129,10 @@ struct ModulationMatrixComponents {
 
 impl ModulationMatrixComponents {
     fn new(parameters: &ModulationMatrixParameters, bounds: Size, style: Theme) -> Self {
-        let operator_1_box = OperatorBox::new(bounds, 0, style.into());
-        let operator_2_box = OperatorBox::new(bounds, 1, style.into());
-        let operator_3_box = OperatorBox::new(bounds, 2, style.into());
-        let operator_4_box = OperatorBox::new(bounds, 3, style.into());
+        let operator_1_box = OperatorBox::new(bounds, 0);
+        let operator_2_box = OperatorBox::new(bounds, 1);
+        let operator_3_box = OperatorBox::new(bounds, 2);
+        let operator_4_box = OperatorBox::new(bounds, 3);
 
         let operator_4_mod_3_box =
             ModulationBox::new(bounds, 3, 2, 53, 2, parameters.operator_4_targets);
@@ -150,30 +153,30 @@ impl ModulationMatrixComponents {
             operator_4_box.center,
             output_box.y,
             parameters.operator_4_mix,
-            style.into(),
+            style.mod_matrix(),
         );
         let operator_3_mix_out_line = MixOutLine::new(
             operator_3_box.center,
             output_box.y,
             parameters.operator_3_mix,
-            style.into(),
+            style.mod_matrix(),
         );
         let operator_2_mix_out_line = MixOutLine::new(
             operator_2_box.center,
             output_box.y,
             parameters.operator_2_mix,
-            style.into(),
+            style.mod_matrix(),
         );
         let operator_1_mix_out_line = MixOutLine::new(
             operator_1_box.center,
             output_box.y,
             parameters.operator_1_mix,
-            style.into(),
+            style.mod_matrix(),
         );
 
-        let operator_4_mod_out_line = ModOutLine::new(operator_4_box.center, style.into());
-        let operator_3_mod_out_line = ModOutLine::new(operator_3_box.center, style.into());
-        let operator_2_mod_out_line = ModOutLine::new(operator_2_box.center, style.into());
+        let operator_4_mod_out_line = ModOutLine::new(operator_4_box.center, style.mod_matrix());
+        let operator_3_mod_out_line = ModOutLine::new(operator_3_box.center, style.mod_matrix());
+        let operator_2_mod_out_line = ModOutLine::new(operator_2_box.center, style.mod_matrix());
 
         let mut components = Self {
             operator_1_box,
@@ -209,14 +212,14 @@ impl ModulationMatrixComponents {
         self.operator_3_mod_1_box.v = parameters.operator_3_targets;
 
         self.operator_4_mix_out_line
-            .update(parameters.operator_4_mix, style.into());
+            .update(parameters.operator_4_mix, style.mod_matrix());
 
         self.operator_3_mix_out_line
-            .update(parameters.operator_3_mix, style.into());
+            .update(parameters.operator_3_mix, style.mod_matrix());
         self.operator_2_mix_out_line
-            .update(parameters.operator_2_mix, style.into());
+            .update(parameters.operator_2_mix, style.mod_matrix());
         self.operator_1_mix_out_line
-            .update(parameters.operator_1_mix, style.into());
+            .update(parameters.operator_1_mix, style.mod_matrix());
 
         {
             let mut points = Vec::new();
@@ -234,7 +237,8 @@ impl ModulationMatrixComponents {
                 points.push(mod_box);
             }
 
-            self.operator_4_mod_out_line.update(points, style.into());
+            self.operator_4_mod_out_line
+                .update(points, style.mod_matrix());
         }
 
         {
@@ -252,7 +256,8 @@ impl ModulationMatrixComponents {
                 points.push(mod_box);
             }
 
-            self.operator_3_mod_out_line.update(points, style.into());
+            self.operator_3_mod_out_line
+                .update(points, style.mod_matrix());
         };
 
         {
@@ -269,7 +274,8 @@ impl ModulationMatrixComponents {
                 points.push(mod_box);
             }
 
-            self.operator_2_mod_out_line.update(points, style.into());
+            self.operator_2_mod_out_line
+                .update(points, style.mod_matrix());
         }
     }
 
@@ -285,19 +291,19 @@ impl ModulationMatrixComponents {
     }
 
     fn draw_boxes(&self, frame: &mut Frame, style: Theme) {
-        self.operator_1_box.draw(frame, style.into());
-        self.operator_2_box.draw(frame, style.into());
-        self.operator_3_box.draw(frame, style.into());
-        self.operator_4_box.draw(frame, style.into());
+        self.operator_1_box.draw(frame, style);
+        self.operator_2_box.draw(frame, style);
+        self.operator_3_box.draw(frame, style);
+        self.operator_4_box.draw(frame, style);
 
-        self.operator_4_mod_3_box.draw(frame, style.into());
-        self.operator_4_mod_2_box.draw(frame, style.into());
-        self.operator_4_mod_1_box.draw(frame, style.into());
-        self.operator_3_mod_2_box.draw(frame, style.into());
-        self.operator_3_mod_1_box.draw(frame, style.into());
-        self.operator_2_mod_1_box.draw(frame, style.into());
+        self.operator_4_mod_3_box.draw(frame, style.mod_matrix());
+        self.operator_4_mod_2_box.draw(frame, style.mod_matrix());
+        self.operator_4_mod_1_box.draw(frame, style.mod_matrix());
+        self.operator_3_mod_2_box.draw(frame, style.mod_matrix());
+        self.operator_3_mod_1_box.draw(frame, style.mod_matrix());
+        self.operator_2_mod_1_box.draw(frame, style.mod_matrix());
 
-        self.output_box.draw(frame, style.into());
+        self.output_box.draw(frame, style.mod_matrix());
     }
 }
 
@@ -426,7 +432,7 @@ impl ModulationMatrix {
 impl Program<Message> for ModulationMatrix {
     fn draw(&self, bounds: Rectangle, _cursor: Cursor) -> Vec<Geometry> {
         let geometry = self.cache.draw(bounds.size(), |frame| {
-            self.draw_background(frame, self.style.into());
+            self.draw_background(frame, self.style.mod_matrix());
 
             self.components.draw_lines(frame);
             self.components.draw_boxes(frame, self.style);

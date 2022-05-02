@@ -29,8 +29,8 @@ impl OutputBox {
         let mut left = scale_point(bounds, left);
         let mut right = scale_point(bounds, right);
 
-        left.x += 1.0;
-        right.x += 1.0;
+        // left.x += 1.0;
+        // right.x += 1.0;
 
         left = left.snap();
         right = right.snap();

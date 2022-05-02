@@ -1,6 +1,6 @@
 use iced_baseview::{
     alignment::Horizontal, button, Alignment, Button, Column, Container, Element, Length, Row,
-    Rule, Space, Text,
+    Space, Text,
 };
 
 use crate::parameter_values::{
@@ -11,13 +11,14 @@ use crate::parameter_values::{
 };
 use crate::sync::GuiSyncHandle;
 
+use super::common::{container_l1, container_l2, container_l3, space_l2, space_l3};
 use super::envelope::Envelope;
 use super::knob::{self, OctaSineKnob};
 use super::mod_target_picker;
 use super::mute_button::OperatorMuteButton;
 use super::style::Theme;
 use super::wave_picker::WavePicker;
-use super::{Message, FONT_SIZE, FONT_VERY_BOLD, LINE_HEIGHT};
+use super::{Message, FONT_SIZE, LINE_HEIGHT};
 
 pub enum ModTargetPicker {
     Operator4(mod_target_picker::ModTargetPicker<Operator4ModulationTargetValue>),
@@ -139,111 +140,147 @@ impl OperatorWidgets {
     }
 
     pub fn view(&mut self) -> Element<Message> {
-        let operator_number = Text::new(format!("{}", self.index + 1))
-            .size(FONT_SIZE * 2)
-            .font(FONT_VERY_BOLD)
-            .color(self.style.heading_color())
-            .horizontal_alignment(Horizontal::Center);
+        let heading = Container::new(
+            Column::new()
+                .width(Length::Fill)
+                .align_items(Alignment::Center)
+                .spacing(0)
+                .push(Space::with_height(Length::Units(LINE_HEIGHT * 3)))
+                .push(
+                    Text::new(format!("OP {}", self.index + 1))
+                        .size(FONT_SIZE + FONT_SIZE / 2)
+                        .font(self.style.font_heading())
+                        .color(self.style.heading_color())
+                        .horizontal_alignment(Horizontal::Center),
+                )
+                .push(self.mute_button.view()),
+        )
+        .width(Length::Units(LINE_HEIGHT * 8))
+        .height(Length::Units(LINE_HEIGHT * 7));
 
-        let operator_number_column = Column::new()
-            .width(Length::Fill)
-            .align_items(Alignment::Center)
-            .spacing(0)
-            .push(Space::with_height(Length::Units(LINE_HEIGHT * 2)))
-            .push(operator_number)
-            .push(self.mute_button.view());
+        let group_1 = container_l2(
+            self.style,
+            Row::new()
+                .push(container_l3(self.style, self.wave_type.view()))
+                .push(space_l3())
+                .push(container_l3(self.style, self.volume.view()))
+                .push(space_l3())
+                .push(container_l3(self.style, self.panning.view())),
+        );
 
-        let mut row = Row::new()
-            .push(
-                Container::new(operator_number_column)
-                    .width(Length::Units(LINE_HEIGHT * 4))
-                    .height(Length::Units(LINE_HEIGHT * 6))
-                    .align_x(Horizontal::Center),
-            )
-            // .push(Space::with_width(Length::Units(LINE_HEIGHT)))
-            .push(self.wave_type.view())
-            .push(self.volume.view())
-            .push(self.panning.view());
+        let routing_group = {
+            let mut group = Row::new()
+                .push(container_l3(self.style, self.mix.view()))
+                .push(space_l3());
 
-        row = row
-            .push(
-                Container::new(Rule::vertical(LINE_HEIGHT)).height(Length::Units(LINE_HEIGHT * 6)),
-            )
-            .push(self.mix.view());
+            if let Some(mod_index) = self.mod_index.as_mut() {
+                group = group.push(container_l3(self.style, mod_index.view()));
+            } else {
+                group = group.push(Space::with_width(Length::Units(LINE_HEIGHT * 5)));
+            }
 
-        if let Some(mod_index) = self.mod_index.as_mut() {
-            row = row.push(mod_index.view())
-        } else {
-            row = row.push(Space::with_width(Length::Units(LINE_HEIGHT * 4)))
-        }
+            group = group.push(space_l3());
 
-        match self.mod_target.as_mut() {
-            Some(ModTargetPicker::Operator2(picker)) => row = row.push(picker.view()),
-            Some(ModTargetPicker::Operator3(picker)) => row = row.push(picker.view()),
-            Some(ModTargetPicker::Operator4(picker)) => row = row.push(picker.view()),
-            None => row = row.push(Space::with_width(Length::Units(LINE_HEIGHT * 4))),
-        }
+            match self.mod_target.as_mut() {
+                Some(ModTargetPicker::Operator2(picker)) => {
+                    group = group.push(container_l3(self.style, picker.view()))
+                }
+                Some(ModTargetPicker::Operator3(picker)) => {
+                    group = group.push(container_l3(self.style, picker.view()))
+                }
+                Some(ModTargetPicker::Operator4(picker)) => {
+                    group = group.push(container_l3(self.style, picker.view()))
+                }
+                None => group = group.push(Space::with_width(Length::Units(LINE_HEIGHT * 3))),
+            }
 
-        row = row.push(self.feedback.view());
+            group = group.push(space_l3());
+            group = group.push(container_l3(self.style, self.feedback.view()));
 
-        row = row
-            .push(
-                Container::new(Rule::vertical(LINE_HEIGHT)).height(Length::Units(LINE_HEIGHT * 6)),
-            )
-            .push(self.frequency_ratio.view())
-            .push(self.frequency_free.view())
-            .push(self.frequency_fine.view());
+            container_l2(self.style, group)
+        };
+
+        let frequency_group = container_l2(
+            self.style,
+            Row::new()
+                .push(container_l3(self.style, self.frequency_ratio.view()))
+                .push(space_l3())
+                .push(container_l3(self.style, self.frequency_free.view()))
+                .push(space_l3())
+                .push(container_l3(self.style, self.frequency_fine.view())),
+        );
 
         let sync_viewports_message = Message::EnvelopeSyncViewports {
             viewport_factor: self.envelope.get_viewport_factor(),
             x_offset: self.envelope.get_x_offset(),
         };
-        let zoom_to_fit_message = Message::EnvelopeZoomToFit(self.index);
 
-        row = row
-            .push(
-                Container::new(Rule::vertical(LINE_HEIGHT)).height(Length::Units(LINE_HEIGHT * 6)),
-            )
-            .push(Column::new().push(self.envelope.view()))
-            .push(
-                Column::new()
-                    .width(Length::Units(LINE_HEIGHT * 3))
-                    .align_items(Alignment::End)
-                    .push(
-                        Row::new()
-                            .push(
-                                Button::new(
-                                    &mut self.zoom_out,
-                                    Text::new("−").font(FONT_VERY_BOLD),
+        let envelope = container_l2(
+            self.style,
+            Row::new()
+                .push(container_l3(self.style, self.envelope.view()))
+                .push(container_l3(
+                    self.style,
+                    Column::new()
+                        .width(Length::Units(LINE_HEIGHT * 3))
+                        .align_items(Alignment::End)
+                        .push(
+                            Row::new()
+                                .push(
+                                    Button::new(
+                                        &mut self.zoom_out,
+                                        Text::new("−").font(self.style.font_bold()),
+                                    )
+                                    .on_press(Message::EnvelopeZoomOut(self.index))
+                                    .style(self.style.button()),
                                 )
-                                .on_press(Message::EnvelopeZoomOut(self.index))
-                                .style(self.style),
-                            )
-                            .push(Space::with_width(Length::Units(3)))
-                            .push(
-                                Button::new(&mut self.zoom_in, Text::new("+").font(FONT_VERY_BOLD))
+                                .push(Space::with_width(Length::Units(3)))
+                                .push(
+                                    Button::new(
+                                        &mut self.zoom_in,
+                                        Text::new("+").font(self.style.font_bold()),
+                                    )
                                     .on_press(Message::EnvelopeZoomIn(self.index))
-                                    .style(self.style),
+                                    .style(self.style.button()),
+                                ),
+                        )
+                        .push(Space::with_height(Length::Units(2)))
+                        .push(
+                            Row::new().push(
+                                Button::new(
+                                    &mut self.zoom_to_fit,
+                                    Text::new("FIT").font(self.style.font_regular()),
+                                )
+                                .on_press(Message::EnvelopeZoomToFit(self.index))
+                                .style(self.style.button()),
                             ),
-                    )
-                    .push(Space::with_height(Length::Units(LINE_HEIGHT * 1 - 10)))
-                    .push(
-                        Row::new().push(
-                            Button::new(&mut self.zoom_to_fit, Text::new("FIT"))
-                                .on_press(zoom_to_fit_message)
-                                .style(self.style),
-                        ),
-                    )
-                    .push(Space::with_height(Length::Units(LINE_HEIGHT * 1 - 10)))
-                    .push(
-                        Row::new().push(
-                            Button::new(&mut self.sync_viewport, Text::new("DIST"))
+                        )
+                        .push(Space::with_height(Length::Units(2)))
+                        .push(
+                            Row::new().push(
+                                Button::new(
+                                    &mut self.sync_viewport,
+                                    Text::new("DIST").font(self.style.font_regular()),
+                                )
                                 .on_press(sync_viewports_message)
-                                .style(self.style),
+                                .style(self.style.button()),
+                            ),
                         ),
-                    ),
-            );
+                )),
+        );
 
-        row.into()
+        container_l1(
+            self.style,
+            Row::new()
+                .push(heading)
+                .push(group_1)
+                .push(space_l2())
+                .push(routing_group)
+                .push(space_l2())
+                .push(frequency_group)
+                .push(space_l2())
+                .push(envelope),
+        )
+        .into()
     }
 }

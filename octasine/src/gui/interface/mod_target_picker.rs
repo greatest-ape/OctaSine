@@ -9,7 +9,7 @@ use crate::parameter_values::{
 use crate::sync::GuiSyncHandle;
 
 use super::style::Theme;
-use super::{Message, FONT_BOLD, FONT_SIZE, LINE_HEIGHT};
+use super::{Message, FONT_SIZE, LINE_HEIGHT};
 
 pub fn operator_2_target<H: GuiSyncHandle>(
     sync_handle: &H,
@@ -74,7 +74,7 @@ where
     pub fn view(&mut self) -> Element<Message> {
         let title = Text::new(self.title.clone())
             .horizontal_alignment(Horizontal::Center)
-            .font(FONT_BOLD);
+            .font(self.style.font_bold());
 
         let mut checkboxes = Column::new().spacing(4);
 
@@ -93,16 +93,18 @@ where
 
                 Message::ChangeSingleParameterImmediate(parameter_index, sync)
             })
+            .font(self.style.font_regular())
             .size(FONT_SIZE)
             .text_size(FONT_SIZE)
             .spacing(4)
-            .style(self.style);
+            .style(self.style.checkbox());
 
             checkboxes = checkboxes.push(checkbox);
         }
 
         Column::new()
             .width(Length::Units(LINE_HEIGHT * 4))
+            .height(Length::Units(LINE_HEIGHT * 6))
             .align_items(Alignment::Center)
             .push(title)
             .push(Space::with_height(Length::Units(LINE_HEIGHT)))

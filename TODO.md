@@ -2,19 +2,32 @@
 
 ## High priority
 
-* Consider easing fine tuning of mod out / changing steps. More room where
-  sounds are the most interesting.
-* Raise default volume (and maybe hard limit limit)
-* Option to disable LFOs / set no target
-* Display patch index independently of patch name, use - or similar as default patch name: "001: -"
-* GUI: change "mode" to "theme" or "colors"
+* Audio
+  * LFO amount toggle parameter (on/off)
+    * Add parameters for this before release for backwards compatibility
+  * Raise default volume (and maybe hard limit limit)
+  * Consider easing fine tuning of mod out / changing steps. More room where
+    sounds are the most interesting.
+* GUI
+  * Frequency knobs should be bipolar, but iced_audio can currently only do
+    bipolar knobs from center.
+  * Make mute button behaviour consistent with other boolean buttons
+  * Envelope dragger "dragging" color
+  * Consider where adding tooltips would be helpful
+  * Consider own half-height container for logo. It could have a more
+    pronounced background color
 * Include license info on all dependencies in releases
 * Release v0.7.0 eventually
 
 ## Medium priority
 
-* Consider built-in patch browsing / saving functionality
+* Consider built-in patch browsing / saving / clearing functionality
+  * Use crate https://github.com/PolyMeilex/rfd
+  * Maybe use buttons like "C" for clear, "S" for save, "L" for load, "R" for
+    rename. They could have tooltips.
 * Consider creating PR in cargo-deny-action
+* Parameter value text input
+  * Maybe use https://github.com/jdm/tinyfiledialogs-rs
 * Mode to lock together envelopes so changes affect all
 * bench_process
   * Is it a cause for concern that not keeping wave type fixed has different

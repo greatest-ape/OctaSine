@@ -1,7 +1,7 @@
 use iced_baseview::canvas::{
     event, path, Cache, Canvas, Cursor, Frame, Geometry, Path, Program, Stroke, Text,
 };
-use iced_baseview::{Color, Element, Length, Point, Rectangle, Size, Vector};
+use iced_baseview::{Color, Container, Element, Length, Point, Rectangle, Size, Vector};
 
 use crate::audio::voices::envelopes::VoiceOperatorVolumeEnvelope;
 use crate::audio::voices::log10_table::Log10Table;
@@ -466,14 +466,18 @@ impl Envelope {
     }
 
     pub fn view(&mut self) -> Element<Message> {
-        Canvas::new(self)
-            .width(Length::Units(WIDTH))
-            .height(Length::Units(HEIGHT))
-            .into()
+        Container::new(
+            Canvas::new(self)
+                .width(Length::Units(WIDTH))
+                .height(Length::Units(HEIGHT)),
+        )
+        .height(Length::Units(LINE_HEIGHT * 6))
+        .into()
     }
 
-    fn draw_time_markers(&self, frame: &mut Frame, style_sheet: Box<dyn StyleSheet>) {
-        let style = style_sheet.active();
+    fn draw_time_markers(&self, frame: &mut Frame, style: Theme) {
+        let font_regular = style.font_regular();
+        let style = style.envelope().active();
 
         let total_duration = self.viewport_factor * TOTAL_DURATION;
         let x_offset = self.x_offset / self.viewport_factor;
@@ -514,6 +518,7 @@ impl Envelope {
                 let text = Text {
                     content: format!("{:.1}s", time_marker_interval * 4.0 * i as f32),
                     position: scale_point_x(self.size, text_point),
+                    font: font_regular,
                     size: FONT_SIZE as f32,
                     color: style.text_color,
                     ..Default::default()
@@ -661,12 +666,12 @@ impl Envelope {
 impl Program<Message> for Envelope {
     fn draw(&self, bounds: Rectangle, _cursor: Cursor) -> Vec<Geometry> {
         let geometry = self.cache.draw(bounds.size(), |frame| {
-            self.draw_time_markers(frame, self.style.into());
-            self.draw_stage_paths(frame, self.style.into());
+            self.draw_time_markers(frame, self.style);
+            self.draw_stage_paths(frame, self.style.envelope());
 
-            Self::draw_dragger(frame, self.style.into(), &self.attack_dragger);
-            Self::draw_dragger(frame, self.style.into(), &self.decay_dragger);
-            Self::draw_dragger(frame, self.style.into(), &self.release_dragger);
+            Self::draw_dragger(frame, self.style.envelope(), &self.attack_dragger);
+            Self::draw_dragger(frame, self.style.envelope(), &self.decay_dragger);
+            Self::draw_dragger(frame, self.style.envelope(), &self.release_dragger);
         });
 
         vec![geometry]

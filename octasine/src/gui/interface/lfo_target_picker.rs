@@ -1,12 +1,12 @@
 use iced_baseview::widget::{pick_list, PickList};
-use iced_baseview::{Alignment, Column, Element, Length};
+use iced_baseview::{Element, Length};
 
 use crate::parameter_values::{
     get_lfo_target_parameters, Lfo1TargetParameterValue, Lfo2TargetParameterValue,
     Lfo3TargetParameterValue, Lfo4TargetParameterValue, LfoTargetParameter, ParameterValue,
 };
 
-use super::{style::Theme, GuiSyncHandle, Message, FONT_SIZE, LINE_HEIGHT};
+use super::{style::Theme, GuiSyncHandle, Message, FONT_SIZE};
 
 #[derive(Clone, PartialEq, Eq)]
 struct LfoTarget {
@@ -86,7 +86,7 @@ impl LfoTargetPicker {
         let lfo_index = self.lfo_index;
         let parameter_index = self.parameter_index;
 
-        let list = PickList::new(
+        PickList::new(
             &mut self.state,
             &self.options[..],
             Some(self.options[self.selected].clone()),
@@ -102,14 +102,10 @@ impl LfoTargetPicker {
                 Message::ChangeSingleParameterImmediate(parameter_index, sync)
             },
         )
+        .font(self.style.font_regular())
         .text_size(FONT_SIZE)
-        .style(self.style)
-        .width(Length::Units(LINE_HEIGHT * 12 - 3));
-
-        Column::new()
-            .width(Length::Units(LINE_HEIGHT * 12))
-            .align_items(Alignment::Center)
-            .push(list)
-            .into()
+        .style(self.style.pick_list())
+        .width(Length::Fill)
+        .into()
     }
 }
