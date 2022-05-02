@@ -3,23 +3,35 @@
 ## High priority
 
 * Option to disable LFOs / set no target
-* Frequency knobs should be bipolar, but iced_audio can currently only do
-  bipolar knobs from center.
-* Make mute button behaviour consistent with other boolean buttons
-* In mod target widget, use space element instead of horizontal centering
-* Envelope dragger "dragging" color
+  * Add parameters for this before release for backwards compatibility
+
+* GUI
+  * Frequency knobs should be bipolar, but iced_audio can currently only do
+    bipolar knobs from center.
+  * Make mute button behaviour consistent with other boolean buttons
+  * In mod target widget, use space element instead of horizontal centering
+  * Envelope dragger "dragging" color
+  * Consider where adding tooltips would be helpful
+  * Consider own half-height container for logo. It could have a more
+    pronounced background color
+
 * Raise default volume (and maybe hard limit limit)
 * Display patch index independently of patch name, use - or similar as default patch name: "001: -"
 * Consider easing fine tuning of mod out / changing steps. More room where
   sounds are the most interesting.
+* Add tests for get_lfo_target_parameters
 * Include license info on all dependencies in releases
 * Release v0.7.0 eventually
 
 ## Medium priority
 
-* Consider built-in patch browsing / saving functionality
+* Consider built-in patch browsing / saving / clearing functionality
+  * Use crate https://github.com/PolyMeilex/rfd
+  * Maybe use buttons like "C" for clear, "S" for save, "L" for load. They
+    could have tooltips.
 * Consider creating PR in cargo-deny-action
-* Text input
+* Parameter value text input
+  * Maybe use https://github.com/jdm/tinyfiledialogs-rs
 * Mode to lock together envelopes so changes affect all
 * bench_process
   * Is it a cause for concern that not keeping wave type fixed has different
