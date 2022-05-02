@@ -1011,7 +1011,7 @@ dependencies = [
 [[package]]
 name = "iced_baseview"
 version = "0.0.3"
-source = "git+https://github.com/BillyDM/iced_baseview.git?branch=iced_git#9d1876147859a92753e82ddf2f225ceab3cf2648"
+source = "git+https://github.com/BillyDM/iced_baseview.git?rev=9d1876147859a92753e82ddf2f225ceab3cf2648#9d1876147859a92753e82ddf2f225ceab3cf2648"
 dependencies = [
  "baseview",
  "copypasta",
@@ -2108,7 +2108,7 @@ checksum = "eb703cfe953bccee95685111adeedb76fabe4e97549a58d16f03ea7b9367bb32"
 [[package]]
 name = "sleef-sys"
 version = "0.1.2"
-source = "git+https://github.com/greatest-ape/sleef-sys.git?branch=octasine#9625d96e64bc83ec18202e206c5fe1e5423df35b"
+source = "git+https://github.com/greatest-ape/sleef-sys.git?rev=9625d96e64bc83ec18202e206c5fe1e5423df35b#9625d96e64bc83ec18202e206c5fe1e5423df35b"
 dependencies = [
  "bindgen",
  "cfg-if",
