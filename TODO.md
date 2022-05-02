@@ -16,7 +16,6 @@
     pronounced background color
 
 * Raise default volume (and maybe hard limit limit)
-* Display patch index independently of patch name, use - or similar as default patch name: "001: -"
 * Consider easing fine tuning of mod out / changing steps. More room where
   sounds are the most interesting.
 * Include license info on all dependencies in releases
