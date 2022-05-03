@@ -1002,7 +1002,7 @@ checksum = "9a3a5bfb195931eeb336b2a7b4d761daec841b97f947d34394601737a7bba5e4"
 [[package]]
 name = "iced_audio"
 version = "0.7.0"
-source = "git+https://github.com/greatest-ape/iced_audio.git?rev=659660ca00dd34d8539969fd4d5d978dbb703dc5#659660ca00dd34d8539969fd4d5d978dbb703dc5"
+source = "git+https://github.com/iced-rs/iced_audio.git?rev=b54a87477386815a9f70664edf540f9a4e72fd69#b54a87477386815a9f70664edf540f9a4e72fd69"
 dependencies = [
  "iced_graphics",
  "iced_native",
