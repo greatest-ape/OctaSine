@@ -161,8 +161,8 @@ impl Theme {
     }
     pub fn mute_button(&self) -> Box<dyn super::boolean_button::StyleSheet> {
         match self {
-            Self::Light => Box::new(light::MuteButton),
-            Self::Dark => Box::new(dark::MuteButton),
+            Self::Light => Box::new(light::OperatorButton),
+            Self::Dark => Box::new(dark::OperatorButton),
         }
     }
     pub fn bpm_sync_button(&self) -> Box<dyn super::boolean_button::StyleSheet> {

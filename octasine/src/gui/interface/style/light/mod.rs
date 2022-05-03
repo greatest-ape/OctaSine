@@ -212,35 +212,31 @@ impl wave_picker::StyleSheet for LfoShapePicker {
     }
 }
 
-pub struct MuteButton;
+pub struct OperatorButton;
 
-impl boolean_button::StyleSheet for MuteButton {
+impl boolean_button::StyleSheet for OperatorButton {
     fn active(&self) -> boolean_button::Style {
         boolean_button::Style {
             background_color: SURFACE,
-            border_color: RED,
-            text_color: RED,
+            border_color: GREEN,
+            text_color: GREEN,
         }
     }
     fn active_hover(&self) -> boolean_button::Style {
-        boolean_button::Style {
-            background_color: SURFACE_HOVER,
-            border_color: RED,
-            text_color: RED,
-        }
+        self.active()
     }
     fn inactive(&self) -> boolean_button::Style {
         boolean_button::Style {
             background_color: SURFACE,
             border_color: BORDER,
-            text_color: TEXT_FG,
+            text_color: BORDER,
         }
     }
     fn inactive_hover(&self) -> boolean_button::Style {
         boolean_button::Style {
             background_color: SURFACE_HOVER,
             border_color: BORDER,
-            text_color: TEXT_FG,
+            text_color: BORDER,
         }
     }
 }

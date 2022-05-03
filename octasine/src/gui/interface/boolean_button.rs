@@ -24,27 +24,35 @@ pub trait StyleSheet {
     fn inactive_hover(&self) -> Style;
 }
 
-pub fn operator_mute_button<H: GuiSyncHandle>(
+pub fn operator_button<H: GuiSyncHandle>(
     sync_handle: &H,
     parameter_index: usize,
     style: Theme,
+    operator_index: usize,
 ) -> BooleanButton {
     BooleanButton::new(
         sync_handle,
         parameter_index,
         style,
-        "M",
-        LINE_HEIGHT,
-        LINE_HEIGHT,
-        |v| OperatorActiveValue::new_from_patch(v).get() == 0.0,
-        |is_muted| {
-            if is_muted {
-                0.0
-            } else {
+        LINE_HEIGHT * 3,
+        LINE_HEIGHT * 3 / 2,
+        |v| OperatorActiveValue::new_from_patch(v).get() == 1.0,
+        |is_on| {
+            if is_on {
                 1.0
+            } else {
+                0.0
             }
         },
         |theme| theme.mute_button(),
+        |theme, style, text| Text {
+            content: text,
+            color: style.text_color,
+            size: f32::from(FONT_SIZE + FONT_SIZE / 2),
+            font: theme.font_heading(),
+            ..Default::default()
+        },
+        format!("OP {}", operator_index + 1),
     )
 }
 
@@ -57,12 +65,22 @@ pub fn lfo_bpm_sync_button<H: GuiSyncHandle>(
         sync_handle,
         parameter_index,
         style,
-        "BPM",
         LINE_HEIGHT * 2,
         LINE_HEIGHT * 3 / 2,
         |v| LfoBpmSyncValue::new_from_patch(v).get(),
         |on| LfoBpmSyncValue::new_from_audio(on).to_patch(),
         |theme| theme.bpm_sync_button(),
+        |theme, style, text| Text {
+            content: text,
+            color: style.text_color,
+            size: f32::from(FONT_SIZE),
+            font: theme.font_regular(),
+            horizontal_alignment: Horizontal::Center,
+            vertical_alignment: Vertical::Center,
+            position: Point::new(0.0, 0.0),
+            ..Default::default()
+        },
+        "BPM".to_string(),
     )
 }
 
@@ -75,7 +93,6 @@ pub fn lfo_mode_button<H: GuiSyncHandle>(
         sync_handle,
         parameter_index,
         style,
-        "ONE",
         LINE_HEIGHT * 2,
         LINE_HEIGHT * 3 / 2,
         |v| LfoModeValue::new_from_patch(v).get() == LfoMode::Once,
@@ -87,6 +104,14 @@ pub fn lfo_mode_button<H: GuiSyncHandle>(
             }
         },
         |theme| theme.bpm_sync_button(),
+        |theme, style, text| Text {
+            content: text,
+            color: style.text_color,
+            size: f32::from(FONT_SIZE),
+            font: theme.font_regular(),
+            ..Default::default()
+        },
+        "ONE".to_string(),
     )
 }
 
@@ -101,7 +126,8 @@ pub struct BooleanButton {
     patch_value_to_is_on: fn(f64) -> bool,
     is_on_to_patch_value: fn(bool) -> f64,
     get_stylesheet: fn(Theme) -> Box<dyn StyleSheet>,
-    text: &'static str,
+    make_text: fn(Theme, Style, String) -> Text,
+    text_content: String,
     width: u16,
     height: u16,
 }
@@ -111,12 +137,13 @@ impl BooleanButton {
         sync_handle: &H,
         parameter_index: usize,
         style: Theme,
-        text: &'static str,
         width: u16,
         height: u16,
         f: fn(f64) -> bool,
         g: fn(bool) -> f64,
         h: fn(Theme) -> Box<dyn StyleSheet>,
+        make_text: fn(Theme, Style, String) -> Text,
+        text_content: String,
     ) -> Self {
         let bounds_path = Path::rectangle(
             Point::new(0.5, 0.5),
@@ -134,7 +161,8 @@ impl BooleanButton {
             patch_value_to_is_on: f,
             is_on_to_patch_value: g,
             get_stylesheet: h,
-            text: text.into(),
+            make_text,
+            text_content,
             width,
             height,
         }
@@ -184,17 +212,15 @@ impl BooleanButton {
     }
 
     fn draw_text(&self, frame: &mut Frame) {
+        let text = (self.make_text)(self.style, self.style(), self.text_content.clone());
+
         let position = Point::new(f32::from(self.width) / 2.0, f32::from(self.height) / 2.0);
 
         let text = Text {
-            content: self.text.to_string(),
-            color: self.style().text_color,
-            size: f32::from(FONT_SIZE),
-            font: self.style.font_regular(),
             horizontal_alignment: Horizontal::Center,
             vertical_alignment: Vertical::Center,
             position,
-            ..Default::default()
+            ..text
         };
 
         frame.fill_text(text);
