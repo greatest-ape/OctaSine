@@ -1,8 +1,7 @@
 pub mod colors;
 pub mod knob;
 
-use iced_baseview::{button, container, pick_list, radio, Color};
-use iced_style::checkbox;
+use iced_baseview::{button, checkbox, container, pick_list, radio, Color};
 
 use super::super::{boolean_button, envelope, mod_matrix, wave_picker};
 
@@ -128,8 +127,8 @@ impl button::StyleSheet for Button {
 pub struct PickList;
 
 impl pick_list::StyleSheet for PickList {
-    fn menu(&self) -> iced_style::menu::Style {
-        iced_style::menu::Style {
+    fn menu(&self) -> pick_list::Menu {
+        pick_list::Menu {
             background: SURFACE.into(),
             text_color: TEXT_FG,
             selected_background: SURFACE_HOVER.into(),

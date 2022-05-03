@@ -1,4 +1,4 @@
-use baseview::{gl::GlConfig, Size, WindowOpenOptions, WindowScalePolicy};
+use baseview::{Size, WindowOpenOptions, WindowScalePolicy};
 use iced_baseview::{IcedWindow, Settings};
 use raw_window_handle::{HasRawWindowHandle, RawWindowHandle};
 use serde::{Deserialize, Serialize};
@@ -44,7 +44,8 @@ impl<H: GuiSyncHandle> Gui<H> {
                 #[cfg(target_os = "windows")]
                 scale: WindowScalePolicy::ScaleFactor(1.0),
                 title: PLUGIN_NAME.to_string(),
-                gl_config: Some(GlConfig {
+                #[cfg(feature = "gui_glow")]
+                gl_config: Some(baseview::gl::GlConfig {
                     samples: Some(8),
                     ..Default::default()
                 }),
