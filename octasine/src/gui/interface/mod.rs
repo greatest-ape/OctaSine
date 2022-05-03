@@ -311,23 +311,23 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
     }
 
     #[cfg(feature = "gui_wgpu")]
-    fn renderer_settings() -> iced_wgpu::settings::Settings {
-        iced_wgpu::settings::Settings {
-            present_mode: iced_wgpu::wgpu::PresentMode::Immediate,
+    fn renderer_settings() -> iced_baseview::backend::Settings {
+        iced_baseview::backend::Settings {
+            present_mode: iced_baseview::backend::wgpu::PresentMode::Immediate,
             default_font: Some(OPEN_SANS_BYTES_SEMI_BOLD),
             default_text_size: FONT_SIZE,
-            antialiasing: Some(iced_wgpu::settings::Antialiasing::MSAAx8),
+            antialiasing: Some(iced_baseview::backend::settings::Antialiasing::MSAAx8),
             ..Default::default()
         }
     }
 
     /// Renderer settings with glow
     #[cfg(feature = "gui_glow")]
-    fn renderer_settings() -> iced_glow::settings::Settings {
-        iced_glow::settings::Settings {
+    fn renderer_settings() -> iced_baseview::backend::Settings {
+        iced_baseview::backend::Settings {
             default_font: Some(OPEN_SANS_BYTES_SEMI_BOLD),
             default_text_size: FONT_SIZE,
-            antialiasing: Some(iced_glow::settings::Antialiasing::MSAAx8),
+            antialiasing: Some(iced_baseview::backend::settings::Antialiasing::MSAAx8),
             text_multithreading: false,
         }
     }

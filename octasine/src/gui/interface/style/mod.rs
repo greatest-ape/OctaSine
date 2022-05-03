@@ -72,25 +72,25 @@ impl Theme {
         }
     }
 
-    pub fn container_l0(&self) -> Box<dyn iced_style::container::StyleSheet> {
+    pub fn container_l0(&self) -> Box<dyn iced_baseview::container::StyleSheet> {
         match self {
             Self::Light => Box::new(light::ContainerL0),
             Self::Dark => Box::new(dark::ContainerL0),
         }
     }
-    pub fn container_l1(&self) -> Box<dyn iced_style::container::StyleSheet> {
+    pub fn container_l1(&self) -> Box<dyn iced_baseview::container::StyleSheet> {
         match self {
             Self::Light => Box::new(light::ContainerL1),
             Self::Dark => Box::new(dark::ContainerL1),
         }
     }
-    pub fn container_l2(&self) -> Box<dyn iced_style::container::StyleSheet> {
+    pub fn container_l2(&self) -> Box<dyn iced_baseview::container::StyleSheet> {
         match self {
             Self::Light => Box::new(light::ContainerL2),
             Self::Dark => Box::new(dark::ContainerL2),
         }
     }
-    pub fn container_l3(&self) -> Box<dyn iced_style::container::StyleSheet> {
+    pub fn container_l3(&self) -> Box<dyn iced_baseview::container::StyleSheet> {
         match self {
             Self::Light => Box::new(light::ContainerL3),
             Self::Dark => Box::new(dark::ContainerL3),
@@ -103,19 +103,19 @@ impl Theme {
             Self::Dark => Box::new(dark::Checkbox),
         }
     }
-    pub fn radio(&self) -> Box<dyn iced_style::radio::StyleSheet> {
+    pub fn radio(&self) -> Box<dyn iced_baseview::radio::StyleSheet> {
         match self {
             Self::Light => Box::new(light::Radio),
             Self::Dark => Box::new(dark::Radio),
         }
     }
-    pub fn button(&self) -> Box<dyn iced_style::button::StyleSheet> {
+    pub fn button(&self) -> Box<dyn iced_baseview::button::StyleSheet> {
         match self {
             Self::Light => Box::new(light::Button),
             Self::Dark => Box::new(dark::Button),
         }
     }
-    pub fn pick_list(&self) -> Box<dyn iced_style::pick_list::StyleSheet> {
+    pub fn pick_list(&self) -> Box<dyn iced_baseview::pick_list::StyleSheet> {
         match self {
             Self::Light => Box::new(light::PickList),
             Self::Dark => Box::new(dark::PickList),

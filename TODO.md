@@ -8,6 +8,8 @@
   * Raise default volume (and maybe hard limit limit)
   * Consider easing fine tuning of mod out / changing steps. More room where
     sounds are the most interesting.
+  * Operator and master volume parameter values directly in decibel so they
+    can be used with external LFOs? Adjust frequency parameters similarily?
 * GUI
   * Frequency knobs should be bipolar, but iced_audio can currently only do
     bipolar knobs from center.
@@ -24,7 +26,6 @@
   * Use crate https://github.com/PolyMeilex/rfd
   * Maybe use buttons like "C" for clear, "S" for save, "L" for load, "R" for
     rename. They could have tooltips.
-* Consider creating PR in cargo-deny-action
 * Parameter value text input
   * Maybe use https://github.com/jdm/tinyfiledialogs-rs
 * Mode to lock together envelopes so changes affect all

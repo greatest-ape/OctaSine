@@ -54,8 +54,9 @@ impl MixOutLine {
         ]);
 
         let color = gradient.get(additive as f32);
+        let color = Srgba::from_linear(color);
 
-        Color::from(Srgba::from_linear(color))
+        Color::new(color.red, color.green, color.blue, color.alpha)
     }
 
     pub fn draw(&self, frame: &mut Frame) {
