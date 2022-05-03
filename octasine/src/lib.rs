@@ -144,7 +144,7 @@ impl Plugin for OctaSine {
 fn init_logging() -> anyhow::Result<()> {
     let log_folder: PathBuf = get_project_dirs()
         .ok_or(anyhow::anyhow!("Couldn't extract home dir"))?
-        .cache_dir()
+        .preference_dir()
         .into();
 
     // Ignore any creation error
