@@ -59,7 +59,7 @@ rev = "b54a87477386815a9f70664edf540f9a4e72fd69" # branch: main
 optional = true
 
 [dependencies.palette]
-version = "0.5"
+version = "0.6"
 optional = true
 
 # SIMD
