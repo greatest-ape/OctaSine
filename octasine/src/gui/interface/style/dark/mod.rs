@@ -200,9 +200,9 @@ impl mod_matrix::StyleSheet for ModulationMatrix {
     }
 }
 
-pub struct LfoShapePicker;
+pub struct WavePicker;
 
-impl wave_picker::StyleSheet for LfoShapePicker {
+impl wave_picker::StyleSheet for WavePicker {
     fn active(&self) -> wave_picker::Style {
         wave_picker::Style {
             background_color: Color::TRANSPARENT.into(),
