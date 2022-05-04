@@ -4,7 +4,7 @@ use crate::{hex, hex_gray};
 
 pub const GRAY_100: Color = hex_gray!(0x20);
 pub const GRAY_200: Color = hex_gray!(0x2A);
-pub const GRAY_300: Color = hex_gray!(0x3A);
+pub const GRAY_300: Color = hex_gray!(0x40);
 pub const GRAY_400: Color = hex_gray!(0x50);
 pub const GRAY_500: Color = hex_gray!(0x60);
 pub const GRAY_600: Color = hex_gray!(0x70);

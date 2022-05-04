@@ -163,15 +163,16 @@ pub struct Envelope;
 impl envelope::StyleSheet for Envelope {
     fn active(&self) -> envelope::Style {
         envelope::Style {
-            background_color: GRAY_200,
-            border_color: GRAY_700,
+            background_color: Color::TRANSPARENT,
+            border_color: GRAY_600,
+            drag_border_color: GRAY_400,
             text_color: TEXT_BG,
-            time_marker_minor_color: GRAY_400,
-            time_marker_color_major: GRAY_600,
-            path_color: TEXT_FG,
-            dragger_fill_color_active: SURFACE,
+            time_marker_minor_color: GRAY_300,
+            time_marker_color_major: GRAY_500,
+            path_color: BLUE,
+            dragger_fill_color_active: TEXT_FG,
             dragger_fill_color_hover: HOVERED,
-            dragger_border_color: TEXT_FG,
+            dragger_border_color: SURFACE,
         }
     }
 }
@@ -208,8 +209,8 @@ impl wave_picker::StyleSheet for LfoShapePicker {
             border_color_active: GRAY_700,
             border_color_hovered: HOVERED,
             middle_line_color: GRAY_400,
-            shape_line_color_active: TEXT_FG,
-            shape_line_color_hovered: HOVERED,
+            shape_line_color_active: BLUE,
+            shape_line_color_hovered: BLUE,
         }
     }
 }

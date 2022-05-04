@@ -82,7 +82,7 @@ impl checkbox::StyleSheet for Checkbox {
     fn active(&self, _is_checked: bool) -> checkbox::Style {
         checkbox::Style {
             background: SURFACE.into(),
-            checkmark_color: TEXT_FG,
+            checkmark_color: BLUE,
             text_color: Some(TEXT_FG),
             border_width: 1.0,
             border_color: BORDER,
@@ -163,13 +163,14 @@ impl envelope::StyleSheet for Envelope {
         envelope::Style {
             background_color: Color::TRANSPARENT,
             border_color: BORDER,
+            drag_border_color: GRAY_700,
             text_color: TEXT_FG,
-            time_marker_minor_color: GRAY_800,
-            time_marker_color_major: GRAY_600,
-            path_color: GRAY_300,
+            time_marker_minor_color: GRAY_900,
+            time_marker_color_major: GRAY_700,
+            path_color: BLUE,
             dragger_fill_color_active: SURFACE,
             dragger_fill_color_hover: SURFACE_HOVER,
-            dragger_border_color: GRAY_300,
+            dragger_border_color: BORDER,
         }
     }
 }
@@ -206,8 +207,8 @@ impl wave_picker::StyleSheet for LfoShapePicker {
             border_color_active: BORDER,
             border_color_hovered: BORDER,
             middle_line_color: GRAY_600,
-            shape_line_color_active: TEXT_FG,
-            shape_line_color_hovered: TEXT_FG,
+            shape_line_color_active: BLUE,
+            shape_line_color_hovered: BLUE,
         }
     }
 }
