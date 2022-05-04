@@ -164,7 +164,7 @@ impl envelope::StyleSheet for Envelope {
     fn active(&self) -> envelope::Style {
         envelope::Style {
             background_color: Color::TRANSPARENT,
-            border_color: BORDER,
+            border_color: BORDER_DARK,
             drag_border_color: GRAY_400,
             text_color: TEXT_BG,
             time_marker_minor_color: GRAY_300,
@@ -231,7 +231,7 @@ impl boolean_button::StyleSheet for MuteButton {
     fn inactive(&self) -> boolean_button::Style {
         boolean_button::Style {
             background_color: Color::TRANSPARENT,
-            border_color: BORDER,
+            border_color: BORDER_DARK,
             text_color: GRAY_700,
         }
     }
@@ -272,7 +272,7 @@ impl boolean_button::StyleSheet for BooleanButton {
     fn inactive(&self) -> boolean_button::Style {
         boolean_button::Style {
             background_color: Color::TRANSPARENT,
-            border_color: BORDER,
+            border_color: BORDER_DARK,
             text_color: GRAY_700,
         }
     }
