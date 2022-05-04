@@ -85,14 +85,14 @@ impl checkbox::StyleSheet for Checkbox {
             checkmark_color: BLUE,
             text_color: Some(TEXT_FG),
             border_width: 1.0,
-            border_color: TEXT_FG,
+            border_color: BORDER,
             border_radius: 3.0,
         }
     }
 
     fn hovered(&self, is_checked: bool) -> checkbox::Style {
         checkbox::Style {
-            border_color: HOVERED,
+            border_color: BORDER_HOVERED,
             ..self.active(is_checked)
         }
     }
@@ -164,7 +164,7 @@ impl envelope::StyleSheet for Envelope {
     fn active(&self) -> envelope::Style {
         envelope::Style {
             background_color: Color::TRANSPARENT,
-            border_color: GRAY_600,
+            border_color: BORDER,
             drag_border_color: GRAY_400,
             text_color: TEXT_BG,
             time_marker_minor_color: GRAY_300,
@@ -206,8 +206,8 @@ impl wave_picker::StyleSheet for LfoShapePicker {
     fn active(&self) -> wave_picker::Style {
         wave_picker::Style {
             background_color: Color::TRANSPARENT.into(),
-            border_color_active: GRAY_700,
-            border_color_hovered: HOVERED,
+            border_color_active: BORDER,
+            border_color_hovered: BORDER_HOVERED,
             middle_line_color: GRAY_400,
             shape_line_color_active: BLUE,
             shape_line_color_hovered: BLUE,
@@ -231,7 +231,7 @@ impl boolean_button::StyleSheet for MuteButton {
     fn inactive(&self) -> boolean_button::Style {
         boolean_button::Style {
             background_color: Color::TRANSPARENT,
-            border_color: GRAY_600,
+            border_color: BORDER,
             text_color: GRAY_700,
         }
     }
@@ -272,7 +272,7 @@ impl boolean_button::StyleSheet for BooleanButton {
     fn inactive(&self) -> boolean_button::Style {
         boolean_button::Style {
             background_color: Color::TRANSPARENT,
-            border_color: GRAY_600,
+            border_color: BORDER,
             text_color: GRAY_700,
         }
     }

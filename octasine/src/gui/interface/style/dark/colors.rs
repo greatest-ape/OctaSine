@@ -22,3 +22,5 @@ pub const SURFACE_HOVER: Color = GRAY_500;
 pub const TEXT_BG: Color = GRAY_900;
 pub const TEXT_FG: Color = GRAY_900;
 pub const HOVERED: Color = hex_gray!(0xFF);
+pub const BORDER: Color = GRAY_600;
+pub const BORDER_HOVERED: Color = GRAY_900;
