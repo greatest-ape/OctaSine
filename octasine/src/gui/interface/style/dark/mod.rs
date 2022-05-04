@@ -185,7 +185,7 @@ impl mod_matrix::StyleSheet for ModulationMatrix {
             background_color: GRAY_200,
             border_color: Color::TRANSPARENT,
             text_color: TEXT_FG,
-            box_border_color: SURFACE,
+            box_border_color: GRAY_500,
             operator_box_border_color: None,
             operator_box_color_active: SURFACE,
             operator_box_color_hover: SURFACE_HOVER,
