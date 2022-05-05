@@ -30,6 +30,7 @@ const MIN_VIEWPORT_FACTOR: f32 = 1.0 / 128.0;
 pub struct Style {
     pub background_color: Color,
     pub border_color: Color,
+    pub drag_border_color: Color,
     pub text_color: Color,
     pub time_marker_minor_color: Color,
     pub time_marker_color_major: Color,
@@ -556,7 +557,7 @@ impl Envelope {
 
         let drag_border_stroke = Stroke::default()
             .with_width(1.0)
-            .with_color(style.time_marker_color_major);
+            .with_color(style.drag_border_color);
 
         frame.stroke(&top_drag_border, drag_border_stroke);
         frame.stroke(&bottom_drag_border, drag_border_stroke);

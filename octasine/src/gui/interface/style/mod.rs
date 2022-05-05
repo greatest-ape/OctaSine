@@ -155,8 +155,8 @@ impl Theme {
     }
     pub fn wave_picker(&self) -> Box<dyn super::wave_picker::StyleSheet> {
         match self {
-            Self::Light => Box::new(light::LfoShapePicker),
-            Self::Dark => Box::new(dark::LfoShapePicker),
+            Self::Light => Box::new(light::WavePicker),
+            Self::Dark => Box::new(dark::WavePicker),
         }
     }
     pub fn mute_button(&self) -> Box<dyn super::boolean_button::StyleSheet> {

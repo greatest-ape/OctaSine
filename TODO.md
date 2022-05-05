@@ -17,6 +17,7 @@
   * Consider where adding tooltips would be helpful
   * Consider own half-height container for logo. It could have a more
     pronounced background color
+* Serialize parameter values in audio format with serde, try parsing
 * Include license info on all dependencies in releases
 * Release v0.7.0 eventually
 
