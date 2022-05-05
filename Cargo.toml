@@ -19,6 +19,9 @@ members = [
 # [patch.'https://github.com/iced-rs/iced_audio']
 # iced_audio = { path = "../iced_audio" }
 
+[patch.crates-io]
+glow_glyph = { git = "https://github.com/greatest-ape/glow_glyph.git", branch = "explicit_attrib_location" }
+
 [profile.release]
 debug = false
 lto = "thin"
