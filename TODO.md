@@ -5,8 +5,6 @@
 * Audio
   * LFO amount toggle parameter (on/off)
     * Add parameters for this before release for backwards compatibility
-  * Consider easing fine tuning of mod out / changing steps. More room where
-    sounds are the most interesting.
   * Operator and master volume parameter values directly in decibel so they
     can be used with external LFOs? Adjust frequency parameters similarily?
 * GUI
@@ -17,6 +15,8 @@
   * Consider own half-height container for logo. It could have a more
     pronounced background color
 * Serialize parameter values in audio format with serde, try parsing
+* Store logs/preferences somewhere else, maybe ~/.config on unix,
+  Documents/OctaSine on Windows
 * Include license info on all dependencies in releases
 * Release v0.7.0 eventually
 
