@@ -1,7 +1,7 @@
+use iced_baseview::Container;
 use iced_baseview::{
     alignment::Horizontal, alignment::Vertical, Column, Element, Length, Row, Space, Text,
 };
-use iced_baseview::{Alignment, Container};
 
 use crate::parameter_values::{
     LfoAmountValue, LfoFrequencyFreeValue, LfoFrequencyRatioValue, LfoShapeValue,
@@ -77,7 +77,7 @@ impl LfoWidgets {
         let title = Text::new(format!("LFO {}", self.index + 1))
             .size(FONT_SIZE + FONT_SIZE / 2)
             .font(self.style.font_heading())
-            .width(Length::Units(LINE_HEIGHT * 5))
+            .width(Length::Units(LINE_HEIGHT * 9))
             // .height(Length::Units(LINE_HEIGHT * 2))
             .color(self.style.heading_color())
             .horizontal_alignment(Horizontal::Center)
@@ -90,20 +90,19 @@ impl LfoWidgets {
                 .push(
                     Container::new(
                         Column::new()
-                            .push(Space::with_height(Length::Units(LINE_HEIGHT * 2)))
+                            .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
                             .push(
                                 Row::new()
                                     .push(self.bpm_sync.view())
-                                    .push(title)
-                                    .push(self.mode.view()),
-                            )
-                            .push(Space::with_height(Length::Units(LINE_HEIGHT)))
-                            .push(
-                                Row::new()
-                                    .push(self.target.view())
-                                    .push(Space::with_width(Length::Units(2)))
+                                    .push(Space::with_width(Length::Units(3)))
+                                    .push(self.mode.view())
+                                    .push(Space::with_width(Length::Units(LINE_HEIGHT * 6 - 3 - 1)))
                                     .push(self.active.view()),
-                            ),
+                            )
+                            //.push(Space::with_height(Length::Units(LINE_HEIGHT / 2)))
+                            .push(title)
+                            .push(Space::with_height(Length::Units(LINE_HEIGHT)))
+                            .push(Row::new().push(self.target.view())),
                     )
                     .width(Length::Units(LINE_HEIGHT * 9)),
                 )

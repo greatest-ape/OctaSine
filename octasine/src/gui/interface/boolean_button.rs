@@ -59,9 +59,9 @@ pub fn lfo_bpm_sync_button<H: GuiSyncHandle>(
         sync_handle,
         parameter_index,
         style,
-        "BPM",
-        LINE_HEIGHT * 2,
-        LINE_HEIGHT * 3 / 2,
+        "B",
+        LINE_HEIGHT,
+        LINE_HEIGHT,
         |v| LfoBpmSyncValue::new_from_patch(v).get(),
         |on| LfoBpmSyncValue::new_from_audio(on).to_patch(),
         |theme| theme.bpm_sync_button(),
@@ -77,9 +77,9 @@ pub fn lfo_mode_button<H: GuiSyncHandle>(
         sync_handle,
         parameter_index,
         style,
-        "ONE",
-        LINE_HEIGHT * 2,
-        LINE_HEIGHT * 3 / 2,
+        "1",
+        LINE_HEIGHT,
+        LINE_HEIGHT,
         |v| LfoModeValue::new_from_patch(v).get() == LfoMode::Once,
         |is_oneshot| {
             if is_oneshot {
@@ -102,8 +102,8 @@ pub fn lfo_active_button<H: GuiSyncHandle>(
         parameter_index,
         style,
         "M",
-        LINE_HEIGHT * 3 / 2 + 3,
-        LINE_HEIGHT * 3 / 2 + 3,
+        LINE_HEIGHT,
+        LINE_HEIGHT,
         |v| LfoActiveValue::new_from_patch(v).get() == 0.0,
         |is_muted| {
             if is_muted {
