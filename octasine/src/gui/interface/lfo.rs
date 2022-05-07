@@ -1,14 +1,16 @@
-use iced_baseview::Container;
 use iced_baseview::{
     alignment::Horizontal, alignment::Vertical, Column, Element, Length, Row, Space, Text,
 };
+use iced_baseview::{Alignment, Container};
 
 use crate::parameter_values::{
     LfoAmountValue, LfoFrequencyFreeValue, LfoFrequencyRatioValue, LfoShapeValue,
 };
 use crate::sync::GuiSyncHandle;
 
-use super::boolean_button::{lfo_bpm_sync_button, lfo_mode_button, BooleanButton};
+use super::boolean_button::{
+    lfo_active_button, lfo_bpm_sync_button, lfo_mode_button, BooleanButton,
+};
 use super::common::{container_l1, container_l2, container_l3, space_l3};
 use super::knob::{self, OctaSineKnob};
 use super::lfo_target_picker::LfoTargetPicker;
@@ -26,11 +28,12 @@ pub struct LfoWidgets {
     pub frequency_ratio: OctaSineKnob<LfoFrequencyRatioValue>,
     pub frequency_free: OctaSineKnob<LfoFrequencyFreeValue>,
     pub amount: OctaSineKnob<LfoAmountValue>,
+    pub active: BooleanButton,
 }
 
 impl LfoWidgets {
     pub fn new<H: GuiSyncHandle>(sync_handle: &H, lfo_index: usize, style: Theme) -> Self {
-        let offset = 64 + lfo_index * 7;
+        let offset = 64 + lfo_index * 8;
         let target = offset + 0;
         let bpm_sync = offset + 1;
         let ratio = offset + 2;
@@ -38,9 +41,11 @@ impl LfoWidgets {
         let mode = offset + 4;
         let shape = offset + 5;
         let amount = offset + 6;
+        let active = offset + 7;
 
         let bpm_sync = lfo_bpm_sync_button(sync_handle, bpm_sync, style);
         let mode = lfo_mode_button(sync_handle, mode, style);
+        let active = lfo_active_button(sync_handle, active, style);
 
         Self {
             index: lfo_index,
@@ -52,6 +57,7 @@ impl LfoWidgets {
             frequency_ratio: knob::lfo_frequency_ratio(sync_handle, ratio, style),
             frequency_free: knob::lfo_frequency_free(sync_handle, free, style),
             amount: knob::lfo_amount(sync_handle, amount, style),
+            active,
         }
     }
 
@@ -64,6 +70,7 @@ impl LfoWidgets {
         self.frequency_ratio.style = style;
         self.frequency_free.style = style;
         self.amount.style = style;
+        self.active.set_style(style);
     }
 
     pub fn view(&mut self) -> Element<Message> {
@@ -71,6 +78,7 @@ impl LfoWidgets {
             .size(FONT_SIZE + FONT_SIZE / 2)
             .font(self.style.font_heading())
             .width(Length::Units(LINE_HEIGHT * 5))
+            // .height(Length::Units(LINE_HEIGHT * 2))
             .color(self.style.heading_color())
             .horizontal_alignment(Horizontal::Center)
             .vertical_alignment(Vertical::Center);
@@ -89,8 +97,13 @@ impl LfoWidgets {
                                     .push(title)
                                     .push(self.mode.view()),
                             )
-                            .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
-                            .push(self.target.view()),
+                            .push(Space::with_height(Length::Units(LINE_HEIGHT)))
+                            .push(
+                                Row::new()
+                                    .push(self.target.view())
+                                    .push(Space::with_width(Length::Units(2)))
+                                    .push(self.active.view()),
+                            ),
                     )
                     .width(Length::Units(LINE_HEIGHT * 9)),
                 )
