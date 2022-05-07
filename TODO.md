@@ -5,7 +5,6 @@
 * Audio
   * LFO amount toggle parameter (on/off)
     * Add parameters for this before release for backwards compatibility
-  * Raise default volume (and maybe hard limit limit)
   * Consider easing fine tuning of mod out / changing steps. More room where
     sounds are the most interesting.
   * Operator and master volume parameter values directly in decibel so they
