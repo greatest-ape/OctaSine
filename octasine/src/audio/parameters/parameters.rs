@@ -169,11 +169,11 @@ impl AudioParameter for OperatorVolumeAudioParameter {
 }
 
 #[derive(Debug, Clone)]
-pub struct OperatorVolumeToggleAudioParameter {
+pub struct OperatorActiveAudioParameter {
     value: InterpolatableAudioValue,
 }
 
-impl Default for OperatorVolumeToggleAudioParameter {
+impl Default for OperatorActiveAudioParameter {
     fn default() -> Self {
         Self {
             value: InterpolatableAudioValue::new(1.0),
@@ -181,7 +181,7 @@ impl Default for OperatorVolumeToggleAudioParameter {
     }
 }
 
-impl AudioParameter for OperatorVolumeToggleAudioParameter {
+impl AudioParameter for OperatorActiveAudioParameter {
     type Value = f64;
 
     fn advance_one_sample(&mut self) {
@@ -192,7 +192,7 @@ impl AudioParameter for OperatorVolumeToggleAudioParameter {
     }
     fn set_from_patch(&mut self, value: f64) {
         self.value
-            .set_value(OperatorVolumeValue::new_from_patch(value).get())
+            .set_value(OperatorActiveValue::new_from_patch(value).get())
     }
     fn get_value_with_lfo_addition(&mut self, _lfo_addition: Option<f64>) -> Self::Value {
         self.get_value()
@@ -437,6 +437,37 @@ impl LfoTargetAudioParameter {
             Self::Three(p) => p.advance_one_sample(),
             Self::Four(p) => p.advance_one_sample(),
         }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct LfoActiveAudioParameter {
+    value: InterpolatableAudioValue,
+}
+
+impl Default for LfoActiveAudioParameter {
+    fn default() -> Self {
+        Self {
+            value: InterpolatableAudioValue::new(1.0),
+        }
+    }
+}
+
+impl AudioParameter for LfoActiveAudioParameter {
+    type Value = f64;
+
+    fn advance_one_sample(&mut self) {
+        self.value.advance_one_sample(&mut |_| ())
+    }
+    fn get_value(&self) -> Self::Value {
+        self.value.get_value()
+    }
+    fn set_from_patch(&mut self, value: f64) {
+        self.value
+            .set_value(LfoActiveValue::new_from_patch(value).get())
+    }
+    fn get_value_with_lfo_addition(&mut self, _lfo_addition: Option<f64>) -> Self::Value {
+        self.get_value()
     }
 }
 
