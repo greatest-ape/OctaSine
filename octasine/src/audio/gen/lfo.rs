@@ -50,12 +50,13 @@ pub fn get_lfo_target_values(
             continue;
         }
 
-        let amount = lfo_parameter
-            .amount
-            .get_value_with_lfo_addition(lfo_values.get(LfoTargetParameter::Lfo(
-                lfo_index,
-                LfoTargetLfoParameter::Amount,
-            )));
+        let amount = lfo_parameter.active.get_value()
+            * lfo_parameter
+                .amount
+                .get_value_with_lfo_addition(lfo_values.get(LfoTargetParameter::Lfo(
+                    lfo_index,
+                    LfoTargetLfoParameter::Amount,
+                )));
 
         if amount.abs() == 0.0 {
             continue;
