@@ -1,6 +1,6 @@
 use crate::{
     common::*,
-    parameter_values::{lfo_mode::LfoMode, lfo_shape::LfoShape, LfoActiveValue, ParameterValue},
+    parameter_values::{lfo_mode::LfoMode, lfo_shape::LfoShape},
 };
 
 const INTERPOLATION_SAMPLES: usize = 128;
@@ -25,7 +25,6 @@ pub struct VoiceLfo {
     current_shape: Option<LfoShape>,
     phase: Phase,
     last_value: f64,
-    amount_active: f64,
 }
 
 impl Default for VoiceLfo {
@@ -35,7 +34,6 @@ impl Default for VoiceLfo {
             current_shape: None,
             phase: Phase(0.0),
             last_value: 0.0,
-            amount_active: LfoActiveValue::default().get(),
         }
     }
 }
@@ -170,11 +168,6 @@ impl VoiceLfo {
     }
 
     pub fn restart(&mut self) {
-        // Don't restart if set to inactive (muted)
-        if self.amount_active.abs() <= f64::EPSILON {
-            return;
-        }
-
         self.phase = Phase(0.0);
         self.current_shape = None;
 
@@ -196,10 +189,6 @@ impl VoiceLfo {
             from_value: self.last_value,
             samples_done: 0,
         };
-    }
-
-    pub fn set_amount_active(&mut self, amount_active: f64) {
-        self.amount_active = amount_active;
     }
 
     pub fn is_stopped(&self) -> bool {

@@ -3,7 +3,6 @@
 ## High priority
 
 * Audio
-  * Is it really a good idea not to start LFOs when they are muted?
   * Fix clicks when muting/unmuting operators and LFOs
   * Operator and master volume parameter values directly in decibel so they
     can be used with external LFOs? Adjust frequency parameters similarily?

@@ -46,15 +46,13 @@ pub fn get_lfo_target_values(
         .enumerate()
         .rev()
     {
-        let amount_active = lfo_parameter.active.get_value();
+        let target = lfo_parameter.target_parameter.get_value();
 
-        voice_lfo.set_amount_active(amount_active);
-
-        if voice_lfo.is_stopped() {
+        if voice_lfo.is_stopped() | matches!(target, LfoTargetParameter::None) {
             continue;
         }
 
-        let amount = amount_active
+        let amount = lfo_parameter.active.get_value()
             * lfo_parameter
                 .amount
                 .get_value_with_lfo_addition(lfo_values.get(LfoTargetParameter::Lfo(
@@ -101,8 +99,6 @@ pub fn get_lfo_target_values(
         );
 
         let addition = voice_lfo.get_value(amount);
-
-        let target = lfo_parameter.target_parameter.get_value();
 
         lfo_values.set_or_add(target, addition);
     }
