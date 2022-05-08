@@ -381,7 +381,7 @@ mod tests {
 
     #[test]
     fn test_operator_panning_left_and_right() {
-        use super::interpolatable_value::INTERPOLATION_STEPS;
+        const STEPS: usize = 32;
         use super::*;
 
         let mut operator = OperatorPanningAudioParameter::default();
@@ -392,7 +392,7 @@ mod tests {
 
         let mut left_and_right = [0.0, 0.0];
 
-        for _ in 0..INTERPOLATION_STEPS {
+        for _ in 0..STEPS {
             operator.advance_one_sample();
 
             let new_value = operator.get_value();
