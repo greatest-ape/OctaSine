@@ -3,6 +3,7 @@
 ## High priority
 
 * Audio
+  * Release still affects sound when decay value is zero
   * Fix clicks when muting/unmuting operators and LFOs
   * Operator and master volume parameter values directly in decibel so they
     can be used with external LFOs? Adjust frequency parameters similarily?
