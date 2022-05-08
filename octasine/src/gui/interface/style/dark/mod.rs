@@ -172,6 +172,7 @@ impl envelope::StyleSheet for Envelope {
             path_color: BLUE,
             dragger_fill_color_active: TEXT_FG,
             dragger_fill_color_hover: HOVERED,
+            dragger_fill_color_dragging: PRESSED,
             dragger_border_color: SURFACE,
         }
     }
@@ -189,7 +190,7 @@ impl mod_matrix::StyleSheet for ModulationMatrix {
             operator_box_border_color: None,
             operator_box_color_active: SURFACE,
             operator_box_color_hover: SURFACE_HOVER,
-            operator_box_color_dragging: GRAY_700,
+            operator_box_color_dragging: GRAY_600,
             modulation_box_color_active: TEXT_FG,
             modulation_box_color_inactive: Color::TRANSPARENT,
             modulation_box_color_hover: HOVERED,

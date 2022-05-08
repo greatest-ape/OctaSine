@@ -170,6 +170,7 @@ impl envelope::StyleSheet for Envelope {
             path_color: BLUE,
             dragger_fill_color_active: SURFACE,
             dragger_fill_color_hover: SURFACE_HOVER,
+            dragger_fill_color_dragging: SURFACE_PRESS,
             dragger_border_color: BORDER,
         }
     }
@@ -187,7 +188,7 @@ impl mod_matrix::StyleSheet for ModulationMatrix {
             operator_box_color_active: SURFACE,
             operator_box_border_color: Some(BORDER),
             operator_box_color_hover: SURFACE_HOVER,
-            operator_box_color_dragging: GRAY_700,
+            operator_box_color_dragging: SURFACE_PRESS,
             modulation_box_color_active: SURFACE,
             modulation_box_color_inactive: Color::TRANSPARENT,
             modulation_box_color_hover: SURFACE_HOVER,

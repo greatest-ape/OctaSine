@@ -9,7 +9,6 @@
 * GUI
   * Operator ratio patch value should be fine-tuned (incremented just a little
     bit) so that knob notch is at right angle
-  * Envelope dragger "dragging" color
   * Consider more places where adding tooltips would be helpful
   * Consider own half-height container for logo. It could have a more
     pronounced background color

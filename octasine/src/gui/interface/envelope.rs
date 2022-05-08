@@ -37,6 +37,7 @@ pub struct Style {
     pub path_color: Color,
     pub dragger_fill_color_active: Color,
     pub dragger_fill_color_hover: Color,
+    pub dragger_fill_color_dragging: Color,
     pub dragger_border_color: Color,
 }
 
@@ -651,7 +652,9 @@ impl Envelope {
         let fill_color = match dragger.status {
             EnvelopeDraggerStatus::Normal => style_sheet.active().dragger_fill_color_active,
             EnvelopeDraggerStatus::Hover => style_sheet.active().dragger_fill_color_hover,
-            EnvelopeDraggerStatus::Dragging { .. } => style_sheet.active().dragger_fill_color_hover,
+            EnvelopeDraggerStatus::Dragging { .. } => {
+                style_sheet.active().dragger_fill_color_dragging
+            }
         };
 
         frame.fill(&circle_path, fill_color);
