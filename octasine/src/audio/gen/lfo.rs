@@ -46,21 +46,21 @@ pub fn get_lfo_target_values(
         .enumerate()
         .rev()
     {
+        let amount_active = lfo_parameter.active.get_value();
+
+        voice_lfo.set_amount_active(amount_active);
+
         if voice_lfo.is_stopped() {
             continue;
         }
 
-        let amount = lfo_parameter.active.get_value()
+        let amount = amount_active
             * lfo_parameter
                 .amount
                 .get_value_with_lfo_addition(lfo_values.get(LfoTargetParameter::Lfo(
                     lfo_index,
                     LfoTargetLfoParameter::Amount,
                 )));
-
-        if amount.abs() == 0.0 {
-            continue;
-        }
 
         let mode = lfo_parameter.mode.value;
         let bpm_sync = lfo_parameter.bpm_sync.value;
