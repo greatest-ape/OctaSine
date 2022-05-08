@@ -7,8 +7,8 @@
   * Operator and master volume parameter values directly in decibel so they
     can be used with external LFOs? Adjust frequency parameters similarily?
 * GUI
-  * Frequency knobs should be bipolar, but iced_audio can currently only do
-    bipolar knobs from center.
+  * Operator ratio patch value should be fine-tuned (incremented just a little
+    bit) so that knob notch is at right angle
   * Envelope dragger "dragging" color
   * Consider more places where adding tooltips would be helpful
   * Consider own half-height container for logo. It could have a more
@@ -17,6 +17,7 @@
 * Store logs/preferences somewhere else, maybe ~/.config on unix,
   Documents/OctaSine on Windows
 * Include license info on all dependencies in releases
+* Use official repos once patches have landed
 * Release v0.7.0 eventually
 
 ## Medium priority
