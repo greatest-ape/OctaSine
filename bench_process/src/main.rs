@@ -60,7 +60,7 @@ fn main() {
     #[allow(unused_variables)]
     let (_, fallback_std) = benchmark::<octasine::audio::gen::simd::FallbackStd>(
         "fallback (std)",
-        "96 b7 56 65 dd 52 96 3d ",
+        "59 ee 27 9b d0 2f 9c 08 ",
     );
 
     #[allow(unused_variables, unused_mut)]
@@ -69,7 +69,7 @@ fn main() {
     #[cfg(feature = "simd")]
     {
         // Don't forget trailing space
-        let hash = "96 b7 56 65 dd 52 96 3d ";
+        let hash = "59 ee 27 9b d0 2f 9c 08 ";
 
         {
             let (success, r) =
@@ -106,8 +106,8 @@ fn main() {
 fn benchmark<A: AudioGen + Simd>(name: &str, expected_hash: &str) -> (bool, f32) {
     let mut octasine = OctaSine::default();
 
-    let envelope_duration_parameters = [9i32, 11, 13, 23, 25, 27, 37, 39, 41, 51, 53, 55];
-    let wave_type_parameters = [4i32, 16, 30, 44];
+    let envelope_duration_parameters = [11, 13, 15, 27, 29, 31, 43, 45, 47, 59, 61, 63];
+    let wave_type_parameters = [6, 20, 36, 52];
 
     const SIZE: usize = 256;
 
@@ -162,7 +162,7 @@ fn benchmark<A: AudioGen + Simd>(name: &str, expected_hash: &str) -> (bool, f32)
                 .enqueue_midi_events(key_off_events.iter().copied());
         }
 
-        for j in 0..87 {
+        for j in 0..96 {
             if envelope_duration_parameters.contains(&j) || wave_type_parameters.contains(&j) {
                 continue;
             }
