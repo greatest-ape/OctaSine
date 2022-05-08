@@ -85,9 +85,13 @@ impl LfoWidgets {
             .vertical_alignment(Vertical::Center);
 
         let bpm_sync = Tooltip::new(self.bpm_sync.view(), "Toggle BPM sync", Position::Top)
-            .style(self.style.tooltip());
+            .style(self.style.tooltip())
+            .font(self.style.font_regular())
+            .padding(self.style.tooltip_padding());
         let mode = Tooltip::new(self.mode.view(), "Toggle oneshot mode", Position::Top)
-            .style(self.style.tooltip());
+            .style(self.style.tooltip())
+            .font(self.style.font_regular())
+            .padding(self.style.tooltip_padding());
 
         container_l1(
             self.style,

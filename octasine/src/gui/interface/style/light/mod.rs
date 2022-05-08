@@ -252,9 +252,11 @@ pub struct Tooltip;
 impl container::StyleSheet for Tooltip {
     fn style(&self) -> container::Style {
         container::Style {
-            background: Color::WHITE.into(),
-            text_color: TEXT_FG.into(),
-            ..Default::default()
+            background: BLUE.into(),
+            text_color: Color::WHITE.into(),
+            border_width: 3.0,
+            border_radius: 3.0,
+            border_color: BLUE,
         }
     }
 }

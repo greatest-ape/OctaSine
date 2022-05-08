@@ -252,7 +252,9 @@ impl container::StyleSheet for Tooltip {
         container::Style {
             background: GRAY_200.into(),
             text_color: TEXT_FG.into(),
-            ..container::Style::default()
+            border_width: 3.0,
+            border_radius: 3.0,
+            border_color: GRAY_200,
         }
     }
 }
