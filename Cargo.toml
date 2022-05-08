@@ -9,7 +9,6 @@ members = [
     "run_gui",
 ]
 
-
 # [patch.'https://github.com/RustAudio/baseview']
 # baseview = { path = "../baseview" }
 
@@ -18,6 +17,10 @@ members = [
 
 # [patch.'https://github.com/iced-rs/iced_audio']
 # iced_audio = { path = "../iced_audio" }
+
+[patch.'https://github.com/iced-rs/iced_audio'.iced_audio]
+git = "https://github.com/greatest-ape/iced_audio.git"
+rev = "709eee0" # branch: bipolar-knob-noncenter
 
 [profile.release]
 debug = false
