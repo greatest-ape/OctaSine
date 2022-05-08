@@ -3,15 +3,16 @@
 ## High priority
 
 * Audio
-  * LFO amount toggle parameter (on/off)
-    * Add parameters for this before release for backwards compatibility
+  * LFO processing can't be skipped just because amount is 0.0. Need other
+    optimization, like not starting stopped LFOs when amount is 0.0
+  * Fix clicks when muting/unmuting operators and LFOs
   * Operator and master volume parameter values directly in decibel so they
     can be used with external LFOs? Adjust frequency parameters similarily?
 * GUI
   * Frequency knobs should be bipolar, but iced_audio can currently only do
     bipolar knobs from center.
   * Envelope dragger "dragging" color
-  * Consider where adding tooltips would be helpful
+  * Consider more places where adding tooltips would be helpful
   * Consider own half-height container for logo. It could have a more
     pronounced background color
 * Serialize parameter values in audio format with serde, try parsing
