@@ -18,6 +18,10 @@ members = [
 # [patch.'https://github.com/iced-rs/iced_audio']
 # iced_audio = { path = "../iced_audio" }
 
+[patch.crates-io.glow_glyph]
+git = "https://github.com/greatest-ape/glow_glyph.git"
+rev = "3b65f54" # branch: explicit_attrib_location
+
 [patch.'https://github.com/iced-rs/iced_audio'.iced_audio]
 git = "https://github.com/greatest-ape/iced_audio.git"
 rev = "709eee0" # branch: bipolar-knob-noncenter

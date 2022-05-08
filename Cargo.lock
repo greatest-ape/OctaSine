@@ -855,8 +855,7 @@ dependencies = [
 [[package]]
 name = "glow_glyph"
 version = "0.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3831f71d18bf89d11908e72f69d52c8c60ef024439f293f2da01eb0926061f98"
+source = "git+https://github.com/greatest-ape/glow_glyph.git?rev=3b65f54#3b65f54452faf2478fc1855eb017ad7d5750828b"
 dependencies = [
  "bytemuck",
  "glow",
