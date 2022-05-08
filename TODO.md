@@ -13,6 +13,7 @@
   * Consider more places where adding tooltips would be helpful
   * Consider own half-height container for logo. It could have a more
     pronounced background color
+  * iced_audio: don't draw knob arc when value is 0.0
 * Serialize parameter values in audio format with serde, try parsing
 * Store logs/preferences somewhere else, maybe ~/.config on unix,
   Documents/OctaSine on Windows
