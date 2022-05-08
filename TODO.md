@@ -3,8 +3,7 @@
 ## High priority
 
 * Audio
-  * LFO processing can't be skipped just because amount is 0.0. Need other
-    optimization, like not starting stopped LFOs when amount is 0.0
+  * Is it really a good idea not to start LFOs when they are muted?
   * Fix clicks when muting/unmuting operators and LFOs
   * Operator and master volume parameter values directly in decibel so they
     can be used with external LFOs? Adjust frequency parameters similarily?
