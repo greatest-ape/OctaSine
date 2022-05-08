@@ -308,7 +308,9 @@ where
         });
 
         let tick_marks = match tick_mark_type {
-            TickMarkType::MinMaxAndDefault => tick_marks_from_min_max_and_value(default_patch_value),
+            TickMarkType::MinMaxAndDefault => {
+                tick_marks_from_min_max_and_value(default_patch_value)
+            }
         };
 
         Self {
@@ -378,10 +380,10 @@ where
     }
 }
 
-fn tick_marks_from_min_max_and_value(sync_value: f64) -> tick_marks::Group {
+fn tick_marks_from_min_max_and_value(patch_value: f64) -> tick_marks::Group {
     let marks = vec![
         (Normal::new(0.0), tick_marks::Tier::Two),
-        (Normal::new(sync_value as f32), tick_marks::Tier::Two),
+        (Normal::new(patch_value as f32), tick_marks::Tier::One),
         (Normal::new(1.0), tick_marks::Tier::Two),
     ];
 
