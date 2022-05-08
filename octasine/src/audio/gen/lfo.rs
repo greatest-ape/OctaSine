@@ -46,20 +46,19 @@ pub fn get_lfo_target_values(
         .enumerate()
         .rev()
     {
-        if voice_lfo.is_stopped() {
+        let target = lfo_parameter.target_parameter.get_value();
+
+        if voice_lfo.is_stopped() | matches!(target, LfoTargetParameter::None) {
             continue;
         }
 
-        let amount = lfo_parameter
-            .amount
-            .get_value_with_lfo_addition(lfo_values.get(LfoTargetParameter::Lfo(
-                lfo_index,
-                LfoTargetLfoParameter::Amount,
-            )));
-
-        if amount.abs() == 0.0 {
-            continue;
-        }
+        let amount = lfo_parameter.active.get_value()
+            * lfo_parameter
+                .amount
+                .get_value_with_lfo_addition(lfo_values.get(LfoTargetParameter::Lfo(
+                    lfo_index,
+                    LfoTargetLfoParameter::Amount,
+                )));
 
         let mode = lfo_parameter.mode.value;
         let bpm_sync = lfo_parameter.bpm_sync.value;
@@ -100,8 +99,6 @@ pub fn get_lfo_target_values(
         );
 
         let addition = voice_lfo.get_value(amount);
-
-        let target = lfo_parameter.target_parameter.get_value();
 
         lfo_values.set_or_add(target, addition);
     }

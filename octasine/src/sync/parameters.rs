@@ -124,6 +124,7 @@ pub fn patch_parameters() -> Vec<PatchParameter> {
             lfo_mode(lfo_index),
             lfo_shape(lfo_index),
             lfo_amount(lfo_index),
+            lfo_active(lfo_index),
         ])
     }
 
@@ -303,6 +304,13 @@ fn lfo_amount(index: usize) -> PatchParameter {
     PatchParameter::new(
         &format!("LFO {} amount", index + 1),
         LfoAmountValue::default(),
+    )
+}
+
+fn lfo_active(index: usize) -> PatchParameter {
+    PatchParameter::new(
+        &format!("LFO {} active", index + 1),
+        LfoActiveValue::default(),
     )
 }
 

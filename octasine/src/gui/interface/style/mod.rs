@@ -72,6 +72,10 @@ impl Theme {
         }
     }
 
+    pub fn tooltip_padding(&self) -> u16 {
+        3
+    }
+
     pub fn container_l0(&self) -> Box<dyn iced_baseview::container::StyleSheet> {
         match self {
             Self::Light => Box::new(light::ContainerL0),

@@ -9,7 +9,6 @@ members = [
     "run_gui",
 ]
 
-
 # [patch.'https://github.com/RustAudio/baseview']
 # baseview = { path = "../baseview" }
 
@@ -18,6 +17,10 @@ members = [
 
 # [patch.'https://github.com/iced-rs/iced_audio']
 # iced_audio = { path = "../iced_audio" }
+
+[patch.crates-io.glow_glyph]
+git = "https://github.com/greatest-ape/glow_glyph.git"
+rev = "3b65f54" # branch: explicit_attrib_location
 
 [profile.release]
 debug = false

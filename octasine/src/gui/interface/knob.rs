@@ -48,7 +48,7 @@ where
         "FREQ",
         TickMarkType::MinMaxAndDefault,
         style,
-        |theme| theme.knob_regular(),
+        |theme| theme.knob_bipolar(),
     )
 }
 
@@ -159,7 +159,7 @@ where
         "RATIO",
         TickMarkType::MinMaxAndDefault,
         style,
-        |theme| theme.knob_regular(),
+        |theme| theme.knob_bipolar(),
     )
 }
 
@@ -177,7 +177,7 @@ where
         "FREE",
         TickMarkType::MinMaxAndDefault,
         style,
-        |theme| theme.knob_regular(),
+        |theme| theme.knob_bipolar(),
     )
 }
 
@@ -195,7 +195,7 @@ where
         "FINE",
         TickMarkType::MinMaxAndDefault,
         style,
-        |theme| theme.knob_regular(),
+        |theme| theme.knob_bipolar(),
     )
 }
 
@@ -261,6 +261,7 @@ pub struct OctaSineKnob<P: ParameterValue> {
     tick_marks: Option<tick_marks::Group>,
     title: String,
     value_text: String,
+    default_patch_value: f64,
     parameter_index: usize,
     phantom_data: ::std::marker::PhantomData<P>,
     style_extractor: fn(Theme) -> Box<dyn iced_audio::knob::StyleSheet>,
@@ -294,7 +295,7 @@ where
         parameter_index: usize,
         title: &str,
         tick_mark_type: TickMarkType,
-        default_sync_value: f64,
+        default_patch_value: f64,
         style: Theme,
         style_extractor: fn(Theme) -> Box<dyn iced_audio::knob::StyleSheet>,
     ) -> Self {
@@ -303,11 +304,13 @@ where
 
         let knob_state = knob::State::new(NormalParam {
             value: Normal::new(sync_value as f32),
-            default: Normal::new(default_sync_value as f32),
+            default: Normal::new(default_patch_value as f32),
         });
 
         let tick_marks = match tick_mark_type {
-            TickMarkType::MinMaxAndDefault => tick_marks_from_min_max_and_value(default_sync_value),
+            TickMarkType::MinMaxAndDefault => {
+                tick_marks_from_min_max_and_value(default_patch_value)
+            }
         };
 
         Self {
@@ -317,6 +320,7 @@ where
             tick_marks: Some(tick_marks),
             title: title.to_string(),
             value_text,
+            default_patch_value,
             parameter_index,
             phantom_data: ::std::marker::PhantomData::default(),
             style_extractor,
@@ -354,6 +358,7 @@ where
         )
         .size(Length::from(KNOB_SIZE))
         .modifier_keys(modifier_keys)
+        .bipolar_center(iced_audio::Normal::new(self.default_patch_value as f32))
         .style((self.style_extractor)(self.style));
 
         if let Some(text_marks) = self.text_marks.as_ref() {
@@ -375,11 +380,11 @@ where
     }
 }
 
-fn tick_marks_from_min_max_and_value(sync_value: f64) -> tick_marks::Group {
+fn tick_marks_from_min_max_and_value(patch_value: f64) -> tick_marks::Group {
     let marks = vec![
-        (Normal::new(0.0), tick_marks::Tier::Two),
-        (Normal::new(sync_value as f32), tick_marks::Tier::Two),
-        (Normal::new(1.0), tick_marks::Tier::Two),
+        (Normal::new(0.0), tick_marks::Tier::One),
+        (Normal::new(patch_value as f32), tick_marks::Tier::Two),
+        (Normal::new(1.0), tick_marks::Tier::One),
     ];
 
     tick_marks::Group::from(marks)

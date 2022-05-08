@@ -1,3 +1,4 @@
+pub mod lfo_active;
 pub mod lfo_amount;
 pub mod lfo_bpm_sync;
 pub mod lfo_frequency_free;
@@ -21,6 +22,7 @@ pub mod operator_volume;
 pub mod operator_wave_type;
 pub mod utils;
 
+pub use lfo_active::LfoActiveValue;
 pub use lfo_amount::LfoAmountValue;
 pub use lfo_bpm_sync::LfoBpmSyncValue;
 pub use lfo_frequency_free::LfoFrequencyFreeValue;

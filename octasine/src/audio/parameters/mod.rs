@@ -213,27 +213,31 @@ impl AudioParameters {
             68 => self.lfos[0].mode.set_from_patch(value),
             69 => self.lfos[0].shape.set_from_patch(value),
             70 => self.lfos[0].amount.set_from_patch(value),
-            71 => self.lfos[1].target_parameter.set_from_sync(value),
-            72 => self.lfos[1].bpm_sync.set_from_patch(value),
-            73 => self.lfos[1].frequency_ratio.set_from_patch(value),
-            74 => self.lfos[1].frequency_free.set_from_patch(value),
-            75 => self.lfos[1].mode.set_from_patch(value),
-            76 => self.lfos[1].shape.set_from_patch(value),
-            77 => self.lfos[1].amount.set_from_patch(value),
-            78 => self.lfos[2].target_parameter.set_from_sync(value),
-            79 => self.lfos[2].bpm_sync.set_from_patch(value),
-            80 => self.lfos[2].frequency_ratio.set_from_patch(value),
-            81 => self.lfos[2].frequency_free.set_from_patch(value),
-            82 => self.lfos[2].mode.set_from_patch(value),
-            83 => self.lfos[2].shape.set_from_patch(value),
-            84 => self.lfos[2].amount.set_from_patch(value),
-            85 => self.lfos[3].target_parameter.set_from_sync(value),
-            86 => self.lfos[3].bpm_sync.set_from_patch(value),
-            87 => self.lfos[3].frequency_ratio.set_from_patch(value),
-            88 => self.lfos[3].frequency_free.set_from_patch(value),
-            89 => self.lfos[3].mode.set_from_patch(value),
-            90 => self.lfos[3].shape.set_from_patch(value),
-            91 => self.lfos[3].amount.set_from_patch(value),
+            71 => self.lfos[0].active.set_from_patch(value),
+            72 => self.lfos[1].target_parameter.set_from_sync(value),
+            73 => self.lfos[1].bpm_sync.set_from_patch(value),
+            74 => self.lfos[1].frequency_ratio.set_from_patch(value),
+            75 => self.lfos[1].frequency_free.set_from_patch(value),
+            76 => self.lfos[1].mode.set_from_patch(value),
+            77 => self.lfos[1].shape.set_from_patch(value),
+            78 => self.lfos[1].amount.set_from_patch(value),
+            79 => self.lfos[1].active.set_from_patch(value),
+            80 => self.lfos[2].target_parameter.set_from_sync(value),
+            81 => self.lfos[2].bpm_sync.set_from_patch(value),
+            82 => self.lfos[2].frequency_ratio.set_from_patch(value),
+            83 => self.lfos[2].frequency_free.set_from_patch(value),
+            84 => self.lfos[2].mode.set_from_patch(value),
+            85 => self.lfos[2].shape.set_from_patch(value),
+            86 => self.lfos[2].amount.set_from_patch(value),
+            87 => self.lfos[2].active.set_from_patch(value),
+            88 => self.lfos[3].target_parameter.set_from_sync(value),
+            89 => self.lfos[3].bpm_sync.set_from_patch(value),
+            90 => self.lfos[3].frequency_ratio.set_from_patch(value),
+            91 => self.lfos[3].frequency_free.set_from_patch(value),
+            92 => self.lfos[3].mode.set_from_patch(value),
+            93 => self.lfos[3].shape.set_from_patch(value),
+            94 => self.lfos[3].amount.set_from_patch(value),
+            95 => self.lfos[3].active.set_from_patch(value),
             _ => (),
         }
     }
@@ -342,6 +346,7 @@ pub struct AudioParameterLfo {
     pub mode: SimpleAudioParameter<LfoModeValue>,
     pub shape: SimpleAudioParameter<LfoShapeValue>,
     pub amount: LfoAmountAudioParameter,
+    pub active: LfoActiveAudioParameter,
 }
 
 impl AudioParameterLfo {
@@ -354,6 +359,7 @@ impl AudioParameterLfo {
             mode: Default::default(),
             shape: Default::default(),
             amount: Default::default(),
+            active: Default::default(),
         }
     }
 
@@ -365,6 +371,7 @@ impl AudioParameterLfo {
         self.mode.advance_one_sample();
         self.shape.advance_one_sample();
         self.amount.advance_one_sample();
+        self.active.advance_one_sample();
     }
 }
 
@@ -374,7 +381,7 @@ mod tests {
 
     #[test]
     fn test_operator_panning_left_and_right() {
-        use super::interpolatable_value::INTERPOLATION_STEPS;
+        const STEPS: usize = 32;
         use super::*;
 
         let mut operator = OperatorPanningAudioParameter::default();
@@ -385,7 +392,7 @@ mod tests {
 
         let mut left_and_right = [0.0, 0.0];
 
-        for _ in 0..INTERPOLATION_STEPS {
+        for _ in 0..STEPS {
             operator.advance_one_sample();
 
             let new_value = operator.get_value();

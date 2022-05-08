@@ -3,22 +3,22 @@
 ## High priority
 
 * Audio
-  * LFO amount toggle parameter (on/off)
-    * Add parameters for this before release for backwards compatibility
-  * Raise default volume (and maybe hard limit limit)
-  * Consider easing fine tuning of mod out / changing steps. More room where
-    sounds are the most interesting.
+  * Release still affects sound when decay value is zero
+  * Fix clicks when muting/unmuting operators and LFOs
   * Operator and master volume parameter values directly in decibel so they
     can be used with external LFOs? Adjust frequency parameters similarily?
 * GUI
-  * Frequency knobs should be bipolar, but iced_audio can currently only do
-    bipolar knobs from center.
-  * Envelope dragger "dragging" color
-  * Consider where adding tooltips would be helpful
+  * Operator ratio patch value should be fine-tuned (incremented just a little
+    bit) so that knob notch is at right angle
+  * Consider more places where adding tooltips would be helpful
   * Consider own half-height container for logo. It could have a more
     pronounced background color
+  * iced_audio: don't draw knob arc when value is 0.0
 * Serialize parameter values in audio format with serde, try parsing
+* Store logs/preferences somewhere else, maybe ~/.config on unix,
+  Documents/OctaSine on Windows
 * Include license info on all dependencies in releases
+* Use official repos once patches have landed
 * Release v0.7.0 eventually
 
 ## Medium priority

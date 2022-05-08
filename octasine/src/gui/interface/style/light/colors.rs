@@ -16,6 +16,7 @@ pub const GRAY_900: Color = hex_gray!(0xEA);
 pub const BACKGROUND: Color = GRAY_700;
 pub const SURFACE: Color = Color::WHITE;
 pub const SURFACE_HOVER: Color = GRAY_800;
+pub const SURFACE_PRESS: Color = GRAY_700;
 pub const TEXT_BG: Color = Color::BLACK;
 pub const TEXT_FG: Color = Color::BLACK;
 pub const BORDER: Color = GRAY_500;

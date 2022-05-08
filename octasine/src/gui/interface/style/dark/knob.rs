@@ -1,7 +1,8 @@
 use super::*;
 use iced_audio::{knob::*, style::tick_marks};
 
-const COLOR_TICK_MARKS: Color = GRAY_600;
+const COLOR_TICK_MARKS_1: Color = GRAY_600;
+const COLOR_TICK_MARKS_2: Color = GRAY_800;
 const COLOR_EMPTY: Color = GRAY_500;
 const COLOR_NOTCH: Color = GRAY_900;
 
@@ -22,20 +23,18 @@ const ARC_STYLE: ArcStyle = ArcStyle {
 };
 
 const TICK_MARK_STYLE: tick_marks::Style = tick_marks::Style {
-    tier_1: tick_marks::Shape::Line {
-        length: 3.0,
-        width: 2.0,
-        color: COLOR_TICK_MARKS,
+    tier_1: tick_marks::Shape::Circle {
+        diameter: 3.0,
+        color: COLOR_TICK_MARKS_1,
     },
-    tier_2: tick_marks::Shape::Line {
-        length: 3.0,
-        width: 2.0,
-        color: COLOR_TICK_MARKS,
+    tier_2: tick_marks::Shape::Circle {
+        diameter: 3.0,
+        color: COLOR_TICK_MARKS_2,
     },
     tier_3: tick_marks::Shape::Line {
         length: 3.0,
         width: 2.0,
-        color: COLOR_TICK_MARKS,
+        color: COLOR_TICK_MARKS_2,
     },
 };
 

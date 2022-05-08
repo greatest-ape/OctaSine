@@ -161,7 +161,7 @@ pub struct Envelope;
 impl envelope::StyleSheet for Envelope {
     fn active(&self) -> envelope::Style {
         envelope::Style {
-            background_color: Color::TRANSPARENT,
+            background_color: Color::WHITE,
             border_color: BORDER,
             drag_border_color: GRAY_700,
             text_color: TEXT_FG,
@@ -170,6 +170,7 @@ impl envelope::StyleSheet for Envelope {
             path_color: BLUE,
             dragger_fill_color_active: SURFACE,
             dragger_fill_color_hover: SURFACE_HOVER,
+            dragger_fill_color_dragging: SURFACE_PRESS,
             dragger_border_color: BORDER,
         }
     }
@@ -187,7 +188,7 @@ impl mod_matrix::StyleSheet for ModulationMatrix {
             operator_box_color_active: SURFACE,
             operator_box_border_color: Some(BORDER),
             operator_box_color_hover: SURFACE_HOVER,
-            operator_box_color_dragging: GRAY_700,
+            operator_box_color_dragging: SURFACE_PRESS,
             modulation_box_color_active: SURFACE,
             modulation_box_color_inactive: Color::TRANSPARENT,
             modulation_box_color_hover: SURFACE_HOVER,
@@ -251,9 +252,11 @@ pub struct Tooltip;
 impl container::StyleSheet for Tooltip {
     fn style(&self) -> container::Style {
         container::Style {
-            background: Color::WHITE.into(),
-            text_color: TEXT_FG.into(),
-            ..Default::default()
+            background: BLUE.into(),
+            text_color: Color::WHITE.into(),
+            border_width: 3.0,
+            border_radius: 3.0,
+            border_color: BLUE,
         }
     }
 }

@@ -17,6 +17,10 @@ use crate::parameter_values::operator_wave_type::WaveType;
 use lfo::*;
 use simd::*;
 
+/// Multiply the volume of each voice with this factor
+const VOICE_VOLUME_FACTOR: f64 = 0.2;
+const LIMIT: f64 = 10.0;
+
 const MAX_PD_WIDTH: usize = 4;
 
 pub trait AudioGen {
@@ -438,8 +442,8 @@ mod gen {
 
         // Apply hard limit
 
-        summed_additive_outputs = S::pd_min(summed_additive_outputs, S::pd_set1(5.0));
-        summed_additive_outputs = S::pd_max(summed_additive_outputs, S::pd_set1(-5.0));
+        summed_additive_outputs = S::pd_min(summed_additive_outputs, S::pd_set1(LIMIT));
+        summed_additive_outputs = S::pd_max(summed_additive_outputs, S::pd_set1(-LIMIT));
 
         // Write additive outputs to audio buffer
 

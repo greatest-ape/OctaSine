@@ -3,6 +3,7 @@ use super::ParameterValue;
 
 // When adjusting this, remember to also modify get_lfo_target_parameters
 pub const LFO_TARGET_CONTEXT_STEPS: &[LfoTargetParameter] = &[
+    LfoTargetParameter::None,
     LfoTargetParameter::Master(LfoTargetMasterParameter::Volume),
     LfoTargetParameter::Master(LfoTargetMasterParameter::Frequency),
     LfoTargetParameter::Operator(0, LfoTargetOperatorParameter::Volume),
@@ -52,9 +53,9 @@ pub const LFO_TARGET_CONTEXT_STEPS: &[LfoTargetParameter] = &[
 
 pub fn get_lfo_target_parameters(lfo_index: usize) -> &'static [LfoTargetParameter] {
     let end = match lfo_index {
-        0 => 33,
-        1 => 37,
-        2 => 41,
+        0 => 34,
+        1 => 38,
+        2 => 42,
         3 => LFO_TARGET_CONTEXT_STEPS.len(),
         _ => unreachable!(),
     };
@@ -90,6 +91,7 @@ pub enum LfoTargetLfoParameter {
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub enum LfoTargetParameter {
+    None,
     Master(LfoTargetMasterParameter),
     Operator(usize, LfoTargetOperatorParameter),
     Lfo(usize, LfoTargetLfoParameter),
@@ -98,6 +100,7 @@ pub enum LfoTargetParameter {
 impl std::fmt::Display for LfoTargetParameter {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
+            LfoTargetParameter::None => write!(f, "None"),
             LfoTargetParameter::Master(p) => {
                 use LfoTargetMasterParameter::*;
 
@@ -145,7 +148,7 @@ pub struct Lfo1TargetParameterValue(pub LfoTargetParameter);
 
 impl Default for Lfo1TargetParameterValue {
     fn default() -> Self {
-        Self(LfoTargetParameter::Master(LfoTargetMasterParameter::Volume))
+        Self(LfoTargetParameter::None)
     }
 }
 
@@ -177,7 +180,7 @@ pub struct Lfo2TargetParameterValue(pub LfoTargetParameter);
 
 impl Default for Lfo2TargetParameterValue {
     fn default() -> Self {
-        Self(LfoTargetParameter::Master(LfoTargetMasterParameter::Volume))
+        Self(LfoTargetParameter::None)
     }
 }
 
@@ -209,7 +212,7 @@ pub struct Lfo3TargetParameterValue(pub LfoTargetParameter);
 
 impl Default for Lfo3TargetParameterValue {
     fn default() -> Self {
-        Self(LfoTargetParameter::Master(LfoTargetMasterParameter::Volume))
+        Self(LfoTargetParameter::None)
     }
 }
 
@@ -241,7 +244,7 @@ pub struct Lfo4TargetParameterValue(pub LfoTargetParameter);
 
 impl Default for Lfo4TargetParameterValue {
     fn default() -> Self {
-        Self(LfoTargetParameter::Master(LfoTargetMasterParameter::Volume))
+        Self(LfoTargetParameter::None)
     }
 }
 

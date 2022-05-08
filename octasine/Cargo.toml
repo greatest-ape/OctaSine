@@ -55,7 +55,7 @@ optional = true
 
 [dependencies.iced_audio]
 git = "https://github.com/iced-rs/iced_audio.git"
-rev = "b54a87477386815a9f70664edf540f9a4e72fd69" # branch: main
+rev = "5e9e916" # branch: main
 optional = true
 
 [dependencies.palette]
