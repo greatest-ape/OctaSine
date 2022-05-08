@@ -1,7 +1,8 @@
-use iced_baseview::Container;
+use iced_baseview::tooltip::Position;
 use iced_baseview::{
     alignment::Horizontal, alignment::Vertical, Column, Element, Length, Row, Space, Text,
 };
+use iced_baseview::{Container, Tooltip};
 
 use crate::parameter_values::{
     LfoAmountValue, LfoFrequencyFreeValue, LfoFrequencyRatioValue, LfoShapeValue,
@@ -83,6 +84,11 @@ impl LfoWidgets {
             .horizontal_alignment(Horizontal::Center)
             .vertical_alignment(Vertical::Center);
 
+        let bpm_sync = Tooltip::new(self.bpm_sync.view(), "Toggle BPM sync", Position::Top)
+            .style(self.style.tooltip());
+        let mode = Tooltip::new(self.mode.view(), "Toggle oneshot mode", Position::Top)
+            .style(self.style.tooltip());
+
         container_l1(
             self.style,
             Row::new()
@@ -93,13 +99,12 @@ impl LfoWidgets {
                             .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
                             .push(
                                 Row::new()
-                                    .push(self.bpm_sync.view())
+                                    .push(bpm_sync)
                                     .push(Space::with_width(Length::Units(3)))
-                                    .push(self.mode.view())
+                                    .push(mode)
                                     .push(Space::with_width(Length::Units(LINE_HEIGHT * 6 - 3 - 1)))
                                     .push(self.active.view()),
                             )
-                            //.push(Space::with_height(Length::Units(LINE_HEIGHT / 2)))
                             .push(title)
                             .push(Space::with_height(Length::Units(LINE_HEIGHT)))
                             .push(Row::new().push(self.target.view())),
