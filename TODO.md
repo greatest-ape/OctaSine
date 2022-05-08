@@ -5,11 +5,14 @@
 * Audio
   * Release still affects sound when decay value is zero
   * Fix clicks when muting/unmuting operators and LFOs
+  * Master frequency, and maybe operator free frequency, should be based
+    on factors of two.
   * Operator and master volume parameter values directly in decibel so they
     can be used with external LFOs? Adjust frequency parameters similarily?
 * GUI
   * Operator ratio patch value should be fine-tuned (incremented just a little
     bit) so that knob notch is at right angle
+  * Add small knob marks to operator ratio knobs indicating factors of 2
   * Consider more places where adding tooltips would be helpful
   * Consider own half-height container for logo. It could have a more
     pronounced background color
