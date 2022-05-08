@@ -382,9 +382,9 @@ where
 
 fn tick_marks_from_min_max_and_value(patch_value: f64) -> tick_marks::Group {
     let marks = vec![
-        (Normal::new(0.0), tick_marks::Tier::Two),
-        (Normal::new(patch_value as f32), tick_marks::Tier::One),
-        (Normal::new(1.0), tick_marks::Tier::Two),
+        (Normal::new(0.0), tick_marks::Tier::One),
+        (Normal::new(patch_value as f32), tick_marks::Tier::Two),
+        (Normal::new(1.0), tick_marks::Tier::One),
     ];
 
     tick_marks::Group::from(marks)

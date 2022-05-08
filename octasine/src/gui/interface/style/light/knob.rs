@@ -3,8 +3,8 @@ use iced_audio::{knob::*, style::tick_marks};
 use super::colors::*;
 use super::*;
 
-const COLOR_TICK_MARKS_1: Color = GRAY_300;
-const COLOR_TICK_MARKS_2: Color = GRAY_600;
+const COLOR_TICK_MARKS_1: Color = GRAY_600;
+const COLOR_TICK_MARKS_2: Color = GRAY_300;
 const COLOR_EMPTY: Color = GRAY_600;
 const COLOR_NOTCH: Color = TEXT_FG;
 
