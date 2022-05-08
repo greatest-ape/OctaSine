@@ -163,7 +163,7 @@ pub struct Envelope;
 impl envelope::StyleSheet for Envelope {
     fn active(&self) -> envelope::Style {
         envelope::Style {
-            background_color: Color::TRANSPARENT,
+            background_color: GRAY_200,
             border_color: BORDER_DARK,
             drag_border_color: GRAY_400,
             text_color: TEXT_BG,
