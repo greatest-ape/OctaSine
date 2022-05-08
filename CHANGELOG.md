@@ -4,8 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
-This release contains breaking changes, i.e., changes that can affect
-how patches sound.
+This release contains breaking changes. Patches created with previous versions
+will __not__ sound the same in this version.
 
 ### Changed
 
@@ -17,6 +17,7 @@ how patches sound.
 - Replace additive factor with mix out parameter, which doesn't
 affect modulation output
 - Update frequency ratios, adding both harmonic and disharmonic ones
+- Update free frequency parameter values
  
 #### LFO changes
 
@@ -38,9 +39,11 @@ affect modulation output
 - Replace the LFO shape knob with a custom widget that displays the waveform
 - Add per-operator modulation target picker
 - Add per-operator mute button
+- Add per-LFO mute button
 
 #### Other changes
 
+- Update master frequency parameter values
 - Bump plugin unique ID to allow using this version in parallel with previous
   versions
 - Use directories crate to determine where to save preference and log files
