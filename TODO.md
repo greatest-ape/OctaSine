@@ -18,8 +18,6 @@
     pronounced background color
   * iced_audio: don't draw knob arc when value is 0.0
 * Serialize parameter values in audio format with serde, try parsing
-* Store logs/preferences somewhere else, maybe ~/.config on unix,
-  Documents/OctaSine on Windows
 * Include license info on all dependencies in releases
 * Use official repos once patches have landed
 * Release v0.7.0 eventually
