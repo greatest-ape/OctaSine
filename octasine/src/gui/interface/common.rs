@@ -2,7 +2,7 @@ use iced_baseview::{Column, Container, Element, Length, Row, Space};
 
 use crate::gui::interface::LINE_HEIGHT;
 
-use super::{style::Theme, Message};
+use super::{style::Theme, Message, SECTION_DISTANCE};
 
 pub fn container_l1<'a, T>(theme: Theme, contents: T) -> Container<'a, Message>
 where
@@ -65,7 +65,7 @@ where
 }
 
 pub fn space_l2<'a>() -> Container<'a, Message> {
-    Container::new(Space::with_width(Length::Units(LINE_HEIGHT)))
+    Container::new(Space::with_width(Length::Units(SECTION_DISTANCE)))
 }
 
 pub fn space_l3<'a>() -> Container<'a, Message> {

@@ -15,7 +15,7 @@ use super::{
     mod_matrix::ModulationMatrix,
     patch_picker::PatchPicker,
     style::Theme,
-    Message, FONT_SIZE, LINE_HEIGHT,
+    Message, FONT_SIZE, LINE_HEIGHT, SECTION_DISTANCE,
 };
 
 pub struct CornerWidgets {
@@ -154,15 +154,25 @@ impl CornerWidgets {
         Column::new()
             .push(
                 Row::new()
-                    .push(mod_matrix)
-                    .push(Space::with_width(Length::Units(LINE_HEIGHT)))
-                    .push(master),
+                    .push(
+                        Container::new(mod_matrix)
+                            .height(Length::Units(LINE_HEIGHT * 8 - SECTION_DISTANCE))
+                            .width(Length::Units(LINE_HEIGHT * 7 - SECTION_DISTANCE)),
+                    )
+                    .push(Space::with_width(Length::Units(SECTION_DISTANCE)))
+                    .push(
+                        Container::new(master)
+                            .height(Length::Units(LINE_HEIGHT * 8 - SECTION_DISTANCE)),
+                    ),
             )
-            .push(Space::with_height(Length::Units(LINE_HEIGHT)))
+            .push(Space::with_height(Length::Units(SECTION_DISTANCE)))
             .push(
                 Row::new()
-                    .push(triple_container(self.style, patch_picker))
-                    .push(Space::with_width(Length::Units(LINE_HEIGHT)))
+                    .push(
+                        triple_container(self.style, patch_picker)
+                            .width(Length::Units(LINE_HEIGHT * 11 - SECTION_DISTANCE)),
+                    )
+                    .push(Space::with_width(Length::Units(SECTION_DISTANCE)))
                     .push(triple_container(self.style, logo)),
             )
             .into()

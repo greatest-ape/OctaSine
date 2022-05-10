@@ -30,6 +30,7 @@ use crate::settings::Settings;
 
 pub const FONT_SIZE: u16 = 12;
 pub const LINE_HEIGHT: u16 = 12;
+pub const SECTION_DISTANCE: u16 = 2;
 
 const OPEN_SANS_BYTES_REGULAR: &[u8] =
     include_bytes!("../../../../contrib/open-sans/OpenSans-Regular.ttf");
@@ -453,31 +454,56 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
     fn view(&mut self) -> Element<'_, Self::Message> {
         Container::new(
             Column::new()
-                .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
-                .push(self.operator_4.view())
-                .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
-                .push(self.operator_3.view())
-                .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
-                .push(self.operator_2.view())
-                .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
-                .push(self.operator_1.view())
-                .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
+                .push(
+                    Container::new(self.operator_4.view())
+                        .height(Length::Units(LINE_HEIGHT * 8 - SECTION_DISTANCE)),
+                )
+                .push(Space::with_height(Length::Units(SECTION_DISTANCE)))
+                .push(
+                    Container::new(self.operator_3.view())
+                        .height(Length::Units(LINE_HEIGHT * 8 - SECTION_DISTANCE)),
+                )
+                .push(Space::with_height(Length::Units(SECTION_DISTANCE)))
+                .push(
+                    Container::new(self.operator_2.view())
+                        .height(Length::Units(LINE_HEIGHT * 8 - SECTION_DISTANCE)),
+                )
+                .push(Space::with_height(Length::Units(SECTION_DISTANCE)))
+                .push(
+                    Container::new(self.operator_1.view())
+                        .height(Length::Units(LINE_HEIGHT * 8 - SECTION_DISTANCE)),
+                )
+                .push(Space::with_height(Length::Units(SECTION_DISTANCE)))
                 .push(
                     Row::new()
                         .push(
                             Column::new()
-                                .push(self.lfo_1.view())
-                                .push(Space::with_height(Length::Units(LINE_HEIGHT)))
-                                .push(self.lfo_2.view()),
+                                .push(
+                                    Container::new(self.lfo_1.view())
+                                        .height(Length::Units(LINE_HEIGHT * 8 - SECTION_DISTANCE))
+                                        .width(Length::Units(LINE_HEIGHT * 29 - SECTION_DISTANCE)),
+                                )
+                                .push(Space::with_height(Length::Units(SECTION_DISTANCE)))
+                                .push(
+                                    Container::new(self.lfo_2.view())
+                                        .width(Length::Units(LINE_HEIGHT * 29 - SECTION_DISTANCE)),
+                                ),
                         )
-                        .push(Space::with_width(Length::Units(LINE_HEIGHT)))
+                        .push(Space::with_width(Length::Units(SECTION_DISTANCE)))
                         .push(
                             Column::new()
-                                .push(self.lfo_3.view())
-                                .push(Space::with_height(Length::Units(LINE_HEIGHT)))
-                                .push(self.lfo_4.view()),
+                                .push(
+                                    Container::new(self.lfo_3.view())
+                                        .height(Length::Units(LINE_HEIGHT * 8 - SECTION_DISTANCE))
+                                        .width(Length::Units(LINE_HEIGHT * 29 - SECTION_DISTANCE)),
+                                )
+                                .push(Space::with_height(Length::Units(SECTION_DISTANCE)))
+                                .push(
+                                    Container::new(self.lfo_4.view())
+                                        .width(Length::Units(LINE_HEIGHT * 29 - SECTION_DISTANCE)),
+                                ),
                         )
-                        .push(Space::with_width(Length::Units(LINE_HEIGHT)))
+                        .push(Space::with_width(Length::Units(SECTION_DISTANCE)))
                         .push(self.corner.view()),
                 ),
         )

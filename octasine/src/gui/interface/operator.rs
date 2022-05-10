@@ -17,9 +17,9 @@ use super::boolean_button::{operator_mute_button, BooleanButton};
 use super::common::{container_l1, container_l2, container_l3, space_l2, space_l3};
 use super::envelope::Envelope;
 use super::knob::{self, OctaSineKnob};
-use super::mod_target_picker;
 use super::style::Theme;
 use super::wave_picker::WavePicker;
+use super::{mod_target_picker, SECTION_DISTANCE};
 use super::{Message, FONT_SIZE, LINE_HEIGHT};
 
 pub enum ModTargetPicker {
@@ -170,7 +170,8 @@ impl OperatorWidgets {
                 .push(container_l3(self.style, self.volume.view()))
                 .push(space_l3())
                 .push(container_l3(self.style, self.panning.view())),
-        );
+        )
+        .width(Length::Units(LINE_HEIGHT * 14 - SECTION_DISTANCE));
 
         let routing_group = {
             let mut group = Row::new()
@@ -202,6 +203,7 @@ impl OperatorWidgets {
             group = group.push(container_l3(self.style, self.feedback.view()));
 
             container_l2(self.style, group)
+                .width(Length::Units(LINE_HEIGHT * 18 - SECTION_DISTANCE))
         };
 
         let frequency_group = container_l2(
@@ -212,7 +214,8 @@ impl OperatorWidgets {
                 .push(container_l3(self.style, self.frequency_free.view()))
                 .push(space_l3())
                 .push(container_l3(self.style, self.frequency_fine.view())),
-        );
+        )
+        .width(Length::Units(LINE_HEIGHT * 14 - SECTION_DISTANCE));
 
         let sync_viewports_message = Message::EnvelopeSyncViewports {
             viewport_factor: self.envelope.get_viewport_factor(),
