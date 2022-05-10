@@ -13,6 +13,6 @@ simd = ["octasine/simd"]
 
 [dependencies]
 octasine = { path = "../octasine", default-features = false }
-vst = { git = "https://github.com/RustAudio/vst-rs.git", rev = "b5f342c" }
+vst = "0.3.0"
 colored = "2"
 sha2 = "0.10"
