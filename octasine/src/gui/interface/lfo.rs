@@ -93,6 +93,10 @@ impl LfoWidgets {
             .style(self.style.tooltip())
             .font(self.style.font_regular())
             .padding(self.style.tooltip_padding());
+        let active = Tooltip::new(self.active.view(), "Toggle mute", Position::Top)
+            .style(self.style.tooltip())
+            .font(self.style.font_regular())
+            .padding(self.style.tooltip_padding());
 
         container_l1(
             self.style,
@@ -108,7 +112,7 @@ impl LfoWidgets {
                                     .push(Space::with_width(Length::Units(3)))
                                     .push(mode)
                                     .push(Space::with_width(Length::Units(LINE_HEIGHT * 6 - 3 - 1)))
-                                    .push(self.active.view()),
+                                    .push(active),
                             )
                             .push(title)
                             .push(Space::with_height(Length::Units(LINE_HEIGHT)))

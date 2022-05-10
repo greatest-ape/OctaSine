@@ -144,24 +144,32 @@ impl OperatorWidgets {
     }
 
     pub fn view(&mut self) -> Element<Message> {
-        let heading = Container::new(
-            Column::new()
-                .width(Length::Fill)
-                .align_items(Alignment::Center)
-                .spacing(0)
-                .push(Space::with_height(Length::Units(LINE_HEIGHT * 3)))
-                .push(
-                    Text::new(format!("OP {}", self.index + 1))
-                        .size(FONT_SIZE + FONT_SIZE / 2)
-                        .height(Length::Units(FONT_SIZE + FONT_SIZE / 2))
-                        .font(self.style.font_heading())
-                        .color(self.style.heading_color())
-                        .horizontal_alignment(Horizontal::Center),
-                )
-                .push(self.mute_button.view()),
-        )
-        .width(Length::Units(LINE_HEIGHT * 8))
-        .height(Length::Units(LINE_HEIGHT * 7));
+        let heading = {
+            let mute_button =
+                Tooltip::new(self.mute_button.view(), "Toggle mute", Position::Bottom)
+                    .style(self.style.tooltip())
+                    .font(self.style.font_regular())
+                    .padding(self.style.tooltip_padding());
+
+            Container::new(
+                Column::new()
+                    .width(Length::Fill)
+                    .align_items(Alignment::Center)
+                    .spacing(0)
+                    .push(Space::with_height(Length::Units(LINE_HEIGHT * 3)))
+                    .push(
+                        Text::new(format!("OP {}", self.index + 1))
+                            .size(FONT_SIZE + FONT_SIZE / 2)
+                            .height(Length::Units(FONT_SIZE + FONT_SIZE / 2))
+                            .font(self.style.font_heading())
+                            .color(self.style.heading_color())
+                            .horizontal_alignment(Horizontal::Center),
+                    )
+                    .push(mute_button),
+            )
+            .width(Length::Units(LINE_HEIGHT * 8))
+            .height(Length::Units(LINE_HEIGHT * 7))
+        };
 
         let group_1 = container_l2(
             self.style,
