@@ -144,23 +144,32 @@ impl OperatorWidgets {
     }
 
     pub fn view(&mut self) -> Element<Message> {
-        let heading = Container::new(
-            Column::new()
-                .width(Length::Fill)
-                .align_items(Alignment::Center)
-                .spacing(0)
-                .push(Space::with_height(Length::Units(LINE_HEIGHT * 3)))
-                .push(
-                    Text::new(format!("OP {}", self.index + 1))
-                        .size(FONT_SIZE + FONT_SIZE / 2)
-                        .font(self.style.font_heading())
-                        .color(self.style.heading_color())
-                        .horizontal_alignment(Horizontal::Center),
-                )
-                .push(self.mute_button.view()),
-        )
-        .width(Length::Units(LINE_HEIGHT * 8))
-        .height(Length::Units(LINE_HEIGHT * 7));
+        let heading = {
+            let mute_button =
+                Tooltip::new(self.mute_button.view(), "Toggle mute", Position::Bottom)
+                    .style(self.style.tooltip())
+                    .font(self.style.font_regular())
+                    .padding(self.style.tooltip_padding());
+
+            Container::new(
+                Column::new()
+                    .width(Length::Fill)
+                    .align_items(Alignment::Center)
+                    .spacing(0)
+                    .push(Space::with_height(Length::Units(LINE_HEIGHT * 3)))
+                    .push(
+                        Text::new(format!("OP {}", self.index + 1))
+                            .size(FONT_SIZE + FONT_SIZE / 2)
+                            .height(Length::Units(FONT_SIZE + FONT_SIZE / 2))
+                            .font(self.style.font_heading())
+                            .color(self.style.heading_color())
+                            .horizontal_alignment(Horizontal::Center),
+                    )
+                    .push(mute_button),
+            )
+            .width(Length::Units(LINE_HEIGHT * 8))
+            .height(Length::Units(LINE_HEIGHT * 7))
+        };
 
         let group_1 = container_l2(
             self.style,
@@ -237,6 +246,7 @@ impl OperatorWidgets {
                                             Text::new("−").font(self.style.font_bold()),
                                         )
                                         .on_press(Message::EnvelopeZoomOut(self.index))
+                                        .padding(self.style.button_padding())
                                         .style(self.style.button()),
                                         "Zoom out",
                                         Position::Top,
@@ -253,6 +263,7 @@ impl OperatorWidgets {
                                             Text::new("+").font(self.style.font_bold()),
                                         )
                                         .on_press(Message::EnvelopeZoomIn(self.index))
+                                        .padding(self.style.button_padding())
                                         .style(self.style.button()),
                                         "Zoom in",
                                         Position::Top,
@@ -271,6 +282,7 @@ impl OperatorWidgets {
                                         Text::new("FIT").font(self.style.font_regular()),
                                     )
                                     .on_press(Message::EnvelopeZoomToFit(self.index))
+                                    .padding(self.style.button_padding())
                                     .style(self.style.button()),
                                     "Zoom to fit",
                                     Position::Top,
@@ -289,6 +301,7 @@ impl OperatorWidgets {
                                         Text::new("DIST").font(self.style.font_regular()),
                                     )
                                     .on_press(sync_viewports_message)
+                                    .padding(self.style.button_padding())
                                     .style(self.style.button()),
                                     "Distribute to other envelopes",
                                     Position::Top,
@@ -299,7 +312,8 @@ impl OperatorWidgets {
                             ),
                         ),
                 )),
-        );
+        )
+        .height(Length::Units(LINE_HEIGHT * 8));
 
         container_l1(
             self.style,

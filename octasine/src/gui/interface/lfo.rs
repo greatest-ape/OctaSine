@@ -77,6 +77,7 @@ impl LfoWidgets {
     pub fn view(&mut self) -> Element<Message> {
         let title = Text::new(format!("LFO {}", self.index + 1))
             .size(FONT_SIZE + FONT_SIZE / 2)
+            .height(Length::Units(FONT_SIZE + FONT_SIZE / 2))
             .font(self.style.font_heading())
             .width(Length::Units(LINE_HEIGHT * 9))
             // .height(Length::Units(LINE_HEIGHT * 2))
@@ -89,6 +90,10 @@ impl LfoWidgets {
             .font(self.style.font_regular())
             .padding(self.style.tooltip_padding());
         let mode = Tooltip::new(self.mode.view(), "Toggle oneshot mode", Position::Top)
+            .style(self.style.tooltip())
+            .font(self.style.font_regular())
+            .padding(self.style.tooltip_padding());
+        let active = Tooltip::new(self.active.view(), "Toggle mute", Position::Top)
             .style(self.style.tooltip())
             .font(self.style.font_regular())
             .padding(self.style.tooltip_padding());
@@ -107,7 +112,7 @@ impl LfoWidgets {
                                     .push(Space::with_width(Length::Units(3)))
                                     .push(mode)
                                     .push(Space::with_width(Length::Units(LINE_HEIGHT * 6 - 3 - 1)))
-                                    .push(self.active.view()),
+                                    .push(active),
                             )
                             .push(title)
                             .push(Space::with_height(Length::Units(LINE_HEIGHT)))

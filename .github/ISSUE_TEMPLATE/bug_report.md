@@ -33,8 +33,8 @@ Add any other context about the problem here.
 
 **Log file contents**
 Please include the contents of the OctaSine log file (`OctaSine.log`). Its location depends on your operating system (replace __Alice__ with your username):
-- _On macOS_: /Users/__Alice__/Library/Preferences/com.OctaSine.OctaSine/OctaSine.log
-- _On Windows_: C:\\Users\\__Alice__\\AppData\\Roaming\\OctaSine\\OctaSine\\config\\OctaSine.log
+- _On macOS_: /Users/__Alice__/Library/Application Support/com.OctaSine.OctaSine/OctaSine.log
+- _On Windows_: C:\\Users\\__Alice__\\Documents\\OctaSine\\OctaSine.log
 - _On Linux_: /home/__Alice__/.config/octasine/OctaSine.log
 
 ```

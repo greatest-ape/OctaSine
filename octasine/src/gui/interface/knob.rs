@@ -1,4 +1,5 @@
 use iced_audio::{knob, text_marks, tick_marks, Normal, NormalParam};
+use iced_baseview::Container;
 use iced_baseview::{
     alignment::Horizontal, keyboard::Modifiers, Alignment, Column, Element, Length, Space, Text,
 };
@@ -338,11 +339,13 @@ where
     pub fn view(&mut self) -> Element<Message> {
         let title = Text::new(self.title.clone())
             .horizontal_alignment(Horizontal::Center)
-            .font(self.style.font_bold());
+            .font(self.style.font_bold())
+            .height(Length::Units(LINE_HEIGHT));
 
         let value = Text::new(self.value_text.clone())
             .horizontal_alignment(Horizontal::Center)
-            .font(self.style.font_regular());
+            .font(self.style.font_regular())
+            .height(Length::Units(LINE_HEIGHT));
 
         let parameter_index = self.parameter_index;
 
@@ -368,15 +371,18 @@ where
             knob = knob.tick_marks(tick_marks);
         }
 
-        Column::new()
-            .width(Length::Units(LINE_HEIGHT * 4))
-            .align_items(Alignment::Center)
-            .push(title)
-            .push(Space::with_height(Length::Units(LINE_HEIGHT)))
-            .push(knob)
-            .push(Space::with_height(Length::Units(LINE_HEIGHT)))
-            .push(value)
-            .into()
+        Container::new(
+            Column::new()
+                .width(Length::Units(LINE_HEIGHT * 4))
+                .align_items(Alignment::Center)
+                .push(title)
+                .push(Space::with_height(Length::Units(LINE_HEIGHT)))
+                .push(knob)
+                .push(Space::with_height(Length::Units(LINE_HEIGHT)))
+                .push(value),
+        )
+        .height(Length::Units(LINE_HEIGHT * 6))
+        .into()
     }
 }
 

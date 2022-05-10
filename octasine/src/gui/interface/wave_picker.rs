@@ -80,11 +80,13 @@ where
     pub fn view(&mut self) -> Element<Message> {
         let title = Text::new(&self.title)
             .horizontal_alignment(Horizontal::Center)
-            .font(self.style.font_bold());
+            .font(self.style.font_bold())
+            .height(Length::Units(LINE_HEIGHT));
 
         let value = Text::new(self.value_text.clone())
             .horizontal_alignment(Horizontal::Center)
-            .font(self.style.font_regular());
+            .font(self.style.font_regular())
+            .height(Length::Units(LINE_HEIGHT));
 
         let canvas = Canvas::new(self)
             .width(Length::Units(WIDTH))

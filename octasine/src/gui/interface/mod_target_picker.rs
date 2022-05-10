@@ -74,7 +74,8 @@ where
     pub fn view(&mut self) -> Element<Message> {
         let title = Text::new(self.title.clone())
             .horizontal_alignment(Horizontal::Center)
-            .font(self.style.font_bold());
+            .font(self.style.font_bold())
+            .height(Length::Units(LINE_HEIGHT));
 
         let mut checkboxes = Column::new().spacing(4);
 

@@ -11,7 +11,6 @@ use std::path::PathBuf;
 use std::sync::Arc;
 
 use audio::AudioState;
-use directories::ProjectDirs;
 
 use sync::SyncState;
 use vst::api::{Events, Supported};
@@ -142,10 +141,7 @@ impl Plugin for OctaSine {
 }
 
 fn init_logging() -> anyhow::Result<()> {
-    let log_folder: PathBuf = get_project_dirs()
-        .ok_or(anyhow::anyhow!("Couldn't extract home dir"))?
-        .preference_dir()
-        .into();
+    let log_folder: PathBuf = get_file_storage_dir()?;
 
     // Ignore any creation error
     let _ = ::std::fs::create_dir(log_folder.clone());
@@ -213,8 +209,20 @@ fn get_version_info() -> String {
     info
 }
 
-fn get_project_dirs() -> Option<ProjectDirs> {
-    ProjectDirs::from("com", "OctaSine", "OctaSine")
+cfg_if::cfg_if! {
+    if #[cfg(target_os = "windows")] {
+        fn get_file_storage_dir() -> anyhow::Result<PathBuf> {
+            ::directories::UserDirs::new()
+                .and_then(|d| d.document_dir().map(|d| d.join("OctaSine")))
+                .ok_or(anyhow::anyhow!("Couldn't extract file storage dir"))
+        }
+    } else {
+        fn get_file_storage_dir() -> anyhow::Result<PathBuf> {
+            ::directories::ProjectDirs::from("com", "OctaSine", "OctaSine")
+                .map(|d| d.config_dir().to_owned())
+                .ok_or(anyhow::anyhow!("Couldn't extract file storage dir"))
+        }
+    }
 }
 
 #[cfg(test)]

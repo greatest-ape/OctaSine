@@ -92,6 +92,7 @@ impl CornerWidgets {
                 .push(
                     Text::new("Patch")
                         .size(FONT_SIZE * 3 / 2)
+                        .height(Length::Units(FONT_SIZE * 3 / 2))
                         .width(Length::Units(LINE_HEIGHT * 10))
                         .font(self.style.font_heading())
                         .color(self.style.heading_color())
@@ -103,53 +104,63 @@ impl CornerWidgets {
         .width(Length::Units(LINE_HEIGHT * 9))
         .height(Length::Units(LINE_HEIGHT * 6));
 
-        // Helps with issues arising from use of different font weights
-        let logo_button_space = match self.style {
-            Theme::Dark => 3,
-            Theme::Light => 2,
-        };
-
-        let logo = Container::new(
-            Column::new()
-                .align_items(Alignment::Center)
-                .push(Space::with_height(Length::Units(LINE_HEIGHT)))
-                .push(
-                    Text::new("OctaSine")
-                        .size(FONT_SIZE * 3 / 2)
-                        .width(Length::Units(LINE_HEIGHT * 8))
-                        .font(self.style.font_heading())
-                        .color(self.style.heading_color())
-                        .horizontal_alignment(Horizontal::Center),
+        let logo = {
+            let theme_button = Tooltip::new(
+                Button::new(
+                    &mut self.toggle_style_state,
+                    Text::new("THEME").font(self.style.font_regular()),
                 )
-                .push(Space::with_height(Length::Units(LINE_HEIGHT)))
-                .push(
-                    Row::new()
-                        .push(
-                            Button::new(
-                                &mut self.toggle_style_state,
-                                Text::new("THEME").font(self.style.font_regular()),
-                            )
-                            .on_press(Message::ToggleColorMode)
-                            .style(self.style.button()),
-                        )
-                        .push(Space::with_width(Length::Units(logo_button_space)))
-                        .push(
-                            Tooltip::new(
-                                Button::new(
-                                    &mut self.toggle_info_state,
-                                    Text::new("INFO").font(self.style.font_regular()),
-                                )
-                                .on_press(Message::ToggleInfo)
-                                .style(self.style.button()),
-                                get_info_text(),
-                                Position::FollowCursor,
-                            )
-                            .style(self.style.tooltip()),
-                        ),
-                ),
-        )
-        .width(Length::Units(LINE_HEIGHT * 7))
-        .height(Length::Units(LINE_HEIGHT * 6));
+                .on_press(Message::ToggleColorMode)
+                .padding(self.style.button_padding())
+                .style(self.style.button()),
+                "Switch color theme",
+                Position::Top,
+            )
+            .style(self.style.tooltip());
+
+            let info_button = Tooltip::new(
+                Button::new(
+                    &mut self.toggle_info_state,
+                    Text::new("INFO").font(self.style.font_regular()),
+                )
+                .on_press(Message::ToggleInfo)
+                .padding(self.style.button_padding())
+                .style(self.style.button()),
+                get_info_text(),
+                Position::FollowCursor,
+            )
+            .style(self.style.tooltip());
+
+            // Helps with issues arising from use of different font weights
+            let logo_button_space = match self.style {
+                Theme::Dark => 3,
+                Theme::Light => 2,
+            };
+
+            Container::new(
+                Column::new()
+                    .align_items(Alignment::Center)
+                    .push(Space::with_height(Length::Units(LINE_HEIGHT)))
+                    .push(
+                        Text::new("OctaSine")
+                            .size(FONT_SIZE * 3 / 2)
+                            .height(Length::Units(FONT_SIZE * 3 / 2))
+                            .width(Length::Units(LINE_HEIGHT * 8))
+                            .font(self.style.font_heading())
+                            .color(self.style.heading_color())
+                            .horizontal_alignment(Horizontal::Center),
+                    )
+                    .push(Space::with_height(Length::Units(LINE_HEIGHT)))
+                    .push(
+                        Row::new()
+                            .push(theme_button)
+                            .push(Space::with_width(Length::Units(logo_button_space)))
+                            .push(info_button),
+                    ),
+            )
+            .width(Length::Units(LINE_HEIGHT * 7))
+            .height(Length::Units(LINE_HEIGHT * 6))
+        };
 
         Column::new()
             .push(
