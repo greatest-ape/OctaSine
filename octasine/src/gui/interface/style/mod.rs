@@ -76,6 +76,14 @@ impl Theme {
         3
     }
 
+    pub fn button_padding(&self) -> u16 {
+        5
+    }
+
+    pub fn picklist_padding(&self) -> u16 {
+        5
+    }
+
     pub fn container_l0(&self) -> Box<dyn iced_baseview::container::StyleSheet> {
         match self {
             Self::Light => Box::new(light::ContainerL0),

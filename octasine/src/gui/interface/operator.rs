@@ -238,6 +238,7 @@ impl OperatorWidgets {
                                             Text::new("−").font(self.style.font_bold()),
                                         )
                                         .on_press(Message::EnvelopeZoomOut(self.index))
+                                        .padding(self.style.button_padding())
                                         .style(self.style.button()),
                                         "Zoom out",
                                         Position::Top,
@@ -254,6 +255,7 @@ impl OperatorWidgets {
                                             Text::new("+").font(self.style.font_bold()),
                                         )
                                         .on_press(Message::EnvelopeZoomIn(self.index))
+                                        .padding(self.style.button_padding())
                                         .style(self.style.button()),
                                         "Zoom in",
                                         Position::Top,
@@ -272,6 +274,7 @@ impl OperatorWidgets {
                                         Text::new("FIT").font(self.style.font_regular()),
                                     )
                                     .on_press(Message::EnvelopeZoomToFit(self.index))
+                                    .padding(self.style.button_padding())
                                     .style(self.style.button()),
                                     "Zoom to fit",
                                     Position::Top,
@@ -290,6 +293,7 @@ impl OperatorWidgets {
                                         Text::new("DIST").font(self.style.font_regular()),
                                     )
                                     .on_press(sync_viewports_message)
+                                    .padding(self.style.button_padding())
                                     .style(self.style.button()),
                                     "Distribute to other envelopes",
                                     Position::Top,

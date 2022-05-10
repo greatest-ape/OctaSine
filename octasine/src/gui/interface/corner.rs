@@ -132,6 +132,7 @@ impl CornerWidgets {
                                 Text::new("THEME").font(self.style.font_regular()),
                             )
                             .on_press(Message::ToggleColorMode)
+                            .padding(self.style.button_padding())
                             .style(self.style.button()),
                         )
                         .push(Space::with_width(Length::Units(logo_button_space)))
@@ -142,6 +143,7 @@ impl CornerWidgets {
                                     Text::new("INFO").font(self.style.font_regular()),
                                 )
                                 .on_press(Message::ToggleInfo)
+                                .padding(self.style.button_padding())
                                 .style(self.style.button()),
                                 get_info_text(),
                                 Position::FollowCursor,
