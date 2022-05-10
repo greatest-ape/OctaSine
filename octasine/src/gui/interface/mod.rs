@@ -30,9 +30,9 @@ use crate::settings::Settings;
 
 pub const FONT_SIZE: u16 = 12;
 pub const LINE_HEIGHT: u16 = 12;
-pub const SECTION_DISTANCE: u16 = 1;
-pub const NEGATIVE_SECTION_DISTANCE_X: u16 = 1;
-pub const NEGATIVE_SECTION_DISTANCE_Y: u16 = 1;
+pub const SECTION_DISTANCE: u16 = 3;
+pub const NEGATIVE_SECTION_DISTANCE_X: u16 = 3;
+pub const NEGATIVE_SECTION_DISTANCE_Y: u16 = 3;
 
 const OPEN_SANS_BYTES_REGULAR: &[u8] =
     include_bytes!("../../../../contrib/open-sans/OpenSans-Regular.ttf");
