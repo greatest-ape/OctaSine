@@ -14,6 +14,9 @@
     bit) so that knob notch is at right angle
   * Add small knob marks to operator ratio knobs indicating factors of 2?
   * iced_audio: don't draw knob arc when value is 0.0
+    * afterwards, create iced_audio 0.8.0 release and use it
+* Ideally, ask for new baseview release and make new iced_baseview one,
+  and use them
 * Serialize parameter values in audio format with serde, try parsing?
 * Include license info on all dependencies in releases
 * Use official repos once patches have landed
