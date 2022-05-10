@@ -299,7 +299,8 @@ impl OperatorWidgets {
                             ),
                         ),
                 )),
-        );
+        )
+        .height(Length::Units(LINE_HEIGHT * 8));
 
         container_l1(
             self.style,
