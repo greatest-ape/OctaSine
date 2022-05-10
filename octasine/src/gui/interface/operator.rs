@@ -153,6 +153,7 @@ impl OperatorWidgets {
                 .push(
                     Text::new(format!("OP {}", self.index + 1))
                         .size(FONT_SIZE + FONT_SIZE / 2)
+                        .height(Length::Units(FONT_SIZE + FONT_SIZE / 2))
                         .font(self.style.font_heading())
                         .color(self.style.heading_color())
                         .horizontal_alignment(Horizontal::Center),
