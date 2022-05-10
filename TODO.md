@@ -12,12 +12,9 @@
 * GUI
   * Operator ratio patch value should be fine-tuned (incremented just a little
     bit) so that knob notch is at right angle
-  * Add small knob marks to operator ratio knobs indicating factors of 2
-  * Consider more places where adding tooltips would be helpful
-  * Consider own half-height container for logo. It could have a more
-    pronounced background color
+  * Add small knob marks to operator ratio knobs indicating factors of 2?
   * iced_audio: don't draw knob arc when value is 0.0
-* Serialize parameter values in audio format with serde, try parsing
+* Serialize parameter values in audio format with serde, try parsing?
 * Include license info on all dependencies in releases
 * Use official repos once patches have landed
 * Release v0.7.0 eventually
