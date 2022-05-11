@@ -227,6 +227,7 @@ mod gen {
                 let lfo_values = get_lfo_target_values(
                     &mut processing.parameters.lfos,
                     &mut voice.lfos,
+                    processing.sample_rate,
                     time_per_sample,
                     processing.bpm,
                 );

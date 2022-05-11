@@ -4,7 +4,6 @@
 
 * Audio
   * Fix clicks when muting/unmuting operators and LFOs
-  * Time-based interpolation for LFOs too
   * Master frequency, and maybe operator free frequency, should be based
     on factors of two.
   * Operator and master volume parameter values directly in decibel so they
