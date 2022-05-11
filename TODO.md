@@ -5,6 +5,7 @@
 * Audio
   * Release still affects sound when decay value is zero
   * Fix clicks when muting/unmuting operators and LFOs
+  * Time-based interpolation for LFOs too
   * Master frequency, and maybe operator free frequency, should be based
     on factors of two.
   * Operator and master volume parameter values directly in decibel so they
@@ -16,7 +17,6 @@
 * Other crates
   * create iced_audio 0.8.0 release, use it
   * ask for new baseview release, then create iced_baseview release, use them
-* Include license info on all dependencies in releases
 * Release v0.7.0 eventually
 
 ## Medium priority
