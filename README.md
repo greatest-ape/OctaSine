@@ -147,8 +147,9 @@ See [ARCHITECTURE.md](ARCHITECTURE.md).
 
 Copyright (C) 2019-2022 Joakim Frostegård
 
-OctaSine is licensed under the GNU Affero General Public License, Version 3, as
-published by the Free Software Foundation. See [LICENSE](LICENSE) for details.
+OctaSine is distributed under the GNU Affero General Public License, Version 3,
+as published by the Free Software Foundation. See [LICENSE](LICENSE) for
+details.
 
 Contents of the `contrib` directory are licensed under other terms. Please
 refer to the contained directories and/or files for details.
