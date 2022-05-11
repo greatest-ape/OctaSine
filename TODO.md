@@ -4,6 +4,9 @@
 
 * Audio
   * Fix clicks when muting/unmuting operators and LFOs
+  * Is LFO to clicky with shapes like square? E.g., should interpolation be
+    longer?
+  * LFO clicks when using DAW and looping notes without space between
   * Master frequency, and maybe operator free frequency, should be based
     on factors of two.
   * Operator and master volume parameter values directly in decibel so they
