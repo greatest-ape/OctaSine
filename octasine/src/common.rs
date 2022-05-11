@@ -49,4 +49,5 @@ pub enum EnvelopeStage {
     Release,
     Ended,
     Restart,
+    PreSustainExit,
 }

@@ -3,7 +3,6 @@
 ## High priority
 
 * Audio
-  * Release still affects sound when decay value is zero
   * Fix clicks when muting/unmuting operators and LFOs
   * Time-based interpolation for LFOs too
   * Master frequency, and maybe operator free frequency, should be based
