@@ -20,7 +20,9 @@ else
     mkdir "OctaSine"
 
     cp -r "$FROM" "OctaSine/"
-    cp ../LICENSE "OctaSine/LICENSE.txt"
+
+    cargo-about generate -o "OctaSine/LICENSES.html" "../about.hbs" --features "simd" -m "../octasine_vst2_plugin/Cargo.toml" 
+    # cp ../LICENSE "OctaSine/LICENSE.txt"
 
     if [ -f "$TO" ]; then
         rm "$TO"
