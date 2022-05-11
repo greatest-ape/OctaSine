@@ -379,26 +379,27 @@ impl AudioParameterLfo {
 mod tests {
     use assert_approx_eq::assert_approx_eq;
 
+    use crate::audio::common::InterpolationDuration;
+
+    use super::*;
+
     #[test]
     fn test_operator_panning_left_and_right() {
-        const STEPS: usize = 147;
-        use super::*;
+        let sample_rate = SampleRate::default();
+        let num_steps = InterpolationDuration::medium().samples(sample_rate);
 
-        let mut operator = OperatorPanningAudioParameter::default();
+        let mut audio_parameter = OperatorPanningAudioParameter::default();
 
-        let mut value = operator.get_value();
-
-        operator.set_from_patch(1.0);
-
+        let mut value = audio_parameter.get_value();
         let mut left_and_right = [0.0, 0.0];
 
-        let sample_rate = SampleRate::default();
+        audio_parameter.set_from_patch(1.0);
 
-        for _ in 0..STEPS {
-            operator.advance_one_sample(sample_rate);
+        for _ in 0..num_steps {
+            audio_parameter.advance_one_sample(sample_rate);
 
-            let new_value = operator.get_value();
-            let new_left_and_right = operator.left_and_right;
+            let new_value = audio_parameter.get_value();
+            let new_left_and_right = audio_parameter.left_and_right;
 
             assert_ne!(value, new_value);
             assert_ne!(left_and_right, new_left_and_right);
