@@ -3,6 +3,7 @@
 ## High priority
 
 * Audio
+  * Figure out how to handle early envelope exit during attack
   * Fix clicks when muting/unmuting operators and LFOs
   * Is LFO to clicky with shapes like square? E.g., should interpolation be
     longer?
@@ -18,6 +19,7 @@
 * Other crates
   * create iced_audio 0.8.0 release, use it
   * ask for new baseview release, then create iced_baseview release, use them
+* Add semver-compatible version info in patch/patch bank exports?
 * Release v0.7.0 eventually
 
 ## Medium priority
@@ -42,12 +44,11 @@
   * Shift-drag knobs for fine tuning
 
 ## Low priority
+
 * GUI
   * Mouse drag movements in pick list transfer through to envelope editor
 * Consider adding saw, square and triangle waves. Maybe look at
   TX81Z waveforms. https://www.reddit.com/r/synthesizers/comments/rkyk6j/comment/hpgcu6r/?utm_source=share&utm_medium=web2x&context=3
-* Consider time-based instead of sample-based interpolation for processing
-  parameters and LFOs
 * Build for Apple silicon
   * ADVSIMD (NEON) acceleration should be supported, at least by enabling the
     target feature. I'm not sure about how that is done when cross-compiling.
@@ -59,15 +60,10 @@
 * Consider updating envelope and lfo values in process benchmark too. This
   would further improve usefulness of output hashing.
 * GUI
-  * Operator audio output indicator, either binary or volume
-  * Master audio output indicator
   * Zoom towards center of envelope duration instead of viewport if
     envelope doesn't cover viewport? (Or maybe always)
-  * Nicer knob marks
-    * Operator 2-4 middle marker
   * Do I need to run update_host_display?
     * Should it be run on knob drag release?
-* sample rate change: what needs to be done? (time reset?)
 * clippy
 * Test that number of sync and processing parameters is equal
 * suspend mode and so on, maybe just reset time, note time, envelopes etc on resume
