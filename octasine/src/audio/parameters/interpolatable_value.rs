@@ -51,7 +51,7 @@ impl InterpolatableAudioValue {
     }
 
     fn restart_interpolation(&mut self) {
-        let num_steps = (self.interpolation_duration.get() * self.sample_rate.0).round() as usize;
+        let num_steps = self.interpolation_duration.samples(self.sample_rate);
         let step_size = (self.target_value - self.value) / (num_steps as f64);
 
         self.steps_remaining = num_steps;

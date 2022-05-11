@@ -4,9 +4,6 @@ use crate::common::SampleRate;
 pub struct InterpolationDuration(f64);
 
 impl InterpolationDuration {
-    pub fn get(&self) -> f64 {
-        self.0
-    }
     pub fn samples(&self, sample_rate: SampleRate) -> usize {
         (self.0 * sample_rate.0).round() as usize
     }
