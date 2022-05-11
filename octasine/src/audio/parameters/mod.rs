@@ -3,7 +3,7 @@ use array_init::array_init;
 mod interpolatable_value;
 pub mod parameters;
 
-use crate::common::{NUM_LFOS, NUM_OPERATORS};
+use crate::common::{SampleRate, NUM_LFOS, NUM_OPERATORS};
 
 use crate::parameter_values::*;
 
@@ -12,7 +12,7 @@ use parameters::*;
 pub trait AudioParameter {
     type Value;
 
-    fn advance_one_sample(&mut self);
+    fn advance_one_sample(&mut self, sample_rate: SampleRate);
     fn get_value(&self) -> Self::Value;
     fn set_from_patch(&mut self, value: f64);
     fn get_value_with_lfo_addition(&mut self, lfo_addition: Option<f64>) -> Self::Value;
@@ -246,16 +246,16 @@ impl AudioParameters {
         87
     }
 
-    pub fn advance_one_sample(&mut self) {
-        self.master_volume.advance_one_sample();
-        self.master_frequency.advance_one_sample();
+    pub fn advance_one_sample(&mut self, sample_rate: SampleRate) {
+        self.master_volume.advance_one_sample(sample_rate);
+        self.master_frequency.advance_one_sample(sample_rate);
 
         for operator in self.operators.iter_mut() {
-            operator.advance_one_sample();
+            operator.advance_one_sample(sample_rate);
         }
 
         for lfo in self.lfos.iter_mut() {
-            lfo.advance_one_sample();
+            lfo.advance_one_sample(sample_rate);
         }
     }
 }
@@ -299,23 +299,23 @@ impl AudioParameterOperator {
         }
     }
 
-    pub fn advance_one_sample(&mut self) {
-        self.volume.advance_one_sample();
-        self.active.advance_one_sample();
-        self.mix.advance_one_sample();
-        self.wave_type.advance_one_sample();
-        self.panning.advance_one_sample();
+    pub fn advance_one_sample(&mut self, sample_rate: SampleRate) {
+        self.volume.advance_one_sample(sample_rate);
+        self.active.advance_one_sample(sample_rate);
+        self.mix.advance_one_sample(sample_rate);
+        self.wave_type.advance_one_sample(sample_rate);
+        self.panning.advance_one_sample(sample_rate);
         if let Some(ref mut output_operator) = self.output_operator {
-            output_operator.advance_one_sample();
+            output_operator.advance_one_sample(sample_rate);
         }
-        self.frequency_ratio.advance_one_sample();
-        self.frequency_free.advance_one_sample();
-        self.frequency_fine.advance_one_sample();
-        self.feedback.advance_one_sample();
+        self.frequency_ratio.advance_one_sample(sample_rate);
+        self.frequency_free.advance_one_sample(sample_rate);
+        self.frequency_fine.advance_one_sample(sample_rate);
+        self.feedback.advance_one_sample(sample_rate);
         if let Some(modulation_index) = self.modulation_index.as_mut() {
-            modulation_index.advance_one_sample();
+            modulation_index.advance_one_sample(sample_rate);
         }
-        self.volume_envelope.advance_one_sample();
+        self.volume_envelope.advance_one_sample(sample_rate);
     }
 }
 
@@ -329,12 +329,12 @@ pub struct OperatorEnvelopeAudioParameter {
 }
 
 impl OperatorEnvelopeAudioParameter {
-    fn advance_one_sample(&mut self) {
-        self.attack_duration.advance_one_sample();
-        self.attack_end_value.advance_one_sample();
-        self.decay_duration.advance_one_sample();
-        self.decay_end_value.advance_one_sample();
-        self.release_duration.advance_one_sample();
+    fn advance_one_sample(&mut self, sample_rate: SampleRate) {
+        self.attack_duration.advance_one_sample(sample_rate);
+        self.attack_end_value.advance_one_sample(sample_rate);
+        self.decay_duration.advance_one_sample(sample_rate);
+        self.decay_end_value.advance_one_sample(sample_rate);
+        self.release_duration.advance_one_sample(sample_rate);
     }
 }
 
@@ -363,15 +363,15 @@ impl AudioParameterLfo {
         }
     }
 
-    fn advance_one_sample(&mut self) {
-        self.target_parameter.advance_one_sample();
-        self.bpm_sync.advance_one_sample();
-        self.frequency_ratio.advance_one_sample();
-        self.frequency_free.advance_one_sample();
-        self.mode.advance_one_sample();
-        self.shape.advance_one_sample();
-        self.amount.advance_one_sample();
-        self.active.advance_one_sample();
+    fn advance_one_sample(&mut self, sample_rate: SampleRate) {
+        self.target_parameter.advance_one_sample(sample_rate);
+        self.bpm_sync.advance_one_sample(sample_rate);
+        self.frequency_ratio.advance_one_sample(sample_rate);
+        self.frequency_free.advance_one_sample(sample_rate);
+        self.mode.advance_one_sample(sample_rate);
+        self.shape.advance_one_sample(sample_rate);
+        self.amount.advance_one_sample(sample_rate);
+        self.active.advance_one_sample(sample_rate);
     }
 }
 
@@ -381,7 +381,7 @@ mod tests {
 
     #[test]
     fn test_operator_panning_left_and_right() {
-        const STEPS: usize = 32;
+        const STEPS: usize = 147;
         use super::*;
 
         let mut operator = OperatorPanningAudioParameter::default();
@@ -392,8 +392,10 @@ mod tests {
 
         let mut left_and_right = [0.0, 0.0];
 
+        let sample_rate = SampleRate::default();
+
         for _ in 0..STEPS {
-            operator.advance_one_sample();
+            operator.advance_one_sample(sample_rate);
 
             let new_value = operator.get_value();
             let new_left_and_right = operator.left_and_right;

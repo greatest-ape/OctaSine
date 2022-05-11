@@ -113,7 +113,7 @@ impl Plugin for OctaSine {
     }
 
     fn set_sample_rate(&mut self, rate: f32) {
-        self.audio.time_per_sample = SampleRate(f64::from(rate)).into();
+        self.audio.set_sample_rate(SampleRate(f64::from(rate)));
     }
 
     fn can_do(&self, can_do: CanDo) -> Supported {

@@ -2,6 +2,7 @@ use std::{f64::consts::FRAC_PI_2, marker::PhantomData};
 
 use arrayvec::ArrayVec;
 
+use crate::common::SampleRate;
 use crate::parameter_values::*;
 
 use super::interpolatable_value::*;
@@ -21,7 +22,7 @@ where
         let default = P::default().get();
 
         Self {
-            value: InterpolatableAudioValue::new(default),
+            value: InterpolatableAudioValue::new(default, Default::default()),
             phantom_data: PhantomData::default(),
         }
     }
@@ -33,8 +34,8 @@ where
 {
     type Value = f64;
 
-    fn advance_one_sample(&mut self) {
-        self.value.advance_one_sample(&mut |_| ())
+    fn advance_one_sample(&mut self, sample_rate: SampleRate) {
+        self.value.advance_one_sample(sample_rate, &mut |_| ())
     }
     fn get_value(&self) -> Self::Value {
         self.value.get_value()
@@ -73,7 +74,7 @@ where
 {
     type Value = <P as ParameterValue>::Value;
 
-    fn advance_one_sample(&mut self) {}
+    fn advance_one_sample(&mut self, _sample_rate: SampleRate) {}
     fn get_value(&self) -> Self::Value {
         self.value
     }
@@ -102,7 +103,7 @@ impl Default for MasterVolumeAudioParameter {
         let default = MasterVolumeValue::default().get();
 
         Self {
-            value: InterpolatableAudioValue::new(default),
+            value: InterpolatableAudioValue::new(default, Default::default()),
         }
     }
 }
@@ -110,8 +111,8 @@ impl Default for MasterVolumeAudioParameter {
 impl AudioParameter for MasterVolumeAudioParameter {
     type Value = f64;
 
-    fn advance_one_sample(&mut self) {
-        self.value.advance_one_sample(&mut |_| ())
+    fn advance_one_sample(&mut self, sample_rate: SampleRate) {
+        self.value.advance_one_sample(sample_rate, &mut |_| ())
     }
     fn get_value(&self) -> Self::Value {
         self.value.get_value()
@@ -141,7 +142,7 @@ impl Default for OperatorVolumeAudioParameter {
         let default = OperatorVolumeValue::default().get();
 
         Self {
-            value: InterpolatableAudioValue::new(default),
+            value: InterpolatableAudioValue::new(default, Default::default()),
         }
     }
 }
@@ -149,8 +150,8 @@ impl Default for OperatorVolumeAudioParameter {
 impl AudioParameter for OperatorVolumeAudioParameter {
     type Value = f64;
 
-    fn advance_one_sample(&mut self) {
-        self.value.advance_one_sample(&mut |_| ())
+    fn advance_one_sample(&mut self, sample_rate: SampleRate) {
+        self.value.advance_one_sample(sample_rate, &mut |_| ())
     }
     fn get_value(&self) -> Self::Value {
         self.value.get_value()
@@ -176,7 +177,7 @@ pub struct OperatorActiveAudioParameter {
 impl Default for OperatorActiveAudioParameter {
     fn default() -> Self {
         Self {
-            value: InterpolatableAudioValue::new(1.0),
+            value: InterpolatableAudioValue::new(1.0, Default::default()),
         }
     }
 }
@@ -184,8 +185,8 @@ impl Default for OperatorActiveAudioParameter {
 impl AudioParameter for OperatorActiveAudioParameter {
     type Value = f64;
 
-    fn advance_one_sample(&mut self) {
-        self.value.advance_one_sample(&mut |_| ())
+    fn advance_one_sample(&mut self, sample_rate: SampleRate) {
+        self.value.advance_one_sample(sample_rate, &mut |_| ())
     }
     fn get_value(&self) -> Self::Value {
         self.value.get_value()
@@ -209,7 +210,7 @@ impl OperatorMixAudioParameter {
         let value = OperatorMixValue::new(operator_index).get();
 
         Self {
-            value: InterpolatableAudioValue::new(value),
+            value: InterpolatableAudioValue::new(value, Default::default()),
         }
     }
 }
@@ -217,8 +218,8 @@ impl OperatorMixAudioParameter {
 impl AudioParameter for OperatorMixAudioParameter {
     type Value = f64;
 
-    fn advance_one_sample(&mut self) {
-        self.value.advance_one_sample(&mut |_| ())
+    fn advance_one_sample(&mut self, sample_rate: SampleRate) {
+        self.value.advance_one_sample(sample_rate, &mut |_| ())
     }
     fn get_value(&self) -> Self::Value {
         self.value.get_value()
@@ -258,7 +259,7 @@ where
 {
     type Value = <P as ParameterValue>::Value;
 
-    fn advance_one_sample(&mut self) {}
+    fn advance_one_sample(&mut self, _sample_rate: SampleRate) {}
     fn get_value(&self) -> Self::Value {
         self.value
     }
@@ -310,11 +311,11 @@ impl OperatorModulationTargetAudioParameter {
         indices
     }
 
-    pub fn advance_one_sample(&mut self) {
+    pub fn advance_one_sample(&mut self, sample_rate: SampleRate) {
         match self {
-            Self::Two(p) => p.advance_one_sample(),
-            Self::Three(p) => p.advance_one_sample(),
-            Self::Four(p) => p.advance_one_sample(),
+            Self::Two(p) => p.advance_one_sample(sample_rate),
+            Self::Three(p) => p.advance_one_sample(sample_rate),
+            Self::Four(p) => p.advance_one_sample(sample_rate),
         }
     }
 }
@@ -339,12 +340,13 @@ impl OperatorPanningAudioParameter {
 impl AudioParameter for OperatorPanningAudioParameter {
     type Value = f64;
 
-    fn advance_one_sample(&mut self) {
+    fn advance_one_sample(&mut self, sample_rate: SampleRate) {
         let mut opt_new_left_and_right = None;
 
-        self.value.advance_one_sample(&mut |new_panning| {
-            opt_new_left_and_right = Some(Self::calculate_left_and_right(new_panning));
-        });
+        self.value
+            .advance_one_sample(sample_rate, &mut |new_panning| {
+                opt_new_left_and_right = Some(Self::calculate_left_and_right(new_panning));
+            });
 
         if let Some(new_left_and_right) = opt_new_left_and_right {
             self.left_and_right = new_left_and_right;
@@ -385,7 +387,7 @@ impl Default for OperatorPanningAudioParameter {
         let default = OperatorPanningValue::default().get();
 
         Self {
-            value: InterpolatableAudioValue::new(default),
+            value: InterpolatableAudioValue::new(default, Default::default()),
             left_and_right: Self::calculate_left_and_right(default),
             lfo_active: false,
         }
@@ -430,12 +432,12 @@ impl LfoTargetAudioParameter {
         }
     }
 
-    pub fn advance_one_sample(&mut self) {
+    pub fn advance_one_sample(&mut self, sample_rate: SampleRate) {
         match self {
-            Self::One(p) => p.advance_one_sample(),
-            Self::Two(p) => p.advance_one_sample(),
-            Self::Three(p) => p.advance_one_sample(),
-            Self::Four(p) => p.advance_one_sample(),
+            Self::One(p) => p.advance_one_sample(sample_rate),
+            Self::Two(p) => p.advance_one_sample(sample_rate),
+            Self::Three(p) => p.advance_one_sample(sample_rate),
+            Self::Four(p) => p.advance_one_sample(sample_rate),
         }
     }
 }
@@ -448,7 +450,7 @@ pub struct LfoActiveAudioParameter {
 impl Default for LfoActiveAudioParameter {
     fn default() -> Self {
         Self {
-            value: InterpolatableAudioValue::new(1.0),
+            value: InterpolatableAudioValue::new(1.0, Default::default()),
         }
     }
 }
@@ -456,8 +458,8 @@ impl Default for LfoActiveAudioParameter {
 impl AudioParameter for LfoActiveAudioParameter {
     type Value = f64;
 
-    fn advance_one_sample(&mut self) {
-        self.value.advance_one_sample(&mut |_| ())
+    fn advance_one_sample(&mut self, sample_rate: SampleRate) {
+        self.value.advance_one_sample(sample_rate, &mut |_| ())
     }
     fn get_value(&self) -> Self::Value {
         self.value.get_value()
@@ -483,7 +485,7 @@ impl Default for LfoAmountAudioParameter {
         let default = LfoAmountValue::default().get();
 
         Self {
-            value: InterpolatableAudioValue::new(default),
+            value: InterpolatableAudioValue::new(default, Default::default()),
         }
     }
 }
@@ -491,8 +493,8 @@ impl Default for LfoAmountAudioParameter {
 impl AudioParameter for LfoAmountAudioParameter {
     type Value = f64;
 
-    fn advance_one_sample(&mut self) {
-        self.value.advance_one_sample(&mut |_| ())
+    fn advance_one_sample(&mut self, sample_rate: SampleRate) {
+        self.value.advance_one_sample(sample_rate, &mut |_| ())
     }
     fn get_value(&self) -> Self::Value {
         self.value.get_value()

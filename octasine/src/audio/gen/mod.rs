@@ -186,7 +186,9 @@ mod gen {
         for sample_index in 0..S::SAMPLES {
             let time_per_sample = processing.time_per_sample;
 
-            processing.parameters.advance_one_sample();
+            processing
+                .parameters
+                .advance_one_sample(processing.sample_rate);
             processing.process_events_for_sample(position + sample_index);
 
             let operators = &mut processing.parameters.operators;
