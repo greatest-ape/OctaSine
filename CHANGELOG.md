@@ -18,6 +18,8 @@ will __not__ sound the same in this version.
   affect modulation output
 - Update frequency ratios, adding both harmonic and disharmonic ones
 - Update free frequency parameter values
+- Fix envelope issues
+- Add operator mute parameter
  
 #### LFO changes
 
@@ -28,6 +30,8 @@ will __not__ sound the same in this version.
   LFO amount (magnitude) or LFO free frequency parameters
 - Make LFO triangle wave type start at value 0.0
 - Add LFO wave types reverse triangle, sine and reverse sine
+- Default to no target
+- Add LFO mute parameter
 
 #### Other audio changes
 
@@ -37,8 +41,8 @@ will __not__ sound the same in this version.
 
 - Major GUI redesign with layout and color changes. It is now a lot prettier,
   as well as more compact
-- Control mix output with modulation matrix operator boxes instead of
-  modulation output
+- Control mix output instead of modulation output with modulation matrix
+  operator boxes
 - Replace operator wave type picker with a custom widget that displays the waveform
 - Replace the LFO shape knob with a custom widget that displays the waveform
 - Add per-operator modulation target picker
