@@ -7,7 +7,7 @@ use arrayvec::ArrayVec;
 use duplicate::duplicate_item;
 use vst::buffer::AudioBuffer;
 
-use crate::audio::parameters::{AudioParameter, AudioParameterOperator};
+use crate::audio::parameters::{common::AudioParameter, AudioParameterOperator};
 use crate::audio::voices::log10_table::Log10Table;
 use crate::audio::AudioState;
 use crate::common::*;
