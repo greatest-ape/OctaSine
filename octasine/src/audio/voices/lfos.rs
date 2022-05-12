@@ -4,6 +4,8 @@ use crate::{
     parameter_values::{lfo_mode::LfoMode, lfo_shape::LfoShape},
 };
 
+const INTERPOLATION_DURATION: InterpolationDuration = InterpolationDuration::approx_3ms();
+
 #[derive(Debug, Clone)]
 enum LfoStage {
     Interpolate {
@@ -24,24 +26,20 @@ pub struct VoiceLfo {
     current_shape: Option<LfoShape>,
     phase: Phase,
     last_value: f64,
-    interpolation_duration: InterpolationDuration,
     sample_rate: SampleRate,
     samples_to_interpolate: usize,
 }
 
 impl Default for VoiceLfo {
     fn default() -> Self {
-        let interpolation_duration = InterpolationDuration::approx_3ms();
-
         let sample_rate = SampleRate::default();
-        let samples_to_interpolate = interpolation_duration.samples(sample_rate);
+        let samples_to_interpolate = INTERPOLATION_DURATION.samples(sample_rate);
 
         Self {
             stage: LfoStage::Stopped,
             current_shape: None,
             phase: Phase(0.0),
             last_value: 0.0,
-            interpolation_duration,
             sample_rate,
             samples_to_interpolate,
         }
@@ -68,7 +66,7 @@ impl VoiceLfo {
 
         if self.sample_rate != sample_rate {
             self.sample_rate = sample_rate;
-            self.samples_to_interpolate = self.interpolation_duration.samples(sample_rate);
+            self.samples_to_interpolate = INTERPOLATION_DURATION.samples(sample_rate);
 
             // Restart interpolation
             self.stage = match self.stage {
