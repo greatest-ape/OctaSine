@@ -3,9 +3,8 @@
 ## High priority
 
 * Audio
-  * Fix clicks when muting/unmuting operators and LFOs
-  * Is LFO to clicky with shapes like square? E.g., should interpolation be
-    longer?
+  * Is current interpolation duration for operators and LFO mute/active
+    appropriate?
   * LFO clicks when using DAW and looping notes without space between
   * Master frequency, and maybe operator free frequency, should be based
     on factors of two.
@@ -14,7 +13,7 @@
 * GUI
   * Operator ratio patch value should be fine-tuned (incremented just a little
     bit) so that knob notch is at right angle
-  * Add small knob marks to operator ratio knobs indicating factors of 2?
+  * Add small marks to operator ratio knobs indicating factors of 2?
 * Other crates
   * create iced_audio 0.8.0 release, use it
   * ask for new baseview release, then create iced_baseview release, use them
