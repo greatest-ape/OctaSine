@@ -31,7 +31,7 @@ pub struct VoiceLfo {
 
 impl Default for VoiceLfo {
     fn default() -> Self {
-        let interpolation_duration = InterpolationDuration::slow();
+        let interpolation_duration = InterpolationDuration::approx_3ms();
 
         let sample_rate = SampleRate::default();
         let samples_to_interpolate = interpolation_duration.samples(sample_rate);

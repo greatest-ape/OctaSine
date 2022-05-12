@@ -23,7 +23,7 @@ where
         let default = P::default().get();
 
         Self {
-            value: InterpolatableAudioValue::new(default, InterpolationDuration::medium()),
+            value: InterpolatableAudioValue::new(default, InterpolationDuration::approx_1ms()),
             phantom_data: PhantomData::default(),
         }
     }
@@ -104,7 +104,7 @@ impl Default for MasterVolumeAudioParameter {
         let default = MasterVolumeValue::default().get();
 
         Self {
-            value: InterpolatableAudioValue::new(default, InterpolationDuration::medium()),
+            value: InterpolatableAudioValue::new(default, InterpolationDuration::approx_1ms()),
         }
     }
 }
@@ -143,7 +143,7 @@ impl Default for OperatorVolumeAudioParameter {
         let default = OperatorVolumeValue::default().get();
 
         Self {
-            value: InterpolatableAudioValue::new(default, InterpolationDuration::medium()),
+            value: InterpolatableAudioValue::new(default, InterpolationDuration::approx_1ms()),
         }
     }
 }
@@ -178,7 +178,7 @@ pub struct OperatorActiveAudioParameter {
 impl Default for OperatorActiveAudioParameter {
     fn default() -> Self {
         Self {
-            value: InterpolatableAudioValue::new(1.0, InterpolationDuration::medium()),
+            value: InterpolatableAudioValue::new(1.0, InterpolationDuration::approx_1ms()),
         }
     }
 }
@@ -211,7 +211,7 @@ impl OperatorMixAudioParameter {
         let value = OperatorMixValue::new(operator_index).get();
 
         Self {
-            value: InterpolatableAudioValue::new(value, InterpolationDuration::medium()),
+            value: InterpolatableAudioValue::new(value, InterpolationDuration::approx_1ms()),
         }
     }
 }
@@ -388,7 +388,7 @@ impl Default for OperatorPanningAudioParameter {
         let default = OperatorPanningValue::default().get();
 
         Self {
-            value: InterpolatableAudioValue::new(default, InterpolationDuration::medium()),
+            value: InterpolatableAudioValue::new(default, InterpolationDuration::approx_1ms()),
             left_and_right: Self::calculate_left_and_right(default),
             lfo_active: false,
         }
@@ -451,7 +451,7 @@ pub struct LfoActiveAudioParameter {
 impl Default for LfoActiveAudioParameter {
     fn default() -> Self {
         Self {
-            value: InterpolatableAudioValue::new(1.0, InterpolationDuration::medium()),
+            value: InterpolatableAudioValue::new(1.0, InterpolationDuration::approx_1ms()),
         }
     }
 }
@@ -486,7 +486,7 @@ impl Default for LfoAmountAudioParameter {
         let default = LfoAmountValue::default().get();
 
         Self {
-            value: InterpolatableAudioValue::new(default, InterpolationDuration::medium()),
+            value: InterpolatableAudioValue::new(default, InterpolationDuration::approx_1ms()),
         }
     }
 }

@@ -386,7 +386,7 @@ mod tests {
     #[test]
     fn test_operator_panning_left_and_right() {
         let sample_rate = SampleRate::default();
-        let num_steps = InterpolationDuration::medium().samples(sample_rate);
+        let num_steps = InterpolationDuration::approx_1ms().samples(sample_rate);
 
         let mut audio_parameter = OperatorPanningAudioParameter::default();
 
