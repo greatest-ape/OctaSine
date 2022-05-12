@@ -5,7 +5,7 @@ use crate::parameter_values::ENVELOPE_CURVE_TAKEOVER_RECIP;
 use super::log10_table::Log10Table;
 use super::VoiceDuration;
 
-const RESTART_DURATION: f64 = 0.01;
+const INTERPOLATION_DURATION: f64 = 0.01;
 
 #[derive(Debug, Copy, Clone)]
 pub struct VoiceOperatorVolumeEnvelope {
@@ -31,21 +31,35 @@ impl VoiceOperatorVolumeEnvelope {
 
         self.duration.0 += time_per_sample.0;
 
-        match self.stage {
-            Restart | Attack | Decay | Sustain if !key_pressed => {
-                self.stage = Release;
-                self.duration_at_stage_change = self.duration;
-                self.volume_at_stage_change = self.last_volume;
+        if !key_pressed {
+            match self.stage {
+                Restart | Attack => {
+                    self.stage = if self.last_volume > operator_envelope.decay_end_value.value {
+                        Decay
+                    } else {
+                        Release
+                    };
 
-                return;
+                    self.duration_at_stage_change = self.duration;
+                    self.volume_at_stage_change = self.last_volume;
+
+                    return;
+                }
+                Sustain => {
+                    self.stage = Release;
+                    self.duration_at_stage_change = self.duration;
+                    self.volume_at_stage_change = self.last_volume;
+
+                    return;
+                }
+                Decay | Release | Ended => (),
             }
-            _ => (),
         }
 
         let duration_since_stage_change = self.duration_since_stage_change();
 
         match self.stage {
-            Restart if duration_since_stage_change >= RESTART_DURATION => {
+            Restart if duration_since_stage_change >= INTERPOLATION_DURATION => {
                 self.stage = Attack;
                 self.duration_at_stage_change = self.duration;
                 self.volume_at_stage_change = self.last_volume;
@@ -79,7 +93,7 @@ impl VoiceOperatorVolumeEnvelope {
         self.last_volume = match self.stage {
             Ended => 0.0,
             Restart => {
-                let progress = self.duration_since_stage_change() / RESTART_DURATION;
+                let progress = self.duration_since_stage_change() / INTERPOLATION_DURATION;
 
                 self.volume_at_stage_change - self.volume_at_stage_change * progress
             }

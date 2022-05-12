@@ -1,3 +1,4 @@
+mod common;
 pub mod gen;
 pub mod parameters;
 pub mod voices;
@@ -18,7 +19,8 @@ use voices::*;
 use self::voices::log10_table::Log10Table;
 
 pub struct AudioState {
-    pub time_per_sample: TimePerSample,
+    sample_rate: SampleRate,
+    time_per_sample: TimePerSample,
     pub bpm: BeatsPerMinute,
     pub parameters: AudioParameters,
     rng: Rng,
@@ -31,6 +33,7 @@ pub struct AudioState {
 impl Default for AudioState {
     fn default() -> Self {
         Self {
+            sample_rate: SampleRate::default(),
             time_per_sample: SampleRate::default().into(),
             bpm: Default::default(),
             parameters: AudioParameters::default(),
@@ -45,6 +48,11 @@ impl Default for AudioState {
 }
 
 impl AudioState {
+    pub fn set_sample_rate(&mut self, sample_rate: SampleRate) {
+        self.sample_rate = sample_rate;
+        self.time_per_sample = sample_rate.into();
+    }
+
     pub fn enqueue_midi_events<I: Iterator<Item = MidiEvent>>(&mut self, events: I) {
         for event in events {
             self.pending_midi_events.push_back(event);

@@ -35,6 +35,7 @@ impl LfoTargetValues {
 pub fn get_lfo_target_values(
     lfo_parameters: &mut [AudioParameterLfo; NUM_LFOS],
     voice_lfos: &mut [VoiceLfo; NUM_LFOS],
+    sample_rate: SampleRate,
     time_per_sample: TimePerSample,
     bpm: BeatsPerMinute,
 ) -> LfoTargetValues {
@@ -91,6 +92,7 @@ pub fn get_lfo_target_values(
         };
 
         voice_lfo.advance_one_sample(
+            sample_rate,
             time_per_sample,
             bpm,
             shape,

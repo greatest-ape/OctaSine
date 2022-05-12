@@ -1,9 +1,10 @@
 use crate::{
+    audio::common::InterpolationDuration,
     common::*,
     parameter_values::{lfo_mode::LfoMode, lfo_shape::LfoShape},
 };
 
-const INTERPOLATION_SAMPLES: usize = 128;
+const INTERPOLATION_DURATION: InterpolationDuration = InterpolationDuration::approx_3ms();
 
 #[derive(Debug, Clone)]
 enum LfoStage {
@@ -25,15 +26,22 @@ pub struct VoiceLfo {
     current_shape: Option<LfoShape>,
     phase: Phase,
     last_value: f64,
+    sample_rate: SampleRate,
+    samples_to_interpolate: usize,
 }
 
 impl Default for VoiceLfo {
     fn default() -> Self {
+        let sample_rate = SampleRate::default();
+        let samples_to_interpolate = INTERPOLATION_DURATION.samples(sample_rate);
+
         Self {
             stage: LfoStage::Stopped,
             current_shape: None,
             phase: Phase(0.0),
             last_value: 0.0,
+            sample_rate,
+            samples_to_interpolate,
         }
     }
 }
@@ -41,6 +49,7 @@ impl Default for VoiceLfo {
 impl VoiceLfo {
     pub fn advance_one_sample(
         &mut self,
+        sample_rate: SampleRate,
         time_per_sample: TimePerSample,
         bpm: BeatsPerMinute,
         shape: LfoShape,
@@ -53,6 +62,25 @@ impl VoiceLfo {
 
         if self.current_shape.is_none() {
             self.current_shape = Some(shape);
+        }
+
+        if self.sample_rate != sample_rate {
+            self.sample_rate = sample_rate;
+            self.samples_to_interpolate = INTERPOLATION_DURATION.samples(sample_rate);
+
+            // Restart interpolation
+            self.stage = match self.stage {
+                LfoStage::Interpolate { .. } => LfoStage::Interpolate {
+                    from_value: self.last_value,
+                    samples_done: 0,
+                },
+                LfoStage::Running => LfoStage::Running,
+                LfoStage::Stopping { .. } => LfoStage::Stopping {
+                    from_value: self.last_value,
+                    samples_done: 0,
+                },
+                LfoStage::Stopped => unreachable!(),
+            };
         }
 
         let new_phase = self.phase.0 + frequency * (bpm.0 / 120.0) * time_per_sample.0;
@@ -76,7 +104,7 @@ impl VoiceLfo {
                 } else {
                     samples_done += 1;
 
-                    if samples_done == INTERPOLATION_SAMPLES {
+                    if samples_done == self.samples_to_interpolate {
                         self.stage = LfoStage::Running;
                     } else {
                         self.stage = LfoStage::Interpolate {
@@ -112,7 +140,7 @@ impl VoiceLfo {
             } => {
                 samples_done += 1;
 
-                if samples_done == INTERPOLATION_SAMPLES {
+                if samples_done == self.samples_to_interpolate {
                     self.stage = LfoStage::Stopped;
                     self.last_value = 0.0;
                 } else {
@@ -144,7 +172,7 @@ impl VoiceLfo {
                 from_value,
                 samples_done,
             } => {
-                let progress = samples_done as f64 / INTERPOLATION_SAMPLES as f64;
+                let progress = samples_done as f64 / self.samples_to_interpolate as f64;
 
                 progress * shape.calculate(self.phase) + (1.0 - progress) * from_value
             }
@@ -153,7 +181,7 @@ impl VoiceLfo {
                 from_value,
                 samples_done,
             } => {
-                let progress = samples_done as f64 / INTERPOLATION_SAMPLES as f64;
+                let progress = samples_done as f64 / self.samples_to_interpolate as f64;
 
                 from_value - from_value * progress
             }

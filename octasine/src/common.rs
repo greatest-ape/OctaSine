@@ -14,7 +14,7 @@ pub trait CalculateCurve: PartialEq + Copy {
 #[derive(Debug, Copy, Clone)]
 pub struct Phase(pub f64);
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub struct SampleRate(pub f64);
 
 impl Default for SampleRate {

@@ -15,9 +15,11 @@ will __not__ sound the same in this version.
 - Set modulation index (mod out) in modulator, not carrier
 - Increase range of feedback parameter to match modulation index
 - Replace additive factor with mix out parameter, which doesn't
-affect modulation output
+  affect modulation output
 - Update frequency ratios, adding both harmonic and disharmonic ones
 - Update free frequency parameter values
+- Fix envelope issues
+- Add operator mute parameter
  
 #### LFO changes
 
@@ -28,13 +30,19 @@ affect modulation output
   LFO amount (magnitude) or LFO free frequency parameters
 - Make LFO triangle wave type start at value 0.0
 - Add LFO wave types reverse triangle, sine and reverse sine
+- Default to no target
+- Add LFO mute parameter
+
+#### Other audio changes
+
+- Update master frequency parameter values
 
 #### GUI changes
 
-- Major GUI redesign with layout and color changes. It is now a lot prettier
-  and easier to scan, as well as more compact
-- Control mix output with modulation matrix operator boxes instead of
-  modulation output
+- Major GUI redesign with layout and color changes. It is now a lot prettier,
+  as well as more compact
+- Control mix output instead of modulation output with modulation matrix
+  operator boxes
 - Replace operator wave type picker with a custom widget that displays the waveform
 - Replace the LFO shape knob with a custom widget that displays the waveform
 - Add per-operator modulation target picker
@@ -43,13 +51,12 @@ affect modulation output
 
 #### Other changes
 
-- Update master frequency parameter values
 - Bump plugin unique ID to allow using this version in parallel with previous
   versions
 - Use directories crate to determine where to save preference and log files
 - Use gzip compression on exported patches and patch banks
 - Update multiple dependencies, notably iced and baseview
-- Do large code refactoring
+- Do major code refactor
 
 ### Fixed
 
