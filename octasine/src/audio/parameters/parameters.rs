@@ -178,7 +178,7 @@ pub struct OperatorActiveAudioParameter {
 impl Default for OperatorActiveAudioParameter {
     fn default() -> Self {
         Self {
-            value: InterpolatableAudioValue::new(1.0, InterpolationDuration::approx_1ms()),
+            value: InterpolatableAudioValue::new(1.0, InterpolationDuration::exactly_50ms()),
         }
     }
 }
@@ -451,7 +451,7 @@ pub struct LfoActiveAudioParameter {
 impl Default for LfoActiveAudioParameter {
     fn default() -> Self {
         Self {
-            value: InterpolatableAudioValue::new(1.0, InterpolationDuration::approx_1ms()),
+            value: InterpolatableAudioValue::new(1.0, InterpolationDuration::exactly_50ms()),
         }
     }
 }
