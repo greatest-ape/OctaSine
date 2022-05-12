@@ -27,12 +27,12 @@ mod tests {
 
     #[test]
     fn test_interpolation_duration_samples() {
-        let sample_rate = SampleRate(44100.0);
+        use InterpolationDuration as D;
 
-        assert_eq!(InterpolationDuration::approx_1ms().samples(sample_rate), 46);
-        assert_eq!(
-            InterpolationDuration::approx_3ms().samples(sample_rate),
-            147
-        );
+        assert_eq!(D::approx_1ms().samples(SampleRate(44100.0)), 46);
+        assert_eq!(D::approx_3ms().samples(SampleRate(44100.0)), 147);
+
+        assert_eq!(D::approx_1ms().samples(SampleRate(48000.0)), 50);
+        assert_eq!(D::approx_3ms().samples(SampleRate(48000.0)), 160);
     }
 }
