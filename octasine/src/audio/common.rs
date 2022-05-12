@@ -8,12 +8,16 @@ impl InterpolationDuration {
         (self.0 * sample_rate.0).round() as usize
     }
     /// 1.04 ms. 45.9375 samples with 44.1 Hz, 50 with 48 kHz
-    pub fn approx_1ms() -> Self {
-        Self(1.0 / 960.0)
+    pub const fn approx_1ms() -> Self {
+        const DURATION: f64 = 1.0 / 960.0;
+
+        Self(DURATION)
     }
     /// 3.33 ms. 147 samples with 44.1 Hz, 160 with 48 kHz
-    pub fn approx_3ms() -> Self {
-        Self(1.0 / 300.0)
+    pub const fn approx_3ms() -> Self {
+        const DURATION: f64 = 1.0 / 300.0;
+
+        Self(DURATION)
     }
 }
 
