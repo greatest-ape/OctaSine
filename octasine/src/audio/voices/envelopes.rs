@@ -33,9 +33,9 @@ impl VoiceOperatorVolumeEnvelope {
 
         if !key_pressed {
             match self.stage {
-                Restart | Attack | Decay => {
+                Restart | Attack => {
                     self.stage = if self.last_volume > operator_envelope.decay_end_value.value {
-                        PreSustainExit
+                        Decay
                     } else {
                         Release
                     };
@@ -52,7 +52,7 @@ impl VoiceOperatorVolumeEnvelope {
 
                     return;
                 }
-                PreSustainExit | Release | Ended => (),
+                Decay | Release | Ended => (),
             }
         }
 
@@ -71,11 +71,6 @@ impl VoiceOperatorVolumeEnvelope {
             }
             Decay if duration_since_stage_change >= operator_envelope.decay_duration.value => {
                 self.stage = Sustain;
-                self.duration_at_stage_change = self.duration;
-                self.volume_at_stage_change = self.last_volume;
-            }
-            PreSustainExit if duration_since_stage_change >= INTERPOLATION_DURATION => {
-                self.stage = Release;
                 self.duration_at_stage_change = self.duration;
                 self.volume_at_stage_change = self.last_volume;
             }
@@ -116,12 +111,6 @@ impl VoiceOperatorVolumeEnvelope {
                 self.duration_since_stage_change(),
                 operator_envelope.decay_duration.value,
             ),
-            PreSustainExit => {
-                let progress = self.duration_since_stage_change() / INTERPOLATION_DURATION;
-                let end_value = operator_envelope.decay_end_value.value;
-
-                self.volume_at_stage_change + (end_value - self.volume_at_stage_change) * progress
-            }
             Sustain => operator_envelope.decay_end_value.value,
             Release => Self::calculate_curve(
                 log10table,
