@@ -3,7 +3,6 @@
 ## High priority
 
 * Audio
-  * Figure out how to handle early envelope exit during attack
   * Fix clicks when muting/unmuting operators and LFOs
   * Is LFO to clicky with shapes like square? E.g., should interpolation be
     longer?

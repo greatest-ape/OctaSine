@@ -34,7 +34,12 @@ impl VoiceOperatorVolumeEnvelope {
         if !key_pressed {
             match self.stage {
                 Restart | Attack | Decay => {
-                    self.stage = PreSustainExit;
+                    self.stage = if self.last_volume > operator_envelope.decay_end_value.value {
+                        PreSustainExit
+                    } else {
+                        Release
+                    };
+
                     self.duration_at_stage_change = self.duration;
                     self.volume_at_stage_change = self.last_volume;
 
