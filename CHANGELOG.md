@@ -36,6 +36,8 @@ will __not__ sound the same in this version.
 #### Other audio changes
 
 - Update master frequency parameter values
+- Use time-based instead of sample-based interpolation for parameters and LFOs
+  for sample rate independence
 
 #### GUI changes
 

@@ -1,22 +1,30 @@
+pub mod common;
+mod frequency_free;
+mod lfo_active;
+mod lfo_amount;
+mod lfo_target;
+mod master_volume;
+mod operator_active;
+mod operator_mix;
+mod operator_mod_target;
+mod operator_panning;
+mod operator_volume;
+
 use array_init::array_init;
 
-mod interpolatable_value;
-pub mod parameters;
-
 use crate::common::{SampleRate, NUM_LFOS, NUM_OPERATORS};
-
 use crate::parameter_values::*;
 
-use parameters::*;
-
-pub trait AudioParameter {
-    type Value;
-
-    fn advance_one_sample(&mut self, sample_rate: SampleRate);
-    fn get_value(&self) -> Self::Value;
-    fn set_from_patch(&mut self, value: f64);
-    fn get_value_with_lfo_addition(&mut self, lfo_addition: Option<f64>) -> Self::Value;
-}
+use self::common::{AudioParameter, InterpolatableAudioParameter, SimpleAudioParameter};
+use self::frequency_free::FreeFrequencyAudioParameter;
+use self::lfo_active::LfoActiveAudioParameter;
+use self::lfo_amount::LfoAmountAudioParameter;
+use self::lfo_target::LfoTargetAudioParameter;
+use self::master_volume::MasterVolumeAudioParameter;
+use self::operator_mix::OperatorMixAudioParameter;
+use self::operator_mod_target::OperatorModulationTargetAudioParameter;
+use self::operator_panning::OperatorPanningAudioParameter;
+use self::operator_volume::OperatorVolumeAudioParameter;
 
 pub struct AudioParameters {
     pub master_volume: MasterVolumeAudioParameter,

@@ -6,6 +6,7 @@
   * Is current interpolation duration for operators and LFO mute/active
     appropriate?
   * LFO clicks when using DAW and looping notes without space between
+  * LFO free/master frequency additions should have larger range
   * Master frequency, and maybe operator free frequency, should be based
     on factors of two.
   * Operator and master volume parameter values directly in decibel so they

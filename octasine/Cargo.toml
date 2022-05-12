@@ -40,6 +40,7 @@ vst = "0.3"
 
 # GUI
 
+palette = { version = "0.6", optional = true }
 raw-window-handle = { version = "0.4", optional = true }
 
 [dependencies.baseview]
@@ -56,10 +57,6 @@ optional = true
 [dependencies.iced_audio]
 git = "https://github.com/iced-rs/iced_audio.git"
 rev = "5e9e916" # branch: main
-optional = true
-
-[dependencies.palette]
-version = "0.6"
 optional = true
 
 # SIMD
