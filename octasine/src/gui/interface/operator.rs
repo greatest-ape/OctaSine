@@ -8,8 +8,8 @@ use iced_baseview::{
 use crate::parameter_values::{
     Operator2ModulationTargetValue, Operator3ModulationTargetValue, Operator4ModulationTargetValue,
     OperatorFeedbackValue, OperatorFrequencyFineValue, OperatorFrequencyFreeValue,
-    OperatorFrequencyRatioValue, OperatorMixValue, OperatorModulationIndexValue,
-    OperatorPanningValue, OperatorVolumeValue, OperatorWaveTypeValue,
+    OperatorFrequencyRatioValue, OperatorMixOutValue, OperatorModOutValue, OperatorPanningValue,
+    OperatorVolumeValue, OperatorWaveTypeValue,
 };
 use crate::sync::GuiSyncHandle;
 
@@ -33,10 +33,10 @@ pub struct OperatorWidgets {
     style: Theme,
     pub volume: OctaSineKnob<OperatorVolumeValue>,
     pub mute_button: BooleanButton,
-    pub mix: OctaSineKnob<OperatorMixValue>,
+    pub mix: OctaSineKnob<OperatorMixOutValue>,
     pub panning: OctaSineKnob<OperatorPanningValue>,
     pub wave_type: WavePicker<OperatorWaveTypeValue>,
-    pub mod_index: Option<OctaSineKnob<OperatorModulationIndexValue>>,
+    pub mod_index: Option<OctaSineKnob<OperatorModOutValue>>,
     pub mod_target: Option<ModTargetPicker>,
     pub feedback: OctaSineKnob<OperatorFeedbackValue>,
     pub frequency_ratio: OctaSineKnob<OperatorFrequencyRatioValue>,

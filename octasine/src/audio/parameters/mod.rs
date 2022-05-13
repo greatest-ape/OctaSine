@@ -285,7 +285,7 @@ pub struct AudioParameterOperator {
     pub frequency_free: OperatorFrequencyFreeAudioParameter,
     pub frequency_fine: OperatorFrequencyFineAudioParameter,
     pub feedback: InterpolatableAudioParameter<OperatorFeedbackValue>,
-    pub modulation_index: Option<InterpolatableAudioParameter<OperatorModulationIndexValue>>,
+    pub modulation_index: Option<InterpolatableAudioParameter<OperatorModOutValue>>,
     pub volume_envelope: OperatorEnvelopeAudioParameter,
 }
 

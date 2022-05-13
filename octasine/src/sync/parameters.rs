@@ -156,7 +156,7 @@ fn operator_active(index: usize) -> PatchParameter {
 fn operator_mix(index: usize) -> PatchParameter {
     PatchParameter::new(
         &format!("OP {} mix out", index + 1),
-        OperatorMixValue::new(index),
+        OperatorMixOutValue::new(index),
     )
 }
 
@@ -198,7 +198,7 @@ fn operator_feedback(index: usize) -> PatchParameter {
 fn operator_modulation_index(index: usize) -> PatchParameter {
     PatchParameter::new(
         &format!("OP {} mod out", index + 1),
-        OperatorModulationIndexValue::default(),
+        OperatorModOutValue::default(),
     )
 }
 
