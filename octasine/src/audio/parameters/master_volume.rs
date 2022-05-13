@@ -34,7 +34,7 @@ impl AudioParameter for MasterVolumeAudioParameter {
     }
     fn get_value_with_lfo_addition(&mut self, lfo_addition: Option<f64>) -> Self::Value {
         if let Some(lfo_addition) = lfo_addition {
-            self.get_value() * 2.0f64.powf(lfo_addition)
+            self.get_value() * 2.0f64.powf(lfo_addition / 2.0)
         } else {
             self.get_value()
         }
