@@ -1,10 +1,13 @@
 pub mod common;
-mod frequency_free;
 mod lfo_active;
 mod lfo_amount;
+mod lfo_frequency_free;
 mod lfo_target;
+mod master_frequency;
 mod master_volume;
 mod operator_active;
+mod operator_frequency_fine;
+mod operator_frequency_free;
 mod operator_mix;
 mod operator_mod_target;
 mod operator_panning;
@@ -16,11 +19,14 @@ use crate::common::{SampleRate, NUM_LFOS, NUM_OPERATORS};
 use crate::parameter_values::*;
 
 use self::common::{AudioParameter, InterpolatableAudioParameter, SimpleAudioParameter};
-use self::frequency_free::FreeFrequencyAudioParameter;
 use self::lfo_active::LfoActiveAudioParameter;
 use self::lfo_amount::LfoAmountAudioParameter;
+use self::lfo_frequency_free::LfoFrequencyFreeAudioParameter;
 use self::lfo_target::LfoTargetAudioParameter;
+use self::master_frequency::MasterFrequencyAudioParameter;
 use self::master_volume::MasterVolumeAudioParameter;
+use self::operator_frequency_fine::OperatorFrequencyFineAudioParameter;
+use self::operator_frequency_free::OperatorFrequencyFreeAudioParameter;
 use self::operator_mix::OperatorMixAudioParameter;
 use self::operator_mod_target::OperatorModulationTargetAudioParameter;
 use self::operator_panning::OperatorPanningAudioParameter;
@@ -28,7 +34,7 @@ use self::operator_volume::OperatorVolumeAudioParameter;
 
 pub struct AudioParameters {
     pub master_volume: MasterVolumeAudioParameter,
-    pub master_frequency: FreeFrequencyAudioParameter<MasterFrequencyValue>,
+    pub master_frequency: MasterFrequencyAudioParameter,
     pub operators: [AudioParameterOperator; NUM_OPERATORS],
     pub lfos: [AudioParameterLfo; NUM_LFOS],
 }
@@ -276,8 +282,8 @@ pub struct AudioParameterOperator {
     pub panning: OperatorPanningAudioParameter,
     pub output_operator: Option<OperatorModulationTargetAudioParameter>,
     pub frequency_ratio: SimpleAudioParameter<OperatorFrequencyRatioValue>,
-    pub frequency_free: FreeFrequencyAudioParameter<OperatorFrequencyFreeValue>,
-    pub frequency_fine: SimpleAudioParameter<OperatorFrequencyFineValue>,
+    pub frequency_free: OperatorFrequencyFreeAudioParameter,
+    pub frequency_fine: OperatorFrequencyFineAudioParameter,
     pub feedback: InterpolatableAudioParameter<OperatorFeedbackValue>,
     pub modulation_index: Option<InterpolatableAudioParameter<OperatorModulationIndexValue>>,
     pub volume_envelope: OperatorEnvelopeAudioParameter,
@@ -350,7 +356,7 @@ pub struct AudioParameterLfo {
     pub target_parameter: LfoTargetAudioParameter,
     pub bpm_sync: SimpleAudioParameter<LfoBpmSyncValue>,
     pub frequency_ratio: SimpleAudioParameter<LfoFrequencyRatioValue>,
-    pub frequency_free: FreeFrequencyAudioParameter<LfoFrequencyFreeValue>,
+    pub frequency_free: LfoFrequencyFreeAudioParameter,
     pub mode: SimpleAudioParameter<LfoModeValue>,
     pub shape: SimpleAudioParameter<LfoShapeValue>,
     pub amount: LfoAmountAudioParameter,
