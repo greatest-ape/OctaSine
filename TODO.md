@@ -2,6 +2,10 @@
 
 ## High priority
 
+* Test parameter changes
+* Ideally make Audio::set_parameter_from_patch generic so that it can
+  do other things with parameters, and then add an integration test which
+  sets values and checks that they get set (after interpolation)
 * Audio
   * Should modulation index now compensate for higher frequencies?
   * Operator freq ratio values: are really both sqrt(2) and sqrt(3) values
