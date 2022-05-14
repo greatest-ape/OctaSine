@@ -291,7 +291,7 @@ mod gen {
         time_per_sample: TimePerSample,
         voice_base_frequency: f64,
     ) {
-        voice_data.wave_type = operator.wave_type.value;
+        voice_data.wave_type = operator.wave_type.get_value();
 
         if let Some(p) = &mut operator.output_operator {
             voice_data.modulation_targets = p.get_active_indices();

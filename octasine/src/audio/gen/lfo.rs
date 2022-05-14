@@ -58,8 +58,8 @@ pub fn get_lfo_target_values(
                 lfo_values.get(Parameter::Lfo(lfo_index, LfoParameter::Amount)),
             );
 
-        let mode = lfo_parameter.mode.value;
-        let bpm_sync = lfo_parameter.bpm_sync.value;
+        let mode = lfo_parameter.mode.get_value();
+        let bpm_sync = lfo_parameter.bpm_sync.get_value();
 
         let shape = lfo_parameter.shape.get_value_with_lfo_addition(
             lfo_values.get(Parameter::Lfo(lfo_index, LfoParameter::Shape)),

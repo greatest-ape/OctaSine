@@ -145,7 +145,7 @@ pub const PARAMETERS: &[Parameter] = &[
     Parameter::Lfo(3, LfoParameter::Active),
 ];
 
-pub trait ParameterValue: Sized + Default {
+pub trait ParameterValue: Sized + Default + Copy {
     /// Value as used in audio generation
     type Value: Copy;
 

@@ -3,16 +3,9 @@ use crate::parameter_values::{LfoFrequencyFreeValue, ParameterValue};
 
 use super::common::AudioParameter;
 
+#[derive(Default)]
 pub struct LfoFrequencyFreeAudioParameter {
-    pub value: f64,
-}
-
-impl Default for LfoFrequencyFreeAudioParameter {
-    fn default() -> Self {
-        Self {
-            value: LfoFrequencyFreeValue::default().get(),
-        }
-    }
+    pub value: LfoFrequencyFreeValue,
 }
 
 impl AudioParameter for LfoFrequencyFreeAudioParameter {
@@ -20,10 +13,10 @@ impl AudioParameter for LfoFrequencyFreeAudioParameter {
 
     fn advance_one_sample(&mut self, _sample_rate: SampleRate) {}
     fn get_value(&self) -> <Self::Value as ParameterValue>::Value {
-        self.value
+        self.value.get()
     }
     fn set_from_patch(&mut self, value: f64) {
-        self.value = Self::Value::new_from_patch(value).get();
+        self.value = Self::Value::new_from_patch(value);
     }
     fn get_value_with_lfo_addition(
         &mut self,

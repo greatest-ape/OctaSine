@@ -66,32 +66,29 @@ where
 }
 
 pub struct SimpleAudioParameter<V: ParameterValue> {
-    pub value: <V as ParameterValue>::Value,
+    value: V,
     sync_cache: f64,
 }
 
 impl<V: ParameterValue + Default> Default for SimpleAudioParameter<V> {
     fn default() -> Self {
         Self {
-            value: V::default().get(),
+            value: V::default(),
             sync_cache: V::default().to_patch(),
         }
     }
 }
 
-impl<V> AudioParameter for SimpleAudioParameter<V>
-where
-    V: ParameterValue,
-{
+impl<V: ParameterValue> AudioParameter for SimpleAudioParameter<V> {
     type Value = V;
 
     fn advance_one_sample(&mut self, _sample_rate: SampleRate) {}
     fn get_value(&self) -> <Self::Value as ParameterValue>::Value {
-        self.value
+        self.value.get()
     }
     fn set_from_patch(&mut self, value: f64) {
         self.sync_cache = value;
-        self.value = V::new_from_patch(value).get();
+        self.value = V::new_from_patch(value);
     }
     fn get_value_with_lfo_addition(
         &mut self,

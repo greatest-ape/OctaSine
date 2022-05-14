@@ -3,27 +3,18 @@ use crate::parameter_values::{OperatorFrequencyFineValue, ParameterValue};
 
 use super::common::AudioParameter;
 
-pub struct OperatorFrequencyFineAudioParameter {
-    pub value: f64,
-}
-
-impl Default for OperatorFrequencyFineAudioParameter {
-    fn default() -> Self {
-        Self {
-            value: OperatorFrequencyFineValue::default().get(),
-        }
-    }
-}
+#[derive(Default)]
+pub struct OperatorFrequencyFineAudioParameter(OperatorFrequencyFineValue);
 
 impl AudioParameter for OperatorFrequencyFineAudioParameter {
     type Value = OperatorFrequencyFineValue;
 
     fn advance_one_sample(&mut self, _sample_rate: SampleRate) {}
     fn get_value(&self) -> <Self::Value as ParameterValue>::Value {
-        self.value
+        self.0.get()
     }
     fn set_from_patch(&mut self, value: f64) {
-        self.value = Self::Value::new_from_patch(value).get();
+        self.0 = Self::Value::new_from_patch(value);
     }
     fn get_value_with_lfo_addition(
         &mut self,

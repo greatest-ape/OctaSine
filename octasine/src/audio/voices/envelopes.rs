@@ -1,3 +1,4 @@
+use crate::audio::parameters::common::AudioParameter;
 use crate::audio::parameters::OperatorEnvelopeAudioParameter;
 use crate::common::*;
 use crate::parameter_values::ENVELOPE_CURVE_TAKEOVER_RECIP;
@@ -34,7 +35,8 @@ impl VoiceOperatorVolumeEnvelope {
         if !key_pressed {
             match self.stage {
                 Restart | Attack => {
-                    self.stage = if self.last_volume > operator_envelope.decay_end_value.value {
+                    self.stage = if self.last_volume > operator_envelope.decay_end_value.get_value()
+                    {
                         Decay
                     } else {
                         Release
@@ -64,17 +66,24 @@ impl VoiceOperatorVolumeEnvelope {
                 self.duration_at_stage_change = self.duration;
                 self.volume_at_stage_change = self.last_volume;
             }
-            Attack if duration_since_stage_change >= operator_envelope.attack_duration.value => {
+            Attack
+                if duration_since_stage_change >= operator_envelope.attack_duration.get_value() =>
+            {
                 self.stage = Decay;
                 self.duration_at_stage_change = self.duration;
                 self.volume_at_stage_change = self.last_volume;
             }
-            Decay if duration_since_stage_change >= operator_envelope.decay_duration.value => {
+            Decay
+                if duration_since_stage_change >= operator_envelope.decay_duration.get_value() =>
+            {
                 self.stage = Sustain;
                 self.duration_at_stage_change = self.duration;
                 self.volume_at_stage_change = self.last_volume;
             }
-            Release if duration_since_stage_change >= operator_envelope.release_duration.value => {
+            Release
+                if duration_since_stage_change
+                    >= operator_envelope.release_duration.get_value() =>
+            {
                 self.stage = Ended;
                 self.duration_at_stage_change = VoiceDuration(0.0);
                 self.volume_at_stage_change = 0.0;
@@ -100,24 +109,24 @@ impl VoiceOperatorVolumeEnvelope {
             Attack => Self::calculate_curve(
                 log10table,
                 0.0,
-                operator_envelope.attack_end_value.value,
+                operator_envelope.attack_end_value.get_value(),
                 self.duration_since_stage_change(),
-                operator_envelope.attack_duration.value,
+                operator_envelope.attack_duration.get_value(),
             ),
             Decay => Self::calculate_curve(
                 log10table,
                 self.volume_at_stage_change,
-                operator_envelope.decay_end_value.value,
+                operator_envelope.decay_end_value.get_value(),
                 self.duration_since_stage_change(),
-                operator_envelope.decay_duration.value,
+                operator_envelope.decay_duration.get_value(),
             ),
-            Sustain => operator_envelope.decay_end_value.value,
+            Sustain => operator_envelope.decay_end_value.get_value(),
             Release => Self::calculate_curve(
                 log10table,
                 self.volume_at_stage_change,
                 0.0,
                 self.duration_since_stage_change(),
-                operator_envelope.release_duration.value,
+                operator_envelope.release_duration.get_value(),
             ),
         };
 
