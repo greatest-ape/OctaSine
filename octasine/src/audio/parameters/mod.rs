@@ -52,6 +52,83 @@ impl Default for AudioParameters {
 
 #[allow(clippy::len_without_is_empty)]
 impl AudioParameters {
+    pub fn set_from_patch2(&mut self, parameter: Parameter, value: f64) {
+        match parameter {
+            Parameter::Master(MasterParameter::Volume) => self.master_volume.set_from_patch(value),
+            Parameter::Master(MasterParameter::Frequency) => {
+                self.master_volume.set_from_patch(value)
+            }
+            Parameter::Operator(index, p) => {
+                let operator = &mut self.operators[index];
+
+                match p {
+                    OperatorParameter::Volume => operator.volume.set_from_patch(value),
+                    OperatorParameter::Active => operator.active.set_from_patch(value),
+                    OperatorParameter::MixOut => operator.mix.set_from_patch(value),
+                    OperatorParameter::Panning => operator.panning.set_from_patch(value),
+                    OperatorParameter::WaveType => operator.wave_type.set_from_patch(value),
+                    OperatorParameter::ModTargets => {
+                        use OperatorModulationTargetAudioParameter::{Four, Three, Two};
+
+                        match operator.output_operator {
+                            Some(Two(p)) => p.set_from_patch(value),
+                            Some(Three(p)) => p.set_from_patch(value),
+                            Some(Four(p)) => p.set_from_patch(value),
+                            None => (),
+                        }
+                    }
+                    OperatorParameter::ModOut => match operator.modulation_index {
+                        Some(p) => p.set_from_patch(value),
+                        None => (),
+                    },
+                    OperatorParameter::Feedback => operator.feedback.set_from_patch(value),
+                    OperatorParameter::FrequencyRatio => {
+                        operator.frequency_ratio.set_from_patch(value)
+                    }
+                    OperatorParameter::FrequencyFree => {
+                        operator.frequency_free.set_from_patch(value)
+                    }
+                    OperatorParameter::FrequencyFine => {
+                        operator.frequency_fine.set_from_patch(value)
+                    }
+                    OperatorParameter::AttackDuration => operator
+                        .volume_envelope
+                        .attack_duration
+                        .set_from_patch(value),
+                    OperatorParameter::AttackValue => operator
+                        .volume_envelope
+                        .attack_end_value
+                        .set_from_patch(value),
+                    OperatorParameter::DecayDuration => operator
+                        .volume_envelope
+                        .decay_duration
+                        .set_from_patch(value),
+                    OperatorParameter::DecayValue => operator
+                        .volume_envelope
+                        .decay_end_value
+                        .set_from_patch(value),
+                    OperatorParameter::ReleaseDuration => operator
+                        .volume_envelope
+                        .release_duration
+                        .set_from_patch(value),
+                }
+            }
+            Parameter::Lfo(index, p) => {
+                let lfo = &mut self.lfos[index];
+
+                match p {
+                    LfoParameter::Target => lfo.target_parameter.set_from_sync(value),
+                    LfoParameter::BpmSync => lfo.bpm_sync.set_from_patch(value),
+                    LfoParameter::FrequencyRatio => lfo.frequency_ratio.set_from_patch(value),
+                    LfoParameter::FrequencyFree => lfo.frequency_free.set_from_patch(value),
+                    LfoParameter::Mode => lfo.mode.set_from_patch(value),
+                    LfoParameter::Shape => lfo.shape.set_from_patch(value),
+                    LfoParameter::Amount => lfo.amount.set_from_patch(value),
+                    LfoParameter::Active => lfo.active.set_from_patch(value),
+                }
+            }
+        }
+    }
     pub fn set_from_patch(&mut self, index: usize, value: f64) {
         match index {
             // Master parameters
