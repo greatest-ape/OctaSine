@@ -11,7 +11,7 @@ use fastrand::Rng;
 use gen::VoiceData;
 use vst::event::MidiEvent;
 
-use crate::common::*;
+use crate::{common::*, parameter_values::Parameter};
 
 use parameters::*;
 use voices::*;
@@ -21,8 +21,8 @@ use self::voices::log10_table::Log10Table;
 pub struct AudioState {
     sample_rate: SampleRate,
     time_per_sample: TimePerSample,
-    pub bpm: BeatsPerMinute,
-    pub parameters: AudioParameters,
+    bpm: BeatsPerMinute,
+    parameters: AudioParameters,
     rng: Rng,
     log10table: Log10Table,
     voices: [Voice; 128],
@@ -48,9 +48,17 @@ impl Default for AudioState {
 }
 
 impl AudioState {
+    pub fn set_parameter_from_patch(&mut self, parameter: Parameter, value: f64) {
+        self.parameters.set_from_patch(parameter, value);
+    }
+
     pub fn set_sample_rate(&mut self, sample_rate: SampleRate) {
         self.sample_rate = sample_rate;
         self.time_per_sample = sample_rate.into();
+    }
+
+    pub fn set_bpm(&mut self, bpm: BeatsPerMinute) {
+        self.bpm = bpm;
     }
 
     pub fn enqueue_midi_events<I: Iterator<Item = MidiEvent>>(&mut self, events: I) {

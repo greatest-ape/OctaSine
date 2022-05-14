@@ -12,6 +12,7 @@ use std::sync::Arc;
 
 use audio::AudioState;
 
+use parameter_values::Parameter;
 use sync::SyncState;
 use vst::api::{Events, Supported};
 use vst::event::Event;
@@ -56,7 +57,7 @@ impl OctaSine {
 
     fn update_bpm(&mut self) {
         if let Some(bpm) = self.sync.get_bpm_from_host() {
-            self.audio.bpm = bpm;
+            self.audio.set_bpm(bpm);
         }
     }
 
@@ -64,7 +65,9 @@ impl OctaSine {
         if let Some(indeces) = self.sync.patches.get_changed_parameters_from_audio() {
             for (index, opt_new_value) in indeces.iter().enumerate() {
                 if let Some(new_value) = opt_new_value {
-                    self.audio.parameters.set_from_patch(index, *new_value);
+                    if let Some(parameter) = Parameter::from_index(index) {
+                        self.audio.set_parameter_from_patch(parameter, *new_value);
+                    }
                 }
             }
         }
