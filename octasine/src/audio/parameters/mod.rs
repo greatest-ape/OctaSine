@@ -54,20 +54,22 @@ impl AudioParameters {
     pub fn set_from_patch(&mut self, parameter: Parameter, value: f64) {
         match parameter {
             Parameter::None => (),
-            Parameter::Master(MasterParameter::Volume) => self.master_volume.set_from_patch(value),
-            Parameter::Master(MasterParameter::Frequency) => {
-                self.master_volume.set_from_patch(value)
-            }
+            Parameter::Master(p) => match p {
+                MasterParameter::Volume => self.master_volume.set_from_patch(value),
+                MasterParameter::Frequency => self.master_volume.set_from_patch(value),
+            },
             Parameter::Operator(index, p) => {
+                use OperatorParameter::*;
+
                 let operator = &mut self.operators[index];
 
                 match p {
-                    OperatorParameter::Volume => operator.volume.set_from_patch(value),
-                    OperatorParameter::Active => operator.active.set_from_patch(value),
-                    OperatorParameter::MixOut => operator.mix.set_from_patch(value),
-                    OperatorParameter::Panning => operator.panning.set_from_patch(value),
-                    OperatorParameter::WaveType => operator.wave_type.set_from_patch(value),
-                    OperatorParameter::ModTargets => {
+                    Volume => operator.volume.set_from_patch(value),
+                    Active => operator.active.set_from_patch(value),
+                    MixOut => operator.mix.set_from_patch(value),
+                    Panning => operator.panning.set_from_patch(value),
+                    WaveType => operator.wave_type.set_from_patch(value),
+                    ModTargets => {
                         use OperatorModulationTargetAudioParameter::{Four, Three, Two};
 
                         match operator.output_operator.as_mut() {
@@ -77,37 +79,32 @@ impl AudioParameters {
                             None => (),
                         }
                     }
-                    OperatorParameter::ModOut => match operator.modulation_index.as_mut() {
-                        Some(p) => p.set_from_patch(value),
-                        None => (),
-                    },
-                    OperatorParameter::Feedback => operator.feedback.set_from_patch(value),
-                    OperatorParameter::FrequencyRatio => {
-                        operator.frequency_ratio.set_from_patch(value)
+                    ModOut => {
+                        if let Some(p) = operator.modulation_index.as_mut() {
+                            p.set_from_patch(value)
+                        }
                     }
-                    OperatorParameter::FrequencyFree => {
-                        operator.frequency_free.set_from_patch(value)
-                    }
-                    OperatorParameter::FrequencyFine => {
-                        operator.frequency_fine.set_from_patch(value)
-                    }
-                    OperatorParameter::AttackDuration => operator
+                    Feedback => operator.feedback.set_from_patch(value),
+                    FrequencyRatio => operator.frequency_ratio.set_from_patch(value),
+                    FrequencyFree => operator.frequency_free.set_from_patch(value),
+                    FrequencyFine => operator.frequency_fine.set_from_patch(value),
+                    AttackDuration => operator
                         .volume_envelope
                         .attack_duration
                         .set_from_patch(value),
-                    OperatorParameter::AttackValue => operator
+                    AttackValue => operator
                         .volume_envelope
                         .attack_end_value
                         .set_from_patch(value),
-                    OperatorParameter::DecayDuration => operator
+                    DecayDuration => operator
                         .volume_envelope
                         .decay_duration
                         .set_from_patch(value),
-                    OperatorParameter::DecayValue => operator
+                    DecayValue => operator
                         .volume_envelope
                         .decay_end_value
                         .set_from_patch(value),
-                    OperatorParameter::ReleaseDuration => operator
+                    ReleaseDuration => operator
                         .volume_envelope
                         .release_duration
                         .set_from_patch(value),
