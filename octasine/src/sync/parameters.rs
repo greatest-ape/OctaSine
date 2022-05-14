@@ -3,6 +3,7 @@ use crate::parameter_values::*;
 use super::atomic_double::AtomicPositiveDouble;
 
 pub struct PatchParameter {
+    parameter: Parameter,
     value: AtomicPositiveDouble,
     pub name: String,
     value_from_text: fn(String) -> Option<f64>,
@@ -13,65 +14,64 @@ impl PatchParameter {
     pub fn all() -> Vec<Self> {
         PARAMETERS
             .iter()
+            .copied()
             .map(PatchParameter::new_from_parameter)
             .collect()
     }
 
-    fn new_from_parameter(parameter: &Parameter) -> Self {
-        let name = &parameter.name();
-
+    fn new_from_parameter(parameter: Parameter) -> Self {
         match parameter {
             Parameter::None => panic!("Attempted to create PatchParameter from Parameter::None"),
-            Parameter::Master(p) => match p {
-                MasterParameter::Frequency => Self::new::<MasterFrequencyValue>(name),
-                MasterParameter::Volume => Self::new::<MasterVolumeValue>(name),
+            Parameter::Master(master_parameter) => match master_parameter {
+                MasterParameter::Frequency => Self::new::<MasterFrequencyValue>(parameter),
+                MasterParameter::Volume => Self::new::<MasterVolumeValue>(parameter),
             },
-            Parameter::Operator(index, p) => {
+            Parameter::Operator(index, operator_parameter) => {
                 use OperatorParameter::*;
 
-                match p {
-                    Volume => Self::new::<OperatorVolumeValue>(name),
-                    Active => Self::new::<OperatorActiveValue>(name),
-                    MixOut => Self::new::<OperatorMixOutValue>(name),
-                    Panning => Self::new::<OperatorPanningValue>(name),
-                    WaveType => Self::new::<OperatorWaveTypeValue>(name),
-                    Feedback => Self::new::<OperatorFeedbackValue>(name),
-                    FrequencyRatio => Self::new::<OperatorFrequencyRatioValue>(name),
-                    FrequencyFree => Self::new::<OperatorFrequencyFreeValue>(name),
-                    FrequencyFine => Self::new::<OperatorFrequencyFineValue>(name),
-                    AttackDuration => Self::new::<OperatorAttackDurationValue>(name),
-                    AttackValue => Self::new::<OperatorAttackVolumeValue>(name),
-                    DecayDuration => Self::new::<OperatorDecayDurationValue>(name),
-                    DecayValue => Self::new::<OperatorDecayVolumeValue>(name),
-                    ReleaseDuration => Self::new::<OperatorReleaseDurationValue>(name),
+                match operator_parameter {
+                    Volume => Self::new::<OperatorVolumeValue>(parameter),
+                    Active => Self::new::<OperatorActiveValue>(parameter),
+                    MixOut => Self::new::<OperatorMixOutValue>(parameter),
+                    Panning => Self::new::<OperatorPanningValue>(parameter),
+                    WaveType => Self::new::<OperatorWaveTypeValue>(parameter),
+                    Feedback => Self::new::<OperatorFeedbackValue>(parameter),
+                    FrequencyRatio => Self::new::<OperatorFrequencyRatioValue>(parameter),
+                    FrequencyFree => Self::new::<OperatorFrequencyFreeValue>(parameter),
+                    FrequencyFine => Self::new::<OperatorFrequencyFineValue>(parameter),
+                    AttackDuration => Self::new::<OperatorAttackDurationValue>(parameter),
+                    AttackValue => Self::new::<OperatorAttackVolumeValue>(parameter),
+                    DecayDuration => Self::new::<OperatorDecayDurationValue>(parameter),
+                    DecayValue => Self::new::<OperatorDecayVolumeValue>(parameter),
+                    ReleaseDuration => Self::new::<OperatorReleaseDurationValue>(parameter),
                     ModTargets => match index {
-                        1 => Self::new::<Operator2ModulationTargetValue>(name),
-                        2 => Self::new::<Operator3ModulationTargetValue>(name),
-                        3 => Self::new::<Operator4ModulationTargetValue>(name),
+                        1 => Self::new::<Operator2ModulationTargetValue>(parameter),
+                        2 => Self::new::<Operator3ModulationTargetValue>(parameter),
+                        3 => Self::new::<Operator4ModulationTargetValue>(parameter),
                         _ => panic!("Unsupported parameter"),
                     },
                     ModOut => match index {
-                        1 | 2 | 3 => Self::new::<OperatorModOutValue>(name),
+                        1 | 2 | 3 => Self::new::<OperatorModOutValue>(parameter),
                         _ => panic!("Unsupported parameter"),
                     },
                 }
             }
-            Parameter::Lfo(index, p) => {
+            Parameter::Lfo(index, lfo_parameter) => {
                 use LfoParameter::*;
 
-                match p {
-                    BpmSync => Self::new::<LfoBpmSyncValue>(name),
-                    FrequencyRatio => Self::new::<LfoFrequencyRatioValue>(name),
-                    FrequencyFree => Self::new::<LfoFrequencyFreeValue>(name),
-                    Mode => Self::new::<LfoModeValue>(name),
-                    Shape => Self::new::<LfoShapeValue>(name),
-                    Amount => Self::new::<LfoAmountValue>(name),
-                    Active => Self::new::<LfoActiveValue>(name),
+                match lfo_parameter {
+                    BpmSync => Self::new::<LfoBpmSyncValue>(parameter),
+                    FrequencyRatio => Self::new::<LfoFrequencyRatioValue>(parameter),
+                    FrequencyFree => Self::new::<LfoFrequencyFreeValue>(parameter),
+                    Mode => Self::new::<LfoModeValue>(parameter),
+                    Shape => Self::new::<LfoShapeValue>(parameter),
+                    Amount => Self::new::<LfoAmountValue>(parameter),
+                    Active => Self::new::<LfoActiveValue>(parameter),
                     Target => match index {
-                        0 => Self::new::<Lfo1TargetParameterValue>(name),
-                        1 => Self::new::<Lfo2TargetParameterValue>(name),
-                        2 => Self::new::<Lfo3TargetParameterValue>(name),
-                        3 => Self::new::<Lfo4TargetParameterValue>(name),
+                        0 => Self::new::<Lfo1TargetParameterValue>(parameter),
+                        1 => Self::new::<Lfo2TargetParameterValue>(parameter),
+                        2 => Self::new::<Lfo3TargetParameterValue>(parameter),
+                        3 => Self::new::<Lfo4TargetParameterValue>(parameter),
                         _ => panic!("Unsupported parameter"),
                     },
                 }
@@ -79,9 +79,10 @@ impl PatchParameter {
         }
     }
 
-    fn new<V: ParameterValue>(name: &str) -> Self {
+    fn new<V: ParameterValue>(parameter: Parameter) -> Self {
         Self {
-            name: name.to_string(),
+            parameter,
+            name: parameter.name(),
             value: AtomicPositiveDouble::new(V::default().to_patch()),
             value_from_text: |v| V::new_from_text(v).map(|v| v.to_patch()),
             format: |v| V::new_from_patch(v).get_formatted(),
