@@ -5,8 +5,8 @@ use iced_baseview::{Color, Container, Element, Length, Point, Rectangle, Size, V
 
 use crate::audio::voices::envelopes::VoiceOperatorVolumeEnvelope;
 use crate::audio::voices::log10_table::Log10Table;
-use crate::parameter_values::{Parameter, OperatorParameter};
 use crate::parameter_values::operator_envelope::{ENVELOPE_MAX_DURATION, ENVELOPE_MIN_DURATION};
+use crate::parameter_values::{OperatorParameter, Parameter};
 use crate::sync::GuiSyncHandle;
 
 use super::style::Theme;
@@ -233,11 +233,23 @@ pub struct Envelope {
 
 impl Envelope {
     pub fn new<H: GuiSyncHandle>(sync_handle: &H, operator_index: usize, style: Theme) -> Self {
-        let attack_duration = Self::process_envelope_duration(sync_handle.get_parameter(Parameter::Operator(operator_index, OperatorParameter::AttackDuration)));
-        let decay_duration = Self::process_envelope_duration(sync_handle.get_parameter(Parameter::Operator(operator_index, OperatorParameter::DecayDuration)));
-        let release_duration = Self::process_envelope_duration(sync_handle.get_parameter(Parameter::Operator(operator_index, OperatorParameter::ReleaseDuration)));
-        let attack_end_value = sync_handle.get_parameter(Parameter::Operator(operator_index, OperatorParameter::AttackValue)) as f32;
-        let decay_end_value = sync_handle.get_parameter(Parameter::Operator(operator_index, OperatorParameter::DecayValue)) as f32;
+        let attack_duration = Self::process_envelope_duration(sync_handle.get_parameter(
+            Parameter::Operator(operator_index, OperatorParameter::AttackDuration),
+        ));
+        let decay_duration = Self::process_envelope_duration(sync_handle.get_parameter(
+            Parameter::Operator(operator_index, OperatorParameter::DecayDuration),
+        ));
+        let release_duration = Self::process_envelope_duration(sync_handle.get_parameter(
+            Parameter::Operator(operator_index, OperatorParameter::ReleaseDuration),
+        ));
+        let attack_end_value = sync_handle.get_parameter(Parameter::Operator(
+            operator_index,
+            OperatorParameter::AttackValue,
+        )) as f32;
+        let decay_end_value = sync_handle.get_parameter(Parameter::Operator(
+            operator_index,
+            OperatorParameter::DecayValue,
+        )) as f32;
 
         let mut envelope = Self {
             log10table: Default::default(),
@@ -699,8 +711,20 @@ impl Program<Message> for Envelope {
                         return (
                             event::Status::Captured,
                             Some(Message::ChangeTwoParametersSetValues(
-                                (Parameter::Operator(self.operator_index, OperatorParameter::AttackDuration), self.attack_duration as f64),
-                                (Parameter::Operator(self.operator_index, OperatorParameter::AttackValue), self.attack_end_value as f64),
+                                (
+                                    Parameter::Operator(
+                                        self.operator_index,
+                                        OperatorParameter::AttackDuration,
+                                    ),
+                                    self.attack_duration as f64,
+                                ),
+                                (
+                                    Parameter::Operator(
+                                        self.operator_index,
+                                        OperatorParameter::AttackValue,
+                                    ),
+                                    self.attack_end_value as f64,
+                                ),
                             )),
                         );
                     }
@@ -741,8 +765,20 @@ impl Program<Message> for Envelope {
                         return (
                             event::Status::Captured,
                             Some(Message::ChangeTwoParametersSetValues(
-                                (Parameter::Operator(self.operator_index, OperatorParameter::DecayDuration), self.decay_duration as f64),
-                                (Parameter::Operator(self.operator_index, OperatorParameter::DecayValue), self.decay_end_value as f64),
+                                (
+                                    Parameter::Operator(
+                                        self.operator_index,
+                                        OperatorParameter::DecayDuration,
+                                    ),
+                                    self.decay_duration as f64,
+                                ),
+                                (
+                                    Parameter::Operator(
+                                        self.operator_index,
+                                        OperatorParameter::DecayValue,
+                                    ),
+                                    self.decay_end_value as f64,
+                                ),
                             )),
                         );
                     }
@@ -786,7 +822,10 @@ impl Program<Message> for Envelope {
                         return (
                             event::Status::Captured,
                             Some(Message::ChangeSingleParameterSetValue(
-                                Parameter::Operator(self.operator_index, OperatorParameter::ReleaseDuration),
+                                Parameter::Operator(
+                                    self.operator_index,
+                                    OperatorParameter::ReleaseDuration,
+                                ),
                                 self.release_duration as f64,
                             )),
                         );
@@ -826,11 +865,11 @@ impl Program<Message> for Envelope {
                             original_end_value: 0.0,
                         };
 
-                        
-
-                        opt_message = Some(Message::ChangeSingleParameterBegin(
-                            Parameter::Operator(self.operator_index, OperatorParameter::ReleaseDuration)
-                        ));
+                        opt_message =
+                            Some(Message::ChangeSingleParameterBegin(Parameter::Operator(
+                                self.operator_index,
+                                OperatorParameter::ReleaseDuration,
+                            )));
                     } else if self.decay_dragger.hitbox.contains(relative_position)
                         && !self.decay_dragger.is_dragging()
                     {
@@ -840,8 +879,11 @@ impl Program<Message> for Envelope {
                             original_end_value: self.decay_end_value,
                         };
                         opt_message = Some(Message::ChangeTwoParametersBegin((
-                            Parameter::Operator(self.operator_index, OperatorParameter::DecayDuration),
-                            Parameter::Operator(self.operator_index, OperatorParameter::DecayValue)
+                            Parameter::Operator(
+                                self.operator_index,
+                                OperatorParameter::DecayDuration,
+                            ),
+                            Parameter::Operator(self.operator_index, OperatorParameter::DecayValue),
                         )));
                     } else if self.attack_dragger.hitbox.contains(relative_position)
                         && !self.attack_dragger.is_dragging()
@@ -852,8 +894,14 @@ impl Program<Message> for Envelope {
                             original_end_value: self.attack_end_value,
                         };
                         opt_message = Some(Message::ChangeTwoParametersBegin((
-                            Parameter::Operator(self.operator_index, OperatorParameter::AttackDuration),
-                            Parameter::Operator(self.operator_index, OperatorParameter::AttackValue)
+                            Parameter::Operator(
+                                self.operator_index,
+                                OperatorParameter::AttackDuration,
+                            ),
+                            Parameter::Operator(
+                                self.operator_index,
+                                OperatorParameter::AttackValue,
+                            ),
                         )));
                     } else {
                         self.dragging_background_from =
@@ -875,30 +923,28 @@ impl Program<Message> for Envelope {
                     self.release_dragger.status = EnvelopeDraggerStatus::Normal;
 
                     captured = true;
-                    opt_message = Some(Message::ChangeSingleParameterEnd(
-                        Parameter::Operator(self.operator_index, OperatorParameter::ReleaseDuration)
-                    ));
+                    opt_message = Some(Message::ChangeSingleParameterEnd(Parameter::Operator(
+                        self.operator_index,
+                        OperatorParameter::ReleaseDuration,
+                    )));
                 }
                 if self.decay_dragger.is_dragging() {
                     self.decay_dragger.status = EnvelopeDraggerStatus::Normal;
 
                     captured = true;
                     opt_message = Some(Message::ChangeTwoParametersEnd((
-                            Parameter::Operator(self.operator_index, OperatorParameter::DecayDuration),
-                            Parameter::Operator(self.operator_index, OperatorParameter::DecayValue)
-                        )
-                    ));
+                        Parameter::Operator(self.operator_index, OperatorParameter::DecayDuration),
+                        Parameter::Operator(self.operator_index, OperatorParameter::DecayValue),
+                    )));
                 }
                 if self.attack_dragger.is_dragging() {
                     self.attack_dragger.status = EnvelopeDraggerStatus::Normal;
 
                     captured = true;
-                    opt_message = Some(Message::ChangeTwoParametersEnd(
-                        (
-                            Parameter::Operator(self.operator_index, OperatorParameter::AttackDuration),
-                            Parameter::Operator(self.operator_index, OperatorParameter::AttackValue)
-                        )
-                    ));
+                    opt_message = Some(Message::ChangeTwoParametersEnd((
+                        Parameter::Operator(self.operator_index, OperatorParameter::AttackDuration),
+                        Parameter::Operator(self.operator_index, OperatorParameter::AttackValue),
+                    )));
                 }
 
                 if self.dragging_background_from.is_some() {

@@ -1,159 +1,79 @@
 use super::utils::*;
-use super::ParameterValue;
+use super::{LfoParameter, MasterParameter, OperatorParameter, Parameter, ParameterValue};
 
 // When adjusting this, remember to also modify get_lfo_target_parameters
-pub const LFO_TARGET_CONTEXT_STEPS: &[LfoTargetParameter] = &[
-    LfoTargetParameter::None,
-    LfoTargetParameter::Master(LfoTargetMasterParameter::Volume),
-    LfoTargetParameter::Master(LfoTargetMasterParameter::Frequency),
-    LfoTargetParameter::Operator(0, LfoTargetOperatorParameter::Volume),
-    LfoTargetParameter::Operator(0, LfoTargetOperatorParameter::Panning),
-    LfoTargetParameter::Operator(0, LfoTargetOperatorParameter::MixOut),
-    LfoTargetParameter::Operator(0, LfoTargetOperatorParameter::Feedback),
-    LfoTargetParameter::Operator(0, LfoTargetOperatorParameter::FrequencyRatio),
-    LfoTargetParameter::Operator(0, LfoTargetOperatorParameter::FrequencyFree),
-    LfoTargetParameter::Operator(0, LfoTargetOperatorParameter::FrequencyFine),
-    LfoTargetParameter::Operator(1, LfoTargetOperatorParameter::Volume),
-    LfoTargetParameter::Operator(1, LfoTargetOperatorParameter::Panning),
-    LfoTargetParameter::Operator(1, LfoTargetOperatorParameter::MixOut),
-    LfoTargetParameter::Operator(1, LfoTargetOperatorParameter::ModOut),
-    LfoTargetParameter::Operator(1, LfoTargetOperatorParameter::Feedback),
-    LfoTargetParameter::Operator(1, LfoTargetOperatorParameter::FrequencyRatio),
-    LfoTargetParameter::Operator(1, LfoTargetOperatorParameter::FrequencyFree),
-    LfoTargetParameter::Operator(1, LfoTargetOperatorParameter::FrequencyFine),
-    LfoTargetParameter::Operator(2, LfoTargetOperatorParameter::Volume),
-    LfoTargetParameter::Operator(2, LfoTargetOperatorParameter::Panning),
-    LfoTargetParameter::Operator(2, LfoTargetOperatorParameter::MixOut),
-    LfoTargetParameter::Operator(2, LfoTargetOperatorParameter::ModOut),
-    LfoTargetParameter::Operator(2, LfoTargetOperatorParameter::Feedback),
-    LfoTargetParameter::Operator(2, LfoTargetOperatorParameter::FrequencyRatio),
-    LfoTargetParameter::Operator(2, LfoTargetOperatorParameter::FrequencyFree),
-    LfoTargetParameter::Operator(2, LfoTargetOperatorParameter::FrequencyFine),
-    LfoTargetParameter::Operator(3, LfoTargetOperatorParameter::Volume),
-    LfoTargetParameter::Operator(3, LfoTargetOperatorParameter::Panning),
-    LfoTargetParameter::Operator(3, LfoTargetOperatorParameter::MixOut),
-    LfoTargetParameter::Operator(3, LfoTargetOperatorParameter::ModOut),
-    LfoTargetParameter::Operator(3, LfoTargetOperatorParameter::Feedback),
-    LfoTargetParameter::Operator(3, LfoTargetOperatorParameter::FrequencyRatio),
-    LfoTargetParameter::Operator(3, LfoTargetOperatorParameter::FrequencyFree),
-    LfoTargetParameter::Operator(3, LfoTargetOperatorParameter::FrequencyFine),
-    LfoTargetParameter::Lfo(0, LfoTargetLfoParameter::Shape),
-    LfoTargetParameter::Lfo(0, LfoTargetLfoParameter::Amount),
-    LfoTargetParameter::Lfo(0, LfoTargetLfoParameter::FrequencyRatio),
-    LfoTargetParameter::Lfo(0, LfoTargetLfoParameter::FrequencyFree),
-    LfoTargetParameter::Lfo(1, LfoTargetLfoParameter::Shape),
-    LfoTargetParameter::Lfo(1, LfoTargetLfoParameter::Amount),
-    LfoTargetParameter::Lfo(1, LfoTargetLfoParameter::FrequencyRatio),
-    LfoTargetParameter::Lfo(1, LfoTargetLfoParameter::FrequencyFree),
-    LfoTargetParameter::Lfo(2, LfoTargetLfoParameter::Shape),
-    LfoTargetParameter::Lfo(2, LfoTargetLfoParameter::Amount),
-    LfoTargetParameter::Lfo(2, LfoTargetLfoParameter::FrequencyRatio),
-    LfoTargetParameter::Lfo(2, LfoTargetLfoParameter::FrequencyFree),
+pub const LFO_TARGETS: &[Parameter] = &[
+    Parameter::None,
+    Parameter::Master(MasterParameter::Volume),
+    Parameter::Master(MasterParameter::Frequency),
+    Parameter::Operator(0, OperatorParameter::Volume),
+    Parameter::Operator(0, OperatorParameter::Panning),
+    Parameter::Operator(0, OperatorParameter::MixOut),
+    Parameter::Operator(0, OperatorParameter::Feedback),
+    Parameter::Operator(0, OperatorParameter::FrequencyRatio),
+    Parameter::Operator(0, OperatorParameter::FrequencyFree),
+    Parameter::Operator(0, OperatorParameter::FrequencyFine),
+    Parameter::Operator(1, OperatorParameter::Volume),
+    Parameter::Operator(1, OperatorParameter::Panning),
+    Parameter::Operator(1, OperatorParameter::MixOut),
+    Parameter::Operator(1, OperatorParameter::ModOut),
+    Parameter::Operator(1, OperatorParameter::Feedback),
+    Parameter::Operator(1, OperatorParameter::FrequencyRatio),
+    Parameter::Operator(1, OperatorParameter::FrequencyFree),
+    Parameter::Operator(1, OperatorParameter::FrequencyFine),
+    Parameter::Operator(2, OperatorParameter::Volume),
+    Parameter::Operator(2, OperatorParameter::Panning),
+    Parameter::Operator(2, OperatorParameter::MixOut),
+    Parameter::Operator(2, OperatorParameter::ModOut),
+    Parameter::Operator(2, OperatorParameter::Feedback),
+    Parameter::Operator(2, OperatorParameter::FrequencyRatio),
+    Parameter::Operator(2, OperatorParameter::FrequencyFree),
+    Parameter::Operator(2, OperatorParameter::FrequencyFine),
+    Parameter::Operator(3, OperatorParameter::Volume),
+    Parameter::Operator(3, OperatorParameter::Panning),
+    Parameter::Operator(3, OperatorParameter::MixOut),
+    Parameter::Operator(3, OperatorParameter::ModOut),
+    Parameter::Operator(3, OperatorParameter::Feedback),
+    Parameter::Operator(3, OperatorParameter::FrequencyRatio),
+    Parameter::Operator(3, OperatorParameter::FrequencyFree),
+    Parameter::Operator(3, OperatorParameter::FrequencyFine),
+    Parameter::Lfo(0, LfoParameter::Shape),
+    Parameter::Lfo(0, LfoParameter::Amount),
+    Parameter::Lfo(0, LfoParameter::FrequencyRatio),
+    Parameter::Lfo(0, LfoParameter::FrequencyFree),
+    Parameter::Lfo(1, LfoParameter::Shape),
+    Parameter::Lfo(1, LfoParameter::Amount),
+    Parameter::Lfo(1, LfoParameter::FrequencyRatio),
+    Parameter::Lfo(1, LfoParameter::FrequencyFree),
+    Parameter::Lfo(2, LfoParameter::Shape),
+    Parameter::Lfo(2, LfoParameter::Amount),
+    Parameter::Lfo(2, LfoParameter::FrequencyRatio),
+    Parameter::Lfo(2, LfoParameter::FrequencyFree),
 ];
 
-pub fn get_lfo_target_parameters(lfo_index: usize) -> &'static [LfoTargetParameter] {
+pub fn get_lfo_target_parameters(lfo_index: usize) -> &'static [Parameter] {
     let end = match lfo_index {
         0 => 34,
         1 => 38,
         2 => 42,
-        3 => LFO_TARGET_CONTEXT_STEPS.len(),
+        3 => LFO_TARGETS.len(),
         _ => unreachable!(),
     };
 
-    &LFO_TARGET_CONTEXT_STEPS[..end]
-}
-
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-pub enum LfoTargetMasterParameter {
-    Volume,
-    Frequency,
-}
-
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-pub enum LfoTargetOperatorParameter {
-    Volume,
-    Panning,
-    MixOut,
-    ModOut,
-    Feedback,
-    FrequencyRatio,
-    FrequencyFree,
-    FrequencyFine,
-}
-
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-pub enum LfoTargetLfoParameter {
-    Shape,
-    FrequencyRatio,
-    FrequencyFree,
-    Amount,
-}
-
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-pub enum LfoTargetParameter {
-    None,
-    Master(LfoTargetMasterParameter),
-    Operator(usize, LfoTargetOperatorParameter),
-    Lfo(usize, LfoTargetLfoParameter),
-}
-
-impl std::fmt::Display for LfoTargetParameter {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        match self {
-            LfoTargetParameter::None => write!(f, "None"),
-            LfoTargetParameter::Master(p) => {
-                use LfoTargetMasterParameter::*;
-
-                let p = match p {
-                    Volume => "vol",
-                    Frequency => "freq",
-                };
-
-                write!(f, "Master {}", p)
-            }
-            LfoTargetParameter::Operator(n, p) => {
-                use LfoTargetOperatorParameter::*;
-
-                let p = match p {
-                    Volume => "vol",
-                    Panning => "pan",
-                    MixOut => "mix out",
-                    ModOut => "mod out",
-                    Feedback => "feedback",
-                    FrequencyRatio => "ratio",
-                    FrequencyFree => "free",
-                    FrequencyFine => "fine",
-                };
-
-                write!(f, "OP {} {}", n + 1, p)
-            }
-            LfoTargetParameter::Lfo(n, p) => {
-                use LfoTargetLfoParameter::*;
-
-                let p = match p {
-                    Shape => "shape",
-                    FrequencyRatio => "ratio",
-                    FrequencyFree => "free",
-                    Amount => "amount",
-                };
-
-                write!(f, "LFO {} {}", n + 1, p)
-            }
-        }
-    }
+    &LFO_TARGETS[..end]
 }
 
 #[derive(Debug, Clone, Copy)]
-pub struct Lfo1TargetParameterValue(pub LfoTargetParameter);
+pub struct Lfo1TargetParameterValue(pub Parameter);
 
 impl Default for Lfo1TargetParameterValue {
     fn default() -> Self {
-        Self(LfoTargetParameter::None)
+        Self(Parameter::None)
     }
 }
 
 impl ParameterValue for Lfo1TargetParameterValue {
-    type Value = LfoTargetParameter;
+    type Value = Parameter;
 
     fn new_from_audio(value: Self::Value) -> Self {
         Self(value)
@@ -171,21 +91,21 @@ impl ParameterValue for Lfo1TargetParameterValue {
         map_step_to_parameter_value(get_lfo_target_parameters(0), self.0)
     }
     fn get_formatted(self) -> String {
-        self.0.to_string()
+        self.0.name()
     }
 }
 
 #[derive(Debug, Clone, Copy)]
-pub struct Lfo2TargetParameterValue(pub LfoTargetParameter);
+pub struct Lfo2TargetParameterValue(pub Parameter);
 
 impl Default for Lfo2TargetParameterValue {
     fn default() -> Self {
-        Self(LfoTargetParameter::None)
+        Self(Parameter::None)
     }
 }
 
 impl ParameterValue for Lfo2TargetParameterValue {
-    type Value = LfoTargetParameter;
+    type Value = Parameter;
 
     fn new_from_audio(value: Self::Value) -> Self {
         Self(value)
@@ -203,21 +123,21 @@ impl ParameterValue for Lfo2TargetParameterValue {
         map_step_to_parameter_value(get_lfo_target_parameters(1), self.0)
     }
     fn get_formatted(self) -> String {
-        self.0.to_string()
+        self.0.name()
     }
 }
 
 #[derive(Debug, Clone, Copy)]
-pub struct Lfo3TargetParameterValue(pub LfoTargetParameter);
+pub struct Lfo3TargetParameterValue(pub Parameter);
 
 impl Default for Lfo3TargetParameterValue {
     fn default() -> Self {
-        Self(LfoTargetParameter::None)
+        Self(Parameter::None)
     }
 }
 
 impl ParameterValue for Lfo3TargetParameterValue {
-    type Value = LfoTargetParameter;
+    type Value = Parameter;
 
     fn new_from_audio(value: Self::Value) -> Self {
         Self(value)
@@ -235,21 +155,21 @@ impl ParameterValue for Lfo3TargetParameterValue {
         map_step_to_parameter_value(get_lfo_target_parameters(2), self.0)
     }
     fn get_formatted(self) -> String {
-        self.0.to_string()
+        self.0.name()
     }
 }
 
 #[derive(Debug, Clone, Copy)]
-pub struct Lfo4TargetParameterValue(pub LfoTargetParameter);
+pub struct Lfo4TargetParameterValue(pub Parameter);
 
 impl Default for Lfo4TargetParameterValue {
     fn default() -> Self {
-        Self(LfoTargetParameter::None)
+        Self(Parameter::None)
     }
 }
 
 impl ParameterValue for Lfo4TargetParameterValue {
-    type Value = LfoTargetParameter;
+    type Value = Parameter;
 
     fn new_from_audio(value: Self::Value) -> Self {
         Self(value)
@@ -267,24 +187,24 @@ impl ParameterValue for Lfo4TargetParameterValue {
         map_step_to_parameter_value(get_lfo_target_parameters(3), self.0)
     }
     fn get_formatted(self) -> String {
-        self.0.to_string()
+        self.0.name()
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::{get_lfo_target_parameters, LfoTargetParameter};
+    use super::{get_lfo_target_parameters, Parameter};
 
     #[test]
     fn test_get_lfo_target_parameters() {
         assert!(!get_lfo_target_parameters(0)
             .iter()
-            .any(|t| matches!(t, LfoTargetParameter::Lfo(_, _))));
+            .any(|t| matches!(t, Parameter::Lfo(_, _))));
         assert!(!get_lfo_target_parameters(1)
             .iter()
-            .any(|t| matches!(t, LfoTargetParameter::Lfo(1.., _))));
+            .any(|t| matches!(t, Parameter::Lfo(1.., _))));
         assert!(!get_lfo_target_parameters(2)
             .iter()
-            .any(|t| matches!(t, LfoTargetParameter::Lfo(2.., _))));
+            .any(|t| matches!(t, Parameter::Lfo(2.., _))));
     }
 }

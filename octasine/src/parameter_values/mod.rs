@@ -22,8 +22,6 @@ pub mod operator_volume;
 pub mod operator_wave_type;
 pub mod utils;
 
-use once_cell::sync::Lazy;
-
 pub use lfo_active::LfoActiveValue;
 pub use lfo_amount::LfoAmountValue;
 pub use lfo_bpm_sync::LfoBpmSyncValue;
@@ -47,6 +45,7 @@ pub use operator_panning::OperatorPanningValue;
 pub use operator_volume::OperatorVolumeValue;
 pub use operator_wave_type::OperatorWaveTypeValue;
 
+/// Authoritative list of parameters in order
 pub const PARAMETERS: &[Parameter] = &[
     Parameter::Master(MasterParameter::Volume),
     Parameter::Master(MasterParameter::Frequency),
@@ -167,6 +166,8 @@ pub trait ParameterValue: Sized + Default {
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub enum Parameter {
+    /// Only used in LFO targetting
+    None,
     Master(MasterParameter),
     Operator(usize, OperatorParameter),
     Lfo(usize, LfoParameter),
@@ -175,54 +176,37 @@ pub enum Parameter {
 impl Parameter {
     pub fn name(&self) -> String {
         match self {
+            Self::None => "None".into(),
             Self::Master(MasterParameter::Frequency) => "Master frequency".into(),
             Self::Master(MasterParameter::Volume) => "Master volume".into(),
-            Self::Operator(index, OperatorParameter::Volume) => format!("OP {} vol", index + 1),
-            Self::Operator(index, OperatorParameter::Active) => format!("OP {} active", index + 1),
-            Self::Operator(index, OperatorParameter::MixOut) => format!("OP {} mix out", index + 1),
-            Self::Operator(index, OperatorParameter::Panning) => format!("OP {} pan", index + 1),
-            Self::Operator(index, OperatorParameter::WaveType) => format!("OP {} wave", index + 1),
-            Self::Operator(index, OperatorParameter::ModTargets) => {
-                format!("OP {} target", index + 1)
-            }
-            Self::Operator(index, OperatorParameter::ModOut) => format!("OP {} mod out", index + 1),
-            Self::Operator(index, OperatorParameter::Feedback) => {
-                format!("OP {} feedback", index + 1)
-            }
-            Self::Operator(index, OperatorParameter::FrequencyRatio) => {
-                format!("OP {} freq ratio", index + 1)
-            }
-            Self::Operator(index, OperatorParameter::FrequencyFree) => {
-                format!("OP {} freq free", index + 1)
-            }
-            Self::Operator(index, OperatorParameter::FrequencyFine) => {
-                format!("OP {} freq fine", index + 1)
-            }
-            Self::Operator(index, OperatorParameter::AttackDuration) => {
-                format!("OP {} attack time", index + 1)
-            }
-            Self::Operator(index, OperatorParameter::AttackValue) => {
-                format!("OP {} attack vol", index + 1)
-            }
-            Self::Operator(index, OperatorParameter::DecayDuration) => {
-                format!("OP {} decay time", index + 1)
-            }
-            Self::Operator(index, OperatorParameter::DecayValue) => {
-                format!("OP {} decay vol", index + 1)
-            }
-            Self::Operator(index, OperatorParameter::ReleaseDuration) => {
-                format!("OP {} release time", index + 1)
-            }
-            Self::Lfo(index, LfoParameter::Target) => format!("LFO {} target", index + 1),
-            Self::Lfo(index, LfoParameter::BpmSync) => format!("LFO {} bpm sync", index + 1),
-            Self::Lfo(index, LfoParameter::FrequencyRatio) => {
-                format!("LFO {} freq ratio", index + 1)
-            }
-            Self::Lfo(index, LfoParameter::FrequencyFree) => format!("LFO {} freq free", index + 1),
-            Self::Lfo(index, LfoParameter::Mode) => format!("LFO {} oneshot", index + 1),
-            Self::Lfo(index, LfoParameter::Shape) => format!("LFO {} shape", index + 1),
-            Self::Lfo(index, LfoParameter::Amount) => format!("LFO {} amount", index + 1),
-            Self::Lfo(index, LfoParameter::Active) => format!("LFO {} active", index + 1),
+            Self::Operator(index, p) => match p {
+                OperatorParameter::Volume => format!("OP {} vol", index + 1),
+                OperatorParameter::Active => format!("OP {} active", index + 1),
+                OperatorParameter::MixOut => format!("OP {} mix out", index + 1),
+                OperatorParameter::Panning => format!("OP {} pan", index + 1),
+                OperatorParameter::WaveType => format!("OP {} wave", index + 1),
+                OperatorParameter::ModTargets => format!("OP {} target", index + 1),
+                OperatorParameter::ModOut => format!("OP {} mod out", index + 1),
+                OperatorParameter::Feedback => format!("OP {} feedback", index + 1),
+                OperatorParameter::FrequencyRatio => format!("OP {} freq ratio", index + 1),
+                OperatorParameter::FrequencyFree => format!("OP {} freq free", index + 1),
+                OperatorParameter::FrequencyFine => format!("OP {} freq fine", index + 1),
+                OperatorParameter::AttackDuration => format!("OP {} attack time", index + 1),
+                OperatorParameter::AttackValue => format!("OP {} attack vol", index + 1),
+                OperatorParameter::DecayDuration => format!("OP {} decay time", index + 1),
+                OperatorParameter::DecayValue => format!("OP {} decay vol", index + 1),
+                OperatorParameter::ReleaseDuration => format!("OP {} release time", index + 1),
+            },
+            Self::Lfo(index, p) => match p {
+                LfoParameter::Target => format!("LFO {} target", index + 1),
+                LfoParameter::BpmSync => format!("LFO {} bpm sync", index + 1),
+                LfoParameter::FrequencyRatio => format!("LFO {} freq ratio", index + 1),
+                LfoParameter::FrequencyFree => format!("LFO {} freq free", index + 1),
+                LfoParameter::Mode => format!("LFO {} oneshot", index + 1),
+                LfoParameter::Shape => format!("LFO {} shape", index + 1),
+                LfoParameter::Amount => format!("LFO {} amount", index + 1),
+                LfoParameter::Active => format!("LFO {} active", index + 1),
+            },
         }
     }
 

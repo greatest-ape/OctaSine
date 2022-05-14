@@ -4,7 +4,7 @@ use iced_baseview::{
 
 use crate::parameter_values::{
     ModTarget, Operator2ModulationTargetValue, Operator3ModulationTargetValue,
-    Operator4ModulationTargetValue, ParameterValue, Parameter, OperatorParameter,
+    Operator4ModulationTargetValue, OperatorParameter, Parameter, ParameterValue,
 };
 use crate::sync::GuiSyncHandle;
 
@@ -84,7 +84,7 @@ where
             let active = self.parameter_value.get().index_active(index);
             let label = format!("{}", index + 1);
             let v = self.parameter_value.get();
-            let parameter= self.parameter;
+            let parameter = self.parameter;
 
             let checkbox = Checkbox::new(active, label, move |active| {
                 let mut v = v;

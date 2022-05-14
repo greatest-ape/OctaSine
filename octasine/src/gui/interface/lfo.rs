@@ -5,7 +5,8 @@ use iced_baseview::{
 use iced_baseview::{Container, Tooltip};
 
 use crate::parameter_values::{
-    LfoAmountValue, LfoFrequencyFreeValue, LfoFrequencyRatioValue, LfoShapeValue, Parameter, LfoParameter,
+    LfoAmountValue, LfoFrequencyFreeValue, LfoFrequencyRatioValue, LfoParameter, LfoShapeValue,
+    Parameter,
 };
 use crate::sync::GuiSyncHandle;
 

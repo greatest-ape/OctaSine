@@ -53,6 +53,7 @@ impl Default for AudioParameters {
 impl AudioParameters {
     pub fn set_from_patch(&mut self, parameter: Parameter, value: f64) {
         match parameter {
+            Parameter::None => (),
             Parameter::Master(MasterParameter::Volume) => self.master_volume.set_from_patch(value),
             Parameter::Master(MasterParameter::Frequency) => {
                 self.master_volume.set_from_patch(value)
@@ -69,14 +70,14 @@ impl AudioParameters {
                     OperatorParameter::ModTargets => {
                         use OperatorModulationTargetAudioParameter::{Four, Three, Two};
 
-                        match operator.output_operator {
+                        match operator.output_operator.as_mut() {
                             Some(Two(p)) => p.set_from_patch(value),
                             Some(Three(p)) => p.set_from_patch(value),
                             Some(Four(p)) => p.set_from_patch(value),
                             None => (),
                         }
                     }
-                    OperatorParameter::ModOut => match operator.modulation_index {
+                    OperatorParameter::ModOut => match operator.modulation_index.as_mut() {
                         Some(p) => p.set_from_patch(value),
                         None => (),
                     },

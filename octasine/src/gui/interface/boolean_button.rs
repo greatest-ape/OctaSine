@@ -6,7 +6,8 @@ use iced_baseview::{Color, Element, Length, Point, Rectangle, Size};
 
 use crate::parameter_values::lfo_mode::LfoMode;
 use crate::parameter_values::{
-    LfoActiveValue, LfoBpmSyncValue, LfoModeValue, OperatorActiveValue, ParameterValue, Parameter, OperatorParameter, LfoParameter,
+    LfoActiveValue, LfoBpmSyncValue, LfoModeValue, LfoParameter, OperatorActiveValue,
+    OperatorParameter, Parameter, ParameterValue,
 };
 use crate::sync::GuiSyncHandle;
 

@@ -5,10 +5,11 @@ use iced_baseview::{
 };
 
 use crate::parameter_values::{
-    LfoAmountValue, LfoFrequencyFreeValue, LfoFrequencyRatioValue, MasterFrequencyValue,
-    MasterVolumeValue, OperatorFeedbackValue, OperatorFrequencyFineValue,
-    OperatorFrequencyFreeValue, OperatorFrequencyRatioValue, OperatorMixOutValue,
-    OperatorModOutValue, OperatorPanningValue, OperatorVolumeValue, ParameterValue, Parameter, MasterParameter, OperatorParameter, LfoParameter,
+    LfoAmountValue, LfoFrequencyFreeValue, LfoFrequencyRatioValue, LfoParameter,
+    MasterFrequencyValue, MasterParameter, MasterVolumeValue, OperatorFeedbackValue,
+    OperatorFrequencyFineValue, OperatorFrequencyFreeValue, OperatorFrequencyRatioValue,
+    OperatorMixOutValue, OperatorModOutValue, OperatorPanningValue, OperatorParameter,
+    OperatorVolumeValue, Parameter, ParameterValue,
 };
 use crate::sync::GuiSyncHandle;
 
@@ -39,8 +40,6 @@ pub fn master_frequency<H>(sync_handle: &H, style: Theme) -> OctaSineKnob<Master
 where
     H: GuiSyncHandle,
 {
-    let parameter_index = 1;
-
     OctaSineKnob::new(
         sync_handle,
         Parameter::Master(MasterParameter::Frequency),
@@ -344,15 +343,13 @@ where
             .font(self.style.font_regular())
             .height(Length::Units(LINE_HEIGHT));
 
-        let parameter= self.parameter;
+        let parameter = self.parameter;
 
         let modifier_keys = Modifiers::SHIFT;
 
         let mut knob = knob::Knob::new(
             &mut self.knob_state,
-            move |value| {
-                Message::ChangeSingleParameterSetValue(parameter, value.as_f32() as f64)
-            },
+            move |value| Message::ChangeSingleParameterSetValue(parameter, value.as_f32() as f64),
             move || Some(Message::ChangeSingleParameterBegin(parameter)),
             move || Some(Message::ChangeSingleParameterEnd(parameter)),
         )

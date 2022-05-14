@@ -1,5 +1,6 @@
 use crate::gui::interface::style::Theme;
 use crate::gui::interface::{Message, SnapPoint, FONT_SIZE};
+use crate::parameter_values::{OperatorParameter, Parameter};
 use iced_baseview::canvas::{event, Frame, Path, Stroke, Text};
 use iced_baseview::{mouse, Point, Rectangle, Size};
 
@@ -88,14 +89,8 @@ impl OperatorBox {
         }
     }
 
-    fn get_parameter_index(&self) -> usize {
-        match self.index {
-            0 => 4,
-            1 => 18,
-            2 => 34,
-            3 => 50,
-            _ => unreachable!(),
-        }
+    fn get_parameter(&self) -> Parameter {
+        Parameter::Operator(self.index, OperatorParameter::MixOut)
     }
 
     pub fn update(
@@ -132,7 +127,7 @@ impl OperatorBox {
                         let change = -(cursor.y - from.y) as f64 / 100.0;
 
                         return OperatorBoxChange::Update(Message::ChangeSingleParameterSetValue(
-                            self.get_parameter_index(),
+                            self.get_parameter(),
                             (original_value + change).max(0.0).min(1.0),
                         ));
                     }
@@ -147,7 +142,7 @@ impl OperatorBox {
                     };
 
                     return OperatorBoxChange::ClearCache(Some(
-                        Message::ChangeSingleParameterBegin(self.get_parameter_index()),
+                        Message::ChangeSingleParameterBegin(self.get_parameter()),
                     ));
                 }
             }
@@ -160,7 +155,7 @@ impl OperatorBox {
                     }
 
                     return OperatorBoxChange::ClearCache(Some(Message::ChangeSingleParameterEnd(
-                        self.get_parameter_index(),
+                        self.get_parameter(),
                     )));
                 }
             }

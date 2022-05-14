@@ -3,7 +3,7 @@ use iced_baseview::{Element, Length};
 
 use crate::parameter_values::{
     get_lfo_target_parameters, Lfo1TargetParameterValue, Lfo2TargetParameterValue,
-    Lfo3TargetParameterValue, Lfo4TargetParameterValue, Parameter, ParameterValue, LfoParameter,
+    Lfo3TargetParameterValue, Lfo4TargetParameterValue, LfoParameter, Parameter, ParameterValue,
 };
 
 use super::{style::Theme, GuiSyncHandle, Message, FONT_SIZE};
@@ -30,11 +30,7 @@ pub struct LfoTargetPicker {
 }
 
 impl LfoTargetPicker {
-    pub fn new<H: GuiSyncHandle>(
-        sync_handle: &H,
-        lfo_index: usize,
-        style: Theme,
-    ) -> Self {
+    pub fn new<H: GuiSyncHandle>(sync_handle: &H, lfo_index: usize, style: Theme) -> Self {
         let parameter = Parameter::Lfo(lfo_index, LfoParameter::Target);
         let sync_value = sync_handle.get_parameter(parameter);
         let selected = Self::get_index_from_sync(lfo_index, sync_value);
@@ -44,7 +40,7 @@ impl LfoTargetPicker {
             .into_iter()
             .map(|target| LfoTarget {
                 value: *target,
-                title: target.to_string().to_uppercase(),
+                title: target.name().to_uppercase(),
             })
             .collect();
 

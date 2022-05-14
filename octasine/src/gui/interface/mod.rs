@@ -89,8 +89,11 @@ pub struct OctaSineIcedApplication<H: GuiSyncHandle> {
 impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {
     fn set_value(&mut self, parameter: Parameter, v: f64) {
         match parameter {
+            Parameter::None => (),
             Parameter::Master(MasterParameter::Volume) => self.corner.master_volume.set_value(v),
-            Parameter::Master(MasterParameter::Frequency) => self.corner.master_frequency.set_value(v),
+            Parameter::Master(MasterParameter::Frequency) => {
+                self.corner.master_frequency.set_value(v)
+            }
             Parameter::Operator(index, p) => {
                 let operator = match index {
                     0 => &mut self.operator_1,
@@ -107,7 +110,7 @@ impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {
                     OperatorParameter::Panning => operator.panning.set_value(v),
                     OperatorParameter::MixOut => {
                         operator.mix.set_value(v);
-                        
+
                         match index {
                             0 => self.corner.modulation_matrix.set_operator_1_mix(v),
                             1 => self.corner.modulation_matrix.set_operator_2_mix(v),
@@ -127,13 +130,13 @@ impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {
                             3 => self.corner.modulation_matrix.set_operator_4_mod(v),
                             _ => (),
                         }
-                    },
+                    }
                     OperatorParameter::ModTargets => {
                         match operator.mod_target.as_mut() {
                             Some(ModTargetPicker::Operator2(p)) => p.set_value(v),
                             Some(ModTargetPicker::Operator3(p)) => p.set_value(v),
                             Some(ModTargetPicker::Operator4(p)) => p.set_value(v),
-                            _ => ()
+                            _ => (),
                         }
                         match index {
                             1 => self.corner.modulation_matrix.set_operator_2_target(v),
@@ -150,7 +153,7 @@ impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {
                     OperatorParameter::AttackValue => operator.envelope.set_attack_end_value(v),
                     OperatorParameter::DecayDuration => operator.envelope.set_decay_duration(v),
                     OperatorParameter::DecayValue => operator.envelope.set_decay_end_value(v),
-                    OperatorParameter::ReleaseDuration => operator.envelope.set_decay_duration(v),
+                    OperatorParameter::ReleaseDuration => operator.envelope.set_release_duration(v),
                 }
             }
             Parameter::Lfo(index, p) => {
@@ -358,7 +361,10 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                 self.sync_handle.end_edit(parameter_1);
                 self.sync_handle.end_edit(parameter_2);
             }
-            Message::ChangeTwoParametersSetValues((parameter_1, value_1), (parameter_2, value_2)) => {
+            Message::ChangeTwoParametersSetValues(
+                (parameter_1, value_1),
+                (parameter_2, value_2),
+            ) => {
                 self.set_value(parameter_1, value_1);
                 self.set_value(parameter_2, value_2);
 

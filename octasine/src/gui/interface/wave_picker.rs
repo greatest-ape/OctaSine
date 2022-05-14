@@ -7,7 +7,7 @@ use iced_baseview::{
 };
 
 use crate::common::{CalculateCurve, Phase};
-use crate::parameter_values::{ParameterValue, Parameter};
+use crate::parameter_values::{Parameter, ParameterValue};
 use crate::sync::GuiSyncHandle;
 
 use super::style::Theme;

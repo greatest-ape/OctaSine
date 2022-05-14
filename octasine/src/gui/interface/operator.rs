@@ -9,7 +9,7 @@ use crate::parameter_values::{
     Operator2ModulationTargetValue, Operator3ModulationTargetValue, Operator4ModulationTargetValue,
     OperatorFeedbackValue, OperatorFrequencyFineValue, OperatorFrequencyFreeValue,
     OperatorFrequencyRatioValue, OperatorMixOutValue, OperatorModOutValue, OperatorPanningValue,
-    OperatorVolumeValue, OperatorWaveTypeValue, Parameter, OperatorParameter,
+    OperatorParameter, OperatorVolumeValue, OperatorWaveTypeValue, Parameter,
 };
 use crate::sync::GuiSyncHandle;
 
@@ -57,8 +57,6 @@ impl OperatorWidgets {
             None
         };
 
-        let mute_button = operator_mute_button(sync_handle, operator_index, style);
-
         let mod_target = match operator_index {
             3 => Some(ModTargetPicker::Operator4(
                 mod_target_picker::operator_4_target(sync_handle, operator_index, style),
@@ -71,14 +69,14 @@ impl OperatorWidgets {
             )),
             _ => None,
         };
-        
+
         let wave_type_parameter = Parameter::Operator(operator_index, OperatorParameter::WaveType);
 
         Self {
             index: operator_index,
             style,
             volume: knob::operator_volume(sync_handle, operator_index, style),
-            mute_button,
+            mute_button: operator_mute_button(sync_handle, operator_index, style),
             mix: knob::operator_mix(sync_handle, operator_index, style),
             panning: knob::operator_panning(sync_handle, operator_index, style),
             wave_type: WavePicker::new(sync_handle, wave_type_parameter, style, "WAVE"),
