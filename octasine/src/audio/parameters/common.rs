@@ -5,26 +5,29 @@ use crate::common::SampleRate;
 use crate::parameter_values::*;
 
 pub trait AudioParameter {
-    type Value;
+    type Value: ParameterValue;
 
     fn advance_one_sample(&mut self, sample_rate: SampleRate);
-    fn get_value(&self) -> Self::Value;
+    fn get_value(&self) -> <Self::Value as ParameterValue>::Value;
     fn set_from_patch(&mut self, value: f64);
-    fn get_value_with_lfo_addition(&mut self, lfo_addition: Option<f64>) -> Self::Value;
+    fn get_value_with_lfo_addition(
+        &mut self,
+        lfo_addition: Option<f64>,
+    ) -> <Self::Value as ParameterValue>::Value;
 }
 
 #[derive(Debug, Clone)]
-pub struct InterpolatableAudioParameter<P: ParameterValue> {
+pub struct InterpolatableAudioParameter<V: ParameterValue> {
     value: InterpolatableAudioValue,
-    phantom_data: PhantomData<P>,
+    phantom_data: PhantomData<V>,
 }
 
-impl<P> Default for InterpolatableAudioParameter<P>
+impl<V> Default for InterpolatableAudioParameter<V>
 where
-    P: ParameterValue<Value = f64> + Default,
+    V: ParameterValue<Value = f64> + Default,
 {
     fn default() -> Self {
-        let default = P::default().get();
+        let default = V::default().get();
 
         Self {
             value: InterpolatableAudioValue::new(default, InterpolationDuration::approx_1ms()),
@@ -33,63 +36,69 @@ where
     }
 }
 
-impl<P> AudioParameter for InterpolatableAudioParameter<P>
+impl<V> AudioParameter for InterpolatableAudioParameter<V>
 where
-    P: ParameterValue<Value = f64>,
+    V: ParameterValue<Value = f64>,
 {
-    type Value = f64;
+    type Value = V;
 
     fn advance_one_sample(&mut self, sample_rate: SampleRate) {
         self.value.advance_one_sample(sample_rate, &mut |_| ())
     }
-    fn get_value(&self) -> Self::Value {
+    fn get_value(&self) -> <Self::Value as ParameterValue>::Value {
         self.value.get_value()
     }
     fn set_from_patch(&mut self, value: f64) {
-        self.value.set_value(P::new_from_patch(value).get())
+        self.value.set_value(V::new_from_patch(value).get())
     }
-    fn get_value_with_lfo_addition(&mut self, lfo_addition: Option<f64>) -> Self::Value {
+    fn get_value_with_lfo_addition(
+        &mut self,
+        lfo_addition: Option<f64>,
+    ) -> <Self::Value as ParameterValue>::Value {
         if let Some(lfo_addition) = lfo_addition {
-            let patch_value = P::new_from_audio(self.get_value()).to_patch();
+            let patch_value = V::new_from_audio(self.get_value()).to_patch();
 
-            P::new_from_patch((patch_value + lfo_addition).min(1.0).max(0.0)).get()
+            V::new_from_patch((patch_value + lfo_addition).min(1.0).max(0.0)).get()
         } else {
             self.get_value()
         }
     }
 }
 
-pub struct SimpleAudioParameter<P: ParameterValue> {
-    pub value: <P as ParameterValue>::Value,
+pub struct SimpleAudioParameter<V: ParameterValue> {
+    pub value: <V as ParameterValue>::Value,
     sync_cache: f64,
 }
 
-impl<P: ParameterValue + Default> Default for SimpleAudioParameter<P> {
+impl<V: ParameterValue + Default> Default for SimpleAudioParameter<V> {
     fn default() -> Self {
         Self {
-            value: P::default().get(),
-            sync_cache: P::default().to_patch(),
+            value: V::default().get(),
+            sync_cache: V::default().to_patch(),
         }
     }
 }
 
-impl<P> AudioParameter for SimpleAudioParameter<P>
+impl<V> AudioParameter for SimpleAudioParameter<V>
 where
-    P: ParameterValue,
+    V: ParameterValue,
 {
-    type Value = <P as ParameterValue>::Value;
+    type Value = V;
 
     fn advance_one_sample(&mut self, _sample_rate: SampleRate) {}
-    fn get_value(&self) -> Self::Value {
+    fn get_value(&self) -> <Self::Value as ParameterValue>::Value {
         self.value
     }
     fn set_from_patch(&mut self, value: f64) {
         self.sync_cache = value;
-        self.value = P::new_from_patch(value).get();
+        self.value = V::new_from_patch(value).get();
     }
-    fn get_value_with_lfo_addition(&mut self, lfo_addition: Option<f64>) -> Self::Value {
+    fn get_value_with_lfo_addition(
+        &mut self,
+        lfo_addition: Option<f64>,
+    ) -> <Self::Value as ParameterValue>::Value {
         if let Some(lfo_addition) = lfo_addition {
-            P::new_from_patch((self.sync_cache + lfo_addition).min(1.0).max(0.0)).get()
+            V::new_from_patch((self.sync_cache + lfo_addition).min(1.0).max(0.0)).get()
         } else {
             self.get_value()
         }

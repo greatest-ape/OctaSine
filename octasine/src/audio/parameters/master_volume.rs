@@ -20,19 +20,22 @@ impl Default for MasterVolumeAudioParameter {
 }
 
 impl AudioParameter for MasterVolumeAudioParameter {
-    type Value = f64;
+    type Value = MasterVolumeValue;
 
     fn advance_one_sample(&mut self, sample_rate: SampleRate) {
         self.value.advance_one_sample(sample_rate, &mut |_| ())
     }
-    fn get_value(&self) -> Self::Value {
+    fn get_value(&self) -> <Self::Value as ParameterValue>::Value {
         self.value.get_value()
     }
     fn set_from_patch(&mut self, value: f64) {
         self.value
-            .set_value(MasterVolumeValue::new_from_patch(value).get())
+            .set_value(Self::Value::new_from_patch(value).get())
     }
-    fn get_value_with_lfo_addition(&mut self, lfo_addition: Option<f64>) -> Self::Value {
+    fn get_value_with_lfo_addition(
+        &mut self,
+        lfo_addition: Option<f64>,
+    ) -> <Self::Value as ParameterValue>::Value {
         if let Some(lfo_addition) = lfo_addition {
             self.get_value() * 2.0f64.powf(lfo_addition / 2.0)
         } else {
