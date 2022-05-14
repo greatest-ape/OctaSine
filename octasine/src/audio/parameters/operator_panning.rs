@@ -8,7 +8,7 @@ use super::common::{AudioParameter, InterpolatableAudioValue};
 
 #[derive(Debug, Clone)]
 pub struct OperatorPanningAudioParameter {
-    value: InterpolatableAudioValue,
+    value: InterpolatableAudioValue<OperatorPanningValue>,
     pub left_and_right: [f64; 2],
     pub lfo_active: bool,
 }
@@ -72,7 +72,10 @@ impl Default for OperatorPanningAudioParameter {
         let default = OperatorPanningValue::default().get();
 
         Self {
-            value: InterpolatableAudioValue::new(default, InterpolationDuration::approx_1ms()),
+            value: InterpolatableAudioValue::new_with_value(
+                default,
+                InterpolationDuration::approx_1ms(),
+            ),
             left_and_right: Self::calculate_left_and_right(default),
             lfo_active: false,
         }

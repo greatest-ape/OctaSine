@@ -17,22 +17,16 @@ pub trait AudioParameter {
 }
 
 #[derive(Debug, Clone)]
-pub struct InterpolatableAudioParameter<V: ParameterValue> {
-    value: InterpolatableAudioValue,
-    phantom_data: PhantomData<V>,
-}
+pub struct InterpolatableAudioParameter<V: ParameterValue>(InterpolatableAudioValue<V>);
 
 impl<V> Default for InterpolatableAudioParameter<V>
 where
     V: ParameterValue<Value = f64> + Default,
 {
     fn default() -> Self {
-        let default = V::default().get();
-
-        Self {
-            value: InterpolatableAudioValue::new(default, InterpolationDuration::approx_1ms()),
-            phantom_data: PhantomData::default(),
-        }
+        Self(InterpolatableAudioValue::new(
+            InterpolationDuration::approx_1ms(),
+        ))
     }
 }
 
@@ -43,13 +37,13 @@ where
     type Value = V;
 
     fn advance_one_sample(&mut self, sample_rate: SampleRate) {
-        self.value.advance_one_sample(sample_rate, &mut |_| ())
+        self.0.advance_one_sample(sample_rate, &mut |_| ())
     }
     fn get_value(&self) -> <Self::Value as ParameterValue>::Value {
-        self.value.get_value()
+        self.0.get_value()
     }
     fn set_from_patch(&mut self, value: f64) {
-        self.value.set_value(V::new_from_patch(value).get())
+        self.0.set_value(V::new_from_patch(value).get())
     }
     fn get_value_with_lfo_addition(
         &mut self,
@@ -103,17 +97,24 @@ impl<V: ParameterValue> AudioParameter for SimpleAudioParameter<V> {
 }
 
 #[derive(Debug, Copy, Clone)]
-pub struct InterpolatableAudioValue {
+pub struct InterpolatableAudioValue<V: ParameterValue> {
     value: f64,
     target_value: f64,
     step_size: f64,
     steps_remaining: usize,
     interpolation_duration: InterpolationDuration,
     sample_rate: SampleRate,
+    phantom_data: PhantomData<V>,
 }
 
-impl InterpolatableAudioValue {
-    pub fn new(value: f64, interpolation_duration: InterpolationDuration) -> Self {
+impl<V> InterpolatableAudioValue<V>
+where
+    V: ParameterValue<Value = f64>,
+{
+    pub fn new(interpolation_duration: InterpolationDuration) -> Self {
+        Self::new_with_value(V::default().get(), interpolation_duration)
+    }
+    pub fn new_with_value(value: f64, interpolation_duration: InterpolationDuration) -> Self {
         Self {
             value,
             target_value: value,
@@ -121,6 +122,7 @@ impl InterpolatableAudioValue {
             steps_remaining: 0,
             interpolation_duration,
             sample_rate: SampleRate::default(),
+            phantom_data: Default::default(),
         }
     }
 
