@@ -7,7 +7,6 @@ use arc_swap::ArcSwap;
 use array_init::array_init;
 
 use super::change_info::{ParameterChangeInfo, MAX_NUM_PARAMETERS};
-use super::parameters::patch_parameters;
 use super::parameters::PatchParameter;
 use super::serde::*;
 
@@ -18,7 +17,7 @@ pub struct Patch {
 
 impl Default for Patch {
     fn default() -> Self {
-        Self::new("-", patch_parameters())
+        Self::new("-", PatchParameter::all())
     }
 }
 
@@ -79,7 +78,7 @@ pub struct PatchBank {
 
 impl Default for PatchBank {
     fn default() -> Self {
-        Self::new(patch_parameters)
+        Self::new(PatchParameter::all)
     }
 }
 

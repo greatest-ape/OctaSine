@@ -3,14 +3,14 @@ use iced_baseview::{Element, Length};
 
 use crate::parameter_values::{
     get_lfo_target_parameters, Lfo1TargetParameterValue, Lfo2TargetParameterValue,
-    Lfo3TargetParameterValue, Lfo4TargetParameterValue, LfoTargetParameter, ParameterValue,
+    Lfo3TargetParameterValue, Lfo4TargetParameterValue, Parameter, ParameterValue,
 };
 
 use super::{style::Theme, GuiSyncHandle, Message, FONT_SIZE};
 
 #[derive(Clone, PartialEq, Eq)]
 struct LfoTarget {
-    value: LfoTargetParameter,
+    value: Parameter,
     title: String,
 }
 
