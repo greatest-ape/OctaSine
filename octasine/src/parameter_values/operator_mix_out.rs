@@ -1,9 +1,9 @@
 use super::ParameterValue;
 
 #[derive(Default, Debug, Clone, Copy)]
-pub struct OperatorMixValue(f64);
+pub struct OperatorMixOutValue(f64);
 
-impl OperatorMixValue {
+impl OperatorMixOutValue {
     pub fn new(index: usize) -> Self {
         if index == 0 {
             Self(1.0)
@@ -13,7 +13,7 @@ impl OperatorMixValue {
     }
 }
 
-impl ParameterValue for OperatorMixValue {
+impl ParameterValue for OperatorMixOutValue {
     type Value = f64;
 
     fn new_from_audio(value: Self::Value) -> Self {

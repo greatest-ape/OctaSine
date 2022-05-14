@@ -2,15 +2,15 @@ use super::{utils::*, ParameterValue};
 use crate::common::OPERATOR_MOD_INDEX_STEPS;
 
 #[derive(Debug, Clone, Copy)]
-pub struct OperatorModulationIndexValue(f64);
+pub struct OperatorModOutValue(f64);
 
-impl Default for OperatorModulationIndexValue {
+impl Default for OperatorModOutValue {
     fn default() -> Self {
         Self(0.0)
     }
 }
 
-impl ParameterValue for OperatorModulationIndexValue {
+impl ParameterValue for OperatorModOutValue {
     type Value = f64;
 
     fn new_from_audio(value: Self::Value) -> Self {

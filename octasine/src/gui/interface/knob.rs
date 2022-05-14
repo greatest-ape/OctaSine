@@ -7,8 +7,8 @@ use iced_baseview::{
 use crate::parameter_values::{
     LfoAmountValue, LfoFrequencyFreeValue, LfoFrequencyRatioValue, MasterFrequencyValue,
     MasterVolumeValue, OperatorFeedbackValue, OperatorFrequencyFineValue,
-    OperatorFrequencyFreeValue, OperatorFrequencyRatioValue, OperatorMixValue,
-    OperatorModulationIndexValue, OperatorPanningValue, OperatorVolumeValue, ParameterValue,
+    OperatorFrequencyFreeValue, OperatorFrequencyRatioValue, OperatorMixOutValue,
+    OperatorModOutValue, OperatorPanningValue, OperatorVolumeValue, ParameterValue,
 };
 use crate::sync::GuiSyncHandle;
 
@@ -77,7 +77,7 @@ pub fn operator_mix<H>(
     parameter_index: usize,
     operator_index: usize,
     style: Theme,
-) -> OctaSineKnob<OperatorMixValue>
+) -> OctaSineKnob<OperatorMixOutValue>
 where
     H: GuiSyncHandle,
 {
@@ -86,7 +86,7 @@ where
         parameter_index,
         "MIX OUT",
         TickMarkType::MinMaxAndDefault,
-        OperatorMixValue::new(operator_index).to_patch(),
+        OperatorMixOutValue::new(operator_index).to_patch(),
         style,
         |theme| theme.knob_regular(),
     )
@@ -114,7 +114,7 @@ pub fn operator_mod_index<H>(
     sync_handle: &H,
     parameter_index: usize,
     style: Theme,
-) -> OctaSineKnob<OperatorModulationIndexValue>
+) -> OctaSineKnob<OperatorModOutValue>
 where
     H: GuiSyncHandle,
 {

@@ -141,119 +141,119 @@ fn master_frequency() -> PatchParameter {
 
 fn operator_volume(index: usize) -> PatchParameter {
     PatchParameter::new(
-        &format!("Op. {} vol", index + 1),
+        &format!("OP {} vol", index + 1),
         OperatorVolumeValue::default(),
     )
 }
 
 fn operator_active(index: usize) -> PatchParameter {
     PatchParameter::new(
-        &format!("Op. {} toggle", index + 1),
+        &format!("OP {} active", index + 1),
         OperatorActiveValue::default(),
     )
 }
 
 fn operator_mix(index: usize) -> PatchParameter {
     PatchParameter::new(
-        &format!("Op. {} mix", index + 1),
-        OperatorMixValue::new(index),
+        &format!("OP {} mix out", index + 1),
+        OperatorMixOutValue::new(index),
     )
 }
 
 fn operator_panning(index: usize) -> PatchParameter {
     PatchParameter::new(
-        &format!("Op. {} pan", index + 1),
+        &format!("OP {} pan", index + 1),
         OperatorPanningValue::default(),
     )
 }
 
 fn operator_frequency_ratio(index: usize) -> PatchParameter {
     PatchParameter::new(
-        &format!("Op. {} freq ratio", index + 1),
+        &format!("OP {} freq ratio", index + 1),
         OperatorFrequencyRatioValue::default(),
     )
 }
 
 fn operator_frequency_free(index: usize) -> PatchParameter {
     PatchParameter::new(
-        &format!("Op. {} freq free", index + 1),
+        &format!("OP {} freq free", index + 1),
         OperatorFrequencyFreeValue::default(),
     )
 }
 
 fn operator_frequency_fine(index: usize) -> PatchParameter {
     PatchParameter::new(
-        &format!("Op. {} freq fine", index + 1),
+        &format!("OP {} freq fine", index + 1),
         OperatorFrequencyFineValue::default(),
     )
 }
 
 fn operator_feedback(index: usize) -> PatchParameter {
     PatchParameter::new(
-        &format!("Op. {} feedback", index + 1),
+        &format!("OP {} feedback", index + 1),
         OperatorFeedbackValue::default(),
     )
 }
 
 fn operator_modulation_index(index: usize) -> PatchParameter {
     PatchParameter::new(
-        &format!("Op. {} mod index", index + 1),
-        OperatorModulationIndexValue::default(),
+        &format!("OP {} mod out", index + 1),
+        OperatorModOutValue::default(),
     )
 }
 
 fn operator_wave_type(index: usize) -> PatchParameter {
     PatchParameter::new(
-        &format!("Op. {} wave", index + 1),
+        &format!("OP {} wave", index + 1),
         OperatorWaveTypeValue::default(),
     )
 }
 
 fn operator_attack_duration(index: usize) -> PatchParameter {
     PatchParameter::new(
-        &format!("Op. {} attack time", index + 1),
+        &format!("OP {} attack time", index + 1),
         OperatorAttackDurationValue::default(),
     )
 }
 
 fn operator_attack_volume(index: usize) -> PatchParameter {
     PatchParameter::new(
-        &format!("Op. {} attack vol", index + 1),
+        &format!("OP {} attack vol", index + 1),
         OperatorAttackVolumeValue::default(),
     )
 }
 
 fn operator_decay_duration(index: usize) -> PatchParameter {
     PatchParameter::new(
-        &format!("Op. {} decay time", index + 1),
+        &format!("OP {} decay time", index + 1),
         OperatorDecayDurationValue::default(),
     )
 }
 
 fn operator_decay_volume(index: usize) -> PatchParameter {
     PatchParameter::new(
-        &format!("Op. {} decay vol", index + 1),
+        &format!("OP {} decay vol", index + 1),
         OperatorDecayVolumeValue::default(),
     )
 }
 
 fn operator_release_duration(index: usize) -> PatchParameter {
     PatchParameter::new(
-        &format!("Op. {} release time", index + 1),
+        &format!("OP {} release time", index + 1),
         OperatorReleaseDurationValue::default(),
     )
 }
 
 fn operator_modulation_target_1() -> PatchParameter {
-    PatchParameter::new("Op. 2 mod out", Operator2ModulationTargetValue::default())
+    PatchParameter::new("OP 2 mod target", Operator2ModulationTargetValue::default())
 }
 
 fn operator_modulation_target_2() -> PatchParameter {
-    PatchParameter::new("Op. 3 mod out", Operator3ModulationTargetValue::default())
+    PatchParameter::new("OP 3 mod target", Operator3ModulationTargetValue::default())
 }
 
 fn operator_modulation_target_3() -> PatchParameter {
-    PatchParameter::new("Op. 4 mod out", Operator4ModulationTargetValue::default())
+    PatchParameter::new("OP 4 mod target", Operator4ModulationTargetValue::default())
 }
 
 fn lfo_target_parameter(index: usize) -> PatchParameter {

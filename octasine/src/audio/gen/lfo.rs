@@ -88,7 +88,7 @@ pub fn get_lfo_target_values(
         let bpm = if bpm_sync {
             bpm
         } else {
-            BeatsPerMinute::default()
+            BeatsPerMinute::one_hertz()
         };
 
         voice_lfo.advance_one_sample(

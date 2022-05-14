@@ -35,6 +35,12 @@ pub struct TimePerSample(pub f64);
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct BeatsPerMinute(pub f64);
 
+impl BeatsPerMinute {
+    pub fn one_hertz() -> Self {
+        Self(60.0)
+    }
+}
+
 impl Default for BeatsPerMinute {
     fn default() -> Self {
         Self(120.0)

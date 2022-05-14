@@ -3,15 +3,17 @@
 ## High priority
 
 * Audio
-  * Is current interpolation duration for operators and LFO mute/active
-    appropriate?
+  * Should modulation index now compensate for higher frequencies?
+  * Operator freq ratio values: are really both sqrt(2) and sqrt(3) values
+    necessary?
   * LFO clicks when using DAW and looping notes without space between
-  * LFO free/master frequency additions should have larger range
-  * Master frequency, and maybe operator free frequency, should be based
-    on factors of two.
   * Operator and master volume parameter values directly in decibel so they
-    can be used with external LFOs? Adjust frequency parameters similarily?
+    can be used with external LFOs?
 * GUI
+  * In envelope editor, zoom by dragging background up/down
+  * Two envelope lock groups
+  * Nicer display of operator freq ratio sqrt values
+  * In operator freq ratio values, display number too? E.g. 2pi: 6.28
   * Operator ratio patch value should be fine-tuned (incremented just a little
     bit) so that knob notch is at right angle
   * Add small marks to operator ratio knobs indicating factors of 2?
@@ -34,6 +36,8 @@
   * Is it a cause for concern that not keeping wave type fixed has different
     effect depending on SIMD width?
 * GUI
+  * Consider adding widget for LFOs and operators showing cumulative
+    frequency multiplier
   * Scrolling in dropdowns
     * iced 0.4: https://github.com/hecrj/iced/pull/872
     * Does scrolling (including touch) need to be added to baseview
