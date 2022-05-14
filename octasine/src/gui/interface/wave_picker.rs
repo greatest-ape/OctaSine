@@ -7,7 +7,7 @@ use iced_baseview::{
 };
 
 use crate::common::{CalculateCurve, Phase};
-use crate::parameter_values::ParameterValue;
+use crate::parameter_values::{ParameterValue, Parameter};
 use crate::sync::GuiSyncHandle;
 
 use super::style::Theme;
@@ -34,7 +34,7 @@ pub trait StyleSheet {
 }
 
 pub struct WavePicker<P: ParameterValue> {
-    parameter_index: usize,
+    parameter: Parameter,
     title: String,
     cache: Cache,
     bounds_path: Path,
@@ -52,11 +52,11 @@ where
 {
     pub fn new<H: GuiSyncHandle>(
         sync_handle: &H,
-        parameter_index: usize,
+        parameter: Parameter,
         style: Theme,
         title: &str,
     ) -> Self {
-        let value = P::new_from_patch(sync_handle.get_parameter(parameter_index));
+        let value = P::new_from_patch(sync_handle.get_parameter(parameter));
         let shape = value.get();
         let value_text = value.get_formatted();
         let bounds_path = Path::rectangle(
@@ -65,7 +65,7 @@ where
         );
 
         Self {
-            parameter_index,
+            parameter,
             title: title.into(),
             cache: Cache::new(),
             bounds_path,
@@ -255,7 +255,7 @@ where
                     (
                         event::Status::Captured,
                         Some(Message::ChangeSingleParameterImmediate(
-                            self.parameter_index,
+                            self.parameter,
                             new_value,
                         )),
                     )

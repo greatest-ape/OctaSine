@@ -9,7 +9,7 @@ use crate::parameter_values::{
     Operator2ModulationTargetValue, Operator3ModulationTargetValue, Operator4ModulationTargetValue,
     OperatorFeedbackValue, OperatorFrequencyFineValue, OperatorFrequencyFreeValue,
     OperatorFrequencyRatioValue, OperatorMixOutValue, OperatorModOutValue, OperatorPanningValue,
-    OperatorVolumeValue, OperatorWaveTypeValue,
+    OperatorVolumeValue, OperatorWaveTypeValue, Parameter, OperatorParameter,
 };
 use crate::sync::GuiSyncHandle;
 
@@ -51,61 +51,43 @@ pub struct OperatorWidgets {
 
 impl OperatorWidgets {
     pub fn new<H: GuiSyncHandle>(sync_handle: &H, operator_index: usize, style: Theme) -> Self {
-        let (
-            volume,
-            volume_toggle,
-            mix,
-            panning,
-            wave,
-            mod_target,
-            mod_index,
-            feedback,
-            ratio,
-            free,
-            fine,
-        ) = match operator_index {
-            0 => (2, 3, 4, 5, 6, 0, 0, 7, 8, 9, 10),
-            1 => (16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26),
-            2 => (32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42),
-            3 => (48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58),
-            _ => unreachable!(),
-        };
-
         let mod_index = if operator_index != 0 {
-            Some(knob::operator_mod_index(sync_handle, mod_index, style))
+            Some(knob::operator_mod_index(sync_handle, operator_index, style))
         } else {
             None
         };
 
-        let mute_button = operator_mute_button(sync_handle, volume_toggle, style);
+        let mute_button = operator_mute_button(sync_handle, operator_index, style);
 
         let mod_target = match operator_index {
             3 => Some(ModTargetPicker::Operator4(
-                mod_target_picker::operator_4_target(sync_handle, mod_target, style),
+                mod_target_picker::operator_4_target(sync_handle, operator_index, style),
             )),
             2 => Some(ModTargetPicker::Operator3(
-                mod_target_picker::operator_3_target(sync_handle, mod_target, style),
+                mod_target_picker::operator_3_target(sync_handle, operator_index, style),
             )),
             1 => Some(ModTargetPicker::Operator2(
-                mod_target_picker::operator_2_target(sync_handle, mod_target, style),
+                mod_target_picker::operator_2_target(sync_handle, operator_index, style),
             )),
             _ => None,
         };
+        
+        let wave_type_parameter = Parameter::Operator(operator_index, OperatorParameter::WaveType);
 
         Self {
             index: operator_index,
             style,
-            volume: knob::operator_volume(sync_handle, volume, style),
+            volume: knob::operator_volume(sync_handle, operator_index, style),
             mute_button,
-            mix: knob::operator_mix(sync_handle, mix, operator_index, style),
-            panning: knob::operator_panning(sync_handle, panning, style),
-            wave_type: WavePicker::new(sync_handle, wave, style, "WAVE"),
+            mix: knob::operator_mix(sync_handle, operator_index, style),
+            panning: knob::operator_panning(sync_handle, operator_index, style),
+            wave_type: WavePicker::new(sync_handle, wave_type_parameter, style, "WAVE"),
             mod_index,
             mod_target,
-            feedback: knob::operator_feedback(sync_handle, feedback, style),
-            frequency_ratio: knob::operator_frequency_ratio(sync_handle, ratio, style),
-            frequency_free: knob::operator_frequency_free(sync_handle, free, style),
-            frequency_fine: knob::operator_frequency_fine(sync_handle, fine, style),
+            feedback: knob::operator_feedback(sync_handle, operator_index, style),
+            frequency_ratio: knob::operator_frequency_ratio(sync_handle, operator_index, style),
+            frequency_free: knob::operator_frequency_free(sync_handle, operator_index, style),
+            frequency_fine: knob::operator_frequency_fine(sync_handle, operator_index, style),
             envelope: Envelope::new(sync_handle, operator_index, style),
             zoom_in: button::State::default(),
             zoom_out: button::State::default(),

@@ -15,6 +15,7 @@ mod wave_picker;
 use iced_baseview::{executor, Application, Command, Subscription, WindowSubs};
 use iced_baseview::{Column, Container, Element, Length, Point, Row, Space, WindowQueue};
 
+use crate::parameter_values::*;
 use crate::sync::GuiSyncHandle;
 
 use lfo::LfoWidgets;
@@ -54,13 +55,13 @@ impl SnapPoint for Point {
 #[derive(Debug, Clone)]
 pub enum Message {
     Frame,
-    ChangeSingleParameterBegin(usize),
-    ChangeSingleParameterEnd(usize),
-    ChangeSingleParameterSetValue(usize, f64),
-    ChangeSingleParameterImmediate(usize, f64),
-    ChangeTwoParametersBegin((usize, usize)),
-    ChangeTwoParametersEnd((usize, usize)),
-    ChangeTwoParametersSetValues((usize, f64), (usize, f64)),
+    ChangeSingleParameterBegin(Parameter),
+    ChangeSingleParameterEnd(Parameter),
+    ChangeSingleParameterSetValue(Parameter, f64),
+    ChangeSingleParameterImmediate(Parameter, f64),
+    ChangeTwoParametersBegin((Parameter, Parameter)),
+    ChangeTwoParametersEnd((Parameter, Parameter)),
+    ChangeTwoParametersSetValues((Parameter, f64), (Parameter, f64)),
     ToggleInfo,
     PatchChange(usize),
     EnvelopeZoomIn(usize),
@@ -86,152 +87,92 @@ pub struct OctaSineIcedApplication<H: GuiSyncHandle> {
 }
 
 impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {
-    fn set_value(&mut self, parameter_index: usize, value: f64) {
-        let v = value;
+    fn set_value(&mut self, parameter: Parameter, v: f64) {
+        match parameter {
+            Parameter::Master(MasterParameter::Volume) => self.corner.master_volume.set_value(v),
+            Parameter::Master(MasterParameter::Frequency) => self.corner.master_frequency.set_value(v),
+            Parameter::Operator(index, p) => {
+                let operator = match index {
+                    0 => &mut self.operator_1,
+                    1 => &mut self.operator_2,
+                    2 => &mut self.operator_3,
+                    3 => &mut self.operator_4,
+                    _ => panic!("No such operator"),
+                };
 
-        match parameter_index {
-            0 => self.corner.master_volume.set_value(v),
-            1 => self.corner.master_frequency.set_value(v),
-            2 => self.operator_1.volume.set_value(v),
-            3 => self.operator_1.mute_button.set_value(v),
-            4 => {
-                self.operator_1.mix.set_value(v);
-                self.corner.modulation_matrix.set_operator_1_mix(value);
-            }
-            5 => self.operator_1.panning.set_value(v),
-            6 => self.operator_1.wave_type.set_value(v),
-            7 => self.operator_1.feedback.set_value(v),
-            8 => self.operator_1.frequency_ratio.set_value(v),
-            9 => self.operator_1.frequency_free.set_value(v),
-            10 => self.operator_1.frequency_fine.set_value(v),
-            11 => self.operator_1.envelope.set_attack_duration(v),
-            12 => self.operator_1.envelope.set_attack_end_value(v),
-            13 => self.operator_1.envelope.set_decay_duration(v),
-            14 => self.operator_1.envelope.set_decay_end_value(v),
-            15 => self.operator_1.envelope.set_release_duration(v),
-            16 => self.operator_2.volume.set_value(v),
-            17 => self.operator_2.mute_button.set_value(v),
-            18 => {
-                self.operator_2.mix.set_value(v);
-                self.corner.modulation_matrix.set_operator_2_mix(value);
-            }
-            19 => self.operator_2.panning.set_value(v),
-            20 => self.operator_2.wave_type.set_value(v),
-            21 => {
-                match self.operator_2.mod_target.as_mut() {
-                    Some(ModTargetPicker::Operator2(p)) => p.set_value(v),
-                    _ => {}
+                match p {
+                    OperatorParameter::Active => operator.mute_button.set_value(v),
+                    OperatorParameter::WaveType => operator.wave_type.set_value(v),
+                    OperatorParameter::Volume => operator.volume.set_value(v),
+                    OperatorParameter::Panning => operator.panning.set_value(v),
+                    OperatorParameter::MixOut => {
+                        operator.mix.set_value(v);
+                        
+                        match index {
+                            0 => self.corner.modulation_matrix.set_operator_1_mix(v),
+                            1 => self.corner.modulation_matrix.set_operator_2_mix(v),
+                            2 => self.corner.modulation_matrix.set_operator_3_mix(v),
+                            3 => self.corner.modulation_matrix.set_operator_4_mix(v),
+                            _ => (),
+                        }
+                    }
+                    OperatorParameter::ModOut => {
+                        if let Some(mod_index) = operator.mod_index.as_mut() {
+                            mod_index.set_value(v)
+                        }
+
+                        match index {
+                            1 => self.corner.modulation_matrix.set_operator_2_mod(v),
+                            2 => self.corner.modulation_matrix.set_operator_3_mod(v),
+                            3 => self.corner.modulation_matrix.set_operator_4_mod(v),
+                            _ => (),
+                        }
+                    },
+                    OperatorParameter::ModTargets => {
+                        match operator.mod_target.as_mut() {
+                            Some(ModTargetPicker::Operator2(p)) => p.set_value(v),
+                            Some(ModTargetPicker::Operator3(p)) => p.set_value(v),
+                            Some(ModTargetPicker::Operator4(p)) => p.set_value(v),
+                            _ => ()
+                        }
+                        match index {
+                            1 => self.corner.modulation_matrix.set_operator_2_target(v),
+                            2 => self.corner.modulation_matrix.set_operator_3_target(v),
+                            3 => self.corner.modulation_matrix.set_operator_4_target(v),
+                            _ => (),
+                        }
+                    }
+                    OperatorParameter::Feedback => operator.feedback.set_value(v),
+                    OperatorParameter::FrequencyRatio => operator.frequency_ratio.set_value(v),
+                    OperatorParameter::FrequencyFree => operator.frequency_free.set_value(v),
+                    OperatorParameter::FrequencyFine => operator.frequency_fine.set_value(v),
+                    OperatorParameter::AttackDuration => operator.envelope.set_attack_duration(v),
+                    OperatorParameter::AttackValue => operator.envelope.set_attack_end_value(v),
+                    OperatorParameter::DecayDuration => operator.envelope.set_decay_duration(v),
+                    OperatorParameter::DecayValue => operator.envelope.set_decay_end_value(v),
+                    OperatorParameter::ReleaseDuration => operator.envelope.set_decay_duration(v),
                 }
-                self.corner.modulation_matrix.set_operator_2_target(v);
             }
-            22 => {
-                if let Some(mod_index) = self.operator_2.mod_index.as_mut() {
-                    mod_index.set_value(v)
+            Parameter::Lfo(index, p) => {
+                let lfo = match index {
+                    0 => &mut self.lfo_1,
+                    1 => &mut self.lfo_2,
+                    2 => &mut self.lfo_3,
+                    3 => &mut self.lfo_4,
+                    _ => panic!("No such LFO"),
+                };
+
+                match p {
+                    LfoParameter::Target => lfo.target.set_value(v),
+                    LfoParameter::BpmSync => lfo.bpm_sync.set_value(v),
+                    LfoParameter::FrequencyRatio => lfo.frequency_ratio.set_value(v),
+                    LfoParameter::FrequencyFree => lfo.frequency_free.set_value(v),
+                    LfoParameter::Mode => lfo.mode.set_value(v),
+                    LfoParameter::Shape => lfo.shape.set_value(v),
+                    LfoParameter::Amount => lfo.amount.set_value(v),
+                    LfoParameter::Active => lfo.active.set_value(v),
                 }
-                self.corner.modulation_matrix.set_operator_2_mod(v);
             }
-            23 => self.operator_2.feedback.set_value(v),
-            24 => self.operator_2.frequency_ratio.set_value(v),
-            25 => self.operator_2.frequency_free.set_value(v),
-            26 => self.operator_2.frequency_fine.set_value(v),
-            27 => self.operator_2.envelope.set_attack_duration(v),
-            28 => self.operator_2.envelope.set_attack_end_value(v),
-            29 => self.operator_2.envelope.set_decay_duration(v),
-            30 => self.operator_2.envelope.set_decay_end_value(v),
-            31 => self.operator_2.envelope.set_release_duration(v),
-            32 => self.operator_3.volume.set_value(v),
-            33 => self.operator_3.mute_button.set_value(v),
-            34 => {
-                self.corner.modulation_matrix.set_operator_3_mix(value);
-                self.operator_3.mix.set_value(v);
-            }
-            35 => self.operator_3.panning.set_value(v),
-            36 => self.operator_3.wave_type.set_value(v),
-            37 => {
-                match self.operator_3.mod_target.as_mut() {
-                    Some(ModTargetPicker::Operator3(p)) => p.set_value(v),
-                    _ => {}
-                }
-                self.corner.modulation_matrix.set_operator_3_target(v);
-            }
-            38 => {
-                if let Some(mod_index) = self.operator_3.mod_index.as_mut() {
-                    mod_index.set_value(v)
-                }
-                self.corner.modulation_matrix.set_operator_3_mod(v);
-            }
-            39 => self.operator_3.feedback.set_value(v),
-            40 => self.operator_3.frequency_ratio.set_value(v),
-            41 => self.operator_3.frequency_free.set_value(v),
-            42 => self.operator_3.frequency_fine.set_value(v),
-            43 => self.operator_3.envelope.set_attack_duration(v),
-            44 => self.operator_3.envelope.set_attack_end_value(v),
-            45 => self.operator_3.envelope.set_decay_duration(v),
-            46 => self.operator_3.envelope.set_decay_end_value(v),
-            47 => self.operator_3.envelope.set_release_duration(v),
-            48 => self.operator_4.volume.set_value(v),
-            49 => self.operator_4.mute_button.set_value(v),
-            50 => {
-                self.operator_4.mix.set_value(v);
-                self.corner.modulation_matrix.set_operator_4_mix(value);
-            }
-            51 => self.operator_4.panning.set_value(v),
-            52 => self.operator_4.wave_type.set_value(v),
-            53 => {
-                match self.operator_4.mod_target.as_mut() {
-                    Some(ModTargetPicker::Operator4(p)) => p.set_value(v),
-                    _ => {}
-                }
-                self.corner.modulation_matrix.set_operator_4_target(v);
-            }
-            54 => {
-                if let Some(mod_index) = self.operator_4.mod_index.as_mut() {
-                    mod_index.set_value(v)
-                }
-                self.corner.modulation_matrix.set_operator_4_mod(v);
-            }
-            55 => self.operator_4.feedback.set_value(v),
-            56 => self.operator_4.frequency_ratio.set_value(v),
-            57 => self.operator_4.frequency_free.set_value(v),
-            58 => self.operator_4.frequency_fine.set_value(v),
-            59 => self.operator_4.envelope.set_attack_duration(v),
-            60 => self.operator_4.envelope.set_attack_end_value(v),
-            61 => self.operator_4.envelope.set_decay_duration(v),
-            62 => self.operator_4.envelope.set_decay_end_value(v),
-            63 => self.operator_4.envelope.set_release_duration(v),
-            64 => self.lfo_1.target.set_value(v),
-            65 => self.lfo_1.bpm_sync.set_value(v),
-            66 => self.lfo_1.frequency_ratio.set_value(v),
-            67 => self.lfo_1.frequency_free.set_value(v),
-            68 => self.lfo_1.mode.set_value(v),
-            69 => self.lfo_1.shape.set_value(v),
-            70 => self.lfo_1.amount.set_value(v),
-            71 => self.lfo_1.active.set_value(v),
-            72 => self.lfo_2.target.set_value(v),
-            73 => self.lfo_2.bpm_sync.set_value(v),
-            74 => self.lfo_2.frequency_ratio.set_value(v),
-            75 => self.lfo_2.frequency_free.set_value(v),
-            76 => self.lfo_2.mode.set_value(v),
-            77 => self.lfo_2.shape.set_value(v),
-            78 => self.lfo_2.amount.set_value(v),
-            79 => self.lfo_2.active.set_value(v),
-            80 => self.lfo_3.target.set_value(v),
-            81 => self.lfo_3.bpm_sync.set_value(v),
-            82 => self.lfo_3.frequency_ratio.set_value(v),
-            83 => self.lfo_3.frequency_free.set_value(v),
-            84 => self.lfo_3.mode.set_value(v),
-            85 => self.lfo_3.shape.set_value(v),
-            86 => self.lfo_3.amount.set_value(v),
-            87 => self.lfo_3.active.set_value(v),
-            88 => self.lfo_4.target.set_value(v),
-            89 => self.lfo_4.bpm_sync.set_value(v),
-            90 => self.lfo_4.frequency_ratio.set_value(v),
-            91 => self.lfo_4.frequency_free.set_value(v),
-            92 => self.lfo_4.mode.set_value(v),
-            93 => self.lfo_4.shape.set_value(v),
-            94 => self.lfo_4.amount.set_value(v),
-            95 => self.lfo_4.active.set_value(v),
-            _ => (),
         }
     }
 
@@ -241,7 +182,9 @@ impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {
         if let Some(changes) = opt_changes {
             for (index, opt_new_value) in changes.iter().enumerate() {
                 if let Some(new_value) = opt_new_value {
-                    self.set_value(index, *new_value);
+                    if let Some(parameter) = Parameter::from_index(index) {
+                        self.set_value(parameter, *new_value);
+                    }
                 }
             }
         }
@@ -395,32 +338,32 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
             Message::ChangeSingleParameterEnd(index) => {
                 self.sync_handle.end_edit(index);
             }
-            Message::ChangeSingleParameterSetValue(index, value) => {
-                self.set_value(index, value);
+            Message::ChangeSingleParameterSetValue(parameter, value) => {
+                self.set_value(parameter, value);
 
-                self.sync_handle.set_parameter(index, value);
+                self.sync_handle.set_parameter(parameter, value);
             }
-            Message::ChangeSingleParameterImmediate(index, value) => {
-                self.set_value(index, value);
+            Message::ChangeSingleParameterImmediate(parameter, value) => {
+                self.set_value(parameter, value);
 
-                self.sync_handle.begin_edit(index);
-                self.sync_handle.set_parameter(index, value);
-                self.sync_handle.end_edit(index);
+                self.sync_handle.begin_edit(parameter);
+                self.sync_handle.set_parameter(parameter, value);
+                self.sync_handle.end_edit(parameter);
             }
-            Message::ChangeTwoParametersBegin((index_1, index_2)) => {
-                self.sync_handle.begin_edit(index_1);
-                self.sync_handle.begin_edit(index_2);
+            Message::ChangeTwoParametersBegin((parameter_1, parameter_2)) => {
+                self.sync_handle.begin_edit(parameter_1);
+                self.sync_handle.begin_edit(parameter_2);
             }
-            Message::ChangeTwoParametersEnd((index_1, index_2)) => {
-                self.sync_handle.end_edit(index_1);
-                self.sync_handle.end_edit(index_2);
+            Message::ChangeTwoParametersEnd((parameter_1, parameter_2)) => {
+                self.sync_handle.end_edit(parameter_1);
+                self.sync_handle.end_edit(parameter_2);
             }
-            Message::ChangeTwoParametersSetValues((index_1, value_1), (index_2, value_2)) => {
-                self.set_value(index_1, value_1);
-                self.set_value(index_2, value_2);
+            Message::ChangeTwoParametersSetValues((parameter_1, value_1), (parameter_2, value_2)) => {
+                self.set_value(parameter_1, value_1);
+                self.set_value(parameter_2, value_2);
 
-                self.sync_handle.set_parameter(index_1, value_1);
-                self.sync_handle.set_parameter(index_2, value_2);
+                self.sync_handle.set_parameter(parameter_1, value_1);
+                self.sync_handle.set_parameter(parameter_2, value_2);
             }
             Message::PatchChange(index) => {
                 self.sync_handle.set_patch_index(index);

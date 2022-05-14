@@ -8,7 +8,7 @@ use crate::parameter_values::{
     LfoAmountValue, LfoFrequencyFreeValue, LfoFrequencyRatioValue, MasterFrequencyValue,
     MasterVolumeValue, OperatorFeedbackValue, OperatorFrequencyFineValue,
     OperatorFrequencyFreeValue, OperatorFrequencyRatioValue, OperatorMixOutValue,
-    OperatorModOutValue, OperatorPanningValue, OperatorVolumeValue, ParameterValue,
+    OperatorModOutValue, OperatorPanningValue, OperatorVolumeValue, ParameterValue, Parameter, MasterParameter, OperatorParameter, LfoParameter,
 };
 use crate::sync::GuiSyncHandle;
 
@@ -25,11 +25,9 @@ pub fn master_volume<H>(sync_handle: &H, style: Theme) -> OctaSineKnob<MasterVol
 where
     H: GuiSyncHandle,
 {
-    let parameter_index = 0;
-
     OctaSineKnob::new(
         sync_handle,
-        parameter_index,
+        Parameter::Master(MasterParameter::Volume),
         "VOLUME",
         TickMarkType::MinMaxAndDefault,
         style,
@@ -45,7 +43,7 @@ where
 
     OctaSineKnob::new(
         sync_handle,
-        parameter_index,
+        Parameter::Master(MasterParameter::Frequency),
         "FREQ",
         TickMarkType::MinMaxAndDefault,
         style,
@@ -55,7 +53,7 @@ where
 
 pub fn operator_volume<H>(
     sync_handle: &H,
-    parameter_index: usize,
+    operator_index: usize,
     style: Theme,
 ) -> OctaSineKnob<OperatorVolumeValue>
 where
@@ -63,7 +61,7 @@ where
 {
     OctaSineKnob::new_with_default_sync_value(
         sync_handle,
-        parameter_index,
+        Parameter::Operator(operator_index, OperatorParameter::Volume),
         "VOL",
         TickMarkType::MinMaxAndDefault,
         OperatorVolumeValue::default().to_patch(),
@@ -74,7 +72,6 @@ where
 
 pub fn operator_mix<H>(
     sync_handle: &H,
-    parameter_index: usize,
     operator_index: usize,
     style: Theme,
 ) -> OctaSineKnob<OperatorMixOutValue>
@@ -83,7 +80,7 @@ where
 {
     OctaSineKnob::new_with_default_sync_value(
         sync_handle,
-        parameter_index,
+        Parameter::Operator(operator_index, OperatorParameter::MixOut),
         "MIX OUT",
         TickMarkType::MinMaxAndDefault,
         OperatorMixOutValue::new(operator_index).to_patch(),
@@ -94,7 +91,7 @@ where
 
 pub fn operator_panning<H>(
     sync_handle: &H,
-    parameter_index: usize,
+    operator_index: usize,
     style: Theme,
 ) -> OctaSineKnob<OperatorPanningValue>
 where
@@ -102,7 +99,7 @@ where
 {
     OctaSineKnob::new(
         sync_handle,
-        parameter_index,
+        Parameter::Operator(operator_index, OperatorParameter::Panning),
         "PAN",
         TickMarkType::MinMaxAndDefault,
         style,
@@ -112,7 +109,7 @@ where
 
 pub fn operator_mod_index<H>(
     sync_handle: &H,
-    parameter_index: usize,
+    operator_index: usize,
     style: Theme,
 ) -> OctaSineKnob<OperatorModOutValue>
 where
@@ -120,7 +117,7 @@ where
 {
     OctaSineKnob::new(
         sync_handle,
-        parameter_index,
+        Parameter::Operator(operator_index, OperatorParameter::ModOut),
         "MOD OUT",
         TickMarkType::MinMaxAndDefault,
         style,
@@ -130,7 +127,7 @@ where
 
 pub fn operator_feedback<H>(
     sync_handle: &H,
-    parameter_index: usize,
+    operator_index: usize,
     style: Theme,
 ) -> OctaSineKnob<OperatorFeedbackValue>
 where
@@ -138,7 +135,7 @@ where
 {
     OctaSineKnob::new(
         sync_handle,
-        parameter_index,
+        Parameter::Operator(operator_index, OperatorParameter::Feedback),
         "FEEDBACK",
         TickMarkType::MinMaxAndDefault,
         style,
@@ -148,7 +145,7 @@ where
 
 pub fn operator_frequency_ratio<H>(
     sync_handle: &H,
-    parameter_index: usize,
+    operator_index: usize,
     style: Theme,
 ) -> OctaSineKnob<OperatorFrequencyRatioValue>
 where
@@ -156,7 +153,7 @@ where
 {
     OctaSineKnob::new(
         sync_handle,
-        parameter_index,
+        Parameter::Operator(operator_index, OperatorParameter::FrequencyRatio),
         "RATIO",
         TickMarkType::MinMaxAndDefault,
         style,
@@ -166,7 +163,7 @@ where
 
 pub fn operator_frequency_free<H>(
     sync_handle: &H,
-    parameter_index: usize,
+    operator_index: usize,
     style: Theme,
 ) -> OctaSineKnob<OperatorFrequencyFreeValue>
 where
@@ -174,7 +171,7 @@ where
 {
     OctaSineKnob::new(
         sync_handle,
-        parameter_index,
+        Parameter::Operator(operator_index, OperatorParameter::FrequencyFree),
         "FREE",
         TickMarkType::MinMaxAndDefault,
         style,
@@ -184,7 +181,7 @@ where
 
 pub fn operator_frequency_fine<H>(
     sync_handle: &H,
-    parameter_index: usize,
+    operator_index: usize,
     style: Theme,
 ) -> OctaSineKnob<OperatorFrequencyFineValue>
 where
@@ -192,7 +189,7 @@ where
 {
     OctaSineKnob::new(
         sync_handle,
-        parameter_index,
+        Parameter::Operator(operator_index, OperatorParameter::FrequencyFine),
         "FINE",
         TickMarkType::MinMaxAndDefault,
         style,
@@ -202,7 +199,7 @@ where
 
 pub fn lfo_frequency_ratio<H>(
     sync_handle: &H,
-    parameter_index: usize,
+    lfo_index: usize,
     style: Theme,
 ) -> OctaSineKnob<LfoFrequencyRatioValue>
 where
@@ -210,7 +207,7 @@ where
 {
     OctaSineKnob::new(
         sync_handle,
-        parameter_index,
+        Parameter::Lfo(lfo_index, LfoParameter::FrequencyRatio),
         "RATIO",
         TickMarkType::MinMaxAndDefault,
         style,
@@ -220,7 +217,7 @@ where
 
 pub fn lfo_frequency_free<H>(
     sync_handle: &H,
-    parameter_index: usize,
+    lfo_index: usize,
     style: Theme,
 ) -> OctaSineKnob<LfoFrequencyFreeValue>
 where
@@ -228,7 +225,7 @@ where
 {
     OctaSineKnob::new(
         sync_handle,
-        parameter_index,
+        Parameter::Lfo(lfo_index, LfoParameter::FrequencyFree),
         "FREE",
         TickMarkType::MinMaxAndDefault,
         style,
@@ -238,7 +235,7 @@ where
 
 pub fn lfo_amount<H>(
     sync_handle: &H,
-    parameter_index: usize,
+    lfo_index: usize,
     style: Theme,
 ) -> OctaSineKnob<LfoAmountValue>
 where
@@ -246,7 +243,7 @@ where
 {
     OctaSineKnob::new(
         sync_handle,
-        parameter_index,
+        Parameter::Lfo(lfo_index, LfoParameter::Amount),
         "AMOUNT",
         TickMarkType::MinMaxAndDefault,
         style,
@@ -263,7 +260,7 @@ pub struct OctaSineKnob<P: ParameterValue> {
     title: String,
     value_text: String,
     default_patch_value: f64,
-    parameter_index: usize,
+    parameter: Parameter,
     phantom_data: ::std::marker::PhantomData<P>,
     style_extractor: fn(Theme) -> Box<dyn iced_audio::knob::StyleSheet>,
 }
@@ -274,7 +271,7 @@ where
 {
     fn new<H: GuiSyncHandle>(
         sync_handle: &H,
-        parameter_index: usize,
+        parameter: Parameter,
         title: &str,
         tick_mark_type: TickMarkType,
         style: Theme,
@@ -282,7 +279,7 @@ where
     ) -> Self {
         Self::new_with_default_sync_value(
             sync_handle,
-            parameter_index,
+            parameter,
             title,
             tick_mark_type,
             P::default().to_patch(),
@@ -293,14 +290,14 @@ where
 
     fn new_with_default_sync_value<H: GuiSyncHandle>(
         sync_handle: &H,
-        parameter_index: usize,
+        parameter: Parameter,
         title: &str,
         tick_mark_type: TickMarkType,
         default_patch_value: f64,
         style: Theme,
         style_extractor: fn(Theme) -> Box<dyn iced_audio::knob::StyleSheet>,
     ) -> Self {
-        let sync_value = sync_handle.get_parameter(parameter_index);
+        let sync_value = sync_handle.get_parameter(parameter);
         let value_text = P::new_from_patch(sync_value).get_formatted();
 
         let knob_state = knob::State::new(NormalParam {
@@ -322,7 +319,7 @@ where
             title: title.to_string(),
             value_text,
             default_patch_value,
-            parameter_index,
+            parameter,
             phantom_data: ::std::marker::PhantomData::default(),
             style_extractor,
         }
@@ -347,17 +344,17 @@ where
             .font(self.style.font_regular())
             .height(Length::Units(LINE_HEIGHT));
 
-        let parameter_index = self.parameter_index;
+        let parameter= self.parameter;
 
         let modifier_keys = Modifiers::SHIFT;
 
         let mut knob = knob::Knob::new(
             &mut self.knob_state,
             move |value| {
-                Message::ChangeSingleParameterSetValue(parameter_index, value.as_f32() as f64)
+                Message::ChangeSingleParameterSetValue(parameter, value.as_f32() as f64)
             },
-            move || Some(Message::ChangeSingleParameterBegin(parameter_index)),
-            move || Some(Message::ChangeSingleParameterEnd(parameter_index)),
+            move || Some(Message::ChangeSingleParameterBegin(parameter)),
+            move || Some(Message::ChangeSingleParameterEnd(parameter)),
         )
         .size(Length::from(KNOB_SIZE))
         .modifier_keys(modifier_keys)

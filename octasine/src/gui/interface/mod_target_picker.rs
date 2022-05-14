@@ -4,7 +4,7 @@ use iced_baseview::{
 
 use crate::parameter_values::{
     ModTarget, Operator2ModulationTargetValue, Operator3ModulationTargetValue,
-    Operator4ModulationTargetValue, ParameterValue,
+    Operator4ModulationTargetValue, ParameterValue, Parameter, OperatorParameter,
 };
 use crate::sync::GuiSyncHandle;
 
@@ -13,32 +13,32 @@ use super::{Message, FONT_SIZE, LINE_HEIGHT};
 
 pub fn operator_2_target<H: GuiSyncHandle>(
     sync_handle: &H,
-    parameter_index: usize,
+    operator_index: usize,
     style: Theme,
 ) -> ModTargetPicker<Operator2ModulationTargetValue> {
-    ModTargetPicker::new(sync_handle, parameter_index, "TARGET", vec![0], style)
+    ModTargetPicker::new(sync_handle, operator_index, "TARGET", vec![0], style)
 }
 
 pub fn operator_3_target<H: GuiSyncHandle>(
     sync_handle: &H,
-    parameter_index: usize,
+    operator_index: usize,
     style: Theme,
 ) -> ModTargetPicker<Operator3ModulationTargetValue> {
-    ModTargetPicker::new(sync_handle, parameter_index, "TARGET", vec![1, 0], style)
+    ModTargetPicker::new(sync_handle, operator_index, "TARGET", vec![1, 0], style)
 }
 
 pub fn operator_4_target<H: GuiSyncHandle>(
     sync_handle: &H,
-    parameter_index: usize,
+    operator_index: usize,
     style: Theme,
 ) -> ModTargetPicker<Operator4ModulationTargetValue> {
-    ModTargetPicker::new(sync_handle, parameter_index, "TARGET", vec![2, 1, 0], style)
+    ModTargetPicker::new(sync_handle, operator_index, "TARGET", vec![2, 1, 0], style)
 }
 
 #[derive(Debug, Clone)]
 pub struct ModTargetPicker<P> {
     title: String,
-    parameter_index: usize,
+    parameter: Parameter,
     pub style: Theme,
     choices: Vec<usize>,
     parameter_value: P,
@@ -51,16 +51,17 @@ where
 {
     fn new<H: GuiSyncHandle>(
         sync_handle: &H,
-        parameter_index: usize,
+        operator_index: usize,
         title: &str,
         choices: Vec<usize>,
         style: Theme,
     ) -> Self {
-        let sync_value = sync_handle.get_parameter(parameter_index);
+        let parameter = Parameter::Operator(operator_index, OperatorParameter::ModTargets);
+        let sync_value = sync_handle.get_parameter(parameter);
 
         Self {
             title: title.into(),
-            parameter_index,
+            parameter,
             style,
             choices,
             parameter_value: P::new_from_patch(sync_value),
@@ -83,7 +84,7 @@ where
             let active = self.parameter_value.get().index_active(index);
             let label = format!("{}", index + 1);
             let v = self.parameter_value.get();
-            let parameter_index = self.parameter_index;
+            let parameter= self.parameter;
 
             let checkbox = Checkbox::new(active, label, move |active| {
                 let mut v = v;
@@ -92,7 +93,7 @@ where
 
                 let sync = P::new_from_audio(v).to_patch();
 
-                Message::ChangeSingleParameterImmediate(parameter_index, sync)
+                Message::ChangeSingleParameterImmediate(parameter, sync)
             })
             .font(self.style.font_regular())
             .size(FONT_SIZE)
