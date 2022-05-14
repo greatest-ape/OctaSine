@@ -22,84 +22,60 @@ impl PatchParameter {
 
         match parameter {
             Parameter::None => panic!("Attempted to create PatchParameter from Parameter::None"),
-            Parameter::Master(MasterParameter::Frequency) => {
-                Self::new::<MasterFrequencyValue>(name)
+            Parameter::Master(p) => match p {
+                MasterParameter::Frequency => Self::new::<MasterFrequencyValue>(name),
+                MasterParameter::Volume => Self::new::<MasterVolumeValue>(name),
+            },
+            Parameter::Operator(index, p) => {
+                use OperatorParameter::*;
+
+                match p {
+                    Volume => Self::new::<OperatorVolumeValue>(name),
+                    Active => Self::new::<OperatorActiveValue>(name),
+                    MixOut => Self::new::<OperatorMixOutValue>(name),
+                    Panning => Self::new::<OperatorPanningValue>(name),
+                    WaveType => Self::new::<OperatorWaveTypeValue>(name),
+                    Feedback => Self::new::<OperatorFeedbackValue>(name),
+                    FrequencyRatio => Self::new::<OperatorFrequencyRatioValue>(name),
+                    FrequencyFree => Self::new::<OperatorFrequencyFreeValue>(name),
+                    FrequencyFine => Self::new::<OperatorFrequencyFineValue>(name),
+                    AttackDuration => Self::new::<OperatorAttackDurationValue>(name),
+                    AttackValue => Self::new::<OperatorAttackVolumeValue>(name),
+                    DecayDuration => Self::new::<OperatorDecayDurationValue>(name),
+                    DecayValue => Self::new::<OperatorDecayVolumeValue>(name),
+                    ReleaseDuration => Self::new::<OperatorReleaseDurationValue>(name),
+                    ModTargets => match index {
+                        1 => Self::new::<Operator2ModulationTargetValue>(name),
+                        2 => Self::new::<Operator3ModulationTargetValue>(name),
+                        3 => Self::new::<Operator4ModulationTargetValue>(name),
+                        _ => panic!("Unsupported parameter"),
+                    },
+                    ModOut => match index {
+                        1 | 2 | 3 => Self::new::<OperatorModOutValue>(name),
+                        _ => panic!("Unsupported parameter"),
+                    },
+                }
             }
-            Parameter::Master(MasterParameter::Volume) => Self::new::<MasterVolumeValue>(name),
-            Parameter::Operator(_, OperatorParameter::Volume) => {
-                Self::new::<OperatorVolumeValue>(name)
+            Parameter::Lfo(index, p) => {
+                use LfoParameter::*;
+
+                match p {
+                    BpmSync => Self::new::<LfoBpmSyncValue>(name),
+                    FrequencyRatio => Self::new::<LfoFrequencyRatioValue>(name),
+                    FrequencyFree => Self::new::<LfoFrequencyFreeValue>(name),
+                    Mode => Self::new::<LfoModeValue>(name),
+                    Shape => Self::new::<LfoShapeValue>(name),
+                    Amount => Self::new::<LfoAmountValue>(name),
+                    Active => Self::new::<LfoActiveValue>(name),
+                    Target => match index {
+                        0 => Self::new::<Lfo1TargetParameterValue>(name),
+                        1 => Self::new::<Lfo2TargetParameterValue>(name),
+                        2 => Self::new::<Lfo3TargetParameterValue>(name),
+                        3 => Self::new::<Lfo4TargetParameterValue>(name),
+                        _ => panic!("Unsupported parameter"),
+                    },
+                }
             }
-            Parameter::Operator(_, OperatorParameter::Active) => {
-                Self::new::<OperatorActiveValue>(name)
-            }
-            Parameter::Operator(_, OperatorParameter::MixOut) => {
-                Self::new::<OperatorMixOutValue>(name)
-            }
-            Parameter::Operator(_, OperatorParameter::Panning) => {
-                Self::new::<OperatorPanningValue>(name)
-            }
-            Parameter::Operator(_, OperatorParameter::WaveType) => {
-                Self::new::<OperatorWaveTypeValue>(name)
-            }
-            Parameter::Operator(1, OperatorParameter::ModTargets) => {
-                Self::new::<Operator2ModulationTargetValue>(name)
-            }
-            Parameter::Operator(2, OperatorParameter::ModTargets) => {
-                Self::new::<Operator3ModulationTargetValue>(name)
-            }
-            Parameter::Operator(3, OperatorParameter::ModTargets) => {
-                Self::new::<Operator4ModulationTargetValue>(name)
-            }
-            Parameter::Operator(_, OperatorParameter::ModTargets) => {
-                panic!("Unsupported parameter")
-            }
-            Parameter::Operator(1..=3, OperatorParameter::ModOut) => {
-                Self::new::<OperatorModOutValue>(name)
-            }
-            Parameter::Operator(_, OperatorParameter::ModOut) => panic!("Unsupported parameter"),
-            Parameter::Operator(_, OperatorParameter::Feedback) => {
-                Self::new::<OperatorFeedbackValue>(name)
-            }
-            Parameter::Operator(_, OperatorParameter::FrequencyRatio) => {
-                Self::new::<OperatorFrequencyRatioValue>(name)
-            }
-            Parameter::Operator(_, OperatorParameter::FrequencyFree) => {
-                Self::new::<OperatorFrequencyFreeValue>(name)
-            }
-            Parameter::Operator(_, OperatorParameter::FrequencyFine) => {
-                Self::new::<OperatorFrequencyFineValue>(name)
-            }
-            Parameter::Operator(_, OperatorParameter::AttackDuration) => {
-                Self::new::<OperatorAttackDurationValue>(name)
-            }
-            Parameter::Operator(_, OperatorParameter::AttackValue) => {
-                Self::new::<OperatorAttackVolumeValue>(name)
-            }
-            Parameter::Operator(_, OperatorParameter::DecayDuration) => {
-                Self::new::<OperatorDecayDurationValue>(name)
-            }
-            Parameter::Operator(_, OperatorParameter::DecayValue) => {
-                Self::new::<OperatorDecayVolumeValue>(name)
-            }
-            Parameter::Operator(_, OperatorParameter::ReleaseDuration) => {
-                Self::new::<OperatorReleaseDurationValue>(name)
-            }
-            Parameter::Lfo(0, LfoParameter::Target) => Self::new::<Lfo1TargetParameterValue>(name),
-            Parameter::Lfo(1, LfoParameter::Target) => Self::new::<Lfo2TargetParameterValue>(name),
-            Parameter::Lfo(2, LfoParameter::Target) => Self::new::<Lfo3TargetParameterValue>(name),
-            Parameter::Lfo(3, LfoParameter::Target) => Self::new::<Lfo4TargetParameterValue>(name),
-            Parameter::Lfo(_, LfoParameter::Target) => panic!("Unsupported parameter"),
-            Parameter::Lfo(_, LfoParameter::BpmSync) => Self::new::<LfoBpmSyncValue>(name),
-            Parameter::Lfo(_, LfoParameter::FrequencyRatio) => {
-                Self::new::<LfoFrequencyRatioValue>(name)
-            }
-            Parameter::Lfo(_, LfoParameter::FrequencyFree) => {
-                Self::new::<LfoFrequencyFreeValue>(name)
-            }
-            Parameter::Lfo(_, LfoParameter::Mode) => Self::new::<LfoModeValue>(name),
-            Parameter::Lfo(_, LfoParameter::Shape) => Self::new::<LfoShapeValue>(name),
-            Parameter::Lfo(_, LfoParameter::Amount) => Self::new::<LfoAmountValue>(name),
-            Parameter::Lfo(_, LfoParameter::Active) => Self::new::<LfoActiveValue>(name),
         }
     }
 
