@@ -119,7 +119,7 @@ mod tests {
     use super::PatchParameter;
 
     #[test]
-    fn test_sync_parameters_len() {
+    fn test_patch_parameters_len() {
         assert!(PatchParameter::all().len() <= MAX_NUM_PARAMETERS);
     }
 }
