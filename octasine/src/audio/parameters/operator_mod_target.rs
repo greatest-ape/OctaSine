@@ -6,6 +6,7 @@ use crate::parameter_values::{
 };
 
 use super::common::{AudioParameter, SimpleAudioParameter};
+use super::AudioParameterPatchInteraction;
 
 pub enum OperatorModulationTargetAudioParameter {
     Two(SimpleAudioParameter<Operator2ModulationTargetValue>),
@@ -47,5 +48,34 @@ impl OperatorModulationTargetAudioParameter {
             Self::Three(p) => p.advance_one_sample(sample_rate),
             Self::Four(p) => p.advance_one_sample(sample_rate),
         }
+    }
+}
+
+impl AudioParameterPatchInteraction for OperatorModulationTargetAudioParameter {
+    fn set_patch_value(&mut self, value: f64) {
+        match self {
+            Self::Two(p) => p.set_from_patch(value),
+            Self::Three(p) => p.set_from_patch(value),
+            Self::Four(p) => p.set_from_patch(value),
+        }
+    }
+
+    #[cfg(test)]
+    fn compare_patch_value(&mut self, value: f64) -> bool {
+        use crate::parameter_values::ParameterValue;
+
+        let a = match self {
+            Self::Two(_) => Operator2ModulationTargetValue::new_from_patch(value).to_patch(),
+            Self::Three(_) => Operator3ModulationTargetValue::new_from_patch(value).to_patch(),
+            Self::Four(_) => Operator4ModulationTargetValue::new_from_patch(value).to_patch(),
+        };
+
+        let b = match self {
+            Self::Two(p) => p.get_parameter_value().to_patch(),
+            Self::Three(p) => p.get_parameter_value().to_patch(),
+            Self::Four(p) => p.get_parameter_value().to_patch(),
+        };
+
+        a == b
     }
 }

@@ -49,7 +49,7 @@ impl Default for AudioState {
 
 impl AudioState {
     pub fn set_parameter_from_patch(&mut self, parameter: Parameter, value: f64) {
-        self.parameters.set_from_patch(parameter, value);
+        self.parameters.set_parameter_from_patch(parameter, value);
     }
 
     pub fn set_sample_rate(&mut self, sample_rate: SampleRate) {
@@ -105,5 +105,17 @@ impl AudioState {
 
     fn key_off(&mut self, pitch: u8) {
         self.voices[pitch as usize].release_key();
+    }
+
+    #[cfg(test)]
+    pub fn advance_one_sample(&mut self, sample_rate: SampleRate) {
+        self.parameters.advance_one_sample(sample_rate);
+    }
+
+    #[cfg(test)]
+    pub fn compare_parameter_patch_value(&mut self, parameter: Parameter, value: f64) -> bool {
+        self.parameters
+            .compare_patch_value(parameter, value)
+            .unwrap()
     }
 }

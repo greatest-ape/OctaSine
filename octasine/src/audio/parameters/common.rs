@@ -15,6 +15,10 @@ pub trait AudioParameter {
         &mut self,
         lfo_addition: Option<f64>,
     ) -> <Self::ParameterValue as ParameterValue>::Value;
+
+    fn get_parameter_value(&self) -> Self::ParameterValue {
+        Self::ParameterValue::new_from_audio(self.get_value())
+    }
 }
 
 #[derive(Debug, Clone)]

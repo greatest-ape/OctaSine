@@ -32,6 +32,25 @@ use self::operator_mod_target::OperatorModulationTargetAudioParameter;
 use self::operator_panning::OperatorPanningAudioParameter;
 use self::operator_volume::OperatorVolumeAudioParameter;
 
+trait AudioParameterPatchInteraction {
+    fn set_patch_value(&mut self, value: f64);
+    #[cfg(test)]
+    fn compare_patch_value(&mut self, value: f64) -> bool;
+}
+
+impl<P: AudioParameter> AudioParameterPatchInteraction for P {
+    fn set_patch_value(&mut self, value: f64) {
+        self.set_from_patch(value)
+    }
+    #[cfg(test)]
+    fn compare_patch_value(&mut self, value: f64) -> bool {
+        let a = P::ParameterValue::new_from_patch(value).to_patch();
+        let b = self.get_parameter_value().to_patch();
+
+        (a - b).abs() <= 1.0 / 1_000_000.0
+    }
+}
+
 pub struct AudioParameters {
     pub master_volume: MasterVolumeAudioParameter,
     pub master_frequency: MasterFrequencyAudioParameter,
@@ -50,82 +69,87 @@ impl Default for AudioParameters {
     }
 }
 
-impl AudioParameters {
-    pub fn set_from_patch(&mut self, parameter: Parameter, value: f64) {
-        match parameter {
-            Parameter::None => (),
-            Parameter::Master(p) => match p {
-                MasterParameter::Volume => self.master_volume.set_from_patch(value),
-                MasterParameter::Frequency => self.master_volume.set_from_patch(value),
-            },
-            Parameter::Operator(index, p) => {
-                use OperatorParameter::*;
+macro_rules! impl_patch_interaction {
+    ($name:ident, $input:ty, $output:ty, $f:expr) => {
+        pub fn $name(&mut self, parameter: Parameter, input: $input) -> Option<$output> {
+            match parameter {
+                Parameter::None => None,
+                Parameter::Master(p) => match p {
+                    MasterParameter::Volume => $f(&mut self.master_volume, input),
+                    MasterParameter::Frequency => $f(&mut self.master_frequency, input),
+                },
+                Parameter::Operator(index, p) => {
+                    use OperatorParameter::*;
 
-                let operator = &mut self.operators[index];
+                    let operator = &mut self.operators[index];
 
-                match p {
-                    Volume => operator.volume.set_from_patch(value),
-                    Active => operator.active.set_from_patch(value),
-                    MixOut => operator.mix.set_from_patch(value),
-                    Panning => operator.panning.set_from_patch(value),
-                    WaveType => operator.wave_type.set_from_patch(value),
-                    ModTargets => {
-                        use OperatorModulationTargetAudioParameter::{Four, Three, Two};
-
-                        match operator.output_operator.as_mut() {
-                            Some(Two(p)) => p.set_from_patch(value),
-                            Some(Three(p)) => p.set_from_patch(value),
-                            Some(Four(p)) => p.set_from_patch(value),
-                            None => (),
+                    match p {
+                        Volume => $f(&mut operator.volume, input),
+                        Active => $f(&mut operator.active, input),
+                        MixOut => $f(&mut operator.mix, input),
+                        Panning => $f(&mut operator.panning, input),
+                        WaveType => $f(&mut operator.wave_type, input),
+                        ModTargets => {
+                            if let Some(p) = &mut operator.output_operator {
+                                $f(p, input)
+                            } else {
+                                None
+                            }
+                        }
+                        ModOut => {
+                            if let Some(p) = operator.modulation_index.as_mut() {
+                                $f(p, input)
+                            } else {
+                                None
+                            }
+                        }
+                        Feedback => $f(&mut operator.feedback, input),
+                        FrequencyRatio => $f(&mut operator.frequency_ratio, input),
+                        FrequencyFree => $f(&mut operator.frequency_free, input),
+                        FrequencyFine => $f(&mut operator.frequency_fine, input),
+                        AttackDuration => $f(&mut operator.volume_envelope.attack_duration, input),
+                        AttackValue => $f(&mut operator.volume_envelope.attack_end_value, input),
+                        DecayDuration => $f(&mut operator.volume_envelope.decay_duration, input),
+                        DecayValue => $f(&mut operator.volume_envelope.decay_end_value, input),
+                        ReleaseDuration => {
+                            $f(&mut operator.volume_envelope.release_duration, input)
                         }
                     }
-                    ModOut => {
-                        if let Some(p) = operator.modulation_index.as_mut() {
-                            p.set_from_patch(value)
-                        }
-                    }
-                    Feedback => operator.feedback.set_from_patch(value),
-                    FrequencyRatio => operator.frequency_ratio.set_from_patch(value),
-                    FrequencyFree => operator.frequency_free.set_from_patch(value),
-                    FrequencyFine => operator.frequency_fine.set_from_patch(value),
-                    AttackDuration => operator
-                        .volume_envelope
-                        .attack_duration
-                        .set_from_patch(value),
-                    AttackValue => operator
-                        .volume_envelope
-                        .attack_end_value
-                        .set_from_patch(value),
-                    DecayDuration => operator
-                        .volume_envelope
-                        .decay_duration
-                        .set_from_patch(value),
-                    DecayValue => operator
-                        .volume_envelope
-                        .decay_end_value
-                        .set_from_patch(value),
-                    ReleaseDuration => operator
-                        .volume_envelope
-                        .release_duration
-                        .set_from_patch(value),
                 }
-            }
-            Parameter::Lfo(index, p) => {
-                let lfo = &mut self.lfos[index];
+                Parameter::Lfo(index, p) => {
+                    let lfo = &mut self.lfos[index];
 
-                match p {
-                    LfoParameter::Target => lfo.target_parameter.set_from_sync(value),
-                    LfoParameter::BpmSync => lfo.bpm_sync.set_from_patch(value),
-                    LfoParameter::FrequencyRatio => lfo.frequency_ratio.set_from_patch(value),
-                    LfoParameter::FrequencyFree => lfo.frequency_free.set_from_patch(value),
-                    LfoParameter::Mode => lfo.mode.set_from_patch(value),
-                    LfoParameter::Shape => lfo.shape.set_from_patch(value),
-                    LfoParameter::Amount => lfo.amount.set_from_patch(value),
-                    LfoParameter::Active => lfo.active.set_from_patch(value),
+                    match p {
+                        LfoParameter::Target => $f(&mut lfo.target_parameter, input),
+                        LfoParameter::BpmSync => $f(&mut lfo.bpm_sync, input),
+                        LfoParameter::FrequencyRatio => $f(&mut lfo.frequency_ratio, input),
+                        LfoParameter::FrequencyFree => $f(&mut lfo.frequency_free, input),
+                        LfoParameter::Mode => $f(&mut lfo.mode, input),
+                        LfoParameter::Shape => $f(&mut lfo.shape, input),
+                        LfoParameter::Amount => $f(&mut lfo.amount, input),
+                        LfoParameter::Active => $f(&mut lfo.active, input),
+                    }
                 }
             }
         }
-    }
+    };
+}
+
+impl AudioParameters {
+    impl_patch_interaction!(
+        set_parameter_from_patch,
+        f64,
+        (),
+        |p: &mut dyn AudioParameterPatchInteraction, v| Some(p.set_patch_value(v))
+    );
+
+    #[cfg(test)]
+    impl_patch_interaction!(
+        compare_patch_value,
+        f64,
+        bool,
+        |p: &mut dyn AudioParameterPatchInteraction, v| Some(p.compare_patch_value(v))
+    );
 
     pub fn advance_one_sample(&mut self, sample_rate: SampleRate) {
         self.master_volume.advance_one_sample(sample_rate);
