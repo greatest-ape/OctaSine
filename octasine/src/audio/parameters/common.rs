@@ -109,6 +109,7 @@ impl<V: ParameterValue> AudioParameter for SimpleAudioParameter<V> {
     }
 }
 
+/// AudioParameter value interpolator. Supports values >= 0.0 only.
 #[derive(Debug, Copy, Clone)]
 pub struct Interpolator {
     value: f64,
@@ -156,7 +157,10 @@ impl Interpolator {
     }
 
     pub fn get_value(&self) -> f64 {
-        self.value
+        // Force value to be at least zero to avoid breaking expectations
+        // elsewhere, notable in operator volume/mod out/mix out operator
+        // dependency analysis
+        self.value.max(0.0)
     }
 
     fn restart_interpolation(&mut self) {
@@ -187,30 +191,40 @@ mod tests {
 
     #[test]
     fn test_interpolator() {
-        fn prop(duration: InterpolationDuration, value: f64) -> TestResult {
-            if value.is_nan() || value.is_infinite() || value.abs() > (10.0f64).powf(100.0) {
+        fn prop(duration: InterpolationDuration, set_value: f64) -> TestResult {
+            if set_value.is_sign_negative()
+                || set_value.is_nan()
+                || set_value.is_infinite()
+                || set_value > (10.0f64).powf(100.0)
+            {
                 return TestResult::discard();
             }
 
             let sample_rate = SampleRate::default();
+            let num_samples = duration.samples(sample_rate);
 
             let mut interpolator = Interpolator::new(0.0, duration);
 
-            interpolator.set_value(value);
+            interpolator.set_value(set_value);
 
-            for _ in 0..duration.samples(sample_rate) {
+            for _ in 0..num_samples {
                 interpolator.advance_one_sample(sample_rate, &mut |_| {})
             }
 
-            let new_value = interpolator.get_value();
+            let resulting_value_internal = interpolator.value;
+            let resulting_value = interpolator.get_value();
 
-            let success = (value - new_value).abs() <= value.abs() / 1_000_000_000.0;
+            let accepted_error = set_value.abs() / 1_000_000_000.0;
+
+            let success = ((set_value - resulting_value).abs() <= accepted_error)
+                && (resulting_value - resulting_value_internal).abs() <= accepted_error;
 
             if !success {
                 println!();
-                println!("duration:        {:?}", duration);
-                println!("set value:       {}", value);
-                println!("resulting value: {}", new_value);
+                println!("duration: {:?}", duration);
+                println!("set value: {}", set_value);
+                println!("resulting value: {}", resulting_value);
+                println!("resulting value (interal): {}", resulting_value);
             }
 
             TestResult::from_bool(success)
