@@ -4,6 +4,7 @@ use crate::audio::common::InterpolationDuration;
 use crate::common::SampleRate;
 use crate::parameter_values::*;
 
+/// Parameter storage for audio generation. Not thread-safe.
 pub trait AudioParameter {
     type ParameterValue: ParameterValue;
 

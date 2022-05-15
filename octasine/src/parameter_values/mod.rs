@@ -145,17 +145,16 @@ pub const PARAMETERS: &[Parameter] = &[
     Parameter::Lfo(3, LfoParameter::Active),
 ];
 
+/// Storage of audio parameter values with utilities for conversions
+/// to and from patch values.
 pub trait ParameterValue: Sized + Default + Copy {
     /// Value as used in audio generation
     type Value: Copy;
 
-    /// Create new
     fn new_from_audio(value: Self::Value) -> Self;
-    /// Create new from String
     fn new_from_text(_text: String) -> Option<Self> {
         None
     }
-    /// Create new from patch value
     fn new_from_patch(value: f64) -> Self;
 
     /// Get inner (audio gen) value
@@ -164,6 +163,7 @@ pub trait ParameterValue: Sized + Default + Copy {
     fn to_patch(self) -> f64;
 }
 
+/// Parameter enum used to abstract over parameter indices
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub enum Parameter {
     /// Only used in LFO targetting

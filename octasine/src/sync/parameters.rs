@@ -2,6 +2,8 @@ use crate::parameter_values::*;
 
 use super::atomic_double::AtomicPositiveDouble;
 
+/// Thread-safe storage of parameter values in patch format (f64 in range 0.0
+/// to 1.0)
 pub struct PatchParameter {
     parameter: Parameter,
     value: AtomicPositiveDouble,
