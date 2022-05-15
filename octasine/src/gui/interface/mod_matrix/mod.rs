@@ -151,7 +151,7 @@ impl ModulationMatrixComponents {
             bounds,
             3,
             2,
-            Parameter::Operator(3, OperatorParameter::ModOut),
+            Parameter::Operator(3, OperatorParameter::ModTargets),
             2,
             parameters.operator_4_targets,
         );
@@ -159,7 +159,7 @@ impl ModulationMatrixComponents {
             bounds,
             3,
             1,
-            Parameter::Operator(3, OperatorParameter::ModOut),
+            Parameter::Operator(3, OperatorParameter::ModTargets),
             1,
             parameters.operator_4_targets,
         );
@@ -167,7 +167,7 @@ impl ModulationMatrixComponents {
             bounds,
             3,
             0,
-            Parameter::Operator(3, OperatorParameter::ModOut),
+            Parameter::Operator(3, OperatorParameter::ModTargets),
             0,
             parameters.operator_4_targets,
         );
@@ -175,7 +175,7 @@ impl ModulationMatrixComponents {
             bounds,
             2,
             1,
-            Parameter::Operator(2, OperatorParameter::ModOut),
+            Parameter::Operator(2, OperatorParameter::ModTargets),
             1,
             parameters.operator_3_targets,
         );
@@ -183,7 +183,7 @@ impl ModulationMatrixComponents {
             bounds,
             2,
             0,
-            Parameter::Operator(2, OperatorParameter::ModOut),
+            Parameter::Operator(2, OperatorParameter::ModTargets),
             0,
             parameters.operator_3_targets,
         );
@@ -191,7 +191,7 @@ impl ModulationMatrixComponents {
             bounds,
             1,
             0,
-            Parameter::Operator(1, OperatorParameter::ModOut),
+            Parameter::Operator(1, OperatorParameter::ModTargets),
             0,
             parameters.operator_2_targets,
         );
