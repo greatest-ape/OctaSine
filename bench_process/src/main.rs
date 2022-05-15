@@ -142,7 +142,15 @@ fn benchmark<A: AudioGen + Simd>(name: &str, expected_hash: &str) -> (bool, f32)
     // have same issue with their default interpolation times.
     // Setting interpolation time to 3ms fixes it for volume and mix out, but NOT for active.
     // However, with volume set to 3ms, with and without dependency analysis still produces different results.
-    // Commit: https://github.com/greatest-ape/OctaSine/pull/62/commits/71983918ac4c17cfc11848e831ef65f7871d38ed
+    //
+    // Forcing audio parameter interpolator to set target value in final interpolation step
+    // means that operator dependency analysis no longer makes a difference. However, different
+    // results are still produced on avx.
+    //
+    // Code likely makes assumptions about values that can be broken by interpolation, for instance that volume,
+    // panning and others are never negative / out of bounds.
+    //
+    // A commit that broke hash equality: https://github.com/greatest-ape/OctaSine/pull/62/commits/71983918ac4c17cfc11848e831ef65f7871d38ed
     let parameters_to_automate: Vec<Parameter> = vec![
         // Parameter::Operator(0, OperatorParameter::Volume),
         Parameter::Operator(0, OperatorParameter::Volume),
