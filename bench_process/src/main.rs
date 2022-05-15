@@ -1,6 +1,7 @@
 use std::time::Instant;
 
 use colored::*;
+use octasine::parameters::{OperatorParameter, Parameter, PARAMETERS};
 use sha2::{Digest, Sha256};
 use vst::event::MidiEvent;
 use vst::plugin::PluginParameters;
@@ -106,8 +107,20 @@ fn main() {
 fn benchmark<A: AudioGen + Simd>(name: &str, expected_hash: &str) -> (bool, f32) {
     let mut octasine = OctaSine::default();
 
-    let envelope_duration_parameters = [11, 13, 15, 27, 29, 31, 43, 45, 47, 59, 61, 63];
-    let wave_type_parameters = [6, 20, 36, 52];
+    let envelope_duration_parameters: Vec<Parameter> = (0..4)
+        .map(|i| {
+            vec![
+                Parameter::Operator(i, OperatorParameter::AttackDuration),
+                Parameter::Operator(i, OperatorParameter::DecayDuration),
+                Parameter::Operator(i, OperatorParameter::ReleaseDuration),
+            ]
+        })
+        .flatten()
+        .collect();
+
+    let wave_type_parameters: Vec<Parameter> = (0..4)
+        .map(|i| Parameter::Operator(i, OperatorParameter::WaveType))
+        .collect();
 
     const SIZE: usize = 256;
 
@@ -119,10 +132,10 @@ fn benchmark<A: AudioGen + Simd>(name: &str, expected_hash: &str) -> (bool, f32)
     let iterations = 5_000;
 
     for p in envelope_duration_parameters.iter() {
-        octasine.sync.set_parameter(*p, 0.1);
+        octasine.sync.set_parameter(p.to_index() as i32, 0.1);
     }
     for p in wave_type_parameters.iter() {
-        octasine.sync.set_parameter(*p, 0.0);
+        octasine.sync.set_parameter(p.to_index() as i32, 0.0);
     }
 
     let now = Instant::now();
@@ -162,12 +175,16 @@ fn benchmark<A: AudioGen + Simd>(name: &str, expected_hash: &str) -> (bool, f32)
                 .enqueue_midi_events(key_off_events.iter().copied());
         }
 
-        for j in 0..96 {
-            if envelope_duration_parameters.contains(&j) || wave_type_parameters.contains(&j) {
+        for parameter in PARAMETERS.iter() {
+            if envelope_duration_parameters.contains(parameter)
+                || wave_type_parameters.contains(parameter)
+            {
                 continue;
             }
 
-            octasine.sync.set_parameter(j, (i % 64) as f32 / 64.0);
+            octasine
+                .sync
+                .set_parameter(parameter.to_index() as i32, (i % 64) as f32 / 64.0);
         }
 
         octasine.update_audio_parameters();
