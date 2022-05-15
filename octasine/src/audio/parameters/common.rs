@@ -178,3 +178,55 @@ impl Interpolator {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use quickcheck::*;
+
+    use super::*;
+
+    #[test]
+    fn test_interpolator() {
+        fn prop(duration: InterpolationDuration, value: f64) -> TestResult {
+            if value.is_nan() || value.is_infinite() || value.abs() > (10.0f64).powf(100.0) {
+                return TestResult::discard();
+            }
+
+            let sample_rate = SampleRate::default();
+
+            let mut interpolator = Interpolator::new(0.0, duration);
+
+            interpolator.set_value(value);
+
+            for _ in 0..duration.samples(sample_rate) {
+                interpolator.advance_one_sample(sample_rate, &mut |_| {})
+            }
+
+            let new_value = interpolator.get_value();
+
+            let success = (value - new_value).abs() <= value.abs() / 1_000_000_000.0;
+
+            if !success {
+                println!();
+                println!("duration:        {:?}", duration);
+                println!("set value:       {}", value);
+                println!("resulting value: {}", new_value);
+            }
+
+            TestResult::from_bool(success)
+        }
+
+        quickcheck(
+            (|value: f64| prop(InterpolationDuration::approx_1ms(), value))
+                as fn(f64) -> TestResult,
+        );
+        quickcheck(
+            (|value: f64| prop(InterpolationDuration::approx_3ms(), value))
+                as fn(f64) -> TestResult,
+        );
+        quickcheck(
+            (|value: f64| prop(InterpolationDuration::exactly_50ms(), value))
+                as fn(f64) -> TestResult,
+        );
+    }
+}
