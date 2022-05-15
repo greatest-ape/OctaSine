@@ -47,7 +47,7 @@ pub fn get_lfo_target_values(
         .enumerate()
         .rev()
     {
-        let target = lfo_parameter.target_parameter.get_value();
+        let target = lfo_parameter.target.get_value();
 
         if voice_lfo.is_stopped() | matches!(target, Parameter::None) {
             continue;

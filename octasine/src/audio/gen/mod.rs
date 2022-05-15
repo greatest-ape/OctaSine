@@ -293,7 +293,7 @@ mod gen {
     ) {
         voice_data.wave_type = operator.wave_type.get_value();
 
-        if let Some(p) = &mut operator.output_operator {
+        if let Some(p) = &mut operator.mod_targets {
             voice_data.modulation_targets = p.get_active_indices();
         }
 
@@ -323,16 +323,17 @@ mod gen {
             volume * volume_active,
         );
 
-        let mix = operator
-            .mix
-            .get_value_with_lfo_addition(lfo_values.get(Parameter::Operator(
-                operator_index,
-                OperatorParameter::MixOut,
-            )));
+        let mix =
+            operator
+                .mix_out
+                .get_value_with_lfo_addition(lfo_values.get(Parameter::Operator(
+                    operator_index,
+                    OperatorParameter::MixOut,
+                )));
 
         set_value_for_both_channels(&mut voice_data.mixes, sample_index, mix);
 
-        let modulation_index = operator.modulation_index.as_mut().map_or(0.0, |p| {
+        let modulation_index = operator.mod_out.as_mut().map_or(0.0, |p| {
             p.get_value_with_lfo_addition(lfo_values.get(Parameter::Operator(
                 operator_index,
                 OperatorParameter::ModOut,

@@ -86,18 +86,18 @@ macro_rules! impl_patch_interaction {
                     match p {
                         Volume => $f(&mut operator.volume, input),
                         Active => $f(&mut operator.active, input),
-                        MixOut => $f(&mut operator.mix, input),
+                        MixOut => $f(&mut operator.mix_out, input),
                         Panning => $f(&mut operator.panning, input),
                         WaveType => $f(&mut operator.wave_type, input),
                         ModTargets => {
-                            if let Some(p) = &mut operator.output_operator {
+                            if let Some(p) = &mut operator.mod_targets {
                                 $f(p, input)
                             } else {
                                 None
                             }
                         }
                         ModOut => {
-                            if let Some(p) = operator.modulation_index.as_mut() {
+                            if let Some(p) = operator.mod_out.as_mut() {
                                 $f(p, input)
                             } else {
                                 None
@@ -120,7 +120,7 @@ macro_rules! impl_patch_interaction {
                     let lfo = &mut self.lfos[index];
 
                     match p {
-                        LfoParameter::Target => $f(&mut lfo.target_parameter, input),
+                        LfoParameter::Target => $f(&mut lfo.target, input),
                         LfoParameter::BpmSync => $f(&mut lfo.bpm_sync, input),
                         LfoParameter::FrequencyRatio => $f(&mut lfo.frequency_ratio, input),
                         LfoParameter::FrequencyFree => $f(&mut lfo.frequency_free, input),
@@ -166,17 +166,17 @@ impl AudioParameters {
 }
 
 pub struct AudioParameterOperator {
-    pub volume: OperatorVolumeAudioParameter,
     pub active: InterpolatableAudioParameter<OperatorActiveValue>,
-    pub mix: OperatorMixAudioParameter,
     pub wave_type: SimpleAudioParameter<OperatorWaveTypeValue>,
+    pub volume: OperatorVolumeAudioParameter,
     pub panning: OperatorPanningAudioParameter,
-    pub output_operator: Option<OperatorModulationTargetAudioParameter>,
+    pub mix_out: OperatorMixAudioParameter,
+    pub mod_out: Option<InterpolatableAudioParameter<OperatorModOutValue>>,
+    pub mod_targets: Option<OperatorModulationTargetAudioParameter>,
+    pub feedback: InterpolatableAudioParameter<OperatorFeedbackValue>,
     pub frequency_ratio: SimpleAudioParameter<OperatorFrequencyRatioValue>,
     pub frequency_free: OperatorFrequencyFreeAudioParameter,
     pub frequency_fine: OperatorFrequencyFineAudioParameter,
-    pub feedback: InterpolatableAudioParameter<OperatorFeedbackValue>,
-    pub modulation_index: Option<InterpolatableAudioParameter<OperatorModOutValue>>,
     pub volume_envelope: OperatorEnvelopeAudioParameter,
 }
 
@@ -189,37 +189,37 @@ impl AudioParameterOperator {
         };
 
         Self {
-            volume: Default::default(),
             active: Default::default(),
-            mix: OperatorMixAudioParameter::new(operator_index),
             wave_type: Default::default(),
+            volume: Default::default(),
             panning: OperatorPanningAudioParameter::default(),
-            output_operator: OperatorModulationTargetAudioParameter::opt_new(operator_index),
+            mix_out: OperatorMixAudioParameter::new(operator_index),
+            mod_out: modulation_index,
+            mod_targets: OperatorModulationTargetAudioParameter::opt_new(operator_index),
+            feedback: Default::default(),
             frequency_ratio: Default::default(),
             frequency_free: Default::default(),
             frequency_fine: Default::default(),
-            feedback: Default::default(),
-            modulation_index,
             volume_envelope: Default::default(),
         }
     }
 
     pub fn advance_one_sample(&mut self, sample_rate: SampleRate) {
-        self.volume.advance_one_sample(sample_rate);
         self.active.advance_one_sample(sample_rate);
-        self.mix.advance_one_sample(sample_rate);
+        self.volume.advance_one_sample(sample_rate);
         self.wave_type.advance_one_sample(sample_rate);
         self.panning.advance_one_sample(sample_rate);
-        if let Some(ref mut output_operator) = self.output_operator {
-            output_operator.advance_one_sample(sample_rate);
+        if let Some(mod_targets) = &mut self.mod_targets {
+            mod_targets.advance_one_sample(sample_rate);
         }
+        self.mix_out.advance_one_sample(sample_rate);
+        if let Some(mod_out) = self.mod_out.as_mut() {
+            mod_out.advance_one_sample(sample_rate);
+        }
+        self.feedback.advance_one_sample(sample_rate);
         self.frequency_ratio.advance_one_sample(sample_rate);
         self.frequency_free.advance_one_sample(sample_rate);
         self.frequency_fine.advance_one_sample(sample_rate);
-        self.feedback.advance_one_sample(sample_rate);
-        if let Some(modulation_index) = self.modulation_index.as_mut() {
-            modulation_index.advance_one_sample(sample_rate);
-        }
         self.volume_envelope.advance_one_sample(sample_rate);
     }
 }
@@ -244,7 +244,7 @@ impl OperatorEnvelopeAudioParameter {
 }
 
 pub struct AudioParameterLfo {
-    pub target_parameter: LfoTargetAudioParameter,
+    pub target: LfoTargetAudioParameter,
     pub bpm_sync: SimpleAudioParameter<LfoBpmSyncValue>,
     pub frequency_ratio: SimpleAudioParameter<LfoFrequencyRatioValue>,
     pub frequency_free: LfoFrequencyFreeAudioParameter,
@@ -257,7 +257,7 @@ pub struct AudioParameterLfo {
 impl AudioParameterLfo {
     fn new(lfo_index: usize) -> Self {
         Self {
-            target_parameter: LfoTargetAudioParameter::new(lfo_index),
+            target: LfoTargetAudioParameter::new(lfo_index),
             bpm_sync: Default::default(),
             frequency_ratio: Default::default(),
             frequency_free: Default::default(),
@@ -269,7 +269,7 @@ impl AudioParameterLfo {
     }
 
     fn advance_one_sample(&mut self, sample_rate: SampleRate) {
-        self.target_parameter.advance_one_sample(sample_rate);
+        self.target.advance_one_sample(sample_rate);
         self.bpm_sync.advance_one_sample(sample_rate);
         self.frequency_ratio.advance_one_sample(sample_rate);
         self.frequency_free.advance_one_sample(sample_rate);
