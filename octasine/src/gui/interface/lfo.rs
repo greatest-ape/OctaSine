@@ -4,7 +4,7 @@ use iced_baseview::{
 };
 use iced_baseview::{Container, Tooltip};
 
-use crate::parameter_values::{
+use crate::parameters::{
     LfoAmountValue, LfoFrequencyFreeValue, LfoFrequencyRatioValue, LfoParameter, LfoShapeValue,
     Parameter,
 };

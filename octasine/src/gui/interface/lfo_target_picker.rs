@@ -1,7 +1,7 @@
 use iced_baseview::widget::{pick_list, PickList};
 use iced_baseview::{Element, Length};
 
-use crate::parameter_values::{
+use crate::parameters::{
     get_lfo_target_parameters, Lfo1TargetParameterValue, Lfo2TargetParameterValue,
     Lfo3TargetParameterValue, Lfo4TargetParameterValue, LfoParameter, Parameter, ParameterValue,
 };

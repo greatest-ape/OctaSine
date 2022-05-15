@@ -5,7 +5,7 @@ use iced_baseview::{
 
 use crate::{
     get_version_info,
-    parameter_values::{MasterFrequencyValue, MasterVolumeValue},
+    parameters::{MasterFrequencyValue, MasterVolumeValue},
     sync::GuiSyncHandle,
 };
 

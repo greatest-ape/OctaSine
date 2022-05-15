@@ -2,7 +2,7 @@ use std::f64::consts::FRAC_PI_2;
 
 use crate::audio::common::InterpolationDuration;
 use crate::common::SampleRate;
-use crate::parameter_values::{OperatorPanningValue, ParameterValue};
+use crate::parameters::{OperatorPanningValue, ParameterValue};
 
 use super::common::{AudioParameter, Interpolator};
 

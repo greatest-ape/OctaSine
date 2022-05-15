@@ -11,7 +11,7 @@ use fastrand::Rng;
 use gen::VoiceData;
 use vst::event::MidiEvent;
 
-use crate::{common::*, parameter_values::Parameter};
+use crate::{common::*, parameters::Parameter};
 
 use parameters::*;
 use voices::*;

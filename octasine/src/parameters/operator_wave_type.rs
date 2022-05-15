@@ -16,7 +16,7 @@ impl Default for WaveType {
 impl CalculateCurve for WaveType {
     fn calculate(self, phase: Phase) -> f64 {
         match self {
-            Self::Sine => crate::parameter_values::lfo_shape::sine(phase),
+            Self::Sine => crate::parameters::lfo_shape::sine(phase),
             Self::WhiteNoise => {
                 // Ensure same numbers are generated each time for GUI
                 // consistency. This will however break if fastrand changes

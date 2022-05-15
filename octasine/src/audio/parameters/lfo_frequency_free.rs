@@ -1,5 +1,5 @@
 use crate::common::SampleRate;
-use crate::parameter_values::{LfoFrequencyFreeValue, ParameterValue};
+use crate::parameters::{LfoFrequencyFreeValue, ParameterValue};
 
 use super::common::AudioParameter;
 

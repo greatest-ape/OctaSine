@@ -16,7 +16,7 @@ mod operator_volume;
 use array_init::array_init;
 
 use crate::common::{SampleRate, NUM_LFOS, NUM_OPERATORS};
-use crate::parameter_values::*;
+use crate::parameters::*;
 
 use self::common::{AudioParameter, InterpolatableAudioParameter, SimpleAudioParameter};
 use self::lfo_active::LfoActiveAudioParameter;

@@ -2,7 +2,7 @@ use iced_baseview::{
     alignment::Horizontal, Alignment, Checkbox, Column, Element, Length, Space, Text,
 };
 
-use crate::parameter_values::{
+use crate::parameters::{
     ModTarget, Operator2ModulationTargetValue, Operator3ModulationTargetValue,
     Operator4ModulationTargetValue, OperatorParameter, Parameter, ParameterValue,
 };

@@ -1,6 +1,6 @@
 use crate::audio::common::InterpolationDuration;
 use crate::common::SampleRate;
-use crate::parameter_values::{OperatorVolumeValue, ParameterValue};
+use crate::parameters::{OperatorVolumeValue, ParameterValue};
 
 use super::common::{AudioParameter, Interpolator};
 

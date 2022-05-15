@@ -147,7 +147,7 @@ impl vst::plugin::PluginParameters for SyncState {
 cfg_if::cfg_if! {
     if #[cfg(feature = "gui")] {
         use self::change_info::MAX_NUM_PARAMETERS;
-        use crate::parameter_values::Parameter;
+        use crate::parameters::Parameter;
 
         /// Trait passed to GUI code for encapsulation
         pub trait GuiSyncHandle: Clone + Send + Sync + 'static {

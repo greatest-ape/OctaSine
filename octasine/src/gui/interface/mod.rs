@@ -15,7 +15,7 @@ mod wave_picker;
 use iced_baseview::{executor, Application, Command, Subscription, WindowSubs};
 use iced_baseview::{Column, Container, Element, Length, Point, Row, Space, WindowQueue};
 
-use crate::parameter_values::*;
+use crate::parameters::*;
 use crate::sync::GuiSyncHandle;
 
 use lfo::LfoWidgets;

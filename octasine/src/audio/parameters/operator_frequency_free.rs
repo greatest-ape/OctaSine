@@ -1,5 +1,5 @@
 use crate::common::SampleRate;
-use crate::parameter_values::{OperatorFrequencyFreeValue, ParameterValue};
+use crate::parameters::{OperatorFrequencyFreeValue, ParameterValue};
 
 use super::common::AudioParameter;
 

@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use crate::audio::common::InterpolationDuration;
 use crate::common::SampleRate;
-use crate::parameter_values::*;
+use crate::parameters::*;
 
 /// Parameter storage for audio generation. Not thread-safe.
 pub trait AudioParameter {

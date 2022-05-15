@@ -4,8 +4,8 @@ use iced_baseview::canvas::{
 };
 use iced_baseview::{Color, Element, Length, Point, Rectangle, Size};
 
-use crate::parameter_values::lfo_mode::LfoMode;
-use crate::parameter_values::{
+use crate::parameters::lfo_mode::LfoMode;
+use crate::parameters::{
     LfoActiveValue, LfoBpmSyncValue, LfoModeValue, LfoParameter, OperatorActiveValue,
     OperatorParameter, Parameter, ParameterValue,
 };

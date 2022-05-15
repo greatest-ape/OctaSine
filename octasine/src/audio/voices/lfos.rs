@@ -1,7 +1,7 @@
 use crate::{
     audio::common::InterpolationDuration,
     common::*,
-    parameter_values::{lfo_mode::LfoMode, lfo_shape::LfoShape},
+    parameters::{lfo_mode::LfoMode, lfo_shape::LfoShape},
 };
 
 const INTERPOLATION_DURATION: InterpolationDuration = InterpolationDuration::approx_3ms();

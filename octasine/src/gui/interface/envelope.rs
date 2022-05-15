@@ -5,8 +5,8 @@ use iced_baseview::{Color, Container, Element, Length, Point, Rectangle, Size, V
 
 use crate::audio::voices::envelopes::VoiceOperatorVolumeEnvelope;
 use crate::audio::voices::log10_table::Log10Table;
-use crate::parameter_values::operator_envelope::{ENVELOPE_MAX_DURATION, ENVELOPE_MIN_DURATION};
-use crate::parameter_values::{OperatorParameter, Parameter};
+use crate::parameters::operator_envelope::{ENVELOPE_MAX_DURATION, ENVELOPE_MIN_DURATION};
+use crate::parameters::{OperatorParameter, Parameter};
 use crate::sync::GuiSyncHandle;
 
 use super::style::Theme;

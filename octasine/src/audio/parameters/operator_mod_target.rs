@@ -1,7 +1,7 @@
 use arrayvec::ArrayVec;
 
 use crate::common::SampleRate;
-use crate::parameter_values::{
+use crate::parameters::{
     Operator2ModulationTargetValue, Operator3ModulationTargetValue, Operator4ModulationTargetValue,
 };
 
@@ -62,7 +62,7 @@ impl AudioParameterPatchInteraction for OperatorModulationTargetAudioParameter {
 
     #[cfg(test)]
     fn compare_patch_value(&mut self, value: f64) -> bool {
-        use crate::parameter_values::ParameterValue;
+        use crate::parameters::ParameterValue;
 
         let a = match self {
             Self::Two(_) => Operator2ModulationTargetValue::new_from_patch(value).to_patch(),

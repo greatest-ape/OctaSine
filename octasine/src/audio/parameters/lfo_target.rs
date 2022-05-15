@@ -1,5 +1,5 @@
 use crate::common::SampleRate;
-use crate::parameter_values::*;
+use crate::parameters::*;
 
 use super::{
     common::{AudioParameter, SimpleAudioParameter},

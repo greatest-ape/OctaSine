@@ -1,6 +1,6 @@
 pub mod audio;
 pub mod common;
-pub mod parameter_values;
+pub mod parameters;
 pub mod settings;
 pub mod sync;
 
@@ -12,7 +12,7 @@ use std::sync::Arc;
 
 use audio::AudioState;
 
-use parameter_values::Parameter;
+use parameters::Parameter;
 use sync::SyncState;
 use vst::api::{Events, Supported};
 use vst::event::Event;
@@ -230,7 +230,7 @@ cfg_if::cfg_if! {
 
 #[cfg(test)]
 mod tests {
-    use crate::parameter_values::PARAMETERS;
+    use crate::parameters::PARAMETERS;
 
     use super::*;
 
