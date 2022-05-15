@@ -109,6 +109,10 @@ impl<V: ParameterValue> AudioParameter for SimpleAudioParameter<V> {
     }
 }
 
+/// Interpolation value factor for increasing precision with very small
+/// numbers.
+const FACTOR: f64 = 1_000_000_000.0;
+
 /// AudioParameter value interpolator. Supports values >= 0.0 only.
 #[derive(Debug, Copy, Clone)]
 pub struct Interpolator {
@@ -123,8 +127,8 @@ pub struct Interpolator {
 impl Interpolator {
     pub fn new(value: f64, interpolation_duration: InterpolationDuration) -> Self {
         Self {
-            value,
-            target_value: value,
+            value: value * FACTOR,
+            target_value: value * FACTOR,
             step_size: 0.0,
             steps_remaining: 0,
             interpolation_duration,
@@ -160,7 +164,7 @@ impl Interpolator {
         // Force value to be at least zero to avoid breaking expectations
         // elsewhere, notable in operator volume/mod out/mix out operator
         // dependency analysis
-        self.value.max(0.0)
+        (self.value / FACTOR).max(0.0)
     }
 
     fn restart_interpolation(&mut self) {
@@ -173,7 +177,7 @@ impl Interpolator {
 
     #[allow(clippy::float_cmp)]
     pub fn set_value(&mut self, target_value: f64) {
-        self.target_value = target_value;
+        self.target_value = target_value * FACTOR;
 
         if (target_value - self.value).abs() <= f64::EPSILON {
             self.steps_remaining = 0;
@@ -211,10 +215,10 @@ mod tests {
                 interpolator.advance_one_sample(sample_rate, &mut |_| {})
             }
 
-            let resulting_value_internal = interpolator.value;
+            let resulting_value_internal = interpolator.value / FACTOR;
             let resulting_value = interpolator.get_value();
 
-            let accepted_error = set_value.abs() / 1_000_000_000.0;
+            let accepted_error = set_value.abs() / 1_000_000_000_000.0;
 
             let success = ((set_value - resulting_value).abs() <= accepted_error)
                 && (resulting_value - resulting_value_internal).abs() <= accepted_error;
