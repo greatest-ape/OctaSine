@@ -1,7 +1,9 @@
 use std::time::Instant;
 
 use colored::*;
-use octasine::parameters::{OperatorParameter, Parameter, PARAMETERS};
+use octasine::parameters::{
+    LfoParameter, MasterParameter, OperatorParameter, Parameter, PARAMETERS,
+};
 use sha2::{Digest, Sha256};
 use vst::event::MidiEvent;
 use vst::plugin::PluginParameters;
@@ -135,10 +137,25 @@ fn benchmark<A: AudioGen + Simd>(name: &str, expected_hash: &str) -> (bool, f32)
         .filter(|p| !envelope_duration_parameters.contains(p) && !wave_type_parameters.contains(p))
         .collect();
 
+    // Notes: 1ms interpolation of operator 0 volume in combination with operator
+    // dependency analysis makes hash different for avx. soperator 0 active / mix out
+    // have same issue with their default interpolation times.
+    // Setting interpolation time to 3ms fixes it for volume and mix out, but NOT for active.
+    // However, with volume set to 3ms, with and without dependency analysis still produces different results.
+    // Commit: https://github.com/greatest-ape/OctaSine/pull/62/commits/71983918ac4c17cfc11848e831ef65f7871d38ed
+    let parameters_to_automate: Vec<Parameter> = vec![
+        // Parameter::Operator(0, OperatorParameter::Volume),
+        Parameter::Operator(0, OperatorParameter::Volume),
+        // Parameter::Operator(0, OperatorParameter::FrequencyFree),
+        // Parameter::Master(MasterParameter::Volume),
+        // Parameter::Lfo(0, LfoParameter::Target),
+        // Parameter::Lfo(0, LfoParameter::Amount),
+    ];
+
     let key_on_events: Vec<MidiEvent> = (0..NUM_VOICES)
         .map(|i| MidiEvent {
             data: [144, i as u8, 100],
-            delta_frames: (i % A::SAMPLES) as i32,
+            delta_frames: (i % BUFFER_LEN) as i32,
             live: false,
             note_length: None,
             note_offset: None,
@@ -150,7 +167,7 @@ fn benchmark<A: AudioGen + Simd>(name: &str, expected_hash: &str) -> (bool, f32)
     let key_off_events: Vec<MidiEvent> = (0..NUM_VOICES)
         .map(|i| MidiEvent {
             data: [128, i as u8, 0],
-            delta_frames: (i % A::SAMPLES) as i32,
+            delta_frames: (i % BUFFER_LEN) as i32,
             live: false,
             note_length: None,
             note_offset: None,
