@@ -179,7 +179,7 @@ impl Interpolator {
     pub fn set_value(&mut self, target_value: f64) {
         self.target_value = target_value * FACTOR;
 
-        if (target_value - self.value).abs() <= f64::EPSILON {
+        if self.target_value == self.value {
             self.steps_remaining = 0;
         } else {
             self.restart_interpolation()
