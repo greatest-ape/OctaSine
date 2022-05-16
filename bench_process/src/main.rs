@@ -140,13 +140,19 @@ fn benchmark<A: AudioGen + Simd>(name: &str, expected_hash: &str) -> (bool, f32)
             Parameter::Operator(_, _) => true,
             Parameter::Master(_) => true,
             Parameter::Lfo(_, LfoParameter::Active) => true,
+            // Parameter::Lfo(_, LfoParameter::Target) => false,
             _ => true,
         })
         .map(|p| p.to_index())
         .collect();
 
-    // LFO active with 50ms interpolation makes avx hash differ from sse2 one,
-    // event if LFO target is constant
+    // LFO active with 50ms interpolation makes avx hash differ from sse2 one
+    // but only if parameters are set in same buffer iteration that key_on events
+    // are queued, AND event delta frames are not all zero
+    //
+    // Only if value is set just before voice ends
+    //
+    // Constant LFO target doesn't matter
     //
     // A commit that broke hash equality: https://github.com/greatest-ape/OctaSine/pull/62/commits/71983918ac4c17cfc11848e831ef65f7871d38ed
     // let parameters_to_automate: Vec<Parameter> = vec![
@@ -196,6 +202,10 @@ fn benchmark<A: AudioGen + Simd>(name: &str, expected_hash: &str) -> (bool, f32)
         octasine.sync.set_parameter(p.to_index() as i32, 0.0);
     }
 
+    for i in 0..4 {
+        // octasine.sync.set_parameter(Parameter::Lfo(i, LfoParameter::Target).to_index() as i32, 1.0);
+    }
+
     let now = Instant::now();
 
     for i in 0..BUFFER_ITERATIONS {
@@ -213,17 +223,20 @@ fn benchmark<A: AudioGen + Simd>(name: &str, expected_hash: &str) -> (bool, f32)
             _ => {}
         }
 
-        for i in 0..PARAMETERS.len() {
-            // Always generate random numbers so that hash comparisons can be
-            // made with/without certain parameters
-            let value = fastrand::f32();
+        // Just before envelope release ends. At 512 + 69, it has ended (I'm almost sure of this)
+        if true { // i % 1024 == 512 + 68 {
+            for i in 0..PARAMETERS.len() {
+                // Always generate random numbers so that hash comparisons can be
+                // made with/without certain parameters
+                let value = fastrand::f32();
 
-            if parameters_to_automate.contains(&i) {
-                octasine.sync.set_parameter(i as i32, value);
+                if parameters_to_automate.contains(&i) {
+                    octasine.sync.set_parameter(i as i32, value);
+                }
             }
-        }
 
-        octasine.update_audio_parameters();
+            octasine.update_audio_parameters();
+        }
 
         for (j, (lefts, rights)) in lefts
             .chunks_exact_mut(A::SAMPLES)

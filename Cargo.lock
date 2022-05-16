@@ -162,6 +162,7 @@ name = "bench_process"
 version = "0.5.4"
 dependencies = [
  "colored",
+ "fastrand",
  "octasine",
  "sha2",
  "vst",
