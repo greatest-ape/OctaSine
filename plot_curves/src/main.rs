@@ -106,7 +106,7 @@ fn plot_lfo_values(filename: &str) {
         }
 
         if envelope.is_ended() {
-            lfo.request_stop();
+            lfo.envelope_ended();
         }
     }
 
