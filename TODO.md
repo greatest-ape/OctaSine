@@ -3,6 +3,7 @@
 ## High priority
 
 * bench_process
+  * test out audio generated with changes!
   * try generating delta_frames with rng
 * Audio
   * voice velocity should affect modulation (not only mix)
