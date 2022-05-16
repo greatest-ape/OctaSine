@@ -199,6 +199,25 @@ mod gen {
                 .zip(processing.audio_gen_voice_data.iter_mut())
                 .filter(|(voice, _)| voice.active)
             {
+                voice.deactivate_if_envelopes_ended();
+
+                if voice.active {
+                    voice_data.active = true;
+                } else {
+                    // If voice was deactivated this sample in avx mode, ensure that audio isn't
+                    // generated for next sample due to lingering data from previous passes. If
+                    // voice gets activated though midi events next sample, new data gets written.
+                    //
+                    // Since we deactivate envelopes the sample after they ended, we know
+                    // at this point that valid data was written for the previous sample, meaning
+                    // that we don't need to worry about setting it to zero.
+                    if (S::SAMPLES == 2) & (sample_index == 0) {
+                        for operator in voice_data.operators.iter_mut() {
+                            set_value_for_both_channels(&mut operator.envelope_volumes, 1, 0.0);
+                        }
+                    }
+                }
+
                 for (operator_index, operator) in operators.iter_mut().enumerate() {
                     voice.operators[operator_index]
                         .volume_envelope
@@ -207,21 +226,6 @@ mod gen {
                             voice.key_pressed,
                             time_per_sample,
                         );
-                }
-
-                voice.deactivate_if_envelopes_ended();
-
-                if voice.active {
-                    voice_data.active = true;
-                } else {
-                    // If voice was deactivated during first sample in avx mode, ensure
-                    // audio isn't generated for second sample (as long as voice isn't
-                    // reactivated by midi events)
-                    if (S::SAMPLES == 2) & (sample_index == 0) {
-                        for operator in voice_data.operators.iter_mut() {
-                            set_value_for_both_channels(&mut operator.envelope_volumes, 1, 0.0);
-                        }
-                    }
                 }
 
                 let lfo_values = get_lfo_target_values(
