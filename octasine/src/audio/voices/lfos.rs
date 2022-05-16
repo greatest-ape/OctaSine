@@ -212,11 +212,16 @@ impl VoiceLfo {
         };
     }
 
-    pub fn request_stop(&mut self) {
+    fn request_stop(&mut self) {
         self.stage = LfoStage::Stopping {
             from_value: self.last_value,
             samples_done: 0,
         };
+    }
+
+    pub fn envelope_ended(&mut self) {
+        self.stage = LfoStage::Stopped;
+        self.last_value = 0.0;
     }
 
     pub fn is_stopped(&self) -> bool {
