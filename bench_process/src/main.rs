@@ -135,21 +135,23 @@ fn benchmark<A: AudioGen + Simd>(name: &str, expected_hash: &str) -> (bool, f32)
         .iter()
         .copied()
         .filter(|p| !envelope_duration_parameters.contains(p) && !wave_type_parameters.contains(p))
+        .filter(|p| match p {
+            Parameter::Operator(_, _) => true,
+            Parameter::Master(_) => true,
+            Parameter::Lfo(_, LfoParameter::Active) => true,
+            _ => true,
+        })
         .collect();
 
-    // Notes: 1ms interpolation of operator 0 volume in combination with operator
-    // dependency analysis makes hash different for avx. Operator 0 active / mix out
-    // have same issue with their default interpolation times.
-    // Setting interpolation time to 3ms fixes it for volume and mix out, but NOT for active.
-    // However, with volume set to 3ms, with and without dependency analysis still produces different results.
-    //
-    // Forcing audio parameter interpolator to only return positive values
-    // means that operator dependency analysis no longer makes a difference. However, different
-    // results are still produced on avx.
+    // LFO active with 50ms interpolation makes avx hash differ from sse2 one,
+    // event if LFO target is constant
     //
     // A commit that broke hash equality: https://github.com/greatest-ape/OctaSine/pull/62/commits/71983918ac4c17cfc11848e831ef65f7871d38ed
     // let parameters_to_automate: Vec<Parameter> = vec![
-    //     Parameter::Operator(0, OperatorParameter::Volume),
+    // Parameter::Operator(0, OperatorParameter::Volume),
+    // Parameter::Lfo(0, LfoParameter::Target),
+    // Parameter::Lfo(0, LfoParameter::Amount),
+    // Parameter::Master(MasterParameter::Frequency),
     // ];
 
     let key_on_events: Vec<MidiEvent> = (0..NUM_VOICES)
