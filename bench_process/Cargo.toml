@@ -12,6 +12,7 @@ name = "bench_process"
 simd = ["octasine/simd"]
 
 [dependencies]
+fastrand = "1"
 octasine = { path = "../octasine", default-features = false }
 vst = "0.3.0"
 colored = "2"

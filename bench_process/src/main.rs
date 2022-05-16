@@ -1,3 +1,4 @@
+use std::collections::HashSet;
 use std::time::Instant;
 
 use colored::*;
@@ -131,7 +132,7 @@ fn benchmark<A: AudioGen + Simd>(name: &str, expected_hash: &str) -> (bool, f32)
         .map(|i| Parameter::Operator(i, OperatorParameter::WaveType))
         .collect();
 
-    let parameters_to_automate: Vec<Parameter> = PARAMETERS
+    let parameters_to_automate: HashSet<usize> = PARAMETERS
         .iter()
         .copied()
         .filter(|p| !envelope_duration_parameters.contains(p) && !wave_type_parameters.contains(p))
@@ -141,6 +142,7 @@ fn benchmark<A: AudioGen + Simd>(name: &str, expected_hash: &str) -> (bool, f32)
             Parameter::Lfo(_, LfoParameter::Active) => true,
             _ => true,
         })
+        .map(|p| p.to_index())
         .collect();
 
     // LFO active with 50ms interpolation makes avx hash differ from sse2 one,
@@ -178,6 +180,9 @@ fn benchmark<A: AudioGen + Simd>(name: &str, expected_hash: &str) -> (bool, f32)
         })
         .collect();
 
+    // Seed rng with a fixed number
+    fastrand::seed(7547);
+
     let mut lefts = [0.0f32; BUFFER_LEN];
     let mut rights = [0.0f32; BUFFER_LEN];
 
@@ -208,10 +213,14 @@ fn benchmark<A: AudioGen + Simd>(name: &str, expected_hash: &str) -> (bool, f32)
             _ => {}
         }
 
-        for parameter in parameters_to_automate.iter() {
-            octasine
-                .sync
-                .set_parameter(parameter.to_index() as i32, (i % 64) as f32 / 64.0);
+        for i in 0..PARAMETERS.len() {
+            // Always generate random numbers so that hash comparisons can be
+            // made with/without certain parameters
+            let value = fastrand::f32();
+
+            if parameters_to_automate.contains(&i) {
+                octasine.sync.set_parameter(i as i32, value);
+            }
         }
 
         octasine.update_audio_parameters();
