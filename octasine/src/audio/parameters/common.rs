@@ -157,7 +157,7 @@ impl Interpolator {
         self.steps_remaining -= 1;
         self.value += self.step_size;
 
-        callback_on_advance(self.value);
+        callback_on_advance((self.value / FACTOR).max(0.0));
     }
 
     pub fn get_value(&self) -> f64 {
