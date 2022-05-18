@@ -2,16 +2,25 @@
 
 ## High priority
 
+* Performance
+  * LfoTargetValues::get seems to be very expensive. Using a long array and
+    indexing by parameter index might be better
+  * 2.0f64.powf() could maybe be replaced with `Sleef_cinz_exp2d1_u10purec(double a)`
+  * Interpolator must do less work in get_value: just compute finished value if actually
+    interpolating when advancing sample
+  * Parameter step mapping is expensive when combined with LFOs
+  * get_value_with_lfo_addition: is branching slower than just doing
+    calculation, at least in some cases?
 * bench_process
   * try generating delta_frames with rng
 * Audio
-  * Profile, particularily LFOs
+  * Mix should start at one for operator 1
   * Are LFO frequency parameters too slow to react?
   * Should envelope values be interpolated? Now there are crackles
     when moving draggers quickly
   * voice velocity should affect modulation (not only mix)
   * Should modulation index now compensate for higher frequencies?
-  * Operator freq ratio values: are really both sqrt(2) and sqrt(3) values
+  * Operator freq ratio values: are really both PI, sqrt(2) and sqrt(3) values
     necessary?
   * LFO clicks when using DAW and looping notes without space between
   * Operator and master volume parameter values directly in decibel so they
