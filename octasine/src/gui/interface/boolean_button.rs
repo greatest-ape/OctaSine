@@ -4,9 +4,10 @@ use iced_baseview::canvas::{
 };
 use iced_baseview::{Color, Element, Length, Point, Rectangle, Size};
 
-use crate::parameter_values::lfo_mode::LfoMode;
-use crate::parameter_values::{
-    LfoActiveValue, LfoBpmSyncValue, LfoModeValue, OperatorActiveValue, ParameterValue,
+use crate::parameters::lfo_mode::LfoMode;
+use crate::parameters::{
+    LfoActiveValue, LfoBpmSyncValue, LfoModeValue, LfoParameter, OperatorActiveValue,
+    OperatorParameter, Parameter, ParameterValue,
 };
 use crate::sync::GuiSyncHandle;
 
@@ -28,12 +29,12 @@ pub trait StyleSheet {
 
 pub fn operator_mute_button<H: GuiSyncHandle>(
     sync_handle: &H,
-    parameter_index: usize,
+    operator_index: usize,
     style: Theme,
 ) -> BooleanButton {
     BooleanButton::new(
         sync_handle,
-        parameter_index,
+        Parameter::Operator(operator_index, OperatorParameter::Active),
         style,
         "M",
         LINE_HEIGHT,
@@ -52,12 +53,12 @@ pub fn operator_mute_button<H: GuiSyncHandle>(
 
 pub fn lfo_bpm_sync_button<H: GuiSyncHandle>(
     sync_handle: &H,
-    parameter_index: usize,
+    lfo_index: usize,
     style: Theme,
 ) -> BooleanButton {
     BooleanButton::new(
         sync_handle,
-        parameter_index,
+        Parameter::Lfo(lfo_index, LfoParameter::BpmSync),
         style,
         "B",
         LINE_HEIGHT,
@@ -70,12 +71,12 @@ pub fn lfo_bpm_sync_button<H: GuiSyncHandle>(
 
 pub fn lfo_mode_button<H: GuiSyncHandle>(
     sync_handle: &H,
-    parameter_index: usize,
+    lfo_index: usize,
     style: Theme,
 ) -> BooleanButton {
     BooleanButton::new(
         sync_handle,
-        parameter_index,
+        Parameter::Lfo(lfo_index, LfoParameter::Mode),
         style,
         "1",
         LINE_HEIGHT,
@@ -94,12 +95,12 @@ pub fn lfo_mode_button<H: GuiSyncHandle>(
 
 pub fn lfo_active_button<H: GuiSyncHandle>(
     sync_handle: &H,
-    parameter_index: usize,
+    lfo_index: usize,
     style: Theme,
 ) -> BooleanButton {
     BooleanButton::new(
         sync_handle,
-        parameter_index,
+        Parameter::Lfo(lfo_index, LfoParameter::Active),
         style,
         "M",
         LINE_HEIGHT,
@@ -117,7 +118,7 @@ pub fn lfo_active_button<H: GuiSyncHandle>(
 }
 
 pub struct BooleanButton {
-    parameter_index: usize,
+    parameter: Parameter,
     on: bool,
     style: Theme,
     cache: Cache,
@@ -135,7 +136,7 @@ pub struct BooleanButton {
 impl BooleanButton {
     pub fn new<H: GuiSyncHandle>(
         sync_handle: &H,
-        parameter_index: usize,
+        parameter: Parameter,
         style: Theme,
         text: &'static str,
         width: u16,
@@ -150,8 +151,8 @@ impl BooleanButton {
         );
 
         Self {
-            parameter_index,
-            on: f(sync_handle.get_parameter(parameter_index)),
+            parameter,
+            on: f(sync_handle.get_parameter(parameter)),
             style,
             cache: Cache::new(),
             bounds_path,
@@ -270,7 +271,7 @@ impl Program<Message> for BooleanButton {
                     let message = {
                         let patch_value = (self.is_on_to_patch_value)(!self.on);
 
-                        Message::ChangeSingleParameterImmediate(self.parameter_index, patch_value)
+                        Message::ChangeSingleParameterImmediate(self.parameter, patch_value)
                     };
 
                     (event::Status::Captured, Some(message))

@@ -119,7 +119,7 @@ impl Voice {
 
         if all_envelopes_ended {
             for lfo in self.lfos.iter_mut() {
-                lfo.request_stop();
+                lfo.envelope_ended();
             }
 
             self.active = false;

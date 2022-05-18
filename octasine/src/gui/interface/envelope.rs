@@ -5,7 +5,8 @@ use iced_baseview::{Color, Container, Element, Length, Point, Rectangle, Size, V
 
 use crate::audio::voices::envelopes::VoiceOperatorVolumeEnvelope;
 use crate::audio::voices::log10_table::Log10Table;
-use crate::parameter_values::operator_envelope::{ENVELOPE_MAX_DURATION, ENVELOPE_MIN_DURATION};
+use crate::parameters::operator_envelope::{ENVELOPE_MAX_DURATION, ENVELOPE_MIN_DURATION};
+use crate::parameters::{OperatorParameter, Parameter};
 use crate::sync::GuiSyncHandle;
 
 use super::style::Theme;
@@ -232,13 +233,23 @@ pub struct Envelope {
 
 impl Envelope {
     pub fn new<H: GuiSyncHandle>(sync_handle: &H, operator_index: usize, style: Theme) -> Self {
-        let (attack_dur, attack_val, decay_dur, decay_val, release_dur) =
-            Self::get_parameter_indices(operator_index);
-        let attack_duration =
-            Self::process_envelope_duration(sync_handle.get_parameter(attack_dur));
-        let decay_duration = Self::process_envelope_duration(sync_handle.get_parameter(decay_dur));
-        let release_duration =
-            Self::process_envelope_duration(sync_handle.get_parameter(release_dur));
+        let attack_duration = Self::process_envelope_duration(sync_handle.get_parameter(
+            Parameter::Operator(operator_index, OperatorParameter::AttackDuration),
+        ));
+        let decay_duration = Self::process_envelope_duration(sync_handle.get_parameter(
+            Parameter::Operator(operator_index, OperatorParameter::DecayDuration),
+        ));
+        let release_duration = Self::process_envelope_duration(sync_handle.get_parameter(
+            Parameter::Operator(operator_index, OperatorParameter::ReleaseDuration),
+        ));
+        let attack_end_value = sync_handle.get_parameter(Parameter::Operator(
+            operator_index,
+            OperatorParameter::AttackValue,
+        )) as f32;
+        let decay_end_value = sync_handle.get_parameter(Parameter::Operator(
+            operator_index,
+            OperatorParameter::DecayValue,
+        )) as f32;
 
         let mut envelope = Self {
             log10table: Default::default(),
@@ -246,9 +257,9 @@ impl Envelope {
             style,
             operator_index,
             attack_duration,
-            attack_end_value: sync_handle.get_parameter(attack_val) as f32,
+            attack_end_value,
             decay_duration,
-            decay_end_value: sync_handle.get_parameter(decay_val) as f32,
+            decay_end_value,
             release_duration,
             size: SIZE,
             viewport_factor: 1.0,
@@ -267,32 +278,6 @@ impl Envelope {
         envelope.update_data();
 
         envelope
-    }
-
-    fn get_parameter_indices(operator_index: usize) -> (usize, usize, usize, usize, usize) {
-        match operator_index {
-            0 => (11, 12, 13, 14, 15),
-            1 => (27, 28, 29, 30, 31),
-            2 => (43, 44, 45, 46, 47),
-            3 => (59, 60, 61, 62, 63),
-            _ => unreachable!(),
-        }
-    }
-
-    fn get_attack_parameter_indices(&self) -> (usize, usize) {
-        let indices = Self::get_parameter_indices(self.operator_index);
-
-        (indices.0, indices.1)
-    }
-
-    fn get_decay_parameter_indices(&self) -> (usize, usize) {
-        let indices = Self::get_parameter_indices(self.operator_index);
-
-        (indices.2, indices.3)
-    }
-
-    fn get_release_dur_parameter_index(&self) -> usize {
-        Self::get_parameter_indices(self.operator_index).4
     }
 
     fn zoom_in_to_fit(&mut self) {
@@ -723,13 +708,23 @@ impl Program<Message> for Envelope {
 
                         self.update_data();
 
-                        let (dur, val) = self.get_attack_parameter_indices();
-
                         return (
                             event::Status::Captured,
                             Some(Message::ChangeTwoParametersSetValues(
-                                (dur, self.attack_duration as f64),
-                                (val, self.attack_end_value as f64),
+                                (
+                                    Parameter::Operator(
+                                        self.operator_index,
+                                        OperatorParameter::AttackDuration,
+                                    ),
+                                    self.attack_duration as f64,
+                                ),
+                                (
+                                    Parameter::Operator(
+                                        self.operator_index,
+                                        OperatorParameter::AttackValue,
+                                    ),
+                                    self.attack_end_value as f64,
+                                ),
                             )),
                         );
                     }
@@ -767,13 +762,23 @@ impl Program<Message> for Envelope {
 
                         self.update_data();
 
-                        let (dur, val) = self.get_decay_parameter_indices();
-
                         return (
                             event::Status::Captured,
                             Some(Message::ChangeTwoParametersSetValues(
-                                (dur, self.decay_duration as f64),
-                                (val, self.decay_end_value as f64),
+                                (
+                                    Parameter::Operator(
+                                        self.operator_index,
+                                        OperatorParameter::DecayDuration,
+                                    ),
+                                    self.decay_duration as f64,
+                                ),
+                                (
+                                    Parameter::Operator(
+                                        self.operator_index,
+                                        OperatorParameter::DecayValue,
+                                    ),
+                                    self.decay_end_value as f64,
+                                ),
                             )),
                         );
                     }
@@ -817,7 +822,10 @@ impl Program<Message> for Envelope {
                         return (
                             event::Status::Captured,
                             Some(Message::ChangeSingleParameterSetValue(
-                                self.get_release_dur_parameter_index(),
+                                Parameter::Operator(
+                                    self.operator_index,
+                                    OperatorParameter::ReleaseDuration,
+                                ),
                                 self.release_duration as f64,
                             )),
                         );
@@ -857,9 +865,11 @@ impl Program<Message> for Envelope {
                             original_end_value: 0.0,
                         };
 
-                        opt_message = Some(Message::ChangeSingleParameterBegin(
-                            self.get_release_dur_parameter_index(),
-                        ));
+                        opt_message =
+                            Some(Message::ChangeSingleParameterBegin(Parameter::Operator(
+                                self.operator_index,
+                                OperatorParameter::ReleaseDuration,
+                            )));
                     } else if self.decay_dragger.hitbox.contains(relative_position)
                         && !self.decay_dragger.is_dragging()
                     {
@@ -868,9 +878,13 @@ impl Program<Message> for Envelope {
                             original_duration: self.decay_duration,
                             original_end_value: self.decay_end_value,
                         };
-                        opt_message = Some(Message::ChangeTwoParametersBegin(
-                            self.get_decay_parameter_indices(),
-                        ));
+                        opt_message = Some(Message::ChangeTwoParametersBegin((
+                            Parameter::Operator(
+                                self.operator_index,
+                                OperatorParameter::DecayDuration,
+                            ),
+                            Parameter::Operator(self.operator_index, OperatorParameter::DecayValue),
+                        )));
                     } else if self.attack_dragger.hitbox.contains(relative_position)
                         && !self.attack_dragger.is_dragging()
                     {
@@ -879,9 +893,16 @@ impl Program<Message> for Envelope {
                             original_duration: self.attack_duration,
                             original_end_value: self.attack_end_value,
                         };
-                        opt_message = Some(Message::ChangeTwoParametersBegin(
-                            self.get_attack_parameter_indices(),
-                        ));
+                        opt_message = Some(Message::ChangeTwoParametersBegin((
+                            Parameter::Operator(
+                                self.operator_index,
+                                OperatorParameter::AttackDuration,
+                            ),
+                            Parameter::Operator(
+                                self.operator_index,
+                                OperatorParameter::AttackValue,
+                            ),
+                        )));
                     } else {
                         self.dragging_background_from =
                             Some((self.last_cursor_position, self.x_offset));
@@ -902,25 +923,28 @@ impl Program<Message> for Envelope {
                     self.release_dragger.status = EnvelopeDraggerStatus::Normal;
 
                     captured = true;
-                    opt_message = Some(Message::ChangeSingleParameterEnd(
-                        self.get_release_dur_parameter_index(),
-                    ));
+                    opt_message = Some(Message::ChangeSingleParameterEnd(Parameter::Operator(
+                        self.operator_index,
+                        OperatorParameter::ReleaseDuration,
+                    )));
                 }
                 if self.decay_dragger.is_dragging() {
                     self.decay_dragger.status = EnvelopeDraggerStatus::Normal;
 
                     captured = true;
-                    opt_message = Some(Message::ChangeTwoParametersEnd(
-                        self.get_decay_parameter_indices(),
-                    ));
+                    opt_message = Some(Message::ChangeTwoParametersEnd((
+                        Parameter::Operator(self.operator_index, OperatorParameter::DecayDuration),
+                        Parameter::Operator(self.operator_index, OperatorParameter::DecayValue),
+                    )));
                 }
                 if self.attack_dragger.is_dragging() {
                     self.attack_dragger.status = EnvelopeDraggerStatus::Normal;
 
                     captured = true;
-                    opt_message = Some(Message::ChangeTwoParametersEnd(
-                        self.get_attack_parameter_indices(),
-                    ));
+                    opt_message = Some(Message::ChangeTwoParametersEnd((
+                        Parameter::Operator(self.operator_index, OperatorParameter::AttackDuration),
+                        Parameter::Operator(self.operator_index, OperatorParameter::AttackValue),
+                    )));
                 }
 
                 if self.dragging_background_from.is_some() {

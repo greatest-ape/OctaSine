@@ -11,8 +11,8 @@ use crate::audio::parameters::{common::AudioParameter, AudioParameterOperator};
 use crate::audio::voices::log10_table::Log10Table;
 use crate::audio::AudioState;
 use crate::common::*;
-use crate::parameter_values::lfo_target::*;
-use crate::parameter_values::operator_wave_type::WaveType;
+use crate::parameters::operator_wave_type::WaveType;
+use crate::parameters::{MasterParameter, OperatorParameter, Parameter};
 
 use lfo::*;
 use simd::*;
@@ -199,6 +199,25 @@ mod gen {
                 .zip(processing.audio_gen_voice_data.iter_mut())
                 .filter(|(voice, _)| voice.active)
             {
+                voice.deactivate_if_envelopes_ended();
+
+                if voice.active {
+                    voice_data.active = true;
+                } else {
+                    // If voice was deactivated this sample in avx mode, ensure that audio isn't
+                    // generated for next sample due to lingering data from previous passes. If
+                    // voice gets activated though midi events next sample, new data gets written.
+                    //
+                    // Since we deactivate envelopes the sample after they ended, we know
+                    // at this point that valid data was written for the previous sample, meaning
+                    // that we don't need to worry about setting it to zero.
+                    if (S::SAMPLES == 2) & (sample_index == 0) {
+                        for operator in voice_data.operators.iter_mut() {
+                            set_value_for_both_channels(&mut operator.envelope_volumes, 1, 0.0);
+                        }
+                    }
+                }
+
                 for (operator_index, operator) in operators.iter_mut().enumerate() {
                     voice.operators[operator_index]
                         .volume_envelope
@@ -207,21 +226,6 @@ mod gen {
                             voice.key_pressed,
                             time_per_sample,
                         );
-                }
-
-                voice.deactivate_if_envelopes_ended();
-
-                if voice.active {
-                    voice_data.active = true;
-                } else {
-                    // If voice was deactivated during first sample in avx mode, ensure
-                    // audio isn't generated for second sample (as long as voice isn't
-                    // reactivated by midi events)
-                    if (S::SAMPLES == 2) & (sample_index == 0) {
-                        for operator in voice_data.operators.iter_mut() {
-                            set_value_for_both_channels(&mut operator.envelope_volumes, 1, 0.0);
-                        }
-                    }
                 }
 
                 let lfo_values = get_lfo_target_values(
@@ -233,8 +237,7 @@ mod gen {
                 );
 
                 let voice_volume_factor = {
-                    let lfo_parameter =
-                        LfoTargetParameter::Master(LfoTargetMasterParameter::Volume);
+                    let lfo_parameter = Parameter::Master(MasterParameter::Volume);
                     let lfo_addition = lfo_values.get(lfo_parameter);
 
                     let master_volume = processing
@@ -257,9 +260,9 @@ mod gen {
                     processing
                         .parameters
                         .master_frequency
-                        .get_value_with_lfo_addition(lfo_values.get(LfoTargetParameter::Master(
-                            LfoTargetMasterParameter::Frequency,
-                        ))),
+                        .get_value_with_lfo_addition(
+                            lfo_values.get(Parameter::Master(MasterParameter::Frequency)),
+                        ),
                 );
 
                 for (operator_index, operator) in operators.iter_mut().enumerate() {
@@ -292,9 +295,9 @@ mod gen {
         time_per_sample: TimePerSample,
         voice_base_frequency: f64,
     ) {
-        voice_data.wave_type = operator.wave_type.value;
+        voice_data.wave_type = operator.wave_type.get_value();
 
-        if let Some(p) = &mut operator.output_operator {
+        if let Some(p) = &mut operator.mod_targets {
             voice_data.modulation_targets = p.get_active_indices();
         }
 
@@ -308,9 +311,13 @@ mod gen {
             envelope_volume,
         );
 
-        let volume = operator.volume.get_value_with_lfo_addition(lfo_values.get(
-            LfoTargetParameter::Operator(operator_index, LfoTargetOperatorParameter::Volume),
-        ));
+        let volume =
+            operator
+                .volume
+                .get_value_with_lfo_addition(lfo_values.get(Parameter::Operator(
+                    operator_index,
+                    OperatorParameter::Volume,
+                )));
 
         let volume_active = operator.active.get_value();
 
@@ -322,18 +329,18 @@ mod gen {
 
         let mix =
             operator
-                .mix
-                .get_value_with_lfo_addition(lfo_values.get(LfoTargetParameter::Operator(
+                .mix_out
+                .get_value_with_lfo_addition(lfo_values.get(Parameter::Operator(
                     operator_index,
-                    LfoTargetOperatorParameter::MixOut,
+                    OperatorParameter::MixOut,
                 )));
 
         set_value_for_both_channels(&mut voice_data.mixes, sample_index, mix);
 
-        let modulation_index = operator.modulation_index.as_mut().map_or(0.0, |p| {
-            p.get_value_with_lfo_addition(lfo_values.get(LfoTargetParameter::Operator(
+        let modulation_index = operator.mod_out.as_mut().map_or(0.0, |p| {
+            p.get_value_with_lfo_addition(lfo_values.get(Parameter::Operator(
                 operator_index,
-                LfoTargetOperatorParameter::ModOut,
+                OperatorParameter::ModOut,
             )))
         });
 
@@ -345,16 +352,20 @@ mod gen {
 
         let feedback = operator
             .feedback
-            .get_value_with_lfo_addition(lfo_values.get(LfoTargetParameter::Operator(
+            .get_value_with_lfo_addition(lfo_values.get(Parameter::Operator(
                 operator_index,
-                LfoTargetOperatorParameter::Feedback,
+                OperatorParameter::Feedback,
             )));
 
         set_value_for_both_channels(&mut voice_data.feedbacks, sample_index, feedback);
 
-        let panning = operator.panning.get_value_with_lfo_addition(lfo_values.get(
-            LfoTargetParameter::Operator(operator_index, LfoTargetOperatorParameter::Panning),
-        ));
+        let panning =
+            operator
+                .panning
+                .get_value_with_lfo_addition(lfo_values.get(Parameter::Operator(
+                    operator_index,
+                    OperatorParameter::Panning,
+                )));
 
         set_value_for_both_channels(&mut voice_data.pannings, sample_index, panning);
 
@@ -369,21 +380,21 @@ mod gen {
 
         let frequency_ratio = operator
             .frequency_ratio
-            .get_value_with_lfo_addition(lfo_values.get(LfoTargetParameter::Operator(
+            .get_value_with_lfo_addition(lfo_values.get(Parameter::Operator(
                 operator_index,
-                LfoTargetOperatorParameter::FrequencyRatio,
+                OperatorParameter::FrequencyRatio,
             )));
         let frequency_free = operator
             .frequency_free
-            .get_value_with_lfo_addition(lfo_values.get(LfoTargetParameter::Operator(
+            .get_value_with_lfo_addition(lfo_values.get(Parameter::Operator(
                 operator_index,
-                LfoTargetOperatorParameter::FrequencyFree,
+                OperatorParameter::FrequencyFree,
             )));
         let frequency_fine = operator
             .frequency_fine
-            .get_value_with_lfo_addition(lfo_values.get(LfoTargetParameter::Operator(
+            .get_value_with_lfo_addition(lfo_values.get(Parameter::Operator(
                 operator_index,
-                LfoTargetOperatorParameter::FrequencyFine,
+                OperatorParameter::FrequencyFine,
             )));
 
         let frequency =

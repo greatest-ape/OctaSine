@@ -1,6 +1,6 @@
 pub mod audio;
 pub mod common;
-pub mod parameter_values;
+pub mod parameters;
 pub mod settings;
 pub mod sync;
 
@@ -12,6 +12,7 @@ use std::sync::Arc;
 
 use audio::AudioState;
 
+use parameters::Parameter;
 use sync::SyncState;
 use vst::api::{Events, Supported};
 use vst::event::Event;
@@ -56,7 +57,7 @@ impl OctaSine {
 
     fn update_bpm(&mut self) {
         if let Some(bpm) = self.sync.get_bpm_from_host() {
-            self.audio.bpm = bpm;
+            self.audio.set_bpm(bpm);
         }
     }
 
@@ -64,7 +65,9 @@ impl OctaSine {
         if let Some(indeces) = self.sync.patches.get_changed_parameters_from_audio() {
             for (index, opt_new_value) in indeces.iter().enumerate() {
                 if let Some(new_value) = opt_new_value {
-                    self.audio.parameters.set_from_patch(index, *new_value);
+                    if let Some(parameter) = Parameter::from_index(index) {
+                        self.audio.set_parameter_from_patch(parameter, *new_value);
+                    }
                 }
             }
         }
@@ -227,6 +230,8 @@ cfg_if::cfg_if! {
 
 #[cfg(test)]
 mod tests {
+    use crate::parameters::PARAMETERS;
+
     use super::*;
 
     #[allow(clippy::zero_prefixed_literal)]
@@ -237,5 +242,45 @@ mod tests {
         assert_eq!(crate_version_to_vst_format("0.0.2".to_string()), 0020);
         assert_eq!(crate_version_to_vst_format("0.5.2".to_string()), 0520);
         assert_eq!(crate_version_to_vst_format("1.0.1".to_string()), 1010);
+    }
+
+    #[test]
+    fn test_parameter_interaction() {
+        let mut octasine = OctaSine::default();
+        let mut patch_values = Vec::new();
+
+        for i in 0..PARAMETERS.len() {
+            let patch_value = fastrand::f64();
+
+            octasine
+                .sync
+                .patches
+                .set_parameter_from_host(i, patch_value);
+
+            patch_values.push(patch_value)
+        }
+
+        octasine.update_audio_parameters();
+
+        let sample_rate = SampleRate(44100.0);
+
+        for _ in 0..44100 {
+            octasine.audio.advance_one_sample(sample_rate);
+        }
+
+        for (i, parameter) in PARAMETERS.iter().copied().enumerate() {
+            assert_eq!(i, parameter.to_index());
+
+            let values_approx_eq = octasine
+                .audio
+                .compare_parameter_patch_value(parameter, patch_values[i]);
+
+            if !values_approx_eq {
+                println!("Parameter: {:?}", parameter);
+                println!("Set patch value: {}", patch_values[i]);
+            }
+
+            assert!(values_approx_eq)
+        }
     }
 }

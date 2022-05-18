@@ -16,7 +16,7 @@ mod operator_volume;
 use array_init::array_init;
 
 use crate::common::{SampleRate, NUM_LFOS, NUM_OPERATORS};
-use crate::parameter_values::*;
+use crate::parameters::*;
 
 use self::common::{AudioParameter, InterpolatableAudioParameter, SimpleAudioParameter};
 use self::lfo_active::LfoActiveAudioParameter;
@@ -31,6 +31,25 @@ use self::operator_mix::OperatorMixAudioParameter;
 use self::operator_mod_target::OperatorModulationTargetAudioParameter;
 use self::operator_panning::OperatorPanningAudioParameter;
 use self::operator_volume::OperatorVolumeAudioParameter;
+
+trait AudioParameterPatchInteraction {
+    fn set_patch_value(&mut self, value: f64);
+    #[cfg(test)]
+    fn compare_patch_value(&mut self, value: f64) -> bool;
+}
+
+impl<P: AudioParameter> AudioParameterPatchInteraction for P {
+    fn set_patch_value(&mut self, value: f64) {
+        self.set_from_patch(value)
+    }
+    #[cfg(test)]
+    fn compare_patch_value(&mut self, value: f64) -> bool {
+        let a = P::ParameterValue::new_from_patch(value).to_patch();
+        let b = self.get_parameter_value().to_patch();
+
+        (a - b).abs() <= 1.0 / 1_000_000.0
+    }
+}
 
 pub struct AudioParameters {
     pub master_volume: MasterVolumeAudioParameter,
@@ -50,215 +69,87 @@ impl Default for AudioParameters {
     }
 }
 
-#[allow(clippy::len_without_is_empty)]
-impl AudioParameters {
-    pub fn set_from_patch(&mut self, index: usize, value: f64) {
-        match index {
-            // Master parameters
-            0 => self.master_volume.set_from_patch(value),
-            1 => self.master_frequency.set_from_patch(value),
-            // Operator 1
-            2 => self.operators[0].volume.set_from_patch(value),
-            3 => self.operators[0].active.set_from_patch(value),
-            4 => self.operators[0].mix.set_from_patch(value),
-            5 => self.operators[0].panning.set_from_patch(value),
-            6 => self.operators[0].wave_type.set_from_patch(value),
-            7 => self.operators[0].feedback.set_from_patch(value),
-            8 => self.operators[0].frequency_ratio.set_from_patch(value),
-            9 => self.operators[0].frequency_free.set_from_patch(value),
-            10 => self.operators[0].frequency_fine.set_from_patch(value),
-            11 => self.operators[0]
-                .volume_envelope
-                .attack_duration
-                .set_from_patch(value),
-            12 => self.operators[0]
-                .volume_envelope
-                .attack_end_value
-                .set_from_patch(value),
-            13 => self.operators[0]
-                .volume_envelope
-                .decay_duration
-                .set_from_patch(value),
-            14 => self.operators[0]
-                .volume_envelope
-                .decay_end_value
-                .set_from_patch(value),
-            15 => self.operators[0]
-                .volume_envelope
-                .release_duration
-                .set_from_patch(value),
-            // Operator 2
-            16 => self.operators[1].volume.set_from_patch(value),
-            17 => self.operators[1].active.set_from_patch(value),
-            18 => self.operators[1].mix.set_from_patch(value),
-            19 => self.operators[1].panning.set_from_patch(value),
-            20 => self.operators[1].wave_type.set_from_patch(value),
-            21 => {
-                use OperatorModulationTargetAudioParameter::*;
+macro_rules! impl_patch_interaction {
+    ($name:ident, $input:ty, $output:ty, $f:expr) => {
+        pub fn $name(&mut self, parameter: Parameter, input: $input) -> Option<$output> {
+            match parameter {
+                Parameter::None => None,
+                Parameter::Master(p) => match p {
+                    MasterParameter::Volume => $f(&mut self.master_volume, input),
+                    MasterParameter::Frequency => $f(&mut self.master_frequency, input),
+                },
+                Parameter::Operator(index, p) => {
+                    use OperatorParameter::*;
 
-                let opt_p = self.operators[1].output_operator.as_mut();
+                    let operator = &mut self.operators[index];
 
-                if let Some(Two(p)) = opt_p {
-                    p.set_from_patch(value)
+                    match p {
+                        Volume => $f(&mut operator.volume, input),
+                        Active => $f(&mut operator.active, input),
+                        MixOut => $f(&mut operator.mix_out, input),
+                        Panning => $f(&mut operator.panning, input),
+                        WaveType => $f(&mut operator.wave_type, input),
+                        ModTargets => {
+                            if let Some(p) = &mut operator.mod_targets {
+                                $f(p, input)
+                            } else {
+                                None
+                            }
+                        }
+                        ModOut => {
+                            if let Some(p) = operator.mod_out.as_mut() {
+                                $f(p, input)
+                            } else {
+                                None
+                            }
+                        }
+                        Feedback => $f(&mut operator.feedback, input),
+                        FrequencyRatio => $f(&mut operator.frequency_ratio, input),
+                        FrequencyFree => $f(&mut operator.frequency_free, input),
+                        FrequencyFine => $f(&mut operator.frequency_fine, input),
+                        AttackDuration => $f(&mut operator.volume_envelope.attack_duration, input),
+                        AttackValue => $f(&mut operator.volume_envelope.attack_end_value, input),
+                        DecayDuration => $f(&mut operator.volume_envelope.decay_duration, input),
+                        DecayValue => $f(&mut operator.volume_envelope.decay_end_value, input),
+                        ReleaseDuration => {
+                            $f(&mut operator.volume_envelope.release_duration, input)
+                        }
+                    }
+                }
+                Parameter::Lfo(index, p) => {
+                    let lfo = &mut self.lfos[index];
+
+                    match p {
+                        LfoParameter::Target => $f(&mut lfo.target, input),
+                        LfoParameter::BpmSync => $f(&mut lfo.bpm_sync, input),
+                        LfoParameter::FrequencyRatio => $f(&mut lfo.frequency_ratio, input),
+                        LfoParameter::FrequencyFree => $f(&mut lfo.frequency_free, input),
+                        LfoParameter::Mode => $f(&mut lfo.mode, input),
+                        LfoParameter::Shape => $f(&mut lfo.shape, input),
+                        LfoParameter::Amount => $f(&mut lfo.amount, input),
+                        LfoParameter::Active => $f(&mut lfo.active, input),
+                    }
                 }
             }
-            22 => {
-                if let Some(p) = self.operators[1].modulation_index.as_mut() {
-                    p.set_from_patch(value)
-                }
-            }
-            23 => self.operators[1].feedback.set_from_patch(value),
-            24 => self.operators[1].frequency_ratio.set_from_patch(value),
-            25 => self.operators[1].frequency_free.set_from_patch(value),
-            26 => self.operators[1].frequency_fine.set_from_patch(value),
-            27 => self.operators[1]
-                .volume_envelope
-                .attack_duration
-                .set_from_patch(value),
-            28 => self.operators[1]
-                .volume_envelope
-                .attack_end_value
-                .set_from_patch(value),
-            29 => self.operators[1]
-                .volume_envelope
-                .decay_duration
-                .set_from_patch(value),
-            30 => self.operators[1]
-                .volume_envelope
-                .decay_end_value
-                .set_from_patch(value),
-            31 => self.operators[1]
-                .volume_envelope
-                .release_duration
-                .set_from_patch(value),
-            // Operator 3
-            32 => self.operators[2].volume.set_from_patch(value),
-            33 => self.operators[2].active.set_from_patch(value),
-            34 => self.operators[2].mix.set_from_patch(value),
-            35 => self.operators[2].panning.set_from_patch(value),
-            36 => self.operators[2].wave_type.set_from_patch(value),
-            37 => {
-                use OperatorModulationTargetAudioParameter::*;
-
-                let opt_p = self.operators[2].output_operator.as_mut();
-
-                if let Some(Three(p)) = opt_p {
-                    p.set_from_patch(value)
-                }
-            }
-            38 => {
-                if let Some(p) = self.operators[2].modulation_index.as_mut() {
-                    p.set_from_patch(value)
-                }
-            }
-            39 => self.operators[2].feedback.set_from_patch(value),
-            40 => self.operators[2].frequency_ratio.set_from_patch(value),
-            41 => self.operators[2].frequency_free.set_from_patch(value),
-            42 => self.operators[2].frequency_fine.set_from_patch(value),
-            43 => self.operators[2]
-                .volume_envelope
-                .attack_duration
-                .set_from_patch(value),
-            44 => self.operators[2]
-                .volume_envelope
-                .attack_end_value
-                .set_from_patch(value),
-            45 => self.operators[2]
-                .volume_envelope
-                .decay_duration
-                .set_from_patch(value),
-            46 => self.operators[2]
-                .volume_envelope
-                .decay_end_value
-                .set_from_patch(value),
-            47 => self.operators[2]
-                .volume_envelope
-                .release_duration
-                .set_from_patch(value),
-            // Operator 4
-            48 => self.operators[3].volume.set_from_patch(value),
-            49 => self.operators[3].active.set_from_patch(value),
-            50 => self.operators[3].mix.set_from_patch(value),
-            51 => self.operators[3].panning.set_from_patch(value),
-            52 => self.operators[3].wave_type.set_from_patch(value),
-            53 => {
-                use OperatorModulationTargetAudioParameter::*;
-
-                let opt_p = self.operators[3].output_operator.as_mut();
-
-                if let Some(Four(p)) = opt_p {
-                    p.set_from_patch(value)
-                }
-            }
-            54 => {
-                if let Some(p) = self.operators[3].modulation_index.as_mut() {
-                    p.set_from_patch(value)
-                }
-            }
-            55 => self.operators[3].feedback.set_from_patch(value),
-            56 => self.operators[3].frequency_ratio.set_from_patch(value),
-            57 => self.operators[3].frequency_free.set_from_patch(value),
-            58 => self.operators[3].frequency_fine.set_from_patch(value),
-            59 => self.operators[3]
-                .volume_envelope
-                .attack_duration
-                .set_from_patch(value),
-            60 => self.operators[3]
-                .volume_envelope
-                .attack_end_value
-                .set_from_patch(value),
-            61 => self.operators[3]
-                .volume_envelope
-                .decay_duration
-                .set_from_patch(value),
-            62 => self.operators[3]
-                .volume_envelope
-                .decay_end_value
-                .set_from_patch(value),
-            63 => self.operators[3]
-                .volume_envelope
-                .release_duration
-                .set_from_patch(value),
-            // LFOs
-            64 => self.lfos[0].target_parameter.set_from_sync(value),
-            65 => self.lfos[0].bpm_sync.set_from_patch(value),
-            66 => self.lfos[0].frequency_ratio.set_from_patch(value),
-            67 => self.lfos[0].frequency_free.set_from_patch(value),
-            68 => self.lfos[0].mode.set_from_patch(value),
-            69 => self.lfos[0].shape.set_from_patch(value),
-            70 => self.lfos[0].amount.set_from_patch(value),
-            71 => self.lfos[0].active.set_from_patch(value),
-            72 => self.lfos[1].target_parameter.set_from_sync(value),
-            73 => self.lfos[1].bpm_sync.set_from_patch(value),
-            74 => self.lfos[1].frequency_ratio.set_from_patch(value),
-            75 => self.lfos[1].frequency_free.set_from_patch(value),
-            76 => self.lfos[1].mode.set_from_patch(value),
-            77 => self.lfos[1].shape.set_from_patch(value),
-            78 => self.lfos[1].amount.set_from_patch(value),
-            79 => self.lfos[1].active.set_from_patch(value),
-            80 => self.lfos[2].target_parameter.set_from_sync(value),
-            81 => self.lfos[2].bpm_sync.set_from_patch(value),
-            82 => self.lfos[2].frequency_ratio.set_from_patch(value),
-            83 => self.lfos[2].frequency_free.set_from_patch(value),
-            84 => self.lfos[2].mode.set_from_patch(value),
-            85 => self.lfos[2].shape.set_from_patch(value),
-            86 => self.lfos[2].amount.set_from_patch(value),
-            87 => self.lfos[2].active.set_from_patch(value),
-            88 => self.lfos[3].target_parameter.set_from_sync(value),
-            89 => self.lfos[3].bpm_sync.set_from_patch(value),
-            90 => self.lfos[3].frequency_ratio.set_from_patch(value),
-            91 => self.lfos[3].frequency_free.set_from_patch(value),
-            92 => self.lfos[3].mode.set_from_patch(value),
-            93 => self.lfos[3].shape.set_from_patch(value),
-            94 => self.lfos[3].amount.set_from_patch(value),
-            95 => self.lfos[3].active.set_from_patch(value),
-            _ => (),
         }
-    }
+    };
+}
 
-    pub fn len(&self) -> usize {
-        87
-    }
+impl AudioParameters {
+    impl_patch_interaction!(
+        set_parameter_from_patch,
+        f64,
+        (),
+        |p: &mut dyn AudioParameterPatchInteraction, v| Some(p.set_patch_value(v))
+    );
+
+    #[cfg(test)]
+    impl_patch_interaction!(
+        compare_patch_value,
+        f64,
+        bool,
+        |p: &mut dyn AudioParameterPatchInteraction, v| Some(p.compare_patch_value(v))
+    );
 
     pub fn advance_one_sample(&mut self, sample_rate: SampleRate) {
         self.master_volume.advance_one_sample(sample_rate);
@@ -275,17 +166,17 @@ impl AudioParameters {
 }
 
 pub struct AudioParameterOperator {
-    pub volume: OperatorVolumeAudioParameter,
     pub active: InterpolatableAudioParameter<OperatorActiveValue>,
-    pub mix: OperatorMixAudioParameter,
     pub wave_type: SimpleAudioParameter<OperatorWaveTypeValue>,
+    pub volume: OperatorVolumeAudioParameter,
     pub panning: OperatorPanningAudioParameter,
-    pub output_operator: Option<OperatorModulationTargetAudioParameter>,
+    pub mix_out: OperatorMixAudioParameter,
+    pub mod_out: Option<InterpolatableAudioParameter<OperatorModOutValue>>,
+    pub mod_targets: Option<OperatorModulationTargetAudioParameter>,
+    pub feedback: InterpolatableAudioParameter<OperatorFeedbackValue>,
     pub frequency_ratio: SimpleAudioParameter<OperatorFrequencyRatioValue>,
     pub frequency_free: OperatorFrequencyFreeAudioParameter,
     pub frequency_fine: OperatorFrequencyFineAudioParameter,
-    pub feedback: InterpolatableAudioParameter<OperatorFeedbackValue>,
-    pub modulation_index: Option<InterpolatableAudioParameter<OperatorModOutValue>>,
     pub volume_envelope: OperatorEnvelopeAudioParameter,
 }
 
@@ -298,37 +189,37 @@ impl AudioParameterOperator {
         };
 
         Self {
-            volume: Default::default(),
             active: Default::default(),
-            mix: OperatorMixAudioParameter::new(operator_index),
             wave_type: Default::default(),
+            volume: Default::default(),
             panning: OperatorPanningAudioParameter::default(),
-            output_operator: OperatorModulationTargetAudioParameter::opt_new(operator_index),
+            mix_out: OperatorMixAudioParameter::new(operator_index),
+            mod_out: modulation_index,
+            mod_targets: OperatorModulationTargetAudioParameter::opt_new(operator_index),
+            feedback: Default::default(),
             frequency_ratio: Default::default(),
             frequency_free: Default::default(),
             frequency_fine: Default::default(),
-            feedback: Default::default(),
-            modulation_index,
             volume_envelope: Default::default(),
         }
     }
 
     pub fn advance_one_sample(&mut self, sample_rate: SampleRate) {
-        self.volume.advance_one_sample(sample_rate);
         self.active.advance_one_sample(sample_rate);
-        self.mix.advance_one_sample(sample_rate);
+        self.volume.advance_one_sample(sample_rate);
         self.wave_type.advance_one_sample(sample_rate);
         self.panning.advance_one_sample(sample_rate);
-        if let Some(ref mut output_operator) = self.output_operator {
-            output_operator.advance_one_sample(sample_rate);
+        if let Some(mod_targets) = &mut self.mod_targets {
+            mod_targets.advance_one_sample(sample_rate);
         }
+        self.mix_out.advance_one_sample(sample_rate);
+        if let Some(mod_out) = self.mod_out.as_mut() {
+            mod_out.advance_one_sample(sample_rate);
+        }
+        self.feedback.advance_one_sample(sample_rate);
         self.frequency_ratio.advance_one_sample(sample_rate);
         self.frequency_free.advance_one_sample(sample_rate);
         self.frequency_fine.advance_one_sample(sample_rate);
-        self.feedback.advance_one_sample(sample_rate);
-        if let Some(modulation_index) = self.modulation_index.as_mut() {
-            modulation_index.advance_one_sample(sample_rate);
-        }
         self.volume_envelope.advance_one_sample(sample_rate);
     }
 }
@@ -353,7 +244,7 @@ impl OperatorEnvelopeAudioParameter {
 }
 
 pub struct AudioParameterLfo {
-    pub target_parameter: LfoTargetAudioParameter,
+    pub target: LfoTargetAudioParameter,
     pub bpm_sync: SimpleAudioParameter<LfoBpmSyncValue>,
     pub frequency_ratio: SimpleAudioParameter<LfoFrequencyRatioValue>,
     pub frequency_free: LfoFrequencyFreeAudioParameter,
@@ -366,7 +257,7 @@ pub struct AudioParameterLfo {
 impl AudioParameterLfo {
     fn new(lfo_index: usize) -> Self {
         Self {
-            target_parameter: LfoTargetAudioParameter::new(lfo_index),
+            target: LfoTargetAudioParameter::new(lfo_index),
             bpm_sync: Default::default(),
             frequency_ratio: Default::default(),
             frequency_free: Default::default(),
@@ -378,7 +269,7 @@ impl AudioParameterLfo {
     }
 
     fn advance_one_sample(&mut self, sample_rate: SampleRate) {
-        self.target_parameter.advance_one_sample(sample_rate);
+        self.target.advance_one_sample(sample_rate);
         self.bpm_sync.advance_one_sample(sample_rate);
         self.frequency_ratio.advance_one_sample(sample_rate);
         self.frequency_free.advance_one_sample(sample_rate);

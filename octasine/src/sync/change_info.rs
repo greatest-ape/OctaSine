@@ -97,8 +97,6 @@ mod tests {
 
     use quickcheck::{quickcheck, TestResult};
 
-    use crate::sync::parameters::patch_parameters;
-
     use super::*;
 
     #[test]
@@ -106,17 +104,17 @@ mod tests {
         let c = ParameterChangeInfo::default();
 
         // Not checked
-        let preset_parameters = patch_parameters();
+        let patch_parameters = PatchParameter::all();
 
-        assert!(c.get_changed_parameters(&preset_parameters).is_none());
+        assert!(c.get_changed_parameters(&patch_parameters).is_none());
 
-        preset_parameters.get(0).unwrap().set_value(1.0);
-        preset_parameters.get(10).unwrap().set_value(1.0);
+        patch_parameters.get(0).unwrap().set_value(1.0);
+        patch_parameters.get(10).unwrap().set_value(1.0);
         c.mark_as_changed(0);
         c.mark_as_changed(10);
 
         let indeces: Vec<usize> = c
-            .get_changed_parameters(&preset_parameters)
+            .get_changed_parameters(&patch_parameters)
             .unwrap()
             .iter()
             .enumerate()
@@ -136,15 +134,15 @@ mod tests {
         assert!(indeces[0] == 0);
         assert!(indeces[1] == 10);
 
-        preset_parameters.get(1).unwrap().set_value(1.0);
-        preset_parameters.get(4).unwrap().set_value(1.0);
-        preset_parameters.get(5).unwrap().set_value(1.0);
+        patch_parameters.get(1).unwrap().set_value(1.0);
+        patch_parameters.get(4).unwrap().set_value(1.0);
+        patch_parameters.get(5).unwrap().set_value(1.0);
         c.mark_as_changed(1);
         c.mark_as_changed(4);
         c.mark_as_changed(5);
 
         let indeces: Vec<usize> = c
-            .get_changed_parameters(&preset_parameters)
+            .get_changed_parameters(&patch_parameters)
             .unwrap()
             .iter()
             .enumerate()
@@ -169,7 +167,7 @@ mod tests {
     #[test]
     fn test_changed_parameters_quickcheck() {
         fn prop(data: Vec<(usize, f64)>) -> TestResult {
-            let preset_parameters = patch_parameters();
+            let patch_parameters = PatchParameter::all();
 
             for (i, v) in data.iter() {
                 if *i > 63 || *v < 0.0 || v.is_nan() {
@@ -225,7 +223,7 @@ mod tests {
             let c = ParameterChangeInfo::default();
 
             for _ in 0..2 {
-                if !f(&c, &preset_parameters, &data) {
+                if !f(&c, &patch_parameters, &data) {
                     return TestResult::from_bool(false);
                 }
             }

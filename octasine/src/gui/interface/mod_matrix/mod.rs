@@ -8,9 +8,9 @@ mod output_box;
 use iced_baseview::canvas::{event, Cache, Canvas, Cursor, Frame, Geometry, Path, Program, Stroke};
 use iced_baseview::{Color, Element, Length, Point, Rectangle, Size};
 
-use crate::parameter_values::{
+use crate::parameters::{
     ModTargetStorage, Operator2ModulationTargetValue, Operator3ModulationTargetValue,
-    Operator4ModulationTargetValue, ParameterValue,
+    Operator4ModulationTargetValue, OperatorParameter, Parameter, ParameterValue,
 };
 use crate::sync::GuiSyncHandle;
 
@@ -75,21 +75,34 @@ struct ModulationMatrixParameters {
 
 impl ModulationMatrixParameters {
     fn new<H: GuiSyncHandle>(sync_handle: &H) -> Self {
-        let operator_2_targets =
-            Operator2ModulationTargetValue::new_from_patch(sync_handle.get_parameter(21)).get();
-        let operator_3_targets =
-            Operator3ModulationTargetValue::new_from_patch(sync_handle.get_parameter(37)).get();
-        let operator_4_targets =
-            Operator4ModulationTargetValue::new_from_patch(sync_handle.get_parameter(53)).get();
+        let operator_2_targets = Operator2ModulationTargetValue::new_from_patch(
+            sync_handle.get_parameter(Parameter::Operator(1, OperatorParameter::ModTargets)),
+        )
+        .get();
+        let operator_3_targets = Operator3ModulationTargetValue::new_from_patch(
+            sync_handle.get_parameter(Parameter::Operator(2, OperatorParameter::ModTargets)),
+        )
+        .get();
+        let operator_4_targets = Operator4ModulationTargetValue::new_from_patch(
+            sync_handle.get_parameter(Parameter::Operator(3, OperatorParameter::ModTargets)),
+        )
+        .get();
 
-        let operator_1_mix = sync_handle.get_parameter(4);
-        let operator_2_mix = sync_handle.get_parameter(18);
-        let operator_3_mix = sync_handle.get_parameter(34);
-        let operator_4_mix = sync_handle.get_parameter(50);
+        let operator_1_mix =
+            sync_handle.get_parameter(Parameter::Operator(0, OperatorParameter::MixOut));
+        let operator_2_mix =
+            sync_handle.get_parameter(Parameter::Operator(1, OperatorParameter::MixOut));
+        let operator_3_mix =
+            sync_handle.get_parameter(Parameter::Operator(2, OperatorParameter::MixOut));
+        let operator_4_mix =
+            sync_handle.get_parameter(Parameter::Operator(3, OperatorParameter::MixOut));
 
-        let operator_2_mod = sync_handle.get_parameter(22);
-        let operator_3_mod = sync_handle.get_parameter(38);
-        let operator_4_mod = sync_handle.get_parameter(54);
+        let operator_2_mod =
+            sync_handle.get_parameter(Parameter::Operator(1, OperatorParameter::ModOut));
+        let operator_3_mod =
+            sync_handle.get_parameter(Parameter::Operator(2, OperatorParameter::ModOut));
+        let operator_4_mod =
+            sync_handle.get_parameter(Parameter::Operator(3, OperatorParameter::ModOut));
 
         Self {
             operator_2_targets,
@@ -134,18 +147,54 @@ impl ModulationMatrixComponents {
         let operator_3_box = OperatorBox::new(bounds, 2);
         let operator_4_box = OperatorBox::new(bounds, 3);
 
-        let operator_4_mod_3_box =
-            ModulationBox::new(bounds, 3, 2, 53, 2, parameters.operator_4_targets);
-        let operator_4_mod_2_box =
-            ModulationBox::new(bounds, 3, 1, 53, 1, parameters.operator_4_targets);
-        let operator_4_mod_1_box =
-            ModulationBox::new(bounds, 3, 0, 53, 0, parameters.operator_4_targets);
-        let operator_3_mod_2_box =
-            ModulationBox::new(bounds, 2, 1, 37, 1, parameters.operator_3_targets);
-        let operator_3_mod_1_box =
-            ModulationBox::new(bounds, 2, 0, 37, 0, parameters.operator_3_targets);
-        let operator_2_mod_1_box =
-            ModulationBox::new(bounds, 1, 0, 21, 0, parameters.operator_2_targets);
+        let operator_4_mod_3_box = ModulationBox::new(
+            bounds,
+            3,
+            2,
+            Parameter::Operator(3, OperatorParameter::ModTargets),
+            2,
+            parameters.operator_4_targets,
+        );
+        let operator_4_mod_2_box = ModulationBox::new(
+            bounds,
+            3,
+            1,
+            Parameter::Operator(3, OperatorParameter::ModTargets),
+            1,
+            parameters.operator_4_targets,
+        );
+        let operator_4_mod_1_box = ModulationBox::new(
+            bounds,
+            3,
+            0,
+            Parameter::Operator(3, OperatorParameter::ModTargets),
+            0,
+            parameters.operator_4_targets,
+        );
+        let operator_3_mod_2_box = ModulationBox::new(
+            bounds,
+            2,
+            1,
+            Parameter::Operator(2, OperatorParameter::ModTargets),
+            1,
+            parameters.operator_3_targets,
+        );
+        let operator_3_mod_1_box = ModulationBox::new(
+            bounds,
+            2,
+            0,
+            Parameter::Operator(2, OperatorParameter::ModTargets),
+            0,
+            parameters.operator_3_targets,
+        );
+        let operator_2_mod_1_box = ModulationBox::new(
+            bounds,
+            1,
+            0,
+            Parameter::Operator(1, OperatorParameter::ModTargets),
+            0,
+            parameters.operator_2_targets,
+        );
 
         let output_box = OutputBox::new(bounds);
 

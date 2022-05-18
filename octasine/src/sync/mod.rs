@@ -146,15 +146,16 @@ impl vst::plugin::PluginParameters for SyncState {
 
 cfg_if::cfg_if! {
     if #[cfg(feature = "gui")] {
-    use self::change_info::MAX_NUM_PARAMETERS;
+        use self::change_info::MAX_NUM_PARAMETERS;
+        use crate::parameters::Parameter;
 
         /// Trait passed to GUI code for encapsulation
         pub trait GuiSyncHandle: Clone + Send + Sync + 'static {
-            fn begin_edit(&self, index: usize);
-            fn end_edit(&self, index: usize);
-            fn set_parameter(&self, index: usize, value: f64);
-            fn get_parameter(&self, index: usize) -> f64;
-            fn format_parameter_value(&self, index: usize, value: f64) -> String;
+            fn begin_edit(&self, parameter: Parameter);
+            fn end_edit(&self, parameter: Parameter);
+            fn set_parameter(&self, parameter: Parameter, value: f64);
+            fn get_parameter(&self, parameter: Parameter) -> f64;
+            fn format_parameter_value(&self, parameter: Parameter, value: f64) -> String;
             fn get_patches(&self) -> (usize, Vec<String>);
             fn set_patch_index(&self, index: usize);
             fn get_changed_parameters(&self) -> Option<[Option<f64>; MAX_NUM_PARAMETERS]>;
@@ -163,17 +164,19 @@ cfg_if::cfg_if! {
         }
 
         impl GuiSyncHandle for Arc<SyncState> {
-            fn begin_edit(&self, index: usize) {
+            fn begin_edit(&self, parameter: Parameter) {
                 if let Some(host) = self.host {
-                    host.begin_edit(index as i32);
+                    host.begin_edit(parameter.to_index() as i32);
                 }
             }
-            fn end_edit(&self, index: usize) {
+            fn end_edit(&self, parameter: Parameter) {
                 if let Some(host) = self.host {
-                    host.end_edit(index as i32);
+                    host.end_edit(parameter.to_index() as i32);
                 }
             }
-            fn set_parameter(&self, index: usize, value: f64){
+            fn set_parameter(&self, parameter: Parameter, value: f64){
+                let index = parameter.to_index();
+
                 if let Some(host) = self.host {
                     // Host will occasionally set the value again, but that's
                     // ok
@@ -182,11 +185,11 @@ cfg_if::cfg_if! {
 
                 self.patches.set_parameter_from_gui(index, value);
             }
-            fn get_parameter(&self, index: usize) -> f64 {
-                self.patches.get_parameter_value(index).unwrap() // FIXME: unwrap
+            fn get_parameter(&self, parameter: Parameter) -> f64 {
+                self.patches.get_parameter_value(parameter.to_index()).unwrap() // FIXME: unwrap
             }
-            fn format_parameter_value(&self, index: usize, value: f64) -> String {
-                self.patches.format_parameter_value(index, value).unwrap() // FIXME: unwrap
+            fn format_parameter_value(&self, parameter: Parameter, value: f64) -> String {
+                self.patches.format_parameter_value(parameter.to_index(), value).unwrap() // FIXME: unwrap
             }
             fn get_patches(&self) -> (usize, Vec<String>){
                 let index = self.patches.get_patch_index();

@@ -4,8 +4,9 @@ use iced_baseview::{
 };
 use iced_baseview::{Container, Tooltip};
 
-use crate::parameter_values::{
-    LfoAmountValue, LfoFrequencyFreeValue, LfoFrequencyRatioValue, LfoShapeValue,
+use crate::parameters::{
+    LfoAmountValue, LfoFrequencyFreeValue, LfoFrequencyRatioValue, LfoParameter, LfoShapeValue,
+    Parameter,
 };
 use crate::sync::GuiSyncHandle;
 
@@ -34,31 +35,19 @@ pub struct LfoWidgets {
 
 impl LfoWidgets {
     pub fn new<H: GuiSyncHandle>(sync_handle: &H, lfo_index: usize, style: Theme) -> Self {
-        let offset = 64 + lfo_index * 8;
-        let target = offset + 0;
-        let bpm_sync = offset + 1;
-        let ratio = offset + 2;
-        let free = offset + 3;
-        let mode = offset + 4;
-        let shape = offset + 5;
-        let amount = offset + 6;
-        let active = offset + 7;
-
-        let bpm_sync = lfo_bpm_sync_button(sync_handle, bpm_sync, style);
-        let mode = lfo_mode_button(sync_handle, mode, style);
-        let active = lfo_active_button(sync_handle, active, style);
+        let lfo_wave_type_parameter = Parameter::Lfo(lfo_index, LfoParameter::Shape);
 
         Self {
             index: lfo_index,
             style,
-            target: LfoTargetPicker::new(sync_handle, lfo_index, target, style),
-            shape: WavePicker::new(sync_handle, shape, style, "SHAPE"),
-            mode,
-            bpm_sync,
-            frequency_ratio: knob::lfo_frequency_ratio(sync_handle, ratio, style),
-            frequency_free: knob::lfo_frequency_free(sync_handle, free, style),
-            amount: knob::lfo_amount(sync_handle, amount, style),
-            active,
+            target: LfoTargetPicker::new(sync_handle, lfo_index, style),
+            shape: WavePicker::new(sync_handle, lfo_wave_type_parameter, style, "SHAPE"),
+            mode: lfo_mode_button(sync_handle, lfo_index, style),
+            bpm_sync: lfo_bpm_sync_button(sync_handle, lfo_index, style),
+            frequency_ratio: knob::lfo_frequency_ratio(sync_handle, lfo_index, style),
+            frequency_free: knob::lfo_frequency_free(sync_handle, lfo_index, style),
+            amount: knob::lfo_amount(sync_handle, lfo_index, style),
+            active: lfo_active_button(sync_handle, lfo_index, style),
         }
     }
 

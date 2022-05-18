@@ -1,16 +1,16 @@
 use iced_baseview::widget::{pick_list, PickList};
 use iced_baseview::{Element, Length};
 
-use crate::parameter_values::{
+use crate::parameters::{
     get_lfo_target_parameters, Lfo1TargetParameterValue, Lfo2TargetParameterValue,
-    Lfo3TargetParameterValue, Lfo4TargetParameterValue, LfoTargetParameter, ParameterValue,
+    Lfo3TargetParameterValue, Lfo4TargetParameterValue, LfoParameter, Parameter, ParameterValue,
 };
 
 use super::{style::Theme, GuiSyncHandle, Message, FONT_SIZE};
 
 #[derive(Clone, PartialEq, Eq)]
 struct LfoTarget {
-    value: LfoTargetParameter,
+    value: Parameter,
     title: String,
 }
 
@@ -25,18 +25,14 @@ pub struct LfoTargetPicker {
     options: Vec<LfoTarget>,
     selected: usize,
     lfo_index: usize,
-    parameter_index: usize,
+    parameter: Parameter,
     pub style: Theme,
 }
 
 impl LfoTargetPicker {
-    pub fn new<H: GuiSyncHandle>(
-        sync_handle: &H,
-        lfo_index: usize,
-        parameter_index: usize,
-        style: Theme,
-    ) -> Self {
-        let sync_value = sync_handle.get_parameter(parameter_index);
+    pub fn new<H: GuiSyncHandle>(sync_handle: &H, lfo_index: usize, style: Theme) -> Self {
+        let parameter = Parameter::Lfo(lfo_index, LfoParameter::Target);
+        let sync_value = sync_handle.get_parameter(parameter);
         let selected = Self::get_index_from_sync(lfo_index, sync_value);
         let target_parameters = get_lfo_target_parameters(lfo_index);
 
@@ -44,7 +40,7 @@ impl LfoTargetPicker {
             .into_iter()
             .map(|target| LfoTarget {
                 value: *target,
-                title: target.to_string().to_uppercase(),
+                title: target.name().to_uppercase(),
             })
             .collect();
 
@@ -53,7 +49,7 @@ impl LfoTargetPicker {
             options,
             selected,
             lfo_index,
-            parameter_index,
+            parameter,
             style,
         }
     }
@@ -84,7 +80,7 @@ impl LfoTargetPicker {
 
     pub fn view(&mut self) -> Element<Message> {
         let lfo_index = self.lfo_index;
-        let parameter_index = self.parameter_index;
+        let parameter = self.parameter;
 
         PickList::new(
             &mut self.state,
@@ -99,7 +95,7 @@ impl LfoTargetPicker {
                     _ => unreachable!(),
                 };
 
-                Message::ChangeSingleParameterImmediate(parameter_index, sync)
+                Message::ChangeSingleParameterImmediate(parameter, sync)
             },
         )
         .font(self.style.font_regular())

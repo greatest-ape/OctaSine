@@ -8,8 +8,8 @@ use octasine::audio::voices::envelopes::VoiceOperatorVolumeEnvelope;
 use octasine::audio::voices::lfos::*;
 use octasine::audio::voices::log10_table::Log10Table;
 use octasine::common::*;
-use octasine::parameter_values::lfo_mode::LfoMode;
-use octasine::parameter_values::lfo_shape::LfoShape;
+use octasine::parameters::lfo_mode::LfoMode;
+use octasine::parameters::lfo_shape::LfoShape;
 
 #[allow(dead_code)]
 fn plot_envelope_stage(length: f64, start_volume: f64, end_volume: f64, filename: &str) {
@@ -106,7 +106,7 @@ fn plot_lfo_values(filename: &str) {
         }
 
         if envelope.is_ended() {
-            lfo.request_stop();
+            lfo.envelope_ended();
         }
     }
 

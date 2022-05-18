@@ -2,7 +2,14 @@
 
 ## High priority
 
+* bench_process
+  * try generating delta_frames with rng
 * Audio
+  * Profile, particularily LFOs
+  * Are LFO frequency parameters too slow to react?
+  * Should envelope values be interpolated? Now there are crackles
+    when moving draggers quickly
+  * voice velocity should affect modulation (not only mix)
   * Should modulation index now compensate for higher frequencies?
   * Operator freq ratio values: are really both sqrt(2) and sqrt(3) values
     necessary?

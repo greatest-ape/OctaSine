@@ -1,7 +1,7 @@
 use iced_baseview::canvas::{event, Frame, Path, Stroke};
 use iced_baseview::{mouse, Point, Rectangle, Size};
 
-use crate::parameter_values::{ModTarget, ParameterValue};
+use crate::parameters::{ModTarget, Parameter, ParameterValue};
 
 use crate::gui::interface::{Message, SnapPoint};
 
@@ -25,7 +25,7 @@ pub struct ModulationBox<P: ParameterValue> {
     hover: bool,
     click_started: bool,
     mouse_left_after_click: bool,
-    parameter_index: usize,
+    parameter: Parameter,
     target_index: usize,
     pub v: P::Value,
 }
@@ -39,7 +39,7 @@ where
         bounds: Size,
         from: usize,
         to: usize,
-        parameter_index: usize,
+        parameter: Parameter,
         target_index: usize,
         v: V,
     ) -> Self {
@@ -74,7 +74,7 @@ where
             hover: false,
             click_started: false,
             mouse_left_after_click: true,
-            parameter_index,
+            parameter,
             target_index,
             v,
         }
@@ -144,7 +144,7 @@ where
                     let sync_value = P::new_from_audio(self.v).to_patch();
 
                     return ModulationBoxChange::Update(Message::ChangeSingleParameterImmediate(
-                        self.parameter_index,
+                        self.parameter,
                         sync_value,
                     ));
                 }
