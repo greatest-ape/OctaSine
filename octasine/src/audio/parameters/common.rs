@@ -109,14 +109,16 @@ impl<V: ParameterValue> AudioParameter for SimpleAudioParameter<V> {
     }
 }
 
-/// Interpolation value factor for increasing precision with very small
-/// numbers.
+/// Interpolation value factor for increasing precision and avoiding subnormals
+/// with very small numbers.
 const FACTOR: f64 = 1_000_000_000.0;
 
 /// AudioParameter value interpolator. Supports values >= 0.0 only.
 #[derive(Debug, Copy, Clone)]
 pub struct Interpolator {
-    value: f64,
+    /// Value to be externally consumed
+    cached_value: f64,
+    current_value: f64,
     target_value: f64,
     step_size: f64,
     steps_remaining: usize,
@@ -127,7 +129,8 @@ pub struct Interpolator {
 impl Interpolator {
     pub fn new(value: f64, interpolation_duration: InterpolationDuration) -> Self {
         Self {
-            value: value * FACTOR,
+            cached_value: value,
+            current_value: value * FACTOR,
             target_value: value * FACTOR,
             step_size: 0.0,
             steps_remaining: 0,
@@ -155,21 +158,23 @@ impl Interpolator {
         }
 
         self.steps_remaining -= 1;
-        self.value += self.step_size;
+        self.current_value += self.step_size;
 
-        callback_on_advance((self.value / FACTOR).max(0.0));
-    }
-
-    pub fn get_value(&self) -> f64 {
         // Force value to be at least zero to avoid breaking expectations
         // elsewhere, notable in operator volume/mod out/mix out operator
         // dependency analysis
-        (self.value / FACTOR).max(0.0)
+        self.cached_value = (self.current_value / FACTOR).max(0.0);
+
+        callback_on_advance(self.cached_value);
+    }
+
+    pub fn get_value(&self) -> f64 {
+        self.cached_value
     }
 
     fn restart_interpolation(&mut self) {
         let num_steps = self.interpolation_duration.samples(self.sample_rate);
-        let step_size = (self.target_value - self.value) / (num_steps as f64);
+        let step_size = (self.target_value - self.current_value) / (num_steps as f64);
 
         self.steps_remaining = num_steps;
         self.step_size = step_size;
@@ -179,7 +184,7 @@ impl Interpolator {
     pub fn set_value(&mut self, target_value: f64) {
         self.target_value = target_value * FACTOR;
 
-        if self.target_value == self.value {
+        if self.target_value == self.current_value {
             self.steps_remaining = 0;
         } else {
             self.restart_interpolation()
@@ -215,7 +220,7 @@ mod tests {
                 interpolator.advance_one_sample(sample_rate, &mut |_| {})
             }
 
-            let resulting_value_internal = interpolator.value / FACTOR;
+            let resulting_value_internal = interpolator.current_value / FACTOR;
             let resulting_value = interpolator.get_value();
 
             let accepted_error = set_value.abs() / 1_000_000_000_000.0;

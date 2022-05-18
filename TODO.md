@@ -6,8 +6,6 @@
   * LfoTargetValues::get seems to be very expensive. Using a long array and
     indexing by parameter index might be better
   * 2.0f64.powf() could maybe be replaced with `Sleef_cinz_exp2d1_u10purec(double a)`
-  * Interpolator must do less work in get_value: just compute finished value if actually
-    interpolating when advancing sample
   * Parameter step mapping is expensive when combined with LFOs
   * get_value_with_lfo_addition: is branching slower than just doing
     calculation, at least in some cases?
