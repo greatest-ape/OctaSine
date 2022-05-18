@@ -62,13 +62,13 @@ fn main() {
     #[allow(unused_variables)]
     let (_, fallback_std) = benchmark::<octasine::audio::gen::simd::FallbackStd>(
         "fallback (std)",
-        "59 ee 27 9b d0 2f 9c 08 ",
+        "ee 6b 66 df ff 51 59 5f ",
     );
 
     #[cfg(feature = "simd")]
     {
         // Don't forget trailing space
-        let hash = "59 ee 27 9b d0 2f 9c 08 ";
+        let hash = "2c 7f b2 f1 3c 59 9f a6 ";
 
         let mut all_sleef_hashes_match = true;
 
