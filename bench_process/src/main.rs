@@ -134,7 +134,7 @@ fn benchmark<A: AudioGen + Simd>(name: &str, expected_hash: &str) -> (bool, f32)
         .iter()
         .copied()
         .filter(|p| !envelope_duration_parameters.contains(p) && !wave_type_parameters.contains(p))
-        .map(|p| p.to_index())
+        .map(|p| p.to_index() as usize)
         .collect();
 
     let key_on_events: Vec<MidiEvent> = (0..NUM_VOICES)

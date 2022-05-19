@@ -175,7 +175,7 @@ cfg_if::cfg_if! {
                 }
             }
             fn set_parameter(&self, parameter: Parameter, value: f64){
-                let index = parameter.to_index();
+                let index = parameter.to_index() as usize;
 
                 if let Some(host) = self.host {
                     // Host will occasionally set the value again, but that's
@@ -186,10 +186,10 @@ cfg_if::cfg_if! {
                 self.patches.set_parameter_from_gui(index, value);
             }
             fn get_parameter(&self, parameter: Parameter) -> f64 {
-                self.patches.get_parameter_value(parameter.to_index()).unwrap() // FIXME: unwrap
+                self.patches.get_parameter_value(parameter.to_index() as usize).unwrap() // FIXME: unwrap
             }
             fn format_parameter_value(&self, parameter: Parameter, value: f64) -> String {
-                self.patches.format_parameter_value(parameter.to_index(), value).unwrap() // FIXME: unwrap
+                self.patches.format_parameter_value(parameter.to_index() as usize, value).unwrap() // FIXME: unwrap
             }
             fn get_patches(&self) -> (usize, Vec<String>){
                 let index = self.patches.get_patch_index();

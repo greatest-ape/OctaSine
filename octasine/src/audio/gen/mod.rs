@@ -237,8 +237,9 @@ mod gen {
                 );
 
                 let voice_volume_factor = {
-                    let lfo_parameter = Parameter::Master(MasterParameter::Volume);
-                    let lfo_addition = lfo_values.get(lfo_parameter);
+                    const I: u8 = Parameter::Master(MasterParameter::Volume).to_index();
+
+                    let lfo_addition = lfo_values.get(I);
 
                     let master_volume = processing
                         .parameters
@@ -256,20 +257,22 @@ mod gen {
                     voice_volume_factor,
                 );
 
-                let voice_base_frequency = voice.midi_pitch.get_frequency(
-                    processing
-                        .parameters
-                        .master_frequency
-                        .get_value_with_lfo_addition(
-                            lfo_values.get(Parameter::Master(MasterParameter::Frequency)),
-                        ),
-                );
+                let voice_base_frequency = {
+                    const I: u8 = Parameter::Master(MasterParameter::Frequency).to_index();
+
+                    voice.midi_pitch.get_frequency(
+                        processing
+                            .parameters
+                            .master_frequency
+                            .get_value_with_lfo_addition(lfo_values.get(I)),
+                    )
+                };
 
                 for (operator_index, operator) in operators.iter_mut().enumerate() {
                     extract_voice_operator_data(
                         &processing.log10table,
                         sample_index,
-                        operator_index as u8,
+                        operator_index,
                         operator,
                         &mut voice.operators[operator_index],
                         &mut voice_data.operators[operator_index],
@@ -287,7 +290,7 @@ mod gen {
     unsafe fn extract_voice_operator_data(
         log10table: &Log10Table,
         sample_index: usize,
-        operator_index: u8,
+        operator_index: usize,
         operator: &mut AudioParameterOperator,
         voice_operator: &mut crate::audio::voices::VoiceOperator,
         voice_data: &mut OperatorVoiceData,
@@ -295,6 +298,22 @@ mod gen {
         time_per_sample: TimePerSample,
         voice_base_frequency: f64,
     ) {
+        const VOLUME_INDICES: [u8; NUM_OPERATORS] = OperatorParameter::Volume.init_index_array();
+        const MIX_INDICES: [u8; NUM_OPERATORS] = OperatorParameter::MixOut.init_index_array();
+        /// Note: MOD_INDICES index 0 is invalid (0) and must never be used
+        const MOD_INDICES: [u8; NUM_OPERATORS] = OperatorParameter::ModOut.init_index_array();
+        const FEEDBACK_INDICES: [u8; NUM_OPERATORS] =
+            OperatorParameter::Feedback.init_index_array();
+        const PANNING_INDICES: [u8; NUM_OPERATORS] = OperatorParameter::Panning.init_index_array();
+        const RATIO_INDICES: [u8; NUM_OPERATORS] =
+            OperatorParameter::FrequencyRatio.init_index_array();
+        const FREE_INDICES: [u8; NUM_OPERATORS] =
+            OperatorParameter::FrequencyFree.init_index_array();
+        const FINE_INDICES: [u8; NUM_OPERATORS] =
+            OperatorParameter::FrequencyFine.init_index_array();
+
+        assert!(operator_index < NUM_OPERATORS);
+
         voice_data.wave_type = operator.wave_type.get_value();
 
         if let Some(p) = &mut operator.mod_targets {
@@ -311,13 +330,9 @@ mod gen {
             envelope_volume,
         );
 
-        let volume =
-            operator
-                .volume
-                .get_value_with_lfo_addition(lfo_values.get(Parameter::Operator(
-                    operator_index,
-                    OperatorParameter::Volume,
-                )));
+        let volume = operator
+            .volume
+            .get_value_with_lfo_addition(lfo_values.get(VOLUME_INDICES[operator_index]));
 
         let volume_active = operator.active.get_value();
 
@@ -327,21 +342,14 @@ mod gen {
             volume * volume_active,
         );
 
-        let mix =
-            operator
-                .mix_out
-                .get_value_with_lfo_addition(lfo_values.get(Parameter::Operator(
-                    operator_index,
-                    OperatorParameter::MixOut,
-                )));
+        let mix = operator
+            .mix_out
+            .get_value_with_lfo_addition(lfo_values.get(MIX_INDICES[operator_index]));
 
         set_value_for_both_channels(&mut voice_data.mixes, sample_index, mix);
 
         let modulation_index = operator.mod_out.as_mut().map_or(0.0, |p| {
-            p.get_value_with_lfo_addition(lfo_values.get(Parameter::Operator(
-                operator_index,
-                OperatorParameter::ModOut,
-            )))
+            p.get_value_with_lfo_addition(lfo_values.get(MOD_INDICES[operator_index]))
         });
 
         set_value_for_both_channels(
@@ -352,20 +360,13 @@ mod gen {
 
         let feedback = operator
             .feedback
-            .get_value_with_lfo_addition(lfo_values.get(Parameter::Operator(
-                operator_index,
-                OperatorParameter::Feedback,
-            )));
+            .get_value_with_lfo_addition(lfo_values.get(FEEDBACK_INDICES[operator_index]));
 
         set_value_for_both_channels(&mut voice_data.feedbacks, sample_index, feedback);
 
-        let panning =
-            operator
-                .panning
-                .get_value_with_lfo_addition(lfo_values.get(Parameter::Operator(
-                    operator_index,
-                    OperatorParameter::Panning,
-                )));
+        let panning = operator
+            .panning
+            .get_value_with_lfo_addition(lfo_values.get(PANNING_INDICES[operator_index]));
 
         set_value_for_both_channels(&mut voice_data.pannings, sample_index, panning);
 
@@ -380,22 +381,13 @@ mod gen {
 
         let frequency_ratio = operator
             .frequency_ratio
-            .get_value_with_lfo_addition(lfo_values.get(Parameter::Operator(
-                operator_index,
-                OperatorParameter::FrequencyRatio,
-            )));
+            .get_value_with_lfo_addition(lfo_values.get(RATIO_INDICES[operator_index]));
         let frequency_free = operator
             .frequency_free
-            .get_value_with_lfo_addition(lfo_values.get(Parameter::Operator(
-                operator_index,
-                OperatorParameter::FrequencyFree,
-            )));
+            .get_value_with_lfo_addition(lfo_values.get(FREE_INDICES[operator_index]));
         let frequency_fine = operator
             .frequency_fine
-            .get_value_with_lfo_addition(lfo_values.get(Parameter::Operator(
-                operator_index,
-                OperatorParameter::FrequencyFine,
-            )));
+            .get_value_with_lfo_addition(lfo_values.get(FINE_INDICES[operator_index]));
 
         let frequency =
             voice_base_frequency * frequency_ratio.value * frequency_free * frequency_fine;

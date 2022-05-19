@@ -269,7 +269,7 @@ mod tests {
         }
 
         for (i, parameter) in PARAMETERS.iter().copied().enumerate() {
-            assert_eq!(i, parameter.to_index());
+            assert_eq!(i, parameter.to_index() as usize);
 
             let values_approx_eq = octasine
                 .audio
