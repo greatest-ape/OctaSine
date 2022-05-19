@@ -1,4 +1,5 @@
 use crate::audio::common::InterpolationDuration;
+use crate::audio::math::exp2;
 use crate::common::SampleRate;
 use crate::parameters::{MasterVolumeValue, ParameterValue};
 
@@ -34,7 +35,7 @@ impl AudioParameter for MasterVolumeAudioParameter {
         lfo_addition: Option<f32>,
     ) -> <Self::ParameterValue as ParameterValue>::Value {
         if let Some(lfo_addition) = lfo_addition {
-            self.get_value() * 2.0f32.powf(lfo_addition / 2.0) as f64
+            self.get_value() * exp2(lfo_addition / 2.0) as f64
         } else {
             self.get_value()
         }

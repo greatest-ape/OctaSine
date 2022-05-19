@@ -1,5 +1,6 @@
 mod common;
 pub mod gen;
+mod math;
 pub mod parameters;
 pub mod voices;
 
