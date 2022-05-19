@@ -1,6 +1,7 @@
 use iced_baseview::widget::{pick_list, PickList};
 use iced_baseview::{Element, Length};
 
+use crate::parameters::lfo_target::LfoTargetParameter;
 use crate::parameters::{
     get_lfo_target_parameters, Lfo1TargetParameterValue, Lfo2TargetParameterValue,
     Lfo3TargetParameterValue, Lfo4TargetParameterValue, LfoParameter, Parameter, ParameterValue,
@@ -10,7 +11,7 @@ use super::{style::Theme, GuiSyncHandle, Message, FONT_SIZE};
 
 #[derive(Clone, PartialEq, Eq)]
 struct LfoTarget {
-    value: Parameter,
+    value: LfoTargetParameter,
     title: String,
 }
 
@@ -40,7 +41,7 @@ impl LfoTargetPicker {
             .into_iter()
             .map(|target| LfoTarget {
                 value: *target,
-                title: target.name().to_uppercase(),
+                title: target.parameter().name().to_uppercase(),
             })
             .collect();
 

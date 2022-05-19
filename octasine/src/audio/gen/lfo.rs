@@ -46,11 +46,12 @@ pub fn get_lfo_target_values(
     {
         assert!(lfo_index < NUM_LFOS);
 
-        let target = lfo_parameter.target.get_value();
+        let target_index = lfo_parameter.target.get_value().index();
 
-        if voice_lfo.is_stopped() | matches!(target, Parameter::None) {
-            continue;
-        }
+        let target_index = match (target_index, voice_lfo.is_stopped()) {
+            (None, _) | (_, true) => continue,
+            (Some(index), false) => index,
+        };
 
         let amount = lfo_parameter.active.get_value()
             * lfo_parameter
@@ -87,7 +88,7 @@ pub fn get_lfo_target_values(
 
         let addition = voice_lfo.get_value(amount);
 
-        lfo_values.set_or_add(target.to_index(), addition);
+        lfo_values.set_or_add(target_index, addition);
     }
 
     lfo_values

@@ -33,7 +33,7 @@ impl LfoTargetAudioParameter {
         }
     }
 
-    pub fn get_value(&self) -> Parameter {
+    pub fn get_value(&self) -> LfoTargetParameter {
         match self {
             Self::One(p) => p.get_value(),
             Self::Two(p) => p.get_value(),

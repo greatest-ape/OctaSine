@@ -116,10 +116,6 @@ impl Parameter {
 }
 
 impl OperatorParameter {
-    pub const fn with_index(self, index: u8) -> Parameter {
-        Parameter::Operator(index, self)
-    }
-
     pub const fn init_index_array(self) -> [u8; NUM_OPERATORS] {
         let mut arr = [0; NUM_OPERATORS];
 
@@ -130,7 +126,7 @@ impl OperatorParameter {
                 // There is no mod out parameter for operator 1
                 arr[i] = 0;
             } else {
-                arr[i] = self.with_index(i as u8).to_index();
+                arr[i] = Parameter::Operator(i as u8, self).to_index();
             }
 
             i += 1;
@@ -141,17 +137,13 @@ impl OperatorParameter {
 }
 
 impl LfoParameter {
-    pub const fn with_index(self, index: u8) -> Parameter {
-        Parameter::Lfo(index, self)
-    }
-
     pub const fn init_index_array(self) -> [u8; NUM_LFOS] {
         let mut arr = [0; NUM_LFOS];
 
         let mut i = 0;
 
         while i < arr.len() {
-            arr[i] = self.with_index(i as u8).to_index();
+            arr[i] = Parameter::Lfo(i as u8, self).to_index();
 
             i += 1;
         }
