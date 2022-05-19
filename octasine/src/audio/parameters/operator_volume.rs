@@ -31,10 +31,10 @@ impl AudioParameter for OperatorVolumeAudioParameter {
     }
     fn get_value_with_lfo_addition(
         &mut self,
-        lfo_addition: Option<f64>,
+        lfo_addition: Option<f32>,
     ) -> <Self::ParameterValue as ParameterValue>::Value {
         if let Some(lfo_addition) = lfo_addition {
-            self.get_value() * 2.0f64.powf(lfo_addition / 2.0)
+            self.get_value() * 2.0f32.powf(lfo_addition / 2.0) as f64
         } else {
             self.get_value()
         }

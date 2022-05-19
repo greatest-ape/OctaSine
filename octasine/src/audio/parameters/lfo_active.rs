@@ -31,7 +31,7 @@ impl AudioParameter for LfoActiveAudioParameter {
     }
     fn get_value_with_lfo_addition(
         &mut self,
-        _lfo_addition: Option<f64>,
+        _lfo_addition: Option<f32>,
     ) -> <Self::ParameterValue as ParameterValue>::Value {
         self.get_value()
     }

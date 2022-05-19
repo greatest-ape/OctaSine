@@ -9,12 +9,12 @@ const INTERPOLATION_DURATION: InterpolationDuration = InterpolationDuration::app
 #[derive(Debug, Clone)]
 enum LfoStage {
     Interpolate {
-        from_value: f64,
+        from_value: f32,
         samples_done: usize,
     },
     Running,
     Stopping {
-        from_value: f64,
+        from_value: f32,
         samples_done: usize,
     },
     Stopped,
@@ -25,7 +25,7 @@ pub struct VoiceLfo {
     stage: LfoStage,
     current_shape: Option<LfoShape>,
     phase: Phase,
-    last_value: f64,
+    last_value: f32,
     sample_rate: SampleRate,
     samples_to_interpolate: usize,
 }
@@ -156,7 +156,7 @@ impl VoiceLfo {
         }
     }
 
-    pub fn get_value(&mut self, amount: f64) -> f64 {
+    pub fn get_value(&mut self, amount: f32) -> f32 {
         if let LfoStage::Stopped = self.stage {
             return 0.0;
         }
@@ -172,7 +172,7 @@ impl VoiceLfo {
                 from_value,
                 samples_done,
             } => {
-                let progress = samples_done as f64 / self.samples_to_interpolate as f64;
+                let progress = samples_done as f32 / self.samples_to_interpolate as f32;
 
                 progress * shape.calculate(self.phase) + (1.0 - progress) * from_value
             }
@@ -181,7 +181,7 @@ impl VoiceLfo {
                 from_value,
                 samples_done,
             } => {
-                let progress = samples_done as f64 / self.samples_to_interpolate as f64;
+                let progress = samples_done as f32 / self.samples_to_interpolate as f32;
 
                 from_value - from_value * progress
             }

@@ -49,13 +49,13 @@ impl AudioParameter for OperatorPanningAudioParameter {
     }
     fn get_value_with_lfo_addition(
         &mut self,
-        lfo_addition: Option<f64>,
+        lfo_addition: Option<f32>,
     ) -> <Self::ParameterValue as ParameterValue>::Value {
         if let Some(lfo_addition) = lfo_addition {
             let patch_value = Self::ParameterValue::new_from_audio(self.get_value()).to_patch();
 
             let new_panning = Self::ParameterValue::new_from_patch(
-                (patch_value + lfo_addition).min(1.0).max(0.0),
+                (patch_value + lfo_addition as f64).min(1.0).max(0.0),
             )
             .get();
 

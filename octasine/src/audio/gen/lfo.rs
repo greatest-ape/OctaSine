@@ -3,17 +3,17 @@ use crate::audio::voices::lfos::VoiceLfo;
 use crate::common::*;
 use crate::parameters::{LfoParameter, Parameter, PARAMETERS};
 
-pub struct LfoTargetValues([Option<f64>; PARAMETERS.len()]);
+pub struct LfoTargetValues([Option<f32>; PARAMETERS.len()]);
 
 impl LfoTargetValues {
-    fn set_or_add(&mut self, target: u8, value: f64) {
+    fn set_or_add(&mut self, target: u8, value: f32) {
         match &mut self.0[target as usize] {
             Some(v) => *v += value,
             v @ None => *v = Some(value),
         }
     }
 
-    pub fn get(&self, target: u8) -> Option<f64> {
+    pub fn get(&self, target: u8) -> Option<f32> {
         self.0[target as usize]
     }
 }
@@ -86,7 +86,7 @@ pub fn get_lfo_target_values(
             frequency_ratio * frequency_free,
         );
 
-        let addition = voice_lfo.get_value(amount);
+        let addition = voice_lfo.get_value(amount as f32);
 
         lfo_values.set_or_add(target_index, addition);
     }

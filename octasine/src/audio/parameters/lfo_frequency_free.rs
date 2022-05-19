@@ -18,10 +18,10 @@ impl AudioParameter for LfoFrequencyFreeAudioParameter {
     }
     fn get_value_with_lfo_addition(
         &mut self,
-        lfo_addition: Option<f64>,
+        lfo_addition: Option<f32>,
     ) -> <Self::ParameterValue as ParameterValue>::Value {
         if let Some(lfo_addition) = lfo_addition {
-            self.get_value() * 2.0f64.powf(3.0 * lfo_addition)
+            self.get_value() * 2.0f32.powf(3.0 * lfo_addition) as f64
         } else {
             self.get_value()
         }

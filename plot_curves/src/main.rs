@@ -77,7 +77,7 @@ fn plot_lfo_values(filename: &str) {
 
         let lfo_value = lfo.get_value(magnitude);
 
-        lfo_value_points.push((i as f64, lfo_value));
+        lfo_value_points.push((i as f64, lfo_value as f64));
 
         envelope.advance_one_sample(
             &mut processing_parameter_envelope,

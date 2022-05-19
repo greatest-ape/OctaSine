@@ -6,7 +6,7 @@ pub const OPERATOR_MOD_INDEX_STEPS: [f64; 16] = [
 ];
 
 pub trait CalculateCurve: PartialEq + Copy {
-    fn calculate(self, phase: Phase) -> f64;
+    fn calculate(self, phase: Phase) -> f32;
     fn steps() -> &'static [Self];
 }
 
