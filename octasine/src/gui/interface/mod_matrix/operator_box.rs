@@ -90,7 +90,7 @@ impl OperatorBox {
     }
 
     fn get_parameter(&self) -> Parameter {
-        Parameter::Operator(self.index, OperatorParameter::MixOut)
+        Parameter::Operator(self.index as u8, OperatorParameter::MixOut)
     }
 
     pub fn update(

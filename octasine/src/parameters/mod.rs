@@ -169,8 +169,8 @@ pub enum Parameter {
     /// Only used in LFO targetting
     None,
     Master(MasterParameter),
-    Operator(usize, OperatorParameter),
-    Lfo(usize, LfoParameter),
+    Operator(u8, OperatorParameter),
+    Lfo(u8, LfoParameter),
 }
 
 impl Parameter {

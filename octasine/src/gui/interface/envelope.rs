@@ -212,7 +212,7 @@ pub struct Envelope {
     log10table: Log10Table,
     cache: Cache,
     style: Theme,
-    operator_index: usize,
+    operator_index: u8,
     attack_duration: f32,
     attack_end_value: f32,
     decay_duration: f32,
@@ -233,6 +233,8 @@ pub struct Envelope {
 
 impl Envelope {
     pub fn new<H: GuiSyncHandle>(sync_handle: &H, operator_index: usize, style: Theme) -> Self {
+        let operator_index = operator_index as u8;
+
         let attack_duration = Self::process_envelope_duration(sync_handle.get_parameter(
             Parameter::Operator(operator_index, OperatorParameter::AttackDuration),
         ));

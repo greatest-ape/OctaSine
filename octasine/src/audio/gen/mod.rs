@@ -269,7 +269,7 @@ mod gen {
                     extract_voice_operator_data(
                         &processing.log10table,
                         sample_index,
-                        operator_index,
+                        operator_index as u8,
                         operator,
                         &mut voice.operators[operator_index],
                         &mut voice_data.operators[operator_index],
@@ -287,7 +287,7 @@ mod gen {
     unsafe fn extract_voice_operator_data(
         log10table: &Log10Table,
         sample_index: usize,
-        operator_index: usize,
+        operator_index: u8,
         operator: &mut AudioParameterOperator,
         voice_operator: &mut crate::audio::voices::VoiceOperator,
         voice_data: &mut OperatorVoiceData,

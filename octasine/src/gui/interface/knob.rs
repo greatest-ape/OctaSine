@@ -60,7 +60,7 @@ where
 {
     OctaSineKnob::new_with_default_sync_value(
         sync_handle,
-        Parameter::Operator(operator_index, OperatorParameter::Volume),
+        Parameter::Operator(operator_index as u8, OperatorParameter::Volume),
         "VOL",
         TickMarkType::MinMaxAndDefault,
         OperatorVolumeValue::default().to_patch(),
@@ -79,7 +79,7 @@ where
 {
     OctaSineKnob::new_with_default_sync_value(
         sync_handle,
-        Parameter::Operator(operator_index, OperatorParameter::MixOut),
+        Parameter::Operator(operator_index as u8, OperatorParameter::MixOut),
         "MIX OUT",
         TickMarkType::MinMaxAndDefault,
         OperatorMixOutValue::new(operator_index).to_patch(),
@@ -98,7 +98,7 @@ where
 {
     OctaSineKnob::new(
         sync_handle,
-        Parameter::Operator(operator_index, OperatorParameter::Panning),
+        Parameter::Operator(operator_index as u8, OperatorParameter::Panning),
         "PAN",
         TickMarkType::MinMaxAndDefault,
         style,
@@ -116,7 +116,7 @@ where
 {
     OctaSineKnob::new(
         sync_handle,
-        Parameter::Operator(operator_index, OperatorParameter::ModOut),
+        Parameter::Operator(operator_index as u8, OperatorParameter::ModOut),
         "MOD OUT",
         TickMarkType::MinMaxAndDefault,
         style,
@@ -134,7 +134,7 @@ where
 {
     OctaSineKnob::new(
         sync_handle,
-        Parameter::Operator(operator_index, OperatorParameter::Feedback),
+        Parameter::Operator(operator_index as u8, OperatorParameter::Feedback),
         "FEEDBACK",
         TickMarkType::MinMaxAndDefault,
         style,
@@ -152,7 +152,7 @@ where
 {
     OctaSineKnob::new(
         sync_handle,
-        Parameter::Operator(operator_index, OperatorParameter::FrequencyRatio),
+        Parameter::Operator(operator_index as u8, OperatorParameter::FrequencyRatio),
         "RATIO",
         TickMarkType::MinMaxAndDefault,
         style,
@@ -170,7 +170,7 @@ where
 {
     OctaSineKnob::new(
         sync_handle,
-        Parameter::Operator(operator_index, OperatorParameter::FrequencyFree),
+        Parameter::Operator(operator_index as u8, OperatorParameter::FrequencyFree),
         "FREE",
         TickMarkType::MinMaxAndDefault,
         style,
@@ -188,7 +188,7 @@ where
 {
     OctaSineKnob::new(
         sync_handle,
-        Parameter::Operator(operator_index, OperatorParameter::FrequencyFine),
+        Parameter::Operator(operator_index as u8, OperatorParameter::FrequencyFine),
         "FINE",
         TickMarkType::MinMaxAndDefault,
         style,
@@ -206,7 +206,7 @@ where
 {
     OctaSineKnob::new(
         sync_handle,
-        Parameter::Lfo(lfo_index, LfoParameter::FrequencyRatio),
+        Parameter::Lfo(lfo_index as u8, LfoParameter::FrequencyRatio),
         "RATIO",
         TickMarkType::MinMaxAndDefault,
         style,
@@ -224,7 +224,7 @@ where
 {
     OctaSineKnob::new(
         sync_handle,
-        Parameter::Lfo(lfo_index, LfoParameter::FrequencyFree),
+        Parameter::Lfo(lfo_index as u8, LfoParameter::FrequencyFree),
         "FREE",
         TickMarkType::MinMaxAndDefault,
         style,
@@ -242,7 +242,7 @@ where
 {
     OctaSineKnob::new(
         sync_handle,
-        Parameter::Lfo(lfo_index, LfoParameter::Amount),
+        Parameter::Lfo(lfo_index as u8, LfoParameter::Amount),
         "AMOUNT",
         TickMarkType::MinMaxAndDefault,
         style,

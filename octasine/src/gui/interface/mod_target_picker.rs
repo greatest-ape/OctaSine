@@ -56,7 +56,7 @@ where
         choices: Vec<usize>,
         style: Theme,
     ) -> Self {
-        let parameter = Parameter::Operator(operator_index, OperatorParameter::ModTargets);
+        let parameter = Parameter::Operator(operator_index as u8, OperatorParameter::ModTargets);
         let sync_value = sync_handle.get_parameter(parameter);
 
         Self {

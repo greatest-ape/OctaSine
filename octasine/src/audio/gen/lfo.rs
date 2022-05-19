@@ -53,6 +53,8 @@ pub fn get_lfo_target_values(
             continue;
         }
 
+        let lfo_index = lfo_index as u8;
+
         let amount = lfo_parameter.active.get_value()
             * lfo_parameter.amount.get_value_with_lfo_addition(
                 lfo_values.get(Parameter::Lfo(lfo_index, LfoParameter::Amount)),

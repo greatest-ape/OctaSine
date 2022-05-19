@@ -70,7 +70,8 @@ impl OperatorWidgets {
             _ => None,
         };
 
-        let wave_type_parameter = Parameter::Operator(operator_index, OperatorParameter::WaveType);
+        let wave_type_parameter =
+            Parameter::Operator(operator_index as u8, OperatorParameter::WaveType);
 
         Self {
             index: operator_index,

@@ -31,7 +31,7 @@ pub struct LfoTargetPicker {
 
 impl LfoTargetPicker {
     pub fn new<H: GuiSyncHandle>(sync_handle: &H, lfo_index: usize, style: Theme) -> Self {
-        let parameter = Parameter::Lfo(lfo_index, LfoParameter::Target);
+        let parameter = Parameter::Lfo(lfo_index as u8, LfoParameter::Target);
         let sync_value = sync_handle.get_parameter(parameter);
         let selected = Self::get_index_from_sync(lfo_index, sync_value);
         let target_parameters = get_lfo_target_parameters(lfo_index);

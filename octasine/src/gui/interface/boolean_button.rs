@@ -34,7 +34,7 @@ pub fn operator_mute_button<H: GuiSyncHandle>(
 ) -> BooleanButton {
     BooleanButton::new(
         sync_handle,
-        Parameter::Operator(operator_index, OperatorParameter::Active),
+        Parameter::Operator(operator_index as u8, OperatorParameter::Active),
         style,
         "M",
         LINE_HEIGHT,
@@ -58,7 +58,7 @@ pub fn lfo_bpm_sync_button<H: GuiSyncHandle>(
 ) -> BooleanButton {
     BooleanButton::new(
         sync_handle,
-        Parameter::Lfo(lfo_index, LfoParameter::BpmSync),
+        Parameter::Lfo(lfo_index as u8, LfoParameter::BpmSync),
         style,
         "B",
         LINE_HEIGHT,
@@ -76,7 +76,7 @@ pub fn lfo_mode_button<H: GuiSyncHandle>(
 ) -> BooleanButton {
     BooleanButton::new(
         sync_handle,
-        Parameter::Lfo(lfo_index, LfoParameter::Mode),
+        Parameter::Lfo(lfo_index as u8, LfoParameter::Mode),
         style,
         "1",
         LINE_HEIGHT,
@@ -100,7 +100,7 @@ pub fn lfo_active_button<H: GuiSyncHandle>(
 ) -> BooleanButton {
     BooleanButton::new(
         sync_handle,
-        Parameter::Lfo(lfo_index, LfoParameter::Active),
+        Parameter::Lfo(lfo_index as u8, LfoParameter::Active),
         style,
         "M",
         LINE_HEIGHT,

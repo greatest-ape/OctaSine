@@ -81,7 +81,7 @@ macro_rules! impl_patch_interaction {
                 Parameter::Operator(index, p) => {
                     use OperatorParameter::*;
 
-                    let operator = &mut self.operators[index];
+                    let operator = &mut self.operators[index as usize];
 
                     match p {
                         Volume => $f(&mut operator.volume, input),
@@ -117,7 +117,7 @@ macro_rules! impl_patch_interaction {
                     }
                 }
                 Parameter::Lfo(index, p) => {
-                    let lfo = &mut self.lfos[index];
+                    let lfo = &mut self.lfos[index as usize];
 
                     match p {
                         LfoParameter::Target => $f(&mut lfo.target, input),
