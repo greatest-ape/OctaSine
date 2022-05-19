@@ -15,11 +15,10 @@
   * modulation target parameter should cache value used in audio gen. Maybe
     rewrite with bitvec or similar
   * Maybe storing voice data in ArrayVec instead of array would help cache locality?
-  * Maybe ditching AVX support and storing voice data in registers
-    immediately would help performance
 * bench_process
   * try generating delta_frames with rng
 * Audio
+  * OperatorPanningAudioParameter should use sleef functions for cos and sin
   * Mix should start at one for operator 1
   * Are LFO frequency parameters too slow to react?
   * Should envelope values be interpolated? Now there are crackles
