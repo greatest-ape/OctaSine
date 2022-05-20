@@ -3,20 +3,17 @@
 ## High priority
 
 * Performance
-  * LfoTargetValues::get seems to be very expensive, but it's not clear how to
-    improve it
-  * 2.0f64.powf() could maybe be replaced with `Sleef_cinz_exp2d1_u10purec(double a)`
-    (seems to just worsen results, but actually, otherwise results might differ
-    depending on libc implementation). Check https://docs.rs/fast-math/0.1.1/fast_math/fn.exp2_raw.html?
   * Parameter step mapping is expensive when combined with LFOs
-    * For modulation index, maybe Sleef_cinz_expm1d1_u10purec or exp2 could be used
+    * For modulation index/feedback, maybe exp2 could be used. Same with frequency
+      parameters.
+  * OperatorPanningAudioParameter should use sleef functions for cos and sin
   * get_value_with_lfo_addition: is branching slower than just doing
     calculation, at least in some cases?
   * Maybe storing voice data in ArrayVec instead of array would help cache locality?
+  * Were envelope / LFO changes to use f32 100% OK?
 * bench_process
   * try generating delta_frames with rng
 * Audio
-  * OperatorPanningAudioParameter should use sleef functions for cos and sin
   * Mix should start at one for operator 1
   * Are LFO frequency parameters too slow to react?
   * Should envelope values be interpolated? Now there are crackles
