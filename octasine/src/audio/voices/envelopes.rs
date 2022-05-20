@@ -13,8 +13,8 @@ pub struct VoiceOperatorVolumeEnvelope {
     stage: EnvelopeStage,
     duration: VoiceDuration,
     duration_at_stage_change: VoiceDuration,
-    volume_at_stage_change: f64,
-    last_volume: f64,
+    volume_at_stage_change: f32,
+    last_volume: f32,
 }
 
 impl VoiceOperatorVolumeEnvelope {
@@ -96,13 +96,13 @@ impl VoiceOperatorVolumeEnvelope {
         &mut self,
         log10table: &Log10Table,
         operator_envelope: &OperatorEnvelopeAudioParameter,
-    ) -> f64 {
+    ) -> f32 {
         use EnvelopeStage::*;
 
         self.last_volume = match self.stage {
             Ended => 0.0,
             Restart => {
-                let progress = self.duration_since_stage_change() / INTERPOLATION_DURATION;
+                let progress = (self.duration_since_stage_change() / INTERPOLATION_DURATION) as f32;
 
                 self.volume_at_stage_change - self.volume_at_stage_change * progress
             }
@@ -139,14 +139,14 @@ impl VoiceOperatorVolumeEnvelope {
 
     pub fn calculate_curve(
         log10table: &Log10Table,
-        start_volume: f64,
-        end_volume: f64,
+        start_volume: f32,
+        end_volume: f32,
         time_so_far_this_stage: f64,
         stage_length: f64,
-    ) -> f64 {
-        let time_progress = time_so_far_this_stage / stage_length;
+    ) -> f32 {
+        let time_progress = (time_so_far_this_stage / stage_length) as f32;
 
-        let curve_factor = (stage_length * ENVELOPE_CURVE_TAKEOVER_RECIP).min(1.0);
+        let curve_factor = (stage_length * ENVELOPE_CURVE_TAKEOVER_RECIP).min(1.0) as f32;
         let linear_factor = 1.0 - curve_factor;
         let curve = curve_factor * log10table.calculate(time_progress);
         let linear = linear_factor * time_progress;
@@ -195,13 +195,13 @@ mod tests {
 
     use super::*;
 
-    fn valid_volume(volume: f64) -> bool {
+    fn valid_volume(volume: f32) -> bool {
         volume >= 0.0 && volume <= 1.0
     }
 
     #[test]
     fn calculate_curve_volume_output_in_range() {
-        fn prop(values: (f64, f64, f64, f64)) -> TestResult {
+        fn prop(values: (f32, f32, f64, f64)) -> TestResult {
             let start_volume = values.0;
             let end_volume = values.1;
             let time_so_far_this_stage = values.2;
@@ -247,7 +247,7 @@ mod tests {
             TestResult::from_bool(success)
         }
 
-        quickcheck(prop as fn((f64, f64, f64, f64)) -> TestResult);
+        quickcheck(prop as fn((f32, f32, f64, f64)) -> TestResult);
     }
 
     #[test]
@@ -266,7 +266,7 @@ mod tests {
 
     #[test]
     fn calculate_curve_volume_stage_change_continuity() {
-        fn prop(stage_change_volume: f64) -> TestResult {
+        fn prop(stage_change_volume: f32) -> TestResult {
             if !valid_volume(stage_change_volume) {
                 return TestResult::discard();
             }
@@ -300,6 +300,6 @@ mod tests {
             TestResult::from_bool(success)
         }
 
-        quickcheck(prop as fn(f64) -> TestResult);
+        quickcheck(prop as fn(f32) -> TestResult);
     }
 }

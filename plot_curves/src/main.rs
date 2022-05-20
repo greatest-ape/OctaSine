@@ -19,11 +19,11 @@ fn plot_envelope_stage(length: f64, start_volume: f64, end_volume: f64, filename
         |x| {
             VoiceOperatorVolumeEnvelope::calculate_curve(
                 &log10table,
-                start_volume,
-                end_volume,
+                start_volume as f32,
+                end_volume as f32,
                 x as f64,
                 length,
-            )
+            ) as f64
         },
         0.,
         length,
@@ -87,7 +87,7 @@ fn plot_lfo_values(filename: &str) {
 
         let envelope_value = envelope.get_volume(&log10table, &mut processing_parameter_envelope);
 
-        envelope_value_points.push((i as f64, envelope_value));
+        envelope_value_points.push((i as f64, envelope_value as f64));
 
         if i % 44100 == 0 {
             seconds_points.push((i as f64, 0.0));

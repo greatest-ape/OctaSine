@@ -1,10 +1,10 @@
 const TABLE_SIZE: usize = 1 << 5;
-const TABLE_SIZE_MINUS_ONE_FLOAT: f64 = (TABLE_SIZE - 1) as f64;
+const TABLE_SIZE_MINUS_ONE_FLOAT: f32 = (TABLE_SIZE - 1) as f32;
 
 /// Log10 based lookup table for envelope curve, with linear interpolation
 ///
 /// Maps inputs 0.0-1.0 to output 0.0-1.0
-pub struct Log10Table([f64; TABLE_SIZE]);
+pub struct Log10Table([f32; TABLE_SIZE]);
 
 impl Log10Table {
     #[inline]
@@ -14,7 +14,7 @@ impl Log10Table {
 
     /// Get volume. Only defined where value >= 0.0 && value <= 1.0
     #[inline]
-    pub fn calculate(&self, value: f64) -> f64 {
+    pub fn calculate(&self, value: f32) -> f32 {
         let index_float = value * TABLE_SIZE_MINUS_ONE_FLOAT;
         let index_fract = index_float.fract();
 
@@ -32,10 +32,10 @@ impl Default for Log10Table {
     fn default() -> Self {
         let mut table = [0.0; TABLE_SIZE];
 
-        let increment = 1.0 / TABLE_SIZE_MINUS_ONE_FLOAT;
+        let increment = 1.0 / TABLE_SIZE_MINUS_ONE_FLOAT as f64;
 
         for (i, v) in table.iter_mut().enumerate() {
-            *v = Self::reference(i as f64 * increment);
+            *v = Self::reference(i as f64 * increment) as f32;
         }
 
         Self(table)
@@ -50,7 +50,7 @@ mod tests {
 
     #[test]
     fn test_table_calculate() {
-        fn prop(value: f64) -> TestResult {
+        fn prop(value: f32) -> TestResult {
             if value > 1.0 || value < 0.0 || value.is_nan() {
                 return TestResult::discard();
             }
@@ -58,7 +58,7 @@ mod tests {
             let table = Log10Table::default();
 
             let table_result = table.calculate(value);
-            let reference_result = Log10Table::reference(value);
+            let reference_result = Log10Table::reference(value as f64) as f32;
             let diff = (table_result - reference_result).abs();
 
             let success = diff < 0.005;
@@ -74,6 +74,6 @@ mod tests {
             TestResult::from_bool(success)
         }
 
-        quickcheck(prop as fn(f64) -> TestResult);
+        quickcheck(prop as fn(f32) -> TestResult);
     }
 }

@@ -133,8 +133,8 @@ impl EnvelopeStagePath {
 
         let value = VoiceOperatorVolumeEnvelope::calculate_curve(
             log10table,
-            start_value as f64,
-            stage_end_value as f64,
+            start_value,
+            stage_end_value,
             duration as f64,
             stage_duration as f64,
         ) as f32;

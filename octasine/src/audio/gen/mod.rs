@@ -329,7 +329,7 @@ mod gen {
         set_value_for_both_channels(
             &mut voice_data.envelope_volumes,
             sample_index,
-            envelope_volume,
+            envelope_volume as f64,
         );
 
         let volume = operator
