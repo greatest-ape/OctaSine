@@ -89,7 +89,7 @@ impl Plugin for OctaSine {
     fn get_info(&self) -> Info {
         Info {
             name: PLUGIN_NAME.to_string(),
-            vendor: "Joakim Frostegård".to_string(),
+            vendor: "Joakim Frostegard".to_string(),
             version: crate_version_to_vst_format(crate_version!()),
             unique_id: PLUGIN_UNIQUE_ID,
             category: Category::Synth,
