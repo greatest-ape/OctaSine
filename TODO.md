@@ -3,10 +3,13 @@
 ## High priority
 
 * Performance
+  * Can't use exp2_raw for frequency parameters with high range
+  * OperatorPanningAudioParameter should use sleef functions for cos and sin
+    * macOS libc cosf/sinf seems to be cheap btw, but that might not be the case
+      on other platforms, so use Sleef_cinz_sincosf1_u35purec
   * Parameter step mapping is expensive when combined with LFOs
     * For modulation index/feedback, maybe exp2 could be used. Same with frequency
       parameters.
-  * OperatorPanningAudioParameter should use sleef functions for cos and sin
   * get_value_with_lfo_addition: is branching slower than just doing
     calculation, at least in some cases?
   * Maybe storing voice data in ArrayVec instead of array would help cache locality?
@@ -23,8 +26,6 @@
   * Operator freq ratio values: are really both PI, sqrt(2) and sqrt(3) values
     necessary?
   * LFO clicks when using DAW and looping notes without space between
-  * Operator and master volume parameter values directly in decibel so they
-    can be used with external LFOs?
 * GUI
   * In envelope editor, zoom by dragging background up/down
   * Two envelope lock groups
