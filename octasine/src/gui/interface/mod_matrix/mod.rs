@@ -61,9 +61,9 @@ pub trait StyleSheet {
 }
 
 struct ModulationMatrixParameters {
-    operator_2_targets: ModTargetStorage<1>,
-    operator_3_targets: ModTargetStorage<2>,
-    operator_4_targets: ModTargetStorage<3>,
+    operator_2_targets: ModTargetStorage,
+    operator_3_targets: ModTargetStorage,
+    operator_4_targets: ModTargetStorage,
     operator_1_mix: f64,
     operator_2_mix: f64,
     operator_3_mix: f64,

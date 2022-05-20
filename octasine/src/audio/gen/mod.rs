@@ -3,7 +3,6 @@ pub mod simd;
 
 use std::f64::consts::TAU;
 
-use arrayvec::ArrayVec;
 use duplicate::duplicate_item;
 use vst::buffer::AudioBuffer;
 
@@ -12,7 +11,7 @@ use crate::audio::voices::log10_table::Log10Table;
 use crate::audio::AudioState;
 use crate::common::*;
 use crate::parameters::operator_wave_type::WaveType;
-use crate::parameters::{MasterParameter, OperatorParameter, Parameter};
+use crate::parameters::{MasterParameter, ModTargetStorage, OperatorParameter, Parameter};
 
 use lfo::*;
 use simd::*;
@@ -44,7 +43,7 @@ pub struct OperatorVoiceData {
     envelope_volumes: [f64; MAX_PD_WIDTH],
     phases: [f64; MAX_PD_WIDTH],
     wave_type: WaveType,
-    modulation_targets: ArrayVec<usize, 3>,
+    modulation_targets: ModTargetStorage,
 }
 
 #[derive(Debug, Default)]
@@ -319,7 +318,7 @@ mod gen {
         voice_data.wave_type = operator.wave_type.get_value();
 
         if let Some(p) = &mut operator.mod_targets {
-            voice_data.modulation_targets = p.get_active_indices();
+            voice_data.modulation_targets = p.get_value();
         }
 
         let envelope_volume = voice_operator
@@ -441,7 +440,7 @@ mod gen {
                 );
 
                 // Add modulation output to target operators' modulation inputs
-                for target in operator_voice_data.modulation_targets.iter().copied() {
+                for target in operator_voice_data.modulation_targets.active_indices() {
                     voice_modulation_inputs[target] =
                         S::pd_add(voice_modulation_inputs[target], modulation_out);
                 }
@@ -569,8 +568,8 @@ mod gen {
         for operator_index in 1..4 {
             let all_targets_inactive = voice_data.operators[operator_index]
                 .modulation_targets
-                .iter()
-                .all(|mod_target| !operator_generate_audio[*mod_target]);
+                .active_indices()
+                .all(|mod_target| !operator_generate_audio[mod_target]);
 
             if all_targets_inactive & !operator_mix_out_active[operator_index] {
                 operator_generate_audio[operator_index] = false;

@@ -2,9 +2,10 @@ use iced_baseview::{
     alignment::Horizontal, Alignment, Checkbox, Column, Element, Length, Space, Text,
 };
 
+use crate::parameters::operator_mod_target::ModTargetStorage;
 use crate::parameters::{
-    ModTarget, Operator2ModulationTargetValue, Operator3ModulationTargetValue,
-    Operator4ModulationTargetValue, OperatorParameter, Parameter, ParameterValue,
+    Operator2ModulationTargetValue, Operator3ModulationTargetValue, Operator4ModulationTargetValue,
+    OperatorParameter, Parameter, ParameterValue,
 };
 use crate::sync::GuiSyncHandle;
 
@@ -46,8 +47,7 @@ pub struct ModTargetPicker<P> {
 
 impl<P> ModTargetPicker<P>
 where
-    P: 'static + ParameterValue + Copy,
-    P::Value: ModTarget,
+    P: 'static + ParameterValue<Value = ModTargetStorage> + Copy,
 {
     fn new<H: GuiSyncHandle>(
         sync_handle: &H,

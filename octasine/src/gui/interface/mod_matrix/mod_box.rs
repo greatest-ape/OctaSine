@@ -1,7 +1,8 @@
 use iced_baseview::canvas::{event, Frame, Path, Stroke};
 use iced_baseview::{mouse, Point, Rectangle, Size};
 
-use crate::parameters::{ModTarget, Parameter, ParameterValue};
+use crate::parameters::operator_mod_target::ModTargetStorage;
+use crate::parameters::{Parameter, ParameterValue};
 
 use crate::gui::interface::{Message, SnapPoint};
 
@@ -30,10 +31,9 @@ pub struct ModulationBox<P: ParameterValue> {
     pub v: P::Value,
 }
 
-impl<P, V> ModulationBox<P>
+impl<P> ModulationBox<P>
 where
-    P: ParameterValue<Value = V>,
-    V: ModTarget,
+    P: ParameterValue<Value = ModTargetStorage>,
 {
     pub fn new(
         bounds: Size,
@@ -41,7 +41,7 @@ where
         to: usize,
         parameter: Parameter,
         target_index: usize,
-        v: V,
+        v: ModTargetStorage,
     ) -> Self {
         let (x, y) = match (from, to) {
             (3, 2) => (2, 0),
@@ -103,10 +103,9 @@ where
     }
 }
 
-impl<P, V> ModulationBoxUpdate for ModulationBox<P>
+impl<P> ModulationBoxUpdate for ModulationBox<P>
 where
-    P: ParameterValue<Value = V>,
-    V: ModTarget,
+    P: ParameterValue<Value = ModTargetStorage>,
 {
     fn update(&mut self, bounds: Rectangle, event: event::Event) -> ModulationBoxChange {
         match event {
