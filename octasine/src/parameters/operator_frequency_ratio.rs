@@ -9,7 +9,7 @@ use super::ParameterValue;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Ratio {
-    pub name: ArrayString<16>,
+    pub name: ArrayString<20>,
     pub value: f64,
 }
 
@@ -57,27 +57,49 @@ static OPERATOR_RATIO_STEPS: Lazy<Vec<Ratio>> = Lazy::new(|| {
     // Add DX ratios
 
     for i in 0..16 {
-        let factor = if i == 0 { 0.5 } else { i as f64 };
+        match i {
+            5 | 15 => {
 
-        if i != 5 && i != 15 {
-            let value = factor * 2.0f64.sqrt();
-            ratios.push(Ratio::new(value, format!("{:.04}", value)));
+            },
+            0 => {
+                let value = 0.5 * 2.0f64.sqrt();
+                ratios.push(Ratio::new(value, format!("sqrt(2)/2")));
+            },
+            1 => {
+                let value = 2.0f64.sqrt();
+                ratios.push(Ratio::new(value, format!("sqrt(2)")));
+            },
+            i => {
+                let value = i as f64 * 2.0f64.sqrt();
+                ratios.push(Ratio::new(value, format!("{} sqrt(2)", i)));
+            },
         }
-
-        let value = factor * 3.0f64.sqrt();
-        ratios.push(Ratio::new(value, format!("{:.04}", value)));
+    }
+    for i in 0..16 {
+        match i {
+            0 => {
+                let value = 0.5 * 3.0f64.sqrt();
+                ratios.push(Ratio::new(value, format!("sqrt(3)/2")));
+            },
+            1 => {
+                let value = 3.0f64.sqrt();
+                ratios.push(Ratio::new(value, format!("sqrt(3)")));
+            },
+            i => {
+                let value = i as f64 * 3.0f64.sqrt();
+                ratios.push(Ratio::new(value, format!("{} sqrt(3)", i)));
+            },
+        }
     }
 
     for i in 1..8 {
-        let factor = i as f64;
-
         let name = if i == 1 {
             String::from("π")
         } else {
-            format!("{}π", factor)
+            format!("{}π", i)
         };
 
-        ratios.push(Ratio::new(factor * PI, name));
+        ratios.push(Ratio::new(i as f64 * PI, name));
     }
 
     for i in [1, 2, 6, 9, 10, 14, 18, 22, 26, 27, 30] {
