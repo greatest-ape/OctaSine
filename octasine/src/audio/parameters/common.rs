@@ -10,7 +10,7 @@ pub trait AudioParameter {
 
     fn advance_one_sample(&mut self, sample_rate: SampleRate);
     fn get_value(&self) -> <Self::ParameterValue as ParameterValue>::Value;
-    fn set_from_patch(&mut self, value: f64);
+    fn set_from_patch(&mut self, value: f32);
     fn get_value_with_lfo_addition(
         &mut self,
         lfo_addition: Option<f32>,
@@ -29,7 +29,7 @@ pub struct InterpolatableAudioParameter<V: ParameterValue> {
 
 impl<V> Default for InterpolatableAudioParameter<V>
 where
-    V: ParameterValue<Value = f64> + Default,
+    V: ParameterValue<Value = f32> + Default,
 {
     fn default() -> Self {
         Self {
@@ -44,7 +44,7 @@ where
 
 impl<V> AudioParameter for InterpolatableAudioParameter<V>
 where
-    V: ParameterValue<Value = f64>,
+    V: ParameterValue<Value = f32>,
 {
     type ParameterValue = V;
 
@@ -55,7 +55,7 @@ where
     fn get_value(&self) -> <Self::ParameterValue as ParameterValue>::Value {
         self.interpolator.get_value()
     }
-    fn set_from_patch(&mut self, value: f64) {
+    fn set_from_patch(&mut self, value: f32) {
         self.interpolator.set_value(V::new_from_patch(value).get())
     }
     fn get_value_with_lfo_addition(
@@ -65,7 +65,7 @@ where
         if let Some(lfo_addition) = lfo_addition {
             let patch_value = V::new_from_audio(self.get_value()).to_patch();
 
-            V::new_from_patch((patch_value + lfo_addition as f64).min(1.0).max(0.0)).get()
+            V::new_from_patch((patch_value + lfo_addition).min(1.0).max(0.0)).get()
         } else {
             self.get_value()
         }
@@ -74,7 +74,7 @@ where
 
 pub struct SimpleAudioParameter<V: ParameterValue> {
     value: V,
-    patch_value_cache: f64,
+    patch_value_cache: f32,
 }
 
 impl<V: ParameterValue + Default> Default for SimpleAudioParameter<V> {
@@ -93,7 +93,7 @@ impl<V: ParameterValue> AudioParameter for SimpleAudioParameter<V> {
     fn get_value(&self) -> <Self::ParameterValue as ParameterValue>::Value {
         self.value.get()
     }
-    fn set_from_patch(&mut self, value: f64) {
+    fn set_from_patch(&mut self, value: f32) {
         self.patch_value_cache = value;
         self.value = V::new_from_patch(value);
     }
@@ -102,12 +102,7 @@ impl<V: ParameterValue> AudioParameter for SimpleAudioParameter<V> {
         lfo_addition: Option<f32>,
     ) -> <Self::ParameterValue as ParameterValue>::Value {
         if let Some(lfo_addition) = lfo_addition {
-            V::new_from_patch(
-                (self.patch_value_cache + lfo_addition as f64)
-                    .min(1.0)
-                    .max(0.0),
-            )
-            .get()
+            V::new_from_patch((self.patch_value_cache + lfo_addition).min(1.0).max(0.0)).get()
         } else {
             self.get_value()
         }
@@ -116,23 +111,23 @@ impl<V: ParameterValue> AudioParameter for SimpleAudioParameter<V> {
 
 /// Interpolation value factor for increasing precision and avoiding subnormals
 /// with very small numbers.
-const FACTOR: f64 = 1_000_000_000.0;
+const FACTOR: f32 = 1_000_000_000.0;
 
 /// AudioParameter value interpolator. Supports values >= 0.0 only.
 #[derive(Debug, Copy, Clone)]
 pub struct Interpolator {
     /// Value to be externally consumed
-    cached_value: f64,
-    current_value: f64,
-    target_value: f64,
-    step_size: f64,
+    cached_value: f32,
+    current_value: f32,
+    target_value: f32,
+    step_size: f32,
     steps_remaining: usize,
     interpolation_duration: InterpolationDuration,
     sample_rate: SampleRate,
 }
 
 impl Interpolator {
-    pub fn new(value: f64, interpolation_duration: InterpolationDuration) -> Self {
+    pub fn new(value: f32, interpolation_duration: InterpolationDuration) -> Self {
         Self {
             cached_value: value,
             current_value: value * FACTOR,
@@ -144,7 +139,7 @@ impl Interpolator {
         }
     }
 
-    pub fn advance_one_sample<F: FnMut(f64)>(
+    pub fn advance_one_sample<F: FnMut(f32)>(
         &mut self,
         sample_rate: SampleRate,
         callback_on_advance: &mut F,
@@ -173,20 +168,20 @@ impl Interpolator {
         callback_on_advance(self.cached_value);
     }
 
-    pub fn get_value(&self) -> f64 {
+    pub fn get_value(&self) -> f32 {
         self.cached_value
     }
 
     fn restart_interpolation(&mut self) {
         let num_steps = self.interpolation_duration.samples(self.sample_rate);
-        let step_size = (self.target_value - self.current_value) / (num_steps as f64);
+        let step_size = (self.target_value - self.current_value) / (num_steps as f32);
 
         self.steps_remaining = num_steps;
         self.step_size = step_size;
     }
 
     #[allow(clippy::float_cmp)]
-    pub fn set_value(&mut self, target_value: f64) {
+    pub fn set_value(&mut self, target_value: f32) {
         self.target_value = target_value * FACTOR;
 
         if self.target_value == self.current_value {
@@ -205,11 +200,11 @@ mod tests {
 
     #[test]
     fn test_interpolator() {
-        fn prop(duration: InterpolationDuration, set_value: f64) -> TestResult {
+        fn prop(duration: InterpolationDuration, set_value: f32) -> TestResult {
             if set_value.is_sign_negative()
                 || set_value.is_nan()
                 || set_value.is_infinite()
-                || set_value > (10.0f64).powf(100.0)
+                || set_value > (10.0f32).powf(20.0)
             {
                 return TestResult::discard();
             }
@@ -228,7 +223,7 @@ mod tests {
             let resulting_value_internal = interpolator.current_value / FACTOR;
             let resulting_value = interpolator.get_value();
 
-            let accepted_error = set_value.abs() / 1_000_000_000_000.0;
+            let accepted_error = set_value.abs() / 10_000.0;
 
             let success = ((set_value - resulting_value).abs() <= accepted_error)
                 && (resulting_value - resulting_value_internal).abs() <= accepted_error;
@@ -245,16 +240,16 @@ mod tests {
         }
 
         quickcheck(
-            (|value: f64| prop(InterpolationDuration::approx_1ms(), value))
-                as fn(f64) -> TestResult,
+            (|value: f32| prop(InterpolationDuration::approx_1ms(), value))
+                as fn(f32) -> TestResult,
         );
         quickcheck(
-            (|value: f64| prop(InterpolationDuration::approx_3ms(), value))
-                as fn(f64) -> TestResult,
+            (|value: f32| prop(InterpolationDuration::approx_3ms(), value))
+                as fn(f32) -> TestResult,
         );
         quickcheck(
-            (|value: f64| prop(InterpolationDuration::exactly_50ms(), value))
-                as fn(f64) -> TestResult,
+            (|value: f32| prop(InterpolationDuration::exactly_50ms(), value))
+                as fn(f32) -> TestResult,
         );
     }
 }

@@ -117,10 +117,10 @@ impl ParameterValue for Operator2ModulationTargetValue {
     fn get(self) -> Self::Value {
         self.0
     }
-    fn new_from_patch(value: f64) -> Self {
+    fn new_from_patch(value: f32) -> Self {
         Self(map_parameter_value_to_step(OPERATOR_2_PERMUTATIONS, value))
     }
-    fn to_patch(self) -> f64 {
+    fn to_patch(self) -> f32 {
         map_step_to_parameter_value(OPERATOR_2_PERMUTATIONS, self.0)
     }
     fn get_formatted(self) -> String {
@@ -146,10 +146,10 @@ impl ParameterValue for Operator3ModulationTargetValue {
     fn get(self) -> Self::Value {
         self.0
     }
-    fn new_from_patch(value: f64) -> Self {
+    fn new_from_patch(value: f32) -> Self {
         Self(map_parameter_value_to_step(OPERATOR_3_PERMUTATIONS, value))
     }
-    fn to_patch(self) -> f64 {
+    fn to_patch(self) -> f32 {
         map_step_to_parameter_value(OPERATOR_3_PERMUTATIONS, self.0)
     }
     fn get_formatted(self) -> String {
@@ -175,10 +175,10 @@ impl ParameterValue for Operator4ModulationTargetValue {
     fn get(self) -> Self::Value {
         self.0
     }
-    fn new_from_patch(value: f64) -> Self {
+    fn new_from_patch(value: f32) -> Self {
         Self(map_parameter_value_to_step(OPERATOR_4_PERMUTATIONS, value))
     }
-    fn to_patch(self) -> f64 {
+    fn to_patch(self) -> f32 {
         map_step_to_parameter_value(OPERATOR_4_PERMUTATIONS, self.0)
     }
     fn get_formatted(self) -> String {

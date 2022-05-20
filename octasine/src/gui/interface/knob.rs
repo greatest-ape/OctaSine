@@ -258,7 +258,7 @@ pub struct OctaSineKnob<P: ParameterValue> {
     tick_marks: Option<tick_marks::Group>,
     title: String,
     value_text: String,
-    default_patch_value: f64,
+    default_patch_value: f32,
     parameter: Parameter,
     phantom_data: ::std::marker::PhantomData<P>,
     style_extractor: fn(Theme) -> Box<dyn iced_audio::knob::StyleSheet>,
@@ -292,7 +292,7 @@ where
         parameter: Parameter,
         title: &str,
         tick_mark_type: TickMarkType,
-        default_patch_value: f64,
+        default_patch_value: f32,
         style: Theme,
         style_extractor: fn(Theme) -> Box<dyn iced_audio::knob::StyleSheet>,
     ) -> Self {
@@ -301,7 +301,7 @@ where
 
         let knob_state = knob::State::new(NormalParam {
             value: Normal::new(sync_value as f32),
-            default: Normal::new(default_patch_value as f32),
+            default: Normal::new(default_patch_value),
         });
 
         let tick_marks = match tick_mark_type {
@@ -324,7 +324,7 @@ where
         }
     }
 
-    pub fn set_value(&mut self, value: f64) {
+    pub fn set_value(&mut self, value: f32) {
         if !self.knob_state.is_dragging() {
             self.knob_state.set_normal(Normal::new(value as f32));
         }
@@ -349,7 +349,7 @@ where
 
         let mut knob = knob::Knob::new(
             &mut self.knob_state,
-            move |value| Message::ChangeSingleParameterSetValue(parameter, value.as_f32() as f64),
+            move |value| Message::ChangeSingleParameterSetValue(parameter, value.as_f32()),
             move || Some(Message::ChangeSingleParameterBegin(parameter)),
             move || Some(Message::ChangeSingleParameterEnd(parameter)),
         )
@@ -380,7 +380,7 @@ where
     }
 }
 
-fn tick_marks_from_min_max_and_value(patch_value: f64) -> tick_marks::Group {
+fn tick_marks_from_min_max_and_value(patch_value: f32) -> tick_marks::Group {
     let marks = vec![
         (Normal::new(0.0), tick_marks::Tier::One),
         (Normal::new(patch_value as f32), tick_marks::Tier::Two),

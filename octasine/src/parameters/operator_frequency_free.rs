@@ -1,7 +1,7 @@
 use super::utils::*;
 use super::ParameterValue;
 
-const OPERATOR_FREE_STEPS: &[f64] = &[
+const OPERATOR_FREE_STEPS: &[f32] = &[
     1.0 / 1024.0,
     1.0 / 64.0,
     1.0 / 16.0,
@@ -35,14 +35,11 @@ impl ParameterValue for OperatorFrequencyFreeValue {
     fn get(self) -> Self::Value {
         self.0
     }
-    fn new_from_patch(value: f64) -> Self {
-        Self(map_parameter_value_to_value_with_steps(
-            &OPERATOR_FREE_STEPS,
-            value,
-        ))
+    fn new_from_patch(value: f32) -> Self {
+        Self(map_parameter_value_to_value_with_steps(&OPERATOR_FREE_STEPS, value) as f64)
     }
-    fn to_patch(self) -> f64 {
-        map_value_to_parameter_value_with_steps(&OPERATOR_FREE_STEPS, self.0)
+    fn to_patch(self) -> f32 {
+        map_value_to_parameter_value_with_steps(&OPERATOR_FREE_STEPS, self.0 as f32)
     }
     fn get_formatted(self) -> String {
         format!("{:.04}", self.0)

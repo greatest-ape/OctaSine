@@ -26,12 +26,12 @@ macro_rules! impl_envelope_duration_value_conversion {
             fn get(self) -> Self::Value {
                 self.0
             }
-            fn new_from_patch(value: f64) -> Self {
+            fn new_from_patch(value: f32) -> Self {
                 // Force some decay to avoid clicks
-                Self((value * ENVELOPE_MAX_DURATION).max(ENVELOPE_MIN_DURATION))
+                Self((value as f64 * ENVELOPE_MAX_DURATION).max(ENVELOPE_MIN_DURATION))
             }
-            fn to_patch(self) -> f64 {
-                self.0 / ENVELOPE_MAX_DURATION
+            fn to_patch(self) -> f32 {
+                (self.0 / ENVELOPE_MAX_DURATION) as f32
             }
 
             fn get_formatted(self) -> String {
@@ -63,11 +63,11 @@ macro_rules! impl_identity_value_conversion {
             fn get(self) -> Self::Value {
                 self.0
             }
-            fn new_from_patch(value: f64) -> Self {
+            fn new_from_patch(value: f32) -> Self {
                 Self(value as f32)
             }
-            fn to_patch(self) -> f64 {
-                self.0 as f64
+            fn to_patch(self) -> f32 {
+                self.0 as f32
             }
             fn get_formatted(self) -> String {
                 format!("{:.04}", self.0)

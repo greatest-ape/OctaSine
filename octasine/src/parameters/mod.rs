@@ -59,12 +59,12 @@ pub trait ParameterValue: Sized + Default + Copy {
     fn new_from_text(_text: String) -> Option<Self> {
         None
     }
-    fn new_from_patch(value: f64) -> Self;
+    fn new_from_patch(value: f32) -> Self;
 
     /// Get inner (audio gen) value
     fn get(self) -> Self::Value;
     fn get_formatted(self) -> String;
-    fn to_patch(self) -> f64;
+    fn to_patch(self) -> f32;
 }
 
 include!(concat!(env!("OUT_DIR"), "/codegen.rs"));

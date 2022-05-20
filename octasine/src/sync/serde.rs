@@ -10,11 +10,11 @@ const SUFFIX: &[u8] = b"\n\nOCTASINE-GZ-DATA-V1-END\n\n";
 pub struct SerdePatchParameterValue(String);
 
 impl SerdePatchParameterValue {
-    pub fn from_f64(value: f64) -> Self {
+    pub fn from_f32(value: f32) -> Self {
         Self(format!("{:.}", value))
     }
 
-    pub fn as_f64(&self) -> f64 {
+    pub fn as_f32(&self) -> f32 {
         self.0
             .parse()
             .expect("deserialize SerdePresetParameterValue")
@@ -30,7 +30,7 @@ impl SerdePatchParameterValue {
             type Value = SerdePatchParameterValue;
 
             fn expecting(&self, formatter: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
-                formatter.write_str("f64 or string")
+                formatter.write_str("f32 or string")
             }
 
             fn visit_str<E>(self, value: &str) -> Result<Self::Value, E>
@@ -38,14 +38,6 @@ impl SerdePatchParameterValue {
                 E: ::serde::de::Error,
             {
                 Ok(SerdePatchParameterValue(value.to_owned()))
-            }
-
-            // Backwards compatibility with f64
-            fn visit_f64<E>(self, value: f64) -> Result<Self::Value, E>
-            where
-                E: ::serde::de::Error,
-            {
-                Ok(SerdePatchParameterValue::from_f64(value))
             }
         }
 
@@ -86,7 +78,7 @@ impl SerdePatch {
             if let Some(parameter) = preset.parameters.get(i) {
                 let value = parameter.get_value();
 
-                let value_float = SerdePatchParameterValue::from_f64(value);
+                let value_float = SerdePatchParameterValue::from_f32(value);
 
                 parameters.push(SerdePatchParameter {
                     name: parameter.name.clone(),

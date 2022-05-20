@@ -1,26 +1,26 @@
-pub fn map_parameter_value_to_step<T: Copy>(steps: &[T], value: f64) -> T {
+pub fn map_parameter_value_to_step<T: Copy>(steps: &[T], value: f32) -> T {
     let value = value.max(0.0).min(1.0);
     let len = steps.len();
 
-    steps[((value * len as f64) as usize).min(len - 1)]
+    steps[((value * len as f32) as usize).min(len - 1)]
 }
 
-pub fn map_step_to_parameter_value<T: Copy + PartialEq>(steps: &[T], step_value: T) -> f64 {
+pub fn map_step_to_parameter_value<T: Copy + PartialEq>(steps: &[T], step_value: T) -> f32 {
     for (index, step) in steps.iter().enumerate() {
         if *step == step_value {
-            let fraction = 1.0 / (steps.len() - 1) as f64;
+            let fraction = 1.0 / (steps.len() - 1) as f32;
 
-            return fraction * index as f64;
+            return fraction * index as f32;
         }
     }
 
     0.5 // Default if step_value is not in steps
 }
 
-pub fn map_parameter_value_to_value_with_steps(steps: &[f64], parameter_value: f64) -> f64 {
+pub fn map_parameter_value_to_value_with_steps(steps: &[f32], parameter_value: f32) -> f32 {
     let max_index = steps.len() - 1;
 
-    let index_float = parameter_value.max(0.0).min(1.0) * max_index as f64;
+    let index_float = parameter_value.max(0.0).min(1.0) * max_index as f32;
     let index_fract = index_float.fract();
 
     let index_low = index_float as usize;
@@ -35,7 +35,7 @@ pub fn map_parameter_value_to_value_with_steps(steps: &[f64], parameter_value: f
     }
 }
 
-pub fn map_value_to_parameter_value_with_steps(steps: &[f64], internal_value: f64) -> f64 {
+pub fn map_value_to_parameter_value_with_steps(steps: &[f32], internal_value: f32) -> f32 {
     let mut prev_step = *steps.first().expect("steps are empty");
 
     for (index, step) in steps[1..].iter().enumerate() {
@@ -43,9 +43,9 @@ pub fn map_value_to_parameter_value_with_steps(steps: &[f64], internal_value: f6
 
         if internal_value <= step {
             let ratio = (internal_value - prev_step) / (step - prev_step);
-            let fraction = ((steps.len() - 1) as f64).recip();
+            let fraction = ((steps.len() - 1) as f32).recip();
 
-            return ratio * fraction + fraction * index as f64;
+            return ratio * fraction + fraction * index as f32;
         }
 
         prev_step = step;
@@ -54,7 +54,7 @@ pub fn map_value_to_parameter_value_with_steps(steps: &[f64], internal_value: f6
     1.0
 }
 
-pub fn round_to_step(steps: &[f64], value: f64) -> f64 {
+pub fn round_to_step(steps: &[f32], value: f32) -> f32 {
     let mut prev_step = *steps.first().expect("steps are empty");
 
     for step in &steps[1..] {
@@ -82,11 +82,11 @@ mod tests {
 
     use super::*;
 
-    fn get_all_steps() -> Vec<f64> {
+    fn get_all_steps() -> Vec<f32> {
         let mut steps = vec![0.0];
 
         for i in 0..300 {
-            steps.push(0.001 * i as f64 + (i >> 3) as f64 * 0.1);
+            steps.push(0.001 * i as f32 + (i >> 3) as f32 * 0.1);
         }
 
         steps.dedup();
@@ -94,7 +94,7 @@ mod tests {
         steps
     }
 
-    fn valid_parameter_value(value: f64) -> bool {
+    fn valid_parameter_value(value: f32) -> bool {
         !(value.is_nan() || value > 1.0 || value < 0.0)
     }
 
@@ -139,7 +139,7 @@ mod tests {
 
     #[test]
     fn test_step_mapping() {
-        fn prop(value: f64) -> TestResult {
+        fn prop(value: f32) -> TestResult {
             if value < 0.0 || value > 1.0 {
                 return TestResult::discard();
             }
@@ -156,12 +156,12 @@ mod tests {
             TestResult::from_bool(inner == new_inner)
         }
 
-        quickcheck(prop as fn(f64) -> TestResult);
+        quickcheck(prop as fn(f32) -> TestResult);
     }
 
     #[test]
     fn test_map_value_to_parameter_value_with_steps_valid_number() {
-        fn prop(value: f64) -> TestResult {
+        fn prop(value: f32) -> TestResult {
             if value < 0.0 {
                 return TestResult::discard();
             }
@@ -171,7 +171,7 @@ mod tests {
             TestResult::from_bool(valid_parameter_value(value))
         }
 
-        quickcheck(prop as fn(f64) -> TestResult);
+        quickcheck(prop as fn(f32) -> TestResult);
     }
 
     #[test]
@@ -220,7 +220,7 @@ mod tests {
 
     #[test]
     fn test_smooth_step_mapping() {
-        fn prop(parameter_value: f64) -> TestResult {
+        fn prop(parameter_value: f32) -> TestResult {
             if parameter_value < 0.0 || parameter_value > 1.0 || parameter_value.is_nan() {
                 return TestResult::discard();
             }
@@ -245,7 +245,7 @@ mod tests {
             TestResult::from_bool(success)
         }
 
-        quickcheck(prop as fn(f64) -> TestResult);
+        quickcheck(prop as fn(f32) -> TestResult);
     }
 
     #[allow(clippy::float_cmp)]

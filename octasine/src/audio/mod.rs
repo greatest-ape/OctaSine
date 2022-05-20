@@ -51,7 +51,7 @@ impl Default for AudioState {
 }
 
 impl AudioState {
-    pub fn set_parameter_from_patch(&mut self, parameter: Parameter, value: f64) {
+    pub fn set_parameter_from_patch(&mut self, parameter: Parameter, value: f32) {
         self.parameters.set_parameter_from_patch(parameter, value);
     }
 
@@ -116,7 +116,7 @@ impl AudioState {
     }
 
     #[cfg(test)]
-    pub fn compare_parameter_patch_value(&mut self, parameter: Parameter, value: f64) -> bool {
+    pub fn compare_parameter_patch_value(&mut self, parameter: Parameter, value: f32) -> bool {
         self.parameters
             .compare_patch_value(parameter, value)
             .unwrap()

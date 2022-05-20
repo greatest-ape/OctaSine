@@ -26,7 +26,7 @@ impl AudioParameter for LfoAmountAudioParameter {
     fn get_value(&self) -> <Self::ParameterValue as ParameterValue>::Value {
         self.0.get_value()
     }
-    fn set_from_patch(&mut self, value: f64) {
+    fn set_from_patch(&mut self, value: f32) {
         self.0
             .set_value(Self::ParameterValue::new_from_patch(value).get())
     }
@@ -35,7 +35,7 @@ impl AudioParameter for LfoAmountAudioParameter {
         lfo_addition: Option<f32>,
     ) -> <Self::ParameterValue as ParameterValue>::Value {
         if let Some(lfo_addition) = lfo_addition {
-            self.get_value() * exp2(lfo_addition) as f64
+            self.get_value() * exp2(lfo_addition)
         } else {
             self.get_value()
         }

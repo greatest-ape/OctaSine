@@ -47,7 +47,7 @@ impl OperatorModulationTargetAudioParameter {
 }
 
 impl AudioParameterPatchInteraction for OperatorModulationTargetAudioParameter {
-    fn set_patch_value(&mut self, value: f64) {
+    fn set_patch_value(&mut self, value: f32) {
         match self {
             Self::Two(p) => p.set_from_patch(value),
             Self::Three(p) => p.set_from_patch(value),
@@ -56,7 +56,7 @@ impl AudioParameterPatchInteraction for OperatorModulationTargetAudioParameter {
     }
 
     #[cfg(test)]
-    fn compare_patch_value(&mut self, value: f64) -> bool {
+    fn compare_patch_value(&mut self, value: f32) -> bool {
         use crate::parameters::ParameterValue;
 
         let a = match self {

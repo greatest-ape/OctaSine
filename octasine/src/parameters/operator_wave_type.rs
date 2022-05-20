@@ -44,14 +44,14 @@ impl ParameterValue for OperatorWaveTypeValue {
     fn get(self) -> Self::Value {
         self.0
     }
-    fn new_from_patch(value: f64) -> Self {
+    fn new_from_patch(value: f32) -> Self {
         if value <= 0.5 {
             Self(WaveType::Sine)
         } else {
             Self(WaveType::WhiteNoise)
         }
     }
-    fn to_patch(self) -> f64 {
+    fn to_patch(self) -> f32 {
         match self.0 {
             WaveType::Sine => 0.0,
             WaveType::WhiteNoise => 1.0,

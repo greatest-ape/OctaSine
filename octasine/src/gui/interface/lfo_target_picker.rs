@@ -55,7 +55,7 @@ impl LfoTargetPicker {
         }
     }
 
-    fn get_index_from_sync(lfo_index: usize, sync_value: f64) -> usize {
+    fn get_index_from_sync(lfo_index: usize, sync_value: f32) -> usize {
         let target = match lfo_index {
             0 => Lfo1TargetParameterValue::new_from_patch(sync_value).0,
             1 => Lfo2TargetParameterValue::new_from_patch(sync_value).0,
@@ -75,7 +75,7 @@ impl LfoTargetPicker {
         unreachable!()
     }
 
-    pub fn set_value(&mut self, sync_value: f64) {
+    pub fn set_value(&mut self, sync_value: f32) {
         self.selected = Self::get_index_from_sync(self.lfo_index, sync_value);
     }
 

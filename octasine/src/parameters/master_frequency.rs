@@ -1,7 +1,7 @@
 use super::utils::*;
 use super::ParameterValue;
 
-const MASTER_FREQUENCY_STEPS: &[f64] = &[
+const MASTER_FREQUENCY_STEPS: &[f32] = &[
     20.0, 220.0, 400.0, 435.0, 438.0, 440.0, 442.0, 445.0, 480.0, 880.0, 20_000.0,
 ];
 
@@ -23,14 +23,11 @@ impl ParameterValue for MasterFrequencyValue {
     fn get(self) -> Self::Value {
         self.0
     }
-    fn new_from_patch(value: f64) -> Self {
-        Self(map_parameter_value_to_value_with_steps(
-            &MASTER_FREQUENCY_STEPS,
-            value,
-        ))
+    fn new_from_patch(value: f32) -> Self {
+        Self(map_parameter_value_to_value_with_steps(&MASTER_FREQUENCY_STEPS, value) as f64)
     }
-    fn to_patch(self) -> f64 {
-        map_value_to_parameter_value_with_steps(&MASTER_FREQUENCY_STEPS, self.0)
+    fn to_patch(self) -> f32 {
+        map_value_to_parameter_value_with_steps(&MASTER_FREQUENCY_STEPS, self.0 as f32)
     }
     fn get_formatted(self) -> String {
         if self.0 < 10000.0 {

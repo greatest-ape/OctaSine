@@ -57,11 +57,11 @@ pub enum Message {
     Frame,
     ChangeSingleParameterBegin(Parameter),
     ChangeSingleParameterEnd(Parameter),
-    ChangeSingleParameterSetValue(Parameter, f64),
-    ChangeSingleParameterImmediate(Parameter, f64),
+    ChangeSingleParameterSetValue(Parameter, f32),
+    ChangeSingleParameterImmediate(Parameter, f32),
     ChangeTwoParametersBegin((Parameter, Parameter)),
     ChangeTwoParametersEnd((Parameter, Parameter)),
-    ChangeTwoParametersSetValues((Parameter, f64), (Parameter, f64)),
+    ChangeTwoParametersSetValues((Parameter, f32), (Parameter, f32)),
     ToggleInfo,
     PatchChange(usize),
     EnvelopeZoomIn(usize),
@@ -87,7 +87,7 @@ pub struct OctaSineIcedApplication<H: GuiSyncHandle> {
 }
 
 impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {
-    fn set_value(&mut self, parameter: Parameter, v: f64) {
+    fn set_value(&mut self, parameter: Parameter, v: f32) {
         match parameter {
             Parameter::None => (),
             Parameter::Master(MasterParameter::Volume) => self.corner.master_volume.set_value(v),

@@ -25,7 +25,7 @@ impl AudioParameter for OperatorActiveAudioParameter {
     fn get_value(&self) -> <Self::ParameterValue as ParameterValue>::Value {
         self.0.get_value()
     }
-    fn set_from_patch(&mut self, value: f64) {
+    fn set_from_patch(&mut self, value: f32) {
         self.0
             .set_value(Self::ParameterValue::new_from_patch(value).get())
     }

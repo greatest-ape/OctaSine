@@ -57,7 +57,7 @@ static OPERATOR_RATIO_STEPS: Lazy<Vec<Ratio>> = Lazy::new(|| {
     // Add DX ratios
 
     for i in 0..16 {
-        let factor = if i == 0 { 0.5 } else { f64::from(i) };
+        let factor = if i == 0 { 0.5 } else { i as f64 };
 
         if i != 5 && i != 15 {
             let value = factor * 2.0f64.sqrt();
@@ -69,7 +69,7 @@ static OPERATOR_RATIO_STEPS: Lazy<Vec<Ratio>> = Lazy::new(|| {
     }
 
     for i in 1..8 {
-        let factor = f64::from(i);
+        let factor = i as f64;
 
         let name = if i == 1 {
             String::from("π")
@@ -81,7 +81,7 @@ static OPERATOR_RATIO_STEPS: Lazy<Vec<Ratio>> = Lazy::new(|| {
     }
 
     for i in [1, 2, 6, 9, 10, 14, 18, 22, 26, 27, 30] {
-        let factor = f64::from(i) / 4.0;
+        let factor = i as f64 / 4.0;
 
         ratios.push(Ratio::new(factor * PI, format!("{}π", factor)));
     }
@@ -114,13 +114,13 @@ impl ParameterValue for OperatorFrequencyRatioValue {
     fn get(self) -> Self::Value {
         self.0
     }
-    fn new_from_patch(value: f64) -> Self {
+    fn new_from_patch(value: f32) -> Self {
         Self(map_parameter_value_to_step(
             &OPERATOR_RATIO_STEPS[..],
             value,
         ))
     }
-    fn to_patch(self) -> f64 {
+    fn to_patch(self) -> f32 {
         map_step_to_parameter_value(&OPERATOR_RATIO_STEPS[..], self.0)
     }
     fn get_formatted(self) -> String {

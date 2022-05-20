@@ -54,7 +54,7 @@ impl Patch {
 
         for (index, parameter) in self.parameters.iter().enumerate() {
             if let Some(import_parameter) = serde_preset.parameters.get(index) {
-                parameter.set_value(import_parameter.value_float.as_f64())
+                parameter.set_value(import_parameter.value_float.as_f32())
             }
         }
     }
@@ -160,19 +160,19 @@ impl PatchBank {
 
     // Get parameter changes
 
-    pub fn get_changed_parameters_from_audio(&self) -> Option<[Option<f64>; MAX_NUM_PARAMETERS]> {
+    pub fn get_changed_parameters_from_audio(&self) -> Option<[Option<f32>; MAX_NUM_PARAMETERS]> {
         self.parameter_change_info_audio
             .get_changed_parameters(&self.get_current_patch().parameters)
     }
 
-    pub fn get_changed_parameters_from_gui(&self) -> Option<[Option<f64>; MAX_NUM_PARAMETERS]> {
+    pub fn get_changed_parameters_from_gui(&self) -> Option<[Option<f32>; MAX_NUM_PARAMETERS]> {
         self.parameter_change_info_gui
             .get_changed_parameters(&self.get_current_patch().parameters)
     }
 
     // Get parameter values
 
-    pub fn get_parameter_value(&self, index: usize) -> Option<f64> {
+    pub fn get_parameter_value(&self, index: usize) -> Option<f32> {
         self.get_current_patch()
             .parameters
             .get(index)
@@ -193,7 +193,7 @@ impl PatchBank {
             .map(|p| p.name.clone())
     }
 
-    pub fn format_parameter_value(&self, index: usize, value: f64) -> Option<String> {
+    pub fn format_parameter_value(&self, index: usize, value: f32) -> Option<String> {
         self.get_current_patch()
             .parameters
             .get(index)
@@ -202,7 +202,7 @@ impl PatchBank {
 
     // Set parameters
 
-    pub fn set_parameter_from_gui(&self, index: usize, value: f64) {
+    pub fn set_parameter_from_gui(&self, index: usize, value: f32) {
         let opt_parameter = self.get_parameter(index);
 
         if let Some(parameter) = opt_parameter {
@@ -212,11 +212,11 @@ impl PatchBank {
         }
     }
 
-    pub fn set_parameter_from_host(&self, index: usize, value: f64) {
+    pub fn set_parameter_from_host(&self, index: usize, value: f32) {
         let opt_parameter = self.get_parameter(index);
 
         if let Some(parameter) = opt_parameter {
-            parameter.set_value(value as f64);
+            parameter.set_value(value as f32);
 
             self.parameter_change_info_audio.mark_as_changed(index);
             self.parameter_change_info_gui.mark_as_changed(index);
@@ -316,7 +316,7 @@ pub mod tests {
                 for parameter_index in 0..current_preset.parameters.len() {
                     let parameter = current_preset.parameters.get(parameter_index).unwrap();
 
-                    let value = fastrand::f64();
+                    let value = fastrand::f32();
 
                     parameter.set_value(value);
 

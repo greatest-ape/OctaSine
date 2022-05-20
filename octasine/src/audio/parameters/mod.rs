@@ -33,17 +33,17 @@ use self::operator_panning::OperatorPanningAudioParameter;
 use self::operator_volume::OperatorVolumeAudioParameter;
 
 trait AudioParameterPatchInteraction {
-    fn set_patch_value(&mut self, value: f64);
+    fn set_patch_value(&mut self, value: f32);
     #[cfg(test)]
-    fn compare_patch_value(&mut self, value: f64) -> bool;
+    fn compare_patch_value(&mut self, value: f32) -> bool;
 }
 
 impl<P: AudioParameter> AudioParameterPatchInteraction for P {
-    fn set_patch_value(&mut self, value: f64) {
+    fn set_patch_value(&mut self, value: f32) {
         self.set_from_patch(value)
     }
     #[cfg(test)]
-    fn compare_patch_value(&mut self, value: f64) -> bool {
+    fn compare_patch_value(&mut self, value: f32) -> bool {
         let a = P::ParameterValue::new_from_patch(value).to_patch();
         let b = self.get_parameter_value().to_patch();
 
@@ -138,7 +138,7 @@ macro_rules! impl_patch_interaction {
 impl AudioParameters {
     impl_patch_interaction!(
         set_parameter_from_patch,
-        f64,
+        f32,
         (),
         |p: &mut dyn AudioParameterPatchInteraction, v| Some(p.set_patch_value(v))
     );
@@ -146,7 +146,7 @@ impl AudioParameters {
     #[cfg(test)]
     impl_patch_interaction!(
         compare_patch_value,
-        f64,
+        f32,
         bool,
         |p: &mut dyn AudioParameterPatchInteraction, v| Some(p.compare_patch_value(v))
     );

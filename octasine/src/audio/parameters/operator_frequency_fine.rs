@@ -14,7 +14,7 @@ impl AudioParameter for OperatorFrequencyFineAudioParameter {
     fn get_value(&self) -> <Self::ParameterValue as ParameterValue>::Value {
         self.0.get()
     }
-    fn set_from_patch(&mut self, value: f64) {
+    fn set_from_patch(&mut self, value: f32) {
         self.0 = Self::ParameterValue::new_from_patch(value);
     }
     fn get_value_with_lfo_addition(

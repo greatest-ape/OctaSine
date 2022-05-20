@@ -249,7 +249,7 @@ mod gen {
 
                     let key_velocity = voice.key_velocity.0;
 
-                    VOICE_VOLUME_FACTOR * master_volume * key_velocity
+                    VOICE_VOLUME_FACTOR * master_volume as f64 * key_velocity
                 };
 
                 set_value_for_both_channels(
@@ -340,14 +340,14 @@ mod gen {
         set_value_for_both_channels(
             &mut voice_data.volumes,
             sample_index,
-            volume * volume_active,
+            (volume * volume_active) as f64,
         );
 
         let mix = operator
             .mix_out
             .get_value_with_lfo_addition(lfo_values.get(MIX_INDICES[operator_index]));
 
-        set_value_for_both_channels(&mut voice_data.mixes, sample_index, mix);
+        set_value_for_both_channels(&mut voice_data.mixes, sample_index, mix as f64);
 
         let modulation_index = operator.mod_out.as_mut().map_or(0.0, |p| {
             p.get_value_with_lfo_addition(lfo_values.get(MOD_INDICES[operator_index]))
@@ -356,28 +356,28 @@ mod gen {
         set_value_for_both_channels(
             &mut voice_data.modulation_indices,
             sample_index,
-            modulation_index,
+            modulation_index as f64,
         );
 
         let feedback = operator
             .feedback
             .get_value_with_lfo_addition(lfo_values.get(FEEDBACK_INDICES[operator_index]));
 
-        set_value_for_both_channels(&mut voice_data.feedbacks, sample_index, feedback);
+        set_value_for_both_channels(&mut voice_data.feedbacks, sample_index, feedback as f64);
 
         let panning = operator
             .panning
             .get_value_with_lfo_addition(lfo_values.get(PANNING_INDICES[operator_index]));
 
-        set_value_for_both_channels(&mut voice_data.pannings, sample_index, panning);
+        set_value_for_both_channels(&mut voice_data.pannings, sample_index, panning as f64);
 
         {
             let [l, r] = operator.panning.left_and_right;
 
             let sample_index_offset = sample_index * 2;
 
-            voice_data.constant_power_pannings[sample_index_offset] = l;
-            voice_data.constant_power_pannings[sample_index_offset + 1] = r;
+            voice_data.constant_power_pannings[sample_index_offset] = l as f64;
+            voice_data.constant_power_pannings[sample_index_offset + 1] = r as f64;
         }
 
         let frequency_ratio = operator

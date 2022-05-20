@@ -64,13 +64,13 @@ struct ModulationMatrixParameters {
     operator_2_targets: ModTargetStorage,
     operator_3_targets: ModTargetStorage,
     operator_4_targets: ModTargetStorage,
-    operator_1_mix: f64,
-    operator_2_mix: f64,
-    operator_3_mix: f64,
-    operator_4_mix: f64,
-    operator_2_mod: f64,
-    operator_3_mod: f64,
-    operator_4_mod: f64,
+    operator_1_mix: f32,
+    operator_2_mix: f32,
+    operator_3_mix: f32,
+    operator_4_mix: f32,
+    operator_2_mod: f32,
+    operator_3_mod: f32,
+    operator_4_mod: f32,
 }
 
 impl ModulationMatrixParameters {
@@ -384,64 +384,64 @@ impl ModulationMatrix {
         self.cache.clear();
     }
 
-    pub fn set_operator_2_target(&mut self, value: f64) {
+    pub fn set_operator_2_target(&mut self, value: f32) {
         self.parameters.operator_2_targets =
             Operator2ModulationTargetValue::new_from_patch(value).get();
 
         self.update_components();
     }
 
-    pub fn set_operator_3_target(&mut self, value: f64) {
+    pub fn set_operator_3_target(&mut self, value: f32) {
         self.parameters.operator_3_targets =
             Operator3ModulationTargetValue::new_from_patch(value).get();
 
         self.update_components();
     }
 
-    pub fn set_operator_4_target(&mut self, value: f64) {
+    pub fn set_operator_4_target(&mut self, value: f32) {
         self.parameters.operator_4_targets =
             Operator4ModulationTargetValue::new_from_patch(value).get();
 
         self.update_components();
     }
 
-    pub fn set_operator_4_mod(&mut self, value: f64) {
+    pub fn set_operator_4_mod(&mut self, value: f32) {
         self.parameters.operator_4_mod = value;
 
         self.update_components();
     }
 
-    pub fn set_operator_3_mod(&mut self, value: f64) {
+    pub fn set_operator_3_mod(&mut self, value: f32) {
         self.parameters.operator_3_mod = value;
 
         self.update_components();
     }
 
-    pub fn set_operator_2_mod(&mut self, value: f64) {
+    pub fn set_operator_2_mod(&mut self, value: f32) {
         self.parameters.operator_2_mod = value;
 
         self.update_components();
     }
 
-    pub fn set_operator_4_mix(&mut self, value: f64) {
+    pub fn set_operator_4_mix(&mut self, value: f32) {
         self.parameters.operator_4_mix = value;
 
         self.update_components();
     }
 
-    pub fn set_operator_3_mix(&mut self, value: f64) {
+    pub fn set_operator_3_mix(&mut self, value: f32) {
         self.parameters.operator_3_mix = value;
 
         self.update_components();
     }
 
-    pub fn set_operator_2_mix(&mut self, value: f64) {
+    pub fn set_operator_2_mix(&mut self, value: f32) {
         self.parameters.operator_2_mix = value;
 
         self.update_components();
     }
 
-    pub fn set_operator_1_mix(&mut self, value: f64) {
+    pub fn set_operator_1_mix(&mut self, value: f32) {
         self.parameters.operator_1_mix = value;
 
         self.update_components();

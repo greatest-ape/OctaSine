@@ -108,7 +108,7 @@ where
         self.cache.clear();
     }
 
-    pub fn set_value(&mut self, value: f64) {
+    pub fn set_value(&mut self, value: f32) {
         let value = P::new_from_patch(value);
         let shape = value.get();
 

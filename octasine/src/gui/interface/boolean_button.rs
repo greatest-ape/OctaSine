@@ -125,8 +125,8 @@ pub struct BooleanButton {
     bounds_path: Path,
     cursor_within_bounds: bool,
     click_started: bool,
-    patch_value_to_is_on: fn(f64) -> bool,
-    is_on_to_patch_value: fn(bool) -> f64,
+    patch_value_to_is_on: fn(f32) -> bool,
+    is_on_to_patch_value: fn(bool) -> f32,
     get_stylesheet: fn(Theme) -> Box<dyn StyleSheet>,
     text: &'static str,
     width: u16,
@@ -141,8 +141,8 @@ impl BooleanButton {
         text: &'static str,
         width: u16,
         height: u16,
-        f: fn(f64) -> bool,
-        g: fn(bool) -> f64,
+        f: fn(f32) -> bool,
+        g: fn(bool) -> f32,
         h: fn(Theme) -> Box<dyn StyleSheet>,
     ) -> Self {
         let bounds_path = Path::rectangle(
@@ -167,7 +167,7 @@ impl BooleanButton {
         }
     }
 
-    pub fn set_value(&mut self, value: f64) {
+    pub fn set_value(&mut self, value: f32) {
         self.on = (self.patch_value_to_is_on)(value);
 
         self.cache.clear();

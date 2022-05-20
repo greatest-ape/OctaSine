@@ -237,13 +237,13 @@ impl Envelope {
 
         let attack_duration = Self::process_envelope_duration(sync_handle.get_parameter(
             Parameter::Operator(operator_index, OperatorParameter::AttackDuration),
-        ));
+        ) as f64);
         let decay_duration = Self::process_envelope_duration(sync_handle.get_parameter(
             Parameter::Operator(operator_index, OperatorParameter::DecayDuration),
-        ));
+        ) as f64);
         let release_duration = Self::process_envelope_duration(sync_handle.get_parameter(
             Parameter::Operator(operator_index, OperatorParameter::ReleaseDuration),
-        ));
+        ) as f64);
         let attack_end_value = sync_handle.get_parameter(Parameter::Operator(
             operator_index,
             OperatorParameter::AttackValue,
@@ -367,37 +367,37 @@ impl Envelope {
         self.update_data();
     }
 
-    pub fn set_attack_duration(&mut self, value: f64) {
+    pub fn set_attack_duration(&mut self, value: f32) {
         if !self.attack_dragger.is_dragging() {
-            self.attack_duration = Self::process_envelope_duration(value);
+            self.attack_duration = Self::process_envelope_duration(value as f64);
 
             self.update_data();
         }
     }
 
-    pub fn set_attack_end_value(&mut self, value: f64) {
+    pub fn set_attack_end_value(&mut self, value: f32) {
         self.attack_end_value = value as f32;
 
         self.update_data();
     }
 
-    pub fn set_decay_duration(&mut self, value: f64) {
+    pub fn set_decay_duration(&mut self, value: f32) {
         if !self.decay_dragger.is_dragging() {
-            self.decay_duration = Self::process_envelope_duration(value);
+            self.decay_duration = Self::process_envelope_duration(value as f64);
 
             self.update_data();
         }
     }
 
-    pub fn set_decay_end_value(&mut self, value: f64) {
+    pub fn set_decay_end_value(&mut self, value: f32) {
         self.decay_end_value = value as f32;
 
         self.update_data();
     }
 
-    pub fn set_release_duration(&mut self, value: f64) {
+    pub fn set_release_duration(&mut self, value: f32) {
         if !self.release_dragger.is_dragging() {
-            self.release_duration = Self::process_envelope_duration(value);
+            self.release_duration = Self::process_envelope_duration(value as f64);
 
             self.update_data();
         }
@@ -718,14 +718,14 @@ impl Program<Message> for Envelope {
                                         self.operator_index,
                                         OperatorParameter::AttackDuration,
                                     ),
-                                    self.attack_duration as f64,
+                                    self.attack_duration as f32,
                                 ),
                                 (
                                     Parameter::Operator(
                                         self.operator_index,
                                         OperatorParameter::AttackValue,
                                     ),
-                                    self.attack_end_value as f64,
+                                    self.attack_end_value as f32,
                                 ),
                             )),
                         );
@@ -772,14 +772,14 @@ impl Program<Message> for Envelope {
                                         self.operator_index,
                                         OperatorParameter::DecayDuration,
                                     ),
-                                    self.decay_duration as f64,
+                                    self.decay_duration as f32,
                                 ),
                                 (
                                     Parameter::Operator(
                                         self.operator_index,
                                         OperatorParameter::DecayValue,
                                     ),
-                                    self.decay_end_value as f64,
+                                    self.decay_end_value as f32,
                                 ),
                             )),
                         );
@@ -828,7 +828,7 @@ impl Program<Message> for Envelope {
                                     self.operator_index,
                                     OperatorParameter::ReleaseDuration,
                                 ),
-                                self.release_duration as f64,
+                                self.release_duration as f32,
                             )),
                         );
                     }

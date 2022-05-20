@@ -68,7 +68,7 @@ where
         }
     }
 
-    pub fn set_value(&mut self, value: f64) {
+    pub fn set_value(&mut self, value: f32) {
         self.parameter_value = P::new_from_patch(value);
     }
 

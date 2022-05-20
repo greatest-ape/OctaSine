@@ -1,7 +1,7 @@
 use super::ParameterValue;
 
 #[derive(Debug, Clone, Copy)]
-pub struct MasterVolumeValue(f64);
+pub struct MasterVolumeValue(f32);
 
 impl Default for MasterVolumeValue {
     fn default() -> Self {
@@ -10,7 +10,7 @@ impl Default for MasterVolumeValue {
 }
 
 impl ParameterValue for MasterVolumeValue {
-    type Value = f64;
+    type Value = f32;
 
     fn new_from_audio(value: Self::Value) -> Self {
         Self(value)
@@ -18,10 +18,10 @@ impl ParameterValue for MasterVolumeValue {
     fn get(self) -> Self::Value {
         self.0
     }
-    fn new_from_patch(value: f64) -> Self {
+    fn new_from_patch(value: f32) -> Self {
         Self(value * 2.0)
     }
-    fn to_patch(self) -> f64 {
+    fn to_patch(self) -> f32 {
         self.0 / 2.0
     }
     fn get_formatted(self) -> String {

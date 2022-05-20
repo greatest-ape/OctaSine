@@ -1,15 +1,15 @@
 use crate::parameters::*;
 
-use super::atomic_double::AtomicPositiveDouble;
+use super::atomic_double::AtomicFloat;
 
 /// Thread-safe storage of parameter values in patch format (f64 in range 0.0
 /// to 1.0)
 pub struct PatchParameter {
     parameter: Parameter,
-    value: AtomicPositiveDouble,
+    value: AtomicFloat,
     pub name: String,
-    value_from_text: fn(String) -> Option<f64>,
-    pub format: fn(f64) -> String,
+    value_from_text: fn(String) -> Option<f32>,
+    pub format: fn(f32) -> String,
 }
 
 impl PatchParameter {
@@ -85,17 +85,17 @@ impl PatchParameter {
         Self {
             parameter,
             name: parameter.name(),
-            value: AtomicPositiveDouble::new(V::default().to_patch()),
+            value: AtomicFloat::new(V::default().to_patch()),
             value_from_text: |v| V::new_from_text(v).map(|v| v.to_patch()),
             format: |v| V::new_from_patch(v).get_formatted(),
         }
     }
 
-    pub fn set_value(&self, value: f64) {
+    pub fn set_value(&self, value: f32) {
         self.value.set(value);
     }
 
-    pub fn get_value(&self) -> f64 {
+    pub fn get_value(&self) -> f32 {
         self.value.get()
     }
 

@@ -250,7 +250,7 @@ mod tests {
         let mut patch_values = Vec::new();
 
         for i in 0..PARAMETERS.len() {
-            let patch_value = fastrand::f64();
+            let patch_value = fastrand::f32();
 
             octasine
                 .sync
