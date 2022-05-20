@@ -3,17 +3,14 @@
 ## High priority
 
 * Performance
-  * Can't use exp2_raw for frequency parameters with high range
   * OperatorPanningAudioParameter should use sleef functions for cos and sin
     * macOS libc cosf/sinf seems to be cheap btw, but that might not be the case
       on other platforms, so use Sleef_cinz_sincosf1_u35purec
   * Parameter step mapping is expensive when combined with LFOs
     * For modulation index/feedback, maybe exp2 could be used. Same with frequency
       parameters.
-  * get_value_with_lfo_addition: is branching slower than just doing
-    calculation, at least in some cases?
-  * Maybe storing voice data in ArrayVec instead of array would help cache locality?
   * Were envelope / LFO changes to use f32 100% OK?
+    * LFO frequency parameters when max stop having an effect
 * bench_process
   * try generating delta_frames with rng
 * Audio
