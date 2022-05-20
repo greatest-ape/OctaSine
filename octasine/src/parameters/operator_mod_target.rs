@@ -39,13 +39,7 @@ impl ModTargetStorage {
         let mut i = 0;
 
         while i < slice.len() {
-            let value = slice[i];
-
-            if value {
-                storage.indices |= 1 << i;
-            } else {
-                storage.indices &= !(1 << i);
-            }
+            storage.indices = Self::set_bit(storage.indices, i, slice[i]);
 
             i += 1;
         }
@@ -54,12 +48,9 @@ impl ModTargetStorage {
     }
 
     pub fn set_index(&mut self, index: usize, value: bool) {
-        if value {
-            self.indices |= 1 << index;
-        } else {
-            self.indices &= !(1 << index);
-        }
+        self.indices = Self::set_bit(self.indices, index, value);
     }
+
     pub fn index_active(&self, index: usize) -> bool {
         (self.indices & (1 << index)) != 0
     }
@@ -72,6 +63,16 @@ impl ModTargetStorage {
                 None
             }
         })
+    }
+
+    const fn set_bit(mut data: u8, index: usize, value: bool) -> u8 {
+        if value {
+            data |= 1 << index;
+        } else {
+            data &= !(1 << index);
+        }
+
+        data
     }
 }
 
