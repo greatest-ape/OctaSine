@@ -18,8 +18,9 @@ will __not__ sound the same in this version.
   affect modulation output
 - Update frequency ratios, adding both harmonic and disharmonic ones
 - Update free frequency parameter values
-- Fix envelope issues
+- Fix various envelope issues
 - Add operator mute parameter
+- Feedback is now affected by key velocity
  
 #### LFO changes
 
