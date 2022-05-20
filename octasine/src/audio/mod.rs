@@ -17,7 +17,7 @@ use crate::{common::*, parameters::Parameter};
 use parameters::*;
 use voices::*;
 
-use self::voices::log10_table::Log10Table;
+use self::{gen::lfo::LfoTargetValues, voices::log10_table::Log10Table};
 
 pub struct AudioState {
     sample_rate: SampleRate,
@@ -29,6 +29,7 @@ pub struct AudioState {
     voices: [Voice; 128],
     pending_midi_events: VecDeque<MidiEvent>,
     audio_gen_voice_data: [VoiceData; 128],
+    lfo_target_values: LfoTargetValues,
 }
 
 impl Default for AudioState {
@@ -44,6 +45,7 @@ impl Default for AudioState {
             // Start with some capacity to cut down on later allocations
             pending_midi_events: VecDeque::with_capacity(128),
             audio_gen_voice_data: array_init::array_init(|_| VoiceData::default()),
+            lfo_target_values: Default::default(),
         }
     }
 }

@@ -1,4 +1,4 @@
-mod lfo;
+pub mod lfo;
 pub mod simd;
 
 use std::f64::consts::TAU;
@@ -192,6 +192,7 @@ mod gen {
             processing.process_events_for_sample(position + sample_index);
 
             let operators = &mut processing.parameters.operators;
+            let lfo_values = &mut processing.lfo_target_values;
 
             for (voice, voice_data) in processing
                 .voices
@@ -228,7 +229,8 @@ mod gen {
                         );
                 }
 
-                let lfo_values = get_lfo_target_values(
+                update_lfo_target_values(
+                    lfo_values,
                     &mut processing.parameters.lfos,
                     &mut voice.lfos,
                     processing.sample_rate,

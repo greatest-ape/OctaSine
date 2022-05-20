@@ -1,42 +1,63 @@
+use arrayvec::ArrayVec;
+
 use crate::audio::parameters::{common::AudioParameter, AudioParameterLfo};
 use crate::audio::voices::lfos::VoiceLfo;
 use crate::common::*;
-use crate::parameters::{LfoParameter, Parameter, PARAMETERS};
+use crate::parameters::{LfoParameter, PARAMETERS};
 
-pub struct LfoTargetValues([Option<f32>; PARAMETERS.len()]);
-
-impl LfoTargetValues {
-    fn set_or_add(&mut self, target: u8, value: f32) {
-        match &mut self.0[target as usize] {
-            Some(v) => *v += value,
-            v @ None => *v = Some(value),
-        }
-    }
-
-    pub fn get(&self, target: u8) -> Option<f32> {
-        self.0[target as usize]
-    }
+pub struct LfoTargetValues {
+    values: [Option<f32>; PARAMETERS.len()],
+    set_indices: ArrayVec<u8, NUM_LFOS>,
 }
 
 impl Default for LfoTargetValues {
     fn default() -> Self {
-        Self([None; PARAMETERS.len()])
+        Self {
+            values: [None; PARAMETERS.len()],
+            set_indices: Default::default(),
+        }
     }
 }
 
-pub fn get_lfo_target_values(
+impl LfoTargetValues {
+    pub fn get(&self, target: u8) -> Option<f32> {
+        self.values[target as usize]
+    }
+
+    fn set_or_add(&mut self, target: u8, value: f32) {
+        match &mut self.values[target as usize] {
+            Some(v) => *v += value,
+            v @ None => {
+                *v = Some(value);
+
+                self.set_indices.push(target);
+            }
+        }
+    }
+
+    fn clear_set(&mut self) {
+        for i in self.set_indices.iter().copied() {
+            self.values[i as usize] = None;
+        }
+
+        self.set_indices.clear();
+    }
+}
+
+pub fn update_lfo_target_values(
+    lfo_values: &mut LfoTargetValues,
     lfo_parameters: &mut [AudioParameterLfo; NUM_LFOS],
     voice_lfos: &mut [VoiceLfo; NUM_LFOS],
     sample_rate: SampleRate,
     time_per_sample: TimePerSample,
     bpm: BeatsPerMinute,
-) -> LfoTargetValues {
-    let mut lfo_values = LfoTargetValues::default();
-
+) {
     const AMOUNT_PARAMETER_INDICES: [u8; NUM_LFOS] = LfoParameter::Amount.init_index_array();
     const SHAPE_PARAMETER_INDICES: [u8; NUM_LFOS] = LfoParameter::Shape.init_index_array();
     const RATIO_PARAMETER_INDICES: [u8; NUM_LFOS] = LfoParameter::FrequencyRatio.init_index_array();
     const FREE_PARAMETER_INDICES: [u8; NUM_LFOS] = LfoParameter::FrequencyFree.init_index_array();
+
+    lfo_values.clear_set();
 
     for (lfo_index, (voice_lfo, lfo_parameter)) in voice_lfos
         .iter_mut()
@@ -90,6 +111,4 @@ pub fn get_lfo_target_values(
 
         lfo_values.set_or_add(target_index, addition);
     }
-
-    lfo_values
 }
