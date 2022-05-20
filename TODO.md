@@ -3,9 +3,6 @@
 ## High priority
 
 * Performance
-  * OperatorPanningAudioParameter should use sleef functions for cos and sin
-    * macOS libc cosf/sinf seems to be cheap btw, but that might not be the case
-      on other platforms, so use Sleef_cinz_sincosf1_u35purec
   * Parameter step mapping is expensive when combined with LFOs
     * For modulation index/feedback, maybe exp2 could be used. Same with frequency
       parameters.

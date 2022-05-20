@@ -1,6 +1,7 @@
 use std::f32::consts::FRAC_PI_2;
 
 use crate::audio::common::InterpolationDuration;
+use crate::audio::math::{cos, sin};
 use crate::common::SampleRate;
 use crate::parameters::{OperatorPanningValue, ParameterValue};
 
@@ -17,7 +18,7 @@ impl OperatorPanningAudioParameter {
     pub fn calculate_left_and_right(panning: f32) -> [f32; 2] {
         let pan_phase = panning * FRAC_PI_2;
 
-        [pan_phase.cos(), pan_phase.sin()]
+        [cos(pan_phase), sin(pan_phase)]
     }
 }
 
