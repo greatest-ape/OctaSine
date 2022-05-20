@@ -9,7 +9,6 @@ use std::collections::VecDeque;
 use array_init::array_init;
 use fastrand::Rng;
 
-use gen::VoiceData;
 use vst::event::MidiEvent;
 
 use crate::{common::*, parameters::Parameter};
@@ -17,7 +16,7 @@ use crate::{common::*, parameters::Parameter};
 use parameters::*;
 use voices::*;
 
-use self::{gen::lfo::LfoTargetValues, voices::log10_table::Log10Table};
+use self::{gen::AudioGenData, voices::log10_table::Log10Table};
 
 pub struct AudioState {
     sample_rate: SampleRate,
@@ -28,8 +27,7 @@ pub struct AudioState {
     log10table: Log10Table,
     voices: [Voice; 128],
     pending_midi_events: VecDeque<MidiEvent>,
-    audio_gen_voice_data: [VoiceData; 128],
-    lfo_target_values: LfoTargetValues,
+    audio_gen_data: AudioGenData,
 }
 
 impl Default for AudioState {
@@ -44,8 +42,7 @@ impl Default for AudioState {
             voices: array_init(|i| Voice::new(MidiPitch::new(i as u8))),
             // Start with some capacity to cut down on later allocations
             pending_midi_events: VecDeque::with_capacity(128),
-            audio_gen_voice_data: array_init::array_init(|_| VoiceData::default()),
-            lfo_target_values: Default::default(),
+            audio_gen_data: Default::default(),
         }
     }
 }

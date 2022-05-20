@@ -58,21 +58,19 @@ static OPERATOR_RATIO_STEPS: Lazy<Vec<Ratio>> = Lazy::new(|| {
 
     for i in 0..16 {
         match i {
-            5 | 15 => {
-
-            },
+            5 | 15 => {}
             0 => {
                 let value = 0.5 * 2.0f64.sqrt();
                 ratios.push(Ratio::new(value, format!("sqrt(2)/2")));
-            },
+            }
             1 => {
                 let value = 2.0f64.sqrt();
                 ratios.push(Ratio::new(value, format!("sqrt(2)")));
-            },
+            }
             i => {
                 let value = i as f64 * 2.0f64.sqrt();
                 ratios.push(Ratio::new(value, format!("{} sqrt(2)", i)));
-            },
+            }
         }
     }
     for i in 0..16 {
@@ -80,15 +78,15 @@ static OPERATOR_RATIO_STEPS: Lazy<Vec<Ratio>> = Lazy::new(|| {
             0 => {
                 let value = 0.5 * 3.0f64.sqrt();
                 ratios.push(Ratio::new(value, format!("sqrt(3)/2")));
-            },
+            }
             1 => {
                 let value = 3.0f64.sqrt();
                 ratios.push(Ratio::new(value, format!("sqrt(3)")));
-            },
+            }
             i => {
                 let value = i as f64 * 3.0f64.sqrt();
                 ratios.push(Ratio::new(value, format!("{} sqrt(3)", i)));
-            },
+            }
         }
     }
 

@@ -3,6 +3,7 @@ pub mod simd;
 
 use std::f64::consts::TAU;
 
+use array_init::array_init;
 use duplicate::duplicate_item;
 use vst::buffer::AudioBuffer;
 
@@ -16,8 +17,7 @@ use crate::parameters::{MasterParameter, ModTargetStorage, OperatorParameter, Pa
 use lfo::*;
 use simd::*;
 
-/// Multiply the volume of each voice with this factor
-const VOICE_VOLUME_FACTOR: f64 = 0.2;
+const MASTER_VOLUME_FACTOR: f64 = 0.2;
 const LIMIT: f64 = 10.0;
 
 const MAX_PD_WIDTH: usize = 4;
@@ -32,6 +32,29 @@ pub trait AudioGen {
     );
 }
 
+pub struct AudioGenData {
+    master_volume: [f64; MAX_PD_WIDTH],
+    lfo_target_values: LfoTargetValues,
+    voices: [VoiceData; 128],
+}
+
+impl Default for AudioGenData {
+    fn default() -> Self {
+        Self {
+            master_volume: Default::default(),
+            lfo_target_values: Default::default(),
+            voices: array_init(|_| VoiceData::default()),
+        }
+    }
+}
+
+#[derive(Debug, Default)]
+pub struct VoiceData {
+    active: bool,
+    key_velocity: [f64; MAX_PD_WIDTH],
+    operators: [OperatorVoiceData; 4],
+}
+
 #[derive(Debug, Default)]
 pub struct OperatorVoiceData {
     volumes: [f64; MAX_PD_WIDTH],
@@ -44,13 +67,6 @@ pub struct OperatorVoiceData {
     phases: [f64; MAX_PD_WIDTH],
     wave_type: WaveType,
     modulation_targets: ModTargetStorage,
-}
-
-#[derive(Debug, Default)]
-pub struct VoiceData {
-    active: bool,
-    volume_factors: [f64; MAX_PD_WIDTH],
-    operators: [OperatorVoiceData; 4],
 }
 
 #[inline]
@@ -168,7 +184,7 @@ mod gen {
             extract_voice_data(processing, position);
             gen_audio(
                 &mut processing.rng,
-                &processing.audio_gen_voice_data,
+                &processing.audio_gen_data,
                 lefts,
                 rights,
             );
@@ -178,7 +194,7 @@ mod gen {
     #[feature_gate]
     #[target_feature_enable]
     unsafe fn extract_voice_data(processing: &mut AudioState, position: usize) {
-        for voice_data in processing.audio_gen_voice_data.iter_mut() {
+        for voice_data in processing.audio_gen_data.voices.iter_mut() {
             voice_data.active = false;
         }
 
@@ -191,12 +207,36 @@ mod gen {
             processing.process_events_for_sample(position + sample_index);
 
             let operators = &mut processing.parameters.operators;
-            let lfo_values = &mut processing.lfo_target_values;
+            let lfo_values = &mut processing.audio_gen_data.lfo_target_values;
+
+            let master_volume = {
+                const I: u8 = Parameter::Master(MasterParameter::Volume).to_index();
+
+                processing
+                    .parameters
+                    .master_volume
+                    .get_value_with_lfo_addition(lfo_values.get(I))
+            };
+
+            set_value_for_both_channels(
+                &mut processing.audio_gen_data.master_volume,
+                sample_index,
+                master_volume as f64,
+            );
+
+            let master_frequency = {
+                const I: u8 = Parameter::Master(MasterParameter::Frequency).to_index();
+
+                processing
+                    .parameters
+                    .master_frequency
+                    .get_value_with_lfo_addition(lfo_values.get(I))
+            };
 
             for (voice, voice_data) in processing
                 .voices
                 .iter_mut()
-                .zip(processing.audio_gen_voice_data.iter_mut())
+                .zip(processing.audio_gen_data.voices.iter_mut())
                 .filter(|(voice, _)| voice.active)
             {
                 voice.deactivate_if_envelopes_ended();
@@ -237,37 +277,13 @@ mod gen {
                     processing.bpm,
                 );
 
-                let voice_volume_factor = {
-                    const I: u8 = Parameter::Master(MasterParameter::Volume).to_index();
-
-                    let lfo_addition = lfo_values.get(I);
-
-                    let master_volume = processing
-                        .parameters
-                        .master_volume
-                        .get_value_with_lfo_addition(lfo_addition);
-
-                    let key_velocity = voice.key_velocity.0;
-
-                    VOICE_VOLUME_FACTOR * master_volume as f64 * key_velocity
-                };
-
                 set_value_for_both_channels(
-                    &mut voice_data.volume_factors,
+                    &mut voice_data.key_velocity,
                     sample_index,
-                    voice_volume_factor,
+                    voice.key_velocity.0,
                 );
 
-                let voice_base_frequency = {
-                    const I: u8 = Parameter::Master(MasterParameter::Frequency).to_index();
-
-                    voice.midi_pitch.get_frequency(
-                        processing
-                            .parameters
-                            .master_frequency
-                            .get_value_with_lfo_addition(lfo_values.get(I)),
-                    )
-                };
+                let voice_base_frequency = voice.midi_pitch.get_frequency(master_frequency);
 
                 for (operator_index, operator) in operators.iter_mut().enumerate() {
                     extract_voice_operator_data(
@@ -404,20 +420,24 @@ mod gen {
     #[target_feature_enable]
     unsafe fn gen_audio(
         rng: &mut fastrand::Rng,
-        voice_data: &[VoiceData; 128],
+        audio_gen_data: &AudioGenData,
         audio_buffer_lefts: &mut [f32],
         audio_buffer_rights: &mut [f32],
     ) {
         // S::SAMPLES * 2 because of two channels. Even index = left channel
         let mut summed_additive_outputs = S::pd_setzero();
 
-        for voice_data in voice_data.iter().filter(|voice_data| voice_data.active) {
+        for voice_data in audio_gen_data
+            .voices
+            .iter()
+            .filter(|voice_data| voice_data.active)
+        {
             let operator_generate_audio = run_operator_dependency_analysis(voice_data);
 
             // Voice modulation input storage, indexed by operator
             let mut voice_modulation_inputs = [S::pd_setzero(); 4];
 
-            let volume_factors = S::pd_loadu(voice_data.volume_factors.as_ptr());
+            let key_velocity = S::pd_loadu(voice_data.key_velocity.as_ptr());
 
             // Go through operators downwards, starting with operator 4
             for operator_index in (0..4).map(|i| 3 - i) {
@@ -432,12 +452,10 @@ mod gen {
                     rng,
                     operator_voice_data,
                     voice_modulation_inputs[operator_index],
+                    key_velocity,
                 );
 
-                summed_additive_outputs = S::pd_add(
-                    summed_additive_outputs,
-                    S::pd_mul(additive_out, volume_factors),
-                );
+                summed_additive_outputs = S::pd_add(summed_additive_outputs, additive_out);
 
                 // Add modulation output to target operators' modulation inputs
                 for target in operator_voice_data.modulation_targets.active_indices() {
@@ -447,8 +465,14 @@ mod gen {
             }
         }
 
-        // Apply hard limit
+        // Apply master volume and hard limit
 
+        summed_additive_outputs =
+            S::pd_mul(summed_additive_outputs, S::pd_set1(MASTER_VOLUME_FACTOR));
+        summed_additive_outputs = S::pd_mul(
+            summed_additive_outputs,
+            S::pd_loadu(audio_gen_data.master_volume.as_ptr()),
+        );
         summed_additive_outputs = S::pd_min(summed_additive_outputs, S::pd_set1(LIMIT));
         summed_additive_outputs = S::pd_max(summed_additive_outputs, S::pd_set1(-LIMIT));
 
@@ -472,6 +496,7 @@ mod gen {
         rng: &mut fastrand::Rng,
         voice_data: &OperatorVoiceData,
         modulation_inputs: <S as Simd>::PackedDouble,
+        key_velocity: <S as Simd>::PackedDouble,
     ) -> (<S as Simd>::PackedDouble, <S as Simd>::PackedDouble) {
         let sample = if voice_data.wave_type == WaveType::WhiteNoise {
             let mut random_numbers = [0.0f64; S::PD_WIDTH];
@@ -520,13 +545,17 @@ mod gen {
             let phase = S::pd_mul(S::pd_loadu(voice_data.phases.as_ptr()), S::pd_set1(TAU));
 
             let feedback = S::pd_mul(
-                S::pd_loadu(voice_data.feedbacks.as_ptr()),
-                S::pd_fast_sin(phase),
+                key_velocity,
+                S::pd_mul(
+                    S::pd_loadu(voice_data.feedbacks.as_ptr()),
+                    S::pd_fast_sin(phase),
+                ),
             );
 
             S::pd_fast_sin(S::pd_add(phase, S::pd_add(feedback, modulation_in)))
         };
 
+        let sample = S::pd_mul(sample, key_velocity);
         let sample = S::pd_mul(sample, S::pd_loadu(voice_data.volumes.as_ptr()));
         let sample = S::pd_mul(sample, S::pd_loadu(voice_data.envelope_volumes.as_ptr()));
         let sample = S::pd_mul(
