@@ -3,27 +3,28 @@
 ## High priority
 
 * Performance
+  * Were envelope / LFO changes to use f32 100% OK?
+    * LFO frequency parameters stop having an effect at combined maximum
   * Parameter step mapping is expensive when combined with LFOs
     * For modulation index/feedback, maybe exp2 could be used. Same with frequency
       parameters.
-  * Were envelope / LFO changes to use f32 100% OK?
-    * LFO frequency parameters when max stop having an effect
 * bench_process
   * try generating delta_frames with rng
 * Audio
-  * Mix should start at one for operator 1
+  * Test how voice velocity now affects feedback
+  * Use sleef for fract calculations etc?
+  * Use fastmath for log table?
   * Are LFO frequency parameters too slow to react?
   * Should envelope values be interpolated? Now there are crackles
     when moving draggers quickly
-  * voice velocity should affect modulation (not only mix)
   * Should modulation index now compensate for higher frequencies?
   * Operator freq ratio values: are really both PI, sqrt(2) and sqrt(3) values
     necessary?
   * LFO clicks when using DAW and looping notes without space between
 * GUI
+  * Mix should start at one for operator 1
   * In envelope editor, zoom by dragging background up/down
   * Two envelope lock groups
-  * Nicer display of operator freq ratio sqrt values
   * In operator freq ratio values, display number too? E.g. 2pi: 6.28
   * Operator ratio patch value should be fine-tuned (incremented just a little
     bit) so that knob notch is at right angle
