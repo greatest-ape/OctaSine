@@ -47,7 +47,7 @@ impl<P: AudioParameter> AudioParameterPatchInteraction for P {
         let a = P::ParameterValue::new_from_patch(value).to_patch();
         let b = self.get_parameter_value().to_patch();
 
-        (a - b).abs() <= 1.0 / 1_000_000.0
+        (a - b).abs() <= 1.0 / 100_000.0
     }
 }
 
