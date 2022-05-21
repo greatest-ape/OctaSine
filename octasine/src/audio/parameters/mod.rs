@@ -227,9 +227,9 @@ impl AudioParameterOperator {
 #[derive(Default)]
 pub struct OperatorEnvelopeAudioParameter {
     pub attack_duration: SimpleAudioParameter<OperatorAttackDurationValue>,
-    pub attack_end_value: SimpleAudioParameter<OperatorAttackVolumeValue>,
+    pub attack_end_value: InterpolatableAudioParameter<OperatorAttackVolumeValue>,
     pub decay_duration: SimpleAudioParameter<OperatorDecayDurationValue>,
-    pub decay_end_value: SimpleAudioParameter<OperatorDecayVolumeValue>,
+    pub decay_end_value: InterpolatableAudioParameter<OperatorDecayVolumeValue>,
     pub release_duration: SimpleAudioParameter<OperatorReleaseDurationValue>,
 }
 
