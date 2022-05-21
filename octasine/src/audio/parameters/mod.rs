@@ -56,8 +56,8 @@ impl<P: AudioParameter> AudioParameterPatchInteraction for P {
 pub struct AudioParameters {
     pub master_volume: MasterVolumeAudioParameter,
     pub master_frequency: MasterFrequencyAudioParameter,
-    pub operators: [AudioParameterOperator; NUM_OPERATORS],
-    pub lfos: [AudioParameterLfo; NUM_LFOS],
+    pub operators: [OperatorAudioParameters; NUM_OPERATORS],
+    pub lfos: [LfoAudioParameters; NUM_LFOS],
 }
 
 impl Default for AudioParameters {
@@ -65,8 +65,8 @@ impl Default for AudioParameters {
         Self {
             master_volume: Default::default(),
             master_frequency: Default::default(),
-            operators: array_init(AudioParameterOperator::new),
-            lfos: array_init(AudioParameterLfo::new),
+            operators: array_init(OperatorAudioParameters::new),
+            lfos: array_init(LfoAudioParameters::new),
         }
     }
 }
@@ -167,7 +167,7 @@ impl AudioParameters {
     }
 }
 
-pub struct AudioParameterOperator {
+pub struct OperatorAudioParameters {
     pub active: InterpolatableAudioParameter<OperatorActiveValue>,
     pub wave_type: SimpleAudioParameter<OperatorWaveTypeValue>,
     pub volume: OperatorVolumeAudioParameter,
@@ -179,10 +179,10 @@ pub struct AudioParameterOperator {
     pub frequency_ratio: SimpleAudioParameter<OperatorFrequencyRatioValue>,
     pub frequency_free: OperatorFrequencyFreeAudioParameter,
     pub frequency_fine: OperatorFrequencyFineAudioParameter,
-    pub volume_envelope: OperatorEnvelopeAudioParameter,
+    pub volume_envelope: OperatorEnvelopeAudioParameters,
 }
 
-impl AudioParameterOperator {
+impl OperatorAudioParameters {
     pub fn new(operator_index: usize) -> Self {
         let modulation_index = if operator_index == 0 {
             None
@@ -227,7 +227,7 @@ impl AudioParameterOperator {
 }
 
 #[derive(Default)]
-pub struct OperatorEnvelopeAudioParameter {
+pub struct OperatorEnvelopeAudioParameters {
     pub attack_duration: SimpleAudioParameter<OperatorAttackDurationValue>,
     pub attack_end_value: OperatorEnvelopeVolumeAudioParameter<OperatorAttackVolumeValue>,
     pub decay_duration: SimpleAudioParameter<OperatorDecayDurationValue>,
@@ -235,7 +235,7 @@ pub struct OperatorEnvelopeAudioParameter {
     pub release_duration: SimpleAudioParameter<OperatorReleaseDurationValue>,
 }
 
-impl OperatorEnvelopeAudioParameter {
+impl OperatorEnvelopeAudioParameters {
     fn advance_one_sample(&mut self, sample_rate: SampleRate) {
         self.attack_duration.advance_one_sample(sample_rate);
         self.attack_end_value.advance_one_sample(sample_rate);
@@ -245,7 +245,7 @@ impl OperatorEnvelopeAudioParameter {
     }
 }
 
-pub struct AudioParameterLfo {
+pub struct LfoAudioParameters {
     pub target: LfoTargetAudioParameter,
     pub bpm_sync: SimpleAudioParameter<LfoBpmSyncValue>,
     pub frequency_ratio: SimpleAudioParameter<LfoFrequencyRatioValue>,
@@ -256,7 +256,7 @@ pub struct AudioParameterLfo {
     pub active: LfoActiveAudioParameter,
 }
 
-impl AudioParameterLfo {
+impl LfoAudioParameters {
     fn new(lfo_index: usize) -> Self {
         Self {
             target: LfoTargetAudioParameter::new(lfo_index),

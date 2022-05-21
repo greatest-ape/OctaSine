@@ -1,5 +1,5 @@
 use crate::audio::parameters::common::AudioParameter;
-use crate::audio::parameters::OperatorEnvelopeAudioParameter;
+use crate::audio::parameters::OperatorEnvelopeAudioParameters;
 use crate::common::*;
 use crate::parameters::ENVELOPE_CURVE_TAKEOVER_RECIP;
 
@@ -21,7 +21,7 @@ pub struct VoiceOperatorVolumeEnvelope {
 impl VoiceOperatorVolumeEnvelope {
     pub fn advance_one_sample(
         &mut self,
-        operator_envelope: &OperatorEnvelopeAudioParameter,
+        operator_envelope: &OperatorEnvelopeAudioParameters,
         key_pressed: bool,
         time_per_sample: TimePerSample,
     ) {
@@ -95,7 +95,7 @@ impl VoiceOperatorVolumeEnvelope {
     pub fn get_volume(
         &mut self,
         log10table: &Log10Table,
-        operator_envelope: &OperatorEnvelopeAudioParameter,
+        operator_envelope: &OperatorEnvelopeAudioParameters,
     ) -> f32 {
         use EnvelopeStage::*;
 

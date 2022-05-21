@@ -3,7 +3,7 @@ use plotlib::repr::Plot;
 use plotlib::style::{LineStyle, PointMarker, PointStyle};
 use plotlib::view::ContinuousView;
 
-use octasine::audio::parameters::OperatorEnvelopeAudioParameter;
+use octasine::audio::parameters::OperatorEnvelopeAudioParameters;
 use octasine::audio::voices::envelopes::VoiceOperatorVolumeEnvelope;
 use octasine::audio::voices::lfos::*;
 use octasine::audio::voices::log10_table::Log10Table;
@@ -63,7 +63,7 @@ fn plot_lfo_values(filename: &str) {
     let log10table = Log10Table::default();
     let mut lfo = VoiceLfo::default();
     let mut envelope = VoiceOperatorVolumeEnvelope::default();
-    let mut processing_parameter_envelope = OperatorEnvelopeAudioParameter::default();
+    let mut processing_parameter_envelope = OperatorEnvelopeAudioParameters::default();
     let mut key_pressed = false;
 
     let mut lfo_value_points = Vec::with_capacity(num_samples);

@@ -1,6 +1,6 @@
 use arrayvec::ArrayVec;
 
-use crate::audio::parameters::{common::AudioParameter, AudioParameterLfo};
+use crate::audio::parameters::{common::AudioParameter, LfoAudioParameters};
 use crate::audio::voices::lfos::VoiceLfo;
 use crate::common::*;
 use crate::parameters::{LfoParameter, PARAMETERS};
@@ -46,7 +46,7 @@ impl LfoTargetValues {
 
 pub fn update_lfo_target_values(
     lfo_values: &mut LfoTargetValues,
-    lfo_parameters: &mut [AudioParameterLfo; NUM_LFOS],
+    lfo_parameters: &mut [LfoAudioParameters; NUM_LFOS],
     voice_lfos: &mut [VoiceLfo; NUM_LFOS],
     sample_rate: SampleRate,
     time_per_sample: TimePerSample,
