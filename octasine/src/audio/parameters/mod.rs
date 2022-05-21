@@ -6,6 +6,7 @@ mod lfo_target;
 mod master_frequency;
 mod master_volume;
 mod operator_active;
+mod operator_envelope_volume;
 mod operator_frequency_fine;
 mod operator_frequency_free;
 mod operator_mix;
@@ -25,6 +26,7 @@ use self::lfo_frequency_free::LfoFrequencyFreeAudioParameter;
 use self::lfo_target::LfoTargetAudioParameter;
 use self::master_frequency::MasterFrequencyAudioParameter;
 use self::master_volume::MasterVolumeAudioParameter;
+use self::operator_envelope_volume::OperatorEnvelopeVolumeAudioParameter;
 use self::operator_frequency_fine::OperatorFrequencyFineAudioParameter;
 use self::operator_frequency_free::OperatorFrequencyFreeAudioParameter;
 use self::operator_mix::OperatorMixAudioParameter;
@@ -227,9 +229,9 @@ impl AudioParameterOperator {
 #[derive(Default)]
 pub struct OperatorEnvelopeAudioParameter {
     pub attack_duration: SimpleAudioParameter<OperatorAttackDurationValue>,
-    pub attack_end_value: InterpolatableAudioParameter<OperatorAttackVolumeValue>,
+    pub attack_end_value: OperatorEnvelopeVolumeAudioParameter<OperatorAttackVolumeValue>,
     pub decay_duration: SimpleAudioParameter<OperatorDecayDurationValue>,
-    pub decay_end_value: InterpolatableAudioParameter<OperatorDecayVolumeValue>,
+    pub decay_end_value: OperatorEnvelopeVolumeAudioParameter<OperatorDecayVolumeValue>,
     pub release_duration: SimpleAudioParameter<OperatorReleaseDurationValue>,
 }
 
