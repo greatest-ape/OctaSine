@@ -8,14 +8,15 @@
   * Parameter step mapping is expensive when combined with LFOs
     * For modulation index/feedback, maybe exp2 could be used. Same with frequency
       parameters.
+  * Sorting midi events might allocate memory (!)
 * bench_process
   * try generating delta_frames with rng
 * Audio
+  * Envelope restarts: still some issues
   * Test how voice velocity now affects feedback
   * Use sleef for fract calculations etc?
   * Use fastmath for log table?
   * Are LFO frequency parameters too slow to react?
-  * Should envelope values be interpolated? Now there are crackles
     when moving draggers quickly
   * Should modulation index now compensate for higher frequencies?
   * Operator freq ratio values: are really both PI, sqrt(2) and sqrt(3) values
