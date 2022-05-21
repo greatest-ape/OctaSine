@@ -15,6 +15,7 @@ pub struct VoiceOperatorVolumeEnvelope {
     duration_at_stage_change: VoiceDuration,
     volume_at_stage_change: f32,
     last_volume: f32,
+    restarting_from_volume: Option<f32>,
 }
 
 impl VoiceOperatorVolumeEnvelope {
@@ -32,9 +33,13 @@ impl VoiceOperatorVolumeEnvelope {
 
         self.duration.0 += time_per_sample.0;
 
+        if self.restarting_from_volume.is_some() && self.duration.0 >= INTERPOLATION_DURATION {
+            self.restarting_from_volume = None;
+        }
+
         if !key_pressed {
             match self.stage {
-                Restart | Attack => {
+                Attack => {
                     self.stage = if self.last_volume > operator_envelope.decay_end_value.get_value()
                     {
                         Decay
@@ -61,11 +66,6 @@ impl VoiceOperatorVolumeEnvelope {
         let duration_since_stage_change = self.duration_since_stage_change();
 
         match self.stage {
-            Restart if duration_since_stage_change >= INTERPOLATION_DURATION => {
-                self.stage = Attack;
-                self.duration_at_stage_change = self.duration;
-                self.volume_at_stage_change = self.last_volume;
-            }
             Attack
                 if duration_since_stage_change >= operator_envelope.attack_duration.get_value() =>
             {
@@ -99,13 +99,13 @@ impl VoiceOperatorVolumeEnvelope {
     ) -> f32 {
         use EnvelopeStage::*;
 
-        self.last_volume = match self.stage {
-            Ended => 0.0,
-            Restart => {
-                let progress = (self.duration_since_stage_change() / INTERPOLATION_DURATION) as f32;
+        if let Ended = self.stage {
+            self.last_volume = 0.0;
 
-                self.volume_at_stage_change - self.volume_at_stage_change * progress
-            }
+            return 0.0;
+        }
+
+        let volume = match self.stage {
             Attack => Self::calculate_curve(
                 log10table,
                 0.0,
@@ -128,6 +128,15 @@ impl VoiceOperatorVolumeEnvelope {
                 self.duration_since_stage_change(),
                 operator_envelope.release_duration.get_value(),
             ),
+            Ended => unreachable!(),
+        };
+
+        self.last_volume = if let Some(restart_volume) = self.restarting_from_volume {
+            let progress = (self.duration.0 / INTERPOLATION_DURATION) as f32;
+
+            progress * volume + (1.0 - progress) * restart_volume
+        } else {
+            volume
         };
 
         self.last_volume
@@ -160,9 +169,7 @@ impl VoiceOperatorVolumeEnvelope {
             Self::default()
         } else {
             Self {
-                volume_at_stage_change: self.last_volume,
-                last_volume: self.last_volume,
-                stage: EnvelopeStage::Restart,
+                restarting_from_volume: Some(self.last_volume),
                 ..Default::default()
             }
         };
@@ -182,6 +189,7 @@ impl Default for VoiceOperatorVolumeEnvelope {
             duration: VoiceDuration(0.0),
             volume_at_stage_change: 0.0,
             last_volume: 0.0,
+            restarting_from_volume: None,
         }
     }
 }
