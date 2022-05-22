@@ -8,7 +8,7 @@
   * try generating delta_frames with rng
   * try generating key velocity with rng
 * Audio
-  * Need to interpolate when restarting envelope with different velocity
+  * Click when triggering note for first time, but only with high velocity
   * Should operator volume affect feedback?
   * Operator freq ratio values: are really both PI, sqrt(2) and sqrt(3) values
     necessary?
