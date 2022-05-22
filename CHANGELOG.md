@@ -5,7 +5,8 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 This release contains breaking changes. Patches created with previous versions
-will __not__ sound the same in this version.
+will __not__ sound the same in this version. You can however continue using
+version 0.6.1 in parallel with this version.
 
 ### Changed
 
@@ -18,9 +19,11 @@ will __not__ sound the same in this version.
   affect modulation output
 - Update frequency ratios, adding both harmonic and disharmonic ones
 - Update free frequency parameter values
-- Fix various envelope issues
 - Add operator mute parameter
 - Feedback is now affected by key velocity
+- Interpolate key velocity if key is pressed while envelope is still active
+- Fix various envelope issues
+- Increase minimum envelope stage length to 10ms
  
 #### LFO changes
 
@@ -32,7 +35,10 @@ will __not__ sound the same in this version.
 - Make LFO triangle wave type start at value 0.0
 - Add LFO wave types reverse triangle, sine and reverse sine
 - Default to no target
+- Remove master volume and master frequency targets, since LFOs are really
+  per-voice
 - Add LFO mute parameter
+- When BPM sync is turned off, use base frequency of 1 Hz
 
 #### Other audio changes
 
