@@ -4,33 +4,33 @@
 
 * Performance
   * Were envelope / LFO changes to use f32 100% OK?
-  * Parameter step mapping is expensive when combined with LFOs
-    * For modulation index/feedback, maybe exp2 could be used. Same with frequency
-      parameters.
   * Sorting midi events might allocate memory (!)
+  * BPM is divided with 120.0 all the time, optimize
 * bench_process
   * try generating delta_frames with rng
+  * try generating key velocity with rng
 * Audio
-  * Envelope restarts: still some issues
-  * Test how voice velocity now affects feedback
-  * Use sleef for fract calculations etc?
-  * Use fastmath for log table?
-  * Are LFO frequency parameters too slow to react?
-  * Should modulation index now compensate for higher frequencies?
+  * Should operator volume affect feedback?
   * Operator freq ratio values: are really both PI, sqrt(2) and sqrt(3) values
     necessary?
-  * LFO clicks when using DAW and looping notes without space between
+  * Envelope clicks when using DAW and looping notes without space between, but
+    only when modulating
 * GUI
   * In envelope editor, zoom by dragging background up/down
   * Two envelope lock groups
-  * In operator freq ratio values, display number too? E.g. 2pi: 6.28
-  * Operator ratio patch value should be fine-tuned (incremented just a little
-    bit) so that knob notch is at right angle
-  * Add small marks to operator ratio knobs indicating factors of 2?
 * Other crates
   * create iced_audio 0.8.0 release, use it
   * ask for new baseview release, then create iced_baseview release, use them
 * Add semver-compatible version info in patch/patch bank exports?
+* Probably don't do / no longer relevant:
+  * Use sleef for fract calculations etc?
+  * Use fastmath for log table?
+  * Should modulation index now compensate for higher frequencies?
+  * Parameter step mapping is expensive when combined with LFOs
+    * For modulation index/feedback, maybe exp2 could be used. Same with frequency
+      parameters.
+  * GUI: in operator freq ratio values, display number too? E.g. 2pi: 6.28
+  * Add small marks to operator ratio knobs indicating factors of 2?
 * Release v0.7.0 eventually
 
 ## Medium priority
