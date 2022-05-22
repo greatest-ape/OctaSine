@@ -1,4 +1,4 @@
-use crate::audio::math::exp2;
+use crate::math::exp2;
 use crate::common::SampleRate;
 use crate::parameters::{OperatorFrequencyFineValue, ParameterValue};
 

@@ -1,7 +1,7 @@
 use std::f32::consts::FRAC_PI_2;
 
 use crate::audio::common::InterpolationDuration;
-use crate::audio::math::{cos, sin};
+use crate::math::{cos, sin};
 use crate::common::SampleRate;
 use crate::parameters::{OperatorPanningValue, ParameterValue};
 
