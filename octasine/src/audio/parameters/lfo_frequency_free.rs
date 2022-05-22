@@ -1,5 +1,5 @@
-use crate::math::exp2;
 use crate::common::SampleRate;
+use crate::math::exp2_fast;
 use crate::parameters::{LfoFrequencyFreeValue, ParameterValue};
 
 use super::common::AudioParameter;
@@ -22,7 +22,7 @@ impl AudioParameter for LfoFrequencyFreeAudioParameter {
         lfo_addition: Option<f32>,
     ) -> <Self::ParameterValue as ParameterValue>::Value {
         if let Some(lfo_addition) = lfo_addition {
-            self.get_value() * exp2(3.0 * lfo_addition) as f64
+            self.get_value() * exp2_fast(3.0 * lfo_addition) as f64
         } else {
             self.get_value()
         }

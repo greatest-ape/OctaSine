@@ -1,8 +1,8 @@
 use std::f32::consts::FRAC_PI_2;
 
 use crate::audio::common::InterpolationDuration;
-use crate::math::{cos, sin};
 use crate::common::SampleRate;
+use crate::math::{cos, sin};
 use crate::parameters::{OperatorPanningValue, ParameterValue};
 
 use super::common::{AudioParameter, Interpolator};

@@ -1,6 +1,6 @@
 use crate::audio::common::InterpolationDuration;
-use crate::math::exp2;
 use crate::common::SampleRate;
+use crate::math::exp2_fast;
 use crate::parameters::{OperatorVolumeValue, ParameterValue};
 
 use super::common::{AudioParameter, Interpolator};
@@ -35,7 +35,7 @@ impl AudioParameter for OperatorVolumeAudioParameter {
         lfo_addition: Option<f32>,
     ) -> <Self::ParameterValue as ParameterValue>::Value {
         if let Some(lfo_addition) = lfo_addition {
-            self.get_value() * exp2(lfo_addition / 2.0)
+            self.get_value() * exp2_fast(lfo_addition / 2.0)
         } else {
             self.get_value()
         }

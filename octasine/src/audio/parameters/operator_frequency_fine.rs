@@ -1,5 +1,5 @@
-use crate::math::exp2;
 use crate::common::SampleRate;
+use crate::math::exp2_fast;
 use crate::parameters::{OperatorFrequencyFineValue, ParameterValue};
 
 use super::common::AudioParameter;
@@ -25,7 +25,7 @@ impl AudioParameter for OperatorFrequencyFineAudioParameter {
             // log2(1.5) / 2
             const FACTOR: f32 = 0.5849625007211562 / 2.0;
 
-            self.get_value() * exp2(FACTOR * lfo_addition) as f64
+            self.get_value() * exp2_fast(FACTOR * lfo_addition) as f64
         } else {
             self.get_value()
         }
