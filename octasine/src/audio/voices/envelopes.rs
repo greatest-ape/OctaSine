@@ -161,6 +161,7 @@ impl VoiceOperatorVolumeEnvelope {
             Self::default()
         } else {
             Self {
+                last_volume: self.last_volume,
                 restarting_from_volume: Some(self.last_volume),
                 ..Default::default()
             }
