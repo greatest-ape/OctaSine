@@ -23,7 +23,6 @@
     necessary?
   * LFO clicks when using DAW and looping notes without space between
 * GUI
-  * Mix should start at one for operator 1
   * In envelope editor, zoom by dragging background up/down
   * Two envelope lock groups
   * In operator freq ratio values, display number too? E.g. 2pi: 6.28

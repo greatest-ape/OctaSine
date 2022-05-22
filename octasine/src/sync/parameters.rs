@@ -34,7 +34,9 @@ impl PatchParameter {
                 match operator_parameter {
                     Volume => Self::new::<OperatorVolumeValue>(parameter),
                     Active => Self::new::<OperatorActiveValue>(parameter),
-                    MixOut => Self::new::<OperatorMixOutValue>(parameter),
+                    MixOut => {
+                        Self::new_with_value(parameter, OperatorMixOutValue::new(index as usize))
+                    }
                     Panning => Self::new::<OperatorPanningValue>(parameter),
                     WaveType => Self::new::<OperatorWaveTypeValue>(parameter),
                     Feedback => Self::new::<OperatorFeedbackValue>(parameter),
@@ -86,6 +88,15 @@ impl PatchParameter {
             parameter,
             name: parameter.name(),
             value: AtomicFloat::new(V::default().to_patch()),
+            value_from_text: |v| V::new_from_text(v).map(|v| v.to_patch()),
+            format: |v| V::new_from_patch(v).get_formatted(),
+        }
+    }
+    fn new_with_value<V: ParameterValue>(parameter: Parameter, v: V) -> Self {
+        Self {
+            parameter,
+            name: parameter.name(),
+            value: AtomicFloat::new(v.to_patch()),
             value_from_text: |v| V::new_from_text(v).map(|v| v.to_patch()),
             format: |v| V::new_from_patch(v).get_formatted(),
         }
