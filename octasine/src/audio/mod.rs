@@ -21,6 +21,7 @@ pub struct AudioState {
     sample_rate: SampleRate,
     time_per_sample: TimePerSample,
     bpm: BeatsPerMinute,
+    bpm_lfo_multiplier: BpmLfoMultiplier,
     parameters: AudioParameters,
     rng: Rng,
     log10table: Log10Table,
@@ -35,6 +36,7 @@ impl Default for AudioState {
             sample_rate: SampleRate::default(),
             time_per_sample: SampleRate::default().into(),
             bpm: Default::default(),
+            bpm_lfo_multiplier: BeatsPerMinute::default().into(),
             parameters: AudioParameters::default(),
             rng: Rng::new(),
             log10table: Default::default(),
@@ -58,6 +60,7 @@ impl AudioState {
 
     pub fn set_bpm(&mut self, bpm: BeatsPerMinute) {
         self.bpm = bpm;
+        self.bpm_lfo_multiplier = bpm.into();
     }
 
     pub fn enqueue_midi_events<I: Iterator<Item = MidiEvent>>(&mut self, events: I) {

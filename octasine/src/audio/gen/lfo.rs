@@ -50,7 +50,7 @@ pub fn update_lfo_target_values(
     voice_lfos: &mut [VoiceLfo; NUM_LFOS],
     sample_rate: SampleRate,
     time_per_sample: TimePerSample,
-    bpm: BeatsPerMinute,
+    bpm_lfo_multiplier: BpmLfoMultiplier,
 ) {
     const AMOUNT_PARAMETER_INDICES: [u8; NUM_LFOS] = LfoParameter::Amount.init_index_array();
     const SHAPE_PARAMETER_INDICES: [u8; NUM_LFOS] = LfoParameter::Shape.init_index_array();
@@ -92,16 +92,16 @@ pub fn update_lfo_target_values(
             .frequency_free
             .get_value_with_lfo_addition(lfo_values.get(FREE_PARAMETER_INDICES[lfo_index]));
 
-        let bpm = if bpm_sync {
-            bpm
+        let bpm_lfo_multiplier = if bpm_sync {
+            bpm_lfo_multiplier
         } else {
-            BeatsPerMinute::one_hertz()
+            BpmLfoMultiplier(1.0)
         };
 
         voice_lfo.advance_one_sample(
             sample_rate,
             time_per_sample,
-            bpm,
+            bpm_lfo_multiplier,
             shape,
             mode,
             frequency_ratio * frequency_free,

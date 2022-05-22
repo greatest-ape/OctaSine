@@ -51,7 +51,7 @@ impl VoiceLfo {
         &mut self,
         sample_rate: SampleRate,
         time_per_sample: TimePerSample,
-        bpm: BeatsPerMinute,
+        bpm_lfo_multiplier: BpmLfoMultiplier,
         shape: LfoShape,
         mode: LfoMode,
         frequency: f64,
@@ -83,7 +83,7 @@ impl VoiceLfo {
             };
         }
 
-        let new_phase = self.phase.0 + frequency * (bpm.0 / 120.0) * time_per_sample.0;
+        let new_phase = self.phase.0 + frequency * bpm_lfo_multiplier.0 * time_per_sample.0;
 
         self.phase.0 = new_phase.fract();
 

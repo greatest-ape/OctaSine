@@ -259,7 +259,7 @@ mod gen {
                     &mut voice.lfos,
                     audio_state.sample_rate,
                     time_per_sample,
-                    audio_state.bpm,
+                    audio_state.bpm_lfo_multiplier,
                 );
 
                 set_value_for_both_channels(

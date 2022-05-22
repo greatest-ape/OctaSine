@@ -54,7 +54,7 @@ fn plot_lfo_values(filename: &str) {
 
     let sample_rate = SampleRate(44100.0);
     let time_per_sample = sample_rate.into();
-    let bpm = BeatsPerMinute(120.0);
+    let bpm_lfo_multiplier = BeatsPerMinute(120.0).into();
     let shape = LfoShape::Saw;
     let mode = LfoMode::Forever;
     let speed = 2.0;
@@ -73,7 +73,14 @@ fn plot_lfo_values(filename: &str) {
     let mut envelope_value_points = Vec::with_capacity(num_samples);
 
     for i in 0..num_samples {
-        lfo.advance_one_sample(sample_rate, time_per_sample, bpm, shape, mode, speed);
+        lfo.advance_one_sample(
+            sample_rate,
+            time_per_sample,
+            bpm_lfo_multiplier,
+            shape,
+            mode,
+            speed,
+        );
 
         let lfo_value = lfo.get_value(magnitude);
 

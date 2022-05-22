@@ -5,7 +5,6 @@
 * Performance
   * Were envelope / LFO changes to use f32 100% OK?
   * Sorting midi events might allocate memory (!)
-  * BPM is divided with 120.0 all the time, optimize
 * bench_process
   * try generating delta_frames with rng
   * try generating key velocity with rng

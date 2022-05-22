@@ -48,6 +48,15 @@ impl Default for BeatsPerMinute {
 }
 
 #[derive(Debug, Copy, Clone, PartialEq)]
+pub struct BpmLfoMultiplier(pub f64);
+
+impl From<BeatsPerMinute> for BpmLfoMultiplier {
+    fn from(bpm: BeatsPerMinute) -> Self {
+        Self(bpm.0 / 120.0)
+    }
+}
+
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub enum EnvelopeStage {
     Attack,
     Decay,
