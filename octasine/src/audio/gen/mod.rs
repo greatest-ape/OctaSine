@@ -243,6 +243,8 @@ mod gen {
                     }
                 }
 
+                voice.advance_velocity_interpolator_one_sample(audio_state.sample_rate);
+
                 for (operator_index, operator) in operators.iter_mut().enumerate() {
                     voice.operators[operator_index]
                         .volume_envelope
@@ -265,7 +267,7 @@ mod gen {
                 set_value_for_both_channels(
                     &mut voice_data.key_velocity,
                     sample_index,
-                    voice.key_velocity.0,
+                    voice.get_key_velocity().0 as f64,
                 );
 
                 let voice_base_frequency = voice.midi_pitch.get_frequency(master_frequency);

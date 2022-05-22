@@ -9,11 +9,15 @@ use crate::common::*;
 use envelopes::*;
 use lfos::*;
 
+use super::common::{InterpolationDuration, Interpolator};
+
+const VELOCITY_INTERPOLATION_DURATION: InterpolationDuration = InterpolationDuration::approx_1ms();
+
 #[derive(Debug, Copy, Clone)]
 pub struct VoiceDuration(pub f64);
 
 #[derive(Debug, Copy, Clone)]
-pub struct KeyVelocity(pub f64);
+pub struct KeyVelocity(pub f32);
 
 impl Default for KeyVelocity {
     fn default() -> Self {
@@ -23,7 +27,7 @@ impl Default for KeyVelocity {
 
 impl KeyVelocity {
     pub fn from_midi_velocity(midi_velocity: u8) -> Self {
-        Self(f64::from(midi_velocity) / 127.0)
+        Self(f32::from(midi_velocity) / 127.0)
     }
 }
 
@@ -70,7 +74,7 @@ pub struct Voice {
     pub active: bool,
     pub midi_pitch: MidiPitch,
     pub key_pressed: bool,
-    pub key_velocity: KeyVelocity,
+    key_velocity_interpolator: Interpolator,
     pub operators: [VoiceOperator; NUM_OPERATORS],
     pub lfos: [VoiceLfo; NUM_LFOS],
 }
@@ -83,15 +87,34 @@ impl Voice {
             active: false,
             midi_pitch,
             key_pressed: false,
-            key_velocity: KeyVelocity::default(),
+            key_velocity_interpolator: Interpolator::new(
+                KeyVelocity::default().0,
+                VELOCITY_INTERPOLATION_DURATION,
+            ),
             operators,
             lfos: array_init(|_| VoiceLfo::default()),
         }
     }
 
+    pub fn advance_velocity_interpolator_one_sample(&mut self, sample_rate: SampleRate) {
+        self.key_velocity_interpolator
+            .advance_one_sample(sample_rate, &mut |_| ())
+    }
+
+    pub fn get_key_velocity(&mut self) -> KeyVelocity {
+        KeyVelocity(self.key_velocity_interpolator.get_value())
+    }
+
     #[inline]
     pub fn press_key(&mut self, velocity: u8) {
-        self.key_velocity = KeyVelocity::from_midi_velocity(velocity);
+        let velocity = KeyVelocity::from_midi_velocity(velocity);
+
+        if self.active {
+            self.key_velocity_interpolator.set_value(velocity.0)
+        } else {
+            self.key_velocity_interpolator.force_set_value(velocity.0)
+        }
+
         self.key_pressed = true;
 
         for operator in self.operators.iter_mut() {

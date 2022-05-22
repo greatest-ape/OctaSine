@@ -121,6 +121,14 @@ impl Interpolator {
             self.restart_interpolation()
         }
     }
+
+    /// Immediately set value to target value
+    pub fn force_set_value(&mut self, target_value: f32) {
+        self.target_value = target_value * FACTOR;
+        self.current_value = target_value * FACTOR;
+        self.cached_value = target_value;
+        self.steps_remaining = 0;
+    }
 }
 
 #[cfg(test)]
