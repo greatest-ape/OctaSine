@@ -23,7 +23,8 @@ impl CalculateCurve for WaveType {
                 // its algorithm.
                 let seed = phase.0.to_bits() + 2;
 
-                (fastrand::Rng::with_seed(seed).f32() - 0.5) * 2.0
+                // Generate f64 because that exact value looks nice
+                ((fastrand::Rng::with_seed(seed).f64() - 0.5) * 2.0) as f32
             }
         }
     }
