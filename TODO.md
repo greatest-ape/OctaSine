@@ -8,7 +8,6 @@
   * try generating delta_frames with rng
   * try generating key velocity with rng
 * Audio
-  * Very fast envelope attacks trigger clicking on start and restart. Using f64 doesn't help
   * Should operator volume affect feedback?
   * Operator freq ratio values: are really both PI, sqrt(2) and sqrt(3) values
     necessary?

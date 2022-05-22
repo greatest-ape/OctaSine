@@ -1,7 +1,7 @@
 use super::ParameterValue;
 
 pub const ENVELOPE_MAX_DURATION: f64 = 4.0;
-pub const ENVELOPE_MIN_DURATION: f64 = 0.004;
+pub const ENVELOPE_MIN_DURATION: f64 = 0.01;
 
 /// After this duration, the envelope slope does not get mixed with linear
 /// slope at all
