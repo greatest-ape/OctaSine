@@ -1,3 +1,15 @@
+use crate::math::{exp2, log2};
+
+#[inline(always)]
+pub fn exp2_map_patch_to_audio(patch_value: f32, exp2_multiplier: f32) -> f32 {
+    exp2((patch_value - 0.5) * (2.0 * exp2_multiplier))
+}
+
+#[inline(always)]
+pub fn exp2_map_audio_to_patch(audio_value: f32, exp2_multiplier: f32) -> f32 {
+    log2(audio_value) / (exp2_multiplier * 2.0) + 0.5
+}
+
 pub fn map_parameter_value_to_step<T: Copy>(steps: &[T], value: f32) -> T {
     let value = value.max(0.0).min(1.0);
     let len = steps.len();
@@ -261,5 +273,36 @@ mod tests {
         assert_eq!(round_to_step(&steps, 1.5), 2.0);
         assert_eq!(round_to_step(&steps, 4.0), 4.0);
         assert_eq!(round_to_step(&steps, 100.0), 4.0);
+    }
+
+    #[test]
+    fn test_exp2_mapping() {
+        fn prop(patch_value: f32, exp2_multiplier: f32) -> TestResult {
+            if patch_value < 0.0 || patch_value > 1.0 || patch_value.is_nan() {
+                return TestResult::discard();
+            }
+
+            if exp2_multiplier.is_nan() || exp2_multiplier <= 0.0 || exp2_multiplier > 150.0 {
+                return TestResult::discard();
+            }
+
+            let audio_value = exp2_map_patch_to_audio(patch_value, exp2_multiplier);
+            let new_patch_value = exp2_map_audio_to_patch(audio_value, exp2_multiplier);
+
+            let diff = (patch_value - new_patch_value).abs();
+            let success = diff < 0.000_000_1;
+
+            if !success {
+                println!();
+                println!("exp2 multiplier: {}", exp2_multiplier);
+                println!("patch value: {}", patch_value);
+                println!("audio value: {}", audio_value);
+                println!("new patch value: {}", new_patch_value);
+            }
+
+            TestResult::from_bool(success)
+        }
+
+        quickcheck(prop as fn(f32, f32) -> TestResult);
     }
 }
