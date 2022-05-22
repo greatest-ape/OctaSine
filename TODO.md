@@ -4,19 +4,25 @@
 
 * Performance
   * Were envelope / LFO changes to use f32 100% OK?
-  * Sorting midi events might allocate memory (!)
 * bench_process
   * try generating delta_frames with rng
   * try generating key velocity with rng
 * Audio
+  * Need to interpolate when restarting envelope with different velocity
   * Should operator volume affect feedback?
   * Operator freq ratio values: are really both PI, sqrt(2) and sqrt(3) values
     necessary?
   * Envelope clicks when using DAW and looping notes without space between, but
-    only when modulating
+    only when modulating. Interpolate for attack_duration.min(0.03) or similar?
+  * Should modulation index now compensate for higher frequencies?
+  * Should there be phase additions when modulating? See
+    https://en.wikipedia.org/wiki/Frequency_modulation_synthesis#Spectral_analysis
+  * Use VST MIDI noteOffset to avoid restarting envelopes in some cases?
 * GUI
-  * In envelope editor, zoom by dragging background up/down
-  * Two envelope lock groups
+  * Envelopes
+    * Zoom by dragging background up/down
+    * Fit by double clicking?
+    * Two envelope lock groups
 * Other crates
   * create iced_audio 0.8.0 release, use it
   * ask for new baseview release, then create iced_baseview release, use them
@@ -24,7 +30,6 @@
 * Probably don't do / no longer relevant:
   * Use sleef for fract calculations etc?
   * Use fastmath for log table?
-  * Should modulation index now compensate for higher frequencies?
   * Parameter step mapping is expensive when combined with LFOs
     * For modulation index/feedback, maybe exp2 could be used. Same with frequency
       parameters.
