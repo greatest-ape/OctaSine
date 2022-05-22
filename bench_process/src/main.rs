@@ -12,63 +12,19 @@ use octasine::parameters::{OperatorParameter, Parameter, PARAMETERS};
 use octasine::OctaSine;
 
 /// Benchmark OctaSine process functions and check sample-accurate output
-///
-/// Example output:
-/// ```txt
-/// --- Benchmarking OctaSine process_f32 variant: fallback (std) ---
-/// Total number of samples:        1280000
-/// Equivalent to audio duration:   29.024942 seconds
-/// Processing time in total:       2364 milliseconds
-/// Processing time per sample:     1847.5138 nanoseconds
-/// Estimated CPU use:              8.144719%
-/// Output hash (first 8 bytes):    3a 05 72 a0 77 76 49 0a
-/// Hash match:                     yes
-///
-/// --- Benchmarking OctaSine process_f32 variant: fallback (sleef) ---
-/// Total number of samples:        1280000
-/// Equivalent to audio duration:   29.024942 seconds
-/// Processing time in total:       1639 milliseconds
-/// Processing time per sample:     1280.9581 nanoseconds
-/// Estimated CPU use:              5.6468673%
-/// Output hash (first 8 bytes):    3a 05 72 a0 77 76 49 0a
-/// Hash match:                     yes
-/// Speed compared to std fallback: 1.4422905x
-///
-/// --- Benchmarking OctaSine process_f32 variant: sse2 ---
-/// Total number of samples:        1280000
-/// Equivalent to audio duration:   29.024942 seconds
-/// Processing time in total:       1449 milliseconds
-/// Processing time per sample:     1132.5383 nanoseconds
-/// Estimated CPU use:              4.992258%
-/// Output hash (first 8 bytes):    3a 05 72 a0 77 76 49 0a
-/// Hash match:                     yes
-/// Speed compared to std fallback: 1.6313035x
-///
-/// --- Benchmarking OctaSine process_f32 variant: avx ---
-/// Total number of samples:        1280000
-/// Equivalent to audio duration:   29.024942 seconds
-/// Processing time in total:       985 milliseconds
-/// Processing time per sample:     770.06256 nanoseconds
-/// Estimated CPU use:              3.393633%
-/// Output hash (first 8 bytes):    3a 05 72 a0 77 76 49 0a
-/// Hash match:                     yes
-/// Speed compared to std fallback: 2.3991737x
-///
-/// All sleef output hashes matched
-/// ```
 fn main() {
     // Ignore success status here, since output differs across platforms
     // depending on std sine implementation
     #[allow(unused_variables)]
     let (_, fallback_std) = benchmark::<octasine::audio::gen::simd::FallbackStd>(
         "fallback (std)",
-        "ee 6b 66 df ff 51 59 5f ",
+        "2b a4 47 c8 5e 51 26 3a ",
     );
 
     #[cfg(feature = "simd")]
     {
         // Don't forget trailing space
-        let hash = "2c 7f b2 f1 3c 59 9f a6 ";
+        let hash = "2b a4 47 c8 5e 51 26 3a ";
 
         let mut all_sleef_hashes_match = true;
 
