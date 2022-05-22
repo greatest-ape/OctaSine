@@ -2,6 +2,7 @@
 
 ## High priority
 
+* Fix failing CI test
 * Performance
   * Were envelope / LFO changes to use f32 100% OK?
 * bench_process
@@ -9,6 +10,8 @@
   * try generating key velocity with rng
 * Audio
   * Should operator volume affect feedback?
+  * Envelope curve takeover is now 100ms. It could probably be shorter,
+    like 50ms
   * Should modulation index now compensate for higher frequencies?
   * Should there be phase additions when modulating? See
     https://en.wikipedia.org/wiki/Frequency_modulation_synthesis#Spectral_analysis
