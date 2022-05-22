@@ -9,7 +9,6 @@
   * try generating key velocity with rng
 * Audio
   * Very fast envelope attacks trigger clicking on start and restart. Using f64 doesn't help
-  * Key velocity interpolation doesn't seem to work very well
   * Should operator volume affect feedback?
   * Operator freq ratio values: are really both PI, sqrt(2) and sqrt(3) values
     necessary?

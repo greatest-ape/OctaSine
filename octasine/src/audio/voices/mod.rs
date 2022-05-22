@@ -11,7 +11,8 @@ use lfos::*;
 
 use super::common::{InterpolationDuration, Interpolator};
 
-const VELOCITY_INTERPOLATION_DURATION: InterpolationDuration = InterpolationDuration::approx_1ms();
+const VELOCITY_INTERPOLATION_DURATION: InterpolationDuration =
+    InterpolationDuration::exactly_10ms();
 
 #[derive(Debug, Copy, Clone)]
 pub struct VoiceDuration(pub f64);
