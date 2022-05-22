@@ -49,22 +49,22 @@ impl Default for AudioGenData {
 }
 
 #[derive(Debug, Default)]
-pub struct VoiceData {
+struct VoiceData {
     active: bool,
     key_velocity: [f64; MAX_PD_WIDTH],
-    operators: [OperatorVoiceData; 4],
+    operators: [VoiceOperatorData; 4],
 }
 
 #[derive(Debug, Default)]
-pub struct OperatorVoiceData {
-    volumes: [f64; MAX_PD_WIDTH],
-    mixes: [f64; MAX_PD_WIDTH],
-    modulation_indices: [f64; MAX_PD_WIDTH],
-    feedbacks: [f64; MAX_PD_WIDTH],
-    pannings: [f64; MAX_PD_WIDTH],
-    constant_power_pannings: [f64; MAX_PD_WIDTH],
-    envelope_volumes: [f64; MAX_PD_WIDTH],
-    phases: [f64; MAX_PD_WIDTH],
+struct VoiceOperatorData {
+    volume: [f64; MAX_PD_WIDTH],
+    mix_out: [f64; MAX_PD_WIDTH],
+    mod_out: [f64; MAX_PD_WIDTH],
+    feedback: [f64; MAX_PD_WIDTH],
+    panning: [f64; MAX_PD_WIDTH],
+    constant_power_panning: [f64; MAX_PD_WIDTH],
+    envelope_volume: [f64; MAX_PD_WIDTH],
+    phase: [f64; MAX_PD_WIDTH],
     wave_type: WaveType,
     modulation_targets: ModTargetStorage,
 }
@@ -253,7 +253,7 @@ mod gen {
                     // that we don't need to worry about setting it to zero.
                     if (S::SAMPLES == 2) & (sample_index == 0) {
                         for operator in voice_data.operators.iter_mut() {
-                            set_value_for_both_channels(&mut operator.envelope_volumes, 1, 0.0);
+                            set_value_for_both_channels(&mut operator.envelope_volume, 1, 0.0);
                         }
                     }
                 }
@@ -310,7 +310,7 @@ mod gen {
         operator_index: usize,
         operator_parameters: &mut OperatorAudioParameters,
         voice_operator: &mut crate::audio::voices::VoiceOperator,
-        operator_data: &mut OperatorVoiceData,
+        operator_data: &mut VoiceOperatorData,
         lfo_values: &LfoTargetValues,
         time_per_sample: TimePerSample,
         voice_base_frequency: f64,
@@ -342,7 +342,7 @@ mod gen {
             .get_volume(log10table, &operator_parameters.volume_envelope);
 
         set_value_for_both_channels(
-            &mut operator_data.envelope_volumes,
+            &mut operator_data.envelope_volume,
             sample_index,
             envelope_volume as f64,
         );
@@ -354,46 +354,42 @@ mod gen {
         let volume_active = operator_parameters.active.get_value();
 
         set_value_for_both_channels(
-            &mut operator_data.volumes,
+            &mut operator_data.volume,
             sample_index,
             (volume * volume_active) as f64,
         );
 
-        let mix = operator_parameters
+        let mix_out = operator_parameters
             .mix_out
             .get_value_with_lfo_addition(lfo_values.get(MIX_INDICES[operator_index]));
 
-        set_value_for_both_channels(&mut operator_data.mixes, sample_index, mix as f64);
+        set_value_for_both_channels(&mut operator_data.mix_out, sample_index, mix_out as f64);
 
-        let modulation_index = operator_parameters.mod_out.as_mut().map_or(0.0, |p| {
+        let mod_out = operator_parameters.mod_out.as_mut().map_or(0.0, |p| {
             p.get_value_with_lfo_addition(lfo_values.get(MOD_INDICES[operator_index]))
         });
 
-        set_value_for_both_channels(
-            &mut operator_data.modulation_indices,
-            sample_index,
-            modulation_index as f64,
-        );
+        set_value_for_both_channels(&mut operator_data.mod_out, sample_index, mod_out as f64);
 
         let feedback = operator_parameters
             .feedback
             .get_value_with_lfo_addition(lfo_values.get(FEEDBACK_INDICES[operator_index]));
 
-        set_value_for_both_channels(&mut operator_data.feedbacks, sample_index, feedback as f64);
+        set_value_for_both_channels(&mut operator_data.feedback, sample_index, feedback as f64);
 
         let panning = operator_parameters
             .panning
             .get_value_with_lfo_addition(lfo_values.get(PANNING_INDICES[operator_index]));
 
-        set_value_for_both_channels(&mut operator_data.pannings, sample_index, panning as f64);
+        set_value_for_both_channels(&mut operator_data.panning, sample_index, panning as f64);
 
         {
             let [l, r] = operator_parameters.panning.left_and_right;
 
             let sample_index_offset = sample_index * 2;
 
-            operator_data.constant_power_pannings[sample_index_offset] = l as f64;
-            operator_data.constant_power_pannings[sample_index_offset + 1] = r as f64;
+            operator_data.constant_power_panning[sample_index_offset] = l as f64;
+            operator_data.constant_power_panning[sample_index_offset + 1] = r as f64;
         }
 
         let frequency_ratio = operator_parameters
@@ -410,7 +406,7 @@ mod gen {
             voice_base_frequency * frequency_ratio.value * frequency_free * frequency_fine;
         let new_phase = voice_operator.last_phase.0 + frequency * time_per_sample.0;
 
-        set_value_for_both_channels(&mut operator_data.phases, sample_index, new_phase);
+        set_value_for_both_channels(&mut operator_data.phase, sample_index, new_phase);
 
         // Save phase
         voice_operator.last_phase.0 = new_phase;
@@ -493,7 +489,7 @@ mod gen {
     #[target_feature_enable]
     unsafe fn gen_voice_operator_audio(
         rng: &mut fastrand::Rng,
-        operator_data: &OperatorVoiceData,
+        operator_data: &VoiceOperatorData,
         modulation_inputs: <S as Simd>::PackedDouble,
         key_velocity: <S as Simd>::PackedDouble,
     ) -> (<S as Simd>::PackedDouble, <S as Simd>::PackedDouble) {
@@ -522,7 +518,7 @@ mod gen {
             // signals and mix in mono.
             // Note: breaks unless S::PD_WIDTH >= 2
             let modulation_in = {
-                let pan = S::pd_loadu(operator_data.pannings.as_ptr());
+                let pan = S::pd_loadu(operator_data.panning.as_ptr());
 
                 // Get panning as value between -1 and 1
                 let pan = S::pd_mul(S::pd_set1(2.0), S::pd_sub(pan, S::pd_set1(0.5)));
@@ -541,12 +537,12 @@ mod gen {
                 )
             };
 
-            let phase = S::pd_mul(S::pd_loadu(operator_data.phases.as_ptr()), S::pd_set1(TAU));
+            let phase = S::pd_mul(S::pd_loadu(operator_data.phase.as_ptr()), S::pd_set1(TAU));
 
             let feedback = S::pd_mul(
                 key_velocity,
                 S::pd_mul(
-                    S::pd_loadu(operator_data.feedbacks.as_ptr()),
+                    S::pd_loadu(operator_data.feedback.as_ptr()),
                     S::pd_fast_sin(phase),
                 ),
             );
@@ -555,18 +551,15 @@ mod gen {
         };
 
         let sample = S::pd_mul(sample, key_velocity);
-        let sample = S::pd_mul(sample, S::pd_loadu(operator_data.volumes.as_ptr()));
-        let sample = S::pd_mul(sample, S::pd_loadu(operator_data.envelope_volumes.as_ptr()));
+        let sample = S::pd_mul(sample, S::pd_loadu(operator_data.volume.as_ptr()));
+        let sample = S::pd_mul(sample, S::pd_loadu(operator_data.envelope_volume.as_ptr()));
         let sample = S::pd_mul(
             sample,
-            S::pd_loadu(operator_data.constant_power_pannings.as_ptr()),
+            S::pd_loadu(operator_data.constant_power_panning.as_ptr()),
         );
 
-        let mix_out = S::pd_mul(sample, S::pd_loadu(operator_data.mixes.as_ptr()));
-        let mod_out = S::pd_mul(
-            sample,
-            S::pd_loadu(operator_data.modulation_indices.as_ptr()),
-        );
+        let mix_out = S::pd_mul(sample, S::pd_loadu(operator_data.mix_out.as_ptr()));
+        let mod_out = S::pd_mul(sample, S::pd_loadu(operator_data.mod_out.as_ptr()));
 
         (mix_out, mod_out)
     }
@@ -579,13 +572,9 @@ mod gen {
         let mut operator_mix_out_active = [false; 4];
 
         for operator_index in 0..4 {
-            let volume = S::pd_loadu(voice_data.operators[operator_index].volumes.as_ptr());
-            let mix_out = S::pd_loadu(voice_data.operators[operator_index].mixes.as_ptr());
-            let mod_out = S::pd_loadu(
-                voice_data.operators[operator_index]
-                    .modulation_indices
-                    .as_ptr(),
-            );
+            let volume = S::pd_loadu(voice_data.operators[operator_index].volume.as_ptr());
+            let mix_out = S::pd_loadu(voice_data.operators[operator_index].mix_out.as_ptr());
+            let mod_out = S::pd_loadu(voice_data.operators[operator_index].mod_out.as_ptr());
 
             let volume_active = S::pd_any_over_zero(volume);
             let mix_out_active = S::pd_any_over_zero(mix_out);
