@@ -4,7 +4,6 @@
 
 * Performance
   * Were envelope / LFO changes to use f32 100% OK?
-    * LFO frequency parameters stop having an effect at combined maximum
   * Parameter step mapping is expensive when combined with LFOs
     * For modulation index/feedback, maybe exp2 could be used. Same with frequency
       parameters.
@@ -17,7 +16,6 @@
   * Use sleef for fract calculations etc?
   * Use fastmath for log table?
   * Are LFO frequency parameters too slow to react?
-    when moving draggers quickly
   * Should modulation index now compensate for higher frequencies?
   * Operator freq ratio values: are really both PI, sqrt(2) and sqrt(3) values
     necessary?
