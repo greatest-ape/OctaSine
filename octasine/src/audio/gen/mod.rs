@@ -12,7 +12,7 @@ use crate::audio::voices::log10_table::Log10Table;
 use crate::audio::AudioState;
 use crate::common::*;
 use crate::parameters::operator_wave_type::WaveType;
-use crate::parameters::{MasterParameter, ModTargetStorage, OperatorParameter, Parameter};
+use crate::parameters::{ModTargetStorage, OperatorParameter};
 
 use lfo::*;
 use simd::*;
@@ -209,29 +209,14 @@ mod gen {
             let operators = &mut audio_state.parameters.operators;
             let lfo_values = &mut audio_state.audio_gen_data.lfo_target_values;
 
-            let master_volume = {
-                const I: u8 = Parameter::Master(MasterParameter::Volume).to_index();
-
-                audio_state
-                    .parameters
-                    .master_volume
-                    .get_value_with_lfo_addition(lfo_values.get(I))
-            };
+            let master_frequency = audio_state.parameters.master_frequency.get_value();
+            let master_volume = audio_state.parameters.master_volume.get_value();
 
             set_value_for_both_channels(
                 &mut audio_state.audio_gen_data.master_volume,
                 sample_index,
                 master_volume as f64,
             );
-
-            let master_frequency = {
-                const I: u8 = Parameter::Master(MasterParameter::Frequency).to_index();
-
-                audio_state
-                    .parameters
-                    .master_frequency
-                    .get_value_with_lfo_addition(lfo_values.get(I))
-            };
 
             for (voice, voice_data) in audio_state
                 .voices

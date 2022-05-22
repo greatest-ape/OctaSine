@@ -1,11 +1,9 @@
 use super::utils::*;
-use super::{LfoParameter, MasterParameter, OperatorParameter, Parameter, ParameterValue};
+use super::{LfoParameter, OperatorParameter, Parameter, ParameterValue};
 
 // When adjusting this, remember to also modify get_lfo_target_parameters
 pub const LFO_TARGETS: &[LfoTargetParameter] = &[
     LfoTargetParameter::new(Parameter::None),
-    LfoTargetParameter::new(Parameter::Master(MasterParameter::Volume)),
-    LfoTargetParameter::new(Parameter::Master(MasterParameter::Frequency)),
     LfoTargetParameter::new(Parameter::Operator(0, OperatorParameter::Volume)),
     LfoTargetParameter::new(Parameter::Operator(0, OperatorParameter::Panning)),
     LfoTargetParameter::new(Parameter::Operator(0, OperatorParameter::MixOut)),
@@ -53,9 +51,9 @@ pub const LFO_TARGETS: &[LfoTargetParameter] = &[
 
 pub fn get_lfo_target_parameters(lfo_index: usize) -> &'static [LfoTargetParameter] {
     let end = match lfo_index {
-        0 => 34,
-        1 => 38,
-        2 => 42,
+        0 => 32,
+        1 => 36,
+        2 => 40,
         3 => LFO_TARGETS.len(),
         _ => unreachable!(),
     };
