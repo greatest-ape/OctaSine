@@ -9,14 +9,9 @@
   * try generating key velocity with rng
 * Audio
   * Should operator volume affect feedback?
-  * Operator freq ratio values: are really both PI, sqrt(2) and sqrt(3) values
-    necessary?
-  * Envelope clicks when using DAW and looping notes without space between, but
-    only when modulating. Interpolate for attack_duration.min(0.03) or similar?
   * Should modulation index now compensate for higher frequencies?
   * Should there be phase additions when modulating? See
     https://en.wikipedia.org/wiki/Frequency_modulation_synthesis#Spectral_analysis
-  * Use VST MIDI noteOffset to avoid restarting envelopes in some cases?
 * GUI
   * Envelopes
     * Zoom by dragging background up/down
@@ -27,8 +22,15 @@
   * ask for new baseview release, then create iced_baseview release, use them
 * Add semver-compatible version info in patch/patch bank exports?
 * Probably don't do / no longer relevant:
+  * Envelope clicks when using DAW and looping notes without space between? Or
+    just normal attack? But only when modulating. Interpolate for
+    attack_duration.min(0.03) or similar? Or use VST MIDI noteOffset or similar
+    to avoid restarting envelopes in some cases?
   * Use sleef for fract calculations etc?
   * Use fastmath for log table?
+  * Operator freq ratio values: are really both PI, sqrt(2) and sqrt(3) values
+    necessary? Yeah, why not, people might use three different inharmonic ones
+    I suppose?
   * Parameter step mapping is expensive when combined with LFOs
     * For modulation index/feedback, maybe exp2 could be used. Same with frequency
       parameters.
