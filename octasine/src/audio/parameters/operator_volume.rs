@@ -1,9 +1,9 @@
-use crate::audio::common::InterpolationDuration;
+use crate::audio::common::{InterpolationDuration, Interpolator};
 use crate::common::SampleRate;
 use crate::math::exp2_fast;
 use crate::parameters::{OperatorVolumeValue, ParameterValue};
 
-use super::common::{AudioParameter, Interpolator};
+use super::common::AudioParameter;
 
 #[derive(Debug, Clone)]
 pub struct OperatorVolumeAudioParameter(Interpolator);

@@ -1,10 +1,10 @@
 use std::marker::PhantomData;
 
-use crate::audio::common::InterpolationDuration;
+use crate::audio::common::{InterpolationDuration, Interpolator};
 use crate::common::SampleRate;
 use crate::parameters::ParameterValue;
 
-use super::common::{AudioParameter, Interpolator};
+use super::common::AudioParameter;
 
 #[derive(Debug, Clone)]
 pub struct OperatorEnvelopeVolumeAudioParameter<V: ParameterValue> {
