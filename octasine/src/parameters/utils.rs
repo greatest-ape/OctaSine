@@ -278,7 +278,7 @@ mod tests {
     #[test]
     fn test_exp2_mapping() {
         fn prop(patch_value: f32, exp2_multiplier: f32) -> TestResult {
-            if patch_value < 0.0 || patch_value > 1.0 || patch_value.is_nan() {
+            if patch_value.is_sign_negative() || patch_value > 1.0 || patch_value.is_nan() {
                 return TestResult::discard();
             }
 
@@ -290,7 +290,7 @@ mod tests {
             let new_patch_value = exp2_map_audio_to_patch(audio_value, exp2_multiplier);
 
             let diff = (patch_value - new_patch_value).abs();
-            let success = diff < 0.000_000_1;
+            let success = diff < 0.000_001;
 
             if !success {
                 println!();

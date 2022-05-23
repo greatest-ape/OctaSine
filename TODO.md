@@ -2,7 +2,6 @@
 
 ## High priority
 
-* Fix failing CI test
 * Performance
   * Were envelope / LFO changes to use f32 100% OK?
 * bench_process
