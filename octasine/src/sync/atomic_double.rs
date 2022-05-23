@@ -1,37 +1,21 @@
-use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::atomic::{AtomicU32, Ordering};
 
-/// Binary `AND` with this to set changed bit to false.
-const SET_NOT_CHANGED_MASK: u64 = !(1 << 63);
-
-/// Atomic double that uses sign bit to store if it has been changed or not.
-/// Changed bit is currently not used.
 #[derive(Debug)]
-pub struct AtomicPositiveDouble {
-    value: AtomicU64,
-}
+pub struct AtomicFloat(AtomicU32);
 
-impl AtomicPositiveDouble {
-    pub fn new(value: f64) -> Self {
-        Self {
-            value: AtomicU64::new(value.to_bits()),
-        }
+impl AtomicFloat {
+    pub fn new(value: f32) -> Self {
+        Self(AtomicU32::new(value.to_bits()))
     }
 
     #[inline]
-    pub fn get(&self) -> f64 {
-        Self::convert_to_f64(self.value.load(Ordering::Relaxed))
+    pub fn get(&self) -> f32 {
+        f32::from_bits(self.0.load(Ordering::Relaxed))
     }
 
     #[inline]
-    fn convert_to_f64(value: u64) -> f64 {
-        f64::from_bits((value & SET_NOT_CHANGED_MASK) as u64)
-    }
-
-    #[inline]
-    pub fn set(&self, value: f64) {
-        let value = value.to_bits() | (1 << 63);
-
-        self.value.store(value, Ordering::Relaxed);
+    pub fn set(&self, value: f32) {
+        self.0.store(value.to_bits(), Ordering::Relaxed);
     }
 }
 
@@ -44,12 +28,12 @@ mod tests {
     fn test_atomic_double() {
         let a = 13.5;
 
-        let atomic_double = AtomicPositiveDouble::new(a);
+        let atomic_double = AtomicFloat::new(a);
 
         assert_eq!(atomic_double.get(), a);
 
         for i in 0..100 {
-            let b = 23896.3487 - i as f64;
+            let b = 23896.3487 - i as f32;
 
             atomic_double.set(b);
 

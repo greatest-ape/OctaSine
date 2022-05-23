@@ -60,7 +60,7 @@ where
 {
     OctaSineKnob::new_with_default_sync_value(
         sync_handle,
-        Parameter::Operator(operator_index, OperatorParameter::Volume),
+        Parameter::Operator(operator_index as u8, OperatorParameter::Volume),
         "VOL",
         TickMarkType::MinMaxAndDefault,
         OperatorVolumeValue::default().to_patch(),
@@ -79,7 +79,7 @@ where
 {
     OctaSineKnob::new_with_default_sync_value(
         sync_handle,
-        Parameter::Operator(operator_index, OperatorParameter::MixOut),
+        Parameter::Operator(operator_index as u8, OperatorParameter::MixOut),
         "MIX OUT",
         TickMarkType::MinMaxAndDefault,
         OperatorMixOutValue::new(operator_index).to_patch(),
@@ -98,7 +98,7 @@ where
 {
     OctaSineKnob::new(
         sync_handle,
-        Parameter::Operator(operator_index, OperatorParameter::Panning),
+        Parameter::Operator(operator_index as u8, OperatorParameter::Panning),
         "PAN",
         TickMarkType::MinMaxAndDefault,
         style,
@@ -116,7 +116,7 @@ where
 {
     OctaSineKnob::new(
         sync_handle,
-        Parameter::Operator(operator_index, OperatorParameter::ModOut),
+        Parameter::Operator(operator_index as u8, OperatorParameter::ModOut),
         "MOD OUT",
         TickMarkType::MinMaxAndDefault,
         style,
@@ -134,7 +134,7 @@ where
 {
     OctaSineKnob::new(
         sync_handle,
-        Parameter::Operator(operator_index, OperatorParameter::Feedback),
+        Parameter::Operator(operator_index as u8, OperatorParameter::Feedback),
         "FEEDBACK",
         TickMarkType::MinMaxAndDefault,
         style,
@@ -152,7 +152,7 @@ where
 {
     OctaSineKnob::new(
         sync_handle,
-        Parameter::Operator(operator_index, OperatorParameter::FrequencyRatio),
+        Parameter::Operator(operator_index as u8, OperatorParameter::FrequencyRatio),
         "RATIO",
         TickMarkType::MinMaxAndDefault,
         style,
@@ -170,7 +170,7 @@ where
 {
     OctaSineKnob::new(
         sync_handle,
-        Parameter::Operator(operator_index, OperatorParameter::FrequencyFree),
+        Parameter::Operator(operator_index as u8, OperatorParameter::FrequencyFree),
         "FREE",
         TickMarkType::MinMaxAndDefault,
         style,
@@ -188,7 +188,7 @@ where
 {
     OctaSineKnob::new(
         sync_handle,
-        Parameter::Operator(operator_index, OperatorParameter::FrequencyFine),
+        Parameter::Operator(operator_index as u8, OperatorParameter::FrequencyFine),
         "FINE",
         TickMarkType::MinMaxAndDefault,
         style,
@@ -206,7 +206,7 @@ where
 {
     OctaSineKnob::new(
         sync_handle,
-        Parameter::Lfo(lfo_index, LfoParameter::FrequencyRatio),
+        Parameter::Lfo(lfo_index as u8, LfoParameter::FrequencyRatio),
         "RATIO",
         TickMarkType::MinMaxAndDefault,
         style,
@@ -224,7 +224,7 @@ where
 {
     OctaSineKnob::new(
         sync_handle,
-        Parameter::Lfo(lfo_index, LfoParameter::FrequencyFree),
+        Parameter::Lfo(lfo_index as u8, LfoParameter::FrequencyFree),
         "FREE",
         TickMarkType::MinMaxAndDefault,
         style,
@@ -242,7 +242,7 @@ where
 {
     OctaSineKnob::new(
         sync_handle,
-        Parameter::Lfo(lfo_index, LfoParameter::Amount),
+        Parameter::Lfo(lfo_index as u8, LfoParameter::Amount),
         "AMOUNT",
         TickMarkType::MinMaxAndDefault,
         style,
@@ -258,7 +258,7 @@ pub struct OctaSineKnob<P: ParameterValue> {
     tick_marks: Option<tick_marks::Group>,
     title: String,
     value_text: String,
-    default_patch_value: f64,
+    default_patch_value: f32,
     parameter: Parameter,
     phantom_data: ::std::marker::PhantomData<P>,
     style_extractor: fn(Theme) -> Box<dyn iced_audio::knob::StyleSheet>,
@@ -292,7 +292,7 @@ where
         parameter: Parameter,
         title: &str,
         tick_mark_type: TickMarkType,
-        default_patch_value: f64,
+        default_patch_value: f32,
         style: Theme,
         style_extractor: fn(Theme) -> Box<dyn iced_audio::knob::StyleSheet>,
     ) -> Self {
@@ -301,7 +301,7 @@ where
 
         let knob_state = knob::State::new(NormalParam {
             value: Normal::new(sync_value as f32),
-            default: Normal::new(default_patch_value as f32),
+            default: Normal::new(default_patch_value),
         });
 
         let tick_marks = match tick_mark_type {
@@ -324,7 +324,7 @@ where
         }
     }
 
-    pub fn set_value(&mut self, value: f64) {
+    pub fn set_value(&mut self, value: f32) {
         if !self.knob_state.is_dragging() {
             self.knob_state.set_normal(Normal::new(value as f32));
         }
@@ -349,7 +349,7 @@ where
 
         let mut knob = knob::Knob::new(
             &mut self.knob_state,
-            move |value| Message::ChangeSingleParameterSetValue(parameter, value.as_f32() as f64),
+            move |value| Message::ChangeSingleParameterSetValue(parameter, value.as_f32()),
             move || Some(Message::ChangeSingleParameterBegin(parameter)),
             move || Some(Message::ChangeSingleParameterEnd(parameter)),
         )
@@ -380,7 +380,7 @@ where
     }
 }
 
-fn tick_marks_from_min_max_and_value(patch_value: f64) -> tick_marks::Group {
+fn tick_marks_from_min_max_and_value(patch_value: f32) -> tick_marks::Group {
     let marks = vec![
         (Normal::new(0.0), tick_marks::Tier::One),
         (Normal::new(patch_value as f32), tick_marks::Tier::Two),

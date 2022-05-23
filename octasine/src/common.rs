@@ -1,12 +1,12 @@
 pub const NUM_OPERATORS: usize = 4;
 pub const NUM_LFOS: usize = 4;
 
-pub const OPERATOR_MOD_INDEX_STEPS: [f64; 16] = [
+pub const OPERATOR_MOD_INDEX_STEPS: [f32; 16] = [
     0.0, 0.01, 0.1, 0.2, 0.5, 1.0, 2.0, 3.0, 5.0, 10.0, 20.0, 35.0, 50.0, 75.0, 100.0, 1000.0,
 ];
 
 pub trait CalculateCurve: PartialEq + Copy {
-    fn calculate(self, phase: Phase) -> f64;
+    fn calculate(self, phase: Phase) -> f32;
     fn steps() -> &'static [Self];
 }
 
@@ -48,11 +48,19 @@ impl Default for BeatsPerMinute {
 }
 
 #[derive(Debug, Copy, Clone, PartialEq)]
+pub struct BpmLfoMultiplier(pub f64);
+
+impl From<BeatsPerMinute> for BpmLfoMultiplier {
+    fn from(bpm: BeatsPerMinute) -> Self {
+        Self(bpm.0 / 120.0)
+    }
+}
+
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub enum EnvelopeStage {
     Attack,
     Decay,
     Sustain,
     Release,
     Ended,
-    Restart,
 }

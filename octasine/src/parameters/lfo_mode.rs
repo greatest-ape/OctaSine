@@ -27,10 +27,10 @@ impl ParameterValue for LfoModeValue {
     fn get(self) -> Self::Value {
         self.0
     }
-    fn new_from_patch(value: f64) -> Self {
+    fn new_from_patch(value: f32) -> Self {
         Self(map_parameter_value_to_step(&LFO_MODE_STEPS[..], value))
     }
-    fn to_patch(self) -> f64 {
+    fn to_patch(self) -> f32 {
         map_step_to_parameter_value(&LFO_MODE_STEPS[..], self.0)
     }
     fn get_formatted(self) -> String {

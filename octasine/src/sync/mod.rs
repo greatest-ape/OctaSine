@@ -76,8 +76,7 @@ impl vst::plugin::PluginParameters for SyncState {
 
     /// Set the value of parameter at `index`. `value` is between 0.0 and 1.0.
     fn set_parameter(&self, index: i32, value: f32) {
-        self.patches
-            .set_parameter_from_host(index as usize, value as f64);
+        self.patches.set_parameter_from_host(index as usize, value);
     }
 
     /// Use String as input for parameter value. Used by host to provide an editable field to
@@ -153,12 +152,12 @@ cfg_if::cfg_if! {
         pub trait GuiSyncHandle: Clone + Send + Sync + 'static {
             fn begin_edit(&self, parameter: Parameter);
             fn end_edit(&self, parameter: Parameter);
-            fn set_parameter(&self, parameter: Parameter, value: f64);
-            fn get_parameter(&self, parameter: Parameter) -> f64;
-            fn format_parameter_value(&self, parameter: Parameter, value: f64) -> String;
+            fn set_parameter(&self, parameter: Parameter, value: f32);
+            fn get_parameter(&self, parameter: Parameter) -> f32;
+            fn format_parameter_value(&self, parameter: Parameter, value: f32) -> String;
             fn get_patches(&self) -> (usize, Vec<String>);
             fn set_patch_index(&self, index: usize);
-            fn get_changed_parameters(&self) -> Option<[Option<f64>; MAX_NUM_PARAMETERS]>;
+            fn get_changed_parameters(&self) -> Option<[Option<f32>; MAX_NUM_PARAMETERS]>;
             fn have_patches_changed(&self) -> bool;
             fn get_gui_settings(&self) -> crate::gui::GuiSettings;
         }
@@ -174,8 +173,8 @@ cfg_if::cfg_if! {
                     host.end_edit(parameter.to_index() as i32);
                 }
             }
-            fn set_parameter(&self, parameter: Parameter, value: f64){
-                let index = parameter.to_index();
+            fn set_parameter(&self, parameter: Parameter, value: f32){
+                let index = parameter.to_index() as usize;
 
                 if let Some(host) = self.host {
                     // Host will occasionally set the value again, but that's
@@ -185,11 +184,11 @@ cfg_if::cfg_if! {
 
                 self.patches.set_parameter_from_gui(index, value);
             }
-            fn get_parameter(&self, parameter: Parameter) -> f64 {
-                self.patches.get_parameter_value(parameter.to_index()).unwrap() // FIXME: unwrap
+            fn get_parameter(&self, parameter: Parameter) -> f32 {
+                self.patches.get_parameter_value(parameter.to_index() as usize).unwrap() // FIXME: unwrap
             }
-            fn format_parameter_value(&self, parameter: Parameter, value: f64) -> String {
-                self.patches.format_parameter_value(parameter.to_index(), value).unwrap() // FIXME: unwrap
+            fn format_parameter_value(&self, parameter: Parameter, value: f32) -> String {
+                self.patches.format_parameter_value(parameter.to_index() as usize, value).unwrap() // FIXME: unwrap
             }
             fn get_patches(&self) -> (usize, Vec<String>){
                 let index = self.patches.get_patch_index();
@@ -204,7 +203,7 @@ cfg_if::cfg_if! {
                     host.update_display();
                 }
             }
-            fn get_changed_parameters(&self) -> Option<[Option<f64>; MAX_NUM_PARAMETERS]> {
+            fn get_changed_parameters(&self) -> Option<[Option<f32>; MAX_NUM_PARAMETERS]> {
                 self.patches.get_changed_parameters_from_gui()
             }
             fn have_patches_changed(&self) -> bool {

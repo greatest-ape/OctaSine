@@ -35,7 +35,7 @@ pub struct LfoWidgets {
 
 impl LfoWidgets {
     pub fn new<H: GuiSyncHandle>(sync_handle: &H, lfo_index: usize, style: Theme) -> Self {
-        let lfo_wave_type_parameter = Parameter::Lfo(lfo_index, LfoParameter::Shape);
+        let lfo_wave_type_parameter = Parameter::Lfo(lfo_index as u8, LfoParameter::Shape);
 
         Self {
             index: lfo_index,

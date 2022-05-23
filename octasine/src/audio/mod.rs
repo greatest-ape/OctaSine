@@ -8,7 +8,6 @@ use std::collections::VecDeque;
 use array_init::array_init;
 use fastrand::Rng;
 
-use gen::VoiceData;
 use vst::event::MidiEvent;
 
 use crate::{common::*, parameters::Parameter};
@@ -16,18 +15,19 @@ use crate::{common::*, parameters::Parameter};
 use parameters::*;
 use voices::*;
 
-use self::voices::log10_table::Log10Table;
+use self::{gen::AudioGenData, voices::log10_table::Log10Table};
 
 pub struct AudioState {
     sample_rate: SampleRate,
     time_per_sample: TimePerSample,
     bpm: BeatsPerMinute,
+    bpm_lfo_multiplier: BpmLfoMultiplier,
     parameters: AudioParameters,
     rng: Rng,
     log10table: Log10Table,
     voices: [Voice; 128],
     pending_midi_events: VecDeque<MidiEvent>,
-    audio_gen_voice_data: [VoiceData; 128],
+    audio_gen_data: AudioGenData,
 }
 
 impl Default for AudioState {
@@ -36,19 +36,20 @@ impl Default for AudioState {
             sample_rate: SampleRate::default(),
             time_per_sample: SampleRate::default().into(),
             bpm: Default::default(),
+            bpm_lfo_multiplier: BeatsPerMinute::default().into(),
             parameters: AudioParameters::default(),
             rng: Rng::new(),
             log10table: Default::default(),
             voices: array_init(|i| Voice::new(MidiPitch::new(i as u8))),
             // Start with some capacity to cut down on later allocations
             pending_midi_events: VecDeque::with_capacity(128),
-            audio_gen_voice_data: array_init::array_init(|_| VoiceData::default()),
+            audio_gen_data: Default::default(),
         }
     }
 }
 
 impl AudioState {
-    pub fn set_parameter_from_patch(&mut self, parameter: Parameter, value: f64) {
+    pub fn set_parameter_from_patch(&mut self, parameter: Parameter, value: f32) {
         self.parameters.set_parameter_from_patch(parameter, value);
     }
 
@@ -59,6 +60,7 @@ impl AudioState {
 
     pub fn set_bpm(&mut self, bpm: BeatsPerMinute) {
         self.bpm = bpm;
+        self.bpm_lfo_multiplier = bpm.into();
     }
 
     pub fn enqueue_midi_events<I: Iterator<Item = MidiEvent>>(&mut self, events: I) {
@@ -113,7 +115,7 @@ impl AudioState {
     }
 
     #[cfg(test)]
-    pub fn compare_parameter_patch_value(&mut self, parameter: Parameter, value: f64) -> bool {
+    pub fn compare_parameter_patch_value(&mut self, parameter: Parameter, value: f32) -> bool {
         self.parameters
             .compare_patch_value(parameter, value)
             .unwrap()

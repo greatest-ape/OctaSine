@@ -1,8 +1,8 @@
-use crate::audio::common::InterpolationDuration;
+use crate::audio::common::{InterpolationDuration, Interpolator};
 use crate::common::SampleRate;
 use crate::parameters::{LfoActiveValue, ParameterValue};
 
-use super::common::{AudioParameter, Interpolator};
+use super::common::AudioParameter;
 
 #[derive(Debug, Clone)]
 pub struct LfoActiveAudioParameter(Interpolator);
@@ -25,13 +25,13 @@ impl AudioParameter for LfoActiveAudioParameter {
     fn get_value(&self) -> <Self::ParameterValue as ParameterValue>::Value {
         self.0.get_value()
     }
-    fn set_from_patch(&mut self, value: f64) {
+    fn set_from_patch(&mut self, value: f32) {
         self.0
             .set_value(Self::ParameterValue::new_from_patch(value).get())
     }
     fn get_value_with_lfo_addition(
         &mut self,
-        _lfo_addition: Option<f64>,
+        _lfo_addition: Option<f32>,
     ) -> <Self::ParameterValue as ParameterValue>::Value {
         self.get_value()
     }

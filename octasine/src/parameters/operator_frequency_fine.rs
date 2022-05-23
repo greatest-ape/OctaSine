@@ -1,7 +1,7 @@
 use super::utils::*;
 use super::ParameterValue;
 
-const OPERATOR_FINE_STEPS: [f64; 17] = [
+const OPERATOR_FINE_STEPS: [f32; 17] = [
     0.8, 0.85, 0.9, 0.95, 0.97, 0.98, 0.99, 0.995, 1.0, 1.005, 1.01, 1.02, 1.03, 1.05, 1.1, 1.15,
     1.2,
 ];
@@ -24,14 +24,11 @@ impl ParameterValue for OperatorFrequencyFineValue {
     fn get(self) -> Self::Value {
         self.0
     }
-    fn new_from_patch(value: f64) -> Self {
-        Self(map_parameter_value_to_value_with_steps(
-            &OPERATOR_FINE_STEPS,
-            value,
-        ))
+    fn new_from_patch(value: f32) -> Self {
+        Self(map_parameter_value_to_value_with_steps(&OPERATOR_FINE_STEPS, value) as f64)
     }
-    fn to_patch(self) -> f64 {
-        map_value_to_parameter_value_with_steps(&OPERATOR_FINE_STEPS, self.0)
+    fn to_patch(self) -> f32 {
+        map_value_to_parameter_value_with_steps(&OPERATOR_FINE_STEPS, self.0 as f32)
     }
     fn get_formatted(self) -> String {
         format!("{:.04}", self.0)

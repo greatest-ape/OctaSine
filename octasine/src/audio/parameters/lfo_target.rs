@@ -24,7 +24,7 @@ impl LfoTargetAudioParameter {
         }
     }
 
-    pub fn set_from_patch(&mut self, value: f64) {
+    pub fn set_from_patch(&mut self, value: f32) {
         match self {
             Self::One(p) => p.set_from_patch(value),
             Self::Two(p) => p.set_from_patch(value),
@@ -33,7 +33,7 @@ impl LfoTargetAudioParameter {
         }
     }
 
-    pub fn get_value(&self) -> Parameter {
+    pub fn get_value(&self) -> LfoTargetParameter {
         match self {
             Self::One(p) => p.get_value(),
             Self::Two(p) => p.get_value(),
@@ -53,12 +53,12 @@ impl LfoTargetAudioParameter {
 }
 
 impl AudioParameterPatchInteraction for LfoTargetAudioParameter {
-    fn set_patch_value(&mut self, value: f64) {
+    fn set_patch_value(&mut self, value: f32) {
         self.set_from_patch(value)
     }
 
     #[cfg(test)]
-    fn compare_patch_value(&mut self, value: f64) -> bool {
+    fn compare_patch_value(&mut self, value: f32) -> bool {
         let a = match self {
             Self::One(_) => Lfo1TargetParameterValue::new_from_patch(value).to_patch(),
             Self::Two(_) => Lfo2TargetParameterValue::new_from_patch(value).to_patch(),

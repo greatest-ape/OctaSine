@@ -2,32 +2,42 @@
 
 ## High priority
 
+* Performance
+  * Were envelope / LFO changes to use f32 100% OK?
 * bench_process
   * try generating delta_frames with rng
+  * try generating key velocity with rng
 * Audio
-  * Profile, particularily LFOs
-  * Are LFO frequency parameters too slow to react?
-  * Should envelope values be interpolated? Now there are crackles
-    when moving draggers quickly
-  * voice velocity should affect modulation (not only mix)
+  * Should operator volume affect feedback?
+  * Envelope curve takeover is now 100ms. It could probably be shorter,
+    like 50ms
   * Should modulation index now compensate for higher frequencies?
-  * Operator freq ratio values: are really both sqrt(2) and sqrt(3) values
-    necessary?
-  * LFO clicks when using DAW and looping notes without space between
-  * Operator and master volume parameter values directly in decibel so they
-    can be used with external LFOs?
+  * Should there be phase additions when modulating? See
+    https://en.wikipedia.org/wiki/Frequency_modulation_synthesis#Spectral_analysis
 * GUI
-  * In envelope editor, zoom by dragging background up/down
-  * Two envelope lock groups
-  * Nicer display of operator freq ratio sqrt values
-  * In operator freq ratio values, display number too? E.g. 2pi: 6.28
-  * Operator ratio patch value should be fine-tuned (incremented just a little
-    bit) so that knob notch is at right angle
-  * Add small marks to operator ratio knobs indicating factors of 2?
+  * Envelopes
+    * Zoom by dragging background up/down
+    * Fit by double clicking?
+    * Two envelope lock groups
 * Other crates
   * create iced_audio 0.8.0 release, use it
   * ask for new baseview release, then create iced_baseview release, use them
 * Add semver-compatible version info in patch/patch bank exports?
+* Probably don't do / no longer relevant:
+  * Envelope clicks when using DAW and looping notes without space between? Or
+    just normal attack? But only when modulating. Interpolate for
+    attack_duration.min(0.03) or similar? Or use VST MIDI noteOffset or similar
+    to avoid restarting envelopes in some cases?
+  * Use sleef for fract calculations etc?
+  * Use fastmath for log table?
+  * Operator freq ratio values: are really both PI, sqrt(2) and sqrt(3) values
+    necessary? Yeah, why not, people might use three different inharmonic ones
+    I suppose?
+  * Parameter step mapping is expensive when combined with LFOs
+    * For modulation index/feedback, maybe exp2 could be used. Same with frequency
+      parameters.
+  * GUI: in operator freq ratio values, display number too? E.g. 2pi: 6.28
+  * Add small marks to operator ratio knobs indicating factors of 2?
 * Release v0.7.0 eventually
 
 ## Medium priority

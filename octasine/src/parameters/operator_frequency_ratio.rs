@@ -9,7 +9,7 @@ use super::ParameterValue;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Ratio {
-    pub name: ArrayString<16>,
+    pub name: ArrayString<20>,
     pub value: f64,
 }
 
@@ -57,31 +57,51 @@ static OPERATOR_RATIO_STEPS: Lazy<Vec<Ratio>> = Lazy::new(|| {
     // Add DX ratios
 
     for i in 0..16 {
-        let factor = if i == 0 { 0.5 } else { f64::from(i) };
-
-        if i != 5 && i != 15 {
-            let value = factor * 2.0f64.sqrt();
-            ratios.push(Ratio::new(value, format!("{:.04}", value)));
+        match i {
+            5 | 15 => {}
+            0 => {
+                let value = 0.5 * 2.0f64.sqrt();
+                ratios.push(Ratio::new(value, format!("sqrt(2)/2")));
+            }
+            1 => {
+                let value = 2.0f64.sqrt();
+                ratios.push(Ratio::new(value, format!("sqrt(2)")));
+            }
+            i => {
+                let value = i as f64 * 2.0f64.sqrt();
+                ratios.push(Ratio::new(value, format!("{} sqrt(2)", i)));
+            }
         }
-
-        let value = factor * 3.0f64.sqrt();
-        ratios.push(Ratio::new(value, format!("{:.04}", value)));
+    }
+    for i in 0..16 {
+        match i {
+            0 => {
+                let value = 0.5 * 3.0f64.sqrt();
+                ratios.push(Ratio::new(value, format!("sqrt(3)/2")));
+            }
+            1 => {
+                let value = 3.0f64.sqrt();
+                ratios.push(Ratio::new(value, format!("sqrt(3)")));
+            }
+            i => {
+                let value = i as f64 * 3.0f64.sqrt();
+                ratios.push(Ratio::new(value, format!("{} sqrt(3)", i)));
+            }
+        }
     }
 
     for i in 1..8 {
-        let factor = f64::from(i);
-
         let name = if i == 1 {
             String::from("π")
         } else {
-            format!("{}π", factor)
+            format!("{}π", i)
         };
 
-        ratios.push(Ratio::new(factor * PI, name));
+        ratios.push(Ratio::new(i as f64 * PI, name));
     }
 
     for i in [1, 2, 6, 9, 10, 14, 18, 22, 26, 27, 30] {
-        let factor = f64::from(i) / 4.0;
+        let factor = i as f64 / 4.0;
 
         ratios.push(Ratio::new(factor * PI, format!("{}π", factor)));
     }
@@ -114,13 +134,13 @@ impl ParameterValue for OperatorFrequencyRatioValue {
     fn get(self) -> Self::Value {
         self.0
     }
-    fn new_from_patch(value: f64) -> Self {
+    fn new_from_patch(value: f32) -> Self {
         Self(map_parameter_value_to_step(
             &OPERATOR_RATIO_STEPS[..],
             value,
         ))
     }
-    fn to_patch(self) -> f64 {
+    fn to_patch(self) -> f32 {
         map_step_to_parameter_value(&OPERATOR_RATIO_STEPS[..], self.0)
     }
     fn get_formatted(self) -> String {

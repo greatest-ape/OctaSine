@@ -47,7 +47,7 @@ impl ParameterChangeInfo {
     pub fn get_changed_parameters(
         &self,
         parameters: &[PatchParameter],
-    ) -> Option<[Option<f64>; MAX_NUM_PARAMETERS]> {
+    ) -> Option<[Option<f32>; MAX_NUM_PARAMETERS]> {
         let mut no_changes = true;
         let mut changed = [0u64; NUM_ATOMIC_U64S];
 
@@ -166,7 +166,7 @@ mod tests {
 
     #[test]
     fn test_changed_parameters_quickcheck() {
-        fn prop(data: Vec<(usize, f64)>) -> TestResult {
+        fn prop(data: Vec<(usize, f32)>) -> TestResult {
             let patch_parameters = PatchParameter::all();
 
             for (i, v) in data.iter() {
@@ -178,7 +178,7 @@ mod tests {
             fn f(
                 c: &ParameterChangeInfo,
                 preset_parameters: &Vec<PatchParameter>,
-                data: &[(usize, f64)],
+                data: &[(usize, f32)],
             ) -> bool {
                 let mut set_parameters = HashMap::new();
 
@@ -195,7 +195,7 @@ mod tests {
                 }
 
                 if let Some(changed_parameters) = c.get_changed_parameters(preset_parameters) {
-                    let results: HashMap<usize, f64> = changed_parameters
+                    let results: HashMap<usize, f32> = changed_parameters
                         .iter()
                         .enumerate()
                         .filter_map(|(index, opt_value)| {
@@ -237,6 +237,6 @@ mod tests {
             TestResult::from_bool(!changes_exist)
         }
 
-        quickcheck(prop as fn(Vec<(usize, f64)>) -> TestResult);
+        quickcheck(prop as fn(Vec<(usize, f32)>) -> TestResult);
     }
 }

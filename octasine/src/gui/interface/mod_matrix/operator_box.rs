@@ -16,7 +16,7 @@ pub enum OperatorBoxChange {
 pub enum BoxStatus {
     Normal,
     Hover,
-    Dragging { from: Point, original_value: f64 },
+    Dragging { from: Point, original_value: f32 },
 }
 
 impl BoxStatus {
@@ -90,14 +90,14 @@ impl OperatorBox {
     }
 
     fn get_parameter(&self) -> Parameter {
-        Parameter::Operator(self.index, OperatorParameter::MixOut)
+        Parameter::Operator(self.index as u8, OperatorParameter::MixOut)
     }
 
     pub fn update(
         &mut self,
         bounds: Rectangle,
         event: event::Event,
-        value: f64,
+        value: f32,
     ) -> OperatorBoxChange {
         match event {
             event::Event::Mouse(mouse::Event::CursorMoved {
@@ -124,7 +124,7 @@ impl OperatorBox {
                         from,
                         original_value,
                     } => {
-                        let change = -(cursor.y - from.y) as f64 / 100.0;
+                        let change = -(cursor.y - from.y) / 100.0;
 
                         return OperatorBoxChange::Update(Message::ChangeSingleParameterSetValue(
                             self.get_parameter(),

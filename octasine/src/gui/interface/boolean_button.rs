@@ -34,7 +34,7 @@ pub fn operator_mute_button<H: GuiSyncHandle>(
 ) -> BooleanButton {
     BooleanButton::new(
         sync_handle,
-        Parameter::Operator(operator_index, OperatorParameter::Active),
+        Parameter::Operator(operator_index as u8, OperatorParameter::Active),
         style,
         "M",
         LINE_HEIGHT,
@@ -58,7 +58,7 @@ pub fn lfo_bpm_sync_button<H: GuiSyncHandle>(
 ) -> BooleanButton {
     BooleanButton::new(
         sync_handle,
-        Parameter::Lfo(lfo_index, LfoParameter::BpmSync),
+        Parameter::Lfo(lfo_index as u8, LfoParameter::BpmSync),
         style,
         "B",
         LINE_HEIGHT,
@@ -76,7 +76,7 @@ pub fn lfo_mode_button<H: GuiSyncHandle>(
 ) -> BooleanButton {
     BooleanButton::new(
         sync_handle,
-        Parameter::Lfo(lfo_index, LfoParameter::Mode),
+        Parameter::Lfo(lfo_index as u8, LfoParameter::Mode),
         style,
         "1",
         LINE_HEIGHT,
@@ -100,7 +100,7 @@ pub fn lfo_active_button<H: GuiSyncHandle>(
 ) -> BooleanButton {
     BooleanButton::new(
         sync_handle,
-        Parameter::Lfo(lfo_index, LfoParameter::Active),
+        Parameter::Lfo(lfo_index as u8, LfoParameter::Active),
         style,
         "M",
         LINE_HEIGHT,
@@ -125,8 +125,8 @@ pub struct BooleanButton {
     bounds_path: Path,
     cursor_within_bounds: bool,
     click_started: bool,
-    patch_value_to_is_on: fn(f64) -> bool,
-    is_on_to_patch_value: fn(bool) -> f64,
+    patch_value_to_is_on: fn(f32) -> bool,
+    is_on_to_patch_value: fn(bool) -> f32,
     get_stylesheet: fn(Theme) -> Box<dyn StyleSheet>,
     text: &'static str,
     width: u16,
@@ -141,8 +141,8 @@ impl BooleanButton {
         text: &'static str,
         width: u16,
         height: u16,
-        f: fn(f64) -> bool,
-        g: fn(bool) -> f64,
+        f: fn(f32) -> bool,
+        g: fn(bool) -> f32,
         h: fn(Theme) -> Box<dyn StyleSheet>,
     ) -> Self {
         let bounds_path = Path::rectangle(
@@ -167,7 +167,7 @@ impl BooleanButton {
         }
     }
 
-    pub fn set_value(&mut self, value: f64) {
+    pub fn set_value(&mut self, value: f32) {
         self.on = (self.patch_value_to_is_on)(value);
 
         self.cache.clear();

@@ -1,5 +1,6 @@
 pub mod audio;
 pub mod common;
+mod math;
 pub mod parameters;
 pub mod settings;
 pub mod sync;
@@ -89,7 +90,7 @@ impl Plugin for OctaSine {
     fn get_info(&self) -> Info {
         Info {
             name: PLUGIN_NAME.to_string(),
-            vendor: "Joakim Frostegård".to_string(),
+            vendor: "Joakim Frostegard".to_string(),
             version: crate_version_to_vst_format(crate_version!()),
             unique_id: PLUGIN_UNIQUE_ID,
             category: Category::Synth,
@@ -250,7 +251,7 @@ mod tests {
         let mut patch_values = Vec::new();
 
         for i in 0..PARAMETERS.len() {
-            let patch_value = fastrand::f64();
+            let patch_value = fastrand::f32();
 
             octasine
                 .sync
@@ -269,7 +270,7 @@ mod tests {
         }
 
         for (i, parameter) in PARAMETERS.iter().copied().enumerate() {
-            assert_eq!(i, parameter.to_index());
+            assert_eq!(i, parameter.to_index() as usize);
 
             let values_approx_eq = octasine
                 .audio

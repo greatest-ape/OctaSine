@@ -1,8 +1,7 @@
-use arrayvec::ArrayVec;
-
 use crate::common::SampleRate;
 use crate::parameters::{
-    Operator2ModulationTargetValue, Operator3ModulationTargetValue, Operator4ModulationTargetValue,
+    ModTargetStorage, Operator2ModulationTargetValue, Operator3ModulationTargetValue,
+    Operator4ModulationTargetValue,
 };
 
 use super::common::{AudioParameter, SimpleAudioParameter};
@@ -30,16 +29,12 @@ impl OperatorModulationTargetAudioParameter {
         }
     }
 
-    pub fn get_active_indices(&self) -> ArrayVec<usize, 3> {
-        let mut indices = ArrayVec::default();
-
+    pub fn get_value(&self) -> ModTargetStorage {
         match self {
-            Self::Two(p) => indices.extend(p.get_value().active_indices()),
-            Self::Three(p) => indices.extend(p.get_value().active_indices()),
-            Self::Four(p) => indices.extend(p.get_value().active_indices()),
+            Self::Two(p) => p.get_value(),
+            Self::Three(p) => p.get_value(),
+            Self::Four(p) => p.get_value(),
         }
-
-        indices
     }
 
     pub fn advance_one_sample(&mut self, sample_rate: SampleRate) {
@@ -52,7 +47,7 @@ impl OperatorModulationTargetAudioParameter {
 }
 
 impl AudioParameterPatchInteraction for OperatorModulationTargetAudioParameter {
-    fn set_patch_value(&mut self, value: f64) {
+    fn set_patch_value(&mut self, value: f32) {
         match self {
             Self::Two(p) => p.set_from_patch(value),
             Self::Three(p) => p.set_from_patch(value),
@@ -61,7 +56,7 @@ impl AudioParameterPatchInteraction for OperatorModulationTargetAudioParameter {
     }
 
     #[cfg(test)]
-    fn compare_patch_value(&mut self, value: f64) -> bool {
+    fn compare_patch_value(&mut self, value: f32) -> bool {
         use crate::parameters::ParameterValue;
 
         let a = match self {

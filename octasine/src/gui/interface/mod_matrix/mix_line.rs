@@ -14,7 +14,7 @@ pub struct MixOutLine {
 }
 
 impl MixOutLine {
-    pub fn new(from: Point, to_y: f32, additive: f64, style_sheet: Box<dyn StyleSheet>) -> Self {
+    pub fn new(from: Point, to_y: f32, additive: f32, style_sheet: Box<dyn StyleSheet>) -> Self {
         let mut to = from;
 
         to.y = to_y;
@@ -32,11 +32,11 @@ impl MixOutLine {
         line
     }
 
-    pub fn update(&mut self, additive: f64, style_sheet: Box<dyn StyleSheet>) {
+    pub fn update(&mut self, additive: f32, style_sheet: Box<dyn StyleSheet>) {
         self.calculated_color = self.calculate_color(additive, style_sheet);
     }
 
-    fn calculate_color(&self, additive: f64, style_sheet: Box<dyn StyleSheet>) -> Color {
+    fn calculate_color(&self, additive: f32, style_sheet: Box<dyn StyleSheet>) -> Color {
         let bg = style_sheet.active().background_color;
         let c = style_sheet.active().line_max_color;
 

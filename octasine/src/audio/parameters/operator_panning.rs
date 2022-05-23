@@ -1,23 +1,24 @@
-use std::f64::consts::FRAC_PI_2;
+use std::f32::consts::FRAC_PI_2;
 
-use crate::audio::common::InterpolationDuration;
+use crate::audio::common::{InterpolationDuration, Interpolator};
 use crate::common::SampleRate;
+use crate::math::{cos, sin};
 use crate::parameters::{OperatorPanningValue, ParameterValue};
 
-use super::common::{AudioParameter, Interpolator};
+use super::common::AudioParameter;
 
 #[derive(Debug, Clone)]
 pub struct OperatorPanningAudioParameter {
     value: Interpolator,
-    pub left_and_right: [f64; 2],
+    pub left_and_right: [f32; 2],
     pub lfo_active: bool,
 }
 
 impl OperatorPanningAudioParameter {
-    pub fn calculate_left_and_right(panning: f64) -> [f64; 2] {
+    pub fn calculate_left_and_right(panning: f32) -> [f32; 2] {
         let pan_phase = panning * FRAC_PI_2;
 
-        [pan_phase.cos(), pan_phase.sin()]
+        [cos(pan_phase), sin(pan_phase)]
     }
 }
 
@@ -43,19 +44,19 @@ impl AudioParameter for OperatorPanningAudioParameter {
     fn get_value(&self) -> <Self::ParameterValue as ParameterValue>::Value {
         self.value.get_value()
     }
-    fn set_from_patch(&mut self, value: f64) {
+    fn set_from_patch(&mut self, value: f32) {
         self.value
             .set_value(Self::ParameterValue::new_from_patch(value).get())
     }
     fn get_value_with_lfo_addition(
         &mut self,
-        lfo_addition: Option<f64>,
+        lfo_addition: Option<f32>,
     ) -> <Self::ParameterValue as ParameterValue>::Value {
         if let Some(lfo_addition) = lfo_addition {
             let patch_value = Self::ParameterValue::new_from_audio(self.get_value()).to_patch();
 
             let new_panning = Self::ParameterValue::new_from_patch(
-                (patch_value + lfo_addition).min(1.0).max(0.0),
+                (patch_value + lfo_addition as f32).min(1.0).max(0.0),
             )
             .get();
 

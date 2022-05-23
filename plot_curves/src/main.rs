@@ -3,7 +3,7 @@ use plotlib::repr::Plot;
 use plotlib::style::{LineStyle, PointMarker, PointStyle};
 use plotlib::view::ContinuousView;
 
-use octasine::audio::parameters::OperatorEnvelopeAudioParameter;
+use octasine::audio::parameters::OperatorEnvelopeAudioParameters;
 use octasine::audio::voices::envelopes::VoiceOperatorVolumeEnvelope;
 use octasine::audio::voices::lfos::*;
 use octasine::audio::voices::log10_table::Log10Table;
@@ -19,11 +19,11 @@ fn plot_envelope_stage(length: f64, start_volume: f64, end_volume: f64, filename
         |x| {
             VoiceOperatorVolumeEnvelope::calculate_curve(
                 &log10table,
-                start_volume,
-                end_volume,
+                start_volume as f32,
+                end_volume as f32,
                 x as f64,
                 length,
-            )
+            ) as f64
         },
         0.,
         length,
@@ -54,7 +54,7 @@ fn plot_lfo_values(filename: &str) {
 
     let sample_rate = SampleRate(44100.0);
     let time_per_sample = sample_rate.into();
-    let bpm = BeatsPerMinute(120.0);
+    let bpm_lfo_multiplier = BeatsPerMinute(120.0).into();
     let shape = LfoShape::Saw;
     let mode = LfoMode::Forever;
     let speed = 2.0;
@@ -63,7 +63,7 @@ fn plot_lfo_values(filename: &str) {
     let log10table = Log10Table::default();
     let mut lfo = VoiceLfo::default();
     let mut envelope = VoiceOperatorVolumeEnvelope::default();
-    let mut processing_parameter_envelope = OperatorEnvelopeAudioParameter::default();
+    let mut processing_parameter_envelope = OperatorEnvelopeAudioParameters::default();
     let mut key_pressed = false;
 
     let mut lfo_value_points = Vec::with_capacity(num_samples);
@@ -73,11 +73,18 @@ fn plot_lfo_values(filename: &str) {
     let mut envelope_value_points = Vec::with_capacity(num_samples);
 
     for i in 0..num_samples {
-        lfo.advance_one_sample(sample_rate, time_per_sample, bpm, shape, mode, speed);
+        lfo.advance_one_sample(
+            sample_rate,
+            time_per_sample,
+            bpm_lfo_multiplier,
+            shape,
+            mode,
+            speed,
+        );
 
         let lfo_value = lfo.get_value(magnitude);
 
-        lfo_value_points.push((i as f64, lfo_value));
+        lfo_value_points.push((i as f64, lfo_value as f64));
 
         envelope.advance_one_sample(
             &mut processing_parameter_envelope,
@@ -87,7 +94,7 @@ fn plot_lfo_values(filename: &str) {
 
         let envelope_value = envelope.get_volume(&log10table, &mut processing_parameter_envelope);
 
-        envelope_value_points.push((i as f64, envelope_value));
+        envelope_value_points.push((i as f64, envelope_value as f64));
 
         if i % 44100 == 0 {
             seconds_points.push((i as f64, 0.0));

@@ -6,6 +6,7 @@ pub mod lfo_frequency_ratio;
 pub mod lfo_mode;
 pub mod lfo_shape;
 pub mod lfo_target;
+pub mod list;
 pub mod master_frequency;
 pub mod master_volume;
 pub mod operator_active;
@@ -30,6 +31,7 @@ pub use lfo_frequency_ratio::LfoFrequencyRatioValue;
 pub use lfo_mode::LfoModeValue;
 pub use lfo_shape::LfoShapeValue;
 pub use lfo_target::*;
+pub use list::*;
 pub use master_frequency::MasterFrequencyValue;
 pub use master_volume::MasterVolumeValue;
 pub use operator_active::OperatorActiveValue;
@@ -45,105 +47,7 @@ pub use operator_panning::OperatorPanningValue;
 pub use operator_volume::OperatorVolumeValue;
 pub use operator_wave_type::OperatorWaveTypeValue;
 
-/// Authoritative list of parameters in order
-pub const PARAMETERS: &[Parameter] = &[
-    Parameter::Master(MasterParameter::Volume),
-    Parameter::Master(MasterParameter::Frequency),
-    Parameter::Operator(0, OperatorParameter::Volume),
-    Parameter::Operator(0, OperatorParameter::Active),
-    Parameter::Operator(0, OperatorParameter::MixOut),
-    Parameter::Operator(0, OperatorParameter::Panning),
-    Parameter::Operator(0, OperatorParameter::WaveType),
-    Parameter::Operator(0, OperatorParameter::Feedback),
-    Parameter::Operator(0, OperatorParameter::FrequencyRatio),
-    Parameter::Operator(0, OperatorParameter::FrequencyFree),
-    Parameter::Operator(0, OperatorParameter::FrequencyFine),
-    Parameter::Operator(0, OperatorParameter::AttackDuration),
-    Parameter::Operator(0, OperatorParameter::AttackValue),
-    Parameter::Operator(0, OperatorParameter::DecayDuration),
-    Parameter::Operator(0, OperatorParameter::DecayValue),
-    Parameter::Operator(0, OperatorParameter::ReleaseDuration),
-    Parameter::Operator(1, OperatorParameter::Volume),
-    Parameter::Operator(1, OperatorParameter::Active),
-    Parameter::Operator(1, OperatorParameter::MixOut),
-    Parameter::Operator(1, OperatorParameter::Panning),
-    Parameter::Operator(1, OperatorParameter::WaveType),
-    Parameter::Operator(1, OperatorParameter::ModTargets),
-    Parameter::Operator(1, OperatorParameter::ModOut),
-    Parameter::Operator(1, OperatorParameter::Feedback),
-    Parameter::Operator(1, OperatorParameter::FrequencyRatio),
-    Parameter::Operator(1, OperatorParameter::FrequencyFree),
-    Parameter::Operator(1, OperatorParameter::FrequencyFine),
-    Parameter::Operator(1, OperatorParameter::AttackDuration),
-    Parameter::Operator(1, OperatorParameter::AttackValue),
-    Parameter::Operator(1, OperatorParameter::DecayDuration),
-    Parameter::Operator(1, OperatorParameter::DecayValue),
-    Parameter::Operator(1, OperatorParameter::ReleaseDuration),
-    Parameter::Operator(2, OperatorParameter::Volume),
-    Parameter::Operator(2, OperatorParameter::Active),
-    Parameter::Operator(2, OperatorParameter::MixOut),
-    Parameter::Operator(2, OperatorParameter::Panning),
-    Parameter::Operator(2, OperatorParameter::WaveType),
-    Parameter::Operator(2, OperatorParameter::ModTargets),
-    Parameter::Operator(2, OperatorParameter::ModOut),
-    Parameter::Operator(2, OperatorParameter::Feedback),
-    Parameter::Operator(2, OperatorParameter::FrequencyRatio),
-    Parameter::Operator(2, OperatorParameter::FrequencyFree),
-    Parameter::Operator(2, OperatorParameter::FrequencyFine),
-    Parameter::Operator(2, OperatorParameter::AttackDuration),
-    Parameter::Operator(2, OperatorParameter::AttackValue),
-    Parameter::Operator(2, OperatorParameter::DecayDuration),
-    Parameter::Operator(2, OperatorParameter::DecayValue),
-    Parameter::Operator(2, OperatorParameter::ReleaseDuration),
-    Parameter::Operator(3, OperatorParameter::Volume),
-    Parameter::Operator(3, OperatorParameter::Active),
-    Parameter::Operator(3, OperatorParameter::MixOut),
-    Parameter::Operator(3, OperatorParameter::Panning),
-    Parameter::Operator(3, OperatorParameter::WaveType),
-    Parameter::Operator(3, OperatorParameter::ModTargets),
-    Parameter::Operator(3, OperatorParameter::ModOut),
-    Parameter::Operator(3, OperatorParameter::Feedback),
-    Parameter::Operator(3, OperatorParameter::FrequencyRatio),
-    Parameter::Operator(3, OperatorParameter::FrequencyFree),
-    Parameter::Operator(3, OperatorParameter::FrequencyFine),
-    Parameter::Operator(3, OperatorParameter::AttackDuration),
-    Parameter::Operator(3, OperatorParameter::AttackValue),
-    Parameter::Operator(3, OperatorParameter::DecayDuration),
-    Parameter::Operator(3, OperatorParameter::DecayValue),
-    Parameter::Operator(3, OperatorParameter::ReleaseDuration),
-    Parameter::Lfo(0, LfoParameter::Target),
-    Parameter::Lfo(0, LfoParameter::BpmSync),
-    Parameter::Lfo(0, LfoParameter::FrequencyRatio),
-    Parameter::Lfo(0, LfoParameter::FrequencyFree),
-    Parameter::Lfo(0, LfoParameter::Mode),
-    Parameter::Lfo(0, LfoParameter::Shape),
-    Parameter::Lfo(0, LfoParameter::Amount),
-    Parameter::Lfo(0, LfoParameter::Active),
-    Parameter::Lfo(1, LfoParameter::Target),
-    Parameter::Lfo(1, LfoParameter::BpmSync),
-    Parameter::Lfo(1, LfoParameter::FrequencyRatio),
-    Parameter::Lfo(1, LfoParameter::FrequencyFree),
-    Parameter::Lfo(1, LfoParameter::Mode),
-    Parameter::Lfo(1, LfoParameter::Shape),
-    Parameter::Lfo(1, LfoParameter::Amount),
-    Parameter::Lfo(1, LfoParameter::Active),
-    Parameter::Lfo(2, LfoParameter::Target),
-    Parameter::Lfo(2, LfoParameter::BpmSync),
-    Parameter::Lfo(2, LfoParameter::FrequencyRatio),
-    Parameter::Lfo(2, LfoParameter::FrequencyFree),
-    Parameter::Lfo(2, LfoParameter::Mode),
-    Parameter::Lfo(2, LfoParameter::Shape),
-    Parameter::Lfo(2, LfoParameter::Amount),
-    Parameter::Lfo(2, LfoParameter::Active),
-    Parameter::Lfo(3, LfoParameter::Target),
-    Parameter::Lfo(3, LfoParameter::BpmSync),
-    Parameter::Lfo(3, LfoParameter::FrequencyRatio),
-    Parameter::Lfo(3, LfoParameter::FrequencyFree),
-    Parameter::Lfo(3, LfoParameter::Mode),
-    Parameter::Lfo(3, LfoParameter::Shape),
-    Parameter::Lfo(3, LfoParameter::Amount),
-    Parameter::Lfo(3, LfoParameter::Active),
-];
+use crate::common::{NUM_LFOS, NUM_OPERATORS};
 
 /// Storage of audio parameter values with utilities for conversions
 /// to and from patch values.
@@ -155,23 +59,15 @@ pub trait ParameterValue: Sized + Default + Copy {
     fn new_from_text(_text: String) -> Option<Self> {
         None
     }
-    fn new_from_patch(value: f64) -> Self;
+    fn new_from_patch(value: f32) -> Self;
 
     /// Get inner (audio gen) value
     fn get(self) -> Self::Value;
     fn get_formatted(self) -> String;
-    fn to_patch(self) -> f64;
+    fn to_patch(self) -> f32;
 }
 
-/// Parameter enum used to abstract over parameter indices
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-pub enum Parameter {
-    /// Only used in LFO targetting
-    None,
-    Master(MasterParameter),
-    Operator(usize, OperatorParameter),
-    Lfo(usize, LfoParameter),
-}
+include!(concat!(env!("OUT_DIR"), "/codegen.rs"));
 
 impl Parameter {
     pub fn name(&self) -> String {
@@ -214,51 +110,44 @@ impl Parameter {
         PARAMETERS.get(index).copied()
     }
 
-    pub fn to_index(&self) -> usize {
-        for (index, p) in PARAMETERS.iter().enumerate() {
-            if p == self {
-                return index;
-            }
-        }
-
-        panic!("Used parameter not in list")
+    pub const fn to_index(self) -> u8 {
+        parameter_to_index(self)
     }
 }
 
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-pub enum MasterParameter {
-    Volume,
-    Frequency,
+impl OperatorParameter {
+    pub const fn init_index_array(self) -> [u8; NUM_OPERATORS] {
+        let mut arr = [0; NUM_OPERATORS];
+
+        let mut i = 0;
+
+        while i < arr.len() {
+            if let (0, Self::ModOut) = (i, self) {
+                // There is no mod out parameter for operator 1
+                arr[i] = 0;
+            } else {
+                arr[i] = Parameter::Operator(i as u8, self).to_index();
+            }
+
+            i += 1;
+        }
+
+        arr
+    }
 }
 
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-pub enum OperatorParameter {
-    Volume,
-    Active,
-    MixOut,
-    Panning,
-    WaveType,
-    ModTargets,
-    ModOut,
-    Feedback,
-    FrequencyRatio,
-    FrequencyFree,
-    FrequencyFine,
-    AttackDuration,
-    AttackValue,
-    DecayDuration,
-    DecayValue,
-    ReleaseDuration,
-}
+impl LfoParameter {
+    pub const fn init_index_array(self) -> [u8; NUM_LFOS] {
+        let mut arr = [0; NUM_LFOS];
 
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-pub enum LfoParameter {
-    Target,
-    BpmSync,
-    FrequencyRatio,
-    FrequencyFree,
-    Mode,
-    Shape,
-    Amount,
-    Active,
+        let mut i = 0;
+
+        while i < arr.len() {
+            arr[i] = Parameter::Lfo(i as u8, self).to_index();
+
+            i += 1;
+        }
+
+        arr
+    }
 }

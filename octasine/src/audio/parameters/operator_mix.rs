@@ -1,8 +1,8 @@
-use crate::audio::common::InterpolationDuration;
+use crate::audio::common::{InterpolationDuration, Interpolator};
 use crate::common::SampleRate;
 use crate::parameters::{OperatorMixOutValue, ParameterValue};
 
-use super::common::{AudioParameter, Interpolator};
+use super::common::AudioParameter;
 
 #[derive(Debug, Clone)]
 pub struct OperatorMixAudioParameter(Interpolator);
@@ -25,13 +25,13 @@ impl AudioParameter for OperatorMixAudioParameter {
     fn get_value(&self) -> <Self::ParameterValue as ParameterValue>::Value {
         self.0.get_value()
     }
-    fn set_from_patch(&mut self, value: f64) {
+    fn set_from_patch(&mut self, value: f32) {
         self.0
             .set_value(Self::ParameterValue::new_from_patch(value).get())
     }
     fn get_value_with_lfo_addition(
         &mut self,
-        lfo_addition: Option<f64>,
+        lfo_addition: Option<f32>,
     ) -> <Self::ParameterValue as ParameterValue>::Value {
         if let Some(lfo_addition) = lfo_addition {
             let patch_value = Self::ParameterValue::new_from_audio(self.get_value()).to_patch();

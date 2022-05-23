@@ -14,7 +14,7 @@ impl Default for WaveType {
     }
 }
 impl CalculateCurve for WaveType {
-    fn calculate(self, phase: Phase) -> f64 {
+    fn calculate(self, phase: Phase) -> f32 {
         match self {
             Self::Sine => crate::parameters::lfo_shape::sine(phase),
             Self::WhiteNoise => {
@@ -23,7 +23,8 @@ impl CalculateCurve for WaveType {
                 // its algorithm.
                 let seed = phase.0.to_bits() + 2;
 
-                (fastrand::Rng::with_seed(seed).f64() - 0.5) * 2.0
+                // Generate f64 because that exact value looks nice
+                ((fastrand::Rng::with_seed(seed).f64() - 0.5) * 2.0) as f32
             }
         }
     }
@@ -44,14 +45,14 @@ impl ParameterValue for OperatorWaveTypeValue {
     fn get(self) -> Self::Value {
         self.0
     }
-    fn new_from_patch(value: f64) -> Self {
+    fn new_from_patch(value: f32) -> Self {
         if value <= 0.5 {
             Self(WaveType::Sine)
         } else {
             Self(WaveType::WhiteNoise)
         }
     }
-    fn to_patch(self) -> f64 {
+    fn to_patch(self) -> f32 {
         match self.0 {
             WaveType::Sine => 0.0,
             WaveType::WhiteNoise => 1.0,

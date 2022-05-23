@@ -3,9 +3,8 @@ mod lfo_active;
 mod lfo_amount;
 mod lfo_frequency_free;
 mod lfo_target;
-mod master_frequency;
-mod master_volume;
 mod operator_active;
+mod operator_envelope_volume;
 mod operator_frequency_fine;
 mod operator_frequency_free;
 mod operator_mix;
@@ -23,8 +22,7 @@ use self::lfo_active::LfoActiveAudioParameter;
 use self::lfo_amount::LfoAmountAudioParameter;
 use self::lfo_frequency_free::LfoFrequencyFreeAudioParameter;
 use self::lfo_target::LfoTargetAudioParameter;
-use self::master_frequency::MasterFrequencyAudioParameter;
-use self::master_volume::MasterVolumeAudioParameter;
+use self::operator_envelope_volume::OperatorEnvelopeVolumeAudioParameter;
 use self::operator_frequency_fine::OperatorFrequencyFineAudioParameter;
 use self::operator_frequency_free::OperatorFrequencyFreeAudioParameter;
 use self::operator_mix::OperatorMixAudioParameter;
@@ -33,29 +31,29 @@ use self::operator_panning::OperatorPanningAudioParameter;
 use self::operator_volume::OperatorVolumeAudioParameter;
 
 trait AudioParameterPatchInteraction {
-    fn set_patch_value(&mut self, value: f64);
+    fn set_patch_value(&mut self, value: f32);
     #[cfg(test)]
-    fn compare_patch_value(&mut self, value: f64) -> bool;
+    fn compare_patch_value(&mut self, value: f32) -> bool;
 }
 
 impl<P: AudioParameter> AudioParameterPatchInteraction for P {
-    fn set_patch_value(&mut self, value: f64) {
+    fn set_patch_value(&mut self, value: f32) {
         self.set_from_patch(value)
     }
     #[cfg(test)]
-    fn compare_patch_value(&mut self, value: f64) -> bool {
+    fn compare_patch_value(&mut self, value: f32) -> bool {
         let a = P::ParameterValue::new_from_patch(value).to_patch();
         let b = self.get_parameter_value().to_patch();
 
-        (a - b).abs() <= 1.0 / 1_000_000.0
+        (a - b).abs() <= 1.0 / 100_000.0
     }
 }
 
 pub struct AudioParameters {
-    pub master_volume: MasterVolumeAudioParameter,
-    pub master_frequency: MasterFrequencyAudioParameter,
-    pub operators: [AudioParameterOperator; NUM_OPERATORS],
-    pub lfos: [AudioParameterLfo; NUM_LFOS],
+    pub master_volume: InterpolatableAudioParameter<MasterVolumeValue>,
+    pub master_frequency: SimpleAudioParameter<MasterFrequencyValue>,
+    pub operators: [OperatorAudioParameters; NUM_OPERATORS],
+    pub lfos: [LfoAudioParameters; NUM_LFOS],
 }
 
 impl Default for AudioParameters {
@@ -63,8 +61,8 @@ impl Default for AudioParameters {
         Self {
             master_volume: Default::default(),
             master_frequency: Default::default(),
-            operators: array_init(AudioParameterOperator::new),
-            lfos: array_init(AudioParameterLfo::new),
+            operators: array_init(OperatorAudioParameters::new),
+            lfos: array_init(LfoAudioParameters::new),
         }
     }
 }
@@ -81,7 +79,7 @@ macro_rules! impl_patch_interaction {
                 Parameter::Operator(index, p) => {
                     use OperatorParameter::*;
 
-                    let operator = &mut self.operators[index];
+                    let operator = &mut self.operators[index as usize];
 
                     match p {
                         Volume => $f(&mut operator.volume, input),
@@ -117,7 +115,7 @@ macro_rules! impl_patch_interaction {
                     }
                 }
                 Parameter::Lfo(index, p) => {
-                    let lfo = &mut self.lfos[index];
+                    let lfo = &mut self.lfos[index as usize];
 
                     match p {
                         LfoParameter::Target => $f(&mut lfo.target, input),
@@ -138,7 +136,7 @@ macro_rules! impl_patch_interaction {
 impl AudioParameters {
     impl_patch_interaction!(
         set_parameter_from_patch,
-        f64,
+        f32,
         (),
         |p: &mut dyn AudioParameterPatchInteraction, v| Some(p.set_patch_value(v))
     );
@@ -146,7 +144,7 @@ impl AudioParameters {
     #[cfg(test)]
     impl_patch_interaction!(
         compare_patch_value,
-        f64,
+        f32,
         bool,
         |p: &mut dyn AudioParameterPatchInteraction, v| Some(p.compare_patch_value(v))
     );
@@ -165,7 +163,7 @@ impl AudioParameters {
     }
 }
 
-pub struct AudioParameterOperator {
+pub struct OperatorAudioParameters {
     pub active: InterpolatableAudioParameter<OperatorActiveValue>,
     pub wave_type: SimpleAudioParameter<OperatorWaveTypeValue>,
     pub volume: OperatorVolumeAudioParameter,
@@ -177,10 +175,10 @@ pub struct AudioParameterOperator {
     pub frequency_ratio: SimpleAudioParameter<OperatorFrequencyRatioValue>,
     pub frequency_free: OperatorFrequencyFreeAudioParameter,
     pub frequency_fine: OperatorFrequencyFineAudioParameter,
-    pub volume_envelope: OperatorEnvelopeAudioParameter,
+    pub volume_envelope: OperatorEnvelopeAudioParameters,
 }
 
-impl AudioParameterOperator {
+impl OperatorAudioParameters {
     pub fn new(operator_index: usize) -> Self {
         let modulation_index = if operator_index == 0 {
             None
@@ -225,15 +223,15 @@ impl AudioParameterOperator {
 }
 
 #[derive(Default)]
-pub struct OperatorEnvelopeAudioParameter {
+pub struct OperatorEnvelopeAudioParameters {
     pub attack_duration: SimpleAudioParameter<OperatorAttackDurationValue>,
-    pub attack_end_value: SimpleAudioParameter<OperatorAttackVolumeValue>,
+    pub attack_end_value: OperatorEnvelopeVolumeAudioParameter<OperatorAttackVolumeValue>,
     pub decay_duration: SimpleAudioParameter<OperatorDecayDurationValue>,
-    pub decay_end_value: SimpleAudioParameter<OperatorDecayVolumeValue>,
+    pub decay_end_value: OperatorEnvelopeVolumeAudioParameter<OperatorDecayVolumeValue>,
     pub release_duration: SimpleAudioParameter<OperatorReleaseDurationValue>,
 }
 
-impl OperatorEnvelopeAudioParameter {
+impl OperatorEnvelopeAudioParameters {
     fn advance_one_sample(&mut self, sample_rate: SampleRate) {
         self.attack_duration.advance_one_sample(sample_rate);
         self.attack_end_value.advance_one_sample(sample_rate);
@@ -243,7 +241,7 @@ impl OperatorEnvelopeAudioParameter {
     }
 }
 
-pub struct AudioParameterLfo {
+pub struct LfoAudioParameters {
     pub target: LfoTargetAudioParameter,
     pub bpm_sync: SimpleAudioParameter<LfoBpmSyncValue>,
     pub frequency_ratio: SimpleAudioParameter<LfoFrequencyRatioValue>,
@@ -254,7 +252,7 @@ pub struct AudioParameterLfo {
     pub active: LfoActiveAudioParameter,
 }
 
-impl AudioParameterLfo {
+impl LfoAudioParameters {
     fn new(lfo_index: usize) -> Self {
         Self {
             target: LfoTargetAudioParameter::new(lfo_index),

@@ -1,4 +1,4 @@
-use std::f64::consts::TAU;
+use std::f32::consts::TAU;
 
 use super::utils::*;
 use super::ParameterValue;
@@ -34,7 +34,7 @@ impl Default for LfoShape {
 }
 
 impl CalculateCurve for LfoShape {
-    fn calculate(self, phase: Phase) -> f64 {
+    fn calculate(self, phase: Phase) -> f32 {
         match self {
             Self::Saw => saw(phase),
             Self::ReverseSaw => -saw(phase),
@@ -63,10 +63,10 @@ impl ParameterValue for LfoShapeValue {
     fn get(self) -> Self::Value {
         self.0
     }
-    fn new_from_patch(value: f64) -> Self {
+    fn new_from_patch(value: f32) -> Self {
         Self(map_parameter_value_to_step(&LFO_SHAPE_STEPS[..], value))
     }
-    fn to_patch(self) -> f64 {
+    fn to_patch(self) -> f32 {
         map_step_to_parameter_value(&LFO_SHAPE_STEPS[..], self.0)
     }
     fn get_formatted(self) -> String {
@@ -94,28 +94,28 @@ impl ParameterValue for LfoShapeValue {
     }
 }
 
-fn triangle(phase: Phase) -> f64 {
+fn triangle(phase: Phase) -> f32 {
     if phase.0 <= 0.25 {
-        4.0 * phase.0
+        4.0 * phase.0 as f32
     } else if phase.0 <= 0.75 {
-        1.0 - 4.0 * (phase.0 - 0.25)
+        1.0 - 4.0 * (phase.0 as f32 - 0.25)
     } else {
-        -1.0 + 4.0 * (phase.0 - 0.75)
+        -1.0 + 4.0 * (phase.0 as f32 - 0.75)
     }
 }
 
-fn saw(phase: Phase) -> f64 {
-    (phase.0 - 0.5) * 2.0
+fn saw(phase: Phase) -> f32 {
+    (phase.0 as f32 - 0.5) * 2.0
 }
 
-fn square(phase: Phase) -> f64 {
+fn square(phase: Phase) -> f32 {
     let peak_end = 32.0 / 64.0;
     let base_start = 33.0 / 64.0;
 
-    if phase.0 <= peak_end {
+    if phase.0 as f32 <= peak_end {
         1.0
-    } else if phase.0 <= base_start {
-        1.0 - 2.0 * ((phase.0 - peak_end) / (base_start - peak_end))
+    } else if phase.0 as f32 <= base_start {
+        1.0 - 2.0 * ((phase.0 as f32 - peak_end) / (base_start - peak_end))
     } else {
         -1.0
     }
@@ -123,14 +123,14 @@ fn square(phase: Phase) -> f64 {
 
 cfg_if::cfg_if! {
     if #[cfg(feature = "simd")] {
-        pub fn sine(phase: Phase) -> f64 {
+        pub fn sine(phase: Phase) -> f32 {
             unsafe {
-                ::sleef_sys::Sleef_cinz_sind1_u35purec(phase.0 * TAU)
+                ::sleef_sys::Sleef_cinz_sinf1_u35purec(phase.0 as f32 * TAU)
             }
         }
     } else {
-        pub fn sine(phase: Phase) -> f64 {
-            (phase.0 * TAU).sin()
+        pub fn sine(phase: Phase) -> f32 {
+            (phase.0 as f32 * TAU).sin()
         }
     }
 }
