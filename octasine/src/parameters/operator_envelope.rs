@@ -5,7 +5,7 @@ pub const ENVELOPE_MIN_DURATION: f64 = 0.01;
 
 /// After this duration, the envelope slope does not get mixed with linear
 /// slope at all
-pub const ENVELOPE_CURVE_TAKEOVER: f64 = ENVELOPE_MIN_DURATION * 10.0;
+pub const ENVELOPE_CURVE_TAKEOVER: f64 = 0.05;
 pub const ENVELOPE_CURVE_TAKEOVER_RECIP: f64 = 1.0 / ENVELOPE_CURVE_TAKEOVER;
 
 const DEFAULT_ENVELOPE_ATTACK_DURATION: f64 = ENVELOPE_MIN_DURATION;
