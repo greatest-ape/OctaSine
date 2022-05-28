@@ -8,15 +8,13 @@
   * try generating delta_frames with rng
   * try generating key velocity with rng
 * Audio
-  * Should operator volume affect feedback?
+  * Consider removing attack volume parameter
   * Should modulation index now compensate for higher frequencies?
-  * Should there be phase additions when modulating? See
-    https://en.wikipedia.org/wiki/Frequency_modulation_synthesis#Spectral_analysis
 * GUI
   * Envelopes
-    * Zoom by dragging background up/down
-    * Fit by double clicking?
+    * Fit by double clicking
     * Two envelope lock groups
+    * When using zoom in button, always zoom to beginning?
 * Other crates
   * create iced_audio 0.8.0 release, use it
   * ask for new baseview release, then create iced_baseview release, use them
