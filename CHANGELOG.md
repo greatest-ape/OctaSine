@@ -5,8 +5,10 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 This release contains breaking changes. Patches created with previous versions
-will __not__ sound the same in this version. You can however continue using
-version 0.6.1 in parallel with this version.
+will __not__ sound the same in this version.
+
+However, you can keep using version 0.6.1 alongside this release, since it
+uses a different VST2 plugin ID.
 
 ### Changed
 
@@ -48,8 +50,8 @@ version 0.6.1 in parallel with this version.
 
 #### GUI changes
 
-- Major GUI redesign with layout and color changes. It is now a lot prettier,
-  as well as more compact
+- Major GUI redesign with layout and color changes
+- Zoom in envelopes by dragging up/down
 - Control mix output instead of modulation output with modulation matrix
   operator boxes
 - Replace operator wave type picker with a custom widget that displays the waveform
@@ -60,6 +62,8 @@ version 0.6.1 in parallel with this version.
 
 #### Other changes
 
+- Add octasine-cli crate with subcommands to convert between exported patches /
+  patch banks and JSON
 - Bump plugin unique ID to allow using this version in parallel with previous
   versions
 - Use directories crate to determine where to save preference and log files

@@ -61,7 +61,7 @@ jobs:
     - name: Run tests
       run: cargo +nightly test --workspace --features "simd" --verbose
     - name: Build plugin in release mode
-      run: cargo +nightly build --release --features "simd" -p octasine_vst2_plugin --verbose
+      run: cargo +nightly build --release --features "simd" -p octasine-vst2-plugin --verbose
 
     - name: Display size of build artifacts
       run: ls -lh target/release

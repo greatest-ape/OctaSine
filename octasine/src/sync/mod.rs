@@ -2,7 +2,7 @@ mod atomic_double;
 mod change_info;
 mod parameters;
 mod patch_bank;
-mod serde;
+pub mod serde;
 
 use std::sync::Arc;
 
