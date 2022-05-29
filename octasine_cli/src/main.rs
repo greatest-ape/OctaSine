@@ -1,6 +1,6 @@
 use std::{
     fs::File,
-    io::{stdout, Read},
+    io::{stdout, Read, Write},
     path::PathBuf,
 };
 
@@ -17,7 +17,13 @@ struct Cli {
 #[derive(Subcommand)]
 enum Commands {
     /// Unpack a patch (.fxp) or patch bank (.fxp) file to JSON
-    UnpackPatch { path: PathBuf },
+    UnpackPatch {
+        path: PathBuf,
+    },
+    /// Pack JSON to patch or patch bank
+    PackPatch {
+        path: PathBuf,
+    },
     /// Run OctaSine GUI (without audio generation)
     RunGui,
 }
@@ -54,6 +60,15 @@ fn main() -> anyhow::Result<()> {
                     ));
                 }
             }
+        }
+        Commands::PackPatch { path } => {
+            use octasine::sync::serde::to_bytes;
+
+            let file = File::open(path)?;
+            let patch_bank: serde_json::Value = serde_json::from_reader(&file)?;
+            let bytes = to_bytes(&patch_bank)?;
+
+            stdout().lock().write_all(&bytes)?;
         }
         Commands::RunGui => {
             use std::sync::Arc;
