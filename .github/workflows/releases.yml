@@ -56,7 +56,7 @@ jobs:
       if: contains(matrix.os, 'windows')
 
     - name: Build plugin in release mode
-      run: cargo +nightly build --release --features "simd" -p octasine_vst2_plugin --verbose
+      run: cargo +nightly build --release --features "simd" -p octasine-vst2-plugin --verbose
 
     - name: Install cargo-about
       run: cargo install --debug --locked cargo-about
@@ -79,7 +79,7 @@ jobs:
       run: |
         New-Item "tmp\OctaSine" -ItemType Directory -ea 0
         Copy-Item "LICENSE" -Destination "tmp\OctaSine\LICENSE.txt"
-        cargo-about generate -o "tmp\OctaSine\LICENSES.html" "about.hbs" --features "simd" -m "octasine_vst2_plugin\Cargo.toml" 
+        cargo-about generate -o "tmp\OctaSine\LICENSES.html" "about.hbs" --features "simd" -m "octasine-vst2-plugin\Cargo.toml" 
         $version = $env:OCTASINE_SEMVER_VERSION
         Copy-Item "target\release\octasine.dll" -Destination "tmp\OctaSine\OctaSine $version.dll"
         Compress-Archive -Path "tmp\OctaSine" -DestinationPath releases\OctaSine-${{ steps.get_version.outputs.VERSION }}-Windows.zip -CompressionLevel Optimal

@@ -90,7 +90,7 @@ git checkout tags/v0.6.1
 * Build OctaSine:
 
 ```cmd
-cargo +nightly build --release --features "simd" -p octasine_vst2_plugin
+cargo +nightly build --release --features "simd" -p octasine-vst2-plugin
 ```
 
 * Copy `target\release\octasine.dll` to your VST plugin folder.
@@ -128,13 +128,13 @@ git checkout tags/v0.6.1
 * Build the OctaSine plugin:
 
 ```sh
-cargo +nightly build --release --features "simd" -p octasine_vst2_plugin
+cargo +nightly build --release --features "simd" -p octasine-vst2-plugin
 ```
 
 If build fails, please try building without sleef SIMD acceleration:
 
 ```sh
-cargo +nightly build --release -p octasine_vst2_plugin
+cargo +nightly build --release -p octasine-vst2-plugin
 ```
 
 * Copy `target/release/liboctasine.so` to your VST plugin folder 

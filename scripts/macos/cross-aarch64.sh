@@ -7,7 +7,7 @@ set -e
 # Building sleef fails, see https://github.com/shibatch/sleef/issues/249
 export SDKROOT=$(xcrun -sdk macosx11.1 --show-sdk-path)
 export MACOSX_DEPLOYMENT_TARGET=$(xcrun -sdk macosx11.1 --show-sdk-platform-version)
-cargo build --release -p octasine_vst2_plugin --target=aarch64-apple-darwin
+cargo build --release -p octasine-vst2-plugin --target=aarch64-apple-darwin
 
 ./scripts/macos/bundle.sh "./target/aarch64-apple-darwin/release/liboctasine.dylib"
 ./scripts/unix/package.sh "OctaSine.vst" "OctaSine-macOS-AppleSilicon"

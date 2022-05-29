@@ -1,5 +1,5 @@
 [package]
-name = "octasine_vst2_plugin"
+name = "octasine-vst2-plugin"
 version = "0.6.1"
 authors = ["Joakim Frostegård <joakim.frostegard@gmail.com>"]
 license = "AGPL-3.0"
