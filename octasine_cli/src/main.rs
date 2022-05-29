@@ -1,3 +1,6 @@
+#[cfg(feature = "bench")]
+mod bench_process;
+
 use std::{
     fs::File,
     io::{stdout, Read, Write},
@@ -21,7 +24,11 @@ enum Commands {
     /// Pack JSON to patch (.fxp) or patch bank (.fxb) file
     PackPatch { path: PathBuf },
     /// Run OctaSine GUI (without audio generation)
+    #[cfg(any(feature = "glow", feature = "wgpu"))]
     RunGui,
+    /// Benchmark OctaSine process functions and check output sample accuracy
+    #[cfg(feature = "bench")]
+    BenchProcess,
 }
 
 fn main() -> anyhow::Result<()> {
@@ -40,11 +47,13 @@ fn main() -> anyhow::Result<()> {
                     let patch_bank: serde_json::Value = from_bytes(&file_buffer)?;
 
                     serde_json::to_writer_pretty(stdout().lock(), &patch_bank)?;
+
+                    Ok(())
                 }
                 _ => {
-                    return Err(anyhow::anyhow!(
+                    Err(anyhow::anyhow!(
                         "Unrecognized file extension (expected .fxp or .fxb)"
-                    ));
+                    ))
                 }
             }
         }
@@ -56,7 +65,10 @@ fn main() -> anyhow::Result<()> {
             let bytes = to_bytes(&patch_bank)?;
 
             stdout().lock().write_all(&bytes)?;
+
+            Ok(())
         }
+        #[cfg(any(feature = "glow", feature = "wgpu"))]
         Commands::RunGui => {
             use std::sync::Arc;
 
@@ -75,8 +87,12 @@ fn main() -> anyhow::Result<()> {
             let sync_state = Arc::new(SyncState::new(None));
 
             Gui::open_blocking(sync_state);
+
+            Ok(())
+        }
+        #[cfg(feature = "bench")]
+        Commands::BenchProcess => {
+            bench_process::run()
         }
     }
-
-    Ok(())
 }

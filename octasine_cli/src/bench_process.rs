@@ -11,8 +11,8 @@ use octasine::audio::gen::AudioGen;
 use octasine::parameters::{OperatorParameter, Parameter, PARAMETERS};
 use octasine::OctaSine;
 
-/// Benchmark OctaSine process functions and check sample-accurate output
-fn main() {
+/// Benchmark OctaSine process functions and check output sample accuracy
+pub fn run() -> anyhow::Result<()> {
     // Ignore success status here, since output differs across platforms
     // depending on std sine implementation
     #[allow(unused_variables)]
@@ -21,48 +21,49 @@ fn main() {
         "2b a4 47 c8 5e 51 26 3a ",
     );
 
-    #[cfg(feature = "simd")]
+    // Don't forget trailing space
+    let hash = "2b a4 47 c8 5e 51 26 3a ";
+
+    let mut all_sleef_hashes_match = true;
+
     {
-        // Don't forget trailing space
-        let hash = "2b a4 47 c8 5e 51 26 3a ";
+        let (success, r) =
+            benchmark::<octasine::audio::gen::simd::FallbackSleef>("fallback (sleef)", hash);
 
-        let mut all_sleef_hashes_match = true;
+        all_sleef_hashes_match &= success;
 
-        {
-            let (success, r) =
-                benchmark::<octasine::audio::gen::simd::FallbackSleef>("fallback (sleef)", hash);
+        println!("Speed compared to std fallback: {}x", fallback_std / r);
+    }
 
-            all_sleef_hashes_match &= success;
+    if is_x86_feature_detected!("sse2") {
+        let (success, r) = benchmark::<octasine::audio::gen::simd::Sse2>("sse2", hash);
 
-            println!("Speed compared to std fallback: {}x", fallback_std / r);
-        }
+        all_sleef_hashes_match &= success;
 
-        if is_x86_feature_detected!("sse2") {
-            let (success, r) = benchmark::<octasine::audio::gen::simd::Sse2>("sse2", hash);
+        println!("Speed compared to std fallback: {}x", fallback_std / r);
+    }
+    if is_x86_feature_detected!("avx") {
+        let (success, r) = benchmark::<octasine::audio::gen::simd::Avx>("avx", hash);
 
-            all_sleef_hashes_match &= success;
+        all_sleef_hashes_match &= success;
 
-            println!("Speed compared to std fallback: {}x", fallback_std / r);
-        }
-        if is_x86_feature_detected!("avx") {
-            let (success, r) = benchmark::<octasine::audio::gen::simd::Avx>("avx", hash);
+        println!("Speed compared to std fallback: {}x", fallback_std / r);
+    }
 
-            all_sleef_hashes_match &= success;
+    if all_sleef_hashes_match {
+        println!(
+            "\n{}",
+            "All sleef output hashes matched reference hash".green()
+        );
 
-            println!("Speed compared to std fallback: {}x", fallback_std / r);
-        }
+        Ok(())
+    } else {
+        println!(
+            "\n{}",
+            "Sleef output hashes didn't match reference hash".red()
+        );
 
-        if all_sleef_hashes_match {
-            println!(
-                "\n{}",
-                "All sleef output hashes matched reference hash".green()
-            );
-        } else {
-            println!(
-                "\n{}",
-                "Sleef output hashes didn't match reference hash".red()
-            );
-        }
+        Err(anyhow::anyhow!("Hashes didn't match"))
     }
 }
 

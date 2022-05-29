@@ -158,17 +158,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "bench_process"
-version = "0.5.4"
-dependencies = [
- "colored",
- "fastrand",
- "octasine",
- "sha2",
- "vst",
-]
-
-[[package]]
 name = "bindgen"
 version = "0.57.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1613,10 +1602,14 @@ version = "0.6.1"
 dependencies = [
  "anyhow",
  "clap",
+ "colored",
+ "fastrand",
  "octasine",
  "serde",
  "serde_json",
+ "sha2",
  "simplelog",
+ "vst",
 ]
 
 [[package]]

@@ -2,7 +2,6 @@
 resolver = "2"
 
 members = [ 
-    "bench_process",
     "octasine",
     "octasine_cli",
     "octasine_vst2_plugin",
