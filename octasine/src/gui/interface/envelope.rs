@@ -216,6 +216,12 @@ struct DraggingBackground {
     viewport_factor: f32,
 }
 
+#[derive(Clone, Copy, Debug)]
+struct DoubleClickData {
+    point: Point,
+    releases: usize,
+}
+
 pub struct Envelope {
     log10table: Log10Table,
     cache: Cache,
@@ -237,6 +243,7 @@ pub struct Envelope {
     release_dragger: EnvelopeDragger,
     last_cursor_position: Point,
     dragging_background_from: Option<DraggingBackground>,
+    double_click_data: Option<DoubleClickData>,
 }
 
 impl Envelope {
@@ -282,6 +289,7 @@ impl Envelope {
             release_dragger: EnvelopeDragger::default(),
             last_cursor_position: Point::new(-1.0, -1.0),
             dragging_background_from: None,
+            double_click_data: None,
         };
 
         envelope.zoom_in_to_fit();
@@ -688,6 +696,12 @@ impl Program<Message> for Envelope {
             }) => {
                 self.last_cursor_position = Point::new(x, y);
 
+                if let Some(data) = self.double_click_data {
+                    if data.point != self.last_cursor_position {
+                        self.double_click_data = None;
+                    }
+                }
+
                 let relative_position = Point::new(x - bounds.x, y - bounds.y);
 
                 let attack_hitbox_hit = self.attack_dragger.hitbox.contains(relative_position);
@@ -940,7 +954,14 @@ impl Program<Message> for Envelope {
                             original_visible_position: pos_in_viewport,
                             original_x_offset: self.x_offset,
                             viewport_factor: self.viewport_factor,
-                        })
+                        });
+
+                        if self.double_click_data.is_none() {
+                            self.double_click_data = Some(DoubleClickData {
+                                point: self.last_cursor_position,
+                                releases: 0,
+                            });
+                        }
                     }
 
                     self.cache.clear();
@@ -986,6 +1007,20 @@ impl Program<Message> for Envelope {
                     self.dragging_background_from = None;
 
                     captured = true;
+                }
+
+                if let Some(data) = self.double_click_data.as_mut() {
+                    data.releases += 1;
+
+                    captured = true;
+                }
+
+                if let Some(data) = self.double_click_data {
+                    if data.releases == 2 {
+                        self.zoom_to_fit();
+
+                        self.double_click_data = None;
+                    }
                 }
 
                 if captured {

@@ -12,7 +12,6 @@
   * Should modulation index now compensate for higher frequencies?
 * GUI
   * Envelopes
-    * Fit by double clicking
     * Two envelope lock groups
     * When using zoom in button, always zoom to beginning?
 * Other crates
