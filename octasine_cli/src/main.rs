@@ -17,13 +17,9 @@ struct Cli {
 #[derive(Subcommand)]
 enum Commands {
     /// Unpack a patch (.fxp) or patch bank (.fxp) file to JSON
-    UnpackPatch {
-        path: PathBuf,
-    },
-    /// Pack JSON to patch or patch bank
-    PackPatch {
-        path: PathBuf,
-    },
+    UnpackPatch { path: PathBuf },
+    /// Pack JSON to patch (.fxp) or patch bank (.fxb) file
+    PackPatch { path: PathBuf },
     /// Run OctaSine GUI (without audio generation)
     RunGui,
 }
@@ -33,26 +29,17 @@ fn main() -> anyhow::Result<()> {
 
     match cli.command {
         Commands::UnpackPatch { path } => {
-            use octasine::sync::serde::{from_bytes, SerdePatch, SerdePatchBank};
+            use octasine::sync::serde::from_bytes;
 
             match path.extension().and_then(|s| s.to_str()) {
-                Some("fxb") => {
+                Some("fxp") | Some("fxb") => {
                     let mut file = File::open(path)?;
                     let mut file_buffer = Vec::new();
                     file.read_to_end(&mut file_buffer)?;
 
-                    let patch_bank: SerdePatchBank = from_bytes(&file_buffer)?;
+                    let patch_bank: serde_json::Value = from_bytes(&file_buffer)?;
 
-                    serde_json::to_writer_pretty(stdout(), &patch_bank)?;
-                }
-                Some("fxp") => {
-                    let mut file = File::open(path)?;
-                    let mut file_buffer = Vec::new();
-                    file.read_to_end(&mut file_buffer)?;
-
-                    let patch: SerdePatch = from_bytes(&file_buffer)?;
-
-                    serde_json::to_writer_pretty(stdout(), &patch)?;
+                    serde_json::to_writer_pretty(stdout().lock(), &patch_bank)?;
                 }
                 _ => {
                     return Err(anyhow::anyhow!(
