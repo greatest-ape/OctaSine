@@ -11,6 +11,14 @@ use octasine::common::*;
 use octasine::parameters::lfo_mode::LfoMode;
 use octasine::parameters::lfo_shape::LfoShape;
 
+pub fn run() -> anyhow::Result<()> {
+    plot_lfo_values("tmp/lfo.svg");
+
+    // plot_envelope_stage(0.1, 0.0, 1.0, "tmp/attack.svg");
+
+    Ok(())
+}
+
 #[allow(dead_code)]
 fn plot_envelope_stage(length: f64, start_volume: f64, end_volume: f64, filename: &str) {
     let log10table = Log10Table::default();
@@ -167,10 +175,4 @@ fn plot_lfo_values(filename: &str) {
         .y_range(-2.0, 2.0);
 
     Page::single(&v).save(&filename).unwrap();
-}
-
-fn main() {
-    plot_lfo_values("tmp/lfo.svg");
-
-    // plot_envelope_stage(0.1, 0.0, 1.0, "tmp/attack.svg");
 }

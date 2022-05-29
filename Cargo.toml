@@ -5,7 +5,6 @@ members = [
     "octasine",
     "octasine_cli",
     "octasine_vst2_plugin",
-    "plot_curves",
 ]
 
 # [patch.'https://github.com/RustAudio/baseview']
