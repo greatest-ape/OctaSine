@@ -25,7 +25,7 @@ const ENVELOPE_PATH_SCALE_X: f32 = (WIDTH as f32 - 2.0 * LINE_HEIGHT as f32) / W
 const ENVELOPE_PATH_SCALE_Y: f32 = 1.0 - (1.0 / 8.0) - (1.0 / 16.0);
 
 const TOTAL_DURATION: f32 = 3.0;
-const MIN_VIEWPORT_FACTOR: f32 = 1.0 / 128.0;
+const MIN_VIEWPORT_FACTOR: f32 = 1.0 / 64.0;
 
 #[derive(Debug, Clone)]
 pub struct Style {
