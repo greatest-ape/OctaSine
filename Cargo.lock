@@ -1616,6 +1616,7 @@ dependencies = [
  "octasine",
  "serde",
  "serde_json",
+ "simplelog",
 ]
 
 [[package]]

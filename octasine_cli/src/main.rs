@@ -18,6 +18,8 @@ struct Cli {
 enum Commands {
     /// Unpack a patch (.fxp) or patch bank (.fxp) file to JSON
     UnpackPatch { path: PathBuf },
+    /// Run OctaSine GUI (without audio generation)
+    RunGui,
 }
 
 fn main() -> anyhow::Result<()> {
@@ -52,6 +54,25 @@ fn main() -> anyhow::Result<()> {
                     ));
                 }
             }
+        }
+        Commands::RunGui => {
+            use std::sync::Arc;
+
+            use octasine::{gui::Gui, sync::SyncState};
+            use simplelog::{ConfigBuilder, LevelFilter, SimpleLogger};
+
+            SimpleLogger::init(
+                LevelFilter::Info,
+                ConfigBuilder::new()
+                    .set_time_offset_to_local()
+                    .unwrap()
+                    .build(),
+            )
+            .unwrap();
+
+            let sync_state = Arc::new(SyncState::new(None));
+
+            Gui::open_blocking(sync_state);
         }
     }
 
