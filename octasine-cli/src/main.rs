@@ -55,11 +55,9 @@ fn main() -> anyhow::Result<()> {
 
                     Ok(())
                 }
-                _ => {
-                    Err(anyhow::anyhow!(
-                        "Unrecognized file extension (expected .fxp or .fxb)"
-                    ))
-                }
+                _ => Err(anyhow::anyhow!(
+                    "Unrecognized file extension (expected .fxp or .fxb)"
+                )),
             }
         }
         Commands::PackPatch { path } => {
@@ -96,12 +94,8 @@ fn main() -> anyhow::Result<()> {
             Ok(())
         }
         #[cfg(feature = "bench")]
-        Commands::BenchProcess => {
-            bench_process::run()
-        }
+        Commands::BenchProcess => bench_process::run(),
         #[cfg(feature = "plot")]
-        Commands::Plot => {
-            plot::run()
-        }
+        Commands::Plot => plot::run(),
     }
 }
