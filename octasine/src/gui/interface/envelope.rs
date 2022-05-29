@@ -208,6 +208,14 @@ impl Default for EnvelopeDragger {
     }
 }
 
+#[derive(Clone, Copy)]
+struct DraggingBackground {
+    from_point: Point,
+    original_visible_position: f32,
+    original_x_offset: f32,
+    viewport_factor: f32,
+}
+
 pub struct Envelope {
     log10table: Log10Table,
     cache: Cache,
@@ -228,7 +236,7 @@ pub struct Envelope {
     decay_dragger: EnvelopeDragger,
     release_dragger: EnvelopeDragger,
     last_cursor_position: Point,
-    dragging_background_from: Option<(Point, f32)>,
+    dragging_background_from: Option<DraggingBackground>,
 }
 
 impl Envelope {
@@ -834,11 +842,25 @@ impl Program<Message> for Envelope {
                     }
                 }
 
-                if let Some((from, original_offset)) = self.dragging_background_from {
-                    let change = (x - from.x) / WIDTH as f32 * self.viewport_factor;
+                if let Some(dragging_from) = self.dragging_background_from {
+                    let zoom_factor = (dragging_from.from_point.y - y) / 50.0;
 
-                    self.x_offset =
-                        Self::process_x_offset(original_offset + change, self.viewport_factor);
+                    self.viewport_factor = (dragging_from.viewport_factor * zoom_factor.exp2())
+                        .min(1.0)
+                        .max(MIN_VIEWPORT_FACTOR);
+
+                    let x_offset_change_zoom = -dragging_from.original_visible_position
+                        * (dragging_from.viewport_factor - self.viewport_factor);
+
+                    let x_offset_change_drag =
+                        (x - dragging_from.from_point.x) / WIDTH as f32 * self.viewport_factor;
+
+                    self.x_offset = Self::process_x_offset(
+                        dragging_from.original_x_offset
+                            + x_offset_change_zoom
+                            + x_offset_change_drag,
+                        self.viewport_factor,
+                    );
 
                     self.update_data();
                 }
@@ -906,8 +928,19 @@ impl Program<Message> for Envelope {
                             ),
                         )));
                     } else {
-                        self.dragging_background_from =
-                            Some((self.last_cursor_position, self.x_offset));
+                        let pos_in_bounds = self.last_cursor_position.x - bounds.x;
+                        let pos_in_viewport = (pos_in_bounds
+                            - (WIDTH as f32 * (1.0 - ENVELOPE_PATH_SCALE_X)) / 2.0)
+                            .max(0.0);
+                        let pos_in_viewport =
+                            (pos_in_viewport / (WIDTH as f32 * ENVELOPE_PATH_SCALE_X)).min(1.0);
+
+                        self.dragging_background_from = Some(DraggingBackground {
+                            from_point: self.last_cursor_position,
+                            original_visible_position: pos_in_viewport,
+                            original_x_offset: self.x_offset,
+                            viewport_factor: self.viewport_factor,
+                        })
                     }
 
                     self.cache.clear();
