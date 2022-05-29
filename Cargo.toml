@@ -3,7 +3,7 @@ resolver = "2"
 
 members = [ 
     "octasine",
-    "octasine_cli",
+    "octasine-cli",
     "octasine_vst2_plugin",
 ]
 

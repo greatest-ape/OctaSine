@@ -1597,7 +1597,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "octasine_cli"
+name = "octasine-cli"
 version = "0.6.1"
 dependencies = [
  "anyhow",
