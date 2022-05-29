@@ -21,9 +21,9 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
-    /// Unpack a patch (.fxp) or patch bank (.fxp) file to JSON
+    /// Unpack JSON from a patch (.fxp) or patch bank file (.fxp)
     UnpackPatch { path: PathBuf },
-    /// Pack JSON to patch (.fxp) or patch bank (.fxb) file
+    /// Pack JSON into patch (.fxp) or patch bank file (.fxb)
     PackPatch { path: PathBuf },
     /// Run OctaSine GUI (without audio generation)
     #[cfg(any(feature = "glow", feature = "wgpu"))]
