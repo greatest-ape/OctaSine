@@ -40,6 +40,8 @@ pub struct Style {
     pub dragger_fill_color_hover: Color,
     pub dragger_fill_color_dragging: Color,
     pub dragger_border_color: Color,
+    pub viewport_indicator_border: Color,
+    pub viewport_indicator_border_active: Color,
 }
 
 pub trait StyleSheet {
@@ -628,6 +630,45 @@ impl Envelope {
         frame.stroke(&right_border, border_stroke);
     }
 
+    fn drag_viewport_indicator(&self, frame: &mut Frame, style_sheet: Box<dyn StyleSheet>) {
+        const WIDTH: f32 = 60.0;
+        const HEIGHT: f32 = 6.0;
+
+        let style = style_sheet.active();
+        let size = frame.size();
+
+        let top_right = scale_point_x(size, Point::new(size.width, 0.0)).snap();
+        let top_left = Point::new(top_right.x - WIDTH, top_right.y);
+
+        let full_rect = Path::rectangle(top_left, Size::new(WIDTH, HEIGHT));
+
+        let border_stroke = Stroke::default()
+            .with_width(1.0)
+            .with_color(style.viewport_indicator_border);
+
+        frame.fill(&full_rect, style.background_color);
+        frame.stroke(&full_rect, border_stroke);
+
+        let viewport_top_left = Point::new(
+            (top_left.x + -self.x_offset * WIDTH).floor() + 0.5 + 1.0,
+            top_left.y + 1.0,
+        );
+        let viewport_rect = Path::rectangle(
+            viewport_top_left,
+            Size::new(
+                (WIDTH * self.viewport_factor).floor().max(2.0) - 2.0,
+                HEIGHT - 2.0,
+            ),
+        );
+
+        let border_stroke = Stroke::default()
+            .with_width(1.0)
+            .with_color(style.viewport_indicator_border_active);
+
+        frame.fill(&viewport_rect, style.background_color);
+        frame.stroke(&viewport_rect, border_stroke);
+    }
+
     fn draw_dragger(
         frame: &mut Frame,
         style_sheet: Box<dyn StyleSheet>,
@@ -679,6 +720,8 @@ impl Program<Message> for Envelope {
             Self::draw_dragger(frame, self.style.envelope(), &self.attack_dragger);
             Self::draw_dragger(frame, self.style.envelope(), &self.decay_dragger);
             Self::draw_dragger(frame, self.style.envelope(), &self.release_dragger);
+
+            self.drag_viewport_indicator(frame, self.style.envelope());
         });
 
         vec![geometry]
