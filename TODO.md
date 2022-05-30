@@ -14,9 +14,9 @@
 * GUI
   * Envelopes
     * Two envelope lock groups
+      * More efficient (begin/end edit) and general means of sync
     * Reset values by double clicking draggers? At least for decay.
     * Display zoom level / viewport length in seconds/milliseconds?
-    * Viewport sync mode?
 * Other crates
   * create iced_audio 0.8.0 release, use it
   * ask for new baseview release, then create iced_baseview release, use them

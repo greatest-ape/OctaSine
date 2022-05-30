@@ -303,19 +303,27 @@ impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {
 
             let p = Parameter::Operator(index as u8, OperatorParameter::AttackDuration);
             self.set_value(p, values.attack);
+            self.sync_handle.begin_edit(p);
             self.sync_handle.set_parameter(p, values.attack);
+            self.sync_handle.end_edit(p);
 
             let p = Parameter::Operator(index as u8, OperatorParameter::DecayDuration);
             self.set_value(p, values.decay);
+            self.sync_handle.begin_edit(p);
             self.sync_handle.set_parameter(p, values.decay);
+            self.sync_handle.end_edit(p);
 
             let p = Parameter::Operator(index as u8, OperatorParameter::DecayValue);
             self.set_value(p, values.sustain);
+            self.sync_handle.begin_edit(p);
             self.sync_handle.set_parameter(p, values.sustain);
+            self.sync_handle.end_edit(p);
 
             let p = Parameter::Operator(index as u8, OperatorParameter::ReleaseDuration);
             self.set_value(p, values.release);
+            self.sync_handle.begin_edit(p);
             self.sync_handle.set_parameter(p, values.release);
+            self.sync_handle.end_edit(p);
         }
     }
 }
