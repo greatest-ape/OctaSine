@@ -66,13 +66,21 @@ pub enum Message {
         parameter_1: (Parameter, f32),
         parameter_2: Option<(Parameter, f32)>,
         group: OperatorEnvelopeLockGroupValue,
-        values: EnvelopeValues,
     },
     ToggleInfo,
     PatchChange(usize),
-    EnvelopeZoomIn(usize),
-    EnvelopeZoomOut(usize),
-    EnvelopeZoomToFit(usize),
+    EnvelopeZoomIn {
+        operator_index: u8,
+        group: OperatorEnvelopeLockGroupValue,
+    },
+    EnvelopeZoomOut {
+        operator_index: u8,
+        group: OperatorEnvelopeLockGroupValue,
+    },
+    EnvelopeZoomToFit {
+        operator_index: u8,
+        group: OperatorEnvelopeLockGroupValue,
+    },
     EnvelopeSyncViewports {
         viewport_factor: f32,
         x_offset: f32,
@@ -238,6 +246,77 @@ impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {
             ::log::error!("Couldn't spawn thread for saving settings: {}", err)
         }
     }
+
+    fn get_envelope_by_index(&mut self, operator_index: u8) -> &mut envelope::Envelope {
+        match operator_index {
+            0 => &mut self.operator_1.envelope,
+            1 => &mut self.operator_2.envelope,
+            2 => &mut self.operator_3.envelope,
+            3 => &mut self.operator_4.envelope,
+            _ => unreachable!(),
+        }
+    }
+
+    fn sync_envelopes(
+        &mut self,
+        sending_operator_index: u8,
+        group: OperatorEnvelopeLockGroupValue,
+        values: EnvelopeValues,
+    ) {
+        for (index, in_group) in [
+            self.operator_1.envelope.is_in_group(group),
+            self.operator_2.envelope.is_in_group(group),
+            self.operator_3.envelope.is_in_group(group),
+            self.operator_4.envelope.is_in_group(group),
+        ]
+        .into_iter()
+        .enumerate()
+        {
+            if !in_group || index == sending_operator_index as usize {
+                continue;
+            }
+
+            match index {
+                0 => self
+                    .operator_1
+                    .envelope
+                    .widget
+                    .set_viewport(values.viewport_factor, values.x_offset),
+                1 => self
+                    .operator_2
+                    .envelope
+                    .widget
+                    .set_viewport(values.viewport_factor, values.x_offset),
+                2 => self
+                    .operator_3
+                    .envelope
+                    .widget
+                    .set_viewport(values.viewport_factor, values.x_offset),
+                3 => self
+                    .operator_4
+                    .envelope
+                    .widget
+                    .set_viewport(values.viewport_factor, values.x_offset),
+                _ => unreachable!(),
+            }
+
+            let p = Parameter::Operator(index as u8, OperatorParameter::AttackDuration);
+            self.set_value(p, values.attack);
+            self.sync_handle.set_parameter(p, values.attack);
+
+            let p = Parameter::Operator(index as u8, OperatorParameter::DecayDuration);
+            self.set_value(p, values.decay);
+            self.sync_handle.set_parameter(p, values.decay);
+
+            let p = Parameter::Operator(index as u8, OperatorParameter::DecayValue);
+            self.set_value(p, values.sustain);
+            self.sync_handle.set_parameter(p, values.sustain);
+
+            let p = Parameter::Operator(index as u8, OperatorParameter::ReleaseDuration);
+            self.set_value(p, values.release);
+            self.sync_handle.set_parameter(p, values.release);
+        }
+    }
 }
 
 impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
@@ -324,27 +403,42 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
             Message::ToggleInfo => {
                 self.show_version = !self.show_version;
             }
-            Message::EnvelopeZoomIn(operator_index) => match operator_index {
-                0 => self.operator_1.envelope.widget.zoom_in(),
-                1 => self.operator_2.envelope.widget.zoom_in(),
-                2 => self.operator_3.envelope.widget.zoom_in(),
-                3 => self.operator_4.envelope.widget.zoom_in(),
-                _ => unreachable!(),
-            },
-            Message::EnvelopeZoomOut(operator_index) => match operator_index {
-                0 => self.operator_1.envelope.widget.zoom_out(),
-                1 => self.operator_2.envelope.widget.zoom_out(),
-                2 => self.operator_3.envelope.widget.zoom_out(),
-                3 => self.operator_4.envelope.widget.zoom_out(),
-                _ => unreachable!(),
-            },
-            Message::EnvelopeZoomToFit(operator_index) => match operator_index {
-                0 => self.operator_1.envelope.widget.zoom_to_fit(),
-                1 => self.operator_2.envelope.widget.zoom_to_fit(),
-                2 => self.operator_3.envelope.widget.zoom_to_fit(),
-                3 => self.operator_4.envelope.widget.zoom_to_fit(),
-                _ => unreachable!(),
-            },
+            Message::EnvelopeZoomIn {
+                operator_index,
+                group,
+            } => {
+                let envelope = self.get_envelope_by_index(operator_index);
+
+                envelope.widget.zoom_in();
+
+                let values = envelope.widget.get_envelope_values();
+
+                self.sync_envelopes(operator_index, group, values);
+            }
+            Message::EnvelopeZoomOut {
+                operator_index,
+                group,
+            } => {
+                let envelope = self.get_envelope_by_index(operator_index);
+
+                envelope.widget.zoom_out();
+
+                let values = envelope.widget.get_envelope_values();
+
+                self.sync_envelopes(operator_index, group, values);
+            }
+            Message::EnvelopeZoomToFit {
+                operator_index,
+                group,
+            } => {
+                let envelope = self.get_envelope_by_index(operator_index);
+
+                envelope.widget.zoom_to_fit();
+
+                let values = envelope.widget.get_envelope_values();
+
+                self.sync_envelopes(operator_index, group, values);
+            }
             Message::EnvelopeSyncViewports {
                 viewport_factor,
                 x_offset,
@@ -397,7 +491,6 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                 parameter_1,
                 parameter_2,
                 group,
-                values,
             } => {
                 self.set_value(parameter_1.0, parameter_1.1);
                 self.sync_handle.set_parameter(parameter_1.0, parameter_1.1);
@@ -407,59 +500,10 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                     self.sync_handle.set_parameter(p, v);
                 }
 
-                for (index, in_group) in [
-                    self.operator_1.envelope.is_in_group(group),
-                    self.operator_2.envelope.is_in_group(group),
-                    self.operator_3.envelope.is_in_group(group),
-                    self.operator_4.envelope.is_in_group(group),
-                ]
-                .into_iter()
-                .enumerate()
-                {
-                    if !in_group || index == operator_index as usize {
-                        continue;
-                    }
+                let envelope = self.get_envelope_by_index(operator_index);
+                let values = envelope.widget.get_envelope_values();
 
-                    match index {
-                        0 => self
-                            .operator_1
-                            .envelope
-                            .widget
-                            .set_viewport(values.viewport_factor, values.x_offset),
-                        1 => self
-                            .operator_2
-                            .envelope
-                            .widget
-                            .set_viewport(values.viewport_factor, values.x_offset),
-                        2 => self
-                            .operator_3
-                            .envelope
-                            .widget
-                            .set_viewport(values.viewport_factor, values.x_offset),
-                        3 => self
-                            .operator_4
-                            .envelope
-                            .widget
-                            .set_viewport(values.viewport_factor, values.x_offset),
-                        _ => unreachable!(),
-                    }
-
-                    let p = Parameter::Operator(index as u8, OperatorParameter::AttackDuration);
-                    self.set_value(p, values.attack);
-                    self.sync_handle.set_parameter(p, values.attack);
-
-                    let p = Parameter::Operator(index as u8, OperatorParameter::DecayDuration);
-                    self.set_value(p, values.decay);
-                    self.sync_handle.set_parameter(p, values.decay);
-
-                    let p = Parameter::Operator(index as u8, OperatorParameter::DecayValue);
-                    self.set_value(p, values.sustain);
-                    self.sync_handle.set_parameter(p, values.sustain);
-
-                    let p = Parameter::Operator(index as u8, OperatorParameter::ReleaseDuration);
-                    self.set_value(p, values.release);
-                    self.sync_handle.set_parameter(p, values.release);
-                }
+                self.sync_envelopes(operator_index, group, values);
             }
             Message::PatchChange(index) => {
                 self.sync_handle.set_patch_index(index);

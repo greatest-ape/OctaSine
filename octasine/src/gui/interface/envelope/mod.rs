@@ -77,7 +77,10 @@ impl Envelope {
             &mut self.zoom_out,
             self.style.font_bold(),
             "−",
-            Message::EnvelopeZoomOut(self.operator_index),
+            Message::EnvelopeZoomOut {
+                operator_index: self.operator_index as u8,
+                group: self.lock_group,
+            },
             "Zoom out",
         );
 
@@ -86,7 +89,10 @@ impl Envelope {
             &mut self.zoom_in,
             self.style.font_bold(),
             "+",
-            Message::EnvelopeZoomIn(self.operator_index),
+            Message::EnvelopeZoomIn {
+                operator_index: self.operator_index as u8,
+                group: self.lock_group,
+            },
             "Zoom in",
         );
 
@@ -95,7 +101,10 @@ impl Envelope {
             &mut self.zoom_to_fit,
             self.style.font_regular(),
             "F",
-            Message::EnvelopeZoomToFit(self.operator_index),
+            Message::EnvelopeZoomToFit {
+                operator_index: self.operator_index as u8,
+                group: self.lock_group,
+            },
             "Zoom to fit",
         );
 

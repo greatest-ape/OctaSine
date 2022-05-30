@@ -453,7 +453,7 @@ impl Envelope {
         self.cache.clear();
     }
 
-    fn get_envelope_values(&self) -> EnvelopeValues {
+    pub fn get_envelope_values(&self) -> EnvelopeValues {
         EnvelopeValues {
             attack: self.attack_duration,
             decay: self.decay_duration,
@@ -815,7 +815,6 @@ impl Program<Message> for Envelope {
                             ),
                             parameter_2: None,
                             group: self.lock_group,
-                            values: self.get_envelope_values(),
                         };
 
                         return (event::Status::Captured, Some(message));
@@ -871,7 +870,6 @@ impl Program<Message> for Envelope {
                                 self.decay_end_value as f32,
                             )),
                             group: self.lock_group,
-                            values: self.get_envelope_values(),
                         };
 
                         return (event::Status::Captured, Some(message));
@@ -924,7 +922,6 @@ impl Program<Message> for Envelope {
                             ),
                             parameter_2: None,
                             group: self.lock_group,
-                            values: self.get_envelope_values(),
                         };
 
                         return (event::Status::Captured, Some(message));
