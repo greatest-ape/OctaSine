@@ -646,7 +646,7 @@ impl Envelope {
         frame.stroke(&right_border, border_stroke);
     }
 
-    fn drag_viewport_indicator(&self, frame: &mut Frame, style_sheet: Box<dyn StyleSheet>) {
+    fn draw_viewport_indicator(&self, frame: &mut Frame, style_sheet: Box<dyn StyleSheet>) {
         const WIDTH: f32 = 60.0;
         const HEIGHT: f32 = 6.0;
 
@@ -737,7 +737,7 @@ impl Program<Message> for Envelope {
             Self::draw_dragger(frame, self.style.envelope(), &self.decay_dragger);
             Self::draw_dragger(frame, self.style.envelope(), &self.release_dragger);
 
-            self.drag_viewport_indicator(frame, self.style.envelope());
+            self.draw_viewport_indicator(frame, self.style.envelope());
         });
 
         vec![geometry]
