@@ -128,8 +128,8 @@ pub fn envelope_group_a_button<H: GuiSyncHandle>(
         Parameter::Operator(operator_index as u8, OperatorParameter::EnvelopeLockGroup),
         style,
         "A",
-        6 + style.button_padding() * 2,
-        LINE_HEIGHT + style.button_padding() * 2,
+        LINE_HEIGHT,
+        LINE_HEIGHT,
         |v| {
             OperatorEnvelopeLockGroupValue::new_from_patch(v).get()
                 == OperatorEnvelopeLockGroupValue::A
@@ -155,8 +155,8 @@ pub fn envelope_group_b_button<H: GuiSyncHandle>(
         Parameter::Operator(operator_index as u8, OperatorParameter::EnvelopeLockGroup),
         style,
         "B",
-        6 + style.button_padding() * 2,
-        LINE_HEIGHT + style.button_padding() * 2,
+        LINE_HEIGHT,
+        LINE_HEIGHT,
         |v| {
             OperatorEnvelopeLockGroupValue::new_from_patch(v).get()
                 == OperatorEnvelopeLockGroupValue::B

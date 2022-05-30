@@ -120,14 +120,14 @@ impl Envelope {
                             .push(Space::with_width(Length::Units(3)))
                             .push(zoom_in),
                     )
-                    .push(Space::with_height(Length::Units(3)))
+                    .push(Space::with_height(Length::Units(2)))
                     .push(
                         Row::new()
                             .push(fit)
                             .push(Space::with_width(Length::Units(3)))
                             .push(distribute),
                     )
-                    .push(Space::with_height(Length::Units(3)))
+                    .push(Space::with_height(Length::Units(6 + 2)))
                     .push(
                         Row::new()
                             .push(self.group_a.view())
