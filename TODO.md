@@ -13,7 +13,6 @@
 * GUI
   * Envelopes
     * Two envelope lock groups
-    * When using zoom in button, always zoom to beginning?
 * Other crates
   * create iced_audio 0.8.0 release, use it
   * ask for new baseview release, then create iced_baseview release, use them

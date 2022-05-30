@@ -359,9 +359,10 @@ impl Envelope {
             if factor < self.viewport_factor {
                 let duration = self.get_current_duration();
 
-                // Zoom towards center of viewport unless envelope is really short
-                // compared to it (in which case, implicitly zoom towards the left)
-                if duration / TOTAL_DURATION >= self.viewport_factor {
+                // Zoom towards center of viewport unless envelope is takes up
+                // less than half of it (in which case, implicitly zoom towards
+                // the left)
+                if duration / TOTAL_DURATION > self.viewport_factor * 0.5 {
                     self.x_offset -= (self.viewport_factor - factor) / 2.0;
                 }
 
