@@ -61,14 +61,33 @@ pub enum Message {
     ChangeSingleParameterImmediate(Parameter, f32),
     ChangeTwoParametersBegin((Parameter, Parameter)),
     ChangeTwoParametersEnd((Parameter, Parameter)),
-    ChangeTwoParametersSetValues((Parameter, f32), (Parameter, f32)),
+    EnvelopeParameterChange {
+        operator_index: u8,
+        parameter_1: (Parameter, f32),
+        parameter_2: Option<(Parameter, f32)>,
+        group: OperatorEnvelopeLockGroupValue,
+        values: EnvelopeValues,
+    },
     ToggleInfo,
     PatchChange(usize),
     EnvelopeZoomIn(usize),
     EnvelopeZoomOut(usize),
     EnvelopeZoomToFit(usize),
-    EnvelopeSyncViewports { viewport_factor: f32, x_offset: f32 },
+    EnvelopeSyncViewports {
+        viewport_factor: f32,
+        x_offset: f32,
+    },
     ToggleColorMode,
+}
+
+#[derive(Debug, Clone)]
+pub struct EnvelopeValues {
+    attack: f32,
+    decay: f32,
+    sustain: f32,
+    release: f32,
+    viewport_factor: f32,
+    x_offset: f32,
 }
 
 pub struct OctaSineIcedApplication<H: GuiSyncHandle> {
@@ -373,15 +392,74 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                 self.sync_handle.end_edit(parameter_1);
                 self.sync_handle.end_edit(parameter_2);
             }
-            Message::ChangeTwoParametersSetValues(
-                (parameter_1, value_1),
-                (parameter_2, value_2),
-            ) => {
-                self.set_value(parameter_1, value_1);
-                self.set_value(parameter_2, value_2);
+            Message::EnvelopeParameterChange {
+                operator_index,
+                parameter_1,
+                parameter_2,
+                group,
+                values,
+            } => {
+                self.set_value(parameter_1.0, parameter_1.1);
+                self.sync_handle.set_parameter(parameter_1.0, parameter_1.1);
 
-                self.sync_handle.set_parameter(parameter_1, value_1);
-                self.sync_handle.set_parameter(parameter_2, value_2);
+                if let Some((p, v)) = parameter_2 {
+                    self.set_value(p, v);
+                    self.sync_handle.set_parameter(p, v);
+                }
+
+                for (index, in_group) in [
+                    self.operator_1.envelope.is_in_group(group),
+                    self.operator_2.envelope.is_in_group(group),
+                    self.operator_3.envelope.is_in_group(group),
+                    self.operator_4.envelope.is_in_group(group),
+                ]
+                .into_iter()
+                .enumerate()
+                {
+                    if !in_group || index == operator_index as usize {
+                        continue;
+                    }
+
+                    match index {
+                        0 => self
+                            .operator_1
+                            .envelope
+                            .widget
+                            .set_viewport(values.viewport_factor, values.x_offset),
+                        1 => self
+                            .operator_2
+                            .envelope
+                            .widget
+                            .set_viewport(values.viewport_factor, values.x_offset),
+                        2 => self
+                            .operator_3
+                            .envelope
+                            .widget
+                            .set_viewport(values.viewport_factor, values.x_offset),
+                        3 => self
+                            .operator_4
+                            .envelope
+                            .widget
+                            .set_viewport(values.viewport_factor, values.x_offset),
+                        _ => unreachable!(),
+                    }
+
+                    let p = Parameter::Operator(index as u8, OperatorParameter::AttackDuration);
+                    self.set_value(p, values.attack);
+                    self.sync_handle.set_parameter(p, values.attack);
+
+                    let p = Parameter::Operator(index as u8, OperatorParameter::DecayDuration);
+                    self.set_value(p, values.decay);
+                    self.sync_handle.set_parameter(p, values.decay);
+
+                    let p = Parameter::Operator(index as u8, OperatorParameter::DecayValue);
+                    self.set_value(p, values.sustain);
+                    self.sync_handle.set_parameter(p, values.sustain);
+
+                    let p = Parameter::Operator(index as u8, OperatorParameter::ReleaseDuration);
+                    self.set_value(p, values.release);
+                    self.sync_handle.set_parameter(p, values.release);
+                }
             }
             Message::PatchChange(index) => {
                 self.sync_handle.set_patch_index(index);

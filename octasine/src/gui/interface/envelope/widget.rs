@@ -5,6 +5,7 @@ use iced_baseview::{Color, Container, Element, Length, Point, Rectangle, Size, V
 
 use crate::audio::voices::envelopes::VoiceOperatorVolumeEnvelope;
 use crate::audio::voices::log10_table::Log10Table;
+use crate::gui::interface::EnvelopeValues;
 use crate::parameters::operator_envelope::{
     OperatorEnvelopeLockGroupValue, ENVELOPE_MAX_DURATION, ENVELOPE_MIN_DURATION,
 };
@@ -338,6 +339,7 @@ impl Envelope {
         self.x_offset = Self::process_x_offset(x_offset, viewport_factor);
 
         self.update_data();
+        self.cache.clear();
     }
 
     pub fn set_style(&mut self, style: Theme) {
@@ -449,6 +451,17 @@ impl Envelope {
             .set_center(self.release_stage_path.end_point);
 
         self.cache.clear();
+    }
+
+    fn get_envelope_values(&self) -> EnvelopeValues {
+        EnvelopeValues {
+            attack: self.attack_duration,
+            decay: self.decay_duration,
+            sustain: self.decay_end_value,
+            release: self.release_duration,
+            viewport_factor: self.viewport_factor,
+            x_offset: self.x_offset,
+        }
     }
 
     fn update_stage_paths(&mut self) {
@@ -791,16 +804,21 @@ impl Program<Message> for Envelope {
 
                         self.update_data();
 
-                        return (
-                            event::Status::Captured,
-                            Some(Message::ChangeSingleParameterSetValue(
+                        let message = Message::EnvelopeParameterChange {
+                            operator_index: self.operator_index,
+                            parameter_1: (
                                 Parameter::Operator(
                                     self.operator_index,
                                     OperatorParameter::AttackDuration,
                                 ),
                                 self.attack_duration as f32,
-                            )),
-                        );
+                            ),
+                            parameter_2: None,
+                            group: self.lock_group,
+                            values: self.get_envelope_values(),
+                        };
+
+                        return (event::Status::Captured, Some(message));
                     }
                 }
 
@@ -836,25 +854,27 @@ impl Program<Message> for Envelope {
 
                         self.update_data();
 
-                        return (
-                            event::Status::Captured,
-                            Some(Message::ChangeTwoParametersSetValues(
-                                (
-                                    Parameter::Operator(
-                                        self.operator_index,
-                                        OperatorParameter::DecayDuration,
-                                    ),
-                                    self.decay_duration as f32,
+                        let message = Message::EnvelopeParameterChange {
+                            operator_index: self.operator_index,
+                            parameter_1: (
+                                Parameter::Operator(
+                                    self.operator_index,
+                                    OperatorParameter::DecayDuration,
                                 ),
-                                (
-                                    Parameter::Operator(
-                                        self.operator_index,
-                                        OperatorParameter::DecayValue,
-                                    ),
-                                    self.decay_end_value as f32,
+                                self.decay_duration as f32,
+                            ),
+                            parameter_2: Some((
+                                Parameter::Operator(
+                                    self.operator_index,
+                                    OperatorParameter::DecayValue,
                                 ),
+                                self.decay_end_value as f32,
                             )),
-                        );
+                            group: self.lock_group,
+                            values: self.get_envelope_values(),
+                        };
+
+                        return (event::Status::Captured, Some(message));
                     }
                 }
 
@@ -893,16 +913,21 @@ impl Program<Message> for Envelope {
 
                         self.update_data();
 
-                        return (
-                            event::Status::Captured,
-                            Some(Message::ChangeSingleParameterSetValue(
+                        let message = Message::EnvelopeParameterChange {
+                            operator_index: self.operator_index,
+                            parameter_1: (
                                 Parameter::Operator(
                                     self.operator_index,
                                     OperatorParameter::ReleaseDuration,
                                 ),
                                 self.release_duration as f32,
-                            )),
-                        );
+                            ),
+                            parameter_2: None,
+                            group: self.lock_group,
+                            values: self.get_envelope_values(),
+                        };
+
+                        return (event::Status::Captured, Some(message));
                     }
                 }
 

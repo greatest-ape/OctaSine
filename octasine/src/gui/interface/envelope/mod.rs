@@ -67,6 +67,10 @@ impl Envelope {
         self.group_b.set_value(value);
     }
 
+    pub fn is_in_group(&self, group: OperatorEnvelopeLockGroupValue) -> bool {
+        group == self.lock_group && group != OperatorEnvelopeLockGroupValue::Off
+    }
+
     pub fn view(&mut self) -> Element<Message> {
         let zoom_out = button_with_tooltip(
             self.style,
