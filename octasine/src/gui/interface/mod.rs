@@ -61,7 +61,8 @@ pub enum Message {
     ChangeSingleParameterImmediate(Parameter, f32),
     ChangeTwoParametersBegin((Parameter, Parameter)),
     ChangeTwoParametersEnd((Parameter, Parameter)),
-    EnvelopeParameterChange {
+    /// Wrap with appropriate begin/end messages
+    ChangeEnvelopeParametersSetValue {
         operator_index: u8,
         parameter_1: (Parameter, f32),
         parameter_2: Option<(Parameter, f32)>,
@@ -486,7 +487,7 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                 self.sync_handle.end_edit(parameter_1);
                 self.sync_handle.end_edit(parameter_2);
             }
-            Message::EnvelopeParameterChange {
+            Message::ChangeEnvelopeParametersSetValue {
                 operator_index,
                 parameter_1,
                 parameter_2,

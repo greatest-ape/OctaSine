@@ -804,7 +804,7 @@ impl Program<Message> for Envelope {
 
                         self.update_data();
 
-                        let message = Message::EnvelopeParameterChange {
+                        let message = Message::ChangeEnvelopeParametersSetValue {
                             operator_index: self.operator_index,
                             parameter_1: (
                                 Parameter::Operator(
@@ -853,7 +853,7 @@ impl Program<Message> for Envelope {
 
                         self.update_data();
 
-                        let message = Message::EnvelopeParameterChange {
+                        let message = Message::ChangeEnvelopeParametersSetValue {
                             operator_index: self.operator_index,
                             parameter_1: (
                                 Parameter::Operator(
@@ -911,7 +911,7 @@ impl Program<Message> for Envelope {
 
                         self.update_data();
 
-                        let message = Message::EnvelopeParameterChange {
+                        let message = Message::ChangeEnvelopeParametersSetValue {
                             operator_index: self.operator_index,
                             parameter_1: (
                                 Parameter::Operator(
