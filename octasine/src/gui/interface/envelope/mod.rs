@@ -120,6 +120,24 @@ impl Envelope {
             "Distribute view to other envelopes",
         );
 
+        let group_a = Tooltip::new(
+            self.group_a.view(),
+            "Toggle group A membership",
+            Position::Top,
+        )
+        .style(self.style.tooltip())
+        .font(self.style.font_regular())
+        .padding(self.style.tooltip_padding());
+
+        let group_b = Tooltip::new(
+            self.group_b.view(),
+            "Toggle group B membership",
+            Position::Top,
+        )
+        .style(self.style.tooltip())
+        .font(self.style.font_regular())
+        .padding(self.style.tooltip_padding());
+
         Row::new()
             .push(container_l3(self.style, self.widget.view()))
             .push(container_l3(
@@ -143,9 +161,9 @@ impl Envelope {
                     .push(Space::with_height(Length::Units(10)))
                     .push(
                         Row::new()
-                            .push(self.group_a.view())
+                            .push(group_a)
                             .push(Space::with_width(Length::Units(3)))
-                            .push(self.group_b.view()),
+                            .push(group_b),
                     ),
             ))
             .into()
