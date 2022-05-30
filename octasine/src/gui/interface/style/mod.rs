@@ -153,7 +153,7 @@ impl Theme {
         }
     }
 
-    pub fn envelope(&self) -> Box<dyn super::envelope::StyleSheet> {
+    pub fn envelope(&self) -> Box<dyn super::envelope::widget::StyleSheet> {
         match self {
             Self::Light => Box::new(light::Envelope),
             Self::Dark => Box::new(dark::Envelope),

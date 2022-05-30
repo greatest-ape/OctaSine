@@ -149,10 +149,18 @@ impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {
                     OperatorParameter::FrequencyRatio => operator.frequency_ratio.set_value(v),
                     OperatorParameter::FrequencyFree => operator.frequency_free.set_value(v),
                     OperatorParameter::FrequencyFine => operator.frequency_fine.set_value(v),
-                    OperatorParameter::AttackDuration => operator.envelope.set_attack_duration(v),
-                    OperatorParameter::DecayDuration => operator.envelope.set_decay_duration(v),
-                    OperatorParameter::DecayValue => operator.envelope.set_decay_end_value(v),
-                    OperatorParameter::ReleaseDuration => operator.envelope.set_release_duration(v),
+                    OperatorParameter::AttackDuration => {
+                        operator.envelope.widget.set_attack_duration(v)
+                    }
+                    OperatorParameter::DecayDuration => {
+                        operator.envelope.widget.set_decay_duration(v)
+                    }
+                    OperatorParameter::DecayValue => {
+                        operator.envelope.widget.set_decay_end_value(v)
+                    }
+                    OperatorParameter::ReleaseDuration => {
+                        operator.envelope.widget.set_release_duration(v)
+                    }
                     OperatorParameter::EnvelopeLockGroup => operator.envelope.set_lock_group(v),
                 }
             }
@@ -298,24 +306,24 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                 self.show_version = !self.show_version;
             }
             Message::EnvelopeZoomIn(operator_index) => match operator_index {
-                0 => self.operator_1.envelope.zoom_in(),
-                1 => self.operator_2.envelope.zoom_in(),
-                2 => self.operator_3.envelope.zoom_in(),
-                3 => self.operator_4.envelope.zoom_in(),
+                0 => self.operator_1.envelope.widget.zoom_in(),
+                1 => self.operator_2.envelope.widget.zoom_in(),
+                2 => self.operator_3.envelope.widget.zoom_in(),
+                3 => self.operator_4.envelope.widget.zoom_in(),
                 _ => unreachable!(),
             },
             Message::EnvelopeZoomOut(operator_index) => match operator_index {
-                0 => self.operator_1.envelope.zoom_out(),
-                1 => self.operator_2.envelope.zoom_out(),
-                2 => self.operator_3.envelope.zoom_out(),
-                3 => self.operator_4.envelope.zoom_out(),
+                0 => self.operator_1.envelope.widget.zoom_out(),
+                1 => self.operator_2.envelope.widget.zoom_out(),
+                2 => self.operator_3.envelope.widget.zoom_out(),
+                3 => self.operator_4.envelope.widget.zoom_out(),
                 _ => unreachable!(),
             },
             Message::EnvelopeZoomToFit(operator_index) => match operator_index {
-                0 => self.operator_1.envelope.zoom_to_fit(),
-                1 => self.operator_2.envelope.zoom_to_fit(),
-                2 => self.operator_3.envelope.zoom_to_fit(),
-                3 => self.operator_4.envelope.zoom_to_fit(),
+                0 => self.operator_1.envelope.widget.zoom_to_fit(),
+                1 => self.operator_2.envelope.widget.zoom_to_fit(),
+                2 => self.operator_3.envelope.widget.zoom_to_fit(),
+                3 => self.operator_4.envelope.widget.zoom_to_fit(),
                 _ => unreachable!(),
             },
             Message::EnvelopeSyncViewports {
@@ -324,15 +332,19 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
             } => {
                 self.operator_1
                     .envelope
+                    .widget
                     .set_viewport(viewport_factor, x_offset);
                 self.operator_2
                     .envelope
+                    .widget
                     .set_viewport(viewport_factor, x_offset);
                 self.operator_3
                     .envelope
+                    .widget
                     .set_viewport(viewport_factor, x_offset);
                 self.operator_4
                     .envelope
+                    .widget
                     .set_viewport(viewport_factor, x_offset);
             }
             Message::ChangeSingleParameterBegin(index) => {

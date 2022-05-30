@@ -11,8 +11,8 @@ use crate::parameters::operator_envelope::{
 use crate::parameters::{OperatorParameter, Parameter, ParameterValue};
 use crate::sync::GuiSyncHandle;
 
-use super::style::Theme;
-use super::{Message, SnapPoint, FONT_SIZE, LINE_HEIGHT};
+use super::super::style::Theme;
+use super::super::{Message, SnapPoint, FONT_SIZE, LINE_HEIGHT};
 
 const WIDTH: u16 = LINE_HEIGHT * 19;
 const HEIGHT: u16 = LINE_HEIGHT * 5;
