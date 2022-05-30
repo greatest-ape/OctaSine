@@ -25,6 +25,7 @@ uses a different VST2 plugin ID.
 - Feedback is now affected by key velocity
 - Interpolate key velocity if key is pressed while envelope is still active
 - Fix various envelope issues
+- Remove ability to set end volume of attack (it is now always at maximum)
 - Increase minimum envelope stage length to 10ms
  
 #### LFO changes

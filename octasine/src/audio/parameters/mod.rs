@@ -106,7 +106,6 @@ macro_rules! impl_patch_interaction {
                         FrequencyFree => $f(&mut operator.frequency_free, input),
                         FrequencyFine => $f(&mut operator.frequency_fine, input),
                         AttackDuration => $f(&mut operator.volume_envelope.attack_duration, input),
-                        AttackValue => $f(&mut operator.volume_envelope.attack_end_value, input),
                         DecayDuration => $f(&mut operator.volume_envelope.decay_duration, input),
                         DecayValue => $f(&mut operator.volume_envelope.decay_end_value, input),
                         ReleaseDuration => {
@@ -225,7 +224,6 @@ impl OperatorAudioParameters {
 #[derive(Default)]
 pub struct OperatorEnvelopeAudioParameters {
     pub attack_duration: SimpleAudioParameter<OperatorAttackDurationValue>,
-    pub attack_end_value: OperatorEnvelopeVolumeAudioParameter<OperatorAttackVolumeValue>,
     pub decay_duration: SimpleAudioParameter<OperatorDecayDurationValue>,
     pub decay_end_value: OperatorEnvelopeVolumeAudioParameter<OperatorDecayVolumeValue>,
     pub release_duration: SimpleAudioParameter<OperatorReleaseDurationValue>,
@@ -234,7 +232,6 @@ pub struct OperatorEnvelopeAudioParameters {
 impl OperatorEnvelopeAudioParameters {
     fn advance_one_sample(&mut self, sample_rate: SampleRate) {
         self.attack_duration.advance_one_sample(sample_rate);
-        self.attack_end_value.advance_one_sample(sample_rate);
         self.decay_duration.advance_one_sample(sample_rate);
         self.decay_end_value.advance_one_sample(sample_rate);
         self.release_duration.advance_one_sample(sample_rate);

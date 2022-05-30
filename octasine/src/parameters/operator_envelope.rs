@@ -9,7 +9,6 @@ pub const ENVELOPE_CURVE_TAKEOVER: f64 = 0.05;
 pub const ENVELOPE_CURVE_TAKEOVER_RECIP: f64 = 1.0 / ENVELOPE_CURVE_TAKEOVER;
 
 const DEFAULT_ENVELOPE_ATTACK_DURATION: f64 = ENVELOPE_MIN_DURATION;
-const DEFAULT_ENVELOPE_ATTACK_VOLUME: f32 = 1.0;
 const DEFAULT_ENVELOPE_DECAY_DURATION: f64 = ENVELOPE_MIN_DURATION;
 const DEFAULT_ENVELOPE_DECAY_VOLUME: f32 = 1.0;
 const DEFAULT_ENVELOPE_RELEASE_DURATION: f64 = 0.25;
@@ -108,17 +107,6 @@ impl Default for OperatorReleaseDurationValue {
 }
 
 impl_envelope_duration_value_conversion!(OperatorReleaseDurationValue);
-
-#[derive(Debug, Clone, Copy)]
-pub struct OperatorAttackVolumeValue(f32);
-
-impl Default for OperatorAttackVolumeValue {
-    fn default() -> Self {
-        Self(DEFAULT_ENVELOPE_ATTACK_VOLUME)
-    }
-}
-
-impl_identity_value_conversion!(OperatorAttackVolumeValue);
 
 #[derive(Debug, Clone, Copy)]
 pub struct OperatorDecayVolumeValue(f32);

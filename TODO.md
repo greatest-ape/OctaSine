@@ -8,7 +8,6 @@
   * try generating delta_frames with rng
   * try generating key velocity with rng
 * Audio
-  * Consider removing attack volume parameter
   * Should modulation index now compensate for higher frequencies?
   * Stores patches/banks in format for suitable for future support for
     multiple banks? Are changes even necessary?

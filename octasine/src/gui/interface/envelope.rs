@@ -240,7 +240,6 @@ pub struct Envelope {
     style: Theme,
     operator_index: u8,
     attack_duration: f32,
-    attack_end_value: f32,
     decay_duration: f32,
     decay_end_value: f32,
     release_duration: f32,
@@ -271,10 +270,6 @@ impl Envelope {
         let release_duration = Self::process_envelope_duration(sync_handle.get_parameter(
             Parameter::Operator(operator_index, OperatorParameter::ReleaseDuration),
         ) as f64);
-        let attack_end_value = sync_handle.get_parameter(Parameter::Operator(
-            operator_index,
-            OperatorParameter::AttackValue,
-        )) as f32;
         let decay_end_value = sync_handle.get_parameter(Parameter::Operator(
             operator_index,
             OperatorParameter::DecayValue,
@@ -286,7 +281,6 @@ impl Envelope {
             style,
             operator_index,
             attack_duration,
-            attack_end_value,
             decay_duration,
             decay_end_value,
             release_duration,
@@ -409,12 +403,6 @@ impl Envelope {
         }
     }
 
-    pub fn set_attack_end_value(&mut self, value: f32) {
-        self.attack_end_value = value as f32;
-
-        self.update_data();
-    }
-
     pub fn set_decay_duration(&mut self, value: f32) {
         if !self.decay_dragger.is_dragging() {
             self.decay_duration = Self::process_envelope_duration(value as f64);
@@ -462,7 +450,7 @@ impl Envelope {
             0.0,
             0.0,
             self.attack_duration as f32,
-            self.attack_end_value as f32,
+            1.0,
         );
 
         self.decay_stage_path = EnvelopeStagePath::new(
@@ -471,7 +459,7 @@ impl Envelope {
             total_duration,
             x_offset,
             self.attack_duration,
-            self.attack_end_value,
+            1.0,
             self.decay_duration as f32,
             self.decay_end_value as f32,
         );
@@ -787,27 +775,17 @@ impl Program<Message> for Envelope {
                     } => {
                         self.attack_duration =
                             dragging_to_duration(self.viewport_factor, x, from, original_duration);
-                        self.attack_end_value = dragging_to_end_value(y, from, original_end_value);
 
                         self.update_data();
 
                         return (
                             event::Status::Captured,
-                            Some(Message::ChangeTwoParametersSetValues(
-                                (
-                                    Parameter::Operator(
-                                        self.operator_index,
-                                        OperatorParameter::AttackDuration,
-                                    ),
-                                    self.attack_duration as f32,
+                            Some(Message::ChangeSingleParameterSetValue(
+                                Parameter::Operator(
+                                    self.operator_index,
+                                    OperatorParameter::AttackDuration,
                                 ),
-                                (
-                                    Parameter::Operator(
-                                        self.operator_index,
-                                        OperatorParameter::AttackValue,
-                                    ),
-                                    self.attack_end_value as f32,
-                                ),
+                                self.attack_duration as f32,
                             )),
                         );
                     }
@@ -988,18 +966,13 @@ impl Program<Message> for Envelope {
                         self.attack_dragger.status = EnvelopeDraggerStatus::Dragging {
                             from: self.last_cursor_position,
                             original_duration: self.attack_duration,
-                            original_end_value: self.attack_end_value,
+                            original_end_value: 1.0,
                         };
-                        opt_message = Some(Message::ChangeTwoParametersBegin((
-                            Parameter::Operator(
+                        opt_message =
+                            Some(Message::ChangeSingleParameterBegin(Parameter::Operator(
                                 self.operator_index,
                                 OperatorParameter::AttackDuration,
-                            ),
-                            Parameter::Operator(
-                                self.operator_index,
-                                OperatorParameter::AttackValue,
-                            ),
-                        )));
+                            )));
                     } else {
                         let pos_in_bounds = self.last_cursor_position.x - bounds.x;
                         let pos_in_viewport = (pos_in_bounds
@@ -1056,9 +1029,9 @@ impl Program<Message> for Envelope {
                     self.attack_dragger.status = EnvelopeDraggerStatus::Normal;
 
                     captured = true;
-                    opt_message = Some(Message::ChangeTwoParametersEnd((
-                        Parameter::Operator(self.operator_index, OperatorParameter::AttackDuration),
-                        Parameter::Operator(self.operator_index, OperatorParameter::AttackValue),
+                    opt_message = Some(Message::ChangeSingleParameterEnd(Parameter::Operator(
+                        self.operator_index,
+                        OperatorParameter::AttackDuration,
                     )));
                 }
 

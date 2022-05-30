@@ -101,7 +101,7 @@ impl VoiceOperatorVolumeEnvelope {
             Attack => Self::calculate_curve(
                 log10table,
                 0.0,
-                parameters.attack_end_value.get_value(),
+                1.0,
                 self.duration_since_stage_change(),
                 parameters.attack_duration.get_value(),
             ),

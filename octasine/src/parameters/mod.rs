@@ -88,7 +88,6 @@ impl Parameter {
                 OperatorParameter::FrequencyFree => format!("OP {} freq free", index + 1),
                 OperatorParameter::FrequencyFine => format!("OP {} freq fine", index + 1),
                 OperatorParameter::AttackDuration => format!("OP {} attack time", index + 1),
-                OperatorParameter::AttackValue => format!("OP {} attack vol", index + 1),
                 OperatorParameter::DecayDuration => format!("OP {} decay time", index + 1),
                 OperatorParameter::DecayValue => format!("OP {} decay vol", index + 1),
                 OperatorParameter::ReleaseDuration => format!("OP {} release time", index + 1),

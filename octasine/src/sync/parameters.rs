@@ -44,7 +44,6 @@ impl PatchParameter {
                     FrequencyFree => Self::new::<OperatorFrequencyFreeValue>(parameter),
                     FrequencyFine => Self::new::<OperatorFrequencyFineValue>(parameter),
                     AttackDuration => Self::new::<OperatorAttackDurationValue>(parameter),
-                    AttackValue => Self::new::<OperatorAttackVolumeValue>(parameter),
                     DecayDuration => Self::new::<OperatorDecayDurationValue>(parameter),
                     DecayValue => Self::new::<OperatorDecayVolumeValue>(parameter),
                     ReleaseDuration => Self::new::<OperatorReleaseDurationValue>(parameter),
