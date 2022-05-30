@@ -61,6 +61,66 @@ impl Envelope {
             x_offset: self.widget.get_x_offset(),
         };
 
+        let zoom_out = Tooltip::new(
+            Button::new(
+                &mut self.zoom_out,
+                Text::new("−").font(self.style.font_bold()),
+            )
+            .on_press(Message::EnvelopeZoomOut(self.operator_index))
+            .padding(self.style.button_padding())
+            .style(self.style.button()),
+            "Zoom out",
+            Position::Top,
+        )
+        .style(self.style.tooltip())
+        .font(self.style.font_regular())
+        .padding(self.style.tooltip_padding());
+
+        let zoom_in = Tooltip::new(
+            Button::new(
+                &mut self.zoom_in,
+                Text::new("+").font(self.style.font_bold()),
+            )
+            .on_press(Message::EnvelopeZoomIn(self.operator_index))
+            .padding(self.style.button_padding())
+            .style(self.style.button()),
+            "Zoom in",
+            Position::Top,
+        )
+        .style(self.style.tooltip())
+        .font(self.style.font_regular())
+        .padding(self.style.tooltip_padding());
+
+        let fit = Tooltip::new(
+            Button::new(
+                &mut self.zoom_to_fit,
+                Text::new("FIT").font(self.style.font_regular()),
+            )
+            .on_press(Message::EnvelopeZoomToFit(self.operator_index))
+            .padding(self.style.button_padding())
+            .style(self.style.button()),
+            "Zoom to fit",
+            Position::Top,
+        )
+        .style(self.style.tooltip())
+        .font(self.style.font_regular())
+        .padding(self.style.tooltip_padding());
+
+        let distribute = Tooltip::new(
+            Button::new(
+                &mut self.sync_viewport,
+                Text::new("DIST").font(self.style.font_regular()),
+            )
+            .on_press(sync_viewports_message)
+            .padding(self.style.button_padding())
+            .style(self.style.button()),
+            "Distribute to other envelopes",
+            Position::Top,
+        )
+        .style(self.style.tooltip())
+        .font(self.style.font_regular())
+        .padding(self.style.tooltip_padding());
+
         Row::new()
             .push(container_l3(self.style, self.widget.view()))
             .push(container_l3(
@@ -70,78 +130,14 @@ impl Envelope {
                     .align_items(Alignment::End)
                     .push(
                         Row::new()
-                            .push(
-                                Tooltip::new(
-                                    Button::new(
-                                        &mut self.zoom_out,
-                                        Text::new("−").font(self.style.font_bold()),
-                                    )
-                                    .on_press(Message::EnvelopeZoomOut(self.operator_index))
-                                    .padding(self.style.button_padding())
-                                    .style(self.style.button()),
-                                    "Zoom out",
-                                    Position::Top,
-                                )
-                                .style(self.style.tooltip())
-                                .font(self.style.font_regular())
-                                .padding(self.style.tooltip_padding()),
-                            )
+                            .push(zoom_out)
                             .push(Space::with_width(Length::Units(3)))
-                            .push(
-                                Tooltip::new(
-                                    Button::new(
-                                        &mut self.zoom_in,
-                                        Text::new("+").font(self.style.font_bold()),
-                                    )
-                                    .on_press(Message::EnvelopeZoomIn(self.operator_index))
-                                    .padding(self.style.button_padding())
-                                    .style(self.style.button()),
-                                    "Zoom in",
-                                    Position::Top,
-                                )
-                                .style(self.style.tooltip())
-                                .font(self.style.font_regular())
-                                .padding(self.style.tooltip_padding()),
-                            ),
+                            .push(zoom_in),
                     )
                     .push(Space::with_height(Length::Units(2)))
-                    .push(
-                        Row::new().push(
-                            Tooltip::new(
-                                Button::new(
-                                    &mut self.zoom_to_fit,
-                                    Text::new("FIT").font(self.style.font_regular()),
-                                )
-                                .on_press(Message::EnvelopeZoomToFit(self.operator_index))
-                                .padding(self.style.button_padding())
-                                .style(self.style.button()),
-                                "Zoom to fit",
-                                Position::Top,
-                            )
-                            .style(self.style.tooltip())
-                            .font(self.style.font_regular())
-                            .padding(self.style.tooltip_padding()),
-                        ),
-                    )
+                    .push(fit)
                     .push(Space::with_height(Length::Units(2)))
-                    .push(
-                        Row::new().push(
-                            Tooltip::new(
-                                Button::new(
-                                    &mut self.sync_viewport,
-                                    Text::new("DIST").font(self.style.font_regular()),
-                                )
-                                .on_press(sync_viewports_message)
-                                .padding(self.style.button_padding())
-                                .style(self.style.button()),
-                                "Distribute to other envelopes",
-                                Position::Top,
-                            )
-                            .style(self.style.tooltip())
-                            .font(self.style.font_regular())
-                            .padding(self.style.tooltip_padding()),
-                        ),
-                    ),
+                    .push(distribute),
             ))
             .into()
     }
