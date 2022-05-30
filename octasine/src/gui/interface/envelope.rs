@@ -27,6 +27,16 @@ const ENVELOPE_PATH_SCALE_Y: f32 = 1.0 - (1.0 / 8.0) - (1.0 / 16.0);
 const TOTAL_DURATION: f32 = 3.0;
 const MIN_VIEWPORT_FACTOR: f32 = 1.0 / 64.0;
 
+const FIXED_VIEWPORT_FACTORS: &[f32] = &[
+    1.0,
+    1.0 / 2.0,
+    1.0 / 4.0,
+    1.0 / 8.0,
+    1.0 / 16.0,
+    1.0 / 32.0,
+    1.0 / 64.0,
+];
+
 #[derive(Debug, Clone)]
 pub struct Style {
     pub background_color: Color,
@@ -348,33 +358,41 @@ impl Envelope {
     }
 
     pub fn zoom_in(&mut self) {
-        if self.viewport_factor > MIN_VIEWPORT_FACTOR {
-            self.viewport_factor = (self.viewport_factor * 0.5).max(MIN_VIEWPORT_FACTOR);
+        for factor in FIXED_VIEWPORT_FACTORS.iter().copied() {
+            if factor < self.viewport_factor {
+                let duration = self.get_current_duration();
 
-            let duration = self.get_current_duration();
+                // Zoom towards center of viewport unless envelope is really short
+                // compared to it (in which case, implicitly zoom towards the left)
+                if duration / TOTAL_DURATION >= self.viewport_factor {
+                    self.x_offset -= (self.viewport_factor - factor) / 2.0;
+                }
 
-            // Zoom towards center of viewport unless envelope is really short
-            // compared to it (in which case, implicitly zoom towards the left)
-            if duration / TOTAL_DURATION >= self.viewport_factor {
-                self.x_offset -= self.viewport_factor / 2.0;
+                self.viewport_factor = factor;
+
+                self.x_offset = Self::process_x_offset(self.x_offset, self.viewport_factor);
+
+                self.update_data();
+
+                break;
             }
-
-            self.x_offset = Self::process_x_offset(self.x_offset, self.viewport_factor);
         }
-
-        self.update_data();
     }
 
     pub fn zoom_out(&mut self) {
-        if self.viewport_factor < 1.0 {
-            self.x_offset += self.viewport_factor / 2.0;
+        for factor in FIXED_VIEWPORT_FACTORS.iter().rev().copied() {
+            if factor > self.viewport_factor {
+                self.x_offset += (factor - self.viewport_factor) / 2.0;
 
-            self.viewport_factor = (self.viewport_factor * 2.0).min(1.0);
+                self.viewport_factor = factor;
 
-            self.x_offset = Self::process_x_offset(self.x_offset, self.viewport_factor);
+                self.x_offset = Self::process_x_offset(self.x_offset, self.viewport_factor);
+
+                self.update_data();
+
+                break;
+            }
         }
-
-        self.update_data();
     }
 
     pub fn zoom_to_fit(&mut self) {
