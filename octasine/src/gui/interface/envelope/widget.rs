@@ -949,6 +949,15 @@ impl Program<Message> for Envelope {
                     );
 
                     self.update_data();
+
+                    let message = Message::EnvelopeChangeViewport {
+                        operator_index: self.operator_index,
+                        viewport_factor: self.viewport_factor,
+                        x_offset: self.x_offset,
+                        group: self.lock_group,
+                    };
+
+                    return (event::Status::Captured, Some(message));
                 }
 
                 if bounds.contains(Point::new(x, y)) {

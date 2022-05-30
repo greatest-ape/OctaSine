@@ -15,7 +15,7 @@
   * Envelopes
     * Two envelope lock groups
       * More efficient (begin/end edit) and general means of sync
-      * Support sync when changing zoom/offset by dragging
+      * Maybe automations should take lock groups into account..
       * Test
     * Reset values by double clicking draggers? At least for decay.
     * Display zoom level / viewport length in seconds/milliseconds?

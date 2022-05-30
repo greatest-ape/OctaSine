@@ -62,6 +62,8 @@ pub enum Message {
     ChangeSingleParameterImmediate(Parameter, f32),
     ChangeTwoParametersBegin((Parameter, Parameter)),
     ChangeTwoParametersEnd((Parameter, Parameter)),
+    /// Set envelope parameters. Broadcast all envelope values to group members
+    ///
     /// Wrap with appropriate begin/end messages
     ChangeEnvelopeParametersSetValue {
         operator_index: u8,
@@ -71,18 +73,29 @@ pub enum Message {
     },
     ToggleInfo,
     PatchChange(usize),
+    /// Zoom in in this envelope, broadcast to group members
     EnvelopeZoomIn {
         operator_index: u8,
         group: OperatorEnvelopeLockGroupValue,
     },
+    /// Zoom out in this envelope, broadcast to group members
     EnvelopeZoomOut {
         operator_index: u8,
         group: OperatorEnvelopeLockGroupValue,
     },
+    /// Zoom to fit in this envelope, broadcast to group members
     EnvelopeZoomToFit {
         operator_index: u8,
         group: OperatorEnvelopeLockGroupValue,
     },
+    /// Broadcast viewport changes to other group members
+    EnvelopeChangeViewport {
+        operator_index: u8,
+        viewport_factor: f32,
+        x_offset: f32,
+        group: OperatorEnvelopeLockGroupValue,
+    },
+    /// Broadcast viewport to all envelopes
     EnvelopeSyncViewports {
         viewport_factor: f32,
         x_offset: f32,
@@ -431,6 +444,22 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                     self.get_envelope_by_index(operator_index as u8)
                         .widget
                         .set_viewport(viewport_factor, x_offset);
+                }
+            }
+            Message::EnvelopeChangeViewport {
+                operator_index,
+                viewport_factor,
+                x_offset,
+                group,
+            } => {
+                for i in 0..NUM_OPERATORS {
+                    let envelope = self.get_envelope_by_index(i as u8);
+
+                    if i as u8 == operator_index || !envelope.is_in_group(group) {
+                        continue;
+                    }
+
+                    envelope.widget.set_viewport(viewport_factor, x_offset);
                 }
             }
             Message::ChangeSingleParameterBegin(index) => {
