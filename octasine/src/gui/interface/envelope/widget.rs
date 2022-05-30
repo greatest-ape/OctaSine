@@ -434,8 +434,8 @@ impl Envelope {
         }
     }
 
-    pub fn set_lock_group(&mut self, value: f32) {
-        self.lock_group = OperatorEnvelopeLockGroupValue::new_from_patch(value);
+    pub fn set_lock_group(&mut self, value: OperatorEnvelopeLockGroupValue) {
+        self.lock_group = value;
     }
 
     fn update_data(&mut self) {

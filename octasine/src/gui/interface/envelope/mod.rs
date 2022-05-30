@@ -49,7 +49,10 @@ impl Envelope {
     }
 
     pub fn set_lock_group(&mut self, value: f32) {
-        self.lock_group = OperatorEnvelopeLockGroupValue::new_from_patch(value);
+        let lock_group = OperatorEnvelopeLockGroupValue::new_from_patch(value);
+
+        self.lock_group = lock_group;
+        self.widget.set_lock_group(lock_group);
     }
 
     pub fn view(&mut self) -> Element<Message> {
