@@ -15,6 +15,7 @@ mod wave_picker;
 use iced_baseview::{executor, Application, Command, Subscription, WindowSubs};
 use iced_baseview::{Column, Container, Element, Length, Point, Row, Space, WindowQueue};
 
+use crate::common::NUM_OPERATORS;
 use crate::parameters::*;
 use crate::sync::GuiSyncHandle;
 
@@ -264,42 +265,16 @@ impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {
         group: OperatorEnvelopeLockGroupValue,
         values: EnvelopeValues,
     ) {
-        for (index, in_group) in [
-            self.operator_1.envelope.is_in_group(group),
-            self.operator_2.envelope.is_in_group(group),
-            self.operator_3.envelope.is_in_group(group),
-            self.operator_4.envelope.is_in_group(group),
-        ]
-        .into_iter()
-        .enumerate()
-        {
-            if !in_group || index == sending_operator_index as usize {
+        for index in 0..NUM_OPERATORS {
+            let envelope = self.get_envelope_by_index(index as u8);
+
+            if !envelope.is_in_group(group) || index == sending_operator_index as usize {
                 continue;
             }
 
-            match index {
-                0 => self
-                    .operator_1
-                    .envelope
-                    .widget
-                    .set_viewport(values.viewport_factor, values.x_offset),
-                1 => self
-                    .operator_2
-                    .envelope
-                    .widget
-                    .set_viewport(values.viewport_factor, values.x_offset),
-                2 => self
-                    .operator_3
-                    .envelope
-                    .widget
-                    .set_viewport(values.viewport_factor, values.x_offset),
-                3 => self
-                    .operator_4
-                    .envelope
-                    .widget
-                    .set_viewport(values.viewport_factor, values.x_offset),
-                _ => unreachable!(),
-            }
+            envelope
+                .widget
+                .set_viewport(values.viewport_factor, values.x_offset);
 
             let p = Parameter::Operator(index as u8, OperatorParameter::AttackDuration);
             self.set_value(p, values.attack);
@@ -452,22 +427,11 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                 viewport_factor,
                 x_offset,
             } => {
-                self.operator_1
-                    .envelope
-                    .widget
-                    .set_viewport(viewport_factor, x_offset);
-                self.operator_2
-                    .envelope
-                    .widget
-                    .set_viewport(viewport_factor, x_offset);
-                self.operator_3
-                    .envelope
-                    .widget
-                    .set_viewport(viewport_factor, x_offset);
-                self.operator_4
-                    .envelope
-                    .widget
-                    .set_viewport(viewport_factor, x_offset);
+                for operator_index in 0..NUM_OPERATORS {
+                    self.get_envelope_by_index(operator_index as u8)
+                        .widget
+                        .set_viewport(viewport_factor, x_offset);
+                }
             }
             Message::ChangeSingleParameterBegin(index) => {
                 self.sync_handle.begin_edit(index);
@@ -509,8 +473,10 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                     self.sync_handle.set_parameter(p, v);
                 }
 
-                let envelope = self.get_envelope_by_index(operator_index);
-                let values = envelope.widget.get_envelope_values();
+                let values = self
+                    .get_envelope_by_index(operator_index)
+                    .widget
+                    .get_envelope_values();
 
                 self.sync_envelopes(operator_index, group, values);
             }
