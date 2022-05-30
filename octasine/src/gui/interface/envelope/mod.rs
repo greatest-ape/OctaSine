@@ -101,7 +101,7 @@ impl Envelope {
             .push(container_l3(
                 self.style,
                 Column::new()
-                    .width(Length::Units(LINE_HEIGHT * 3))
+                    .width(Length::Units(LINE_HEIGHT * 4))
                     .align_items(Alignment::End)
                     .push(
                         Row::new()
@@ -109,7 +109,7 @@ impl Envelope {
                             .push(Space::with_width(Length::Units(3)))
                             .push(zoom_in),
                     )
-                    .push(Space::with_height(Length::Units(2)))
+                    .push(Space::with_height(Length::Units(6)))
                     .push(
                         Row::new()
                             .push(fit)
