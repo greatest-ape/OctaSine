@@ -313,15 +313,12 @@ impl Envelope {
     fn zoom_in_to_fit(&mut self) {
         let duration_ratio = self.get_current_duration() / TOTAL_DURATION;
 
-        loop {
-            let next_viewport_factor = self.viewport_factor / 2.0;
-
-            if duration_ratio > next_viewport_factor || next_viewport_factor <= MIN_VIEWPORT_FACTOR
-            {
+        for factor in FIXED_VIEWPORT_FACTORS.iter().copied() {
+            if duration_ratio > factor {
                 break;
             }
 
-            self.viewport_factor = next_viewport_factor;
+            self.viewport_factor = factor;
         }
     }
 
