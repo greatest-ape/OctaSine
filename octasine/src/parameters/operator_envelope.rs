@@ -1,4 +1,7 @@
-use super::ParameterValue;
+use super::{
+    utils::{map_parameter_value_to_step, map_step_to_parameter_value},
+    ParameterValue,
+};
 
 pub const ENVELOPE_MAX_DURATION: f64 = 4.0;
 pub const ENVELOPE_MIN_DURATION: f64 = 0.01;
@@ -118,6 +121,46 @@ impl Default for OperatorDecayVolumeValue {
 }
 
 impl_identity_value_conversion!(OperatorDecayVolumeValue);
+
+const LOCK_STEPS: &[OperatorEnvelopeLockGroupValue] = &[
+    OperatorEnvelopeLockGroupValue::Off,
+    OperatorEnvelopeLockGroupValue::A,
+    OperatorEnvelopeLockGroupValue::B,
+];
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum OperatorEnvelopeLockGroupValue {
+    Off,
+    A,
+    B,
+}
+
+impl Default for OperatorEnvelopeLockGroupValue {
+    fn default() -> Self {
+        Self::Off
+    }
+}
+
+impl ParameterValue for OperatorEnvelopeLockGroupValue {
+    type Value = Self;
+
+    fn new_from_audio(value: Self::Value) -> Self {
+        value
+    }
+
+    fn get(self) -> Self::Value {
+        self
+    }
+    fn new_from_patch(value: f32) -> Self {
+        map_parameter_value_to_step(&LOCK_STEPS[..], value)
+    }
+    fn to_patch(self) -> f32 {
+        map_step_to_parameter_value(&LOCK_STEPS[..], self)
+    }
+    fn get_formatted(self) -> String {
+        format!("{:?}", self)
+    }
+}
 
 #[cfg(test)]
 mod tests {

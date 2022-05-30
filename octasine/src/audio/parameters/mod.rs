@@ -111,6 +111,7 @@ macro_rules! impl_patch_interaction {
                         ReleaseDuration => {
                             $f(&mut operator.volume_envelope.release_duration, input)
                         }
+                        EnvelopeLockGroup => $f(&mut operator.volume_envelope.lock_group, input),
                     }
                 }
                 Parameter::Lfo(index, p) => {
@@ -227,6 +228,7 @@ pub struct OperatorEnvelopeAudioParameters {
     pub decay_duration: SimpleAudioParameter<OperatorDecayDurationValue>,
     pub decay_end_value: OperatorEnvelopeVolumeAudioParameter<OperatorDecayVolumeValue>,
     pub release_duration: SimpleAudioParameter<OperatorReleaseDurationValue>,
+    pub lock_group: SimpleAudioParameter<OperatorEnvelopeLockGroupValue>,
 }
 
 impl OperatorEnvelopeAudioParameters {
@@ -235,6 +237,7 @@ impl OperatorEnvelopeAudioParameters {
         self.decay_duration.advance_one_sample(sample_rate);
         self.decay_end_value.advance_one_sample(sample_rate);
         self.release_duration.advance_one_sample(sample_rate);
+        self.lock_group.advance_one_sample(sample_rate);
     }
 }
 

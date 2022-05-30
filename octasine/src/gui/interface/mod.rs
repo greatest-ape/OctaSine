@@ -153,6 +153,7 @@ impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {
                     OperatorParameter::DecayDuration => operator.envelope.set_decay_duration(v),
                     OperatorParameter::DecayValue => operator.envelope.set_decay_end_value(v),
                     OperatorParameter::ReleaseDuration => operator.envelope.set_release_duration(v),
+                    OperatorParameter::EnvelopeLockGroup => operator.envelope.set_lock_group(v),
                 }
             }
             Parameter::Lfo(index, p) => {

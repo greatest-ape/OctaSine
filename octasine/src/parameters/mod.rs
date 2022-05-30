@@ -91,6 +91,7 @@ impl Parameter {
                 OperatorParameter::DecayDuration => format!("OP {} decay time", index + 1),
                 OperatorParameter::DecayValue => format!("OP {} decay vol", index + 1),
                 OperatorParameter::ReleaseDuration => format!("OP {} release time", index + 1),
+                OperatorParameter::EnvelopeLockGroup => format!("OP {} lock group", index + 1),
             },
             Self::Lfo(index, p) => match p {
                 LfoParameter::Target => format!("LFO {} target", index + 1),
