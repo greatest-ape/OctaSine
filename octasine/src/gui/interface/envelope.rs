@@ -25,7 +25,17 @@ const ENVELOPE_PATH_SCALE_X: f32 = (WIDTH as f32 - 2.0 * LINE_HEIGHT as f32) / W
 const ENVELOPE_PATH_SCALE_Y: f32 = 1.0 - (1.0 / 8.0) - (1.0 / 16.0);
 
 const TOTAL_DURATION: f32 = 3.0;
-const MIN_VIEWPORT_FACTOR: f32 = 1.0 / 128.0;
+const MIN_VIEWPORT_FACTOR: f32 = 1.0 / 64.0;
+
+const FIXED_VIEWPORT_FACTORS: &[f32] = &[
+    1.0,
+    1.0 / 2.0,
+    1.0 / 4.0,
+    1.0 / 8.0,
+    1.0 / 16.0,
+    1.0 / 32.0,
+    1.0 / 64.0,
+];
 
 #[derive(Debug, Clone)]
 pub struct Style {
@@ -40,6 +50,8 @@ pub struct Style {
     pub dragger_fill_color_hover: Color,
     pub dragger_fill_color_dragging: Color,
     pub dragger_border_color: Color,
+    pub viewport_indicator_border: Color,
+    pub viewport_indicator_border_active: Color,
 }
 
 pub trait StyleSheet {
@@ -216,6 +228,12 @@ struct DraggingBackground {
     viewport_factor: f32,
 }
 
+#[derive(Clone, Copy, Debug)]
+struct DoubleClickData {
+    point: Point,
+    releases: usize,
+}
+
 pub struct Envelope {
     log10table: Log10Table,
     cache: Cache,
@@ -237,6 +255,7 @@ pub struct Envelope {
     release_dragger: EnvelopeDragger,
     last_cursor_position: Point,
     dragging_background_from: Option<DraggingBackground>,
+    double_click_data: Option<DoubleClickData>,
 }
 
 impl Envelope {
@@ -282,6 +301,7 @@ impl Envelope {
             release_dragger: EnvelopeDragger::default(),
             last_cursor_position: Point::new(-1.0, -1.0),
             dragging_background_from: None,
+            double_click_data: None,
         };
 
         envelope.zoom_in_to_fit();
@@ -293,15 +313,12 @@ impl Envelope {
     fn zoom_in_to_fit(&mut self) {
         let duration_ratio = self.get_current_duration() / TOTAL_DURATION;
 
-        loop {
-            let next_viewport_factor = self.viewport_factor / 2.0;
-
-            if duration_ratio > next_viewport_factor || next_viewport_factor <= MIN_VIEWPORT_FACTOR
-            {
+        for factor in FIXED_VIEWPORT_FACTORS.iter().copied() {
+            if duration_ratio > factor {
                 break;
             }
 
-            self.viewport_factor = next_viewport_factor;
+            self.viewport_factor = factor;
         }
     }
 
@@ -338,33 +355,42 @@ impl Envelope {
     }
 
     pub fn zoom_in(&mut self) {
-        if self.viewport_factor > MIN_VIEWPORT_FACTOR {
-            self.viewport_factor = (self.viewport_factor * 0.5).max(MIN_VIEWPORT_FACTOR);
+        for factor in FIXED_VIEWPORT_FACTORS.iter().copied() {
+            if factor < self.viewport_factor {
+                let duration = self.get_current_duration();
 
-            let duration = self.get_current_duration();
+                // Zoom towards center of viewport unless envelope is takes up
+                // less than half of it (in which case, implicitly zoom towards
+                // the left)
+                if duration / TOTAL_DURATION > self.viewport_factor * 0.5 {
+                    self.x_offset -= (self.viewport_factor - factor) / 2.0;
+                }
 
-            // Zoom towards center of viewport unless envelope is really short
-            // compared to it (in which case, implicitly zoom towards the left)
-            if duration / TOTAL_DURATION >= self.viewport_factor {
-                self.x_offset -= self.viewport_factor / 2.0;
+                self.viewport_factor = factor;
+
+                self.x_offset = Self::process_x_offset(self.x_offset, self.viewport_factor);
+
+                self.update_data();
+
+                break;
             }
-
-            self.x_offset = Self::process_x_offset(self.x_offset, self.viewport_factor);
         }
-
-        self.update_data();
     }
 
     pub fn zoom_out(&mut self) {
-        if self.viewport_factor < 1.0 {
-            self.x_offset += self.viewport_factor / 2.0;
+        for factor in FIXED_VIEWPORT_FACTORS.iter().rev().copied() {
+            if factor > self.viewport_factor {
+                self.x_offset += (factor - self.viewport_factor) / 2.0;
 
-            self.viewport_factor = (self.viewport_factor * 2.0).min(1.0);
+                self.viewport_factor = factor;
 
-            self.x_offset = Self::process_x_offset(self.x_offset, self.viewport_factor);
+                self.x_offset = Self::process_x_offset(self.x_offset, self.viewport_factor);
+
+                self.update_data();
+
+                break;
+            }
         }
-
-        self.update_data();
     }
 
     pub fn zoom_to_fit(&mut self) {
@@ -620,6 +646,45 @@ impl Envelope {
         frame.stroke(&right_border, border_stroke);
     }
 
+    fn drag_viewport_indicator(&self, frame: &mut Frame, style_sheet: Box<dyn StyleSheet>) {
+        const WIDTH: f32 = 60.0;
+        const HEIGHT: f32 = 6.0;
+
+        let style = style_sheet.active();
+        let size = frame.size();
+
+        let top_right = scale_point_x(size, Point::new(size.width, 0.0)).snap();
+        let top_left = Point::new(top_right.x - WIDTH, top_right.y);
+
+        let full_rect = Path::rectangle(top_left, Size::new(WIDTH, HEIGHT));
+
+        let border_stroke = Stroke::default()
+            .with_width(1.0)
+            .with_color(style.viewport_indicator_border);
+
+        frame.fill(&full_rect, style.background_color);
+        frame.stroke(&full_rect, border_stroke);
+
+        let viewport_top_left = Point::new(
+            (top_left.x + -self.x_offset * WIDTH).floor() + 0.5 + 1.0,
+            top_left.y + 1.0,
+        );
+        let viewport_rect = Path::rectangle(
+            viewport_top_left,
+            Size::new(
+                (WIDTH * self.viewport_factor).floor().max(2.0) - 2.0,
+                HEIGHT - 2.0,
+            ),
+        );
+
+        let border_stroke = Stroke::default()
+            .with_width(1.0)
+            .with_color(style.viewport_indicator_border_active);
+
+        frame.fill(&viewport_rect, style.background_color);
+        frame.stroke(&viewport_rect, border_stroke);
+    }
+
     fn draw_dragger(
         frame: &mut Frame,
         style_sheet: Box<dyn StyleSheet>,
@@ -671,6 +736,8 @@ impl Program<Message> for Envelope {
             Self::draw_dragger(frame, self.style.envelope(), &self.attack_dragger);
             Self::draw_dragger(frame, self.style.envelope(), &self.decay_dragger);
             Self::draw_dragger(frame, self.style.envelope(), &self.release_dragger);
+
+            self.drag_viewport_indicator(frame, self.style.envelope());
         });
 
         vec![geometry]
@@ -687,6 +754,12 @@ impl Program<Message> for Envelope {
                 position: Point { x, y },
             }) => {
                 self.last_cursor_position = Point::new(x, y);
+
+                if let Some(data) = self.double_click_data {
+                    if data.point != self.last_cursor_position {
+                        self.double_click_data = None;
+                    }
+                }
 
                 let relative_position = Point::new(x - bounds.x, y - bounds.y);
 
@@ -940,7 +1013,14 @@ impl Program<Message> for Envelope {
                             original_visible_position: pos_in_viewport,
                             original_x_offset: self.x_offset,
                             viewport_factor: self.viewport_factor,
-                        })
+                        });
+
+                        if self.double_click_data.is_none() {
+                            self.double_click_data = Some(DoubleClickData {
+                                point: self.last_cursor_position,
+                                releases: 0,
+                            });
+                        }
                     }
 
                     self.cache.clear();
@@ -986,6 +1066,20 @@ impl Program<Message> for Envelope {
                     self.dragging_background_from = None;
 
                     captured = true;
+                }
+
+                if let Some(data) = self.double_click_data.as_mut() {
+                    data.releases += 1;
+
+                    captured = true;
+                }
+
+                if let Some(data) = self.double_click_data {
+                    if data.releases == 2 {
+                        self.zoom_to_fit();
+
+                        self.double_click_data = None;
+                    }
                 }
 
                 if captured {

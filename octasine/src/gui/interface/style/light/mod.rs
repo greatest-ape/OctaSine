@@ -172,6 +172,8 @@ impl envelope::StyleSheet for Envelope {
             dragger_fill_color_hover: SURFACE_HOVER,
             dragger_fill_color_dragging: SURFACE_PRESS,
             dragger_border_color: BORDER,
+            viewport_indicator_border: GRAY_300,
+            viewport_indicator_border_active: BLUE,
         }
     }
 }
