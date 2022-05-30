@@ -108,7 +108,9 @@ impl CornerWidgets {
             let theme_button = Tooltip::new(
                 Button::new(
                     &mut self.toggle_style_state,
-                    Text::new("THEME").font(self.style.font_regular()),
+                    Text::new("THEME")
+                        .font(self.style.font_regular())
+                        .height(Length::Units(LINE_HEIGHT)),
                 )
                 .on_press(Message::ToggleColorMode)
                 .padding(self.style.button_padding())
@@ -121,7 +123,9 @@ impl CornerWidgets {
             let info_button = Tooltip::new(
                 Button::new(
                     &mut self.toggle_info_state,
-                    Text::new("INFO").font(self.style.font_regular()),
+                    Text::new("INFO")
+                        .font(self.style.font_regular())
+                        .height(Length::Units(LINE_HEIGHT)),
                 )
                 .on_press(Message::ToggleInfo)
                 .padding(self.style.button_padding())
