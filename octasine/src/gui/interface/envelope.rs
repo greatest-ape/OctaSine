@@ -784,7 +784,7 @@ impl Program<Message> for Envelope {
                     EnvelopeDraggerStatus::Dragging {
                         from,
                         original_duration,
-                        original_end_value,
+                        ..
                     } => {
                         self.attack_duration =
                             dragging_to_duration(self.viewport_factor, x, from, original_duration);
