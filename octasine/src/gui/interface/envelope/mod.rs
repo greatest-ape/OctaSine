@@ -10,6 +10,7 @@ use crate::parameters::operator_envelope::OperatorEnvelopeLockGroupValue;
 use crate::parameters::ParameterValue;
 use crate::sync::GuiSyncHandle;
 
+use super::boolean_button::{envelope_group_a_button, envelope_group_b_button, BooleanButton};
 use super::common::container_l3;
 use super::style::Theme;
 use super::{Message, LINE_HEIGHT};
@@ -23,6 +24,8 @@ pub struct Envelope {
     pub zoom_out: button::State,
     pub sync_viewport: button::State,
     pub zoom_to_fit: button::State,
+    pub group_a: BooleanButton,
+    pub group_b: BooleanButton,
 }
 
 impl Envelope {
@@ -32,6 +35,7 @@ impl Envelope {
 
             OperatorEnvelopeLockGroupValue::new_from_patch(sync_handle.get_parameter(p))
         };
+
         Self {
             operator_index,
             style,
@@ -41,12 +45,16 @@ impl Envelope {
             zoom_out: button::State::default(),
             sync_viewport: button::State::default(),
             zoom_to_fit: button::State::default(),
+            group_a: envelope_group_a_button(sync_handle, operator_index, style),
+            group_b: envelope_group_b_button(sync_handle, operator_index, style),
         }
     }
 
     pub fn set_style(&mut self, style: Theme) {
         self.style = style;
         self.widget.set_style(style);
+        self.group_a.set_style(style);
+        self.group_b.set_style(style);
     }
 
     pub fn set_lock_group(&mut self, value: f32) {
@@ -54,6 +62,9 @@ impl Envelope {
 
         self.lock_group = lock_group;
         self.widget.set_lock_group(lock_group);
+
+        self.group_a.set_value(value);
+        self.group_b.set_value(value);
     }
 
     pub fn view(&mut self) -> Element<Message> {
@@ -109,12 +120,19 @@ impl Envelope {
                             .push(Space::with_width(Length::Units(3)))
                             .push(zoom_in),
                     )
-                    .push(Space::with_height(Length::Units(6)))
+                    .push(Space::with_height(Length::Units(3)))
                     .push(
                         Row::new()
                             .push(fit)
                             .push(Space::with_width(Length::Units(3)))
                             .push(distribute),
+                    )
+                    .push(Space::with_height(Length::Units(3)))
+                    .push(
+                        Row::new()
+                            .push(self.group_a.view())
+                            .push(Space::with_width(Length::Units(3)))
+                            .push(self.group_b.view()),
                     ),
             ))
             .into()

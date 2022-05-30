@@ -5,6 +5,7 @@ use iced_baseview::canvas::{
 use iced_baseview::{Color, Element, Length, Point, Rectangle, Size};
 
 use crate::parameters::lfo_mode::LfoMode;
+use crate::parameters::operator_envelope::OperatorEnvelopeLockGroupValue;
 use crate::parameters::{
     LfoActiveValue, LfoBpmSyncValue, LfoModeValue, LfoParameter, OperatorActiveValue,
     OperatorParameter, Parameter, ParameterValue,
@@ -114,6 +115,60 @@ pub fn lfo_active_button<H: GuiSyncHandle>(
             }
         },
         |theme| theme.mute_button(),
+    )
+}
+
+pub fn envelope_group_a_button<H: GuiSyncHandle>(
+    sync_handle: &H,
+    operator_index: usize,
+    style: Theme,
+) -> BooleanButton {
+    BooleanButton::new(
+        sync_handle,
+        Parameter::Operator(operator_index as u8, OperatorParameter::EnvelopeLockGroup),
+        style,
+        "A",
+        6 + style.button_padding() * 2,
+        LINE_HEIGHT + style.button_padding() * 2,
+        |v| {
+            OperatorEnvelopeLockGroupValue::new_from_patch(v).get()
+                == OperatorEnvelopeLockGroupValue::A
+        },
+        |is_active| {
+            if is_active {
+                OperatorEnvelopeLockGroupValue::A.to_patch()
+            } else {
+                OperatorEnvelopeLockGroupValue::Off.to_patch()
+            }
+        },
+        |theme| theme.envelope_group_button(),
+    )
+}
+
+pub fn envelope_group_b_button<H: GuiSyncHandle>(
+    sync_handle: &H,
+    operator_index: usize,
+    style: Theme,
+) -> BooleanButton {
+    BooleanButton::new(
+        sync_handle,
+        Parameter::Operator(operator_index as u8, OperatorParameter::EnvelopeLockGroup),
+        style,
+        "B",
+        6 + style.button_padding() * 2,
+        LINE_HEIGHT + style.button_padding() * 2,
+        |v| {
+            OperatorEnvelopeLockGroupValue::new_from_patch(v).get()
+                == OperatorEnvelopeLockGroupValue::B
+        },
+        |is_active| {
+            if is_active {
+                OperatorEnvelopeLockGroupValue::B.to_patch()
+            } else {
+                OperatorEnvelopeLockGroupValue::Off.to_patch()
+            }
+        },
+        |theme| theme.envelope_group_button(),
     )
 }
 
