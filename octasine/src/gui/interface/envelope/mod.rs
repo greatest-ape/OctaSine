@@ -112,7 +112,7 @@ impl Envelope {
             .push(container_l3(
                 self.style,
                 Column::new()
-                    .width(Length::Units(LINE_HEIGHT * 4))
+                    .width(Length::Units(LINE_HEIGHT * 3))
                     .align_items(Alignment::End)
                     .push(
                         Row::new()
@@ -127,7 +127,7 @@ impl Envelope {
                             .push(Space::with_width(Length::Units(3)))
                             .push(distribute),
                     )
-                    .push(Space::with_height(Length::Units(6 + 2)))
+                    .push(Space::with_height(Length::Units(10)))
                     .push(
                         Row::new()
                             .push(self.group_a.view())

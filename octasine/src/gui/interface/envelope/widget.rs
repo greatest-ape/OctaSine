@@ -14,7 +14,7 @@ use crate::sync::GuiSyncHandle;
 use super::super::style::Theme;
 use super::super::{Message, SnapPoint, FONT_SIZE, LINE_HEIGHT};
 
-const WIDTH: u16 = LINE_HEIGHT * 18;
+const WIDTH: u16 = LINE_HEIGHT * 19;
 const HEIGHT: u16 = LINE_HEIGHT * 5;
 const SIZE: Size = Size {
     width: WIDTH as f32,
