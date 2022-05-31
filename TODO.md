@@ -11,9 +11,11 @@
   * Should modulation index now compensate for higher frequencies?
   * Stores patches/banks in format for suitable for future support for
     multiple banks? Are changes even necessary?
+  * Should lock groups be taken into account when automating? Just setting
+    equivalent parameter for other envelopes in same group.
 * GUI
   * Envelopes
-    * Test envelope lock groups
+    * Double-check envelope parameter setting logic
     * Reset values by double clicking draggers? At least for decay.
     * Display zoom level / viewport length in seconds/milliseconds?
     * Display all volumes in dB?
