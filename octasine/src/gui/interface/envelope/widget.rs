@@ -1096,7 +1096,10 @@ impl Program<Message> for Envelope {
 
                 if let Some(data) = self.double_click_data {
                     if data.releases == 2 {
-                        self.zoom_to_fit();
+                        opt_message = Some(Message::EnvelopeZoomToFit {
+                            operator_index: self.operator_index,
+                            group: self.lock_group,
+                        });
 
                         self.double_click_data = None;
                     }
