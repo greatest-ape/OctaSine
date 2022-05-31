@@ -13,7 +13,7 @@ use crate::sync::GuiSyncHandle;
 use super::boolean_button::{envelope_group_a_button, envelope_group_b_button, BooleanButton};
 use super::common::container_l3;
 use super::style::Theme;
-use super::{Message, FONT_SIZE, LINE_HEIGHT};
+use super::{Message, LINE_HEIGHT};
 
 pub struct Envelope {
     operator_index: usize,
@@ -67,6 +67,10 @@ impl Envelope {
         self.group_b.set_value(value);
     }
 
+    pub fn get_group(&self) -> OperatorEnvelopeLockGroupValue {
+        self.lock_group
+    }
+
     pub fn is_in_group(&self, group: OperatorEnvelopeLockGroupValue) -> bool {
         group == self.lock_group && group != OperatorEnvelopeLockGroupValue::Off
     }
@@ -79,7 +83,6 @@ impl Envelope {
             "−",
             Message::EnvelopeZoomOut {
                 operator_index: self.operator_index as u8,
-                group: self.lock_group,
             },
             "Zoom out",
         );
@@ -91,7 +94,6 @@ impl Envelope {
             "+",
             Message::EnvelopeZoomIn {
                 operator_index: self.operator_index as u8,
-                group: self.lock_group,
             },
             "Zoom in",
         );
@@ -103,7 +105,6 @@ impl Envelope {
             "F",
             Message::EnvelopeZoomToFit {
                 operator_index: self.operator_index as u8,
-                group: self.lock_group,
             },
             "Zoom to fit",
         );
@@ -113,7 +114,7 @@ impl Envelope {
             &mut self.sync_viewport,
             self.style.font_regular(),
             "D",
-            Message::EnvelopeSyncViewports {
+            Message::EnvelopeDistributeViewports {
                 viewport_factor: self.widget.get_viewport_factor(),
                 x_offset: self.widget.get_x_offset(),
             },

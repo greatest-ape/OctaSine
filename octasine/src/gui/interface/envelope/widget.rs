@@ -814,7 +814,6 @@ impl Program<Message> for Envelope {
                                 self.attack_duration as f32,
                             ),
                             parameter_2: None,
-                            group: self.lock_group,
                         };
 
                         return (event::Status::Captured, Some(message));
@@ -869,7 +868,6 @@ impl Program<Message> for Envelope {
                                 ),
                                 self.sustain_volume as f32,
                             )),
-                            group: self.lock_group,
                         };
 
                         return (event::Status::Captured, Some(message));
@@ -921,7 +919,6 @@ impl Program<Message> for Envelope {
                                 self.release_duration as f32,
                             ),
                             parameter_2: None,
-                            group: self.lock_group,
                         };
 
                         return (event::Status::Captured, Some(message));
@@ -954,7 +951,6 @@ impl Program<Message> for Envelope {
                         operator_index: self.operator_index,
                         viewport_factor: self.viewport_factor,
                         x_offset: self.x_offset,
-                        group: self.lock_group,
                     };
 
                     return (event::Status::Captured, Some(message));
@@ -1098,7 +1094,6 @@ impl Program<Message> for Envelope {
                     if data.releases == 2 {
                         opt_message = Some(Message::EnvelopeZoomToFit {
                             operator_index: self.operator_index,
-                            group: self.lock_group,
                         });
 
                         self.double_click_data = None;
