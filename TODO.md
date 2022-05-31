@@ -17,6 +17,8 @@
       * Test
     * Reset values by double clicking draggers? At least for decay.
     * Display zoom level / viewport length in seconds/milliseconds?
+    * Display all volumes in dB?
+    * Tooltips for parameter titles?
 * Other crates
   * create iced_audio 0.8.0 release, use it
   * ask for new baseview release, then create iced_baseview release, use them
