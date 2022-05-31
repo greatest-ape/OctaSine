@@ -314,51 +314,81 @@ impl Envelope {
         envelope
     }
 
-    fn zoom_in_to_fit(&mut self) {
-        let duration_ratio = self.get_current_duration() / TOTAL_DURATION;
-
-        for factor in FIXED_VIEWPORT_FACTORS.iter().copied() {
-            if duration_ratio > factor {
-                break;
-            }
-
-            self.viewport_factor = factor;
-        }
+    pub fn view(&mut self) -> Element<Message> {
+        Container::new(
+            Canvas::new(self)
+                .width(Length::Units(WIDTH))
+                .height(Length::Units(HEIGHT)),
+        )
+        .height(Length::Units(LINE_HEIGHT * 6))
+        .into()
     }
+}
 
-    pub fn get_viewport_factor(&self) -> f32 {
-        self.viewport_factor
-    }
-
-    pub fn get_x_offset(&self) -> f32 {
-        self.x_offset
-    }
-
-    pub fn set_viewport(&mut self, viewport_factor: f32, x_offset: f32) {
-        self.viewport_factor = viewport_factor;
-        self.x_offset = Self::process_x_offset(x_offset, viewport_factor);
-
-        self.update_data();
-        self.cache.clear();
-    }
-
+/// Public style / parameter value setters
+impl Envelope {
     pub fn set_style(&mut self, style: Theme) {
         self.style = style;
         self.cache.clear();
     }
 
-    fn process_x_offset(x_offset: f32, viewport_factor: f32) -> f32 {
-        x_offset.min(0.0).max(-1.0 + viewport_factor)
+    pub fn set_attack_duration(&mut self, value: f32) {
+        if !self.attack_dragger.is_dragging() {
+            self.attack_duration = Self::process_envelope_duration(value as f64);
+
+            self.update_data();
+        }
     }
 
-    fn process_envelope_duration(sync_value: f64) -> f32 {
-        sync_value.max(ENVELOPE_MIN_DURATION / ENVELOPE_MAX_DURATION) as f32
+    pub fn set_decay_duration(&mut self, value: f32) {
+        if !self.decay_dragger.is_dragging() {
+            self.decay_duration = Self::process_envelope_duration(value as f64);
+
+            self.update_data();
+        }
     }
 
-    fn get_current_duration(&self) -> f32 {
-        self.attack_duration + self.decay_duration + self.release_duration
+    pub fn set_sustain_volume(&mut self, value: f32) {
+        self.sustain_volume = value as f32;
+
+        self.update_data();
     }
 
+    pub fn set_release_duration(&mut self, value: f32) {
+        if !self.release_dragger.is_dragging() {
+            self.release_duration = Self::process_envelope_duration(value as f64);
+
+            self.update_data();
+        }
+    }
+
+    pub fn set_lock_group(&mut self, value: OperatorEnvelopeLockGroupValue) {
+        self.lock_group = value;
+    }
+}
+
+/// Public value getters
+impl Envelope {
+    pub fn get_envelope_values(&self) -> EnvelopeValues {
+        EnvelopeValues {
+            attack: self.attack_duration,
+            decay: self.decay_duration,
+            sustain: self.sustain_volume,
+            release: self.release_duration,
+            viewport_factor: self.viewport_factor,
+            x_offset: self.x_offset,
+        }
+    }
+    pub fn get_viewport_factor(&self) -> f32 {
+        self.viewport_factor
+    }
+    pub fn get_x_offset(&self) -> f32 {
+        self.x_offset
+    }
+}
+
+/// Public viewport manipulation
+impl Envelope {
     pub fn zoom_in(&mut self) {
         for factor in FIXED_VIEWPORT_FACTORS.iter().copied() {
             if factor < self.viewport_factor {
@@ -406,40 +436,29 @@ impl Envelope {
         self.update_data();
     }
 
-    pub fn set_attack_duration(&mut self, value: f32) {
-        if !self.attack_dragger.is_dragging() {
-            self.attack_duration = Self::process_envelope_duration(value as f64);
-
-            self.update_data();
-        }
-    }
-
-    pub fn set_decay_duration(&mut self, value: f32) {
-        if !self.decay_dragger.is_dragging() {
-            self.decay_duration = Self::process_envelope_duration(value as f64);
-
-            self.update_data();
-        }
-    }
-
-    pub fn set_sustain_volume(&mut self, value: f32) {
-        self.sustain_volume = value as f32;
+    pub fn set_viewport(&mut self, viewport_factor: f32, x_offset: f32) {
+        self.viewport_factor = viewport_factor;
+        self.x_offset = Self::process_x_offset(x_offset, viewport_factor);
 
         self.update_data();
+        self.cache.clear();
     }
 
-    pub fn set_release_duration(&mut self, value: f32) {
-        if !self.release_dragger.is_dragging() {
-            self.release_duration = Self::process_envelope_duration(value as f64);
+    fn zoom_in_to_fit(&mut self) {
+        let duration_ratio = self.get_current_duration() / TOTAL_DURATION;
 
-            self.update_data();
+        for factor in FIXED_VIEWPORT_FACTORS.iter().copied() {
+            if duration_ratio > factor {
+                break;
+            }
+
+            self.viewport_factor = factor;
         }
     }
+}
 
-    pub fn set_lock_group(&mut self, value: OperatorEnvelopeLockGroupValue) {
-        self.lock_group = value;
-    }
-
+/// Internal data update helpers
+impl Envelope {
     fn update_data(&mut self) {
         self.update_stage_paths();
 
@@ -451,17 +470,6 @@ impl Envelope {
             .set_center(self.release_stage_path.end_point);
 
         self.cache.clear();
-    }
-
-    pub fn get_envelope_values(&self) -> EnvelopeValues {
-        EnvelopeValues {
-            attack: self.attack_duration,
-            decay: self.decay_duration,
-            sustain: self.sustain_volume,
-            release: self.release_duration,
-            viewport_factor: self.viewport_factor,
-            x_offset: self.x_offset,
-        }
     }
 
     fn update_stage_paths(&mut self) {
@@ -501,245 +509,25 @@ impl Envelope {
             0.0,
         );
     }
+}
 
-    pub fn view(&mut self) -> Element<Message> {
-        Container::new(
-            Canvas::new(self)
-                .width(Length::Units(WIDTH))
-                .height(Length::Units(HEIGHT)),
-        )
-        .height(Length::Units(LINE_HEIGHT * 6))
-        .into()
+/// Utilities
+impl Envelope {
+    fn process_x_offset(x_offset: f32, viewport_factor: f32) -> f32 {
+        x_offset.min(0.0).max(-1.0 + viewport_factor)
     }
 
-    fn draw_time_markers(&self, frame: &mut Frame, style: Theme) {
-        let font_regular = style.font_regular();
-        let style = style.envelope().active();
-
-        let total_duration = self.viewport_factor * TOTAL_DURATION;
-        let x_offset = self.x_offset / self.viewport_factor;
-
-        let mut time_marker_interval = 0.01 / 4.0;
-
-        loop {
-            let num_markers = (total_duration / time_marker_interval) as usize;
-
-            if num_markers <= 110 {
-                break;
-            } else {
-                time_marker_interval *= 10.0;
-            }
-        }
-
-        let iterations = (TOTAL_DURATION / time_marker_interval) as usize + 1;
-
-        for i in 0..iterations {
-            let x =
-                (x_offset + (time_marker_interval * i as f32) / total_duration) * self.size.width;
-
-            if x < 0.0 || x > self.size.width {
-                continue;
-            }
-
-            let top_point = Point::new(x, 0.0);
-            let bottom_point = Point::new(x, self.size.height);
-
-            let path = Path::line(
-                scale_point_x(self.size, top_point).snap(),
-                scale_point_x(self.size, bottom_point).snap(),
-            );
-
-            if i % 10 == 0 && i != 0 {
-                let text_point = Point::new(x - 10.0, self.size.height);
-
-                let text = Text {
-                    content: format!("{:.1}s", time_marker_interval * 4.0 * i as f32),
-                    position: scale_point_x(self.size, text_point),
-                    font: font_regular,
-                    size: FONT_SIZE as f32,
-                    color: style.text_color,
-                    ..Default::default()
-                };
-
-                frame.fill_text(text);
-
-                let stroke = Stroke::default()
-                    .with_width(1.0)
-                    .with_color(style.time_marker_color_major);
-
-                frame.stroke(&path, stroke);
-            } else {
-                let stroke = Stroke::default()
-                    .with_width(1.0)
-                    .with_color(style.time_marker_minor_color);
-
-                frame.stroke(&path, stroke);
-            }
-        }
+    fn process_envelope_duration(sync_value: f64) -> f32 {
+        sync_value.max(ENVELOPE_MIN_DURATION / ENVELOPE_MAX_DURATION) as f32
     }
 
-    fn draw_stage_paths(&self, frame: &mut Frame, style_sheet: Box<dyn StyleSheet>) {
-        let style = style_sheet.active();
-        let size = frame.size();
-
-        let top_drag_border = Path::line(
-            scale_point(size, Point::ORIGIN).snap(),
-            scale_point(size, Point::new(size.width, 0.0)).snap(),
-        );
-        let bottom_drag_border = Path::line(
-            scale_point(size, Point::new(0.0, size.height)).snap(),
-            scale_point(size, Point::new(size.width, size.height)).snap(),
-        );
-
-        let drag_border_stroke = Stroke::default()
-            .with_width(1.0)
-            .with_color(style.drag_border_color);
-
-        frame.stroke(&top_drag_border, drag_border_stroke);
-        frame.stroke(&bottom_drag_border, drag_border_stroke);
-
-        let stage_path_stroke = Stroke::default()
-            .with_width(1.0)
-            .with_color(style.path_color);
-
-        frame.stroke(&self.attack_stage_path.path, stage_path_stroke);
-        frame.stroke(&self.decay_stage_path.path, stage_path_stroke);
-        frame.stroke(&self.release_stage_path.path, stage_path_stroke);
-
-        // Hide stage path parts that extend beyond scaled bounds, draw borders
-
-        let left_bg_x = scale_point_x(size, Point::ORIGIN).snap().x - 1.0;
-        let left_bg = Path::rectangle(Point::ORIGIN, Size::new(left_bg_x, size.height));
-        frame.fill(&left_bg, style.background_color);
-        frame.stroke(
-            &left_bg,
-            Stroke::default().with_color(style.background_color),
-        );
-
-        let right_bg_x = scale_point_x(size, Point::new(size.width, 0.0)).snap().x + 1.0;
-        let right_bg = Path::rectangle(
-            Point::new(right_bg_x, 0.0),
-            Size::new(size.width, size.height),
-        );
-        frame.fill(&right_bg, style.background_color);
-        frame.stroke(
-            &right_bg,
-            Stroke::default().with_color(style.background_color),
-        );
-
-        let top_border = Path::line(
-            scale_point_x(size, Point::ORIGIN).snap(),
-            scale_point_x(size, Point::new(size.width, 0.0)).snap(),
-        );
-        let bottom_border = {
-            let left = scale_point_x(size, Point::new(0.0, size.height)).snap().x;
-            let right = scale_point_x(size, Point::new(size.width, size.height))
-                .snap()
-                .x;
-
-            Path::line(
-                Point::new(left, size.height - 1.0).snap(),
-                Point::new(right, size.height - 1.0).snap(),
-            )
-        };
-        let left_border = Path::line(
-            scale_point_x(size, Point::new(0.0, 0.0)).snap(),
-            scale_point_x(size, Point::new(0.0, size.height)).snap(),
-        );
-        let right_border = Path::line(
-            scale_point_x(size, Point::new(size.width, 0.0)).snap(),
-            scale_point_x(size, Point::new(size.width, size.height)).snap(),
-        );
-        let border_stroke = Stroke::default()
-            .with_width(1.0)
-            .with_color(style.border_color);
-
-        frame.stroke(&top_border, border_stroke);
-        frame.stroke(&bottom_border, border_stroke);
-        frame.stroke(&left_border, border_stroke);
-        frame.stroke(&right_border, border_stroke);
+    fn get_current_duration(&self) -> f32 {
+        self.attack_duration + self.decay_duration + self.release_duration
     }
+}
 
-    fn draw_viewport_indicator(&self, frame: &mut Frame, style_sheet: Box<dyn StyleSheet>) {
-        const WIDTH: f32 = 60.0;
-        const HEIGHT: f32 = 6.0;
-
-        let style = style_sheet.active();
-        let size = frame.size();
-
-        let top_right = scale_point_x(size, Point::new(size.width, 0.0)).snap();
-        let top_left = Point::new(top_right.x - WIDTH, top_right.y);
-
-        let full_rect = Path::rectangle(top_left, Size::new(WIDTH, HEIGHT));
-
-        let border_stroke = Stroke::default()
-            .with_width(1.0)
-            .with_color(style.viewport_indicator_border);
-
-        frame.fill(&full_rect, style.background_color);
-        frame.stroke(&full_rect, border_stroke);
-
-        let viewport_top_left = Point::new(
-            (top_left.x + -self.x_offset * WIDTH).floor() + 0.5 + 1.0,
-            top_left.y + 1.0,
-        );
-        let viewport_rect = Path::rectangle(
-            viewport_top_left,
-            Size::new(
-                (WIDTH * self.viewport_factor).floor().max(2.0) - 2.0,
-                HEIGHT - 2.0,
-            ),
-        );
-
-        let border_stroke = Stroke::default()
-            .with_width(1.0)
-            .with_color(style.viewport_indicator_border_active);
-
-        frame.fill(&viewport_rect, style.background_color);
-        frame.stroke(&viewport_rect, border_stroke);
-    }
-
-    fn draw_dragger(
-        frame: &mut Frame,
-        style_sheet: Box<dyn StyleSheet>,
-        dragger: &EnvelopeDragger,
-    ) {
-        let size = frame.size();
-        let style = style_sheet.active();
-
-        let left_end_x = scale_point(size, Point::ORIGIN).snap().x;
-        let right_end_x = scale_point(size, Point::new(size.width, 0.0)).snap().x;
-
-        if dragger.center.x < left_end_x || dragger.center.x > right_end_x {
-            return;
-        }
-
-        let circle_path = {
-            let mut builder = path::Builder::new();
-
-            builder.move_to(dragger.center);
-            builder.circle(dragger.center, dragger.radius);
-
-            builder.build()
-        };
-
-        let fill_color = match dragger.status {
-            EnvelopeDraggerStatus::Normal => style_sheet.active().dragger_fill_color_active,
-            EnvelopeDraggerStatus::Hover => style_sheet.active().dragger_fill_color_hover,
-            EnvelopeDraggerStatus::Dragging { .. } => {
-                style_sheet.active().dragger_fill_color_dragging
-            }
-        };
-
-        frame.fill(&circle_path, fill_color);
-
-        let stroke = Stroke::default()
-            .with_width(1.0)
-            .with_color(style.dragger_border_color);
-
-        frame.stroke(&circle_path, stroke);
-    }
-
+/// Event handlers
+impl Envelope {
     fn handle_cursor_moved(
         &mut self,
         bounds: Rectangle,
@@ -1077,6 +865,237 @@ impl Envelope {
         }
 
         (event::Status::Ignored, None)
+    }
+}
+
+/// Display logic
+impl Envelope {
+    fn draw_time_markers(&self, frame: &mut Frame, style: Theme) {
+        let font_regular = style.font_regular();
+        let style = style.envelope().active();
+
+        let total_duration = self.viewport_factor * TOTAL_DURATION;
+        let x_offset = self.x_offset / self.viewport_factor;
+
+        let mut time_marker_interval = 0.01 / 4.0;
+
+        loop {
+            let num_markers = (total_duration / time_marker_interval) as usize;
+
+            if num_markers <= 110 {
+                break;
+            } else {
+                time_marker_interval *= 10.0;
+            }
+        }
+
+        let iterations = (TOTAL_DURATION / time_marker_interval) as usize + 1;
+
+        for i in 0..iterations {
+            let x =
+                (x_offset + (time_marker_interval * i as f32) / total_duration) * self.size.width;
+
+            if x < 0.0 || x > self.size.width {
+                continue;
+            }
+
+            let top_point = Point::new(x, 0.0);
+            let bottom_point = Point::new(x, self.size.height);
+
+            let path = Path::line(
+                scale_point_x(self.size, top_point).snap(),
+                scale_point_x(self.size, bottom_point).snap(),
+            );
+
+            if i % 10 == 0 && i != 0 {
+                let text_point = Point::new(x - 10.0, self.size.height);
+
+                let text = Text {
+                    content: format!("{:.1}s", time_marker_interval * 4.0 * i as f32),
+                    position: scale_point_x(self.size, text_point),
+                    font: font_regular,
+                    size: FONT_SIZE as f32,
+                    color: style.text_color,
+                    ..Default::default()
+                };
+
+                frame.fill_text(text);
+
+                let stroke = Stroke::default()
+                    .with_width(1.0)
+                    .with_color(style.time_marker_color_major);
+
+                frame.stroke(&path, stroke);
+            } else {
+                let stroke = Stroke::default()
+                    .with_width(1.0)
+                    .with_color(style.time_marker_minor_color);
+
+                frame.stroke(&path, stroke);
+            }
+        }
+    }
+
+    fn draw_stage_paths(&self, frame: &mut Frame, style_sheet: Box<dyn StyleSheet>) {
+        let style = style_sheet.active();
+        let size = frame.size();
+
+        let top_drag_border = Path::line(
+            scale_point(size, Point::ORIGIN).snap(),
+            scale_point(size, Point::new(size.width, 0.0)).snap(),
+        );
+        let bottom_drag_border = Path::line(
+            scale_point(size, Point::new(0.0, size.height)).snap(),
+            scale_point(size, Point::new(size.width, size.height)).snap(),
+        );
+
+        let drag_border_stroke = Stroke::default()
+            .with_width(1.0)
+            .with_color(style.drag_border_color);
+
+        frame.stroke(&top_drag_border, drag_border_stroke);
+        frame.stroke(&bottom_drag_border, drag_border_stroke);
+
+        let stage_path_stroke = Stroke::default()
+            .with_width(1.0)
+            .with_color(style.path_color);
+
+        frame.stroke(&self.attack_stage_path.path, stage_path_stroke);
+        frame.stroke(&self.decay_stage_path.path, stage_path_stroke);
+        frame.stroke(&self.release_stage_path.path, stage_path_stroke);
+
+        // Hide stage path parts that extend beyond scaled bounds, draw borders
+
+        let left_bg_x = scale_point_x(size, Point::ORIGIN).snap().x - 1.0;
+        let left_bg = Path::rectangle(Point::ORIGIN, Size::new(left_bg_x, size.height));
+        frame.fill(&left_bg, style.background_color);
+        frame.stroke(
+            &left_bg,
+            Stroke::default().with_color(style.background_color),
+        );
+
+        let right_bg_x = scale_point_x(size, Point::new(size.width, 0.0)).snap().x + 1.0;
+        let right_bg = Path::rectangle(
+            Point::new(right_bg_x, 0.0),
+            Size::new(size.width, size.height),
+        );
+        frame.fill(&right_bg, style.background_color);
+        frame.stroke(
+            &right_bg,
+            Stroke::default().with_color(style.background_color),
+        );
+
+        let top_border = Path::line(
+            scale_point_x(size, Point::ORIGIN).snap(),
+            scale_point_x(size, Point::new(size.width, 0.0)).snap(),
+        );
+        let bottom_border = {
+            let left = scale_point_x(size, Point::new(0.0, size.height)).snap().x;
+            let right = scale_point_x(size, Point::new(size.width, size.height))
+                .snap()
+                .x;
+
+            Path::line(
+                Point::new(left, size.height - 1.0).snap(),
+                Point::new(right, size.height - 1.0).snap(),
+            )
+        };
+        let left_border = Path::line(
+            scale_point_x(size, Point::new(0.0, 0.0)).snap(),
+            scale_point_x(size, Point::new(0.0, size.height)).snap(),
+        );
+        let right_border = Path::line(
+            scale_point_x(size, Point::new(size.width, 0.0)).snap(),
+            scale_point_x(size, Point::new(size.width, size.height)).snap(),
+        );
+        let border_stroke = Stroke::default()
+            .with_width(1.0)
+            .with_color(style.border_color);
+
+        frame.stroke(&top_border, border_stroke);
+        frame.stroke(&bottom_border, border_stroke);
+        frame.stroke(&left_border, border_stroke);
+        frame.stroke(&right_border, border_stroke);
+    }
+
+    fn draw_viewport_indicator(&self, frame: &mut Frame, style_sheet: Box<dyn StyleSheet>) {
+        const WIDTH: f32 = 60.0;
+        const HEIGHT: f32 = 6.0;
+
+        let style = style_sheet.active();
+        let size = frame.size();
+
+        let top_right = scale_point_x(size, Point::new(size.width, 0.0)).snap();
+        let top_left = Point::new(top_right.x - WIDTH, top_right.y);
+
+        let full_rect = Path::rectangle(top_left, Size::new(WIDTH, HEIGHT));
+
+        let border_stroke = Stroke::default()
+            .with_width(1.0)
+            .with_color(style.viewport_indicator_border);
+
+        frame.fill(&full_rect, style.background_color);
+        frame.stroke(&full_rect, border_stroke);
+
+        let viewport_top_left = Point::new(
+            (top_left.x + -self.x_offset * WIDTH).floor() + 0.5 + 1.0,
+            top_left.y + 1.0,
+        );
+        let viewport_rect = Path::rectangle(
+            viewport_top_left,
+            Size::new(
+                (WIDTH * self.viewport_factor).floor().max(2.0) - 2.0,
+                HEIGHT - 2.0,
+            ),
+        );
+
+        let border_stroke = Stroke::default()
+            .with_width(1.0)
+            .with_color(style.viewport_indicator_border_active);
+
+        frame.fill(&viewport_rect, style.background_color);
+        frame.stroke(&viewport_rect, border_stroke);
+    }
+
+    fn draw_dragger(
+        frame: &mut Frame,
+        style_sheet: Box<dyn StyleSheet>,
+        dragger: &EnvelopeDragger,
+    ) {
+        let size = frame.size();
+        let style = style_sheet.active();
+
+        let left_end_x = scale_point(size, Point::ORIGIN).snap().x;
+        let right_end_x = scale_point(size, Point::new(size.width, 0.0)).snap().x;
+
+        if dragger.center.x < left_end_x || dragger.center.x > right_end_x {
+            return;
+        }
+
+        let circle_path = {
+            let mut builder = path::Builder::new();
+
+            builder.move_to(dragger.center);
+            builder.circle(dragger.center, dragger.radius);
+
+            builder.build()
+        };
+
+        let fill_color = match dragger.status {
+            EnvelopeDraggerStatus::Normal => style_sheet.active().dragger_fill_color_active,
+            EnvelopeDraggerStatus::Hover => style_sheet.active().dragger_fill_color_hover,
+            EnvelopeDraggerStatus::Dragging { .. } => {
+                style_sheet.active().dragger_fill_color_dragging
+            }
+        };
+
+        frame.fill(&circle_path, fill_color);
+
+        let stroke = Stroke::default()
+            .with_width(1.0)
+            .with_color(style.dragger_border_color);
+
+        frame.stroke(&circle_path, stroke);
     }
 }
 
