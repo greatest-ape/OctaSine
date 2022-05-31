@@ -197,8 +197,8 @@ impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {
                     OperatorParameter::DecayDuration => {
                         operator.envelope.widget.set_decay_duration(v)
                     }
-                    OperatorParameter::DecayValue => {
-                        operator.envelope.widget.set_decay_end_value(v)
+                    OperatorParameter::SustainVolume => {
+                        operator.envelope.widget.set_sustain_volume(v)
                     }
                     OperatorParameter::ReleaseDuration => {
                         operator.envelope.widget.set_release_duration(v)
@@ -301,7 +301,7 @@ impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {
             self.sync_handle.set_parameter(p, values.decay);
             self.sync_handle.end_edit(p);
 
-            let p = Parameter::Operator(index as u8, OperatorParameter::DecayValue);
+            let p = Parameter::Operator(index as u8, OperatorParameter::SustainVolume);
             self.set_value(p, values.sustain);
             self.sync_handle.begin_edit(p);
             self.sync_handle.set_parameter(p, values.sustain);

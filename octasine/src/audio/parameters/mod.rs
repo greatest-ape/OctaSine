@@ -107,7 +107,7 @@ macro_rules! impl_patch_interaction {
                         FrequencyFine => $f(&mut operator.frequency_fine, input),
                         AttackDuration => $f(&mut operator.volume_envelope.attack_duration, input),
                         DecayDuration => $f(&mut operator.volume_envelope.decay_duration, input),
-                        DecayValue => $f(&mut operator.volume_envelope.decay_end_value, input),
+                        SustainVolume => $f(&mut operator.volume_envelope.sustain_volume, input),
                         ReleaseDuration => {
                             $f(&mut operator.volume_envelope.release_duration, input)
                         }
@@ -226,7 +226,7 @@ impl OperatorAudioParameters {
 pub struct OperatorEnvelopeAudioParameters {
     pub attack_duration: SimpleAudioParameter<OperatorAttackDurationValue>,
     pub decay_duration: SimpleAudioParameter<OperatorDecayDurationValue>,
-    pub decay_end_value: OperatorEnvelopeVolumeAudioParameter<OperatorDecayVolumeValue>,
+    pub sustain_volume: OperatorEnvelopeVolumeAudioParameter<OperatorSustainVolumeValue>,
     pub release_duration: SimpleAudioParameter<OperatorReleaseDurationValue>,
     pub lock_group: SimpleAudioParameter<OperatorEnvelopeLockGroupValue>,
 }
@@ -235,7 +235,7 @@ impl OperatorEnvelopeAudioParameters {
     fn advance_one_sample(&mut self, sample_rate: SampleRate) {
         self.attack_duration.advance_one_sample(sample_rate);
         self.decay_duration.advance_one_sample(sample_rate);
-        self.decay_end_value.advance_one_sample(sample_rate);
+        self.sustain_volume.advance_one_sample(sample_rate);
         self.release_duration.advance_one_sample(sample_rate);
         self.lock_group.advance_one_sample(sample_rate);
     }

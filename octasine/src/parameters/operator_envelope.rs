@@ -112,15 +112,15 @@ impl Default for OperatorReleaseDurationValue {
 impl_envelope_duration_value_conversion!(OperatorReleaseDurationValue);
 
 #[derive(Debug, Clone, Copy)]
-pub struct OperatorDecayVolumeValue(f32);
+pub struct OperatorSustainVolumeValue(f32);
 
-impl Default for OperatorDecayVolumeValue {
+impl Default for OperatorSustainVolumeValue {
     fn default() -> Self {
         Self(DEFAULT_ENVELOPE_DECAY_VOLUME)
     }
 }
 
-impl_identity_value_conversion!(OperatorDecayVolumeValue);
+impl_identity_value_conversion!(OperatorSustainVolumeValue);
 
 const LOCK_STEPS: &[OperatorEnvelopeLockGroupValue] = &[
     OperatorEnvelopeLockGroupValue::Off,

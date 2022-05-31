@@ -244,7 +244,7 @@ pub struct Envelope {
     operator_index: u8,
     attack_duration: f32,
     decay_duration: f32,
-    decay_end_value: f32,
+    sustain_volume: f32,
     release_duration: f32,
     lock_group: OperatorEnvelopeLockGroupValue,
     size: Size,
@@ -274,9 +274,9 @@ impl Envelope {
         let release_duration = Self::process_envelope_duration(sync_handle.get_parameter(
             Parameter::Operator(operator_index, OperatorParameter::ReleaseDuration),
         ) as f64);
-        let decay_end_value = sync_handle.get_parameter(Parameter::Operator(
+        let sustain_volume = sync_handle.get_parameter(Parameter::Operator(
             operator_index,
-            OperatorParameter::DecayValue,
+            OperatorParameter::SustainVolume,
         )) as f32;
         let lock_group = {
             let p = Parameter::Operator(operator_index, OperatorParameter::EnvelopeLockGroup);
@@ -291,7 +291,7 @@ impl Envelope {
             operator_index,
             attack_duration,
             decay_duration,
-            decay_end_value,
+            sustain_volume,
             release_duration,
             lock_group,
             size: SIZE,
@@ -422,8 +422,8 @@ impl Envelope {
         }
     }
 
-    pub fn set_decay_end_value(&mut self, value: f32) {
-        self.decay_end_value = value as f32;
+    pub fn set_sustain_volume(&mut self, value: f32) {
+        self.sustain_volume = value as f32;
 
         self.update_data();
     }
@@ -457,7 +457,7 @@ impl Envelope {
         EnvelopeValues {
             attack: self.attack_duration,
             decay: self.decay_duration,
-            sustain: self.decay_end_value,
+            sustain: self.sustain_volume,
             release: self.release_duration,
             viewport_factor: self.viewport_factor,
             x_offset: self.x_offset,
@@ -487,7 +487,7 @@ impl Envelope {
             self.attack_duration,
             1.0,
             self.decay_duration as f32,
-            self.decay_end_value as f32,
+            self.sustain_volume as f32,
         );
 
         self.release_stage_path = EnvelopeStagePath::new(
@@ -496,7 +496,7 @@ impl Envelope {
             total_duration,
             x_offset,
             self.attack_duration + self.decay_duration,
-            self.decay_end_value,
+            self.sustain_volume,
             self.release_duration as f32,
             0.0,
         );
@@ -849,7 +849,7 @@ impl Program<Message> for Envelope {
                     } => {
                         self.decay_duration =
                             dragging_to_duration(self.viewport_factor, x, from, original_duration);
-                        self.decay_end_value = dragging_to_end_value(y, from, original_end_value);
+                        self.sustain_volume = dragging_to_end_value(y, from, original_end_value);
 
                         self.update_data();
 
@@ -865,9 +865,9 @@ impl Program<Message> for Envelope {
                             parameter_2: Some((
                                 Parameter::Operator(
                                     self.operator_index,
-                                    OperatorParameter::DecayValue,
+                                    OperatorParameter::SustainVolume,
                                 ),
-                                self.decay_end_value as f32,
+                                self.sustain_volume as f32,
                             )),
                             group: self.lock_group,
                         };
@@ -995,14 +995,17 @@ impl Program<Message> for Envelope {
                         self.decay_dragger.status = EnvelopeDraggerStatus::Dragging {
                             from: self.last_cursor_position,
                             original_duration: self.decay_duration,
-                            original_end_value: self.decay_end_value,
+                            original_end_value: self.sustain_volume,
                         };
                         opt_message = Some(Message::ChangeTwoParametersBegin((
                             Parameter::Operator(
                                 self.operator_index,
                                 OperatorParameter::DecayDuration,
                             ),
-                            Parameter::Operator(self.operator_index, OperatorParameter::DecayValue),
+                            Parameter::Operator(
+                                self.operator_index,
+                                OperatorParameter::SustainVolume,
+                            ),
                         )));
                     } else if self.attack_dragger.hitbox.contains(relative_position)
                         && !self.attack_dragger.is_dragging()
@@ -1066,7 +1069,7 @@ impl Program<Message> for Envelope {
                     captured = true;
                     opt_message = Some(Message::ChangeTwoParametersEnd((
                         Parameter::Operator(self.operator_index, OperatorParameter::DecayDuration),
-                        Parameter::Operator(self.operator_index, OperatorParameter::DecayValue),
+                        Parameter::Operator(self.operator_index, OperatorParameter::SustainVolume),
                     )));
                 }
                 if self.attack_dragger.is_dragging() {

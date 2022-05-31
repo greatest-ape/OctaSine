@@ -40,7 +40,7 @@ impl VoiceOperatorVolumeEnvelope {
         if !key_pressed {
             match self.stage {
                 Attack => {
-                    self.stage = if self.last_volume > parameters.decay_end_value.get_value() {
+                    self.stage = if self.last_volume > parameters.sustain_volume.get_value() {
                         Decay
                     } else {
                         Release
@@ -108,11 +108,11 @@ impl VoiceOperatorVolumeEnvelope {
             Decay => Self::calculate_curve(
                 log10table,
                 self.volume_at_stage_change,
-                parameters.decay_end_value.get_value(),
+                parameters.sustain_volume.get_value(),
                 self.duration_since_stage_change(),
                 parameters.decay_duration.get_value(),
             ),
-            Sustain => parameters.decay_end_value.get_value(),
+            Sustain => parameters.sustain_volume.get_value(),
             Release => Self::calculate_curve(
                 log10table,
                 self.volume_at_stage_change,
