@@ -795,9 +795,8 @@ impl Envelope {
 
             self.cache.clear();
 
-            return (event::Status::Captured, Some(message));
-        }
-        if self.decay_dragger.is_dragging() {
+            (event::Status::Captured, Some(message))
+        } else if self.decay_dragger.is_dragging() {
             self.decay_dragger.status = EnvelopeDraggerStatus::Normal;
 
             let message = Message::ChangeEnvelopeParametersEnd {
@@ -814,9 +813,8 @@ impl Envelope {
 
             self.cache.clear();
 
-            return (event::Status::Captured, Some(message));
-        }
-        if self.attack_dragger.is_dragging() {
+            (event::Status::Captured, Some(message))
+        } else if self.attack_dragger.is_dragging() {
             self.attack_dragger.status = EnvelopeDraggerStatus::Normal;
 
             let message = Message::ChangeEnvelopeParametersEnd {
@@ -830,41 +828,40 @@ impl Envelope {
 
             self.cache.clear();
 
-            return (event::Status::Captured, Some(message));
-        }
+            (event::Status::Captured, Some(message))
+        } else {
+            let mut event_status = event::Status::Ignored;
+            let mut opt_message = None;
 
-        let mut captured = false;
-        let mut opt_message = None;
+            if self.dragging_background_from.is_some() {
+                self.dragging_background_from = None;
 
-        if self.dragging_background_from.is_some() {
-            self.dragging_background_from = None;
+                event_status = event::Status::Captured;
+            }
 
-            captured = true;
-        }
+            // Increment double click data release count if set
+            if let Some(data) = self.double_click_data.as_mut() {
+                data.releases += 1;
 
-        if let Some(data) = self.double_click_data.as_mut() {
-            data.releases += 1;
+                event_status = event::Status::Captured;
+            }
 
-            captured = true;
-        }
+            // If this is second release without mouse movement in between,
+            // send zoom to fit message
+            if let Some(DoubleClickData { releases: 2, .. }) = self.double_click_data {
+                self.double_click_data = None;
 
-        if let Some(data) = self.double_click_data {
-            if data.releases == 2 {
+                self.cache.clear();
+
+                event_status = event::Status::Captured;
+
                 opt_message = Some(Message::EnvelopeZoomToFit {
                     operator_index: self.operator_index,
                 });
-
-                self.double_click_data = None;
             }
+
+            (event_status, opt_message)
         }
-
-        if captured {
-            self.cache.clear();
-
-            return (event::Status::Captured, opt_message);
-        }
-
-        (event::Status::Ignored, None)
     }
 }
 
