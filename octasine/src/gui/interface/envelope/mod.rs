@@ -76,13 +76,19 @@ impl Envelope {
     }
 
     pub fn view(&mut self) -> Element<Message> {
+        let zoom_out_data = self.widget.get_zoom_out_data();
+        let zoom_in_data = self.widget.get_zoom_in_data();
+        let zoom_to_fit_data = self.widget.get_zoom_to_fit_data();
+
         let zoom_out = button_with_tooltip(
             self.style,
             &mut self.zoom_out,
             self.style.font_extra_bold(),
             "−",
-            Message::EnvelopeZoomOut {
+            Message::EnvelopeChangeViewport {
                 operator_index: self.operator_index as u8,
+                viewport_factor: zoom_out_data.0,
+                x_offset: zoom_out_data.1,
             },
             "Zoom out",
         );
@@ -92,8 +98,10 @@ impl Envelope {
             &mut self.zoom_in,
             self.style.font_extra_bold(),
             "+",
-            Message::EnvelopeZoomIn {
+            Message::EnvelopeChangeViewport {
                 operator_index: self.operator_index as u8,
+                viewport_factor: zoom_in_data.0,
+                x_offset: zoom_in_data.1,
             },
             "Zoom in",
         );
@@ -103,8 +111,10 @@ impl Envelope {
             &mut self.zoom_to_fit,
             self.style.font_regular(),
             "F",
-            Message::EnvelopeZoomToFit {
+            Message::EnvelopeChangeViewport {
                 operator_index: self.operator_index as u8,
+                viewport_factor: zoom_to_fit_data.0,
+                x_offset: zoom_to_fit_data.1,
             },
             "Zoom to fit",
         );

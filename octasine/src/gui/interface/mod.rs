@@ -81,19 +81,7 @@ pub enum Message {
         parameter_2: Option<(Parameter, f32)>,
     },
     ChangePatch(usize),
-    /// Zoom in in this envelope, broadcast viewport to group members
-    EnvelopeZoomIn {
-        operator_index: u8,
-    },
-    /// Zoom out in this envelope, broadcast viewport to group members
-    EnvelopeZoomOut {
-        operator_index: u8,
-    },
-    /// Zoom to fit in this envelope, broadcast viewport to group members
-    EnvelopeZoomToFit {
-        operator_index: u8,
-    },
-    /// Broadcast viewport changes to group members
+    /// Set viewport, broadcast it to group members
     EnvelopeChangeViewport {
         operator_index: u8,
         viewport_factor: f32,
@@ -407,23 +395,6 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                 self.update_widgets_from_parameters();
             }
             Message::NoOp => {}
-            Message::EnvelopeZoomIn { operator_index } => {
-                self.get_envelope_by_index(operator_index).widget.zoom_in();
-
-                self.sync_envelopes(operator_index, false);
-            }
-            Message::EnvelopeZoomOut { operator_index } => {
-                self.get_envelope_by_index(operator_index).widget.zoom_out();
-
-                self.sync_envelopes(operator_index, false);
-            }
-            Message::EnvelopeZoomToFit { operator_index } => {
-                self.get_envelope_by_index(operator_index)
-                    .widget
-                    .zoom_to_fit();
-
-                self.sync_envelopes(operator_index, false);
-            }
             Message::EnvelopeChangeViewport {
                 operator_index,
                 viewport_factor,

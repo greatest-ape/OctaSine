@@ -308,8 +308,9 @@ impl Envelope {
             double_click_data: None,
         };
 
-        envelope.zoom_in_to_fit();
-        envelope.update_data();
+        let (viewport_factor, x_offset) = envelope.get_zoom_to_fit_data();
+
+        envelope.set_viewport(viewport_factor, x_offset);
 
         envelope
     }
@@ -389,51 +390,59 @@ impl Envelope {
 
 /// Public viewport manipulation
 impl Envelope {
-    pub fn zoom_in(&mut self) {
+    pub(super) fn get_zoom_in_data(&self) -> (f32, f32) {
         for factor in FIXED_VIEWPORT_FACTORS.iter().copied() {
             if factor < self.viewport_factor {
-                let duration = self.get_current_duration();
+                let mut new_x_offset = self.x_offset;
 
                 // Zoom towards center of viewport unless envelope is takes up
                 // less than half of it (in which case, implicitly zoom towards
                 // the left)
-                if duration / TOTAL_DURATION > self.viewport_factor * 0.5 {
-                    self.x_offset -= (self.viewport_factor - factor) / 2.0;
+                if self.get_current_duration() / TOTAL_DURATION > self.viewport_factor * 0.5 {
+                    new_x_offset -= (self.viewport_factor - factor) / 2.0;
                 }
 
-                self.viewport_factor = factor;
+                let new_viewport_factor = factor;
+                let new_x_offset = Self::process_x_offset(new_x_offset, self.viewport_factor);
 
-                self.x_offset = Self::process_x_offset(self.x_offset, self.viewport_factor);
-
-                self.update_data();
-
-                break;
+                return (new_viewport_factor, new_x_offset);
             }
         }
+
+        (self.viewport_factor, self.x_offset)
     }
 
-    pub fn zoom_out(&mut self) {
+    pub(super) fn get_zoom_out_data(&self) -> (f32, f32) {
         for factor in FIXED_VIEWPORT_FACTORS.iter().rev().copied() {
             if factor > self.viewport_factor {
-                self.x_offset += (factor - self.viewport_factor) / 2.0;
+                let new_x_offset = self.x_offset + (factor - self.viewport_factor) / 2.0;
 
-                self.viewport_factor = factor;
+                let new_viewport_factor = factor;
+                let new_x_offset = Self::process_x_offset(new_x_offset, new_viewport_factor);
 
-                self.x_offset = Self::process_x_offset(self.x_offset, self.viewport_factor);
-
-                self.update_data();
-
-                break;
+                return (new_viewport_factor, new_x_offset);
             }
         }
+
+        (self.viewport_factor, self.x_offset)
     }
 
-    pub fn zoom_to_fit(&mut self) {
-        self.viewport_factor = 1.0;
-        self.x_offset = 0.0;
+    pub(super) fn get_zoom_to_fit_data(&self) -> (f32, f32) {
+        let duration_ratio = self.get_current_duration() / TOTAL_DURATION;
 
-        self.zoom_in_to_fit();
-        self.update_data();
+        let mut new_viewport_factor = 1.0;
+
+        for factor in FIXED_VIEWPORT_FACTORS.iter().copied() {
+            if duration_ratio > factor {
+                break;
+            }
+
+            new_viewport_factor = factor;
+        }
+
+        let new_x_offset = Self::process_x_offset(0.0, new_viewport_factor);
+
+        (new_viewport_factor, new_x_offset)
     }
 
     pub fn set_viewport(&mut self, viewport_factor: f32, x_offset: f32) {
@@ -441,19 +450,6 @@ impl Envelope {
         self.x_offset = Self::process_x_offset(x_offset, viewport_factor);
 
         self.update_data();
-        self.cache.clear();
-    }
-
-    fn zoom_in_to_fit(&mut self) {
-        let duration_ratio = self.get_current_duration() / TOTAL_DURATION;
-
-        for factor in FIXED_VIEWPORT_FACTORS.iter().copied() {
-            if duration_ratio > factor {
-                break;
-            }
-
-            self.viewport_factor = factor;
-        }
     }
 }
 
@@ -856,8 +852,12 @@ impl Envelope {
 
                 event_status = event::Status::Captured;
 
-                opt_message = Some(Message::EnvelopeZoomToFit {
+                let (viewport_factor, x_offset) = self.get_zoom_to_fit_data();
+
+                opt_message = Some(Message::EnvelopeChangeViewport {
                     operator_index: self.operator_index,
+                    viewport_factor,
+                    x_offset,
                 });
             }
 
