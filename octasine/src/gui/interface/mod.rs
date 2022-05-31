@@ -456,12 +456,10 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                 parameter_1,
                 parameter_2,
             } => {
-                self.set_value(parameter_1.0, parameter_1.1);
                 self.sync_handle
                     .set_parameter_deferred(parameter_1.0, parameter_1.1);
 
                 if let Some((p, v)) = parameter_2 {
-                    self.set_value(p, v);
                     self.sync_handle.set_parameter_deferred(p, v);
                 }
 
