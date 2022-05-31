@@ -153,7 +153,8 @@ cfg_if::cfg_if! {
             fn begin_edit(&self, parameter: Parameter);
             fn end_edit(&self, parameter: Parameter);
             fn set_parameter(&self, parameter: Parameter, value: f32);
-            fn set_parameter_deferred(&self, parameter: Parameter, value: f32);
+            /// Set parameter without telling host
+            fn set_parameter_audio_only(&self, parameter: Parameter, value: f32);
             fn get_parameter(&self, parameter: Parameter) -> f32;
             fn format_parameter_value(&self, parameter: Parameter, value: f32) -> String;
             fn get_patches(&self) -> (usize, Vec<String>);
@@ -185,8 +186,7 @@ cfg_if::cfg_if! {
 
                 self.patches.set_parameter_from_gui(index, value);
             }
-            /// Set parameter without telling host
-            fn set_parameter_deferred(&self, parameter: Parameter, value: f32){
+            fn set_parameter_audio_only(&self, parameter: Parameter, value: f32){
                 self.patches.set_parameter_from_gui(parameter.to_index() as usize, value);
             }
             fn get_parameter(&self, parameter: Parameter) -> f32 {

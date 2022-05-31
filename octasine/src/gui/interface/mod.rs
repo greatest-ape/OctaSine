@@ -263,6 +263,7 @@ impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {
         }
     }
 
+    /// Broadcast envelope changes to other group members, and optionally to host
     fn sync_envelopes(&mut self, sending_operator_index: u8, automate_host: bool) {
         let sending_envelope = self.get_envelope_by_index(sending_operator_index);
 
@@ -307,7 +308,7 @@ impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {
                     self.sync_handle.set_parameter(p, v);
                     self.sync_handle.end_edit(p);
                 } else {
-                    self.sync_handle.set_parameter_deferred(p, v);
+                    self.sync_handle.set_parameter_audio_only(p, v);
                 }
             }
         }
@@ -457,10 +458,10 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                 parameter_2,
             } => {
                 self.sync_handle
-                    .set_parameter_deferred(parameter_1.0, parameter_1.1);
+                    .set_parameter_audio_only(parameter_1.0, parameter_1.1);
 
                 if let Some((p, v)) = parameter_2 {
-                    self.sync_handle.set_parameter_deferred(p, v);
+                    self.sync_handle.set_parameter_audio_only(p, v);
                 }
 
                 self.sync_envelopes(operator_index, false);
