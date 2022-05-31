@@ -39,6 +39,8 @@ const OPEN_SANS_BYTES_SEMI_BOLD: &[u8] =
     include_bytes!("../../../../contrib/open-sans/OpenSans-SemiBold.ttf");
 const OPEN_SANS_BYTES_BOLD: &[u8] =
     include_bytes!("../../../../contrib/open-sans/OpenSans-Bold.ttf");
+const OPEN_SANS_BYTES_EXTRA_BOLD: &[u8] =
+    include_bytes!("../../../../contrib/open-sans/OpenSans-ExtraBold.ttf");
 
 pub trait SnapPoint {
     fn snap(self) -> Self;

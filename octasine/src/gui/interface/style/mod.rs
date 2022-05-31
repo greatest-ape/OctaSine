@@ -17,6 +17,10 @@ const OPEN_SANS_BOLD: Font = Font::External {
     name: "Open Sans Bold",
     bytes: super::OPEN_SANS_BYTES_BOLD,
 };
+const OPEN_SANS_EXTRA_BOLD: Font = Font::External {
+    name: "Open Sans Extra Bold",
+    bytes: super::OPEN_SANS_BYTES_EXTRA_BOLD,
+};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
@@ -63,6 +67,12 @@ impl Theme {
         match self {
             Theme::Dark => OPEN_SANS_SEMI_BOLD,
             Theme::Light => OPEN_SANS_BOLD,
+        }
+    }
+    pub fn font_extra_bold(&self) -> Font {
+        match self {
+            Theme::Dark => OPEN_SANS_BOLD,
+            Theme::Light => OPEN_SANS_EXTRA_BOLD,
         }
     }
     pub fn font_heading(&self) -> Font {

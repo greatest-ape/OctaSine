@@ -79,7 +79,7 @@ impl Envelope {
         let zoom_out = button_with_tooltip(
             self.style,
             &mut self.zoom_out,
-            self.style.font_bold(),
+            self.style.font_extra_bold(),
             "−",
             Message::EnvelopeZoomOut {
                 operator_index: self.operator_index as u8,
@@ -90,7 +90,7 @@ impl Envelope {
         let zoom_in = button_with_tooltip(
             self.style,
             &mut self.zoom_in,
-            self.style.font_bold(),
+            self.style.font_extra_bold(),
             "+",
             Message::EnvelopeZoomIn {
                 operator_index: self.operator_index as u8,
