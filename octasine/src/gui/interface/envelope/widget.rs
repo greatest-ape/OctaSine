@@ -771,7 +771,7 @@ impl Envelope {
         }
 
         if bounds.contains(Point::new(x, y)) {
-            return (event::Status::Captured, None);
+            (event::Status::Captured, None)
         } else {
             (event::Status::Ignored, None)
         }
