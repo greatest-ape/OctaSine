@@ -589,6 +589,9 @@ impl Envelope {
         }
     }
 
+    /// Handle cursor moved event
+    ///
+    /// Updates display state and ADSR parameter values on self
     fn handle_cursor_moved(
         &mut self,
         bounds: Rectangle,
@@ -773,9 +776,9 @@ impl Envelope {
 
         if bounds.contains(Point::new(x, y)) {
             return (event::Status::Captured, None);
+        } else {
+            (event::Status::Ignored, None)
         }
-
-        (event::Status::Ignored, None)
     }
 
     fn handle_button_released(&mut self) -> (event::Status, Option<Message>) {
