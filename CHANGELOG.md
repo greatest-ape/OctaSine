@@ -52,6 +52,7 @@ uses a different VST2 plugin ID.
 #### GUI changes
 
 - Major GUI redesign with layout and color changes
+- Add envelope group functionality, enabling simultaneously editing multiple ones
 - Zoom in envelopes by dragging up/down
 - Control mix output instead of modulation output with modulation matrix
   operator boxes
