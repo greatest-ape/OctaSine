@@ -326,11 +326,18 @@ impl Envelope {
     }
 }
 
-/// Public style / parameter value setters
+/// Public style / viewport / parameter value setters
 impl Envelope {
     pub fn set_style(&mut self, style: Theme) {
         self.style = style;
         self.cache.clear();
+    }
+
+    pub fn set_viewport(&mut self, viewport_factor: f32, x_offset: f32) {
+        self.viewport_factor = viewport_factor;
+        self.x_offset = Self::process_x_offset(x_offset, viewport_factor);
+
+        self.update_data();
     }
 
     pub fn set_attack_duration(&mut self, value: f32) {
@@ -388,7 +395,7 @@ impl Envelope {
     }
 }
 
-/// Public viewport manipulation
+/// Viewport change helpers
 impl Envelope {
     pub(super) fn get_zoom_in_data(&self) -> (f32, f32) {
         for factor in FIXED_VIEWPORT_FACTORS.iter().copied() {
@@ -443,13 +450,6 @@ impl Envelope {
         let new_x_offset = Self::process_x_offset(0.0, new_viewport_factor);
 
         (new_viewport_factor, new_x_offset)
-    }
-
-    pub fn set_viewport(&mut self, viewport_factor: f32, x_offset: f32) {
-        self.viewport_factor = viewport_factor;
-        self.x_offset = Self::process_x_offset(x_offset, viewport_factor);
-
-        self.update_data();
     }
 }
 
