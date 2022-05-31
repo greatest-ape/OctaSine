@@ -993,7 +993,7 @@ impl Program<Message> for Envelope {
                             original_duration: self.decay_duration,
                             original_end_value: self.sustain_volume,
                         };
-                        opt_message = Some(Message::ChangeTwoParametersBegin((
+                        opt_message = Some(Message::ChangeTwoParametersBegin(
                             Parameter::Operator(
                                 self.operator_index,
                                 OperatorParameter::DecayDuration,
@@ -1002,7 +1002,7 @@ impl Program<Message> for Envelope {
                                 self.operator_index,
                                 OperatorParameter::SustainVolume,
                             ),
-                        )));
+                        ));
                     } else if self.attack_dragger.hitbox.contains(relative_position)
                         && !self.attack_dragger.is_dragging()
                     {
@@ -1063,10 +1063,10 @@ impl Program<Message> for Envelope {
                     self.decay_dragger.status = EnvelopeDraggerStatus::Normal;
 
                     captured = true;
-                    opt_message = Some(Message::ChangeTwoParametersEnd((
+                    opt_message = Some(Message::ChangeTwoParametersEnd(
                         Parameter::Operator(self.operator_index, OperatorParameter::DecayDuration),
                         Parameter::Operator(self.operator_index, OperatorParameter::SustainVolume),
-                    )));
+                    ));
                 }
                 if self.attack_dragger.is_dragging() {
                     self.attack_dragger.status = EnvelopeDraggerStatus::Normal;

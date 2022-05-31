@@ -60,8 +60,8 @@ pub enum Message {
     ChangeSingleParameterEnd(Parameter),
     ChangeSingleParameterSetValue(Parameter, f32),
     ChangeSingleParameterImmediate(Parameter, f32),
-    ChangeTwoParametersBegin((Parameter, Parameter)),
-    ChangeTwoParametersEnd((Parameter, Parameter)),
+    ChangeTwoParametersBegin(Parameter, Parameter),
+    ChangeTwoParametersEnd(Parameter, Parameter),
     /// Set envelope parameters. Broadcast all envelope values to group members
     ///
     /// Wrap with appropriate begin/end messages
@@ -70,8 +70,8 @@ pub enum Message {
         parameter_1: (Parameter, f32),
         parameter_2: Option<(Parameter, f32)>,
     },
-    ToggleInfo,
-    PatchChange(usize),
+    NoOp,
+    ChangePatch(usize),
     /// Zoom in in this envelope, broadcast to group members
     EnvelopeZoomIn {
         operator_index: u8,
@@ -95,7 +95,7 @@ pub enum Message {
         viewport_factor: f32,
         x_offset: f32,
     },
-    ToggleColorMode,
+    SwitchTheme,
 }
 
 #[derive(Debug, Clone)]
@@ -111,7 +111,6 @@ pub struct EnvelopeValues {
 pub struct OctaSineIcedApplication<H: GuiSyncHandle> {
     sync_handle: H,
     style: style::Theme,
-    show_version: bool,
     operator_1: OperatorWidgets,
     operator_2: OperatorWidgets,
     operator_3: OperatorWidgets,
@@ -334,7 +333,6 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
         let app = Self {
             sync_handle,
             style,
-            show_version: false,
             operator_1,
             operator_2,
             operator_3,
@@ -392,9 +390,7 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                 }
                 self.update_widgets_from_parameters();
             }
-            Message::ToggleInfo => {
-                self.show_version = !self.show_version;
-            }
+            Message::NoOp => {}
             Message::EnvelopeZoomIn { operator_index } => {
                 self.get_envelope_by_index(operator_index).widget.zoom_in();
 
@@ -433,11 +429,11 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                         .set_viewport(viewport_factor, x_offset);
                 }
             }
-            Message::ChangeSingleParameterBegin(index) => {
-                self.sync_handle.begin_edit(index);
+            Message::ChangeSingleParameterBegin(parameter) => {
+                self.sync_handle.begin_edit(parameter);
             }
-            Message::ChangeSingleParameterEnd(index) => {
-                self.sync_handle.end_edit(index);
+            Message::ChangeSingleParameterEnd(parameter) => {
+                self.sync_handle.end_edit(parameter);
             }
             Message::ChangeSingleParameterSetValue(parameter, value) => {
                 self.set_value(parameter, value);
@@ -451,11 +447,11 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                 self.sync_handle.set_parameter(parameter, value);
                 self.sync_handle.end_edit(parameter);
             }
-            Message::ChangeTwoParametersBegin((parameter_1, parameter_2)) => {
+            Message::ChangeTwoParametersBegin(parameter_1, parameter_2) => {
                 self.sync_handle.begin_edit(parameter_1);
                 self.sync_handle.begin_edit(parameter_2);
             }
-            Message::ChangeTwoParametersEnd((parameter_1, parameter_2)) => {
+            Message::ChangeTwoParametersEnd(parameter_1, parameter_2) => {
                 self.sync_handle.end_edit(parameter_1);
                 self.sync_handle.end_edit(parameter_2);
             }
@@ -474,10 +470,10 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
 
                 self.sync_envelopes(operator_index);
             }
-            Message::PatchChange(index) => {
+            Message::ChangePatch(index) => {
                 self.sync_handle.set_patch_index(index);
             }
-            Message::ToggleColorMode => {
+            Message::SwitchTheme => {
                 let style = if let Theme::Light = self.style {
                     Theme::Dark
                 } else {

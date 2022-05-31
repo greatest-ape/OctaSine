@@ -112,7 +112,7 @@ impl CornerWidgets {
                         .font(self.style.font_regular())
                         .height(Length::Units(LINE_HEIGHT)),
                 )
-                .on_press(Message::ToggleColorMode)
+                .on_press(Message::SwitchTheme)
                 .padding(self.style.button_padding())
                 .style(self.style.button()),
                 "Switch color theme",
@@ -127,7 +127,7 @@ impl CornerWidgets {
                         .font(self.style.font_regular())
                         .height(Length::Units(LINE_HEIGHT)),
                 )
-                .on_press(Message::ToggleInfo)
+                .on_press(Message::NoOp)
                 .padding(self.style.button_padding())
                 .style(self.style.button()),
                 get_info_text(),

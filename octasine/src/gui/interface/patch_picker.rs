@@ -45,7 +45,7 @@ impl PatchPicker {
             &mut self.state,
             &self.options[..],
             Some(self.options[self.selected].clone()),
-            |option| Message::PatchChange(option.index),
+            |option| Message::ChangePatch(option.index),
         )
         .font(self.style.font_regular())
         .text_size(FONT_SIZE)
