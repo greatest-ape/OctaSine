@@ -57,32 +57,39 @@ impl SnapPoint for Point {
 
 #[derive(Debug, Clone)]
 pub enum Message {
+    NoOp,
     Frame,
     ChangeSingleParameterBegin(Parameter),
     ChangeSingleParameterEnd(Parameter),
     ChangeSingleParameterSetValue(Parameter, f32),
     ChangeSingleParameterImmediate(Parameter, f32),
-    ChangeTwoParametersBegin(Parameter, Parameter),
-    ChangeTwoParametersEnd(Parameter, Parameter),
-    /// Set envelope parameters. Broadcast all envelope values to group members
+    /// End envelope edit.
     ///
-    /// Wrap with appropriate begin/end messages
+    /// Call host.begin_edit, host.automate and host.end_edit.
+    ChangeEnvelopeParametersEnd {
+        operator_index: u8,
+        parameter_1: (Parameter, f32),
+        parameter_2: Option<(Parameter, f32)>,
+    },
+    /// Set envelope parameters (but don't automate host for performance
+    /// reasons). Broadcast all envelope values to group members.
+    ///
+    /// Remember to wrap calls with appropriate begin/end messages
     ChangeEnvelopeParametersSetValue {
         operator_index: u8,
         parameter_1: (Parameter, f32),
         parameter_2: Option<(Parameter, f32)>,
     },
-    NoOp,
     ChangePatch(usize),
-    /// Zoom in in this envelope, broadcast to group members
+    /// Zoom in in this envelope, broadcast viewport to group members
     EnvelopeZoomIn {
         operator_index: u8,
     },
-    /// Zoom out in this envelope, broadcast to group members
+    /// Zoom out in this envelope, broadcast viewport to group members
     EnvelopeZoomOut {
         operator_index: u8,
     },
-    /// Zoom to fit in this envelope, broadcast to group members
+    /// Zoom to fit in this envelope, broadcast viewport to group members
     EnvelopeZoomToFit {
         operator_index: u8,
     },
@@ -92,7 +99,7 @@ pub enum Message {
         viewport_factor: f32,
         x_offset: f32,
     },
-    /// Distibute viewport to all envelopes
+    /// Distribute viewport to all envelopes
     EnvelopeDistributeViewports {
         viewport_factor: f32,
         x_offset: f32,
@@ -268,7 +275,7 @@ impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {
         }
     }
 
-    fn sync_envelopes(&mut self, sending_operator_index: u8) {
+    fn sync_envelopes(&mut self, sending_operator_index: u8, automate_host: bool) {
         let sending_envelope = self.get_envelope_by_index(sending_operator_index);
 
         let group = sending_envelope.get_group();
@@ -285,29 +292,36 @@ impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {
                 .widget
                 .set_viewport(values.viewport_factor, values.x_offset);
 
-            let p = Parameter::Operator(index as u8, OperatorParameter::AttackDuration);
-            self.set_value(p, values.attack);
-            self.sync_handle.begin_edit(p);
-            self.sync_handle.set_parameter(p, values.attack);
-            self.sync_handle.end_edit(p);
+            let parameters = [
+                (
+                    Parameter::Operator(index as u8, OperatorParameter::AttackDuration),
+                    values.attack,
+                ),
+                (
+                    Parameter::Operator(index as u8, OperatorParameter::DecayDuration),
+                    values.decay,
+                ),
+                (
+                    Parameter::Operator(index as u8, OperatorParameter::SustainVolume),
+                    values.sustain,
+                ),
+                (
+                    Parameter::Operator(index as u8, OperatorParameter::ReleaseDuration),
+                    values.release,
+                ),
+            ];
 
-            let p = Parameter::Operator(index as u8, OperatorParameter::DecayDuration);
-            self.set_value(p, values.decay);
-            self.sync_handle.begin_edit(p);
-            self.sync_handle.set_parameter(p, values.decay);
-            self.sync_handle.end_edit(p);
+            for (p, v) in parameters {
+                self.set_value(p, v);
 
-            let p = Parameter::Operator(index as u8, OperatorParameter::SustainVolume);
-            self.set_value(p, values.sustain);
-            self.sync_handle.begin_edit(p);
-            self.sync_handle.set_parameter(p, values.sustain);
-            self.sync_handle.end_edit(p);
-
-            let p = Parameter::Operator(index as u8, OperatorParameter::ReleaseDuration);
-            self.set_value(p, values.release);
-            self.sync_handle.begin_edit(p);
-            self.sync_handle.set_parameter(p, values.release);
-            self.sync_handle.end_edit(p);
+                if automate_host {
+                    self.sync_handle.begin_edit(p);
+                    self.sync_handle.set_parameter(p, v);
+                    self.sync_handle.end_edit(p);
+                } else {
+                    self.sync_handle.set_parameter_deferred(p, v);
+                }
+            }
         }
     }
 }
@@ -396,19 +410,19 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
             Message::EnvelopeZoomIn { operator_index } => {
                 self.get_envelope_by_index(operator_index).widget.zoom_in();
 
-                self.sync_envelopes(operator_index);
+                self.sync_envelopes(operator_index, false);
             }
             Message::EnvelopeZoomOut { operator_index } => {
                 self.get_envelope_by_index(operator_index).widget.zoom_out();
 
-                self.sync_envelopes(operator_index);
+                self.sync_envelopes(operator_index, false);
             }
             Message::EnvelopeZoomToFit { operator_index } => {
                 self.get_envelope_by_index(operator_index)
                     .widget
                     .zoom_to_fit();
 
-                self.sync_envelopes(operator_index);
+                self.sync_envelopes(operator_index, false);
             }
             Message::EnvelopeChangeViewport {
                 operator_index,
@@ -419,7 +433,7 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                     .widget
                     .set_viewport(viewport_factor, x_offset);
 
-                self.sync_envelopes(operator_index);
+                self.sync_envelopes(operator_index, false);
             }
             Message::EnvelopeDistributeViewports {
                 viewport_factor,
@@ -449,13 +463,22 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                 self.sync_handle.set_parameter(parameter, value);
                 self.sync_handle.end_edit(parameter);
             }
-            Message::ChangeTwoParametersBegin(parameter_1, parameter_2) => {
-                self.sync_handle.begin_edit(parameter_1);
-                self.sync_handle.begin_edit(parameter_2);
-            }
-            Message::ChangeTwoParametersEnd(parameter_1, parameter_2) => {
-                self.sync_handle.end_edit(parameter_1);
-                self.sync_handle.end_edit(parameter_2);
+            Message::ChangeEnvelopeParametersEnd {
+                operator_index,
+                parameter_1,
+                parameter_2,
+            } => {
+                self.sync_handle.begin_edit(parameter_1.0);
+                self.sync_handle.set_parameter(parameter_1.0, parameter_1.1);
+                self.sync_handle.end_edit(parameter_1.0);
+
+                if let Some((p, v)) = parameter_2 {
+                    self.sync_handle.begin_edit(p);
+                    self.sync_handle.set_parameter(p, v);
+                    self.sync_handle.end_edit(p);
+                }
+
+                self.sync_envelopes(operator_index, true);
             }
             Message::ChangeEnvelopeParametersSetValue {
                 operator_index,
@@ -463,14 +486,15 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                 parameter_2,
             } => {
                 self.set_value(parameter_1.0, parameter_1.1);
-                self.sync_handle.set_parameter(parameter_1.0, parameter_1.1);
+                self.sync_handle
+                    .set_parameter_deferred(parameter_1.0, parameter_1.1);
 
                 if let Some((p, v)) = parameter_2 {
                     self.set_value(p, v);
-                    self.sync_handle.set_parameter(p, v);
+                    self.sync_handle.set_parameter_deferred(p, v);
                 }
 
-                self.sync_envelopes(operator_index);
+                self.sync_envelopes(operator_index, false);
             }
             Message::ChangePatch(index) => {
                 self.sync_handle.set_patch_index(index);

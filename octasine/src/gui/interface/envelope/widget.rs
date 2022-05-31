@@ -964,8 +964,6 @@ impl Program<Message> for Envelope {
                 iced_baseview::mouse::Button::Left,
             )) => {
                 if bounds.contains(self.last_cursor_position) {
-                    let mut opt_message = None;
-
                     let relative_position = Point::new(
                         self.last_cursor_position.x - bounds.x,
                         self.last_cursor_position.y - bounds.y,
@@ -979,12 +977,6 @@ impl Program<Message> for Envelope {
                             original_duration: self.release_duration,
                             original_end_value: 0.0,
                         };
-
-                        opt_message =
-                            Some(Message::ChangeSingleParameterBegin(Parameter::Operator(
-                                self.operator_index,
-                                OperatorParameter::ReleaseDuration,
-                            )));
                     } else if self.decay_dragger.hitbox.contains(relative_position)
                         && !self.decay_dragger.is_dragging()
                     {
@@ -993,16 +985,6 @@ impl Program<Message> for Envelope {
                             original_duration: self.decay_duration,
                             original_end_value: self.sustain_volume,
                         };
-                        opt_message = Some(Message::ChangeTwoParametersBegin(
-                            Parameter::Operator(
-                                self.operator_index,
-                                OperatorParameter::DecayDuration,
-                            ),
-                            Parameter::Operator(
-                                self.operator_index,
-                                OperatorParameter::SustainVolume,
-                            ),
-                        ));
                     } else if self.attack_dragger.hitbox.contains(relative_position)
                         && !self.attack_dragger.is_dragging()
                     {
@@ -1011,11 +993,6 @@ impl Program<Message> for Envelope {
                             original_duration: self.attack_duration,
                             original_end_value: 1.0,
                         };
-                        opt_message =
-                            Some(Message::ChangeSingleParameterBegin(Parameter::Operator(
-                                self.operator_index,
-                                OperatorParameter::AttackDuration,
-                            )));
                     } else {
                         let pos_in_bounds = self.last_cursor_position.x - bounds.x;
                         let pos_in_viewport = (pos_in_bounds
@@ -1041,42 +1018,78 @@ impl Program<Message> for Envelope {
 
                     self.cache.clear();
 
-                    return (event::Status::Captured, opt_message);
+                    return (event::Status::Captured, None);
                 }
             }
             event::Event::Mouse(iced_baseview::mouse::Event::ButtonReleased(
                 iced_baseview::mouse::Button::Left,
             )) => {
-                let mut captured = false;
-                let mut opt_message = None;
-
                 if self.release_dragger.is_dragging() {
                     self.release_dragger.status = EnvelopeDraggerStatus::Normal;
 
-                    captured = true;
-                    opt_message = Some(Message::ChangeSingleParameterEnd(Parameter::Operator(
-                        self.operator_index,
-                        OperatorParameter::ReleaseDuration,
-                    )));
+                    let message = Message::ChangeEnvelopeParametersEnd {
+                        operator_index: self.operator_index as u8,
+                        parameter_1: (
+                            Parameter::Operator(
+                                self.operator_index,
+                                OperatorParameter::ReleaseDuration,
+                            ),
+                            self.release_duration,
+                        ),
+                        parameter_2: None,
+                    };
+
+                    self.cache.clear();
+
+                    return (event::Status::Captured, Some(message));
                 }
                 if self.decay_dragger.is_dragging() {
                     self.decay_dragger.status = EnvelopeDraggerStatus::Normal;
 
-                    captured = true;
-                    opt_message = Some(Message::ChangeTwoParametersEnd(
-                        Parameter::Operator(self.operator_index, OperatorParameter::DecayDuration),
-                        Parameter::Operator(self.operator_index, OperatorParameter::SustainVolume),
-                    ));
+                    let message = Message::ChangeEnvelopeParametersEnd {
+                        operator_index: self.operator_index as u8,
+                        parameter_1: (
+                            Parameter::Operator(
+                                self.operator_index,
+                                OperatorParameter::DecayDuration,
+                            ),
+                            self.decay_duration,
+                        ),
+                        parameter_2: Some((
+                            Parameter::Operator(
+                                self.operator_index,
+                                OperatorParameter::SustainVolume,
+                            ),
+                            self.sustain_volume,
+                        )),
+                    };
+
+                    self.cache.clear();
+
+                    return (event::Status::Captured, Some(message));
                 }
                 if self.attack_dragger.is_dragging() {
                     self.attack_dragger.status = EnvelopeDraggerStatus::Normal;
 
-                    captured = true;
-                    opt_message = Some(Message::ChangeSingleParameterEnd(Parameter::Operator(
-                        self.operator_index,
-                        OperatorParameter::AttackDuration,
-                    )));
+                    let message = Message::ChangeEnvelopeParametersEnd {
+                        operator_index: self.operator_index as u8,
+                        parameter_1: (
+                            Parameter::Operator(
+                                self.operator_index,
+                                OperatorParameter::AttackDuration,
+                            ),
+                            self.attack_duration,
+                        ),
+                        parameter_2: None,
+                    };
+
+                    self.cache.clear();
+
+                    return (event::Status::Captured, Some(message));
                 }
+
+                let mut captured = false;
+                let mut opt_message = None;
 
                 if self.dragging_background_from.is_some() {
                     self.dragging_background_from = None;
