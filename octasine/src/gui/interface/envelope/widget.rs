@@ -747,27 +747,25 @@ impl Envelope {
         if let Some(dragging_from) = self.dragging_background_from {
             let zoom_factor = (dragging_from.from_point.y - y) / 50.0;
 
-            self.viewport_factor = (dragging_from.viewport_factor * zoom_factor.exp2())
+            let new_viewport_factor = (dragging_from.viewport_factor * zoom_factor.exp2())
                 .min(1.0)
                 .max(MIN_VIEWPORT_FACTOR);
 
             let x_offset_change_zoom = -dragging_from.original_visible_position
-                * (dragging_from.viewport_factor - self.viewport_factor);
+                * (dragging_from.viewport_factor - new_viewport_factor);
 
             let x_offset_change_drag =
-                (x - dragging_from.from_point.x) / WIDTH as f32 * self.viewport_factor;
+                (x - dragging_from.from_point.x) / WIDTH as f32 * new_viewport_factor;
 
-            self.x_offset = Self::process_x_offset(
+            let new_x_offset = Self::process_x_offset(
                 dragging_from.original_x_offset + x_offset_change_zoom + x_offset_change_drag,
-                self.viewport_factor,
+                new_viewport_factor,
             );
-
-            self.update_data();
 
             let message = Message::EnvelopeChangeViewport {
                 operator_index: self.operator_index,
-                viewport_factor: self.viewport_factor,
-                x_offset: self.x_offset,
+                viewport_factor: new_viewport_factor,
+                x_offset: new_x_offset,
             };
 
             return (event::Status::Captured, Some(message));
