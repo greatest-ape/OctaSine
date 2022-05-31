@@ -156,14 +156,14 @@ impl Envelope {
                     .push(
                         Row::new()
                             .push(zoom_out)
-                            .push(Space::with_width(Length::Units(3)))
+                            .push(Space::with_width(Length::Units(4)))
                             .push(zoom_in),
                     )
                     .push(Space::with_height(Length::Units(6)))
                     .push(
                         Row::new()
                             .push(fit)
-                            .push(Space::with_width(Length::Units(3)))
+                            .push(Space::with_width(Length::Units(4)))
                             .push(distribute),
                     ),
             ))
@@ -185,7 +185,7 @@ fn button_with_tooltip<'a>(
             Text::new(button_text)
                 .font(button_font)
                 .height(Length::Units(LINE_HEIGHT))
-                .width(Length::Units(9))
+                .width(Length::Units(10))
                 .horizontal_alignment(Horizontal::Center),
         )
         .on_press(button_message)
