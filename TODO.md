@@ -13,8 +13,9 @@
     multiple banks? Are changes even necessary?
 * GUI
   * Envelopes
-    * Two envelope lock groups
-      * Test
+    * Don't automate all the time when adjusting envelopes? (mainly because of
+      envelope groups)
+    * Test envelope lock groups
     * Reset values by double clicking draggers? At least for decay.
     * Display zoom level / viewport length in seconds/milliseconds?
     * Display all volumes in dB?
