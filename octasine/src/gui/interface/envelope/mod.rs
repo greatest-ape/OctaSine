@@ -148,6 +148,13 @@ impl Envelope {
                     .align_items(Alignment::End)
                     .push(
                         Row::new()
+                            .push(group_a)
+                            .push(Space::with_width(Length::Units(3)))
+                            .push(group_b), // .push(Space::with_width(Length::Units(3)))
+                    )
+                    .push(Space::with_height(Length::Units(9)))
+                    .push(
+                        Row::new()
                             .push(zoom_out)
                             .push(Space::with_width(Length::Units(3)))
                             .push(zoom_in),
@@ -158,13 +165,6 @@ impl Envelope {
                             .push(fit)
                             .push(Space::with_width(Length::Units(3)))
                             .push(distribute),
-                    )
-                    .push(Space::with_height(Length::Units(6)))
-                    .push(
-                        Row::new()
-                            .push(group_a)
-                            .push(Space::with_width(Length::Units(3)))
-                            .push(group_b), // .push(Space::with_width(Length::Units(3)))
                     ),
             ))
             .into()
