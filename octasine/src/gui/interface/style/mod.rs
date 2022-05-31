@@ -77,11 +77,11 @@ impl Theme {
     }
 
     pub fn button_padding(&self) -> u16 {
-        5
+        3
     }
 
     pub fn picklist_padding(&self) -> u16 {
-        5
+        3
     }
 
     pub fn container_l0(&self) -> Box<dyn iced_baseview::container::StyleSheet> {
