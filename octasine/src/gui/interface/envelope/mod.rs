@@ -158,7 +158,7 @@ impl Envelope {
                             .push(Space::with_width(Length::Units(3)))
                             .push(distribute),
                     )
-                    .push(Space::with_height(Length::Units(6 + 6)))
+                    .push(Space::with_height(Length::Units(6)))
                     .push(
                         Row::new()
                             .push(group_a)
