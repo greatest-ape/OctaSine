@@ -13,7 +13,7 @@ use crate::sync::GuiSyncHandle;
 use super::boolean_button::{envelope_group_a_button, envelope_group_b_button, BooleanButton};
 use super::common::container_l3;
 use super::style::Theme;
-use super::{Message, LINE_HEIGHT};
+use super::{Message, FONT_SIZE, LINE_HEIGHT};
 
 pub struct Envelope {
     operator_index: usize,
@@ -158,12 +158,12 @@ impl Envelope {
                             .push(Space::with_width(Length::Units(3)))
                             .push(distribute),
                     )
-                    .push(Space::with_height(Length::Units(12)))
+                    .push(Space::with_height(Length::Units(6 + 6)))
                     .push(
                         Row::new()
                             .push(group_a)
                             .push(Space::with_width(Length::Units(3)))
-                            .push(group_b),
+                            .push(group_b), // .push(Space::with_width(Length::Units(3)))
                     ),
             ))
             .into()
