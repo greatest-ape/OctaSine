@@ -22,7 +22,6 @@
       host sets parameter, since it might cause host to set parameter again
 * GUI
   * Envelopes
-    * Envelope parameter value storage doesn't use ParameterValue
     * Test envelope parameter setting some more
     * Sync values when calling distribute viewports?
     * Reset values by double clicking draggers? At least for decay.
