@@ -430,6 +430,9 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                 parameter_1,
                 parameter_2,
             } => {
+                // There is not need to call self.set_value, since values were
+                // already set internally in sender while dragging
+
                 self.sync_handle.begin_edit(parameter_1.0);
                 self.sync_handle.set_parameter(parameter_1.0, parameter_1.1);
                 self.sync_handle.end_edit(parameter_1.0);
@@ -447,6 +450,9 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                 parameter_1,
                 parameter_2,
             } => {
+                // Skip calling self.set_value, since envelopes update their
+                // internal data when dragging
+
                 self.sync_handle
                     .set_parameter_audio_only(parameter_1.0, parameter_1.1);
 
