@@ -18,9 +18,14 @@
       every envelope parameter automation access to preserve current GUI
       behaviour. An option would be to change current GUI behaviour to force
       sync when changing lock groups.
+    * It's most likely a bad idea to automate host inside of handler for when
+      host sets parameter, since it might cause host to set parameter again
 * GUI
   * Envelopes
     * Test envelope parameter setting some more
+    * Sync all envelopes on changes, not only those in same group as
+      message sender?
+        * Also when calling distribute viewports?
     * Reset values by double clicking draggers? At least for decay.
     * Display zoom level / viewport length in seconds/milliseconds?
     * Display corresponding value when hovering over dragger?
