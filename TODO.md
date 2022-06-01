@@ -22,11 +22,9 @@
       host sets parameter, since it might cause host to set parameter again
 * GUI
   * Envelopes
+    * Envelope parameter value storage doesn't use ParameterValue
     * Test envelope parameter setting some more
-    * Display when values were changed by DAW instead of any time they differ?
-    * Sync all envelopes on changes, not only those in same group as
-      message sender?
-        * Also when calling distribute viewports?
+    * Sync values when calling distribute viewports?
     * Reset values by double clicking draggers? At least for decay.
     * Display zoom level / viewport length in seconds/milliseconds?
     * Display corresponding value when hovering over dragger?
