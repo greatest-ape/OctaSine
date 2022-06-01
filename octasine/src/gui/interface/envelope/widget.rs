@@ -355,9 +355,11 @@ impl Envelope {
     }
 
     pub fn set_sustain_volume(&mut self, value: f32) {
-        self.sustain_volume = value as f32;
+        if !self.decay_dragger.is_dragging() {
+            self.sustain_volume = value as f32;
 
-        self.update_data();
+            self.update_data();
+        }
     }
 
     pub fn set_release_duration(&mut self, value: f32) {
