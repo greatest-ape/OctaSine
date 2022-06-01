@@ -408,7 +408,7 @@ impl Envelope {
                 }
 
                 let new_viewport_factor = factor;
-                let new_x_offset = Self::process_x_offset(new_x_offset, self.viewport_factor);
+                let new_x_offset = Self::process_x_offset(new_x_offset, new_viewport_factor);
 
                 return (new_viewport_factor, new_x_offset);
             }
