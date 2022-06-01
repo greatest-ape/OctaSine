@@ -173,35 +173,35 @@ impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {
                     OperatorParameter::FrequencyFree => operator.frequency_free.set_value(v),
                     OperatorParameter::FrequencyFine => operator.frequency_fine.set_value(v),
                     OperatorParameter::AttackDuration => {
-                        operator.envelope.widget.set_attack_duration(v);
+                        operator.envelope.widget.set_attack_duration(v, internal);
 
                         if !internal {
                             self.update_envelope_group_statuses();
                         }
                     }
                     OperatorParameter::DecayDuration => {
-                        operator.envelope.widget.set_decay_duration(v);
+                        operator.envelope.widget.set_decay_duration(v, internal);
 
                         if !internal {
                             self.update_envelope_group_statuses();
                         }
                     }
                     OperatorParameter::SustainVolume => {
-                        operator.envelope.widget.set_sustain_volume(v);
+                        operator.envelope.widget.set_sustain_volume(v, internal);
 
                         if !internal {
                             self.update_envelope_group_statuses();
                         }
                     }
                     OperatorParameter::ReleaseDuration => {
-                        operator.envelope.widget.set_release_duration(v);
+                        operator.envelope.widget.set_release_duration(v, internal);
 
                         if !internal {
                             self.update_envelope_group_statuses();
                         }
                     }
                     OperatorParameter::EnvelopeLockGroup => {
-                        operator.envelope.set_group(v);
+                        operator.envelope.set_group(v, internal);
 
                         // Group buttons don't send message triggering update by themselves
                         self.update_envelope_group_statuses();
@@ -329,6 +329,16 @@ impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {
 
     fn update_envelope_group_statuses(&mut self) {
         for group in [OperatorEnvelopeGroupValue::A, OperatorEnvelopeGroupValue::B] {
+            let mut any_modified_by_automation = false;
+
+            for i in 0..NUM_OPERATORS {
+                let envelope = self.get_envelope_by_index(i as u8);
+
+                if envelope.is_group_member(group) {
+                    any_modified_by_automation |= envelope.widget.get_modified_by_automation();
+                }
+            }
+
             let mut opt_values = None;
             let mut group_synced = true;
 
@@ -340,7 +350,7 @@ impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {
 
                     match &mut opt_values {
                         Some(previous_values) => {
-                            if values != *previous_values {
+                            if any_modified_by_automation && values != *previous_values {
                                 group_synced = false;
 
                                 break;

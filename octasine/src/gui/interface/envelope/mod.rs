@@ -63,11 +63,11 @@ impl Envelope {
         self.group_b.set_style(style);
     }
 
-    pub fn set_group(&mut self, value: f32) {
+    pub fn set_group(&mut self, value: f32, internal: bool) {
         let group = OperatorEnvelopeGroupValue::new_from_patch(value);
 
         self.group = group;
-        self.widget.set_group(group);
+        self.widget.set_group(group, internal);
 
         self.group_a.set_value(value);
         self.group_b.set_value(value);
@@ -97,11 +97,15 @@ impl Envelope {
                 .width(Length::Units(6))
                 .horizontal_alignment(Horizontal::Center);
 
-            Tooltip::new(text, "Group member values differ", Position::Top)
-                .style(self.style.tooltip())
-                .font(self.style.font_regular())
-                .padding(self.style.tooltip_padding())
-                .into()
+            Tooltip::new(
+                text,
+                "DAW automation may have affected group members",
+                Position::Top,
+            )
+            .style(self.style.tooltip())
+            .font(self.style.font_regular())
+            .padding(self.style.tooltip_padding())
+            .into()
         };
 
         let zoom_out_data = self.widget.get_zoom_out_data();

@@ -256,6 +256,7 @@ pub struct Envelope {
     sustain_volume: f32,
     release_duration: f32,
     group: OperatorEnvelopeGroupValue,
+    modified_by_automation: bool,
     size: Size,
     viewport_factor: f32,
     x_offset: f32,
@@ -301,6 +302,7 @@ impl Envelope {
             sustain_volume,
             release_duration,
             group,
+            modified_by_automation: true,
             size: SIZE,
             viewport_factor: 1.0,
             x_offset: 0.0,
@@ -347,40 +349,60 @@ impl Envelope {
         self.update_data();
     }
 
-    pub fn set_attack_duration(&mut self, value: f32) {
+    pub fn set_attack_duration(&mut self, value: f32, internal: bool) {
         if !self.attack_dragger.is_dragging() {
-            self.attack_duration = Self::process_envelope_duration(value as f64);
+            let new_value = Self::process_envelope_duration(value as f64);
 
-            self.update_data();
+            if new_value != self.attack_duration {
+                self.attack_duration = new_value;
+                self.modified_by_automation = !internal;
+
+                self.update_data();
+            }
         }
     }
 
-    pub fn set_decay_duration(&mut self, value: f32) {
+    pub fn set_decay_duration(&mut self, value: f32, internal: bool) {
         if !self.decay_dragger.is_dragging() {
-            self.decay_duration = Self::process_envelope_duration(value as f64);
+            let new_value = Self::process_envelope_duration(value as f64);
 
-            self.update_data();
+            if new_value != self.decay_duration {
+                self.decay_duration = new_value;
+                self.update_data();
+
+                self.modified_by_automation = !internal;
+            }
         }
     }
 
-    pub fn set_sustain_volume(&mut self, value: f32) {
-        if !self.decay_dragger.is_dragging() {
+    pub fn set_sustain_volume(&mut self, value: f32, internal: bool) {
+        if !self.decay_dragger.is_dragging() && value != self.sustain_volume {
             self.sustain_volume = value as f32;
+            self.modified_by_automation = !internal;
 
             self.update_data();
         }
     }
 
-    pub fn set_release_duration(&mut self, value: f32) {
+    pub fn set_release_duration(&mut self, value: f32, internal: bool) {
         if !self.release_dragger.is_dragging() {
-            self.release_duration = Self::process_envelope_duration(value as f64);
+            let new_value = Self::process_envelope_duration(value as f64);
 
-            self.update_data();
+            if new_value != self.release_duration {
+                self.release_duration = new_value;
+                self.modified_by_automation = !internal;
+
+                self.update_data();
+            }
         }
     }
 
-    pub fn set_group(&mut self, group: OperatorEnvelopeGroupValue) {
-        self.group = group;
+    pub fn set_group(&mut self, group: OperatorEnvelopeGroupValue, internal: bool) {
+        if group != self.group {
+            self.group = group;
+
+            self.modified_by_automation = !internal;
+        }
     }
 }
 
@@ -401,6 +423,9 @@ impl Envelope {
     }
     pub fn get_x_offset(&self) -> f32 {
         self.x_offset
+    }
+    pub fn get_modified_by_automation(&self) -> bool {
+        self.modified_by_automation
     }
 }
 
@@ -637,6 +662,7 @@ impl Envelope {
             } => {
                 self.attack_duration =
                     dragging_to_duration(self.viewport_factor, x, from, original_duration);
+                self.modified_by_automation = false;
 
                 self.update_data();
 
@@ -682,6 +708,7 @@ impl Envelope {
                 self.decay_duration =
                     dragging_to_duration(self.viewport_factor, x, from, original_duration);
                 self.sustain_volume = dragging_to_end_value(y, from, original_end_value);
+                self.modified_by_automation = false;
 
                 self.update_data();
 
@@ -733,6 +760,7 @@ impl Envelope {
             } => {
                 self.release_duration =
                     dragging_to_duration(self.viewport_factor, x, from, original_duration);
+                self.modified_by_automation = false;
 
                 self.update_data();
 
