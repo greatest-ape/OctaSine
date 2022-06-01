@@ -7,7 +7,7 @@ use crate::audio::voices::envelopes::VoiceOperatorVolumeEnvelope;
 use crate::audio::voices::log10_table::Log10Table;
 use crate::gui::interface::EnvelopeValues;
 use crate::parameters::operator_envelope::{
-    OperatorEnvelopeLockGroupValue, ENVELOPE_MAX_DURATION, ENVELOPE_MIN_DURATION,
+    OperatorEnvelopeGroupValue, ENVELOPE_MAX_DURATION, ENVELOPE_MIN_DURATION,
 };
 use crate::parameters::{OperatorParameter, Parameter, ParameterValue};
 use crate::sync::GuiSyncHandle;
@@ -246,7 +246,7 @@ pub struct Envelope {
     decay_duration: f32,
     sustain_volume: f32,
     release_duration: f32,
-    lock_group: OperatorEnvelopeLockGroupValue,
+    group: OperatorEnvelopeGroupValue,
     size: Size,
     viewport_factor: f32,
     x_offset: f32,
@@ -278,11 +278,9 @@ impl Envelope {
             operator_index,
             OperatorParameter::SustainVolume,
         )) as f32;
-        let lock_group = {
-            let p = Parameter::Operator(operator_index, OperatorParameter::EnvelopeLockGroup);
-
-            OperatorEnvelopeLockGroupValue::new_from_patch(sync_handle.get_parameter(p))
-        };
+        let group = OperatorEnvelopeGroupValue::new_from_patch(sync_handle.get_parameter(
+            Parameter::Operator(operator_index, OperatorParameter::EnvelopeLockGroup),
+        ));
 
         let mut envelope = Self {
             log10table: Default::default(),
@@ -293,7 +291,7 @@ impl Envelope {
             decay_duration,
             sustain_volume,
             release_duration,
-            lock_group,
+            group,
             size: SIZE,
             viewport_factor: 1.0,
             x_offset: 0.0,
@@ -370,8 +368,8 @@ impl Envelope {
         }
     }
 
-    pub fn set_lock_group(&mut self, value: OperatorEnvelopeLockGroupValue) {
-        self.lock_group = value;
+    pub fn set_group(&mut self, group: OperatorEnvelopeGroupValue) {
+        self.group = group;
     }
 }
 

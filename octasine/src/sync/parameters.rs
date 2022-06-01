@@ -47,7 +47,7 @@ impl PatchParameter {
                     DecayDuration => Self::new::<OperatorDecayDurationValue>(parameter),
                     SustainVolume => Self::new::<OperatorSustainVolumeValue>(parameter),
                     ReleaseDuration => Self::new::<OperatorReleaseDurationValue>(parameter),
-                    EnvelopeLockGroup => Self::new::<OperatorEnvelopeLockGroupValue>(parameter),
+                    EnvelopeLockGroup => Self::new::<OperatorEnvelopeGroupValue>(parameter),
                     ModTargets => match index {
                         1 => Self::new::<Operator2ModulationTargetValue>(parameter),
                         2 => Self::new::<Operator3ModulationTargetValue>(parameter),

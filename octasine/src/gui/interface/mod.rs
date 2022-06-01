@@ -194,7 +194,7 @@ impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {
                     OperatorParameter::ReleaseDuration => {
                         operator.envelope.widget.set_release_duration(v)
                     }
-                    OperatorParameter::EnvelopeLockGroup => operator.envelope.set_lock_group(v),
+                    OperatorParameter::EnvelopeLockGroup => operator.envelope.set_group(v),
                 }
             }
             Parameter::Lfo(index, p) => {

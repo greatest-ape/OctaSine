@@ -4,12 +4,12 @@ mod lfo_amount;
 mod lfo_frequency_free;
 mod lfo_target;
 mod operator_active;
-mod operator_envelope_volume;
 mod operator_frequency_fine;
 mod operator_frequency_free;
 mod operator_mix;
 mod operator_mod_target;
 mod operator_panning;
+mod operator_sustain_volume;
 mod operator_volume;
 
 use array_init::array_init;
@@ -22,12 +22,12 @@ use self::lfo_active::LfoActiveAudioParameter;
 use self::lfo_amount::LfoAmountAudioParameter;
 use self::lfo_frequency_free::LfoFrequencyFreeAudioParameter;
 use self::lfo_target::LfoTargetAudioParameter;
-use self::operator_envelope_volume::OperatorEnvelopeVolumeAudioParameter;
 use self::operator_frequency_fine::OperatorFrequencyFineAudioParameter;
 use self::operator_frequency_free::OperatorFrequencyFreeAudioParameter;
 use self::operator_mix::OperatorMixAudioParameter;
 use self::operator_mod_target::OperatorModulationTargetAudioParameter;
 use self::operator_panning::OperatorPanningAudioParameter;
+use self::operator_sustain_volume::OperatorSustainVolumeAudioParameter;
 use self::operator_volume::OperatorVolumeAudioParameter;
 
 trait AudioParameterPatchInteraction {
@@ -226,9 +226,9 @@ impl OperatorAudioParameters {
 pub struct OperatorEnvelopeAudioParameters {
     pub attack_duration: SimpleAudioParameter<OperatorAttackDurationValue>,
     pub decay_duration: SimpleAudioParameter<OperatorDecayDurationValue>,
-    pub sustain_volume: OperatorEnvelopeVolumeAudioParameter<OperatorSustainVolumeValue>,
+    pub sustain_volume: OperatorSustainVolumeAudioParameter,
     pub release_duration: SimpleAudioParameter<OperatorReleaseDurationValue>,
-    pub lock_group: SimpleAudioParameter<OperatorEnvelopeLockGroupValue>,
+    pub lock_group: SimpleAudioParameter<OperatorEnvelopeGroupValue>,
 }
 
 impl OperatorEnvelopeAudioParameters {

@@ -6,7 +6,7 @@ use iced_baseview::{button, Alignment, Button, Column, Element, Length, Row, Spa
 use iced_baseview::{Font, Tooltip};
 
 use crate::parameters::list::{OperatorParameter, Parameter};
-use crate::parameters::operator_envelope::OperatorEnvelopeLockGroupValue;
+use crate::parameters::operator_envelope::OperatorEnvelopeGroupValue;
 use crate::parameters::ParameterValue;
 use crate::sync::GuiSyncHandle;
 
@@ -18,7 +18,7 @@ use super::{Message, LINE_HEIGHT};
 pub struct Envelope {
     operator_index: usize,
     style: Theme,
-    lock_group: OperatorEnvelopeLockGroupValue,
+    group: OperatorEnvelopeGroupValue,
     pub widget: widget::Envelope,
     pub zoom_in: button::State,
     pub zoom_out: button::State,
@@ -30,16 +30,14 @@ pub struct Envelope {
 
 impl Envelope {
     pub fn new<H: GuiSyncHandle>(sync_handle: &H, operator_index: usize, style: Theme) -> Self {
-        let lock_group = {
-            let p = Parameter::Operator(operator_index as u8, OperatorParameter::EnvelopeLockGroup);
-
-            OperatorEnvelopeLockGroupValue::new_from_patch(sync_handle.get_parameter(p))
-        };
+        let group = OperatorEnvelopeGroupValue::new_from_patch(sync_handle.get_parameter(
+            Parameter::Operator(operator_index as u8, OperatorParameter::EnvelopeLockGroup),
+        ));
 
         Self {
             operator_index,
             style,
-            lock_group,
+            group,
             widget: widget::Envelope::new(sync_handle, operator_index, style),
             zoom_in: button::State::default(),
             zoom_out: button::State::default(),
@@ -57,22 +55,22 @@ impl Envelope {
         self.group_b.set_style(style);
     }
 
-    pub fn set_lock_group(&mut self, value: f32) {
-        let lock_group = OperatorEnvelopeLockGroupValue::new_from_patch(value);
+    pub fn set_group(&mut self, value: f32) {
+        let group = OperatorEnvelopeGroupValue::new_from_patch(value);
 
-        self.lock_group = lock_group;
-        self.widget.set_lock_group(lock_group);
+        self.group = group;
+        self.widget.set_group(group);
 
         self.group_a.set_value(value);
         self.group_b.set_value(value);
     }
 
-    pub fn get_group(&self) -> OperatorEnvelopeLockGroupValue {
-        self.lock_group
+    pub fn get_group(&self) -> OperatorEnvelopeGroupValue {
+        self.group
     }
 
-    pub fn is_in_group(&self, group: OperatorEnvelopeLockGroupValue) -> bool {
-        group == self.lock_group && group != OperatorEnvelopeLockGroupValue::Off
+    pub fn is_in_group(&self, group: OperatorEnvelopeGroupValue) -> bool {
+        group == self.group && group != OperatorEnvelopeGroupValue::Off
     }
 
     pub fn view(&mut self) -> Element<Message> {
