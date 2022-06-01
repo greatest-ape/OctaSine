@@ -5,7 +5,6 @@ use iced_baseview::{Color, Container, Element, Length, Point, Rectangle, Size, V
 
 use crate::audio::voices::envelopes::VoiceOperatorVolumeEnvelope;
 use crate::audio::voices::log10_table::Log10Table;
-use crate::gui::interface::EnvelopeValues;
 use crate::parameters::operator_envelope::{
     OperatorEnvelopeGroupValue, ENVELOPE_MAX_DURATION, ENVELOPE_MIN_DURATION,
 };
@@ -59,6 +58,16 @@ pub struct Style {
 
 pub trait StyleSheet {
     fn active(&self) -> Style;
+}
+
+#[derive(Debug, Clone)]
+pub struct EnvelopeValues {
+    pub attack: f32,
+    pub decay: f32,
+    pub sustain: f32,
+    pub release: f32,
+    pub viewport_factor: f32,
+    pub x_offset: f32,
 }
 
 struct EnvelopeStagePath {

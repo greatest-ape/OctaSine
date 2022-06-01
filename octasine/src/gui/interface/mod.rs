@@ -95,16 +95,6 @@ pub enum Message {
     SwitchTheme,
 }
 
-#[derive(Debug, Clone)]
-pub struct EnvelopeValues {
-    attack: f32,
-    decay: f32,
-    sustain: f32,
-    release: f32,
-    viewport_factor: f32,
-    x_offset: f32,
-}
-
 pub struct OctaSineIcedApplication<H: GuiSyncHandle> {
     sync_handle: H,
     style: style::Theme,
