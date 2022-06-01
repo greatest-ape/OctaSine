@@ -6,7 +6,9 @@ use iced_baseview::{Color, Container, Element, Length, Point, Rectangle, Size, V
 use crate::audio::voices::envelopes::VoiceOperatorVolumeEnvelope;
 use crate::audio::voices::log10_table::Log10Table;
 use crate::parameters::operator_envelope::{
-    OperatorEnvelopeGroupValue, ENVELOPE_MAX_DURATION, ENVELOPE_MIN_DURATION,
+    OperatorAttackDurationValue, OperatorDecayDurationValue, OperatorEnvelopeGroupValue,
+    OperatorReleaseDurationValue, OperatorSustainVolumeValue, ENVELOPE_MAX_DURATION,
+    ENVELOPE_MIN_DURATION,
 };
 use crate::parameters::{OperatorParameter, Parameter, ParameterValue};
 use crate::sync::GuiSyncHandle;
@@ -275,19 +277,24 @@ impl Envelope {
     pub fn new<H: GuiSyncHandle>(sync_handle: &H, operator_index: usize, style: Theme) -> Self {
         let operator_index = operator_index as u8;
 
-        let attack_duration = Self::process_envelope_duration(sync_handle.get_parameter(
-            Parameter::Operator(operator_index, OperatorParameter::AttackDuration),
-        ) as f64);
-        let decay_duration = Self::process_envelope_duration(sync_handle.get_parameter(
+        let attack_duration =
+            OperatorAttackDurationValue::new_from_patch(sync_handle.get_parameter(
+                Parameter::Operator(operator_index, OperatorParameter::AttackDuration),
+            ))
+            .to_patch();
+        let decay_duration = OperatorDecayDurationValue::new_from_patch(sync_handle.get_parameter(
             Parameter::Operator(operator_index, OperatorParameter::DecayDuration),
-        ) as f64);
-        let release_duration = Self::process_envelope_duration(sync_handle.get_parameter(
-            Parameter::Operator(operator_index, OperatorParameter::ReleaseDuration),
-        ) as f64);
-        let sustain_volume = sync_handle.get_parameter(Parameter::Operator(
-            operator_index,
-            OperatorParameter::SustainVolume,
-        )) as f32;
+        ))
+        .to_patch();
+        let release_duration =
+            OperatorReleaseDurationValue::new_from_patch(sync_handle.get_parameter(
+                Parameter::Operator(operator_index, OperatorParameter::ReleaseDuration),
+            ))
+            .to_patch();
+        let sustain_volume = OperatorSustainVolumeValue::new_from_patch(sync_handle.get_parameter(
+            Parameter::Operator(operator_index, OperatorParameter::SustainVolume),
+        ))
+        .to_patch();
         let group = OperatorEnvelopeGroupValue::new_from_patch(sync_handle.get_parameter(
             Parameter::Operator(operator_index, OperatorParameter::EnvelopeLockGroup),
         ));
@@ -351,7 +358,7 @@ impl Envelope {
 
     pub fn set_attack_duration(&mut self, value: f32, internal: bool) {
         if !self.attack_dragger.is_dragging() {
-            let new_value = Self::process_envelope_duration(value as f64);
+            let new_value = OperatorAttackDurationValue::new_from_patch(value).to_patch();
 
             if new_value != self.attack_duration {
                 self.attack_duration = new_value;
@@ -364,29 +371,33 @@ impl Envelope {
 
     pub fn set_decay_duration(&mut self, value: f32, internal: bool) {
         if !self.decay_dragger.is_dragging() {
-            let new_value = Self::process_envelope_duration(value as f64);
+            let new_value = OperatorDecayDurationValue::new_from_patch(value).to_patch();
 
             if new_value != self.decay_duration {
                 self.decay_duration = new_value;
-                self.update_data();
-
                 self.modified_by_automation = !internal;
+
+                self.update_data();
             }
         }
     }
 
     pub fn set_sustain_volume(&mut self, value: f32, internal: bool) {
-        if !self.decay_dragger.is_dragging() && value != self.sustain_volume {
-            self.sustain_volume = value as f32;
-            self.modified_by_automation = !internal;
+        if !self.decay_dragger.is_dragging() {
+            let new_value = OperatorSustainVolumeValue::new_from_patch(value).to_patch();
 
-            self.update_data();
+            if new_value != self.sustain_volume {
+                self.sustain_volume = value;
+                self.modified_by_automation = !internal;
+
+                self.update_data();
+            }
         }
     }
 
     pub fn set_release_duration(&mut self, value: f32, internal: bool) {
         if !self.release_dragger.is_dragging() {
-            let new_value = Self::process_envelope_duration(value as f64);
+            let new_value = OperatorReleaseDurationValue::new_from_patch(value).to_patch();
 
             if new_value != self.release_duration {
                 self.release_duration = new_value;
@@ -545,10 +556,6 @@ impl Envelope {
 impl Envelope {
     fn process_x_offset(x_offset: f32, viewport_factor: f32) -> f32 {
         x_offset.min(0.0).max(-1.0 + viewport_factor)
-    }
-
-    fn process_envelope_duration(sync_value: f64) -> f32 {
-        sync_value.max(ENVELOPE_MIN_DURATION / ENVELOPE_MAX_DURATION) as f32
     }
 
     fn get_current_duration(&self) -> f32 {
