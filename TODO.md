@@ -23,6 +23,7 @@
 * GUI
   * Envelopes
     * Test envelope parameter setting some more
+    * Display when values were changed by DAW instead of any time they differ?
     * Sync all envelopes on changes, not only those in same group as
       message sender?
         * Also when calling distribute viewports?

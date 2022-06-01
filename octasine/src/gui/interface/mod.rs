@@ -110,7 +110,7 @@ pub struct OctaSineIcedApplication<H: GuiSyncHandle> {
 }
 
 impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {
-    fn set_value(&mut self, parameter: Parameter, v: f32) {
+    fn set_value(&mut self, parameter: Parameter, v: f32, internal: bool) {
         match parameter {
             Parameter::None => (),
             Parameter::Master(MasterParameter::Volume) => self.corner.master_volume.set_value(v),
@@ -173,18 +173,39 @@ impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {
                     OperatorParameter::FrequencyFree => operator.frequency_free.set_value(v),
                     OperatorParameter::FrequencyFine => operator.frequency_fine.set_value(v),
                     OperatorParameter::AttackDuration => {
-                        operator.envelope.widget.set_attack_duration(v)
+                        operator.envelope.widget.set_attack_duration(v);
+
+                        if !internal {
+                            self.update_envelope_group_statuses();
+                        }
                     }
                     OperatorParameter::DecayDuration => {
-                        operator.envelope.widget.set_decay_duration(v)
+                        operator.envelope.widget.set_decay_duration(v);
+
+                        if !internal {
+                            self.update_envelope_group_statuses();
+                        }
                     }
                     OperatorParameter::SustainVolume => {
-                        operator.envelope.widget.set_sustain_volume(v)
+                        operator.envelope.widget.set_sustain_volume(v);
+
+                        if !internal {
+                            self.update_envelope_group_statuses();
+                        }
                     }
                     OperatorParameter::ReleaseDuration => {
-                        operator.envelope.widget.set_release_duration(v)
+                        operator.envelope.widget.set_release_duration(v);
+
+                        if !internal {
+                            self.update_envelope_group_statuses();
+                        }
                     }
-                    OperatorParameter::EnvelopeLockGroup => operator.envelope.set_group(v),
+                    OperatorParameter::EnvelopeLockGroup => {
+                        operator.envelope.set_group(v);
+
+                        // Group buttons don't send message triggering update by themselves
+                        self.update_envelope_group_statuses();
+                    }
                 }
             }
             Parameter::Lfo(index, p) => {
@@ -217,7 +238,7 @@ impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {
             for (index, opt_new_value) in changes.iter().enumerate() {
                 if let Some(new_value) = opt_new_value {
                     if let Some(parameter) = Parameter::from_index(index) {
-                        self.set_value(parameter, *new_value);
+                        self.set_value(parameter, *new_value, false);
                     }
                 }
             }
@@ -263,7 +284,7 @@ impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {
         for index in 0..NUM_OPERATORS {
             let envelope = self.get_envelope_by_index(index as u8);
 
-            if !envelope.is_in_group(group) || index == sending_operator_index as usize {
+            if !envelope.is_group_member(group) || index == sending_operator_index as usize {
                 continue;
             }
 
@@ -291,7 +312,7 @@ impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {
             ];
 
             for (p, v) in parameters {
-                self.set_value(p, v);
+                self.set_value(p, v, true);
 
                 if automate_host {
                     self.sync_handle.begin_edit(p);
@@ -300,6 +321,50 @@ impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {
                 } else {
                     self.sync_handle.set_parameter_audio_only(p, v);
                 }
+            }
+        }
+
+        self.update_envelope_group_statuses();
+    }
+
+    fn update_envelope_group_statuses(&mut self) {
+        for group in [OperatorEnvelopeGroupValue::A, OperatorEnvelopeGroupValue::B] {
+            let mut opt_values = None;
+            let mut group_synced = true;
+
+            for i in 0..NUM_OPERATORS {
+                let envelope = self.get_envelope_by_index(i as u8);
+
+                if envelope.is_group_member(group) {
+                    let values = envelope.widget.get_envelope_values();
+
+                    match &mut opt_values {
+                        Some(previous_values) => {
+                            if values != *previous_values {
+                                group_synced = false;
+
+                                break;
+                            }
+                        }
+                        opt_values @ None => *opt_values = Some(values),
+                    }
+                }
+            }
+
+            for i in 0..NUM_OPERATORS {
+                let envelope = self.get_envelope_by_index(i as u8);
+
+                if envelope.is_group_member(group) {
+                    envelope.set_group_synced(group_synced);
+                }
+            }
+        }
+
+        for i in 0..NUM_OPERATORS {
+            let envelope = self.get_envelope_by_index(i as u8);
+
+            if let OperatorEnvelopeGroupValue::Off = envelope.get_group() {
+                envelope.set_group_synced(true);
             }
         }
     }
@@ -414,12 +479,12 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                 self.sync_handle.end_edit(parameter);
             }
             Message::ChangeSingleParameterSetValue(parameter, value) => {
-                self.set_value(parameter, value);
+                self.set_value(parameter, value, true);
 
                 self.sync_handle.set_parameter(parameter, value);
             }
             Message::ChangeSingleParameterImmediate(parameter, value) => {
-                self.set_value(parameter, value);
+                self.set_value(parameter, value, true);
 
                 self.sync_handle.begin_edit(parameter);
                 self.sync_handle.set_parameter(parameter, value);

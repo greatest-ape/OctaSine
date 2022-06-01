@@ -60,7 +60,7 @@ pub trait StyleSheet {
     fn active(&self) -> Style;
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct EnvelopeValues {
     pub attack: f32,
     pub decay: f32,

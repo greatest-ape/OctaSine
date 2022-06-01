@@ -13,12 +13,13 @@ use crate::sync::GuiSyncHandle;
 use super::boolean_button::{envelope_group_a_button, envelope_group_b_button, BooleanButton};
 use super::common::container_l3;
 use super::style::Theme;
-use super::{Message, LINE_HEIGHT};
+use super::{Message, FONT_SIZE, LINE_HEIGHT};
 
 pub struct Envelope {
     operator_index: usize,
     style: Theme,
     group: OperatorEnvelopeGroupValue,
+    group_synced: bool,
     pub widget: widget::Envelope,
     pub zoom_in: button::State,
     pub zoom_out: button::State,
@@ -34,10 +35,17 @@ impl Envelope {
             Parameter::Operator(operator_index as u8, OperatorParameter::EnvelopeLockGroup),
         ));
 
+        let group_synced = if let OperatorEnvelopeGroupValue::Off = group {
+            true
+        } else {
+            false
+        };
+
         Self {
             operator_index,
             style,
             group,
+            group_synced,
             widget: widget::Envelope::new(sync_handle, operator_index, style),
             zoom_in: button::State::default(),
             zoom_out: button::State::default(),
@@ -65,15 +73,37 @@ impl Envelope {
         self.group_b.set_value(value);
     }
 
+    pub fn set_group_synced(&mut self, synced: bool) {
+        self.group_synced = synced;
+    }
+
     pub fn get_group(&self) -> OperatorEnvelopeGroupValue {
         self.group
     }
 
-    pub fn is_in_group(&self, group: OperatorEnvelopeGroupValue) -> bool {
+    pub fn is_group_member(&self, group: OperatorEnvelopeGroupValue) -> bool {
         group == self.group && group != OperatorEnvelopeGroupValue::Off
     }
 
     pub fn view(&mut self) -> Element<Message> {
+        let group_synced: Element<Message> = if self.group_synced {
+            Space::with_width(Length::Units(1)).into()
+        } else {
+            let text = Text::new("≠")
+                .font(self.style.font_bold())
+                .size(FONT_SIZE)
+                .color(self.style.text_color())
+                .height(Length::Units(LINE_HEIGHT))
+                .width(Length::Units(6))
+                .horizontal_alignment(Horizontal::Center);
+
+            Tooltip::new(text, "Group member values differ", Position::Top)
+                .style(self.style.tooltip())
+                .font(self.style.font_regular())
+                .padding(self.style.tooltip_padding())
+                .into()
+        };
+
         let zoom_out_data = self.widget.get_zoom_out_data();
         let zoom_in_data = self.widget.get_zoom_in_data();
         let zoom_to_fit_data = self.widget.get_zoom_to_fit_data();
@@ -156,6 +186,8 @@ impl Envelope {
                     .align_items(Alignment::End)
                     .push(
                         Row::new()
+                            .push(group_synced)
+                            .push(Space::with_width(Length::Units(3)))
                             .push(group_a)
                             .push(Space::with_width(Length::Units(3)))
                             .push(group_b), // .push(Space::with_width(Length::Units(3)))
