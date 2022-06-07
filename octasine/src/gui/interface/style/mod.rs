@@ -17,6 +17,10 @@ const OPEN_SANS_BOLD: Font = Font::External {
     name: "Open Sans Bold",
     bytes: super::OPEN_SANS_BYTES_BOLD,
 };
+const OPEN_SANS_EXTRA_BOLD: Font = Font::External {
+    name: "Open Sans Extra Bold",
+    bytes: super::OPEN_SANS_BYTES_EXTRA_BOLD,
+};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
@@ -65,6 +69,12 @@ impl Theme {
             Theme::Light => OPEN_SANS_BOLD,
         }
     }
+    pub fn font_extra_bold(&self) -> Font {
+        match self {
+            Theme::Dark => OPEN_SANS_BOLD,
+            Theme::Light => OPEN_SANS_EXTRA_BOLD,
+        }
+    }
     pub fn font_heading(&self) -> Font {
         match self {
             Theme::Dark => OPEN_SANS_BOLD,
@@ -77,11 +87,11 @@ impl Theme {
     }
 
     pub fn button_padding(&self) -> u16 {
-        5
+        3
     }
 
     pub fn picklist_padding(&self) -> u16 {
-        5
+        3
     }
 
     pub fn container_l0(&self) -> Box<dyn iced_baseview::container::StyleSheet> {
@@ -153,7 +163,7 @@ impl Theme {
         }
     }
 
-    pub fn envelope(&self) -> Box<dyn super::envelope::StyleSheet> {
+    pub fn envelope(&self) -> Box<dyn super::envelope::widget::StyleSheet> {
         match self {
             Self::Light => Box::new(light::Envelope),
             Self::Dark => Box::new(dark::Envelope),
@@ -178,6 +188,12 @@ impl Theme {
         }
     }
     pub fn bpm_sync_button(&self) -> Box<dyn super::boolean_button::StyleSheet> {
+        match self {
+            Self::Light => Box::new(light::BooleanButton),
+            Self::Dark => Box::new(dark::BooleanButton),
+        }
+    }
+    pub fn envelope_group_button(&self) -> Box<dyn super::boolean_button::StyleSheet> {
         match self {
             Self::Light => Box::new(light::BooleanButton),
             Self::Dark => Box::new(dark::BooleanButton),

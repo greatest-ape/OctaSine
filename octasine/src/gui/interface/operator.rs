@@ -1,8 +1,7 @@
 use iced_baseview::tooltip::Position;
 use iced_baseview::Tooltip;
 use iced_baseview::{
-    alignment::Horizontal, button, Alignment, Button, Column, Container, Element, Length, Row,
-    Space, Text,
+    alignment::Horizontal, Alignment, Column, Container, Element, Length, Row, Space, Text,
 };
 
 use crate::parameters::{
@@ -43,10 +42,6 @@ pub struct OperatorWidgets {
     pub frequency_free: OctaSineKnob<OperatorFrequencyFreeValue>,
     pub frequency_fine: OctaSineKnob<OperatorFrequencyFineValue>,
     pub envelope: Envelope,
-    pub zoom_in: button::State,
-    pub zoom_out: button::State,
-    pub sync_viewport: button::State,
-    pub zoom_to_fit: button::State,
 }
 
 impl OperatorWidgets {
@@ -88,10 +83,6 @@ impl OperatorWidgets {
             frequency_free: knob::operator_frequency_free(sync_handle, operator_index, style),
             frequency_fine: knob::operator_frequency_fine(sync_handle, operator_index, style),
             envelope: Envelope::new(sync_handle, operator_index, style),
-            zoom_in: button::State::default(),
-            zoom_out: button::State::default(),
-            sync_viewport: button::State::default(),
-            zoom_to_fit: button::State::default(),
         }
     }
 
@@ -204,97 +195,8 @@ impl OperatorWidgets {
                 .push(container_l3(self.style, self.frequency_fine.view())),
         );
 
-        let sync_viewports_message = Message::EnvelopeSyncViewports {
-            viewport_factor: self.envelope.get_viewport_factor(),
-            x_offset: self.envelope.get_x_offset(),
-        };
-
-        let envelope = container_l2(
-            self.style,
-            Row::new()
-                .push(container_l3(self.style, self.envelope.view()))
-                .push(container_l3(
-                    self.style,
-                    Column::new()
-                        .width(Length::Units(LINE_HEIGHT * 3))
-                        .align_items(Alignment::End)
-                        .push(
-                            Row::new()
-                                .push(
-                                    Tooltip::new(
-                                        Button::new(
-                                            &mut self.zoom_out,
-                                            Text::new("−").font(self.style.font_bold()),
-                                        )
-                                        .on_press(Message::EnvelopeZoomOut(self.index))
-                                        .padding(self.style.button_padding())
-                                        .style(self.style.button()),
-                                        "Zoom out",
-                                        Position::Top,
-                                    )
-                                    .style(self.style.tooltip())
-                                    .font(self.style.font_regular())
-                                    .padding(self.style.tooltip_padding()),
-                                )
-                                .push(Space::with_width(Length::Units(3)))
-                                .push(
-                                    Tooltip::new(
-                                        Button::new(
-                                            &mut self.zoom_in,
-                                            Text::new("+").font(self.style.font_bold()),
-                                        )
-                                        .on_press(Message::EnvelopeZoomIn(self.index))
-                                        .padding(self.style.button_padding())
-                                        .style(self.style.button()),
-                                        "Zoom in",
-                                        Position::Top,
-                                    )
-                                    .style(self.style.tooltip())
-                                    .font(self.style.font_regular())
-                                    .padding(self.style.tooltip_padding()),
-                                ),
-                        )
-                        .push(Space::with_height(Length::Units(2)))
-                        .push(
-                            Row::new().push(
-                                Tooltip::new(
-                                    Button::new(
-                                        &mut self.zoom_to_fit,
-                                        Text::new("FIT").font(self.style.font_regular()),
-                                    )
-                                    .on_press(Message::EnvelopeZoomToFit(self.index))
-                                    .padding(self.style.button_padding())
-                                    .style(self.style.button()),
-                                    "Zoom to fit",
-                                    Position::Top,
-                                )
-                                .style(self.style.tooltip())
-                                .font(self.style.font_regular())
-                                .padding(self.style.tooltip_padding()),
-                            ),
-                        )
-                        .push(Space::with_height(Length::Units(2)))
-                        .push(
-                            Row::new().push(
-                                Tooltip::new(
-                                    Button::new(
-                                        &mut self.sync_viewport,
-                                        Text::new("DIST").font(self.style.font_regular()),
-                                    )
-                                    .on_press(sync_viewports_message)
-                                    .padding(self.style.button_padding())
-                                    .style(self.style.button()),
-                                    "Distribute to other envelopes",
-                                    Position::Top,
-                                )
-                                .style(self.style.tooltip())
-                                .font(self.style.font_regular())
-                                .padding(self.style.tooltip_padding()),
-                            ),
-                        ),
-                )),
-        )
-        .height(Length::Units(LINE_HEIGHT * 8));
+        let envelope =
+            container_l2(self.style, self.envelope.view()).height(Length::Units(LINE_HEIGHT * 8));
 
         container_l1(
             self.style,

@@ -15,6 +15,7 @@ mod wave_picker;
 use iced_baseview::{executor, Application, Command, Subscription, WindowSubs};
 use iced_baseview::{Column, Container, Element, Length, Point, Row, Space, WindowQueue};
 
+use crate::common::NUM_OPERATORS;
 use crate::parameters::*;
 use crate::sync::GuiSyncHandle;
 
@@ -38,6 +39,8 @@ const OPEN_SANS_BYTES_SEMI_BOLD: &[u8] =
     include_bytes!("../../../../contrib/open-sans/OpenSans-SemiBold.ttf");
 const OPEN_SANS_BYTES_BOLD: &[u8] =
     include_bytes!("../../../../contrib/open-sans/OpenSans-Bold.ttf");
+const OPEN_SANS_BYTES_EXTRA_BOLD: &[u8] =
+    include_bytes!("../../../../contrib/open-sans/OpenSans-ExtraBold.ttf");
 
 pub trait SnapPoint {
     fn snap(self) -> Self;
@@ -54,27 +57,47 @@ impl SnapPoint for Point {
 
 #[derive(Debug, Clone)]
 pub enum Message {
+    NoOp,
     Frame,
     ChangeSingleParameterBegin(Parameter),
     ChangeSingleParameterEnd(Parameter),
     ChangeSingleParameterSetValue(Parameter, f32),
     ChangeSingleParameterImmediate(Parameter, f32),
-    ChangeTwoParametersBegin((Parameter, Parameter)),
-    ChangeTwoParametersEnd((Parameter, Parameter)),
-    ChangeTwoParametersSetValues((Parameter, f32), (Parameter, f32)),
-    ToggleInfo,
-    PatchChange(usize),
-    EnvelopeZoomIn(usize),
-    EnvelopeZoomOut(usize),
-    EnvelopeZoomToFit(usize),
-    EnvelopeSyncViewports { viewport_factor: f32, x_offset: f32 },
-    ToggleColorMode,
+    /// End envelope edit.
+    ///
+    /// Call host.begin_edit, host.automate and host.end_edit.
+    ChangeEnvelopeParametersEnd {
+        operator_index: u8,
+        parameter_1: (Parameter, f32),
+        parameter_2: Option<(Parameter, f32)>,
+    },
+    /// Set envelope parameters (but don't automate host for performance
+    /// reasons). Broadcast all envelope values to group members.
+    ///
+    /// Remember to wrap calls with appropriate begin/end messages
+    ChangeEnvelopeParametersSetValue {
+        operator_index: u8,
+        parameter_1: (Parameter, f32),
+        parameter_2: Option<(Parameter, f32)>,
+    },
+    ChangePatch(usize),
+    /// Set viewport, broadcast it to group members
+    EnvelopeChangeViewport {
+        operator_index: u8,
+        viewport_factor: f32,
+        x_offset: f32,
+    },
+    /// Distribute viewport to all envelopes
+    EnvelopeDistributeViewports {
+        viewport_factor: f32,
+        x_offset: f32,
+    },
+    SwitchTheme,
 }
 
 pub struct OctaSineIcedApplication<H: GuiSyncHandle> {
     sync_handle: H,
     style: style::Theme,
-    show_version: bool,
     operator_1: OperatorWidgets,
     operator_2: OperatorWidgets,
     operator_3: OperatorWidgets,
@@ -87,7 +110,7 @@ pub struct OctaSineIcedApplication<H: GuiSyncHandle> {
 }
 
 impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {
-    fn set_value(&mut self, parameter: Parameter, v: f32) {
+    fn set_value(&mut self, parameter: Parameter, v: f32, internal: bool) {
         match parameter {
             Parameter::None => (),
             Parameter::Master(MasterParameter::Volume) => self.corner.master_volume.set_value(v),
@@ -149,11 +172,40 @@ impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {
                     OperatorParameter::FrequencyRatio => operator.frequency_ratio.set_value(v),
                     OperatorParameter::FrequencyFree => operator.frequency_free.set_value(v),
                     OperatorParameter::FrequencyFine => operator.frequency_fine.set_value(v),
-                    OperatorParameter::AttackDuration => operator.envelope.set_attack_duration(v),
-                    OperatorParameter::AttackValue => operator.envelope.set_attack_end_value(v),
-                    OperatorParameter::DecayDuration => operator.envelope.set_decay_duration(v),
-                    OperatorParameter::DecayValue => operator.envelope.set_decay_end_value(v),
-                    OperatorParameter::ReleaseDuration => operator.envelope.set_release_duration(v),
+                    OperatorParameter::AttackDuration => {
+                        operator.envelope.widget.set_attack_duration(v, internal);
+
+                        if !internal {
+                            self.update_envelope_group_statuses();
+                        }
+                    }
+                    OperatorParameter::DecayDuration => {
+                        operator.envelope.widget.set_decay_duration(v, internal);
+
+                        if !internal {
+                            self.update_envelope_group_statuses();
+                        }
+                    }
+                    OperatorParameter::SustainVolume => {
+                        operator.envelope.widget.set_sustain_volume(v, internal);
+
+                        if !internal {
+                            self.update_envelope_group_statuses();
+                        }
+                    }
+                    OperatorParameter::ReleaseDuration => {
+                        operator.envelope.widget.set_release_duration(v, internal);
+
+                        if !internal {
+                            self.update_envelope_group_statuses();
+                        }
+                    }
+                    OperatorParameter::EnvelopeLockGroup => {
+                        operator.envelope.set_group(v, internal);
+
+                        // Group buttons don't send message triggering update by themselves
+                        self.update_envelope_group_statuses();
+                    }
                 }
             }
             Parameter::Lfo(index, p) => {
@@ -186,7 +238,7 @@ impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {
             for (index, opt_new_value) in changes.iter().enumerate() {
                 if let Some(new_value) = opt_new_value {
                     if let Some(parameter) = Parameter::from_index(index) {
-                        self.set_value(parameter, *new_value);
+                        self.set_value(parameter, *new_value, false);
                     }
                 }
             }
@@ -209,6 +261,121 @@ impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {
 
         if let Err(err) = spawn_result {
             ::log::error!("Couldn't spawn thread for saving settings: {}", err)
+        }
+    }
+
+    fn get_envelope_by_index(&mut self, operator_index: u8) -> &mut envelope::Envelope {
+        match operator_index {
+            0 => &mut self.operator_1.envelope,
+            1 => &mut self.operator_2.envelope,
+            2 => &mut self.operator_3.envelope,
+            3 => &mut self.operator_4.envelope,
+            _ => unreachable!(),
+        }
+    }
+
+    /// Broadcast envelope changes to other group members, and optionally to host
+    fn sync_envelopes(&mut self, sending_operator_index: u8, automate_host: bool) {
+        let sending_envelope = self.get_envelope_by_index(sending_operator_index);
+
+        let group = sending_envelope.get_group();
+        let values = sending_envelope.widget.get_envelope_values();
+
+        for index in 0..NUM_OPERATORS {
+            let envelope = self.get_envelope_by_index(index as u8);
+
+            if !envelope.is_group_member(group) || index == sending_operator_index as usize {
+                continue;
+            }
+
+            envelope
+                .widget
+                .set_viewport(values.viewport_factor, values.x_offset);
+
+            let parameters = [
+                (
+                    Parameter::Operator(index as u8, OperatorParameter::AttackDuration),
+                    values.attack,
+                ),
+                (
+                    Parameter::Operator(index as u8, OperatorParameter::DecayDuration),
+                    values.decay,
+                ),
+                (
+                    Parameter::Operator(index as u8, OperatorParameter::SustainVolume),
+                    values.sustain,
+                ),
+                (
+                    Parameter::Operator(index as u8, OperatorParameter::ReleaseDuration),
+                    values.release,
+                ),
+            ];
+
+            for (p, v) in parameters {
+                self.set_value(p, v, true);
+
+                if automate_host {
+                    self.sync_handle.begin_edit(p);
+                    self.sync_handle.set_parameter(p, v);
+                    self.sync_handle.end_edit(p);
+                } else {
+                    self.sync_handle.set_parameter_audio_only(p, v);
+                }
+            }
+        }
+
+        self.update_envelope_group_statuses();
+    }
+
+    fn update_envelope_group_statuses(&mut self) {
+        for group in [OperatorEnvelopeGroupValue::A, OperatorEnvelopeGroupValue::B] {
+            let mut any_modified_by_automation = false;
+
+            for i in 0..NUM_OPERATORS {
+                let envelope = self.get_envelope_by_index(i as u8);
+
+                if envelope.is_group_member(group) {
+                    any_modified_by_automation |= envelope.widget.get_modified_by_automation();
+                }
+            }
+
+            let mut opt_values = None;
+            let mut group_synced = true;
+
+            for i in 0..NUM_OPERATORS {
+                let envelope = self.get_envelope_by_index(i as u8);
+
+                if envelope.is_group_member(group) {
+                    let values = envelope.widget.get_envelope_values();
+
+                    match &mut opt_values {
+                        Some(previous_values) => {
+                            if any_modified_by_automation && values != *previous_values {
+                                group_synced = false;
+
+                                break;
+                            }
+                        }
+                        opt_values @ None => *opt_values = Some(values),
+                    }
+                }
+            }
+
+            for i in 0..NUM_OPERATORS {
+                let envelope = self.get_envelope_by_index(i as u8);
+
+                if envelope.is_group_member(group) {
+                    envelope.set_group_synced(group_synced);
+                }
+            }
+        }
+
+        for i in 0..NUM_OPERATORS {
+            let envelope = self.get_envelope_by_index(i as u8);
+
+            if let OperatorEnvelopeGroupValue::Off = envelope.get_group() {
+                envelope.set_group_synced(true);
+            }
         }
     }
 }
@@ -236,7 +403,6 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
         let app = Self {
             sync_handle,
             style,
-            show_version: false,
             operator_1,
             operator_2,
             operator_3,
@@ -294,87 +460,87 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                 }
                 self.update_widgets_from_parameters();
             }
-            Message::ToggleInfo => {
-                self.show_version = !self.show_version;
-            }
-            Message::EnvelopeZoomIn(operator_index) => match operator_index {
-                0 => self.operator_1.envelope.zoom_in(),
-                1 => self.operator_2.envelope.zoom_in(),
-                2 => self.operator_3.envelope.zoom_in(),
-                3 => self.operator_4.envelope.zoom_in(),
-                _ => unreachable!(),
-            },
-            Message::EnvelopeZoomOut(operator_index) => match operator_index {
-                0 => self.operator_1.envelope.zoom_out(),
-                1 => self.operator_2.envelope.zoom_out(),
-                2 => self.operator_3.envelope.zoom_out(),
-                3 => self.operator_4.envelope.zoom_out(),
-                _ => unreachable!(),
-            },
-            Message::EnvelopeZoomToFit(operator_index) => match operator_index {
-                0 => self.operator_1.envelope.zoom_to_fit(),
-                1 => self.operator_2.envelope.zoom_to_fit(),
-                2 => self.operator_3.envelope.zoom_to_fit(),
-                3 => self.operator_4.envelope.zoom_to_fit(),
-                _ => unreachable!(),
-            },
-            Message::EnvelopeSyncViewports {
+            Message::NoOp => {}
+            Message::EnvelopeChangeViewport {
+                operator_index,
                 viewport_factor,
                 x_offset,
             } => {
-                self.operator_1
-                    .envelope
+                self.get_envelope_by_index(operator_index)
+                    .widget
                     .set_viewport(viewport_factor, x_offset);
-                self.operator_2
-                    .envelope
-                    .set_viewport(viewport_factor, x_offset);
-                self.operator_3
-                    .envelope
-                    .set_viewport(viewport_factor, x_offset);
-                self.operator_4
-                    .envelope
-                    .set_viewport(viewport_factor, x_offset);
+
+                self.sync_envelopes(operator_index, false);
             }
-            Message::ChangeSingleParameterBegin(index) => {
-                self.sync_handle.begin_edit(index);
+            Message::EnvelopeDistributeViewports {
+                viewport_factor,
+                x_offset,
+            } => {
+                for operator_index in 0..NUM_OPERATORS {
+                    self.get_envelope_by_index(operator_index as u8)
+                        .widget
+                        .set_viewport(viewport_factor, x_offset);
+                }
             }
-            Message::ChangeSingleParameterEnd(index) => {
-                self.sync_handle.end_edit(index);
+            Message::ChangeSingleParameterBegin(parameter) => {
+                self.sync_handle.begin_edit(parameter);
+            }
+            Message::ChangeSingleParameterEnd(parameter) => {
+                self.sync_handle.end_edit(parameter);
             }
             Message::ChangeSingleParameterSetValue(parameter, value) => {
-                self.set_value(parameter, value);
+                self.set_value(parameter, value, true);
 
                 self.sync_handle.set_parameter(parameter, value);
             }
             Message::ChangeSingleParameterImmediate(parameter, value) => {
-                self.set_value(parameter, value);
+                self.set_value(parameter, value, true);
 
                 self.sync_handle.begin_edit(parameter);
                 self.sync_handle.set_parameter(parameter, value);
                 self.sync_handle.end_edit(parameter);
             }
-            Message::ChangeTwoParametersBegin((parameter_1, parameter_2)) => {
-                self.sync_handle.begin_edit(parameter_1);
-                self.sync_handle.begin_edit(parameter_2);
-            }
-            Message::ChangeTwoParametersEnd((parameter_1, parameter_2)) => {
-                self.sync_handle.end_edit(parameter_1);
-                self.sync_handle.end_edit(parameter_2);
-            }
-            Message::ChangeTwoParametersSetValues(
-                (parameter_1, value_1),
-                (parameter_2, value_2),
-            ) => {
-                self.set_value(parameter_1, value_1);
-                self.set_value(parameter_2, value_2);
+            Message::ChangeEnvelopeParametersEnd {
+                operator_index,
+                parameter_1,
+                parameter_2,
+            } => {
+                // There is not need to call self.set_value, since values were
+                // already set internally in sender while dragging
 
-                self.sync_handle.set_parameter(parameter_1, value_1);
-                self.sync_handle.set_parameter(parameter_2, value_2);
+                self.sync_handle.begin_edit(parameter_1.0);
+                self.sync_handle.set_parameter(parameter_1.0, parameter_1.1);
+                self.sync_handle.end_edit(parameter_1.0);
+
+                if let Some((p, v)) = parameter_2 {
+                    self.sync_handle.begin_edit(p);
+                    self.sync_handle.set_parameter(p, v);
+                    self.sync_handle.end_edit(p);
+                }
+
+                self.sync_envelopes(operator_index, true);
             }
-            Message::PatchChange(index) => {
+            Message::ChangeEnvelopeParametersSetValue {
+                operator_index,
+                parameter_1,
+                parameter_2,
+            } => {
+                // Skip calling self.set_value, since envelopes update their
+                // internal data when dragging
+
+                self.sync_handle
+                    .set_parameter_audio_only(parameter_1.0, parameter_1.1);
+
+                if let Some((p, v)) = parameter_2 {
+                    self.sync_handle.set_parameter_audio_only(p, v);
+                }
+
+                self.sync_envelopes(operator_index, false);
+            }
+            Message::ChangePatch(index) => {
                 self.sync_handle.set_patch_index(index);
             }
-            Message::ToggleColorMode => {
+            Message::SwitchTheme => {
                 let style = if let Theme::Light = self.style {
                     Theme::Dark
                 } else {

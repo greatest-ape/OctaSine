@@ -5,6 +5,7 @@ use iced_baseview::canvas::{
 use iced_baseview::{Color, Element, Length, Point, Rectangle, Size};
 
 use crate::parameters::lfo_mode::LfoMode;
+use crate::parameters::operator_envelope::OperatorEnvelopeGroupValue;
 use crate::parameters::{
     LfoActiveValue, LfoBpmSyncValue, LfoModeValue, LfoParameter, OperatorActiveValue,
     OperatorParameter, Parameter, ParameterValue,
@@ -114,6 +115,54 @@ pub fn lfo_active_button<H: GuiSyncHandle>(
             }
         },
         |theme| theme.mute_button(),
+    )
+}
+
+pub fn envelope_group_a_button<H: GuiSyncHandle>(
+    sync_handle: &H,
+    operator_index: usize,
+    style: Theme,
+) -> BooleanButton {
+    BooleanButton::new(
+        sync_handle,
+        Parameter::Operator(operator_index as u8, OperatorParameter::EnvelopeLockGroup),
+        style,
+        "A",
+        LINE_HEIGHT,
+        LINE_HEIGHT,
+        |v| OperatorEnvelopeGroupValue::new_from_patch(v).get() == OperatorEnvelopeGroupValue::A,
+        |is_active| {
+            if is_active {
+                OperatorEnvelopeGroupValue::A.to_patch()
+            } else {
+                OperatorEnvelopeGroupValue::Off.to_patch()
+            }
+        },
+        |theme| theme.envelope_group_button(),
+    )
+}
+
+pub fn envelope_group_b_button<H: GuiSyncHandle>(
+    sync_handle: &H,
+    operator_index: usize,
+    style: Theme,
+) -> BooleanButton {
+    BooleanButton::new(
+        sync_handle,
+        Parameter::Operator(operator_index as u8, OperatorParameter::EnvelopeLockGroup),
+        style,
+        "B",
+        LINE_HEIGHT,
+        LINE_HEIGHT,
+        |v| OperatorEnvelopeGroupValue::new_from_patch(v).get() == OperatorEnvelopeGroupValue::B,
+        |is_active| {
+            if is_active {
+                OperatorEnvelopeGroupValue::B.to_patch()
+            } else {
+                OperatorEnvelopeGroupValue::Off.to_patch()
+            }
+        },
+        |theme| theme.envelope_group_button(),
     )
 }
 

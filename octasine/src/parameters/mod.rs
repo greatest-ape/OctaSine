@@ -88,10 +88,10 @@ impl Parameter {
                 OperatorParameter::FrequencyFree => format!("OP {} freq free", index + 1),
                 OperatorParameter::FrequencyFine => format!("OP {} freq fine", index + 1),
                 OperatorParameter::AttackDuration => format!("OP {} attack time", index + 1),
-                OperatorParameter::AttackValue => format!("OP {} attack vol", index + 1),
                 OperatorParameter::DecayDuration => format!("OP {} decay time", index + 1),
-                OperatorParameter::DecayValue => format!("OP {} decay vol", index + 1),
+                OperatorParameter::SustainVolume => format!("OP {} sustain vol", index + 1),
                 OperatorParameter::ReleaseDuration => format!("OP {} release time", index + 1),
+                OperatorParameter::EnvelopeLockGroup => format!("OP {} lock group", index + 1),
             },
             Self::Lfo(index, p) => match p {
                 LfoParameter::Target => format!("LFO {} target", index + 1),

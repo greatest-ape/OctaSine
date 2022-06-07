@@ -4,12 +4,12 @@ mod lfo_amount;
 mod lfo_frequency_free;
 mod lfo_target;
 mod operator_active;
-mod operator_envelope_volume;
 mod operator_frequency_fine;
 mod operator_frequency_free;
 mod operator_mix;
 mod operator_mod_target;
 mod operator_panning;
+mod operator_sustain_volume;
 mod operator_volume;
 
 use array_init::array_init;
@@ -22,12 +22,12 @@ use self::lfo_active::LfoActiveAudioParameter;
 use self::lfo_amount::LfoAmountAudioParameter;
 use self::lfo_frequency_free::LfoFrequencyFreeAudioParameter;
 use self::lfo_target::LfoTargetAudioParameter;
-use self::operator_envelope_volume::OperatorEnvelopeVolumeAudioParameter;
 use self::operator_frequency_fine::OperatorFrequencyFineAudioParameter;
 use self::operator_frequency_free::OperatorFrequencyFreeAudioParameter;
 use self::operator_mix::OperatorMixAudioParameter;
 use self::operator_mod_target::OperatorModulationTargetAudioParameter;
 use self::operator_panning::OperatorPanningAudioParameter;
+use self::operator_sustain_volume::OperatorSustainVolumeAudioParameter;
 use self::operator_volume::OperatorVolumeAudioParameter;
 
 trait AudioParameterPatchInteraction {
@@ -106,12 +106,12 @@ macro_rules! impl_patch_interaction {
                         FrequencyFree => $f(&mut operator.frequency_free, input),
                         FrequencyFine => $f(&mut operator.frequency_fine, input),
                         AttackDuration => $f(&mut operator.volume_envelope.attack_duration, input),
-                        AttackValue => $f(&mut operator.volume_envelope.attack_end_value, input),
                         DecayDuration => $f(&mut operator.volume_envelope.decay_duration, input),
-                        DecayValue => $f(&mut operator.volume_envelope.decay_end_value, input),
+                        SustainVolume => $f(&mut operator.volume_envelope.sustain_volume, input),
                         ReleaseDuration => {
                             $f(&mut operator.volume_envelope.release_duration, input)
                         }
+                        EnvelopeLockGroup => $f(&mut operator.volume_envelope.lock_group, input),
                     }
                 }
                 Parameter::Lfo(index, p) => {
@@ -225,19 +225,19 @@ impl OperatorAudioParameters {
 #[derive(Default)]
 pub struct OperatorEnvelopeAudioParameters {
     pub attack_duration: SimpleAudioParameter<OperatorAttackDurationValue>,
-    pub attack_end_value: OperatorEnvelopeVolumeAudioParameter<OperatorAttackVolumeValue>,
     pub decay_duration: SimpleAudioParameter<OperatorDecayDurationValue>,
-    pub decay_end_value: OperatorEnvelopeVolumeAudioParameter<OperatorDecayVolumeValue>,
+    pub sustain_volume: OperatorSustainVolumeAudioParameter,
     pub release_duration: SimpleAudioParameter<OperatorReleaseDurationValue>,
+    pub lock_group: SimpleAudioParameter<OperatorEnvelopeGroupValue>,
 }
 
 impl OperatorEnvelopeAudioParameters {
     fn advance_one_sample(&mut self, sample_rate: SampleRate) {
         self.attack_duration.advance_one_sample(sample_rate);
-        self.attack_end_value.advance_one_sample(sample_rate);
         self.decay_duration.advance_one_sample(sample_rate);
-        self.decay_end_value.advance_one_sample(sample_rate);
+        self.sustain_volume.advance_one_sample(sample_rate);
         self.release_duration.advance_one_sample(sample_rate);
+        self.lock_group.advance_one_sample(sample_rate);
     }
 }
 

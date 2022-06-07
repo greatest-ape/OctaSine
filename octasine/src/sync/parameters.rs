@@ -44,10 +44,10 @@ impl PatchParameter {
                     FrequencyFree => Self::new::<OperatorFrequencyFreeValue>(parameter),
                     FrequencyFine => Self::new::<OperatorFrequencyFineValue>(parameter),
                     AttackDuration => Self::new::<OperatorAttackDurationValue>(parameter),
-                    AttackValue => Self::new::<OperatorAttackVolumeValue>(parameter),
                     DecayDuration => Self::new::<OperatorDecayDurationValue>(parameter),
-                    DecayValue => Self::new::<OperatorDecayVolumeValue>(parameter),
+                    SustainVolume => Self::new::<OperatorSustainVolumeValue>(parameter),
                     ReleaseDuration => Self::new::<OperatorReleaseDurationValue>(parameter),
+                    EnvelopeLockGroup => Self::new::<OperatorEnvelopeGroupValue>(parameter),
                     ModTargets => match index {
                         1 => Self::new::<Operator2ModulationTargetValue>(parameter),
                         2 => Self::new::<Operator3ModulationTargetValue>(parameter),

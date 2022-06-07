@@ -158,9 +158,9 @@ impl pick_list::StyleSheet for PickList {
 
 pub struct Envelope;
 
-impl envelope::StyleSheet for Envelope {
-    fn active(&self) -> envelope::Style {
-        envelope::Style {
+impl envelope::widget::StyleSheet for Envelope {
+    fn active(&self) -> envelope::widget::Style {
+        envelope::widget::Style {
             background_color: Color::WHITE,
             border_color: BORDER,
             drag_border_color: GRAY_700,

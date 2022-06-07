@@ -8,16 +8,28 @@
   * try generating delta_frames with rng
   * try generating key velocity with rng
 * Audio
-  * Consider removing attack volume parameter
+  * Is 10ms minimum envelope stage length too short?
   * Should modulation index now compensate for higher frequencies?
   * Stores patches/banks in format for suitable for future support for
     multiple banks? Are changes even necessary?
+  * Should lock groups be taken into account when automating?
+    * Setting equivalent parameter for other envelopes in same group is not
+      enough. If lock groups are automated, data will be not synced between
+      envelopes, meaning that a full sync would probably have to be done for
+      every envelope parameter automation access to preserve current GUI
+      behaviour. An option would be to change current GUI behaviour to force
+      sync when changing lock groups.
+    * It's most likely a bad idea to automate host inside of handler for when
+      host sets parameter, since it might cause host to set parameter again
 * GUI
   * Envelopes
-    * Two envelope lock groups
+    * Test envelope parameter setting some more
+    * Sync values when calling distribute viewports?
     * Reset values by double clicking draggers? At least for decay.
     * Display zoom level / viewport length in seconds/milliseconds?
-    * Viewport sync mode?
+    * Display corresponding value when hovering over dragger?
+    * Display all volumes in dB?
+    * Tooltips for parameter titles?
 * Other crates
   * create iced_audio 0.8.0 release, use it
   * ask for new baseview release, then create iced_baseview release, use them
