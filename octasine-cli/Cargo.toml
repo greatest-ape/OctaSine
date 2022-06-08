@@ -1,6 +1,6 @@
 [package]
 name = "octasine-cli"
-version = "0.6.1"
+version = "0.7.0"
 authors = ["Joakim Frostegård <joakim.frostegard@gmail.com>"]
 license = "AGPL-3.0"
 edition = "2021"
@@ -14,7 +14,7 @@ plot = ["plotlib"]
 wgpu = ["octasine/gui_wgpu", "simplelog"]
 
 [dependencies]
-octasine = { path = "../octasine", default-features = false }
+octasine = { path = "../octasine", version = "0.7.0", default-features = false }
 
 anyhow = "1"
 clap = { version = "3", features = ["derive"] }

@@ -7,7 +7,7 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
-  OCTASINE_SEMVER_VERSION: "v0.6"
+  OCTASINE_SEMVER_VERSION: "v0.7"
 
 jobs:
   cargo-deny:

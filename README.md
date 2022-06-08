@@ -26,7 +26,7 @@ Frequency modulation synthesizer plugin. Runs on macOS, Windows and Linux (X11) 
 
 ## About
 
-* Four FM operators with parameters for volume, panning, modulation index, feedback, frequency modifiers (ratio, free and fine), envelope values (attack, decay, release) and toggling of white noise mode.
+* Four FM operators with parameters for volume, panning, modulation output, feedback, frequency modifiers (ratio, free and fine), envelope values (attack, decay, sustain, release) and toggling of white noise mode.
 * Flexible routing allows setting the operator modulation targets (with some limitations) as well as the amount of signal that is simply added to the final output, enabling additive synthesis.
 * Four LFOs with multiple waveforms, oneshot and loop modes and optional DAW BPM sync. They can target most operator parameters and most parameters of lower-index LFOs.
 * Each operator is connected to an attack-decay-sustain-release volume envelope with logarithmic slopes.
@@ -64,7 +64,7 @@ cd OctaSine
 * Unless you want to use the bleeding edge development branch, switch to the latest stable version, e.g.:
 
 ```sh
-git checkout tags/v0.6.1
+git checkout tags/v0.7.0
 ```
 
 * Build and install:
@@ -84,7 +84,7 @@ git checkout tags/v0.6.1
 * Unless you want to use the bleeding edge development branch, switch to the latest stable version, e.g.:
 
 ```sh
-git checkout tags/v0.6.1
+git checkout tags/v0.7.0
 ```
 
 * Build OctaSine:
@@ -122,7 +122,7 @@ cd OctaSine
 * Unless you want to use the bleeding edge development branch, switch to the latest stable version, e.g.:
 
 ```sh
-git checkout tags/v0.6.1
+git checkout tags/v0.7.0
 ```
 
 * Build the OctaSine plugin:

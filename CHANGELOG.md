@@ -2,13 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
-## Unreleased
+## 0.7.0 - 2022-06-08
 
-This release contains breaking changes. Patches created with previous versions
-will __not__ sound the same in this version.
+This is a large release featuring lots of changes. Some major ones include:
+- Full interface redesign for a more modern look
+- Operators can now modulate multiple targets. Routing parameters were updated
+  to be more intuitive
+- LFOs were redesigned to be easier to work with
+- Envelope groups were implemented for adjusting multiple envelopes
+  simultaneously
+- Operator and LFO mute buttons were added
 
-However, you can keep using version 0.6.1 alongside this release, since it
-uses a different VST2 plugin ID.
+This release contains breaking changes. It is __not__ compatible with patches
+created with previous versions. However, you can keep using version 0.6.1
+alongside this release, since it uses a different VST2 plugin ID.
 
 ### Changed
 
