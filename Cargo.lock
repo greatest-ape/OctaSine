@@ -1032,8 +1032,9 @@ checksum = "9a3a5bfb195931eeb336b2a7b4d761daec841b97f947d34394601737a7bba5e4"
 
 [[package]]
 name = "iced_audio"
-version = "0.7.0"
-source = "git+https://github.com/iced-rs/iced_audio.git?rev=5e9e916#5e9e9163d2613ec6ee4d2b37c03783f0554ec16a"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "abcc23005d4d2c731972bac12a91c78c48be4ef96692db71c2df765a07dc0d36"
 dependencies = [
  "iced_graphics",
  "iced_native",
