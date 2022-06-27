@@ -2,74 +2,38 @@
 
 ## High priority
 
-* Performance
-  * Were envelope / LFO changes to use f32 100% OK?
-* bench_process
-  * try generating delta_frames with rng
-  * try generating key velocity with rng
-* Audio
-  * Is 10ms minimum envelope stage length too short?
-  * Should modulation index now compensate for higher frequencies?
-  * Stores patches/banks in format for suitable for future support for
-    multiple banks? Are changes even necessary?
-  * Should lock groups be taken into account when automating?
-    * Setting equivalent parameter for other envelopes in same group is not
-      enough. If lock groups are automated, data will be not synced between
-      envelopes, meaning that a full sync would probably have to be done for
-      every envelope parameter automation access to preserve current GUI
-      behaviour. An option would be to change current GUI behaviour to force
-      sync when changing lock groups.
-    * It's most likely a bad idea to automate host inside of handler for when
-      host sets parameter, since it might cause host to set parameter again
-* GUI
-  * Envelopes
-    * Test envelope parameter setting some more
-    * Sync values when calling distribute viewports?
-    * Reset values by double clicking draggers? At least for decay.
-    * Display zoom level / viewport length in seconds/milliseconds?
-    * Display corresponding value when hovering over dragger?
-    * Display all volumes in dB?
-    * Tooltips for parameter titles?
-* Other crates
-  * create iced_audio 0.8.0 release, use it
-  * ask for new baseview release, then create iced_baseview release, use them
-* Add semver-compatible version info in patch/patch bank exports?
-* Probably don't do / no longer relevant:
-  * Envelope clicks when using DAW and looping notes without space between? Or
-    just normal attack? But only when modulating. Interpolate for
-    attack_duration.min(0.03) or similar? Or use VST MIDI noteOffset or similar
-    to avoid restarting envelopes in some cases?
-  * Use sleef for fract calculations etc?
-  * Use fastmath for log table?
-  * Operator freq ratio values: are really both PI, sqrt(2) and sqrt(3) values
-    necessary? Yeah, why not, people might use three different inharmonic ones
-    I suppose?
-  * Parameter step mapping is expensive when combined with LFOs
-    * For modulation index/feedback, maybe exp2 could be used. Same with frequency
-      parameters.
-  * GUI: in operator freq ratio values, display number too? E.g. 2pi: 6.28
-  * Add small marks to operator ratio knobs indicating factors of 2?
-* Release v0.7.0 eventually
-
-## Medium priority
-
 * Consider built-in patch browsing / saving / clearing functionality
   * Use crate https://github.com/PolyMeilex/rfd
   * Maybe use buttons like "C" for clear, "S" for save, "L" for load, "R" for
     rename. They could have tooltips.
 * Parameter value text input
   * Maybe use https://github.com/jdm/tinyfiledialogs-rs
-* Mode to lock together envelopes so changes affect all
-* bench_process
-  * Is it a cause for concern that not keeping wave type fixed has different
-    effect depending on SIMD width?
+* Check for available updates at plugin start
+* Consider reenabling LFO targetting of frequency / volume of all operators
+
+## Medium priority
+
 * GUI
+  * Tooltips for parameter titles?
+  * Envelopes
+    * Reset values by double clicking draggers? At least for decay.
+    * Display zoom level / viewport length in seconds/milliseconds?
+    * Display corresponding value when hovering over dragger?
+    * Display all volumes in dB?
+  * Probably don't do / no longer relevant:
+    * GUI: in operator freq ratio values, display number too? E.g. 2pi: 6.28
+    * Add small marks to operator ratio knobs indicating factors of 2?
   * Consider adding widget for LFOs and operators showing cumulative
     frequency multiplier
   * Scrolling in dropdowns
     * iced 0.4: https://github.com/hecrj/iced/pull/872
     * Does scrolling (including touch) need to be added to baseview
       macOS code? What about other platforms?
+* bench_process
+  * try generating delta_frames with rng
+  * try generating key velocity with rng
+  * Is it a cause for concern that not keeping wave type fixed has different
+    effect depending on SIMD width?
 * Documentation
   * Double-click to reset knobs
   * Shift-drag knobs for fine tuning
@@ -116,3 +80,12 @@
   independent phases and FM is done by incrementing the phase. It probably
   wouldn't contribute a lot to audio generation flexibility to change this
   just to add possibility of setting operator phase in addition to frequency.
+* Should lock groups be taken into account when automating?
+  * Setting equivalent parameter for other envelopes in same group is not
+    enough. If lock groups are automated, data will be not synced between
+    envelopes, meaning that a full sync would probably have to be done for
+    every envelope parameter automation access to preserve current GUI
+    behaviour. An option would be to change current GUI behaviour to force
+    sync when changing lock groups.
+  * It's most likely a bad idea to automate host inside of handler for when
+    host sets parameter, since it might cause host to set parameter again

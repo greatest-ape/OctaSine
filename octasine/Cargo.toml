@@ -41,6 +41,7 @@ vst = "0.3"
 
 # GUI
 
+iced_audio = { version = "0.8", optional = true }
 palette = { version = "0.6", optional = true }
 raw-window-handle = { version = "0.4", optional = true }
 
@@ -53,11 +54,6 @@ optional = true
 git = "https://github.com/BillyDM/iced_baseview.git"
 rev = "b78fa8057d1b7ba0adf0351a59173ec4e8ec9ee4" # branch: main
 default-features = false
-optional = true
-
-[dependencies.iced_audio]
-git = "https://github.com/iced-rs/iced_audio.git"
-rev = "5e9e916" # branch: main
 optional = true
 
 # SIMD
