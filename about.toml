@@ -10,6 +10,7 @@ accepted = [
     "Zlib",
     "AGPL-3.0",
     "BSL-1.0",
+    "Unicode-DFS-2016",
 ]
 
 targets = [
