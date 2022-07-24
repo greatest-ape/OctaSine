@@ -6,9 +6,11 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- Reintroduce master volume and master frequency parameters as LFO targets
+  (removed in version 0.7)
 - When note off message is received during envelope attack phase, always go to
   release phase, even if it means that with low sustain volumes and a long
-  release time, short notes might be louder for a lot longer than longer
+  release time, short notes might be loud for a lot longer than longer
   notes. FM8 envelopes work this way.
 
 ### Fixed

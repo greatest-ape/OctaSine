@@ -3,6 +3,8 @@ mod lfo_active;
 mod lfo_amount;
 mod lfo_frequency_free;
 mod lfo_target;
+mod master_frequency;
+mod master_volume;
 mod operator_active;
 mod operator_frequency_fine;
 mod operator_frequency_free;
@@ -22,6 +24,8 @@ use self::lfo_active::LfoActiveAudioParameter;
 use self::lfo_amount::LfoAmountAudioParameter;
 use self::lfo_frequency_free::LfoFrequencyFreeAudioParameter;
 use self::lfo_target::LfoTargetAudioParameter;
+use self::master_frequency::MasterFrequencyAudioParameter;
+use self::master_volume::MasterVolumeAudioParameter;
 use self::operator_frequency_fine::OperatorFrequencyFineAudioParameter;
 use self::operator_frequency_free::OperatorFrequencyFreeAudioParameter;
 use self::operator_mix::OperatorMixAudioParameter;
@@ -50,8 +54,8 @@ impl<P: AudioParameter> AudioParameterPatchInteraction for P {
 }
 
 pub struct AudioParameters {
-    pub master_volume: InterpolatableAudioParameter<MasterVolumeValue>,
-    pub master_frequency: SimpleAudioParameter<MasterFrequencyValue>,
+    pub master_volume: MasterVolumeAudioParameter,
+    pub master_frequency: MasterFrequencyAudioParameter,
     pub operators: [OperatorAudioParameters; NUM_OPERATORS],
     pub lfos: [LfoAudioParameters; NUM_LFOS],
 }
