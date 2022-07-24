@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## Unreleased
+
+### Changed
+
+- When note off message is received during envelope attack phase, always go to
+  release phase, even if it means that with low sustain volumes and a long
+  release time, short notes might be louder for a lot longer than longer
+  notes. FM8 envelopes work this way.
+
+### Fixed
+
+- When note off message is received during envelope decay phase, go to release
+  phase
+
 ## 0.7.0 - 2022-06-08
 
 This is a large release featuring lots of changes. Some major ones include:
