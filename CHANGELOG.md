@@ -6,6 +6,8 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- Add buttons for loading and saving patches / patch banks
+- Add button for renaming patches
 - Reintroduce master volume and master frequency parameters as LFO targets
   (removed in version 0.7)
 - When note off message is received during envelope attack phase, always go to
