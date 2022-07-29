@@ -246,9 +246,17 @@ cfg_if::cfg_if! {
             }
             fn import_bank_from_serde(&self, serde_bank: SerdePatchBank) {
                 self.patches.import_bank_from_serde(serde_bank);
+
+                if let Some(host) = self.host {
+                    host.update_display();
+                }
             }
             fn import_patches_from_serde(&self, serde_patches: Vec<SerdePatch>) {
                 self.patches.import_patches_from_serde(serde_patches);
+
+                if let Some(host) = self.host {
+                    host.update_display();
+                }
             }
         }
     }
