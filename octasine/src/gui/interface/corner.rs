@@ -144,14 +144,16 @@ impl CornerWidgets {
             let rename_button = Tooltip::new(
                 Button::new(
                     &mut self.rename_patch_button,
-                    Text::new("R")
+                    Text::new("E")
                         .font(self.style.font_regular())
-                        .height(Length::Units(LINE_HEIGHT)),
+                        .height(Length::Units(LINE_HEIGHT))
+                        .width(Length::Units(10))
+                        .horizontal_alignment(Horizontal::Center),
                 )
                 .on_press(Message::RenamePatch)
                 .padding(self.style.button_padding())
                 .style(self.style.button()),
-                "Rename patch",
+                "Edit patch name",
                 Position::Top,
             )
             .style(self.style.tooltip());
