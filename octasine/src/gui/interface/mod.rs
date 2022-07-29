@@ -16,6 +16,7 @@ use std::io::Write;
 use std::path::PathBuf;
 
 use anyhow::Context;
+use cfg_if::cfg_if;
 use iced_baseview::command::Action;
 use iced_baseview::{executor, Application, Command, Subscription, WindowSubs};
 use iced_baseview::{Column, Container, Element, Length, Point, Row, Space, WindowQueue};
@@ -103,7 +104,7 @@ pub enum Message {
     SaveBank,
     LoadBankOrPatch,
     RenamePatch,
-    SaveBankOrPatchToFile(Option<PathBuf>, Vec<u8>),
+    SaveBankOrPatchToFile(PathBuf, Vec<u8>),
     LoadBankOrPatchesFromPaths(Vec<PathBuf>),
 }
 
@@ -573,51 +574,105 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                 self.save_settings();
             }
             Message::LoadBankOrPatch => {
+                const TITLE: &str = "Load OctaSine patch bank or patches";
+
                 return Command::single(Action::Future(Box::pin(async move {
-                    let opt_handles = rfd::AsyncFileDialog::new()
-                        .set_title("Load OctaSine patch or patch bank")
-                        .add_filter("Patch", &["fxp"])
-                        .add_filter("Patch bank", &["fxb"])
-                        .pick_files()
-                        .await;
+                    cfg_if!(
+                        if #[cfg(any(target_os = "macos", target_os = "windows"))] {
+                            let opt_paths = rfd::AsyncFileDialog::new()
+                                .set_title(TITLE)
+                                .add_filter("Patch", &["fxp"])
+                                .add_filter("Patch bank", &["fxb"])
+                                .pick_files()
+                                .await
+                                .map(|handles|
+                                    handles.into_iter()
+                                        .map(|h| h.path().to_owned())
+                                        .collect::<Vec<PathBuf>>()
+                                );
+                        } else {
+                            let opt_paths = tinyfiledialogs::open_file_dialog_multi(
+                                TITLE,
+                                "",
+                                Some((&["*.fxp", "*.fxb"], "Patch bank or patch files"))
+                            ).map(|strings|
+                                strings.into_iter()
+                                    .map(|s| s.into())
+                                    .collect::<Vec<PathBuf>>()
+                            );
+                        }
+                    );
 
-                    if let Some(handles) = opt_handles {
-                        let paths = handles.into_iter().map(|h| h.path().to_owned()).collect();
-
+                    if let Some(paths) = opt_paths {
                         Message::LoadBankOrPatchesFromPaths(paths)
                     } else {
                         Message::NoOp
                     }
-                })))
+                })));
             }
             Message::SavePatch => {
+                const TITLE: &str = "Save OctaSine patch";
+
                 let (patch_filename, patch_bytes) = self.sync_handle.export_patch();
 
                 return Command::single(Action::Future(Box::pin(async move {
-                    let opt_path_buf = rfd::AsyncFileDialog::new()
-                        .set_title("Save OctaSine patch")
-                        .add_filter("Patch", &["fxp"])
-                        .set_file_name(&patch_filename)
-                        .save_file()
-                        .await
-                        .map(|handle| handle.path().to_owned());
+                    cfg_if!(
+                        if #[cfg(any(target_os = "macos", target_os = "windows"))] {
+                            let opt_path_buf = rfd::AsyncFileDialog::new()
+                                .set_title(TITLE)
+                                .add_filter("Patch", &["fxp"])
+                                .set_file_name(&patch_filename)
+                                .save_file()
+                                .await
+                                .map(|handle| handle.path().to_owned());
+                        } else {
+                            let opt_path_buf = tinyfiledialogs::save_file_dialog_with_filter(
+                                TITLE,
+                                &patch_filename,
+                                &["*.fxp"],
+                                "Patch"
+                            ).map(|s| s.into());
+                        }
+                    );
 
-                    Message::SaveBankOrPatchToFile(opt_path_buf, patch_bytes)
+                    if let Some(path_buf) = opt_path_buf {
+                        Message::SaveBankOrPatchToFile(path_buf, patch_bytes)
+                    } else {
+                        Message::NoOp
+                    }
                 })));
             }
             Message::SaveBank => {
+                const TITLE: &str = "Save OctaSine bank";
+                const FILENAME: &str = "OctaSine bank.fxb";
+
                 let bank_bytes = self.sync_handle.export_bank();
 
                 return Command::single(Action::Future(Box::pin(async move {
-                    let opt_path_buf = rfd::AsyncFileDialog::new()
-                        .set_title("Save OctaSine patch bank")
-                        .add_filter("Patch bank", &["fxb"])
-                        .set_file_name("OctaSine patch bank.fxb")
-                        .save_file()
-                        .await
-                        .map(|handle| handle.path().to_owned());
+                    cfg_if!(
+                        if #[cfg(any(target_os = "macos", target_os = "windows"))] {
+                            let opt_path_buf = rfd::AsyncFileDialog::new()
+                                .set_title(TITLE)
+                                .add_filter("Patch bank", &["fxb"])
+                                .set_file_name(FILENAME)
+                                .save_file()
+                                .await
+                                .map(|handle| handle.path().to_owned());
+                        } else {
+                            let opt_path_buf = tinyfiledialogs::save_file_dialog_with_filter(
+                                TITLE,
+                                FILENAME,
+                                &["*.fxb"],
+                                ""
+                            ).map(|s| s.into());
+                        }
+                    );
 
-                    Message::SaveBankOrPatchToFile(opt_path_buf, bank_bytes)
+                    if let Some(path_buf) = opt_path_buf {
+                        Message::SaveBankOrPatchToFile(path_buf, bank_bytes)
+                    } else {
+                        Message::NoOp
+                    }
                 })));
             }
             Message::RenamePatch => {
@@ -631,11 +686,9 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                     self.sync_handle.set_current_patch_name(name);
                 }
             }
-            Message::SaveBankOrPatchToFile(opt_path_buf, bytes) => {
-                if let Some(path_buf) = opt_path_buf {
-                    if let Err(err) = save_data_to_file(path_buf, bytes) {
-                        ::log::error!("Error saving patch/patch bank to file: {:#}", err)
-                    }
+            Message::SaveBankOrPatchToFile(path_buf, bytes) => {
+                if let Err(err) = save_data_to_file(path_buf, bytes) {
+                    ::log::error!("Error saving patch/patch bank to file: {:#}", err)
                 }
             }
             Message::LoadBankOrPatchesFromPaths(paths) => {

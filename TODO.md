@@ -3,7 +3,6 @@
 ## High priority
 
 * Patch/bank loading and saving buttons
-  * Use tinyfiledialogs on Linux for better compatibility
   * Possibly use tinyfiledialogs on all platforms?
     * Advantages: window appears on top
     * Drawbacks: doesn't support async, so UI rendering is blocked.
