@@ -12,11 +12,17 @@ mod patch_picker;
 pub mod style;
 mod wave_picker;
 
+use std::io::Write;
+use std::path::PathBuf;
+
+use anyhow::Context;
+use iced_baseview::command::Action;
 use iced_baseview::{executor, Application, Command, Subscription, WindowSubs};
 use iced_baseview::{Column, Container, Element, Length, Point, Row, Space, WindowQueue};
 
 use crate::common::NUM_OPERATORS;
 use crate::parameters::*;
+use crate::sync::serde::{from_path, SerdePatch, SerdePatchBank};
 use crate::sync::GuiSyncHandle;
 
 use lfo::LfoWidgets;
@@ -93,6 +99,11 @@ pub enum Message {
         x_offset: f32,
     },
     SwitchTheme,
+    SavePatch,
+    SaveBank,
+    LoadBankOrPatch,
+    SaveBankOrPatchToFile(Option<PathBuf>, Vec<u8>),
+    LoadBankOrPatchesFromPaths(Vec<PathBuf>),
 }
 
 pub struct OctaSineIcedApplication<H: GuiSyncHandle> {
@@ -560,6 +571,108 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
 
                 self.save_settings();
             }
+            Message::LoadBankOrPatch => {
+                return Command::single(Action::Future(Box::pin(async move {
+                    let opt_handles = rfd::AsyncFileDialog::new()
+                        .set_title("Load OctaSine patch or patch bank")
+                        .add_filter("Patch", &["fxp"])
+                        .add_filter("Patch bank", &["fxb"])
+                        .pick_files()
+                        .await;
+
+                    if let Some(handles) = opt_handles {
+                        let paths = handles.into_iter().map(|h| h.path().to_owned()).collect();
+
+                        Message::LoadBankOrPatchesFromPaths(paths)
+                    } else {
+                        Message::NoOp
+                    }
+                })))
+            }
+            Message::SavePatch => {
+                let (patch_filename, patch_bytes) = self.sync_handle.export_patch();
+
+                return Command::single(Action::Future(Box::pin(async move {
+                    let opt_path_buf = rfd::AsyncFileDialog::new()
+                        .set_title("Save OctaSine patch")
+                        .add_filter("Patch", &["fxp"])
+                        .set_file_name(&patch_filename)
+                        .save_file()
+                        .await
+                        .map(|handle| handle.path().to_owned());
+
+                    Message::SaveBankOrPatchToFile(opt_path_buf, patch_bytes)
+                })));
+            }
+            Message::SaveBank => {
+                let bank_bytes = self.sync_handle.export_bank();
+
+                return Command::single(Action::Future(Box::pin(async move {
+                    let opt_path_buf = rfd::AsyncFileDialog::new()
+                        .set_title("Save OctaSine patch bank")
+                        .add_filter("Patch bank", &["fxb"])
+                        .set_file_name("OctaSine patch bank.fxb")
+                        .save_file()
+                        .await
+                        .map(|handle| handle.path().to_owned());
+
+                    Message::SaveBankOrPatchToFile(opt_path_buf, bank_bytes)
+                })));
+            }
+            Message::SaveBankOrPatchToFile(opt_path_buf, bytes) => {
+                if let Some(path_buf) = opt_path_buf {
+                    if let Err(err) = save_data_to_file(path_buf, bytes) {
+                        ::log::error!("Error saving patch/patch bank to file: {:#}", err)
+                    }
+                }
+            }
+            Message::LoadBankOrPatchesFromPaths(paths) => {
+                let mut banks = Vec::new();
+                let mut patches = Vec::new();
+
+                for path in paths {
+                    match path.extension().and_then(|s| s.to_str()) {
+                        Some("fxb") => match from_path::<SerdePatchBank>(&path) {
+                            Ok(bank) => banks.push(bank),
+                            Err(err) => ::log::warn!(
+                                "Failed loading patch bank from file {}: {:#}",
+                                path.display(),
+                                err
+                            ),
+                        },
+                        Some("fxp") => match from_path::<SerdePatch>(&path) {
+                            Ok(bank) => patches.push(bank),
+                            Err(err) => ::log::warn!(
+                                "Failed loading patch from file {}: {:#}",
+                                path.display(),
+                                err
+                            ),
+                        },
+                        _ => {
+                            ::log::warn!("Ignored file without fxp or fxb file extension");
+                        }
+                    }
+                }
+
+                match banks.pop() {
+                    Some(bank) => {
+                        if banks.is_empty() && patches.is_empty() {
+                            self.sync_handle.import_bank_from_serde(bank);
+
+                            return Command::none();
+                        }
+                    }
+                    None => {
+                        if !patches.is_empty() {
+                            self.sync_handle.import_patches_from_serde(patches);
+
+                            return Command::none();
+                        }
+                    }
+                }
+
+                ::log::warn!("Loading multiple banks or patches and banks at the same time doesn't make sense");
+            }
         }
 
         Command::none()
@@ -600,4 +713,14 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
         .style(self.style.container_l0())
         .into()
     }
+}
+
+fn save_data_to_file(path_buf: PathBuf, mut bytes: Vec<u8>) -> anyhow::Result<()> {
+    let mut file = ::std::fs::File::create(&path_buf)
+        .with_context(|| format!("create file {}", path_buf.display()))?;
+
+    file.write_all(&mut bytes)
+        .with_context(|| format!("write to file {}", path_buf.display()))?;
+
+    Ok(())
 }

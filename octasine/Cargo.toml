@@ -9,7 +9,7 @@ edition = "2021"
 simd = ["sleef-sys"]
 gui_glow = ["gui", "iced_baseview/glow", "iced_baseview/glow_canvas"]
 gui_wgpu = ["gui", "iced_baseview/wgpu", "iced_baseview/wgpu_canvas"]
-gui = ["baseview", "iced_baseview", "iced_audio", "palette", "raw-window-handle"]
+gui = ["baseview", "iced_baseview", "iced_audio", "palette", "raw-window-handle", "rfd"]
 
 [lib]
 name = "octasine"
@@ -44,6 +44,7 @@ vst = "0.3"
 iced_audio = { version = "0.8", optional = true }
 palette = { version = "0.6", optional = true }
 raw-window-handle = { version = "0.4", optional = true }
+rfd = { version = "0.10", optional = true, default-features = false, features = ["xdg-portal"] }
 
 [dependencies.baseview]
 git = "https://github.com/rustaudio/baseview.git"

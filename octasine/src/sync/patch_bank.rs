@@ -140,6 +140,13 @@ impl PatchBank {
             .map(|p| format!("{:03}: {}", index + 1, p.name.load_full()))
     }
 
+    pub fn get_current_patch_filename_for_export(&self) -> String {
+        match self.get_current_patch().name.load_full().as_str() {
+            "" => "-.fxp".into(),
+            name => format!("{}.fxp", name),
+        }
+    }
+
     pub fn get_patch_names(&self) -> Vec<String> {
         self.patches
             .iter()
@@ -240,26 +247,42 @@ impl PatchBank {
 
     // Import / export
 
+    /// Import serde bank into current bank, set sync parameters
+    pub fn import_bank_from_serde(&self, serde_bank: SerdePatchBank) {
+        let default_serde_preset = Patch::default().export_serde_preset();
+
+        for (index, preset) in self.patches.iter().enumerate() {
+            if let Some(serde_preset) = serde_bank.patches.get(index) {
+                preset.import_serde_preset(serde_preset);
+            } else {
+                preset.import_serde_preset(&default_serde_preset);
+                preset.set_name(format!("{:03}", index + 1));
+            }
+        }
+
+        self.set_patch_index(0);
+        self.mark_parameters_as_changed();
+        self.patches_changed.store(true, Ordering::SeqCst);
+    }
+
+    /// Import serde patches into current and following patches
+    pub fn import_patches_from_serde(&self, serde_patches: Vec<SerdePatch>) {
+        for (patch, serde_patch) in self.patches[self.get_patch_index()..]
+            .iter()
+            .zip(serde_patches.iter())
+        {
+            patch.import_serde_preset(serde_patch);
+        }
+
+        self.mark_parameters_as_changed();
+        self.patches_changed.store(true, Ordering::SeqCst);
+    }
+
     /// Import bytes into current bank, set sync parameters
     pub fn import_bank_from_bytes(&self, bytes: &[u8]) -> Result<(), impl ::std::error::Error> {
-        let res_serde_preset_bank: Result<SerdePatchBank, _> = from_bytes(bytes);
-
-        match res_serde_preset_bank {
-            Ok(serde_preset_bank) => {
-                let default_serde_preset = Patch::default().export_serde_preset();
-
-                for (index, preset) in self.patches.iter().enumerate() {
-                    if let Some(serde_preset) = serde_preset_bank.patches.get(index) {
-                        preset.import_serde_preset(serde_preset);
-                    } else {
-                        preset.import_serde_preset(&default_serde_preset);
-                        preset.set_name(format!("{:03}", index + 1));
-                    }
-                }
-
-                self.set_patch_index(0);
-                self.mark_parameters_as_changed();
-                self.patches_changed.store(true, Ordering::SeqCst);
+        match from_bytes::<SerdePatchBank>(bytes) {
+            Ok(serde_bank) => {
+                self.import_bank_from_serde(serde_bank);
 
                 Ok(())
             }

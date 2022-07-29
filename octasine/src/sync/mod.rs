@@ -14,6 +14,8 @@ use crate::settings::Settings;
 
 use patch_bank::PatchBank;
 
+use self::serde::{SerdePatch, SerdePatchBank};
+
 /// Thread-safe state used for parameter and preset calls
 pub struct SyncState {
     /// Host should always be set when running as real plugin, but having the
@@ -162,6 +164,10 @@ cfg_if::cfg_if! {
             fn get_changed_parameters(&self) -> Option<[Option<f32>; MAX_NUM_PARAMETERS]>;
             fn have_patches_changed(&self) -> bool;
             fn get_gui_settings(&self) -> crate::gui::GuiSettings;
+            fn export_patch(&self) -> (String, Vec<u8>);
+            fn export_bank(&self) -> Vec<u8>;
+            fn import_bank_from_serde(&self, serde_bank: SerdePatchBank);
+            fn import_patches_from_serde(&self, serde_patches: Vec<SerdePatch>);
         }
 
         impl GuiSyncHandle for Arc<SyncState> {
@@ -216,6 +222,21 @@ cfg_if::cfg_if! {
             }
             fn get_gui_settings(&self) -> crate::gui::GuiSettings {
                 self.settings.gui.clone()
+            }
+            fn export_patch(&self) -> (String, Vec<u8>) {
+                let name = self.patches.get_current_patch_filename_for_export();
+                let data = self.patches.export_current_patch_bytes();
+
+                (name, data)
+            }
+            fn export_bank(&self) -> Vec<u8> {
+                self.patches.export_bank_as_bytes()
+            }
+            fn import_bank_from_serde(&self, serde_bank: SerdePatchBank) {
+                self.patches.import_bank_from_serde(serde_bank);
+            }
+            fn import_patches_from_serde(&self, serde_patches: Vec<SerdePatch>) {
+                self.patches.import_patches_from_serde(serde_patches);
             }
         }
     }

@@ -26,6 +26,9 @@ pub struct CornerWidgets {
     pub patch_picker: PatchPicker,
     toggle_info_state: button::State,
     toggle_style_state: button::State,
+    save_patch_button: button::State,
+    save_bank_button: button::State,
+    load_bank_or_patches_button: button::State,
 }
 
 impl CornerWidgets {
@@ -45,6 +48,9 @@ impl CornerWidgets {
             patch_picker,
             toggle_info_state: button::State::default(),
             toggle_style_state: button::State::default(),
+            save_patch_button: Default::default(),
+            save_bank_button: Default::default(),
+            load_bank_or_patches_button: Default::default(),
         }
     }
 
@@ -85,24 +91,85 @@ impl CornerWidgets {
             ),
         );
 
-        let patch_picker = Container::new(
-            Column::new()
-                .align_items(Alignment::Center)
-                .push(Space::with_height(Length::Units(LINE_HEIGHT)))
-                .push(
-                    Text::new("Patch")
-                        .size(FONT_SIZE * 3 / 2)
-                        .height(Length::Units(FONT_SIZE * 3 / 2))
-                        .width(Length::Units(LINE_HEIGHT * 10))
-                        .font(self.style.font_heading())
-                        .color(self.style.heading_color())
-                        .horizontal_alignment(Horizontal::Center),
+        let patch_picker = {
+            let save_patch_button = Tooltip::new(
+                Button::new(
+                    &mut self.save_patch_button,
+                    Text::new("SP")
+                        .font(self.style.font_regular())
+                        .height(Length::Units(LINE_HEIGHT)),
                 )
-                .push(Space::with_height(Length::Units(LINE_HEIGHT)))
-                .push(self.patch_picker.view()),
-        )
-        .width(Length::Units(LINE_HEIGHT * 9))
-        .height(Length::Units(LINE_HEIGHT * 6));
+                .on_press(Message::SavePatch)
+                .padding(self.style.button_padding())
+                .style(self.style.button()),
+                "Save patch",
+                Position::Top,
+            )
+            .style(self.style.tooltip());
+
+            let save_bank_button = Tooltip::new(
+                Button::new(
+                    &mut self.save_bank_button,
+                    Text::new("SB")
+                        .font(self.style.font_regular())
+                        .height(Length::Units(LINE_HEIGHT)),
+                )
+                .on_press(Message::SaveBank)
+                .padding(self.style.button_padding())
+                .style(self.style.button()),
+                "Save patch bank",
+                Position::Top,
+            )
+            .style(self.style.tooltip());
+
+            let load_button = Tooltip::new(
+                Button::new(
+                    &mut self.load_bank_or_patches_button,
+                    Text::new("L")
+                        .font(self.style.font_regular())
+                        .height(Length::Units(LINE_HEIGHT)),
+                )
+                .on_press(Message::LoadBankOrPatch)
+                .padding(self.style.button_padding())
+                .style(self.style.button()),
+                "Load bank or patches",
+                Position::Top,
+            )
+            .style(self.style.tooltip());
+
+            // Helps with issues arising from use of different font weights
+            let button_space = match self.style {
+                Theme::Dark => 3,
+                Theme::Light => 2,
+            };
+
+            Container::new(
+                Column::new()
+                    .align_items(Alignment::Center)
+                    .push(Space::with_height(Length::Units(LINE_HEIGHT)))
+                    .push(
+                        Text::new("Patch")
+                            .size(FONT_SIZE * 3 / 2)
+                            .height(Length::Units(FONT_SIZE * 3 / 2))
+                            .width(Length::Units(LINE_HEIGHT * 10))
+                            .font(self.style.font_heading())
+                            .color(self.style.heading_color())
+                            .horizontal_alignment(Horizontal::Center),
+                    )
+                    // .push(Space::with_height(Length::Units(LINE_HEIGHT)))
+                    .push(self.patch_picker.view())
+                    .push(
+                        Row::new()
+                            .push(save_patch_button)
+                            .push(Space::with_width(Length::Units(button_space)))
+                            .push(save_bank_button)
+                            .push(Space::with_width(Length::Units(button_space)))
+                            .push(load_button),
+                    ),
+            )
+            .width(Length::Units(LINE_HEIGHT * 9))
+            .height(Length::Units(LINE_HEIGHT * 6))
+        };
 
         let logo = {
             let theme_button = Tooltip::new(
