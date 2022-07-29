@@ -39,26 +39,14 @@ impl VoiceOperatorVolumeEnvelope {
 
         if !key_pressed {
             match self.stage {
-                Attack => {
-                    self.stage = if self.last_volume > parameters.sustain_volume.get_value() {
-                        Decay
-                    } else {
-                        Release
-                    };
-
-                    self.duration_at_stage_change = self.duration;
-                    self.volume_at_stage_change = self.last_volume;
-
-                    return;
-                }
-                Sustain => {
+                Attack | Decay | Sustain => {
                     self.stage = Release;
                     self.duration_at_stage_change = self.duration;
                     self.volume_at_stage_change = self.last_volume;
 
                     return;
                 }
-                Decay | Release | Ended => (),
+                Release | Ended => (),
             }
         }
 

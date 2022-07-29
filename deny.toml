@@ -80,6 +80,7 @@ allow = [
     "BSL-1.0",
     "BSD-2-Clause",
     "CC0-1.0",
+    "Unicode-DFS-2016",
     # "FTL",
     #"Apache-2.0 WITH LLVM-exception",
 ]

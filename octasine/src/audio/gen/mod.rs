@@ -12,7 +12,7 @@ use crate::audio::voices::log10_table::Log10Table;
 use crate::audio::AudioState;
 use crate::common::*;
 use crate::parameters::operator_wave_type::WaveType;
-use crate::parameters::{ModTargetStorage, OperatorParameter};
+use crate::parameters::{MasterParameter, ModTargetStorage, OperatorParameter, Parameter};
 
 use lfo::*;
 use simd::*;
@@ -33,7 +33,6 @@ pub trait AudioGen {
 }
 
 pub struct AudioGenData {
-    master_volume: [f64; MAX_PD_WIDTH],
     lfo_target_values: LfoTargetValues,
     voices: [VoiceData; 128],
 }
@@ -41,7 +40,6 @@ pub struct AudioGenData {
 impl Default for AudioGenData {
     fn default() -> Self {
         Self {
-            master_volume: Default::default(),
             lfo_target_values: Default::default(),
             voices: array_init(|_| VoiceData::default()),
         }
@@ -52,6 +50,8 @@ impl Default for AudioGenData {
 struct VoiceData {
     active: bool,
     key_velocity: [f64; MAX_PD_WIDTH],
+    /// Master volume is calculated per-voice, since it can be an LFO target
+    master_volume: [f64; MAX_PD_WIDTH],
     operators: [VoiceOperatorData; 4],
 }
 
@@ -209,15 +209,6 @@ mod gen {
             let operators = &mut audio_state.parameters.operators;
             let lfo_values = &mut audio_state.audio_gen_data.lfo_target_values;
 
-            let master_frequency = audio_state.parameters.master_frequency.get_value();
-            let master_volume = audio_state.parameters.master_volume.get_value();
-
-            set_value_for_both_channels(
-                &mut audio_state.audio_gen_data.master_volume,
-                sample_index,
-                master_volume as f64,
-            );
-
             for (voice, voice_data) in audio_state
                 .voices
                 .iter_mut()
@@ -269,6 +260,28 @@ mod gen {
                     sample_index,
                     voice.get_key_velocity().0 as f64,
                 );
+
+                const MASTER_VOLUME_INDEX: u8 =
+                    Parameter::Master(MasterParameter::Volume).to_index();
+
+                let master_volume = audio_state
+                    .parameters
+                    .master_volume
+                    .get_value_with_lfo_addition(lfo_values.get(MASTER_VOLUME_INDEX));
+
+                set_value_for_both_channels(
+                    &mut voice_data.master_volume,
+                    sample_index,
+                    master_volume as f64,
+                );
+
+                const MASTER_FREQUENCY_INDEX: u8 =
+                    Parameter::Master(MasterParameter::Frequency).to_index();
+
+                let master_frequency = audio_state
+                    .parameters
+                    .master_frequency
+                    .get_value_with_lfo_addition(lfo_values.get(MASTER_FREQUENCY_INDEX));
 
                 let voice_base_frequency = voice.midi_pitch.get_frequency(master_frequency);
 
@@ -421,6 +434,7 @@ mod gen {
             let mut voice_modulation_inputs = [S::pd_setzero(); 4];
 
             let key_velocity = S::pd_loadu(voice_data.key_velocity.as_ptr());
+            let master_volume = S::pd_loadu(voice_data.master_volume.as_ptr());
 
             // Go through operators downwards, starting with operator 4
             for operator_index in (0..4).map(|i| 3 - i) {
@@ -438,6 +452,9 @@ mod gen {
                     key_velocity,
                 );
 
+                // Apply master volume
+                let mix_out = S::pd_mul(mix_out, master_volume);
+
                 mix_out_sum = S::pd_add(mix_out_sum, mix_out);
 
                 // Add modulation output to target operators' modulation inputs
@@ -448,13 +465,9 @@ mod gen {
             }
         }
 
-        // Apply master volume and hard limit
+        // Apply master volume factor and hard limit
 
         mix_out_sum = S::pd_mul(mix_out_sum, S::pd_set1(MASTER_VOLUME_FACTOR));
-        mix_out_sum = S::pd_mul(
-            mix_out_sum,
-            S::pd_loadu(audio_gen_data.master_volume.as_ptr()),
-        );
         mix_out_sum = S::pd_min(mix_out_sum, S::pd_set1(LIMIT));
         mix_out_sum = S::pd_max(mix_out_sum, S::pd_set1(-LIMIT));
 
