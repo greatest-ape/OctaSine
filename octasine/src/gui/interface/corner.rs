@@ -1,8 +1,6 @@
 use iced_baseview::{
-    alignment::{Horizontal, Vertical},
-    button,
-    tooltip::Position,
-    Alignment, Button, Column, Container, Element, Length, Row, Space, Text, Tooltip,
+    alignment::Horizontal, button, tooltip::Position, Alignment, Button, Column, Container,
+    Element, Length, Row, Space, Text, Tooltip,
 };
 
 use crate::{
@@ -167,7 +165,18 @@ impl CornerWidgets {
             Container::new(
                 Column::new()
                     .align_items(Alignment::Center)
-                    .push(Space::with_height(Length::Units(LINE_HEIGHT)))
+                    .push(
+                        Row::new()
+                            .push(load_button)
+                            .push(Space::with_width(Length::Units(button_space)))
+                            .push(save_patch_button)
+                            .push(Space::with_width(Length::Units(button_space)))
+                            .push(save_bank_button),
+                    )
+                    // .push(Space::with_height(Length::Units(LINE_HEIGHT)))
+                    .push(Space::with_height(Length::Units(
+                        LINE_HEIGHT / 2 + LINE_HEIGHT / 4,
+                    )))
                     .push(
                         Text::new("Patch")
                             .size(FONT_SIZE * 3 / 2)
@@ -177,22 +186,17 @@ impl CornerWidgets {
                             .color(self.style.heading_color())
                             .horizontal_alignment(Horizontal::Center),
                     )
-                    .push(Space::with_height(Length::Units(LINE_HEIGHT / 4)))
+                    .push(Space::with_height(Length::Units(
+                        LINE_HEIGHT / 2 + LINE_HEIGHT / 4,
+                    )))
+                    // .push(Space::with_height(Length::Units(LINE_HEIGHT)))
+                    // .push(Space::with_height(Length::Units(LINE_HEIGHT / 2)))
                     .push(
                         Row::new()
                             .push(self.patch_picker.view())
                             .push(Space::with_width(Length::Units(button_space)))
                             .push(rename_button),
-                    )
-                    .push(Space::with_height(Length::Units(LINE_HEIGHT / 4)))
-                    .push(
-                        Row::new()
-                            .push(load_button)
-                            .push(Space::with_width(Length::Units(button_space)))
-                            .push(save_patch_button)
-                            .push(Space::with_width(Length::Units(button_space)))
-                            .push(save_bank_button),
-                    ),
+                    ), // .push(Space::with_height(Length::Units(LINE_HEIGHT / 2)))
             )
             .width(Length::Units(LINE_HEIGHT * 9))
             .height(Length::Units(LINE_HEIGHT * 6))
@@ -239,6 +243,7 @@ impl CornerWidgets {
                 Column::new()
                     .align_items(Alignment::Center)
                     .push(Space::with_height(Length::Units(LINE_HEIGHT)))
+                    // .push(Space::with_height(Length::Units(LINE_HEIGHT * 2 + LINE_HEIGHT / 4)))
                     .push(
                         Text::new("OctaSine")
                             .size(FONT_SIZE * 3 / 2)
@@ -249,6 +254,7 @@ impl CornerWidgets {
                             .horizontal_alignment(Horizontal::Center),
                     )
                     .push(Space::with_height(Length::Units(LINE_HEIGHT)))
+                    // .push(Space::with_height(Length::Units(LINE_HEIGHT / 2 + LINE_HEIGHT / 4)))
                     .push(
                         Row::new()
                             .push(theme_button)
