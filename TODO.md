@@ -2,10 +2,11 @@
 
 ## High priority
 
-* Consider built-in patch browsing / saving / clearing functionality
-  * Use crate https://github.com/PolyMeilex/rfd
-  * Maybe use buttons like "C" for clear, "S" for save, "L" for load, "R" for
-    rename. They could have tooltips.
+* Patch/bank loading and saving buttons
+  * Use tinyfiledialogs on Linux for better compatibility
+  * Possibly use tinyfiledialogs on all platforms?
+    * Advantages: window appears on top
+    * Drawbacks: doesn't support async, so UI rendering is blocked.
 * Parameter value text input
   * Maybe use https://github.com/jdm/tinyfiledialogs-rs
 * Check for available updates at plugin start
