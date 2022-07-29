@@ -161,6 +161,8 @@ cfg_if::cfg_if! {
             fn format_parameter_value(&self, parameter: Parameter, value: f32) -> String;
             fn get_patches(&self) -> (usize, Vec<String>);
             fn set_patch_index(&self, index: usize);
+            fn get_current_patch_name(&self) -> String;
+            fn set_current_patch_name(&self, name: String);
             fn get_changed_parameters(&self) -> Option<[Option<f32>; MAX_NUM_PARAMETERS]>;
             fn have_patches_changed(&self) -> bool;
             fn get_gui_settings(&self) -> crate::gui::GuiSettings;
@@ -209,6 +211,16 @@ cfg_if::cfg_if! {
             }
             fn set_patch_index(&self, index: usize){
                 self.patches.set_patch_index(index);
+
+                if let Some(host) = self.host {
+                    host.update_display();
+                }
+            }
+            fn get_current_patch_name(&self) -> String {
+                self.patches.get_current_patch_name()
+            }
+            fn set_current_patch_name(&self, name: String) {
+                self.patches.set_patch_name(name);
 
                 if let Some(host) = self.host {
                     host.update_display();

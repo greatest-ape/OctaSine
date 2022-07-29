@@ -1820,6 +1820,7 @@ dependencies = [
  "serde_json",
  "simplelog",
  "sleef-sys",
+ "tinyfiledialogs",
  "vst",
 ]
 
@@ -2633,6 +2634,16 @@ name = "time-macros"
 version = "0.2.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "42657b1a6f4d817cda8e7a0ace261fe0cc946cf3a80314390b22cc61ae080792"
+
+[[package]]
+name = "tinyfiledialogs"
+version = "3.9.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e25fa0bc43a6566e2cc6d7ac96df3fa5a57beba34445bead1b368ba8fe9ca568"
+dependencies = [
+ "cc",
+ "libc",
+]
 
 [[package]]
 name = "toml"

@@ -140,6 +140,10 @@ impl PatchBank {
             .map(|p| format!("{:03}: {}", index + 1, p.name.load_full()))
     }
 
+    pub fn get_current_patch_name(&self) -> String {
+        self.get_current_patch().name.load_full().to_string()
+    }
+
     pub fn get_current_patch_filename_for_export(&self) -> String {
         match self.get_current_patch().name.load_full().as_str() {
             "" => "-.fxp".into(),

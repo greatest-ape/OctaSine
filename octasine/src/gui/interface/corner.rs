@@ -29,6 +29,7 @@ pub struct CornerWidgets {
     save_patch_button: button::State,
     save_bank_button: button::State,
     load_bank_or_patches_button: button::State,
+    rename_patch_button: button::State,
 }
 
 impl CornerWidgets {
@@ -51,6 +52,7 @@ impl CornerWidgets {
             save_patch_button: Default::default(),
             save_bank_button: Default::default(),
             load_bank_or_patches_button: Default::default(),
+            rename_patch_button: Default::default(),
         }
     }
 
@@ -137,6 +139,21 @@ impl CornerWidgets {
             )
             .style(self.style.tooltip());
 
+            let rename_button = Tooltip::new(
+                Button::new(
+                    &mut self.rename_patch_button,
+                    Text::new("R")
+                        .font(self.style.font_regular())
+                        .height(Length::Units(LINE_HEIGHT)),
+                )
+                .on_press(Message::RenamePatch)
+                .padding(self.style.button_padding())
+                .style(self.style.button()),
+                "Rename patch",
+                Position::Top,
+            )
+            .style(self.style.tooltip());
+
             // Helps with issues arising from use of different font weights
             let button_space = match self.style {
                 Theme::Dark => 3,
@@ -164,7 +181,9 @@ impl CornerWidgets {
                             .push(Space::with_width(Length::Units(button_space)))
                             .push(save_bank_button)
                             .push(Space::with_width(Length::Units(button_space)))
-                            .push(load_button),
+                            .push(load_button)
+                            .push(Space::with_width(Length::Units(button_space)))
+                            .push(rename_button),
                     ),
             )
             .width(Length::Units(LINE_HEIGHT * 9))

@@ -102,6 +102,7 @@ pub enum Message {
     SavePatch,
     SaveBank,
     LoadBankOrPatch,
+    RenamePatch,
     SaveBankOrPatchToFile(Option<PathBuf>, Vec<u8>),
     LoadBankOrPatchesFromPaths(Vec<PathBuf>),
 }
@@ -618,6 +619,17 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
 
                     Message::SaveBankOrPatchToFile(opt_path_buf, bank_bytes)
                 })));
+            }
+            Message::RenamePatch => {
+                let previous_name = self.sync_handle.get_current_patch_name();
+
+                if let Some(name) = tinyfiledialogs::input_box(
+                    "Change OctaSine patch name",
+                    "Please provide a new name for this patch",
+                    &previous_name,
+                ) {
+                    self.sync_handle.set_current_patch_name(name);
+                }
             }
             Message::SaveBankOrPatchToFile(opt_path_buf, bytes) => {
                 if let Some(path_buf) = opt_path_buf {
