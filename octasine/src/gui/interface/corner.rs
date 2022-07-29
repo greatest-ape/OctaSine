@@ -1,6 +1,8 @@
 use iced_baseview::{
-    alignment::Horizontal, button, tooltip::Position, Alignment, Button, Column, Container,
-    Element, Length, Row, Space, Text, Tooltip,
+    alignment::{Horizontal, Vertical},
+    button,
+    tooltip::Position,
+    Alignment, Button, Column, Container, Element, Length, Row, Space, Text, Tooltip,
 };
 
 use crate::{
@@ -97,7 +99,7 @@ impl CornerWidgets {
             let save_patch_button = Tooltip::new(
                 Button::new(
                     &mut self.save_patch_button,
-                    Text::new("SP")
+                    Text::new("SAVE")
                         .font(self.style.font_regular())
                         .height(Length::Units(LINE_HEIGHT)),
                 )
@@ -112,7 +114,7 @@ impl CornerWidgets {
             let save_bank_button = Tooltip::new(
                 Button::new(
                     &mut self.save_bank_button,
-                    Text::new("SB")
+                    Text::new("SAVE ALL")
                         .font(self.style.font_regular())
                         .height(Length::Units(LINE_HEIGHT)),
                 )
@@ -127,14 +129,14 @@ impl CornerWidgets {
             let load_button = Tooltip::new(
                 Button::new(
                     &mut self.load_bank_or_patches_button,
-                    Text::new("L")
+                    Text::new("OPEN")
                         .font(self.style.font_regular())
                         .height(Length::Units(LINE_HEIGHT)),
                 )
                 .on_press(Message::LoadBankOrPatch)
                 .padding(self.style.button_padding())
                 .style(self.style.button()),
-                "Load bank or patches",
+                "Open bank or patches",
                 Position::Top,
             )
             .style(self.style.tooltip());
@@ -173,17 +175,21 @@ impl CornerWidgets {
                             .color(self.style.heading_color())
                             .horizontal_alignment(Horizontal::Center),
                     )
-                    // .push(Space::with_height(Length::Units(LINE_HEIGHT)))
-                    .push(self.patch_picker.view())
+                    .push(Space::with_height(Length::Units(LINE_HEIGHT / 4)))
                     .push(
                         Row::new()
-                            .push(save_patch_button)
-                            .push(Space::with_width(Length::Units(button_space)))
-                            .push(save_bank_button)
-                            .push(Space::with_width(Length::Units(button_space)))
-                            .push(load_button)
+                            .push(self.patch_picker.view())
                             .push(Space::with_width(Length::Units(button_space)))
                             .push(rename_button),
+                    )
+                    .push(Space::with_height(Length::Units(LINE_HEIGHT / 4)))
+                    .push(
+                        Row::new()
+                            .push(load_button)
+                            .push(Space::with_width(Length::Units(button_space)))
+                            .push(save_patch_button)
+                            .push(Space::with_width(Length::Units(button_space)))
+                            .push(save_bank_button),
                     ),
             )
             .width(Length::Units(LINE_HEIGHT * 9))
