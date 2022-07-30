@@ -15,6 +15,14 @@ impl ParameterValue for OperatorActiveValue {
     fn new_from_audio(value: Self::Value) -> Self {
         Self(value.round())
     }
+
+    fn new_from_text(text: String) -> Option<Self> {
+        match text.trim().to_lowercase().as_str() {
+            "on" | "active" => Some(Self(1.0)),
+            "off" | "inactive" => Some(Self(0.0)),
+            _ => None,
+        }
+    }
     fn get(self) -> Self::Value {
         self.0
     }

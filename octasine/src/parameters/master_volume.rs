@@ -1,4 +1,4 @@
-use super::ParameterValue;
+use super::{utils::parse_valid_f32, ParameterValue};
 
 #[derive(Debug, Clone, Copy)]
 pub struct MasterVolumeValue(f32);
@@ -14,6 +14,9 @@ impl ParameterValue for MasterVolumeValue {
 
     fn new_from_audio(value: Self::Value) -> Self {
         Self(value)
+    }
+    fn new_from_text(text: String) -> Option<Self> {
+        parse_valid_f32(text, 0.0, 2.0).map(Self)
     }
     fn get(self) -> Self::Value {
         self.0

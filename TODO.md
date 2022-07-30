@@ -9,7 +9,7 @@
       but probably requires changes to iced_baseview)
     * Drawbacks: doesn't support async, so UI rendering is blocked.
 * Parameter value text input
-  * Maybe use https://github.com/jdm/tinyfiledialogs-rs
+  * Unit tests for parsing
 * Check for available updates at plugin start
 
 ## Medium priority

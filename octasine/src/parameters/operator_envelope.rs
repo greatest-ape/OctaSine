@@ -1,5 +1,7 @@
+use std::str::FromStr;
+
 use super::{
-    utils::{map_parameter_value_to_step, map_step_to_parameter_value},
+    utils::{map_parameter_value_to_step, map_step_to_parameter_value, parse_valid_f32},
     ParameterValue,
 };
 
@@ -41,13 +43,10 @@ macro_rules! impl_duration_parameter_value {
             }
 
             fn new_from_text(text: String) -> Option<Self> {
-                text.parse::<f64>()
-                    .map(|v| {
-                        let v = v.min(ENVELOPE_MAX_DURATION).max(ENVELOPE_MIN_DURATION);
+                const MIN: f32 = ENVELOPE_MIN_DURATION as f32;
+                const MAX: f32 = ENVELOPE_MAX_DURATION as f32;
 
-                        Self(v)
-                    })
-                    .ok()
+                parse_valid_f32(text, MIN, MAX).map(|v| Self(v.into()))
             }
         }
     };
@@ -101,6 +100,9 @@ impl ParameterValue for OperatorSustainVolumeValue {
     fn new_from_audio(value: Self::Value) -> Self {
         Self(value)
     }
+    fn new_from_text(text: String) -> Option<Self> {
+        parse_valid_f32(text, 0.0, 1.0).map(Self)
+    }
 
     fn get(self) -> Self::Value {
         self.0
@@ -135,11 +137,27 @@ impl Default for OperatorEnvelopeGroupValue {
     }
 }
 
+impl FromStr for OperatorEnvelopeGroupValue {
+    type Err = ();
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s.trim().to_lowercase().as_str() {
+            "a" => Ok(Self::A),
+            "b" => Ok(Self::B),
+            "off" | "none" => Ok(Self::Off),
+            _ => Err(()),
+        }
+    }
+}
+
 impl ParameterValue for OperatorEnvelopeGroupValue {
     type Value = Self;
 
     fn new_from_audio(value: Self::Value) -> Self {
         value
+    }
+    fn new_from_text(text: String) -> Option<Self> {
+        text.parse().ok()
     }
 
     fn get(self) -> Self::Value {

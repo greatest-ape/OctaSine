@@ -131,6 +131,17 @@ impl ParameterValue for OperatorFrequencyRatioValue {
     fn new_from_audio(value: Self::Value) -> Self {
         Self(value)
     }
+    fn new_from_text(text: String) -> Option<Self> {
+        let text = text.trim();
+
+        for ratio in OPERATOR_RATIO_STEPS.iter() {
+            if ratio.name.as_str() == text {
+                return Some(Self(*ratio));
+            }
+        }
+
+        None
+    }
     fn get(self) -> Self::Value {
         self.0
     }

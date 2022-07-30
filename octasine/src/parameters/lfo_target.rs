@@ -112,6 +112,9 @@ impl ParameterValue for Lfo1TargetParameterValue {
     fn new_from_audio(value: Self::Value) -> Self {
         Self(value)
     }
+    fn new_from_text(_text: String) -> Option<Self> {
+        None
+    }
     fn get(self) -> Self::Value {
         self.0
     }
@@ -143,6 +146,9 @@ impl ParameterValue for Lfo2TargetParameterValue {
 
     fn new_from_audio(value: Self::Value) -> Self {
         Self(value)
+    }
+    fn new_from_text(_text: String) -> Option<Self> {
+        None
     }
     fn get(self) -> Self::Value {
         self.0
@@ -176,6 +182,9 @@ impl ParameterValue for Lfo3TargetParameterValue {
     fn new_from_audio(value: Self::Value) -> Self {
         Self(value)
     }
+    fn new_from_text(_text: String) -> Option<Self> {
+        None
+    }
     fn get(self) -> Self::Value {
         self.0
     }
@@ -207,6 +216,9 @@ impl ParameterValue for Lfo4TargetParameterValue {
 
     fn new_from_audio(value: Self::Value) -> Self {
         Self(value)
+    }
+    fn new_from_text(_text: String) -> Option<Self> {
+        None
     }
     fn get(self) -> Self::Value {
         self.0
