@@ -140,6 +140,22 @@ impl ParameterValue for OperatorFrequencyRatioValue {
             }
         }
 
+        if let Ok(value) = text.parse::<f64>() {
+            if value == 3.14 {
+                return OPERATOR_RATIO_STEPS
+                    .iter()
+                    .find(|r| r.value == PI)
+                    .copied()
+                    .map(Self);
+            }
+
+            for ratio in OPERATOR_RATIO_STEPS.iter() {
+                if value == ratio.value {
+                    return Some(Self(*ratio));
+                }
+            }
+        }
+
         None
     }
     fn get(self) -> Self::Value {
