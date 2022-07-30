@@ -58,8 +58,8 @@ impl CornerWidgets {
 
     pub fn set_style(&mut self, style: Theme) {
         self.style = style;
-        self.master_volume.style = style;
-        self.master_frequency.style = style;
+        self.master_volume.set_style(style);
+        self.master_frequency.set_style(style);
         self.modulation_matrix.set_style(style);
         self.patch_picker.style = style;
     }

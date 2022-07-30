@@ -14,6 +14,7 @@ use crate::parameters::{
 use crate::sync::GuiSyncHandle;
 
 use super::style::Theme;
+use super::value_text::ValueText;
 use super::{Message, LINE_HEIGHT};
 
 const KNOB_SIZE: Length = Length::Units(LINE_HEIGHT * 2);
@@ -252,12 +253,12 @@ where
 
 #[derive(Debug, Clone)]
 pub struct OctaSineKnob<P: ParameterValue> {
-    pub style: Theme,
+    style: Theme,
     knob_state: knob::State,
     text_marks: Option<text_marks::Group>,
     tick_marks: Option<tick_marks::Group>,
     title: String,
-    value_text: String,
+    value_text: ValueText<P>,
     default_patch_value: f32,
     parameter: Parameter,
     phantom_data: ::std::marker::PhantomData<P>,
@@ -297,7 +298,7 @@ where
         style_extractor: fn(Theme) -> Box<dyn iced_audio::knob::StyleSheet>,
     ) -> Self {
         let sync_value = sync_handle.get_parameter(parameter);
-        let value_text = P::new_from_patch(sync_value).get_formatted();
+        let value_text = ValueText::new(sync_handle, style, parameter);
 
         let knob_state = knob::State::new(NormalParam {
             value: Normal::new(sync_value as f32),
@@ -327,20 +328,20 @@ where
     pub fn set_value(&mut self, value: f32) {
         if !self.knob_state.is_dragging() {
             self.knob_state.set_normal(Normal::new(value as f32));
-        }
 
-        self.value_text = P::new_from_patch(value).get_formatted();
+            self.value_text.set_value(value);
+        }
+    }
+
+    pub fn set_style(&mut self, style: Theme) {
+        self.style = style;
+        self.value_text.style = style;
     }
 
     pub fn view(&mut self) -> Element<Message> {
         let title = Text::new(self.title.clone())
             .horizontal_alignment(Horizontal::Center)
             .font(self.style.font_bold())
-            .height(Length::Units(LINE_HEIGHT));
-
-        let value = Text::new(self.value_text.clone())
-            .horizontal_alignment(Horizontal::Center)
-            .font(self.style.font_regular())
             .height(Length::Units(LINE_HEIGHT));
 
         let parameter = self.parameter;
@@ -373,7 +374,7 @@ where
                 .push(Space::with_height(Length::Units(LINE_HEIGHT)))
                 .push(knob)
                 .push(Space::with_height(Length::Units(LINE_HEIGHT)))
-                .push(value),
+                .push(self.value_text.view()),
         )
         .height(Length::Units(LINE_HEIGHT * 6))
         .into()

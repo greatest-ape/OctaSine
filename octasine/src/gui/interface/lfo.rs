@@ -57,9 +57,9 @@ impl LfoWidgets {
         self.shape.set_style(style);
         self.mode.set_style(style);
         self.bpm_sync.set_style(style);
-        self.frequency_ratio.style = style;
-        self.frequency_free.style = style;
-        self.amount.style = style;
+        self.frequency_ratio.set_style(style);
+        self.frequency_free.set_style(style);
+        self.amount.set_style(style);
         self.active.set_style(style);
     }
 

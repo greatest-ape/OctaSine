@@ -249,6 +249,20 @@ impl PatchBank {
         false
     }
 
+    pub fn set_parameter_text_from_gui(&self, index: usize, value: String) -> bool {
+        let opt_parameter = self.get_parameter(index);
+
+        if let Some(parameter) = opt_parameter {
+            if parameter.set_from_text(value) {
+                self.parameter_change_info_audio.mark_as_changed(index);
+
+                return true;
+            }
+        }
+
+        false
+    }
+
     // Import / export
 
     /// Import serde bank into current bank, set sync parameters

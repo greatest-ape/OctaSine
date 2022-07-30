@@ -10,6 +10,7 @@ mod mod_target_picker;
 mod operator;
 mod patch_picker;
 pub mod style;
+mod value_text;
 mod wave_picker;
 
 use std::io::Write;
@@ -106,6 +107,7 @@ pub enum Message {
     RenamePatch,
     SaveBankOrPatchToFile(PathBuf, Vec<u8>),
     LoadBankOrPatchesFromPaths(Vec<PathBuf>),
+    ChangeParameterByTextInput(Parameter, String),
 }
 
 pub struct OctaSineIcedApplication<H: GuiSyncHandle> {
@@ -737,6 +739,20 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                 }
 
                 ::log::warn!("Loading multiple banks or patches and banks at the same time doesn't make sense");
+            }
+            Message::ChangeParameterByTextInput(parameter, current_text_value) => {
+                if let Some(new_text_value) = tinyfiledialogs::input_box(
+                    "Change OctaSine parameter value",
+                    &format!("Please provide a new value for {}", parameter.name()),
+                    &current_text_value,
+                ) {
+                    if let Some(new_value) = self
+                        .sync_handle
+                        .set_parameter_from_text(parameter, new_text_value)
+                    {
+                        self.set_value(parameter, new_value, true);
+                    }
+                }
             }
         }
 

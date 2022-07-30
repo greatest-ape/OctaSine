@@ -124,6 +124,32 @@ impl button::StyleSheet for Button {
     }
 }
 
+pub struct ValueButton;
+
+impl button::StyleSheet for ValueButton {
+    fn active(&self) -> button::Style {
+        button::Style {
+            background: Color::TRANSPARENT.into(),
+            border_radius: 3.0,
+            border_width: 0.0,
+            border_color: Color::TRANSPARENT,
+            text_color: TEXT_FG,
+            ..button::Style::default()
+        }
+    }
+
+    fn hovered(&self) -> button::Style {
+        button::Style {
+            background: SURFACE_HOVER.into(),
+            ..self.active()
+        }
+    }
+
+    fn pressed(&self) -> button::Style {
+        self.hovered()
+    }
+}
+
 pub struct PickList;
 
 impl pick_list::StyleSheet for PickList {
