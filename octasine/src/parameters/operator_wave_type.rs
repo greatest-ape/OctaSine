@@ -42,6 +42,17 @@ impl ParameterValue for OperatorWaveTypeValue {
     fn new_from_audio(value: Self::Value) -> Self {
         Self(value)
     }
+    fn new_from_text(text: String) -> Option<Self> {
+        let value = text.to_lowercase();
+
+        if value.contains("sin") {
+            Some(OperatorWaveTypeValue(WaveType::Sine))
+        } else if value.contains("noise") {
+            Some(OperatorWaveTypeValue(WaveType::WhiteNoise))
+        } else {
+            None
+        }
+    }
     fn get(self) -> Self::Value {
         self.0
     }
@@ -62,17 +73,6 @@ impl ParameterValue for OperatorWaveTypeValue {
         match self.0 {
             WaveType::Sine => "SINE".to_string(),
             WaveType::WhiteNoise => "NOISE".to_string(),
-        }
-    }
-    fn new_from_text(text: String) -> Option<Self> {
-        let value = text.to_lowercase();
-
-        if value.contains("sin") {
-            Some(OperatorWaveTypeValue(WaveType::Sine))
-        } else if value.contains("noise") {
-            Some(OperatorWaveTypeValue(WaveType::WhiteNoise))
-        } else {
-            None
         }
     }
 }

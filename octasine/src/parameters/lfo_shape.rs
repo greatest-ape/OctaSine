@@ -60,6 +60,21 @@ impl ParameterValue for LfoShapeValue {
     fn new_from_audio(value: Self::Value) -> Self {
         Self(value)
     }
+    fn new_from_text(text: String) -> Option<Self> {
+        match text.trim().to_lowercase().as_ref() {
+            "triangle" | "trng" => Some(Self(LfoShape::Triangle)),
+            "reverse triangle" | "rev triangle" | "rev trng" => {
+                Some(Self(LfoShape::ReverseTriangle))
+            }
+            "saw" => Some(Self(LfoShape::Saw)),
+            "reverse saw" | "rev saw" => Some(Self(LfoShape::ReverseSaw)),
+            "square" | "sqr" => Some(Self(LfoShape::Square)),
+            "reverse square" | "rev square" | "rev sqr" => Some(Self(LfoShape::ReverseSquare)),
+            "sine" => Some(Self(LfoShape::Sine)),
+            "reverse sine" | "rev sine" => Some(Self(LfoShape::ReverseSine)),
+            _ => None,
+        }
+    }
     fn get(self) -> Self::Value {
         self.0
     }
@@ -79,21 +94,6 @@ impl ParameterValue for LfoShapeValue {
             LfoShape::ReverseSquare => "REV SQR".to_string(),
             LfoShape::Sine => "SINE".to_string(),
             LfoShape::ReverseSine => "REV SINE".to_string(),
-        }
-    }
-    fn new_from_text(text: String) -> Option<Self> {
-        match text.trim().to_lowercase().as_ref() {
-            "triangle" | "trng" => Some(Self(LfoShape::Triangle)),
-            "reverse triangle" | "rev triangle" | "rev trng" => {
-                Some(Self(LfoShape::ReverseTriangle))
-            }
-            "saw" => Some(Self(LfoShape::Saw)),
-            "reverse saw" | "rev saw" => Some(Self(LfoShape::ReverseSaw)),
-            "square" | "sqr" => Some(Self(LfoShape::Square)),
-            "reverse square" | "rev square" | "rev sqr" => Some(Self(LfoShape::ReverseSquare)),
-            "sine" => Some(Self(LfoShape::Sine)),
-            "reverse sine" | "rev sine" => Some(Self(LfoShape::ReverseSine)),
-            _ => None,
         }
     }
 }

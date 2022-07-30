@@ -1,4 +1,4 @@
-use super::ParameterValue;
+use super::{utils::parse_valid_f32, ParameterValue};
 
 #[derive(Default, Debug, Clone, Copy)]
 pub struct OperatorMixOutValue(f32);
@@ -19,6 +19,9 @@ impl ParameterValue for OperatorMixOutValue {
     fn new_from_audio(value: Self::Value) -> Self {
         Self(value)
     }
+    fn new_from_text(text: String) -> Option<Self> {
+        parse_valid_f32(text, 0.0, 2.0).map(Self)
+    }
     fn get(self) -> Self::Value {
         self.0
     }
@@ -30,8 +33,5 @@ impl ParameterValue for OperatorMixOutValue {
     }
     fn get_formatted(self) -> String {
         format!("{:.04}", self.0)
-    }
-    fn new_from_text(text: String) -> Option<Self> {
-        text.parse::<f32>().map(|v| Self(v.max(0.0).min(2.0))).ok()
     }
 }
