@@ -11,6 +11,7 @@ use crate::parameters::{Parameter, ParameterValue};
 use crate::sync::GuiSyncHandle;
 
 use super::style::Theme;
+use super::value_text::ValueText;
 use super::{Message, LINE_HEIGHT};
 
 const WIDTH: u16 = LINE_HEIGHT * 2;
@@ -34,15 +35,11 @@ pub trait StyleSheet {
 }
 
 pub struct WavePicker<P: ParameterValue> {
-    parameter: Parameter,
     title: String,
-    cache: Cache,
-    bounds_path: Path,
-    cursor_within_bounds: bool,
-    click_started: bool,
     style: Theme,
     shape: P::Value,
-    value_text: String,
+    canvas: WavePickerCanvas<P>,
+    value_text: ValueText<P>,
 }
 
 impl<P> WavePicker<P>
@@ -58,22 +55,34 @@ where
     ) -> Self {
         let value = P::new_from_patch(sync_handle.get_parameter(parameter));
         let shape = value.get();
-        let value_text = value.get_formatted();
-        let bounds_path = Path::rectangle(
-            Point::new(0.5, 0.5),
-            Size::new((WIDTH - 1) as f32, (HEIGHT - 1) as f32),
-        );
+
+        let canvas = WavePickerCanvas::new(parameter, shape, style);
+        let value_text = ValueText::new(sync_handle, style, parameter);
 
         Self {
-            parameter,
             title: title.into(),
-            cache: Cache::new(),
-            bounds_path,
-            cursor_within_bounds: false,
-            click_started: false,
             style,
             shape,
+            canvas,
             value_text,
+        }
+    }
+
+    pub fn set_style(&mut self, style: Theme) {
+        self.style = style;
+
+        self.canvas.set_style(style);
+        self.value_text.style = style;
+    }
+
+    pub fn set_value(&mut self, value: f32) {
+        let shape = P::new_from_patch(value).get();
+
+        if self.shape != shape {
+            self.shape = shape;
+
+            self.canvas.set_value(value);
+            self.value_text.set_value(value);
         }
     }
 
@@ -83,23 +92,54 @@ where
             .font(self.style.font_bold())
             .height(Length::Units(LINE_HEIGHT));
 
-        let value = Text::new(self.value_text.clone())
-            .horizontal_alignment(Horizontal::Center)
-            .font(self.style.font_regular())
-            .height(Length::Units(LINE_HEIGHT));
-
-        let canvas = Canvas::new(self)
-            .width(Length::Units(WIDTH))
-            .height(Length::Units(HEIGHT));
-
         Column::new()
             .width(Length::Units(LINE_HEIGHT * 4))
             .align_items(Alignment::Center)
             .push(title)
             .push(Space::with_height(Length::Units(LINE_HEIGHT)))
-            .push(canvas)
+            .push(self.canvas.view())
             .push(Space::with_height(Length::Units(LINE_HEIGHT)))
-            .push(value)
+            .push(self.value_text.view())
+            .into()
+    }
+}
+
+struct WavePickerCanvas<P: ParameterValue> {
+    parameter: Parameter,
+    cache: Cache,
+    bounds_path: Path,
+    cursor_within_bounds: bool,
+    click_started: bool,
+    shape: P::Value,
+    style: Theme,
+}
+
+impl<P> WavePickerCanvas<P>
+where
+    P: ParameterValue + Copy + 'static,
+    P::Value: CalculateCurve,
+{
+    pub fn new(parameter: Parameter, shape: P::Value, style: Theme) -> Self {
+        let bounds_path = Path::rectangle(
+            Point::new(0.5, 0.5),
+            Size::new((WIDTH - 1) as f32, (HEIGHT - 1) as f32),
+        );
+
+        Self {
+            parameter,
+            cache: Cache::new(),
+            bounds_path,
+            cursor_within_bounds: false,
+            click_started: false,
+            style,
+            shape,
+        }
+    }
+
+    pub fn view(&mut self) -> Element<Message> {
+        Canvas::new(self)
+            .width(Length::Units(WIDTH))
+            .height(Length::Units(HEIGHT))
             .into()
     }
 
@@ -109,15 +149,8 @@ where
     }
 
     pub fn set_value(&mut self, value: f32) {
-        let value = P::new_from_patch(value);
-        let shape = value.get();
-
-        if self.shape != shape {
-            self.shape = shape;
-            self.value_text = value.get_formatted();
-
-            self.cache.clear();
-        }
+        self.shape = P::new_from_patch(value).get();
+        self.cache.clear();
     }
 
     fn draw_background(&self, frame: &mut Frame, style_sheet: Box<dyn StyleSheet>) {
@@ -185,7 +218,7 @@ where
     }
 }
 
-impl<P> Program<Message> for WavePicker<P>
+impl<P> Program<Message> for WavePickerCanvas<P>
 where
     P: ParameterValue + Copy + 'static,
     P::Value: CalculateCurve,
