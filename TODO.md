@@ -10,6 +10,8 @@
     * Drawbacks: doesn't support async, so UI rendering is blocked.
 * Parameter value text input
   * Unit tests for parsing
+  * Operator frequency ratio: consider also parsing as float and returning
+    nearest match
 * Check for available updates at plugin start
 
 ## Medium priority
