@@ -1,7 +1,9 @@
 use std::str::FromStr;
 
 use super::{
-    utils::{map_parameter_value_to_step, map_step_to_parameter_value, parse_valid_f32},
+    utils::{
+        map_parameter_value_to_step, map_step_to_parameter_value, parse_valid_f32, parse_valid_f64,
+    },
     ParameterValue,
 };
 
@@ -43,10 +45,8 @@ macro_rules! impl_duration_parameter_value {
             }
 
             fn new_from_text(text: String) -> Option<Self> {
-                const MIN: f32 = ENVELOPE_MIN_DURATION as f32;
-                const MAX: f32 = ENVELOPE_MAX_DURATION as f32;
-
-                parse_valid_f32(text, MIN, MAX).map(|v| Self(v.into()))
+                parse_valid_f64(text, ENVELOPE_MIN_DURATION, ENVELOPE_MAX_DURATION)
+                    .map(|v| Self(v.into()))
             }
         }
     };

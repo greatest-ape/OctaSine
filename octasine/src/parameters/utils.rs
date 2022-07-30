@@ -97,6 +97,16 @@ pub fn parse_valid_f32(text: String, min: f32, max: f32) -> Option<f32> {
     }
 }
 
+pub fn parse_valid_f64(text: String, min: f64, max: f64) -> Option<f64> {
+    let value: f64 = text.parse().ok()?;
+
+    if value.is_infinite() | value.is_nan() {
+        None
+    } else {
+        Some(value.min(max).max(min))
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use assert_approx_eq::assert_approx_eq;
