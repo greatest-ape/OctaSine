@@ -52,11 +52,10 @@ impl ParameterValue for OperatorPanningValue {
     fn get_formatted(self) -> String {
         let pan = ((self.0 - 0.5) * 100.0).round() as isize;
 
-        match self.0.partial_cmp(&0.5) {
-            Some(std::cmp::Ordering::Greater) => format!("{}R", pan),
-            Some(std::cmp::Ordering::Less) => format!("{}L", pan.abs()),
-            Some(std::cmp::Ordering::Equal) => "C".to_string(),
-            None => "-".to_string(),
+        match pan.cmp(&0) {
+            std::cmp::Ordering::Greater => format!("{}R", pan),
+            std::cmp::Ordering::Less => format!("{}L", pan.abs()),
+            std::cmp::Ordering::Equal => "C".to_string(),
         }
     }
 }
