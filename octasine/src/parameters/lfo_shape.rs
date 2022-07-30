@@ -82,13 +82,17 @@ impl ParameterValue for LfoShapeValue {
         }
     }
     fn new_from_text(text: String) -> Option<Self> {
-        match text.to_lowercase().as_ref() {
-            "triangle" => Some(Self(LfoShape::Triangle)),
-            "reverse triangle" => Some(Self(LfoShape::ReverseTriangle)),
+        match text.trim().to_lowercase().as_ref() {
+            "triangle" | "trng" => Some(Self(LfoShape::Triangle)),
+            "reverse triangle" | "rev triangle" | "rev trng" => {
+                Some(Self(LfoShape::ReverseTriangle))
+            }
             "saw" => Some(Self(LfoShape::Saw)),
-            "reverse saw" => Some(Self(LfoShape::ReverseSaw)),
-            "square" => Some(Self(LfoShape::Square)),
-            "reverse square" => Some(Self(LfoShape::ReverseSquare)),
+            "reverse saw" | "rev saw" => Some(Self(LfoShape::ReverseSaw)),
+            "square" | "sqr" => Some(Self(LfoShape::Square)),
+            "reverse square" | "rev square" | "rev sqr" => Some(Self(LfoShape::ReverseSquare)),
+            "sine" => Some(Self(LfoShape::Sine)),
+            "reverse sine" | "rev sine" => Some(Self(LfoShape::ReverseSine)),
             _ => None,
         }
     }
