@@ -328,9 +328,9 @@ where
     pub fn set_value(&mut self, value: f32) {
         if !self.knob_state.is_dragging() {
             self.knob_state.set_normal(Normal::new(value as f32));
-
-            self.value_text.set_value(value);
         }
+
+        self.value_text.set_value(value);
     }
 
     pub fn set_style(&mut self, style: Theme) {
