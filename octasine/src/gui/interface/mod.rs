@@ -266,16 +266,8 @@ impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {
             gui: GuiSettings { theme: self.style },
         };
 
-        let builder = ::std::thread::Builder::new();
-
-        let spawn_result = builder.spawn(move || {
-            if let Err(err) = settings.save() {
-                ::log::error!("Couldn't save settings: {}", err)
-            }
-        });
-
-        if let Err(err) = spawn_result {
-            ::log::error!("Couldn't spawn thread for saving settings: {}", err)
+        if let Err(err) = settings.save() {
+            ::log::error!("Couldn't save settings: {:#}", err)
         }
     }
 
