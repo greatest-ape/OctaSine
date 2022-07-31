@@ -132,7 +132,11 @@ impl ParameterValue for OperatorFrequencyRatioValue {
         Self(value)
     }
     fn new_from_text(text: String) -> Option<Self> {
-        let text = text.trim();
+        let text = text
+            .trim()
+            .to_lowercase()
+            .replace(" pi", "π")
+            .replace("pi", "π");
 
         for ratio in OPERATOR_RATIO_STEPS.iter() {
             if ratio.name.as_str() == text {
