@@ -104,14 +104,25 @@ pub fn process_f32_runtime_select(
                     let new_position = position + 1;
 
                     cfg_if::cfg_if!(
-                        if #[cfg(all(feature = "simd", target_arch = "x86_64"))] {
-                            // SSE2 is always supported on x86_64
-                            Sse2::process_f32(
-                                audio_state,
-                                &mut lefts[position..new_position],
-                                &mut rights[position..new_position],
-                                position,
-                            );
+                        if #[cfg(feature = "simd")] {
+                            cfg_if::cfg_if!(
+                                if #[cfg(target_arch = "x86_64")] {
+                                    // SSE2 is always supported on x86_64
+                                    Sse2::process_f32(
+                                        audio_state,
+                                        &mut lefts[position..new_position],
+                                        &mut rights[position..new_position],
+                                        position,
+                                    );
+                                } else {
+                                    FallbackSleef::process_f32(
+                                        audio_state,
+                                        &mut lefts[position..new_position],
+                                        &mut rights[position..new_position],
+                                        position,
+                                    );
+                                }
+                            )
                         } else {
                             FallbackStd::process_f32(
                                 audio_state,

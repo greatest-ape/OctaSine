@@ -48,7 +48,7 @@ impl Settings {
         match Self::load() {
             Ok(settings) => settings,
             Err(err) => {
-                ::log::info!("Couldn't load settings: {}", err);
+                ::log::warn!("Couldn't load settings: {}", err);
 
                 Settings::default()
             }

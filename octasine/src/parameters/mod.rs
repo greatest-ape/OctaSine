@@ -56,9 +56,7 @@ pub trait ParameterValue: Sized + Default + Copy {
     type Value: Copy;
 
     fn new_from_audio(value: Self::Value) -> Self;
-    fn new_from_text(_text: String) -> Option<Self> {
-        None
-    }
+    fn new_from_text(_text: String) -> Option<Self>;
     fn new_from_patch(value: f32) -> Self;
 
     /// Get inner (audio gen) value

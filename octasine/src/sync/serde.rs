@@ -1,3 +1,5 @@
+use std::{io::Read, path::Path};
+
 use flate2::{read::GzDecoder, write::GzEncoder, Compression};
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 
@@ -138,6 +140,18 @@ pub fn from_bytes<'a, T: DeserializeOwned>(
     let mut decoder = GzDecoder::new(bytes);
 
     serde_json::from_reader(&mut decoder)
+}
+
+pub fn from_path<T: DeserializeOwned>(path: &Path) -> anyhow::Result<T> {
+    let mut file = ::std::fs::File::open(path)?;
+    let mut bytes = Vec::new();
+
+    file.read_to_end(&mut bytes)?;
+
+    match from_bytes(&bytes) {
+        Ok(t) => Ok(t),
+        Err(err) => Err(anyhow::anyhow!("deserialize patch/preset: {}", err)),
+    }
 }
 
 fn split_off_slice_prefix<'a>(mut bytes: &'a [u8], prefix: &[u8]) -> &'a [u8] {

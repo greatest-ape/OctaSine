@@ -15,6 +15,13 @@ impl ParameterValue for LfoBpmSyncValue {
     fn new_from_audio(value: Self::Value) -> Self {
         Self(value)
     }
+    fn new_from_text(text: String) -> Option<Self> {
+        match text.to_lowercase().as_ref() {
+            "true" | "on" => Some(Self(true)),
+            "false" | "off" => Some(Self(false)),
+            _ => None,
+        }
+    }
     fn get(self) -> Self::Value {
         self.0
     }
@@ -33,13 +40,6 @@ impl ParameterValue for LfoBpmSyncValue {
             "On".to_string()
         } else {
             "Off".to_string()
-        }
-    }
-    fn new_from_text(text: String) -> Option<Self> {
-        match text.to_lowercase().as_ref() {
-            "true" | "on" => Some(Self(true)),
-            "false" | "off" => Some(Self(false)),
-            _ => None,
         }
     }
 }

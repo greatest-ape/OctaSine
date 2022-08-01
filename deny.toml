@@ -81,6 +81,7 @@ allow = [
     "BSD-2-Clause",
     "CC0-1.0",
     "Unicode-DFS-2016",
+    "zlib-acknowledgement",
     # "FTL",
     #"Apache-2.0 WITH LLVM-exception",
 ]
@@ -117,8 +118,7 @@ exceptions = [
     #{ allow = ["Zlib"], name = "adler32", version = "*" },
     { allow = ["AGPL-3.0"], name = "octasine", version = "*" },
     { allow = ["AGPL-3.0"], name = "octasine-vst2-plugin", version = "*" },
-    { allow = ["AGPL-3.0"], name = "run_gui", version = "*" },
-    { allow = ["AGPL-3.0"], name = "plot_curves", version = "*" },
+    { allow = ["AGPL-3.0"], name = "octasine-cli", version = "*" },
 ]
 
 # Some crates don't have (easily) machine readable licensing information,

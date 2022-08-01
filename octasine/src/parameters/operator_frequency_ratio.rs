@@ -131,6 +131,37 @@ impl ParameterValue for OperatorFrequencyRatioValue {
     fn new_from_audio(value: Self::Value) -> Self {
         Self(value)
     }
+    fn new_from_text(text: String) -> Option<Self> {
+        let text = text
+            .trim()
+            .to_lowercase()
+            .replace(" pi", "π")
+            .replace("pi", "π");
+
+        for ratio in OPERATOR_RATIO_STEPS.iter() {
+            if ratio.name.as_str() == text {
+                return Some(Self(*ratio));
+            }
+        }
+
+        if let Ok(value) = text.parse::<f64>() {
+            if value == 3.14 {
+                return OPERATOR_RATIO_STEPS
+                    .iter()
+                    .find(|r| r.value == PI)
+                    .copied()
+                    .map(Self);
+            }
+
+            for ratio in OPERATOR_RATIO_STEPS.iter() {
+                if value == ratio.value {
+                    return Some(Self(*ratio));
+                }
+            }
+        }
+
+        None
+    }
     fn get(self) -> Self::Value {
         self.0
     }

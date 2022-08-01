@@ -24,6 +24,13 @@ impl ParameterValue for LfoModeValue {
     fn new_from_audio(value: Self::Value) -> Self {
         Self(value)
     }
+    fn new_from_text(text: String) -> Option<Self> {
+        match text.to_lowercase().as_ref() {
+            "once" => Some(Self(LfoMode::Once)),
+            "forever" => Some(Self(LfoMode::Forever)),
+            _ => None,
+        }
+    }
     fn get(self) -> Self::Value {
         self.0
     }
@@ -37,13 +44,6 @@ impl ParameterValue for LfoModeValue {
         match self.0 {
             LfoMode::Once => "ONCE".to_string(),
             LfoMode::Forever => "LOOP".to_string(),
-        }
-    }
-    fn new_from_text(text: String) -> Option<Self> {
-        match text.to_lowercase().as_ref() {
-            "once" => Some(Self(LfoMode::Once)),
-            "forever" => Some(Self(LfoMode::Forever)),
-            _ => None,
         }
     }
 }

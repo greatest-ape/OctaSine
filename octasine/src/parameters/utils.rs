@@ -87,6 +87,26 @@ pub fn round_to_step(steps: &[f32], value: f32) -> f32 {
     *steps.last().expect("steps are empty")
 }
 
+pub fn parse_valid_f32(text: String, min: f32, max: f32) -> Option<f32> {
+    let value: f32 = text.parse().ok()?;
+
+    if value.is_infinite() | value.is_nan() {
+        None
+    } else {
+        Some(value.min(max).max(min))
+    }
+}
+
+pub fn parse_valid_f64(text: String, min: f64, max: f64) -> Option<f64> {
+    let value: f64 = text.parse().ok()?;
+
+    if value.is_infinite() | value.is_nan() {
+        None
+    } else {
+        Some(value.min(max).max(min))
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use assert_approx_eq::assert_approx_eq;
@@ -304,5 +324,37 @@ mod tests {
         }
 
         quickcheck(prop as fn(f32, f32) -> TestResult);
+    }
+
+    #[test]
+    fn test_parse_valid_f32() {
+        fn prop(v: f32, min: f32, max: f32) -> TestResult {
+            if min.is_infinite() | min.is_nan() | max.is_infinite() | max.is_nan() {
+                return TestResult::discard();
+            }
+            if min > max {
+                return TestResult::discard();
+            }
+
+            let result = parse_valid_f32(v.to_string(), min, max);
+
+            if v.is_infinite() | v.is_nan() {
+                return TestResult::from_bool(result.is_none());
+            }
+
+            let parsed_v = result.unwrap();
+
+            if v < min {
+                TestResult::from_bool(parsed_v == min)
+            } else if v > max {
+                TestResult::from_bool(parsed_v == max)
+            } else if parsed_v < min || parsed_v > max {
+                TestResult::failed()
+            } else {
+                TestResult::from_bool(v == parsed_v)
+            }
+        }
+
+        quickcheck(prop as fn(f32, f32, f32) -> TestResult);
     }
 }

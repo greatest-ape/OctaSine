@@ -14,6 +14,8 @@ use crate::settings::Settings;
 
 use patch_bank::PatchBank;
 
+use self::serde::{SerdePatch, SerdePatchBank};
+
 /// Thread-safe state used for parameter and preset calls
 pub struct SyncState {
     /// Host should always be set when running as real plugin, but having the
@@ -153,15 +155,22 @@ cfg_if::cfg_if! {
             fn begin_edit(&self, parameter: Parameter);
             fn end_edit(&self, parameter: Parameter);
             fn set_parameter(&self, parameter: Parameter, value: f32);
+            fn set_parameter_from_text(&self, parameter: Parameter, text: String) -> Option<f32>;
             /// Set parameter without telling host
             fn set_parameter_audio_only(&self, parameter: Parameter, value: f32);
             fn get_parameter(&self, parameter: Parameter) -> f32;
             fn format_parameter_value(&self, parameter: Parameter, value: f32) -> String;
             fn get_patches(&self) -> (usize, Vec<String>);
             fn set_patch_index(&self, index: usize);
+            fn get_current_patch_name(&self) -> String;
+            fn set_current_patch_name(&self, name: String);
             fn get_changed_parameters(&self) -> Option<[Option<f32>; MAX_NUM_PARAMETERS]>;
             fn have_patches_changed(&self) -> bool;
             fn get_gui_settings(&self) -> crate::gui::GuiSettings;
+            fn export_patch(&self) -> (String, Vec<u8>);
+            fn export_bank(&self) -> Vec<u8>;
+            fn import_bank_from_serde(&self, serde_bank: SerdePatchBank);
+            fn import_patches_from_serde(&self, serde_patches: Vec<SerdePatch>);
         }
 
         impl GuiSyncHandle for Arc<SyncState> {
@@ -186,6 +195,23 @@ cfg_if::cfg_if! {
 
                 self.patches.set_parameter_from_gui(index, value);
             }
+            fn set_parameter_from_text(&self, parameter: Parameter, text: String) -> Option<f32> {
+                let index = parameter.to_index() as usize;
+
+                if self.patches.set_parameter_text_from_gui(index, text) {
+                    let value = self.patches.get_parameter_value(index).unwrap();
+
+                    if let Some(host) = self.host {
+                        host.begin_edit(index as i32);
+                        host.automate(index as i32, value);
+                        host.end_edit(index as i32);
+                    }
+
+                    Some(value)
+                } else {
+                    None
+                }
+            }
             fn set_parameter_audio_only(&self, parameter: Parameter, value: f32){
                 self.patches.set_parameter_from_gui(parameter.to_index() as usize, value);
             }
@@ -208,6 +234,16 @@ cfg_if::cfg_if! {
                     host.update_display();
                 }
             }
+            fn get_current_patch_name(&self) -> String {
+                self.patches.get_current_patch_name()
+            }
+            fn set_current_patch_name(&self, name: String) {
+                self.patches.set_patch_name(name);
+
+                if let Some(host) = self.host {
+                    host.update_display();
+                }
+            }
             fn get_changed_parameters(&self) -> Option<[Option<f32>; MAX_NUM_PARAMETERS]> {
                 self.patches.get_changed_parameters_from_gui()
             }
@@ -216,6 +252,29 @@ cfg_if::cfg_if! {
             }
             fn get_gui_settings(&self) -> crate::gui::GuiSettings {
                 self.settings.gui.clone()
+            }
+            fn export_patch(&self) -> (String, Vec<u8>) {
+                let name = self.patches.get_current_patch_filename_for_export();
+                let data = self.patches.export_current_patch_bytes();
+
+                (name, data)
+            }
+            fn export_bank(&self) -> Vec<u8> {
+                self.patches.export_bank_as_bytes()
+            }
+            fn import_bank_from_serde(&self, serde_bank: SerdePatchBank) {
+                self.patches.import_bank_from_serde(serde_bank);
+
+                if let Some(host) = self.host {
+                    host.update_display();
+                }
+            }
+            fn import_patches_from_serde(&self, serde_patches: Vec<SerdePatch>) {
+                self.patches.import_patches_from_serde(serde_patches);
+
+                if let Some(host) = self.host {
+                    host.update_display();
+                }
             }
         }
     }

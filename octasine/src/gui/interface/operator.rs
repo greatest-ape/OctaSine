@@ -89,12 +89,12 @@ impl OperatorWidgets {
     pub fn set_style(&mut self, style: Theme) {
         self.style = style;
         self.mute_button.set_style(style);
-        self.volume.style = style;
-        self.mix.style = style;
-        self.panning.style = style;
+        self.volume.set_style(style);
+        self.mix.set_style(style);
+        self.panning.set_style(style);
         self.wave_type.set_style(style);
         if let Some(mod_index) = self.mod_index.as_mut() {
-            mod_index.style = style;
+            mod_index.set_style(style);
         }
         match self.mod_target.as_mut() {
             Some(ModTargetPicker::Operator2(p)) => {
@@ -108,10 +108,10 @@ impl OperatorWidgets {
             }
             None => {}
         }
-        self.feedback.style = style;
-        self.frequency_ratio.style = style;
-        self.frequency_free.style = style;
-        self.frequency_fine.style = style;
+        self.feedback.set_style(style);
+        self.frequency_ratio.set_style(style);
+        self.frequency_free.set_style(style);
+        self.frequency_fine.set_style(style);
         self.envelope.set_style(style);
     }
 

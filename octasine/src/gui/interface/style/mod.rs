@@ -137,6 +137,12 @@ impl Theme {
             Self::Dark => Box::new(dark::Button),
         }
     }
+    pub fn value_button(&self) -> Box<dyn iced_baseview::button::StyleSheet> {
+        match self {
+            Self::Light => Box::new(light::ValueButton),
+            Self::Dark => Box::new(dark::ValueButton),
+        }
+    }
     pub fn pick_list(&self) -> Box<dyn iced_baseview::pick_list::StyleSheet> {
         match self {
             Self::Light => Box::new(light::PickList),
