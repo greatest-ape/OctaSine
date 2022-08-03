@@ -1,4 +1,5 @@
 use std::collections::HashSet;
+use std::fmt::Write;
 use std::time::Instant;
 
 use colored::*;
@@ -18,11 +19,10 @@ pub fn run() -> anyhow::Result<()> {
     #[allow(unused_variables)]
     let (_, fallback_std) = benchmark::<octasine::audio::gen::simd::FallbackStd>(
         "fallback (std)",
-        "dd 42 94 8e 65 23 17 d0 ",
+        "dd 42 94 8e 65 23 17 d0",
     );
 
-    // Don't forget trailing space
-    let hash = "dd 42 94 8e 65 23 17 d0 ";
+    let hash = "dd 42 94 8e 65 23 17 d0";
 
     let mut all_sleef_hashes_match = true;
 
@@ -207,12 +207,15 @@ fn benchmark<A: AudioGen + Simd>(name: &str, expected_hash: &str) -> (bool, f32)
         elapsed_millis as f32 / (num_seconds * 10.0)
     );
 
-    let output_hash: String = output_hasher
-        .finalize()
-        .iter()
-        .take(8)
-        .map(|byte| format!("{:02x} ", byte))
-        .collect();
+    let mut output_hash = String::new();
+
+    for byte in output_hasher.finalize().iter().take(8) {
+        if !output_hash.is_empty() {
+            output_hash.push_str(" ");
+        }
+
+        write!(output_hash, "{:02x}", byte).unwrap();
+    }
 
     println!("Output hash (first 8 bytes):    {}", output_hash);
 
