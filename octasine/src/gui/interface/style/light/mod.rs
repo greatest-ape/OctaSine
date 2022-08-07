@@ -170,7 +170,7 @@ impl pick_list::StyleSheet for PickList {
             border_color: BORDER,
             border_width: 1.0,
             border_radius: 3.0,
-            placeholder_color: SURFACE,
+            placeholder_color: TEXT_FG,
             icon_size: 0.6,
         }
     }

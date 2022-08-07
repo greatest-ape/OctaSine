@@ -173,7 +173,7 @@ impl pick_list::StyleSheet for PickList {
             border_width: 0.0,
             border_radius: 3.0,
             icon_size: 0.6,
-            placeholder_color: SURFACE,
+            placeholder_color: TEXT_FG,
         }
     }
     fn hovered(&self) -> pick_list::Style {
