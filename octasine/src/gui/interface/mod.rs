@@ -105,6 +105,8 @@ pub enum Message {
     SaveBank,
     LoadBankOrPatch,
     RenamePatch,
+    ClearPatch,
+    ClearBank,
     SaveBankOrPatchToFile(PathBuf, Vec<u8>),
     LoadBankOrPatchesFromPaths(Vec<PathBuf>),
     ChangeParameterByTextInput(Parameter, String),
@@ -678,6 +680,30 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                     &previous_name,
                 ) {
                     self.sync_handle.set_current_patch_name(name);
+                }
+            }
+            Message::ClearPatch => {
+                let answer = tinyfiledialogs::message_box_yes_no(
+                    "Clear OctaSine patch",
+                    "Are you sure that you want to clear the currently active OctaSine patch?",
+                    tinyfiledialogs::MessageBoxIcon::Warning,
+                    tinyfiledialogs::YesNo::No,
+                );
+
+                if let tinyfiledialogs::YesNo::Yes = answer {
+                    self.sync_handle.clear_patch();
+                }
+            }
+            Message::ClearBank => {
+                let answer = tinyfiledialogs::message_box_yes_no(
+                    "Clear OctaSine patch bank",
+                    "Are you sure that you want to clear the whole active OctaSine patch bank?",
+                    tinyfiledialogs::MessageBoxIcon::Warning,
+                    tinyfiledialogs::YesNo::No,
+                );
+
+                if let tinyfiledialogs::YesNo::Yes = answer {
+                    self.sync_handle.clear_bank();
                 }
             }
             Message::SaveBankOrPatchToFile(path_buf, bytes) => {

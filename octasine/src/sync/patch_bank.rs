@@ -66,6 +66,18 @@ impl Patch {
     pub fn export_serde_preset(&self) -> SerdePatch {
         SerdePatch::new(self)
     }
+
+    fn set_from_patch_parameters(&self, parameters: &[PatchParameter]) {
+        self.set_name("-".into());
+
+        for (parameter, default_value) in self
+            .parameters
+            .iter()
+            .zip(parameters.iter().map(PatchParameter::get_value))
+        {
+            parameter.set_value(default_value);
+        }
+    }
 }
 
 pub struct PatchBank {
@@ -331,6 +343,27 @@ impl PatchBank {
             .expect("import bank from bytes");
 
         preset_bank
+    }
+
+    pub fn clear_current_patch(&self) {
+        self.get_current_patch()
+            .set_from_patch_parameters(&PatchParameter::all());
+
+        self.mark_parameters_as_changed();
+        self.patches_changed.store(true, Ordering::SeqCst);
+    }
+
+    pub fn clear_bank(&self) {
+        let default_parameters = PatchParameter::all();
+
+        for patch in self.patches.iter() {
+            patch.set_from_patch_parameters(&default_parameters);
+        }
+
+        self.set_patch_index(0);
+
+        self.mark_parameters_as_changed();
+        self.patches_changed.store(true, Ordering::SeqCst);
     }
 }
 

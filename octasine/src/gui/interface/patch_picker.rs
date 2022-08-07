@@ -12,6 +12,8 @@ const ACTIONS: &[Action] = &[
     Action::SavePatch,
     Action::SaveBank,
     Action::RenamePatch,
+    Action::ClearPatch,
+    Action::ClearBank,
 ];
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -20,15 +22,19 @@ enum Action {
     SavePatch,
     SaveBank,
     RenamePatch,
+    ClearPatch,
+    ClearBank,
 }
 
 impl Action {
     fn to_message(self) -> Message {
         match self {
-            Action::SavePatch => Message::SavePatch,
-            Action::SaveBank => Message::SaveBank,
-            Action::OpenPatchesOrBank => Message::LoadBankOrPatch,
-            Action::RenamePatch => Message::RenamePatch,
+            Self::SavePatch => Message::SavePatch,
+            Self::SaveBank => Message::SaveBank,
+            Self::OpenPatchesOrBank => Message::LoadBankOrPatch,
+            Self::RenamePatch => Message::RenamePatch,
+            Self::ClearPatch => Message::ClearPatch,
+            Self::ClearBank => Message::ClearBank,
         }
     }
 }
@@ -40,6 +46,8 @@ impl Display for Action {
             Self::SavePatch => write!(f, "SAVE PATCH"),
             Self::SaveBank => write!(f, "SAVE BANK"),
             Self::RenamePatch => write!(f, "RENAME PATCH"),
+            Self::ClearPatch => write!(f, "CLEAR PATCH"),
+            Self::ClearBank => write!(f, "CLEAR BANK"),
         }
     }
 }

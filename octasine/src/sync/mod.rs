@@ -171,6 +171,8 @@ cfg_if::cfg_if! {
             fn export_bank(&self) -> Vec<u8>;
             fn import_bank_from_serde(&self, serde_bank: SerdePatchBank);
             fn import_patches_from_serde(&self, serde_patches: Vec<SerdePatch>);
+            fn clear_patch(&self);
+            fn clear_bank(&self);
         }
 
         impl GuiSyncHandle for Arc<SyncState> {
@@ -275,6 +277,12 @@ cfg_if::cfg_if! {
                 if let Some(host) = self.host {
                     host.update_display();
                 }
+            }
+            fn clear_patch(&self) {
+                self.patches.clear_current_patch();
+            }
+            fn clear_bank(&self) {
+                self.patches.clear_bank();
             }
         }
     }
