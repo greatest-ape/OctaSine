@@ -8,20 +8,20 @@ use super::LINE_HEIGHT;
 use super::{style::Theme, GuiSyncHandle, Message, FONT_SIZE};
 
 const ACTIONS: &[Action] = &[
-    Action::OpenPatchesOrBank,
+    Action::RenamePatch,
     Action::SavePatch,
     Action::SaveBank,
-    Action::RenamePatch,
+    Action::OpenPatchesOrBank,
     Action::ClearPatch,
     Action::ClearBank,
 ];
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum Action {
-    OpenPatchesOrBank,
+    RenamePatch,
     SavePatch,
     SaveBank,
-    RenamePatch,
+    OpenPatchesOrBank,
     ClearPatch,
     ClearBank,
 }
@@ -29,10 +29,10 @@ enum Action {
 impl Action {
     fn to_message(self) -> Message {
         match self {
+            Self::RenamePatch => Message::RenamePatch,
             Self::SavePatch => Message::SavePatch,
             Self::SaveBank => Message::SaveBank,
             Self::OpenPatchesOrBank => Message::LoadBankOrPatch,
-            Self::RenamePatch => Message::RenamePatch,
             Self::ClearPatch => Message::ClearPatch,
             Self::ClearBank => Message::ClearBank,
         }
@@ -42,10 +42,10 @@ impl Action {
 impl Display for Action {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::OpenPatchesOrBank => write!(f, "OPEN PATCHES/BANK"),
+            Self::RenamePatch => write!(f, "RENAME PATCH"),
             Self::SavePatch => write!(f, "SAVE PATCH"),
             Self::SaveBank => write!(f, "SAVE BANK"),
-            Self::RenamePatch => write!(f, "RENAME PATCH"),
+            Self::OpenPatchesOrBank => write!(f, "OPEN PATCHES/BANK"),
             Self::ClearPatch => write!(f, "CLEAR PATCH"),
             Self::ClearBank => write!(f, "CLEAR BANK"),
         }
