@@ -119,13 +119,10 @@ impl ParameterValue for Lfo1TargetParameterValue {
         self.0
     }
     fn new_from_patch(value: f32) -> Self {
-        Self(map_parameter_value_to_step(
-            get_lfo_target_parameters(0),
-            value,
-        ))
+        Self(map_patch_value_to_step(get_lfo_target_parameters(0), value))
     }
     fn to_patch(self) -> f32 {
-        map_step_to_parameter_value(get_lfo_target_parameters(0), self.0)
+        map_step_to_patch_value(get_lfo_target_parameters(0), self.0)
     }
     fn get_formatted(self) -> String {
         self.0.parameter().name()
@@ -154,13 +151,10 @@ impl ParameterValue for Lfo2TargetParameterValue {
         self.0
     }
     fn new_from_patch(value: f32) -> Self {
-        Self(map_parameter_value_to_step(
-            get_lfo_target_parameters(1),
-            value,
-        ))
+        Self(map_patch_value_to_step(get_lfo_target_parameters(1), value))
     }
     fn to_patch(self) -> f32 {
-        map_step_to_parameter_value(get_lfo_target_parameters(1), self.0)
+        map_step_to_patch_value(get_lfo_target_parameters(1), self.0)
     }
     fn get_formatted(self) -> String {
         self.0.parameter().name()
@@ -189,13 +183,10 @@ impl ParameterValue for Lfo3TargetParameterValue {
         self.0
     }
     fn new_from_patch(value: f32) -> Self {
-        Self(map_parameter_value_to_step(
-            get_lfo_target_parameters(2),
-            value,
-        ))
+        Self(map_patch_value_to_step(get_lfo_target_parameters(2), value))
     }
     fn to_patch(self) -> f32 {
-        map_step_to_parameter_value(get_lfo_target_parameters(2), self.0)
+        map_step_to_patch_value(get_lfo_target_parameters(2), self.0)
     }
     fn get_formatted(self) -> String {
         self.0.parameter().name()
@@ -224,13 +215,10 @@ impl ParameterValue for Lfo4TargetParameterValue {
         self.0
     }
     fn new_from_patch(value: f32) -> Self {
-        Self(map_parameter_value_to_step(
-            get_lfo_target_parameters(3),
-            value,
-        ))
+        Self(map_patch_value_to_step(get_lfo_target_parameters(3), value))
     }
     fn to_patch(self) -> f32 {
-        map_step_to_parameter_value(get_lfo_target_parameters(3), self.0)
+        map_step_to_patch_value(get_lfo_target_parameters(3), self.0)
     }
     fn get_formatted(self) -> String {
         self.0.parameter().name()

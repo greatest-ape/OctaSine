@@ -1,9 +1,7 @@
 use std::str::FromStr;
 
 use super::{
-    utils::{
-        map_parameter_value_to_step, map_step_to_parameter_value, parse_valid_f32, parse_valid_f64,
-    },
+    utils::{map_patch_value_to_step, map_step_to_patch_value, parse_valid_f32, parse_valid_f64},
     ParameterValue,
 };
 
@@ -164,10 +162,10 @@ impl ParameterValue for OperatorEnvelopeGroupValue {
         self
     }
     fn new_from_patch(value: f32) -> Self {
-        map_parameter_value_to_step(&LOCK_STEPS[..], value)
+        map_patch_value_to_step(&LOCK_STEPS[..], value)
     }
     fn to_patch(self) -> f32 {
-        map_step_to_parameter_value(&LOCK_STEPS[..], self)
+        map_step_to_patch_value(&LOCK_STEPS[..], self)
     }
     fn get_formatted(self) -> String {
         format!("{:?}", self)
