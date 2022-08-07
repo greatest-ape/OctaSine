@@ -326,19 +326,15 @@ mod gen {
         time_per_sample: TimePerSample,
         voice_base_frequency: f64,
     ) {
-        const VOLUME_INDICES: [u8; NUM_OPERATORS] = OperatorParameter::Volume.init_index_array();
-        const MIX_INDICES: [u8; NUM_OPERATORS] = OperatorParameter::MixOut.init_index_array();
+        const VOLUME_INDICES: [u8; NUM_OPERATORS] = OperatorParameter::Volume.index_array();
+        const MIX_INDICES: [u8; NUM_OPERATORS] = OperatorParameter::MixOut.index_array();
         /// Note: MOD_INDICES index 0 is invalid (0) and must never be used
-        const MOD_INDICES: [u8; NUM_OPERATORS] = OperatorParameter::ModOut.init_index_array();
-        const FEEDBACK_INDICES: [u8; NUM_OPERATORS] =
-            OperatorParameter::Feedback.init_index_array();
-        const PANNING_INDICES: [u8; NUM_OPERATORS] = OperatorParameter::Panning.init_index_array();
-        const RATIO_INDICES: [u8; NUM_OPERATORS] =
-            OperatorParameter::FrequencyRatio.init_index_array();
-        const FREE_INDICES: [u8; NUM_OPERATORS] =
-            OperatorParameter::FrequencyFree.init_index_array();
-        const FINE_INDICES: [u8; NUM_OPERATORS] =
-            OperatorParameter::FrequencyFine.init_index_array();
+        const MOD_INDICES: [u8; NUM_OPERATORS] = OperatorParameter::ModOut.index_array();
+        const FEEDBACK_INDICES: [u8; NUM_OPERATORS] = OperatorParameter::Feedback.index_array();
+        const PANNING_INDICES: [u8; NUM_OPERATORS] = OperatorParameter::Panning.index_array();
+        const RATIO_INDICES: [u8; NUM_OPERATORS] = OperatorParameter::FrequencyRatio.index_array();
+        const FREE_INDICES: [u8; NUM_OPERATORS] = OperatorParameter::FrequencyFree.index_array();
+        const FINE_INDICES: [u8; NUM_OPERATORS] = OperatorParameter::FrequencyFine.index_array();
 
         assert!(operator_index < NUM_OPERATORS);
 
