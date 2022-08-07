@@ -6,14 +6,14 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- Add buttons for loading and saving patches / patch banks
-- Add button for renaming patches
+- Add patch section dropdown with actions for opening patch/bank files, saving
+  patches/banks, renaming patches and cleaning current patch/bank
 - Reintroduce master volume and master frequency parameters as LFO targets
   (removed in version 0.7)
 - When note off message is received during envelope attack phase, always go to
   release phase, even if it means that with low sustain volumes and a long
   release time, short notes might be loud for a lot longer than longer
-  notes. FM8 envelopes work this way.
+  notes. This is how FM8 envelopes work.
 
 ### Fixed
 
