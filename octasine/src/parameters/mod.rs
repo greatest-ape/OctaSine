@@ -114,7 +114,7 @@ impl Parameter {
 }
 
 impl OperatorParameter {
-    pub const fn init_index_array(self) -> [u8; NUM_OPERATORS] {
+    pub const fn index_array(self) -> [u8; NUM_OPERATORS] {
         let mut arr = [0; NUM_OPERATORS];
 
         let mut i = 0;
@@ -135,7 +135,7 @@ impl OperatorParameter {
 }
 
 impl LfoParameter {
-    pub const fn init_index_array(self) -> [u8; NUM_LFOS] {
+    pub const fn index_array(self) -> [u8; NUM_LFOS] {
         let mut arr = [0; NUM_LFOS];
 
         let mut i = 0;

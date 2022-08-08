@@ -66,6 +66,18 @@ impl Patch {
     pub fn export_serde_preset(&self) -> SerdePatch {
         SerdePatch::new(self)
     }
+
+    fn set_from_patch_parameters(&self, parameters: &[PatchParameter]) {
+        self.set_name("-".into());
+
+        for (parameter, default_value) in self
+            .parameters
+            .iter()
+            .zip(parameters.iter().map(PatchParameter::get_value))
+        {
+            parameter.set_value(default_value);
+        }
+    }
 }
 
 pub struct PatchBank {
@@ -117,9 +129,10 @@ impl PatchBank {
     pub fn num_parameters(&self) -> usize {
         self.get_current_patch().parameters.len()
     }
+}
 
-    // Manage patches
-
+// Manage patches
+impl PatchBank {
     pub fn get_patch_index(&self) -> usize {
         self.patch_index.load(Ordering::SeqCst)
     }
@@ -144,13 +157,6 @@ impl PatchBank {
         self.get_current_patch().name.load_full().to_string()
     }
 
-    pub fn get_current_patch_filename_for_export(&self) -> String {
-        match self.get_current_patch().name.load_full().as_str() {
-            "" => "-.fxp".into(),
-            name => format!("{}.fxp", name),
-        }
-    }
-
     pub fn get_patch_names(&self) -> Vec<String> {
         self.patches
             .iter()
@@ -168,9 +174,10 @@ impl PatchBank {
     pub fn have_patches_changed(&self) -> bool {
         self.patches_changed.fetch_and(false, Ordering::SeqCst)
     }
+}
 
-    // Get parameter changes
-
+// Get parameter changes
+impl PatchBank {
     pub fn get_changed_parameters_from_audio(&self) -> Option<[Option<f32>; MAX_NUM_PARAMETERS]> {
         self.parameter_change_info_audio
             .get_changed_parameters(&self.get_current_patch().parameters)
@@ -180,9 +187,10 @@ impl PatchBank {
         self.parameter_change_info_gui
             .get_changed_parameters(&self.get_current_patch().parameters)
     }
+}
 
-    // Get parameter values
-
+// Get parameter values
+impl PatchBank {
     pub fn get_parameter_value(&self, index: usize) -> Option<f32> {
         self.get_current_patch()
             .parameters
@@ -210,9 +218,10 @@ impl PatchBank {
             .get(index)
             .map(|p| (p.format)(value))
     }
+}
 
-    // Set parameters
-
+// Set parameters
+impl PatchBank {
     pub fn set_parameter_from_gui(&self, index: usize, value: f32) {
         let opt_parameter = self.get_parameter(index);
 
@@ -262,9 +271,10 @@ impl PatchBank {
 
         false
     }
+}
 
-    // Import / export
-
+// Import / export
+impl PatchBank {
     /// Import serde bank into current bank, set sync parameters
     pub fn import_bank_from_serde(&self, serde_bank: SerdePatchBank) {
         let default_serde_preset = Patch::default().export_serde_preset();
@@ -331,6 +341,37 @@ impl PatchBank {
             .expect("import bank from bytes");
 
         preset_bank
+    }
+
+    pub fn get_current_patch_filename_for_export(&self) -> String {
+        match self.get_current_patch().name.load_full().as_str() {
+            "" => "-.fxp".into(),
+            name => format!("{}.fxp", name),
+        }
+    }
+}
+
+// Clear data
+impl PatchBank {
+    pub fn clear_current_patch(&self) {
+        self.get_current_patch()
+            .set_from_patch_parameters(&PatchParameter::all());
+
+        self.mark_parameters_as_changed();
+        self.patches_changed.store(true, Ordering::SeqCst);
+    }
+
+    pub fn clear_bank(&self) {
+        let default_parameters = PatchParameter::all();
+
+        for patch in self.patches.iter() {
+            patch.set_from_patch_parameters(&default_parameters);
+        }
+
+        self.set_patch_index(0);
+
+        self.mark_parameters_as_changed();
+        self.patches_changed.store(true, Ordering::SeqCst);
     }
 }
 

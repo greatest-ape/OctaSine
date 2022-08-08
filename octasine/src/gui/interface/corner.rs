@@ -26,10 +26,6 @@ pub struct CornerWidgets {
     pub patch_picker: PatchPicker,
     toggle_info_state: button::State,
     toggle_style_state: button::State,
-    save_patch_button: button::State,
-    save_bank_button: button::State,
-    load_bank_or_patches_button: button::State,
-    rename_patch_button: button::State,
 }
 
 impl CornerWidgets {
@@ -49,10 +45,6 @@ impl CornerWidgets {
             patch_picker,
             toggle_info_state: button::State::default(),
             toggle_style_state: button::State::default(),
-            save_patch_button: Default::default(),
-            save_bank_button: Default::default(),
-            load_bank_or_patches_button: Default::default(),
-            rename_patch_button: Default::default(),
         }
     }
 
@@ -92,115 +84,6 @@ impl CornerWidgets {
                     .push(Space::with_width(Length::Units(LINE_HEIGHT * 3))), // Extend to end
             ),
         );
-
-        let patch_picker = {
-            let save_patch_button = Tooltip::new(
-                Button::new(
-                    &mut self.save_patch_button,
-                    Text::new("SAVE")
-                        .font(self.style.font_regular())
-                        .height(Length::Units(LINE_HEIGHT)),
-                )
-                .on_press(Message::SavePatch)
-                .padding(self.style.button_padding())
-                .style(self.style.button()),
-                "Save patch",
-                Position::Top,
-            )
-            .style(self.style.tooltip());
-
-            let save_bank_button = Tooltip::new(
-                Button::new(
-                    &mut self.save_bank_button,
-                    Text::new("SAVE ALL")
-                        .font(self.style.font_regular())
-                        .height(Length::Units(LINE_HEIGHT)),
-                )
-                .on_press(Message::SaveBank)
-                .padding(self.style.button_padding())
-                .style(self.style.button()),
-                "Save patch bank",
-                Position::Top,
-            )
-            .style(self.style.tooltip());
-
-            let load_button = Tooltip::new(
-                Button::new(
-                    &mut self.load_bank_or_patches_button,
-                    Text::new("OPEN")
-                        .font(self.style.font_regular())
-                        .height(Length::Units(LINE_HEIGHT)),
-                )
-                .on_press(Message::LoadBankOrPatch)
-                .padding(self.style.button_padding())
-                .style(self.style.button()),
-                "Open bank or patches",
-                Position::Top,
-            )
-            .style(self.style.tooltip());
-
-            let rename_button = Tooltip::new(
-                Button::new(
-                    &mut self.rename_patch_button,
-                    Text::new("E")
-                        .font(self.style.font_regular())
-                        .height(Length::Units(LINE_HEIGHT))
-                        .width(Length::Units(10))
-                        .horizontal_alignment(Horizontal::Center),
-                )
-                .on_press(Message::RenamePatch)
-                .padding(self.style.button_padding())
-                .style(self.style.button()),
-                "Edit patch name",
-                Position::Top,
-            )
-            .style(self.style.tooltip());
-
-            // Helps with issues arising from use of different font weights
-            let button_space = match self.style {
-                Theme::Dark => 3,
-                Theme::Light => 2,
-            };
-
-            Container::new(
-                Column::new()
-                    .align_items(Alignment::Center)
-                    .push(
-                        Row::new()
-                            .push(load_button)
-                            .push(Space::with_width(Length::Units(button_space)))
-                            .push(save_patch_button)
-                            .push(Space::with_width(Length::Units(button_space)))
-                            .push(save_bank_button),
-                    )
-                    // .push(Space::with_height(Length::Units(LINE_HEIGHT)))
-                    .push(Space::with_height(Length::Units(
-                        LINE_HEIGHT / 2 + LINE_HEIGHT / 4,
-                    )))
-                    .push(
-                        Text::new("Patch")
-                            .size(FONT_SIZE * 3 / 2)
-                            .height(Length::Units(FONT_SIZE * 3 / 2))
-                            .width(Length::Units(LINE_HEIGHT * 10))
-                            .font(self.style.font_heading())
-                            .color(self.style.heading_color())
-                            .horizontal_alignment(Horizontal::Center),
-                    )
-                    .push(Space::with_height(Length::Units(
-                        LINE_HEIGHT / 2 + LINE_HEIGHT / 4,
-                    )))
-                    // .push(Space::with_height(Length::Units(LINE_HEIGHT)))
-                    // .push(Space::with_height(Length::Units(LINE_HEIGHT / 2)))
-                    .push(
-                        Row::new()
-                            .push(self.patch_picker.view())
-                            .push(Space::with_width(Length::Units(button_space)))
-                            .push(rename_button),
-                    ), // .push(Space::with_height(Length::Units(LINE_HEIGHT / 2)))
-            )
-            .width(Length::Units(LINE_HEIGHT * 9))
-            .height(Length::Units(LINE_HEIGHT * 6))
-        };
 
         let logo = {
             let theme_button = Tooltip::new(
@@ -276,7 +159,7 @@ impl CornerWidgets {
             .push(Space::with_height(Length::Units(LINE_HEIGHT)))
             .push(
                 Row::new()
-                    .push(triple_container(self.style, patch_picker))
+                    .push(triple_container(self.style, self.patch_picker.view()))
                     .push(Space::with_width(Length::Units(LINE_HEIGHT)))
                     .push(triple_container(self.style, logo)),
             )

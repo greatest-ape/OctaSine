@@ -52,10 +52,10 @@ pub fn update_lfo_target_values(
     time_per_sample: TimePerSample,
     bpm_lfo_multiplier: BpmLfoMultiplier,
 ) {
-    const AMOUNT_PARAMETER_INDICES: [u8; NUM_LFOS] = LfoParameter::Amount.init_index_array();
-    const SHAPE_PARAMETER_INDICES: [u8; NUM_LFOS] = LfoParameter::Shape.init_index_array();
-    const RATIO_PARAMETER_INDICES: [u8; NUM_LFOS] = LfoParameter::FrequencyRatio.init_index_array();
-    const FREE_PARAMETER_INDICES: [u8; NUM_LFOS] = LfoParameter::FrequencyFree.init_index_array();
+    const AMOUNT_PARAMETER_INDICES: [u8; NUM_LFOS] = LfoParameter::Amount.index_array();
+    const SHAPE_PARAMETER_INDICES: [u8; NUM_LFOS] = LfoParameter::Shape.index_array();
+    const RATIO_PARAMETER_INDICES: [u8; NUM_LFOS] = LfoParameter::FrequencyRatio.index_array();
+    const FREE_PARAMETER_INDICES: [u8; NUM_LFOS] = LfoParameter::FrequencyFree.index_array();
 
     lfo_values.clear_set();
 

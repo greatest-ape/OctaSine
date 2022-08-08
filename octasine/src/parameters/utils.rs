@@ -1,23 +1,11 @@
-use crate::math::{exp2, log2};
-
-#[inline(always)]
-pub fn exp2_map_patch_to_audio(patch_value: f32, exp2_multiplier: f32) -> f32 {
-    exp2((patch_value - 0.5) * (2.0 * exp2_multiplier))
-}
-
-#[inline(always)]
-pub fn exp2_map_audio_to_patch(audio_value: f32, exp2_multiplier: f32) -> f32 {
-    log2(audio_value) / (exp2_multiplier * 2.0) + 0.5
-}
-
-pub fn map_parameter_value_to_step<T: Copy>(steps: &[T], value: f32) -> T {
+pub fn map_patch_value_to_step<T: Copy>(steps: &[T], value: f32) -> T {
     let value = value.max(0.0).min(1.0);
     let len = steps.len();
 
     steps[((value * len as f32) as usize).min(len - 1)]
 }
 
-pub fn map_step_to_parameter_value<T: Copy + PartialEq>(steps: &[T], step_value: T) -> f32 {
+pub fn map_step_to_patch_value<T: Copy + PartialEq>(steps: &[T], step_value: T) -> f32 {
     for (index, step) in steps.iter().enumerate() {
         if *step == step_value {
             let fraction = 1.0 / (steps.len() - 1) as f32;
@@ -29,10 +17,10 @@ pub fn map_step_to_parameter_value<T: Copy + PartialEq>(steps: &[T], step_value:
     0.5 // Default if step_value is not in steps
 }
 
-pub fn map_parameter_value_to_value_with_steps(steps: &[f32], parameter_value: f32) -> f32 {
+pub fn map_patch_to_audio_value_with_steps(steps: &[f32], patch_value: f32) -> f32 {
     let max_index = steps.len() - 1;
 
-    let index_float = parameter_value.max(0.0).min(1.0) * max_index as f32;
+    let index_float = patch_value.max(0.0).min(1.0) * max_index as f32;
     let index_fract = index_float.fract();
 
     let index_low = index_float as usize;
@@ -47,14 +35,14 @@ pub fn map_parameter_value_to_value_with_steps(steps: &[f32], parameter_value: f
     }
 }
 
-pub fn map_value_to_parameter_value_with_steps(steps: &[f32], internal_value: f32) -> f32 {
+pub fn map_audio_to_patch_value_with_steps(steps: &[f32], audio_value: f32) -> f32 {
     let mut prev_step = *steps.first().expect("steps are empty");
 
     for (index, step) in steps[1..].iter().enumerate() {
         let step = *step;
 
-        if internal_value <= step {
-            let ratio = (internal_value - prev_step) / (step - prev_step);
+        if audio_value <= step {
+            let ratio = (audio_value - prev_step) / (step - prev_step);
             let fraction = ((steps.len() - 1) as f32).recip();
 
             return ratio * fraction + fraction * index as f32;
@@ -131,7 +119,7 @@ mod tests {
     }
 
     #[test]
-    fn test_map_step_to_parameter_value_valid_number() {
+    fn test_map_step_to_patch_value_valid_number() {
         fn prop(index: usize) -> TestResult {
             let steps = get_all_steps();
 
@@ -139,7 +127,7 @@ mod tests {
                 return TestResult::discard();
             }
 
-            let value = map_step_to_parameter_value(&steps[..], steps[index]);
+            let value = map_step_to_patch_value(&steps[..], steps[index]);
 
             TestResult::from_bool(valid_parameter_value(value))
         }
@@ -148,25 +136,25 @@ mod tests {
     }
 
     #[test]
-    fn test_map_parameter_value_to_step() {
+    fn test_map_patch_value_to_step() {
         let steps = [1, 2, 3];
 
-        assert_eq!(map_parameter_value_to_step(&steps[..], 0.0), 1);
-        assert_eq!(map_parameter_value_to_step(&steps[..], 0.5), 2);
-        assert_eq!(map_parameter_value_to_step(&steps[..], 0.66), 2);
-        assert_eq!(map_parameter_value_to_step(&steps[..], 0.67), 3);
-        assert_eq!(map_parameter_value_to_step(&steps[..], 1.0), 3);
+        assert_eq!(map_patch_value_to_step(&steps[..], 0.0), 1);
+        assert_eq!(map_patch_value_to_step(&steps[..], 0.5), 2);
+        assert_eq!(map_patch_value_to_step(&steps[..], 0.66), 2);
+        assert_eq!(map_patch_value_to_step(&steps[..], 0.67), 3);
+        assert_eq!(map_patch_value_to_step(&steps[..], 1.0), 3);
     }
 
     #[test]
-    fn test_map_step_to_parameter_value() {
+    fn test_map_step_to_patch_value() {
         let steps = [1, 2, 3, 4, 5];
 
-        assert_approx_eq!(map_step_to_parameter_value(&steps[..], 1), 0.0);
-        assert_approx_eq!(map_step_to_parameter_value(&steps[..], 2), 0.25);
-        assert_approx_eq!(map_step_to_parameter_value(&steps[..], 3), 0.5);
-        assert_approx_eq!(map_step_to_parameter_value(&steps[..], 4), 0.75);
-        assert_approx_eq!(map_step_to_parameter_value(&steps[..], 5), 1.0);
+        assert_approx_eq!(map_step_to_patch_value(&steps[..], 1), 0.0);
+        assert_approx_eq!(map_step_to_patch_value(&steps[..], 2), 0.25);
+        assert_approx_eq!(map_step_to_patch_value(&steps[..], 3), 0.5);
+        assert_approx_eq!(map_step_to_patch_value(&steps[..], 4), 0.75);
+        assert_approx_eq!(map_step_to_patch_value(&steps[..], 5), 1.0);
     }
 
     #[test]
@@ -178,11 +166,11 @@ mod tests {
 
             let steps = get_all_steps();
 
-            let inner = map_parameter_value_to_step(&steps[..], value);
-            let new_value = map_step_to_parameter_value(&steps[..], inner);
+            let inner = map_patch_value_to_step(&steps[..], value);
+            let new_value = map_step_to_patch_value(&steps[..], inner);
             // Simulate the VST sending back the recieved parameter value.
             // Result must be identical to last result.
-            let new_inner = map_parameter_value_to_step(&steps[..], new_value);
+            let new_inner = map_patch_value_to_step(&steps[..], new_value);
 
             #[allow(clippy::float_cmp)]
             TestResult::from_bool(inner == new_inner)
@@ -192,13 +180,13 @@ mod tests {
     }
 
     #[test]
-    fn test_map_value_to_parameter_value_with_steps_valid_number() {
+    fn test_map_audio_to_patch_value_with_steps_valid_number() {
         fn prop(value: f32) -> TestResult {
             if value < 0.0 {
                 return TestResult::discard();
             }
 
-            let value = map_value_to_parameter_value_with_steps(&get_all_steps()[..], value);
+            let value = map_audio_to_patch_value_with_steps(&get_all_steps()[..], value);
 
             TestResult::from_bool(valid_parameter_value(value))
         }
@@ -207,47 +195,23 @@ mod tests {
     }
 
     #[test]
-    fn test_map_parameter_value_to_value_with_steps() {
+    fn test_map_patch_to_audio_value_with_steps() {
         let steps = [1.0, 2.0, 3.0];
 
-        assert_approx_eq!(
-            map_parameter_value_to_value_with_steps(&steps[..], 0.0),
-            1.0
-        );
-        assert_approx_eq!(
-            map_parameter_value_to_value_with_steps(&steps[..], 0.5),
-            2.0
-        );
-        assert_approx_eq!(
-            map_parameter_value_to_value_with_steps(&steps[..], 0.75),
-            2.5
-        );
-        assert_approx_eq!(
-            map_parameter_value_to_value_with_steps(&steps[..], 1.0),
-            3.0
-        );
+        assert_approx_eq!(map_patch_to_audio_value_with_steps(&steps[..], 0.0), 1.0);
+        assert_approx_eq!(map_patch_to_audio_value_with_steps(&steps[..], 0.5), 2.0);
+        assert_approx_eq!(map_patch_to_audio_value_with_steps(&steps[..], 0.75), 2.5);
+        assert_approx_eq!(map_patch_to_audio_value_with_steps(&steps[..], 1.0), 3.0);
     }
 
     #[test]
-    fn test_map_value_to_parameter_value_with_steps() {
+    fn test_map_audio_to_patch_value_with_steps() {
         let steps = [1.0, 2.0, 3.0];
 
-        assert_approx_eq!(
-            map_value_to_parameter_value_with_steps(&steps[..], 1.0),
-            0.0
-        );
-        assert_approx_eq!(
-            map_value_to_parameter_value_with_steps(&steps[..], 2.0),
-            0.5
-        );
-        assert_approx_eq!(
-            map_value_to_parameter_value_with_steps(&steps[..], 2.5),
-            0.75
-        );
-        assert_approx_eq!(
-            map_value_to_parameter_value_with_steps(&steps[..], 3.0),
-            1.0
-        );
+        assert_approx_eq!(map_audio_to_patch_value_with_steps(&steps[..], 1.0), 0.0);
+        assert_approx_eq!(map_audio_to_patch_value_with_steps(&steps[..], 2.0), 0.5);
+        assert_approx_eq!(map_audio_to_patch_value_with_steps(&steps[..], 2.5), 0.75);
+        assert_approx_eq!(map_audio_to_patch_value_with_steps(&steps[..], 3.0), 1.0);
     }
 
     #[test]
@@ -259,10 +223,9 @@ mod tests {
 
             let steps = get_all_steps();
 
-            let internal_value =
-                map_parameter_value_to_value_with_steps(&steps[..], parameter_value);
+            let internal_value = map_patch_to_audio_value_with_steps(&steps[..], parameter_value);
             let new_parameter_value =
-                map_value_to_parameter_value_with_steps(&steps[..], internal_value);
+                map_audio_to_patch_value_with_steps(&steps[..], internal_value);
 
             let diff = (parameter_value - new_parameter_value).abs();
             let success = diff < 0.0001;
@@ -293,37 +256,6 @@ mod tests {
         assert_eq!(round_to_step(&steps, 1.5), 2.0);
         assert_eq!(round_to_step(&steps, 4.0), 4.0);
         assert_eq!(round_to_step(&steps, 100.0), 4.0);
-    }
-
-    #[test]
-    fn test_exp2_mapping() {
-        fn prop(patch_value: f32, exp2_multiplier: f32) -> TestResult {
-            if patch_value.is_sign_negative() || patch_value > 1.0 || patch_value.is_nan() {
-                return TestResult::discard();
-            }
-
-            if exp2_multiplier.is_nan() || exp2_multiplier <= 0.0 || exp2_multiplier > 150.0 {
-                return TestResult::discard();
-            }
-
-            let audio_value = exp2_map_patch_to_audio(patch_value, exp2_multiplier);
-            let new_patch_value = exp2_map_audio_to_patch(audio_value, exp2_multiplier);
-
-            let diff = (patch_value - new_patch_value).abs();
-            let success = diff < 0.000_001;
-
-            if !success {
-                println!();
-                println!("exp2 multiplier: {}", exp2_multiplier);
-                println!("patch value: {}", patch_value);
-                println!("audio value: {}", audio_value);
-                println!("new patch value: {}", new_patch_value);
-            }
-
-            TestResult::from_bool(success)
-        }
-
-        quickcheck(prop as fn(f32, f32) -> TestResult);
     }
 
     #[test]

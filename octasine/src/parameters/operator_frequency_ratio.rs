@@ -166,13 +166,10 @@ impl ParameterValue for OperatorFrequencyRatioValue {
         self.0
     }
     fn new_from_patch(value: f32) -> Self {
-        Self(map_parameter_value_to_step(
-            &OPERATOR_RATIO_STEPS[..],
-            value,
-        ))
+        Self(map_patch_value_to_step(&OPERATOR_RATIO_STEPS[..], value))
     }
     fn to_patch(self) -> f32 {
-        map_step_to_parameter_value(&OPERATOR_RATIO_STEPS[..], self.0)
+        map_step_to_patch_value(&OPERATOR_RATIO_STEPS[..], self.0)
     }
     fn get_formatted(self) -> String {
         self.0.name.as_str().to_owned()

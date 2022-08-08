@@ -42,10 +42,10 @@ impl ParameterValue for OperatorFrequencyFreeValue {
         self.0
     }
     fn new_from_patch(value: f32) -> Self {
-        Self(map_parameter_value_to_value_with_steps(&OPERATOR_FREE_STEPS, value) as f64)
+        Self(map_patch_to_audio_value_with_steps(&OPERATOR_FREE_STEPS, value) as f64)
     }
     fn to_patch(self) -> f32 {
-        map_value_to_parameter_value_with_steps(&OPERATOR_FREE_STEPS, self.0 as f32)
+        map_audio_to_patch_value_with_steps(&OPERATOR_FREE_STEPS, self.0 as f32)
     }
     fn get_formatted(self) -> String {
         format!("{:.04}", self.0)
