@@ -161,7 +161,19 @@ impl WaveDisplay {
 
     pub fn set_value(&mut self, parameter: Parameter, value: f32) {
         match parameter {
+            // Any changes pertaining to lower-index operators can be ignored
             Parameter::Operator(i, _) if (i as usize) < self.operator_index => return,
+            // Any changes to frequencies, panning, mod out or mod targets of
+            // this or lower-index operators can be ignored
+            Parameter::Operator(
+                i,
+                OperatorParameter::FrequencyRatio
+                | OperatorParameter::FrequencyFree
+                | OperatorParameter::FrequencyFine
+                | OperatorParameter::Panning
+                | OperatorParameter::ModOut
+                | OperatorParameter::ModTargets,
+            ) if (i as usize) <= self.operator_index => return,
             Parameter::Operator(i, OperatorParameter::FrequencyRatio) => self.operators[i as usize]
                 .frequency_ratio
                 .replace_from_patch(value),
