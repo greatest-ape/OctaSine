@@ -1,5 +1,4 @@
 pub mod lfo;
-pub mod simd;
 
 use std::f64::consts::TAU;
 
@@ -13,9 +12,9 @@ use crate::audio::AudioState;
 use crate::common::*;
 use crate::parameters::operator_wave_type::WaveType;
 use crate::parameters::{MasterParameter, ModTargetStorage, OperatorParameter, Parameter};
+use crate::simd::*;
 
 use lfo::*;
-use simd::*;
 
 const MASTER_VOLUME_FACTOR: f64 = 0.2;
 const LIMIT: f64 = 10.0;
