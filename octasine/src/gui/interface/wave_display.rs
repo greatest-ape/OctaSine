@@ -567,18 +567,20 @@ mod gen {
 
                 // If this is current operator, store output points
                 if i == operator_index {
-                    let mut out = [0.0f64; S::PD_WIDTH];
+                    let out = S::pd_sub(
+                        S::pd_set1(HEIGHT_MIDDLE as f64),
+                        S::pd_mul(samples, S::pd_set1(WAVE_HEIGHT_RANGE as f64)),
+                    );
 
-                    S::pd_storeu(out.as_mut_ptr(), samples);
+                    let mut out_arr = [0.0f64; S::PD_WIDTH];
+
+                    S::pd_storeu(out_arr.as_mut_ptr(), out);
 
                     for sample_index in 0..S::SAMPLES {
                         let sample_index_offset = sample_index * 2;
 
-                        let l = out[sample_index_offset] as f32;
-                        let r = out[sample_index_offset + 1] as f32;
-
-                        lefts[sample_index].y = HEIGHT_MIDDLE - l as f32 * WAVE_HEIGHT_RANGE;
-                        rights[sample_index].y = HEIGHT_MIDDLE - r as f32 * WAVE_HEIGHT_RANGE;
+                        lefts[sample_index].y = out_arr[sample_index_offset] as f32;
+                        rights[sample_index].y = out_arr[sample_index_offset + 1] as f32;
                     }
                 }
             }
