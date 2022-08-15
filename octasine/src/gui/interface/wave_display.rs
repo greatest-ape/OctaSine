@@ -164,7 +164,7 @@ impl WaveDisplay {
     pub fn new<H: GuiSyncHandle>(sync_handle: &H, operator_index: usize, style: Theme) -> Self {
         let operators = OperatorData::create_all_four(sync_handle);
 
-        let values = [Point::default(); WIDTH as usize];
+        let values = ::std::array::from_fn(|i| Point::new(0.5 + i as f32, 0.0));
 
         let mut display = Self {
             operator_index,
@@ -577,13 +577,8 @@ mod gen {
                         let l = out[sample_index_offset] as f32;
                         let r = out[sample_index_offset + 1] as f32;
 
-                        let visual_y_l = HEIGHT_MIDDLE - l as f32 * WAVE_HEIGHT_RANGE;
-                        let visual_y_r = HEIGHT_MIDDLE - r as f32 * WAVE_HEIGHT_RANGE;
-
-                        let visual_x = 0.5 + (offset + sample_index) as f32;
-
-                        lefts[sample_index] = Point::new(visual_x, visual_y_l);
-                        rights[sample_index] = Point::new(visual_x, visual_y_r);
+                        lefts[sample_index].y = HEIGHT_MIDDLE - l as f32 * WAVE_HEIGHT_RANGE;
+                        rights[sample_index].y = HEIGHT_MIDDLE - r as f32 * WAVE_HEIGHT_RANGE;
                     }
                 }
             }
