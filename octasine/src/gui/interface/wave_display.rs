@@ -34,10 +34,8 @@ const WAVE_HEIGHT_RANGE: f32 = HEIGHT as f32 / 4.0;
 pub struct Style {
     pub background_color: Color,
     pub middle_line_color: Color,
-    pub border_color_active: Color,
-    pub border_color_hovered: Color,
-    pub shape_line_color_active: Color,
-    pub shape_line_color_hovered: Color,
+    pub border_color: Color,
+    pub wave_line_color: Color,
 }
 
 pub trait StyleSheet {
@@ -367,7 +365,7 @@ impl WaveDisplayCanvas {
     fn draw_border(&self, frame: &mut Frame, style_sheet: Box<dyn StyleSheet>) {
         let style = style_sheet.active();
 
-        let stroke = Stroke::default().with_color(style.border_color_active);
+        let stroke = Stroke::default().with_color(style.border_color);
 
         frame.stroke(&self.bounds_path, stroke);
     }
@@ -397,7 +395,7 @@ impl WaveDisplayCanvas {
 
         frame.stroke(
             &path.build(),
-            Stroke::default().with_color(style.shape_line_color_active),
+            Stroke::default().with_color(style.wave_line_color),
         )
     }
 }

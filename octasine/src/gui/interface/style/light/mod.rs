@@ -250,11 +250,9 @@ impl wave_display::StyleSheet for WaveDisplay {
     fn active(&self) -> wave_display::Style {
         wave_display::Style {
             background_color: SURFACE,
-            border_color_active: BORDER,
-            border_color_hovered: BORDER,
+            border_color: BORDER,
             middle_line_color: GRAY_600,
-            shape_line_color_active: BLUE,
-            shape_line_color_hovered: BLUE,
+            wave_line_color: BLUE,
         }
     }
 }
