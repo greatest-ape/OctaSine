@@ -498,11 +498,13 @@ mod gen {
 
             let mut phases = [0.0; S::PD_WIDTH];
 
-            for i in 0..S::SAMPLES {
-                let phase = (offset as f64 + i as f64) / (WIDTH - 1) as f64;
+            for sample_index in 0..S::SAMPLES {
+                let phase = ((offset + sample_index) as f64) / (WIDTH - 1) as f64;
 
-                phases[i] = phase;
-                phases[i + 1] = phase;
+                let sample_index_offset = sample_index * 2;
+
+                phases[sample_index_offset] = phase;
+                phases[sample_index_offset + 1] = phase;
             }
 
             let phases = S::pd_mul(S::pd_loadu(phases.as_ptr()), S::pd_set1(TAU));
