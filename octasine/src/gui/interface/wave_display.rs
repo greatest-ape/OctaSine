@@ -90,6 +90,10 @@ impl OperatorData {
             mod_targets,
         }
     }
+
+    fn frequency(&self) -> f64 {
+        self.frequency_ratio.get().value * self.frequency_free.get() * self.frequency_fine.get()
+    }
 }
 
 pub struct WaveDisplay {
@@ -435,7 +439,13 @@ mod gen {
                 S::pd_setzero(),
             ];
 
+            let operator_frequency = operator_data[operator_index].frequency();
+
             for i in (operator_index..4).rev() {
+                let relative_frequency =
+                    S::pd_set1(operator_data[i].frequency() / operator_frequency);
+                let phases = S::pd_mul(phases, relative_frequency);
+
                 let feedback = S::pd_mul(
                     S::pd_fast_sin(phases),
                     S::pd_set1(operator_data[operator_index].feedback.get() as f64),
