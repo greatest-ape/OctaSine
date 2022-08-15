@@ -11,6 +11,7 @@ mod operator;
 mod patch_picker;
 pub mod style;
 mod value_text;
+mod wave_display;
 mod wave_picker;
 
 use std::io::Write;

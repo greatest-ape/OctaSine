@@ -3,6 +3,8 @@ pub mod knob;
 
 use iced_baseview::{button, checkbox, container, pick_list, radio, Color};
 
+use crate::gui::interface::wave_display;
+
 use super::super::{boolean_button, envelope, mod_matrix, wave_picker};
 
 use colors::*;
@@ -232,6 +234,21 @@ pub struct WavePicker;
 impl wave_picker::StyleSheet for WavePicker {
     fn active(&self) -> wave_picker::Style {
         wave_picker::Style {
+            background_color: SURFACE,
+            border_color_active: BORDER,
+            border_color_hovered: BORDER,
+            middle_line_color: GRAY_600,
+            shape_line_color_active: BLUE,
+            shape_line_color_hovered: BLUE,
+        }
+    }
+}
+
+pub struct WaveDisplay;
+
+impl wave_display::StyleSheet for WaveDisplay {
+    fn active(&self) -> wave_display::Style {
+        wave_display::Style {
             background_color: SURFACE,
             border_color_active: BORDER,
             border_color_hovered: BORDER,
