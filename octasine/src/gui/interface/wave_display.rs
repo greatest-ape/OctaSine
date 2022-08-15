@@ -3,7 +3,7 @@ use duplicate::duplicate_item;
 use iced_baseview::canvas::{
     event, path, Cache, Canvas, Cursor, Frame, Geometry, Path, Program, Stroke,
 };
-use iced_baseview::{Color, Element, Length, Point, Rectangle, Size};
+use iced_baseview::{Color, Element, Length, Point, Rectangle, Row, Size};
 
 use crate::parameters::list::OperatorParameter;
 use crate::parameters::operator_active::OperatorActiveValue;
@@ -13,8 +13,7 @@ use crate::parameters::operator_frequency_free::OperatorFrequencyFreeValue;
 use crate::parameters::operator_frequency_ratio::OperatorFrequencyRatioValue;
 use crate::parameters::operator_mod_out::OperatorModOutValue;
 use crate::parameters::operator_mod_target::{
-    ModTargetStorage, Operator2ModulationTargetValue, Operator3ModulationTargetValue,
-    Operator4ModulationTargetValue,
+    Operator2ModulationTargetValue, Operator3ModulationTargetValue, Operator4ModulationTargetValue,
 };
 use crate::parameters::operator_panning::OperatorPanningValue;
 use crate::parameters::operator_volume::OperatorVolumeValue;
@@ -96,18 +95,8 @@ impl OperatorData {
     fn frequency(&self) -> f64 {
         self.frequency_ratio.get().value * self.frequency_free.get() * self.frequency_fine.get()
     }
-}
 
-pub struct WaveDisplay {
-    operator_index: usize,
-    style: Theme,
-    canvas_cache: Cache,
-    canvas_bounds_path: Path,
-    operators: [OperatorData; 4],
-}
-
-impl WaveDisplay {
-    pub fn new<H: GuiSyncHandle>(sync_handle: &H, operator_index: usize, style: Theme) -> Self {
+    fn create_all_four<H: GuiSyncHandle>(sync_handle: &H) -> [Self; 4] {
         let mut operators = ::std::array::from_fn(OperatorData::new);
 
         for (i, operator) in operators.iter_mut().enumerate() {
@@ -159,23 +148,42 @@ impl WaveDisplay {
             }
         }
 
-        let canvas_bounds_path = Path::rectangle(
-            Point::new(0.5, 0.5),
-            Size::new((WIDTH - 1) as f32, (HEIGHT - 1) as f32),
-        );
+        operators
+    }
+}
 
-        Self {
+pub struct WaveDisplay {
+    operator_index: usize,
+    style: Theme,
+    left_canvas: WaveDisplayCanvas,
+    right_canvas: WaveDisplayCanvas,
+    operators: [OperatorData; 4],
+}
+
+impl WaveDisplay {
+    pub fn new<H: GuiSyncHandle>(sync_handle: &H, operator_index: usize, style: Theme) -> Self {
+        let operators = OperatorData::create_all_four(sync_handle);
+
+        let values = [Point::default(); WIDTH as usize];
+
+        let mut display = Self {
             operator_index,
             style,
-            canvas_cache: Cache::new(),
-            canvas_bounds_path,
+            left_canvas: WaveDisplayCanvas::new(style, values),
+            right_canvas: WaveDisplayCanvas::new(style, values),
             operators,
-        }
+        };
+
+        display.recalculate_values();
+
+        display
     }
 
     pub fn set_style(&mut self, style: Theme) {
         self.style = style;
-        self.canvas_cache.clear();
+
+        self.left_canvas.set_style(style);
+        self.right_canvas.set_style(style);
     }
 
     pub fn set_value(&mut self, parameter: Parameter, value: f32) {
@@ -232,49 +240,12 @@ impl WaveDisplay {
             _ => return,
         }
 
-        self.canvas_cache.clear();
+        self.recalculate_values();
     }
 
-    pub fn view(&mut self) -> Element<Message> {
-        Canvas::new(self)
-            .width(Length::Units(WIDTH))
-            .height(Length::Units(HEIGHT))
-            .into()
-    }
-}
-
-// Drawing
-impl WaveDisplay {
-    fn draw_background(&self, frame: &mut Frame, style_sheet: Box<dyn StyleSheet>) {
-        let style = style_sheet.active();
-
-        frame.fill(&self.canvas_bounds_path, style.background_color);
-    }
-
-    fn draw_border(&self, frame: &mut Frame, style_sheet: Box<dyn StyleSheet>) {
-        let style = style_sheet.active();
-
-        let stroke = Stroke::default().with_color(style.border_color_active);
-
-        frame.stroke(&self.canvas_bounds_path, stroke);
-    }
-
-    fn draw_middle_line(&self, frame: &mut Frame, style_sheet: Box<dyn StyleSheet>) {
-        let style = style_sheet.active();
-
-        let path = Path::line(
-            Point::new(0.5, HEIGHT_MIDDLE),
-            Point::new(WIDTH as f32 - 0.5, HEIGHT_MIDDLE),
-        );
-        let stroke = Stroke::default().with_color(style.middle_line_color);
-
-        frame.stroke(&path, stroke)
-    }
-
-    fn draw_wave_line(&self, frame: &mut Frame, style_sheet: Box<dyn StyleSheet>) {
-        let style = style_sheet.active();
-
-        let mut path = path::Builder::new();
+    fn recalculate_values(&mut self) {
+        let mut all_lefts = [Point::default(); WIDTH as usize];
+        let mut all_rights = [Point::default(); WIDTH as usize];
 
         let mut lefts = [0.0; 2];
         let mut rights = [0.0; 2];
@@ -342,15 +313,106 @@ impl WaveDisplay {
                     let visual_y = HEIGHT_MIDDLE - y as f32 * SHAPE_HEIGHT_RANGE;
                     let visual_x = 0.5 + (offset + i as u64) as f32;
 
-                    if offset == 0 {
-                        path.move_to(Point::new(visual_x, visual_y))
-                    } else {
-                        path.line_to(Point::new(visual_x, visual_y))
-                    }
+                    all_lefts[offset as usize + i] = Point::new(visual_x, visual_y);
+                }
+                for (i, y) in rights.iter().copied().take(samples_processed).enumerate() {
+                    let visual_y = HEIGHT_MIDDLE - y as f32 * SHAPE_HEIGHT_RANGE;
+                    let visual_x = 0.5 + (offset + i as u64) as f32;
+
+                    all_rights[offset as usize + i] = Point::new(visual_x, visual_y);
                 }
 
                 offset += samples_processed as u64;
             }
+        }
+
+        self.left_canvas.set_values(all_lefts);
+        self.right_canvas.set_values(all_rights);
+    }
+
+    pub fn view(&mut self) -> Element<Message> {
+        Row::new()
+            .push(self.left_canvas.view())
+            .push(self.right_canvas.view())
+            .into()
+    }
+}
+
+struct WaveDisplayCanvas {
+    bounds_path: Path,
+    cache: Cache,
+    style: Theme,
+    values: [Point; WIDTH as usize],
+}
+
+impl WaveDisplayCanvas {
+    fn new(style: Theme, values: [Point; WIDTH as usize]) -> Self {
+        let bounds_path = Path::rectangle(
+            Point::new(0.5, 0.5),
+            Size::new((WIDTH - 1) as f32, (HEIGHT - 1) as f32),
+        );
+        let cache = Cache::new();
+
+        Self {
+            bounds_path,
+            cache,
+            style,
+            values,
+        }
+    }
+
+    pub fn set_style(&mut self, style: Theme) {
+        self.style = style;
+        self.cache.clear();
+    }
+
+    pub fn set_values(&mut self, values: [Point; WIDTH as usize]) {
+        self.values = values;
+        self.cache.clear();
+    }
+
+    pub fn view(&mut self) -> Element<Message> {
+        Canvas::new(self)
+            .width(Length::Units(WIDTH))
+            .height(Length::Units(HEIGHT))
+            .into()
+    }
+
+    fn draw_background(&self, frame: &mut Frame, style_sheet: Box<dyn StyleSheet>) {
+        let style = style_sheet.active();
+
+        frame.fill(&self.bounds_path, style.background_color);
+    }
+
+    fn draw_border(&self, frame: &mut Frame, style_sheet: Box<dyn StyleSheet>) {
+        let style = style_sheet.active();
+
+        let stroke = Stroke::default().with_color(style.border_color_active);
+
+        frame.stroke(&self.bounds_path, stroke);
+    }
+
+    fn draw_middle_line(&self, frame: &mut Frame, style_sheet: Box<dyn StyleSheet>) {
+        let style = style_sheet.active();
+
+        let path = Path::line(
+            Point::new(0.5, HEIGHT_MIDDLE),
+            Point::new(WIDTH as f32 - 0.5, HEIGHT_MIDDLE),
+        );
+        let stroke = Stroke::default().with_color(style.middle_line_color);
+
+        frame.stroke(&path, stroke)
+    }
+
+    fn draw_wave_line(&self, frame: &mut Frame, style_sheet: Box<dyn StyleSheet>) {
+        let style = style_sheet.active();
+
+        let mut path = path::Builder::new();
+
+        path.move_to(self.values[0]);
+
+        for point in self.values[1..].iter().copied() {
+            path.line_to(point);
         }
 
         frame.stroke(
@@ -360,9 +422,9 @@ impl WaveDisplay {
     }
 }
 
-impl Program<Message> for WaveDisplay {
+impl Program<Message> for WaveDisplayCanvas {
     fn draw(&self, bounds: Rectangle, _cursor: Cursor) -> Vec<Geometry> {
-        let geometry = self.canvas_cache.draw(bounds.size(), |frame| {
+        let geometry = self.cache.draw(bounds.size(), |frame| {
             self.draw_background(frame, self.style.wave_display());
             self.draw_middle_line(frame, self.style.wave_display());
             self.draw_wave_line(frame, self.style.wave_display());
