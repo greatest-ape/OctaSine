@@ -2,6 +2,7 @@
 
 ## High priority
 
+* Wave display: better colors to indicate that it can not be interacted with
 * Should modulation output be increased to compensate for constant power
   panning making it "smaller"?
 * Should wave display be implemented using f32 SIMD?
