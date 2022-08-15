@@ -410,14 +410,46 @@ mod gen {
 
             let phases = S::pd_mul(S::pd_loadu(phases.as_ptr()), S::pd_set1(TAU));
 
-            let feedback = S::pd_mul(
-                S::pd_fast_sin(phases),
-                S::pd_set1(operator_data[operator_index].feedback.get() as f64),
-            );
+            let mut mod_inputs = [
+                S::pd_setzero(),
+                S::pd_setzero(),
+                S::pd_setzero(),
+                S::pd_setzero(),
+            ];
 
-            let samples = S::pd_fast_sin(S::pd_add(feedback, phases));
+            for i in (operator_index..4).rev() {
+                let feedback = S::pd_mul(
+                    S::pd_fast_sin(phases),
+                    S::pd_set1(operator_data[operator_index].feedback.get() as f64),
+                );
 
-            S::pd_storeu(y_values.as_mut_ptr(), samples);
+                let samples = S::pd_fast_sin(S::pd_add(S::pd_add(feedback, mod_inputs[i]), phases));
+
+                // Store modulation outputs
+                match (
+                    operator_data[i].mod_out.as_ref(),
+                    operator_data[i].mod_targets.as_ref(),
+                ) {
+                    (Some(mod_out), Some(mod_targets)) => {
+                        let mod_out = S::pd_mul(S::pd_set1(mod_out.get() as f64), samples);
+
+                        let mod_targets = match mod_targets {
+                            OperatorModTargets::Two(v) => v.get(),
+                            OperatorModTargets::Three(v) => v.get(),
+                            OperatorModTargets::Four(v) => v.get(),
+                        };
+
+                        for target_index in mod_targets.active_indices() {
+                            mod_inputs[target_index] = S::pd_add(mod_inputs[target_index], mod_out);
+                        }
+                    }
+                    _ => (),
+                }
+
+                if i == operator_index {
+                    S::pd_storeu(y_values.as_mut_ptr(), samples);
+                }
+            }
         }
     }
 }
