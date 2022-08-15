@@ -18,6 +18,7 @@ use super::envelope::Envelope;
 use super::knob::{self, OctaSineKnob};
 use super::mod_target_picker;
 use super::style::Theme;
+use super::wave_display::WaveDisplay;
 use super::wave_picker::WavePicker;
 use super::{Message, FONT_SIZE, LINE_HEIGHT};
 
@@ -42,6 +43,7 @@ pub struct OperatorWidgets {
     pub frequency_free: OctaSineKnob<OperatorFrequencyFreeValue>,
     pub frequency_fine: OctaSineKnob<OperatorFrequencyFineValue>,
     pub envelope: Envelope,
+    pub wave_display: WaveDisplay,
 }
 
 impl OperatorWidgets {
@@ -83,6 +85,7 @@ impl OperatorWidgets {
             frequency_free: knob::operator_frequency_free(sync_handle, operator_index, style),
             frequency_fine: knob::operator_frequency_fine(sync_handle, operator_index, style),
             envelope: Envelope::new(sync_handle, operator_index, style),
+            wave_display: WaveDisplay::new(sync_handle, operator_index as u8, style),
         }
     }
 
@@ -137,7 +140,8 @@ impl OperatorWidgets {
                             .color(self.style.heading_color())
                             .horizontal_alignment(Horizontal::Center),
                     )
-                    .push(mute_button),
+                    .push(mute_button)
+                    .push(self.wave_display.view()),
             )
             .width(Length::Units(LINE_HEIGHT * 8))
             .height(Length::Units(LINE_HEIGHT * 7))

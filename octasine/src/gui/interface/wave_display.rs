@@ -55,7 +55,7 @@ struct OperatorData {
     frequency_fine: OperatorFrequencyFineValue,
     feedback: OperatorFeedbackValue,
     pan: OperatorPanningValue,
-    mod_out: OperatorModOutValue,
+    mod_out: Option<OperatorModOutValue>,
     mod_targets: Option<OperatorModTargets>,
 }
 
@@ -80,7 +80,7 @@ impl OperatorData {
             frequency_fine: Default::default(),
             feedback: Default::default(),
             pan: Default::default(),
-            mod_out: Default::default(),
+            mod_out: (operator_index > 0).then_some(Default::default()),
             mod_targets,
         }
     }
@@ -117,18 +117,26 @@ impl WaveDisplay {
             operator.pan.replace_from_patch(
                 sync_handle.get_parameter(Parameter::Operator(i, OperatorParameter::Panning)),
             );
-            operator.mod_out.replace_from_patch(
-                sync_handle.get_parameter(Parameter::Operator(i, OperatorParameter::ModOut)),
-            );
-
-            let targets =
-                sync_handle.get_parameter(Parameter::Operator(i, OperatorParameter::ModTargets));
+            if let Some(v) = operator.mod_out.as_mut() {
+                v.replace_from_patch(
+                    sync_handle.get_parameter(Parameter::Operator(i, OperatorParameter::ModOut)),
+                )
+            }
 
             match operator.mod_targets.as_mut() {
                 None => (),
-                Some(OperatorModTargets::Two(v)) => v.replace_from_patch(targets),
-                Some(OperatorModTargets::Three(v)) => v.replace_from_patch(targets),
-                Some(OperatorModTargets::Four(v)) => v.replace_from_patch(targets),
+                Some(OperatorModTargets::Two(v)) => v.replace_from_patch(
+                    sync_handle
+                        .get_parameter(Parameter::Operator(i, OperatorParameter::ModTargets)),
+                ),
+                Some(OperatorModTargets::Three(v)) => v.replace_from_patch(
+                    sync_handle
+                        .get_parameter(Parameter::Operator(i, OperatorParameter::ModTargets)),
+                ),
+                Some(OperatorModTargets::Four(v)) => v.replace_from_patch(
+                    sync_handle
+                        .get_parameter(Parameter::Operator(i, OperatorParameter::ModTargets)),
+                ),
             }
         }
 
@@ -170,7 +178,9 @@ impl WaveDisplay {
                 self.operators[i as usize].pan.replace_from_patch(value)
             }
             Parameter::Operator(i, OperatorParameter::ModOut) => {
-                self.operators[i as usize].mod_out.replace_from_patch(value)
+                if let Some(v) = self.operators[i as usize].mod_out.as_mut() {
+                    v.replace_from_patch(value)
+                }
             }
             Parameter::Operator(i, OperatorParameter::ModTargets) => {
                 match self.operators[i as usize].mod_targets.as_mut() {
@@ -236,31 +246,31 @@ impl WaveDisplay {
             unsafe {
                 let samples_processed = match num_remaining_samples {
                     #[cfg(all(feature = "simd", target_arch = "x86_64"))]
-                    (2..) if is_x86_feature_detected!("avx") => {
+                    (4..) if is_x86_feature_detected!("avx") => {
                         Avx::gen_segment(
-                            &mut y_values,
+                            &mut y_values[..4],
                             self.operator_index,
                             &self.operators,
                             offset as usize,
                         );
 
-                        2
+                        4
                     }
-                    1.. => {
+                    2.. => {
                         cfg_if::cfg_if!(
                             if #[cfg(feature = "simd")] {
                                 cfg_if::cfg_if!(
                                     if #[cfg(target_arch = "x86_64")] {
                                         // SSE2 is always supported on x86_64
                                         Sse2::gen_segment(
-                                            &mut y_values,
+                                            &mut y_values[..2],
                                             self.operator_index,
                                             &self.operators,
                                             offset as usize,
                                         );
                                     } else {
                                         FallbackSleef::gen_segment(
-                                            &mut y_values,
+                                            &mut y_values[..2],
                                             self.operator_index,
                                             &self.operators,
                                             offset as usize,
@@ -269,7 +279,7 @@ impl WaveDisplay {
                                 )
                             } else {
                                 FallbackStd::gen_segment(
-                                    &mut y_values,
+                                    &mut y_values[..2],
                                     self.operator_index,
                                     &self.operators,
                                     offset as usize,
@@ -277,18 +287,16 @@ impl WaveDisplay {
                             }
                         );
 
-                        1
+                        2
                     }
-                    0 => {
+                    1 | 0 => {
                         break;
                     }
                 };
 
-                for i in 0..samples_processed {
-                    let y = y_values[i] as f32;
-
-                    let visual_y = HEIGHT_MIDDLE - y * SHAPE_HEIGHT_RANGE;
-                    let visual_x = 0.5 + i as f32;
+                for (i, y) in y_values.iter().copied().take(samples_processed).enumerate() {
+                    let visual_y = HEIGHT_MIDDLE - y as f32 * SHAPE_HEIGHT_RANGE;
+                    let visual_x = 0.5 + (offset + i as u64) as f32;
 
                     if offset == 0 {
                         path.move_to(Point::new(visual_x, visual_y))
@@ -363,6 +371,12 @@ trait PathGen {
 )]
 mod gen {
     #[feature_gate]
+    use std::f64::consts::TAU;
+
+    #[feature_gate]
+    use crate::simd::Simd;
+
+    #[feature_gate]
     use super::*;
 
     #[feature_gate]
@@ -374,7 +388,7 @@ mod gen {
             operator_data: &[OperatorData; 4],
             offset: usize,
         ) {
-            assert_eq!(y_values.len(), S::SAMPLES);
+            assert_eq!(y_values.len(), S::PD_WIDTH);
 
             let mut phases = [0.0; S::PD_WIDTH];
 
@@ -382,7 +396,7 @@ mod gen {
                 *phase = (offset as f64 + i as f64) / (WIDTH - 1) as f64;
             }
 
-            let phases = S::pd_loadu(phases.as_ptr());
+            let phases = S::pd_mul(S::pd_loadu(phases.as_ptr()), S::pd_set1(TAU));
 
             let samples = S::pd_fast_sin(phases);
 
