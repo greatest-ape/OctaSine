@@ -1,3 +1,5 @@
+use duplicate::duplicate_item;
+
 use iced_baseview::canvas::{
     event, path, Cache, Canvas, Cursor, Frame, Geometry, Path, Program, Stroke,
 };
@@ -15,6 +17,7 @@ use crate::parameters::operator_mod_target::{
 };
 use crate::parameters::operator_panning::OperatorPanningValue;
 use crate::parameters::{Parameter, ParameterValue};
+use crate::simd::*;
 use crate::sync::GuiSyncHandle;
 
 use super::style::Theme;
@@ -224,27 +227,84 @@ impl WaveDisplay {
 
         let mut path = path::Builder::new();
 
-        for i in 0..WIDTH - 1 {
-            let phase = (i as f64) / (WIDTH - 1) as f64;
-            let y = calculate_curve(self.operator_index, &self.operators, phase) as f32;
+        let mut y_values = [0.0; 4];
+        let mut offset = 0;
 
-            let visual_y = HEIGHT_MIDDLE - y * SHAPE_HEIGHT_RANGE;
-            let visual_x = 0.5 + i as f32;
+        loop {
+            let num_remaining_samples = (WIDTH as u64 - offset) as u64;
 
-            if i == 0 {
-                path.move_to(Point::new(visual_x, visual_y))
-            } else {
-                path.line_to(Point::new(visual_x, visual_y))
+            unsafe {
+                let samples_processed = match num_remaining_samples {
+                    #[cfg(all(feature = "simd", target_arch = "x86_64"))]
+                    (2..) if is_x86_feature_detected!("avx") => {
+                        Avx::gen_segment(
+                            &mut y_values,
+                            self.operator_index,
+                            &self.operators,
+                            offset as usize,
+                        );
+
+                        2
+                    }
+                    1.. => {
+                        cfg_if::cfg_if!(
+                            if #[cfg(feature = "simd")] {
+                                cfg_if::cfg_if!(
+                                    if #[cfg(target_arch = "x86_64")] {
+                                        // SSE2 is always supported on x86_64
+                                        Sse2::gen_segment(
+                                            &mut y_values,
+                                            self.operator_index,
+                                            &self.operators,
+                                            offset as usize,
+                                        );
+                                    } else {
+                                        FallbackSleef::gen_segment(
+                                            &mut y_values,
+                                            self.operator_index,
+                                            &self.operators,
+                                            offset as usize,
+                                        );
+                                    }
+                                )
+                            } else {
+                                FallbackStd::gen_segment(
+                                    &mut y_values,
+                                    self.operator_index,
+                                    &self.operators,
+                                    offset as usize,
+                                );
+                            }
+                        );
+
+                        1
+                    }
+                    0 => {
+                        break;
+                    }
+                };
+
+                for i in 0..samples_processed {
+                    let y = y_values[i] as f32;
+
+                    let visual_y = HEIGHT_MIDDLE - y * SHAPE_HEIGHT_RANGE;
+                    let visual_x = 0.5 + i as f32;
+
+                    if offset == 0 {
+                        path.move_to(Point::new(visual_x, visual_y))
+                    } else {
+                        path.line_to(Point::new(visual_x, visual_y))
+                    }
+                }
+
+                offset += samples_processed as u64;
             }
         }
 
-        let path = path.build();
-
-        let color = style.shape_line_color_active;
-
-        let stroke = Stroke::default().with_color(color);
-
-        frame.stroke(&path, stroke)
+        frame.stroke(
+            &path.build(),
+            Stroke::default().with_color(style.shape_line_color_active),
+        )
     }
 }
 
@@ -270,6 +330,63 @@ impl Program<Message> for WaveDisplay {
     }
 }
 
-fn calculate_curve(operator_index: u8, operators: &[OperatorData; 4], phase: f64) -> f64 {
-    0.0
+trait PathGen {
+    unsafe fn gen_segment(
+        y_values: &mut [f64],
+        operator_index: u8,
+        operator_data: &[OperatorData; 4],
+        offset: usize,
+    );
+}
+
+#[duplicate_item(
+    [
+        S [ FallbackStd ]
+        target_feature_enable [ cfg(not(feature = "fake-feature")) ]
+        feature_gate [ cfg(not(feature = "fake-feature")) ]
+    ]
+    [
+        S [ FallbackSleef ]
+        target_feature_enable [ cfg(not(feature = "fake-feature")) ]
+        feature_gate [ cfg(all(feature = "simd")) ]
+    ]
+    [
+        S [ Sse2 ]
+        target_feature_enable [ target_feature(enable = "sse2") ]
+        feature_gate [ cfg(all(feature = "simd", target_arch = "x86_64")) ]
+    ]
+    [
+        S [ Avx ]
+        target_feature_enable [ target_feature(enable = "avx") ]
+        feature_gate [ cfg(all(feature = "simd", target_arch = "x86_64")) ]
+    ]
+)]
+mod gen {
+    #[feature_gate]
+    use super::*;
+
+    #[feature_gate]
+    impl PathGen for S {
+        #[target_feature_enable]
+        unsafe fn gen_segment(
+            y_values: &mut [f64],
+            operator_index: u8,
+            operator_data: &[OperatorData; 4],
+            offset: usize,
+        ) {
+            assert_eq!(y_values.len(), S::SAMPLES);
+
+            let mut phases = [0.0; S::PD_WIDTH];
+
+            for (i, phase) in phases.iter_mut().enumerate() {
+                *phase = (offset as f64 + i as f64) / (WIDTH - 1) as f64;
+            }
+
+            let phases = S::pd_loadu(phases.as_ptr());
+
+            let samples = S::pd_fast_sin(phases);
+
+            S::pd_storeu(y_values.as_mut_ptr(), samples);
+        }
+    }
 }
