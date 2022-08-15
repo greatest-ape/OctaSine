@@ -6,6 +6,7 @@ use iced_baseview::canvas::{
 use iced_baseview::{Color, Element, Length, Point, Rectangle, Size};
 
 use crate::parameters::list::OperatorParameter;
+use crate::parameters::operator_active::OperatorActiveValue;
 use crate::parameters::operator_feedback::OperatorFeedbackValue;
 use crate::parameters::operator_frequency_fine::OperatorFrequencyFineValue;
 use crate::parameters::operator_frequency_free::OperatorFrequencyFreeValue;
@@ -16,6 +17,7 @@ use crate::parameters::operator_mod_target::{
     Operator4ModulationTargetValue,
 };
 use crate::parameters::operator_panning::OperatorPanningValue;
+use crate::parameters::operator_volume::OperatorVolumeValue;
 use crate::parameters::{Parameter, ParameterValue};
 use crate::simd::*;
 use crate::sync::GuiSyncHandle;
@@ -50,6 +52,8 @@ enum OperatorModTargets {
 }
 
 struct OperatorData {
+    active: OperatorActiveValue,
+    volume: OperatorVolumeValue,
     frequency_ratio: OperatorFrequencyRatioValue,
     frequency_free: OperatorFrequencyFreeValue,
     frequency_fine: OperatorFrequencyFineValue,
@@ -75,6 +79,8 @@ impl OperatorData {
         };
 
         Self {
+            active: Default::default(),
+            volume: Default::default(),
             frequency_free: Default::default(),
             frequency_ratio: Default::default(),
             frequency_fine: Default::default(),
@@ -101,6 +107,12 @@ impl WaveDisplay {
         for (i, operator) in operators.iter_mut().enumerate() {
             let i = i as u8;
 
+            operator.active.replace_from_patch(
+                sync_handle.get_parameter(Parameter::Operator(i, OperatorParameter::Active)),
+            );
+            operator.volume.replace_from_patch(
+                sync_handle.get_parameter(Parameter::Operator(i, OperatorParameter::Volume)),
+            );
             operator.frequency_ratio.replace_from_patch(
                 sync_handle
                     .get_parameter(Parameter::Operator(i, OperatorParameter::FrequencyRatio)),
@@ -174,6 +186,12 @@ impl WaveDisplay {
                 | OperatorParameter::ModOut
                 | OperatorParameter::ModTargets,
             ) if (i as usize) <= self.operator_index => return,
+            Parameter::Operator(i, OperatorParameter::Active) => {
+                self.operators[i as usize].active.replace_from_patch(value)
+            }
+            Parameter::Operator(i, OperatorParameter::Volume) => {
+                self.operators[i as usize].volume.replace_from_patch(value)
+            }
             Parameter::Operator(i, OperatorParameter::FrequencyRatio) => self.operators[i as usize]
                 .frequency_ratio
                 .replace_from_patch(value),
@@ -425,6 +443,18 @@ mod gen {
 
                 let samples = S::pd_fast_sin(S::pd_add(S::pd_add(feedback, mod_inputs[i]), phases));
 
+                // If this is current operator, store outputs without volume modification
+                if i == operator_index {
+                    S::pd_storeu(y_values.as_mut_ptr(), samples);
+                }
+
+                let volume = S::pd_mul(
+                    S::pd_set1(operator_data[i].active.get() as f64),
+                    S::pd_set1(operator_data[i].volume.get() as f64),
+                );
+
+                let samples = S::pd_mul(samples, volume);
+
                 // Store modulation outputs
                 match (
                     operator_data[i].mod_out.as_ref(),
@@ -444,10 +474,6 @@ mod gen {
                         }
                     }
                     _ => (),
-                }
-
-                if i == operator_index {
-                    S::pd_storeu(y_values.as_mut_ptr(), samples);
                 }
             }
         }
