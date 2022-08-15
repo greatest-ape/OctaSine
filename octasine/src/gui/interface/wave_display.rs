@@ -512,6 +512,7 @@ mod gen {
                     S::pd_set1(operator_data[i].feedback.get() as f64),
                 );
 
+                // Modulation input panning. See audio gen code for more info
                 let modulation_in = {
                     let pan = S::pd_set1(operator_data[i].pan.get() as f64);
 
@@ -565,7 +566,7 @@ mod gen {
                     _ => (),
                 }
 
-                // If this is current operator, store output points
+                // If this is current operator, set output point y values
                 if i == operator_index {
                     let out = S::pd_sub(
                         S::pd_set1(HEIGHT_MIDDLE as f64),
