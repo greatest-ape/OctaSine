@@ -121,18 +121,23 @@ impl OperatorWidgets {
 
     pub fn view(&mut self) -> Element<Message> {
         let heading = {
-            let mute_button =
-                Tooltip::new(self.mute_button.view(), "Toggle mute", Position::Bottom)
-                    .style(self.style.tooltip())
-                    .font(self.style.font_regular())
-                    .padding(self.style.tooltip_padding());
+            let mute_button = Tooltip::new(self.mute_button.view(), "Toggle mute", Position::Top)
+                .style(self.style.tooltip())
+                .font(self.style.font_regular())
+                .padding(self.style.tooltip_padding());
 
             Container::new(
                 Column::new()
                     .width(Length::Fill)
                     .align_items(Alignment::Center)
                     .spacing(0)
-                    .push(Space::with_height(Length::Units(LINE_HEIGHT * 3)))
+                    .push(Space::with_height(Length::Units(LINE_HEIGHT)))
+                    .push(
+                        Row::new()
+                            .width(Length::Fill)
+                            .push(Space::with_width(Length::Units(LINE_HEIGHT)))
+                            .push(mute_button),
+                    )
                     .push(
                         Text::new(format!("OP {}", self.index + 1))
                             .size(FONT_SIZE + FONT_SIZE / 2)
@@ -141,7 +146,7 @@ impl OperatorWidgets {
                             .color(self.style.heading_color())
                             .horizontal_alignment(Horizontal::Center),
                     )
-                    .push(mute_button)
+                    .push(Space::with_height(Length::Units(LINE_HEIGHT / 2)))
                     .push(self.wave_display.view()),
             )
             .width(Length::Units(LINE_HEIGHT * 8))

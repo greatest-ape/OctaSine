@@ -3,7 +3,7 @@ use duplicate::duplicate_item;
 use iced_baseview::canvas::{
     event, path, Cache, Canvas, Cursor, Frame, Geometry, Path, Program, Stroke,
 };
-use iced_baseview::{Color, Element, Length, Point, Rectangle, Row, Size};
+use iced_baseview::{Color, Element, Length, Point, Rectangle, Row, Size, Space};
 
 use crate::parameters::list::OperatorParameter;
 use crate::parameters::operator_active::OperatorActiveValue;
@@ -317,6 +317,7 @@ impl WaveDisplay {
     pub fn view(&mut self) -> Element<Message> {
         Row::new()
             .push(self.canvas_left.view())
+            .push(Space::with_width(Length::Units(4)))
             .push(self.canvas_right.view())
             .into()
     }
