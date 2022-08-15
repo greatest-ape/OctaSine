@@ -244,9 +244,6 @@ impl WaveDisplay {
     }
 
     fn recalculate_values(&mut self) {
-        let mut all_lefts = [Point::default(); WIDTH as usize];
-        let mut all_rights = [Point::default(); WIDTH as usize];
-
         let mut lefts = [0.0; 2];
         let mut rights = [0.0; 2];
         let mut offset = 0;
@@ -309,25 +306,34 @@ impl WaveDisplay {
                     }
                 };
 
-                for (i, y) in lefts.iter().copied().take(samples_processed).enumerate() {
+                let left_canvas_iter = self.left_canvas.values
+                    [offset as usize..offset as usize + samples_processed]
+                    .iter_mut();
+
+                for (i, (p, y)) in left_canvas_iter.zip(lefts.iter().copied()).enumerate() {
                     let visual_y = HEIGHT_MIDDLE - y as f32 * SHAPE_HEIGHT_RANGE;
                     let visual_x = 0.5 + (offset + i as u64) as f32;
 
-                    all_lefts[offset as usize + i] = Point::new(visual_x, visual_y);
+                    *p = Point::new(visual_x, visual_y);
                 }
-                for (i, y) in rights.iter().copied().take(samples_processed).enumerate() {
+
+                let right_canvas_iter = self.right_canvas.values
+                    [offset as usize..offset as usize + samples_processed]
+                    .iter_mut();
+
+                for (i, (p, y)) in right_canvas_iter.zip(rights.iter().copied()).enumerate() {
                     let visual_y = HEIGHT_MIDDLE - y as f32 * SHAPE_HEIGHT_RANGE;
                     let visual_x = 0.5 + (offset + i as u64) as f32;
 
-                    all_rights[offset as usize + i] = Point::new(visual_x, visual_y);
+                    *p = Point::new(visual_x, visual_y);
                 }
 
                 offset += samples_processed as u64;
             }
         }
 
-        self.left_canvas.set_values(all_lefts);
-        self.right_canvas.set_values(all_rights);
+        self.left_canvas.cache.clear();
+        self.right_canvas.cache.clear();
     }
 
     pub fn view(&mut self) -> Element<Message> {
@@ -363,11 +369,6 @@ impl WaveDisplayCanvas {
 
     pub fn set_style(&mut self, style: Theme) {
         self.style = style;
-        self.cache.clear();
-    }
-
-    pub fn set_values(&mut self, values: [Point; WIDTH as usize]) {
-        self.values = values;
         self.cache.clear();
     }
 
