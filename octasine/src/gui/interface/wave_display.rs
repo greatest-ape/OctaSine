@@ -28,7 +28,7 @@ const WIDTH: u16 = LINE_HEIGHT * 2;
 const HEIGHT: u16 = LINE_HEIGHT * 2;
 
 const HEIGHT_MIDDLE: f32 = HEIGHT as f32 / 2.0 - 0.5;
-const SHAPE_HEIGHT_RANGE: f32 = HEIGHT as f32 / 4.0;
+const WAVE_HEIGHT_RANGE: f32 = HEIGHT as f32 / 4.0;
 
 #[derive(Debug, Clone)]
 pub struct Style {
@@ -155,8 +155,8 @@ impl OperatorData {
 pub struct WaveDisplay {
     operator_index: usize,
     style: Theme,
-    left_canvas: WaveDisplayCanvas,
-    right_canvas: WaveDisplayCanvas,
+    canvas_left: WaveDisplayCanvas,
+    canvas_right: WaveDisplayCanvas,
     operators: [OperatorData; 4],
 }
 
@@ -169,8 +169,8 @@ impl WaveDisplay {
         let mut display = Self {
             operator_index,
             style,
-            left_canvas: WaveDisplayCanvas::new(style, values),
-            right_canvas: WaveDisplayCanvas::new(style, values),
+            canvas_left: WaveDisplayCanvas::new(style, values),
+            canvas_right: WaveDisplayCanvas::new(style, values),
             operators,
         };
 
@@ -182,8 +182,8 @@ impl WaveDisplay {
     pub fn set_style(&mut self, style: Theme) {
         self.style = style;
 
-        self.left_canvas.set_style(style);
-        self.right_canvas.set_style(style);
+        self.canvas_left.set_style(style);
+        self.canvas_right.set_style(style);
     }
 
     pub fn set_value(&mut self, parameter: Parameter, value: f32) {
@@ -244,44 +244,46 @@ impl WaveDisplay {
     }
 
     fn recalculate_values(&mut self) {
-        let mut lefts = [0.0; 2];
-        let mut rights = [0.0; 2];
         let mut offset = 0;
 
         loop {
-            let num_remaining_samples = (WIDTH as u64 - offset) as u64;
+            let num_remaining_samples = self.canvas_left.values.len() as u64 - offset as u64;
 
             unsafe {
-                let samples_processed = match num_remaining_samples {
+                match num_remaining_samples {
                     #[cfg(all(feature = "simd", target_arch = "x86_64"))]
                     (2..) if is_x86_feature_detected!("avx") => {
+                        let end_offset = offset + 2;
+
                         Avx::gen_segment(
-                            &mut lefts[..2],
-                            &mut rights[..2],
+                            &mut self.canvas_left.values[offset..end_offset],
+                            &mut self.canvas_right.values[offset..end_offset],
                             self.operator_index,
                             &self.operators,
                             offset as usize,
                         );
 
-                        2
+                        offset = end_offset;
                     }
                     1.. => {
+                        let end_offset = offset + 1;
+
                         cfg_if::cfg_if!(
                             if #[cfg(feature = "simd")] {
                                 cfg_if::cfg_if!(
                                     if #[cfg(target_arch = "x86_64")] {
                                         // SSE2 is always supported on x86_64
                                         Sse2::gen_segment(
-                                            &mut lefts[..1],
-                                            &mut rights[..1],
+                                            &mut self.canvas_left.values[offset..end_offset],
+                                            &mut self.canvas_right.values[offset..end_offset],
                                             self.operator_index,
                                             &self.operators,
                                             offset as usize,
                                         );
                                     } else {
                                         FallbackSleef::gen_segment(
-                                            &mut lefts[..1],
-                                            &mut rights[..1],
+                                            &mut self.canvas_left.values[offset..end_offset],
+                                            &mut self.canvas_right.values[offset..end_offset],
                                             self.operator_index,
                                             &self.operators,
                                             offset as usize,
@@ -290,8 +292,8 @@ impl WaveDisplay {
                                 )
                             } else {
                                 FallbackStd::gen_segment(
-                                    &mut lefts[..1],
-                                    &mut rights[..1],
+                                    &mut self.canvas_left.values[offset..end_offset],
+                                    &mut self.canvas_right.values[offset..end_offset],
                                     self.operator_index,
                                     &self.operators,
                                     offset as usize,
@@ -299,47 +301,23 @@ impl WaveDisplay {
                             }
                         );
 
-                        1
+                        offset = end_offset;
                     }
                     0 => {
                         break;
                     }
                 };
-
-                let left_canvas_iter = self.left_canvas.values
-                    [offset as usize..offset as usize + samples_processed]
-                    .iter_mut();
-
-                for (i, (p, y)) in left_canvas_iter.zip(lefts.iter().copied()).enumerate() {
-                    let visual_y = HEIGHT_MIDDLE - y as f32 * SHAPE_HEIGHT_RANGE;
-                    let visual_x = 0.5 + (offset + i as u64) as f32;
-
-                    *p = Point::new(visual_x, visual_y);
-                }
-
-                let right_canvas_iter = self.right_canvas.values
-                    [offset as usize..offset as usize + samples_processed]
-                    .iter_mut();
-
-                for (i, (p, y)) in right_canvas_iter.zip(rights.iter().copied()).enumerate() {
-                    let visual_y = HEIGHT_MIDDLE - y as f32 * SHAPE_HEIGHT_RANGE;
-                    let visual_x = 0.5 + (offset + i as u64) as f32;
-
-                    *p = Point::new(visual_x, visual_y);
-                }
-
-                offset += samples_processed as u64;
             }
         }
 
-        self.left_canvas.cache.clear();
-        self.right_canvas.cache.clear();
+        self.canvas_left.cache.clear();
+        self.canvas_right.cache.clear();
     }
 
     pub fn view(&mut self) -> Element<Message> {
         Row::new()
-            .push(self.left_canvas.view())
-            .push(self.right_canvas.view())
+            .push(self.canvas_left.view())
+            .push(self.canvas_right.view())
             .into()
     }
 }
@@ -447,8 +425,8 @@ impl Program<Message> for WaveDisplayCanvas {
 
 trait PathGen {
     unsafe fn gen_segment(
-        lefts: &mut [f32],
-        rights: &mut [f32],
+        lefts: &mut [Point],
+        rights: &mut [Point],
         operator_index: usize,
         operator_data: &[OperatorData; 4],
         offset: usize,
@@ -491,8 +469,8 @@ mod gen {
     impl PathGen for S {
         #[target_feature_enable]
         unsafe fn gen_segment(
-            lefts: &mut [f32],
-            rights: &mut [f32],
+            lefts: &mut [Point],
+            rights: &mut [Point],
             operator_index: usize,
             operator_data: &[OperatorData; 4],
             offset: usize,
@@ -586,7 +564,7 @@ mod gen {
                     _ => (),
                 }
 
-                // If this is current operator, store mix outputs
+                // If this is current operator, store output points
                 if i == operator_index {
                     let mut out = [0.0f64; S::PD_WIDTH];
 
@@ -595,8 +573,16 @@ mod gen {
                     for sample_index in 0..S::SAMPLES {
                         let sample_index_offset = sample_index * 2;
 
-                        lefts[sample_index] = out[sample_index_offset] as f32;
-                        rights[sample_index] = out[sample_index_offset + 1] as f32;
+                        let l = out[sample_index_offset] as f32;
+                        let r = out[sample_index_offset + 1] as f32;
+
+                        let visual_y_l = HEIGHT_MIDDLE - l as f32 * WAVE_HEIGHT_RANGE;
+                        let visual_y_r = HEIGHT_MIDDLE - r as f32 * WAVE_HEIGHT_RANGE;
+
+                        let visual_x = 0.5 + (offset + sample_index) as f32;
+
+                        lefts[sample_index] = Point::new(visual_x, visual_y_l);
+                        rights[sample_index] = Point::new(visual_x, visual_y_r);
                     }
                 }
             }
