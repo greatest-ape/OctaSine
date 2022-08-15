@@ -453,11 +453,6 @@ mod gen {
 
                 let samples = S::pd_fast_sin(S::pd_add(S::pd_add(feedback, mod_inputs[i]), phases));
 
-                // If this is current operator, store outputs without volume modification
-                if i == operator_index {
-                    S::pd_storeu(y_values.as_mut_ptr(), samples);
-                }
-
                 let volume = S::pd_mul(
                     S::pd_set1(operator_data[i].active.get() as f64),
                     S::pd_set1(operator_data[i].volume.get() as f64),
@@ -484,6 +479,11 @@ mod gen {
                         }
                     }
                     _ => (),
+                }
+
+                // If this is current operator, store mix outputs
+                if i == operator_index {
+                    S::pd_storeu(y_values.as_mut_ptr(), samples);
                 }
             }
         }
