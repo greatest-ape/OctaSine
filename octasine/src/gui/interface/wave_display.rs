@@ -462,17 +462,17 @@ mod gen {
 
                 // Store modulation outputs
                 match (
-                    operator_data[i].mod_out.as_ref(),
+                    operator_data[i].mod_out.map(|v| v.get() as f64),
                     operator_data[i].mod_targets.as_ref(),
                 ) {
-                    (Some(mod_out), Some(mod_targets)) => {
-                        let mod_out = S::pd_mul(S::pd_set1(mod_out.get() as f64), samples);
-
+                    (Some(mod_out), Some(mod_targets)) if mod_out > 0.0 => {
                         let mod_targets = match mod_targets {
                             OperatorModTargets::Two(v) => v.get(),
                             OperatorModTargets::Three(v) => v.get(),
                             OperatorModTargets::Four(v) => v.get(),
                         };
+
+                        let mod_out = S::pd_mul(S::pd_set1(mod_out), samples);
 
                         for target_index in mod_targets.active_indices() {
                             mod_inputs[target_index] = S::pd_add(mod_inputs[target_index], mod_out);
