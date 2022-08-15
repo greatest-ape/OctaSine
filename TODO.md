@@ -6,7 +6,7 @@
   * Reverse display order of LFOs?
   * Move LFO mute button to left side?
   * Wave display
-    * Unexplained channel differences when run as plugin
+    * Handle noise mode
     * Better colors to indicate that it can not be interacted with
     * Should displayed wave maybe not be affected by volume?
 * Should modulation output be increased to compensate for constant power
