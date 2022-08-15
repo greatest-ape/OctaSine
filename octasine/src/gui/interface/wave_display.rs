@@ -448,7 +448,7 @@ mod gen {
 
                 let feedback = S::pd_mul(
                     S::pd_fast_sin(phases),
-                    S::pd_set1(operator_data[operator_index].feedback.get() as f64),
+                    S::pd_set1(operator_data[i].feedback.get() as f64),
                 );
 
                 let samples = S::pd_fast_sin(S::pd_add(S::pd_add(feedback, mod_inputs[i]), phases));
