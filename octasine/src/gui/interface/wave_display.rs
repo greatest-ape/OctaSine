@@ -87,7 +87,7 @@ impl OperatorData {
 }
 
 pub struct WaveDisplay {
-    operator_index: u8,
+    operator_index: usize,
     style: Theme,
     canvas_cache: Cache,
     canvas_bounds_path: Path,
@@ -95,7 +95,7 @@ pub struct WaveDisplay {
 }
 
 impl WaveDisplay {
-    pub fn new<H: GuiSyncHandle>(sync_handle: &H, operator_index: u8, style: Theme) -> Self {
+    pub fn new<H: GuiSyncHandle>(sync_handle: &H, operator_index: usize, style: Theme) -> Self {
         let mut operators = ::std::array::from_fn(OperatorData::new);
 
         for (i, operator) in operators.iter_mut().enumerate() {
@@ -161,7 +161,7 @@ impl WaveDisplay {
 
     pub fn set_value(&mut self, parameter: Parameter, value: f32) {
         match parameter {
-            Parameter::Operator(i, _) if i < self.operator_index => return,
+            Parameter::Operator(i, _) if (i as usize) < self.operator_index => return,
             Parameter::Operator(i, OperatorParameter::FrequencyRatio) => self.operators[i as usize]
                 .frequency_ratio
                 .replace_from_patch(value),
@@ -341,7 +341,7 @@ impl Program<Message> for WaveDisplay {
 trait PathGen {
     unsafe fn gen_segment(
         y_values: &mut [f64],
-        operator_index: u8,
+        operator_index: usize,
         operator_data: &[OperatorData; 4],
         offset: usize,
     );
@@ -384,7 +384,7 @@ mod gen {
         #[target_feature_enable]
         unsafe fn gen_segment(
             y_values: &mut [f64],
-            operator_index: u8,
+            operator_index: usize,
             operator_data: &[OperatorData; 4],
             offset: usize,
         ) {
@@ -398,7 +398,12 @@ mod gen {
 
             let phases = S::pd_mul(S::pd_loadu(phases.as_ptr()), S::pd_set1(TAU));
 
-            let samples = S::pd_fast_sin(phases);
+            let feedback = S::pd_mul(
+                S::pd_fast_sin(phases),
+                S::pd_set1(operator_data[operator_index].feedback.get() as f64),
+            );
+
+            let samples = S::pd_fast_sin(S::pd_add(feedback, phases));
 
             S::pd_storeu(y_values.as_mut_ptr(), samples);
         }

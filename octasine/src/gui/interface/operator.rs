@@ -85,7 +85,7 @@ impl OperatorWidgets {
             frequency_free: knob::operator_frequency_free(sync_handle, operator_index, style),
             frequency_fine: knob::operator_frequency_fine(sync_handle, operator_index, style),
             envelope: Envelope::new(sync_handle, operator_index, style),
-            wave_display: WaveDisplay::new(sync_handle, operator_index as u8, style),
+            wave_display: WaveDisplay::new(sync_handle, operator_index, style),
         }
     }
 
@@ -116,6 +116,7 @@ impl OperatorWidgets {
         self.frequency_free.set_style(style);
         self.frequency_fine.set_style(style);
         self.envelope.set_style(style);
+        self.wave_display.set_style(style);
     }
 
     pub fn view(&mut self) -> Element<Message> {
