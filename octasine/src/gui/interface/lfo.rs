@@ -102,11 +102,11 @@ impl LfoWidgets {
                             .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
                             .push(
                                 Row::new()
+                                    .push(active)
+                                    .push(Space::with_width(Length::Units(LINE_HEIGHT * 6 - 3 - 1)))
                                     .push(bpm_sync)
                                     .push(Space::with_width(Length::Units(3)))
-                                    .push(mode)
-                                    .push(Space::with_width(Length::Units(LINE_HEIGHT * 6 - 3 - 1)))
-                                    .push(active),
+                                    .push(mode),
                             )
                             .push(title)
                             .push(Space::with_height(Length::Units(LINE_HEIGHT)))

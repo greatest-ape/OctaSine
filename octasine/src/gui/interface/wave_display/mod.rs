@@ -1,5 +1,7 @@
 mod gen;
 
+use std::borrow::Borrow;
+
 use iced_baseview::canvas::{
     event, path, Cache, Canvas, Cursor, Frame, Geometry, Path, Program, Stroke,
 };
@@ -14,7 +16,8 @@ use crate::parameters::operator_frequency_free::OperatorFrequencyFreeValue;
 use crate::parameters::operator_frequency_ratio::OperatorFrequencyRatioValue;
 use crate::parameters::operator_mod_out::OperatorModOutValue;
 use crate::parameters::operator_mod_target::{
-    Operator2ModulationTargetValue, Operator3ModulationTargetValue, Operator4ModulationTargetValue,
+    ModTargetStorage, Operator2ModulationTargetValue, Operator3ModulationTargetValue,
+    Operator4ModulationTargetValue,
 };
 use crate::parameters::operator_panning::OperatorPanningValue;
 use crate::parameters::operator_volume::OperatorVolumeValue;
@@ -55,11 +58,11 @@ enum OperatorModTargets {
 
 impl OperatorModTargets {
     fn active_indices<'a>(&'a self) -> impl Iterator<Item = usize> + 'a {
-        match self {
-            Self::Two(v) => v.0.active_indices(),
-            Self::Three(v) => v.0.active_indices(),
-            Self::Four(v) => v.0.active_indices(),
-        }
+        ModTargetStorage::active_indices(match self {
+            Self::Two(v) => v.borrow(),
+            Self::Three(v) => v.borrow(),
+            Self::Four(v) => v.borrow(),
+        })
     }
 }
 

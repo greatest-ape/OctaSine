@@ -1,3 +1,5 @@
+use std::borrow::Borrow;
+
 use super::utils::*;
 use super::ParameterValue;
 
@@ -100,11 +102,17 @@ impl std::fmt::Display for ModTargetStorage {
 }
 
 #[derive(Debug, Clone, Copy)]
-pub struct Operator2ModulationTargetValue(pub ModTargetStorage);
+pub struct Operator2ModulationTargetValue(ModTargetStorage);
 
 impl Default for Operator2ModulationTargetValue {
     fn default() -> Self {
         Self(ModTargetStorage::new(&[true]))
+    }
+}
+
+impl Borrow<ModTargetStorage> for Operator2ModulationTargetValue {
+    fn borrow(&self) -> &ModTargetStorage {
+        &self.0
     }
 }
 
@@ -132,11 +140,17 @@ impl ParameterValue for Operator2ModulationTargetValue {
 }
 
 #[derive(Debug, Clone, Copy)]
-pub struct Operator3ModulationTargetValue(pub ModTargetStorage);
+pub struct Operator3ModulationTargetValue(ModTargetStorage);
 
 impl Default for Operator3ModulationTargetValue {
     fn default() -> Self {
         Self(ModTargetStorage::new(&[false, true]))
+    }
+}
+
+impl Borrow<ModTargetStorage> for Operator3ModulationTargetValue {
+    fn borrow(&self) -> &ModTargetStorage {
+        &self.0
     }
 }
 
@@ -164,11 +178,17 @@ impl ParameterValue for Operator3ModulationTargetValue {
 }
 
 #[derive(Debug, Clone, Copy)]
-pub struct Operator4ModulationTargetValue(pub ModTargetStorage);
+pub struct Operator4ModulationTargetValue(ModTargetStorage);
 
 impl Default for Operator4ModulationTargetValue {
     fn default() -> Self {
         Self(ModTargetStorage::new(&[false, false, true]))
+    }
+}
+
+impl Borrow<ModTargetStorage> for Operator4ModulationTargetValue {
+    fn borrow(&self) -> &ModTargetStorage {
+        &self.0
     }
 }
 

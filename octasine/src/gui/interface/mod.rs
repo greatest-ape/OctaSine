@@ -799,16 +799,16 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                     Row::new()
                         .push(
                             Column::new()
-                                .push(self.lfo_1.view())
+                                .push(self.lfo_4.view())
                                 .push(Space::with_height(Length::Units(LINE_HEIGHT)))
-                                .push(self.lfo_2.view()),
+                                .push(self.lfo_3.view()),
                         )
                         .push(Space::with_width(Length::Units(LINE_HEIGHT)))
                         .push(
                             Column::new()
-                                .push(self.lfo_3.view())
+                                .push(self.lfo_2.view())
                                 .push(Space::with_height(Length::Units(LINE_HEIGHT)))
-                                .push(self.lfo_4.view()),
+                                .push(self.lfo_1.view()),
                         )
                         .push(Space::with_width(Length::Units(LINE_HEIGHT)))
                         .push(self.corner.view()),
