@@ -314,23 +314,16 @@ impl WaveDisplay {
     }
 
     pub fn view(&mut self) -> Element<Message> {
-        let canvas_left = Tooltip::new(
-            self.canvas_left.view(),
-            "Left channel wave",
-            Position::Bottom,
-        )
-        .style(self.style.tooltip())
-        .font(self.style.font_regular())
-        .padding(self.style.tooltip_padding());
+        let canvas_left = Tooltip::new(self.canvas_left.view(), "Left channel", Position::Bottom)
+            .style(self.style.tooltip())
+            .font(self.style.font_regular())
+            .padding(self.style.tooltip_padding());
 
-        let canvas_right = Tooltip::new(
-            self.canvas_right.view(),
-            "Right channel wave",
-            Position::Bottom,
-        )
-        .style(self.style.tooltip())
-        .font(self.style.font_regular())
-        .padding(self.style.tooltip_padding());
+        let canvas_right =
+            Tooltip::new(self.canvas_right.view(), "Right channel", Position::Bottom)
+                .style(self.style.tooltip())
+                .font(self.style.font_regular())
+                .padding(self.style.tooltip_padding());
 
         Row::new()
             .push(canvas_left)
