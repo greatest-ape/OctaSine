@@ -6,10 +6,10 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- Display (part of) waveform for all operators (left and right channel)
 - Add patch section dropdown with actions for opening patch/bank files, saving
   patches/banks, renaming patches and clearing current patch/bank
-- Add functionality for setting parameter values by text input, by clicking on
-  them
+- Implement setting parameter values by text input by clicking on them
 - Reintroduce master volume and master frequency parameters as LFO targets
   (removed in version 0.7)
 
