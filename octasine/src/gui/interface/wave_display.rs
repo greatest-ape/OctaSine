@@ -521,6 +521,8 @@ mod gen {
                 S::pd_setzero(),
             ];
 
+            let mut out_samples = S::pd_setzero();
+
             let operator_frequency = operator_data[operator_index].frequency();
 
             for i in (operator_index..4).rev() {
@@ -615,24 +617,27 @@ mod gen {
                     _ => (),
                 }
 
-                // If this is current operator, set output point y values
                 if i == operator_index {
-                    let out = S::pd_sub(
-                        S::pd_set1(HEIGHT_MIDDLE as f64),
-                        S::pd_mul(samples, S::pd_set1(WAVE_HEIGHT_RANGE as f64)),
-                    );
-
-                    let mut out_arr = [0.0f64; S::PD_WIDTH];
-
-                    S::pd_storeu(out_arr.as_mut_ptr(), out);
-
-                    for sample_index in 0..S::SAMPLES {
-                        let sample_index_offset = sample_index * 2;
-
-                        lefts[sample_index].y = out_arr[sample_index_offset] as f32;
-                        rights[sample_index].y = out_arr[sample_index_offset + 1] as f32;
-                    }
+                    out_samples = samples;
                 }
+            }
+
+            // Set output point y values
+
+            let out = S::pd_sub(
+                S::pd_set1(HEIGHT_MIDDLE as f64),
+                S::pd_mul(out_samples, S::pd_set1(WAVE_HEIGHT_RANGE as f64)),
+            );
+
+            let mut out_arr = [0.0f64; S::PD_WIDTH];
+
+            S::pd_storeu(out_arr.as_mut_ptr(), out);
+
+            for sample_index in 0..S::SAMPLES {
+                let sample_index_offset = sample_index * 2;
+
+                lefts[sample_index].y = out_arr[sample_index_offset] as f32;
+                rights[sample_index].y = out_arr[sample_index_offset + 1] as f32;
             }
         }
     }
