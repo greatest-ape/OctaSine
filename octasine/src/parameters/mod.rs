@@ -63,6 +63,10 @@ pub trait ParameterValue: Sized + Default + Copy {
     fn get(self) -> Self::Value;
     fn get_formatted(self) -> String;
     fn to_patch(self) -> f32;
+
+    fn replace_from_patch(&mut self, value: f32) {
+        *self = Self::new_from_patch(value);
+    }
 }
 
 include!(concat!(env!("OUT_DIR"), "/codegen.rs"));

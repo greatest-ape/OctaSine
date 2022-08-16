@@ -100,7 +100,7 @@ impl std::fmt::Display for ModTargetStorage {
 }
 
 #[derive(Debug, Clone, Copy)]
-pub struct Operator2ModulationTargetValue(ModTargetStorage);
+pub struct Operator2ModulationTargetValue(pub ModTargetStorage);
 
 impl Default for Operator2ModulationTargetValue {
     fn default() -> Self {
@@ -132,7 +132,7 @@ impl ParameterValue for Operator2ModulationTargetValue {
 }
 
 #[derive(Debug, Clone, Copy)]
-pub struct Operator3ModulationTargetValue(ModTargetStorage);
+pub struct Operator3ModulationTargetValue(pub ModTargetStorage);
 
 impl Default for Operator3ModulationTargetValue {
     fn default() -> Self {
@@ -164,7 +164,7 @@ impl ParameterValue for Operator3ModulationTargetValue {
 }
 
 #[derive(Debug, Clone, Copy)]
-pub struct Operator4ModulationTargetValue(ModTargetStorage);
+pub struct Operator4ModulationTargetValue(pub ModTargetStorage);
 
 impl Default for Operator4ModulationTargetValue {
     fn default() -> Self {

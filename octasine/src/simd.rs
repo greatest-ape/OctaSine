@@ -1,3 +1,5 @@
+//! SIMD abstraction
+
 #[cfg(all(feature = "simd", target_arch = "x86_64"))]
 use core::arch::x86_64::*;
 
@@ -100,6 +102,7 @@ impl<T: FallbackSine> Simd for Fallback<T> {
     }
 }
 
+#[cfg_attr(not(feature = "simd"), allow(dead_code))]
 pub struct Sse2;
 
 #[cfg(all(feature = "simd", target_arch = "x86_64"))]
@@ -165,6 +168,7 @@ impl Simd for Sse2 {
     }
 }
 
+#[cfg_attr(not(feature = "simd"), allow(dead_code))]
 pub struct Avx;
 
 #[cfg(all(feature = "simd", target_arch = "x86_64"))]

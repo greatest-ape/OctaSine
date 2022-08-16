@@ -11,6 +11,7 @@ mod operator;
 mod patch_picker;
 pub mod style;
 mod value_text;
+mod wave_display;
 mod wave_picker;
 
 use std::io::Write;
@@ -134,7 +135,12 @@ impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {
             Parameter::Master(MasterParameter::Frequency) => {
                 self.corner.master_frequency.set_value(v)
             }
-            Parameter::Operator(index, p) => {
+            outer_p @ Parameter::Operator(index, p) => {
+                self.operator_1.wave_display.set_value(outer_p, v);
+                self.operator_2.wave_display.set_value(outer_p, v);
+                self.operator_3.wave_display.set_value(outer_p, v);
+                self.operator_4.wave_display.set_value(outer_p, v);
+
                 let operator = match index {
                     0 => &mut self.operator_1,
                     1 => &mut self.operator_2,

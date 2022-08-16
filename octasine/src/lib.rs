@@ -3,6 +3,7 @@ pub mod common;
 mod math;
 pub mod parameters;
 pub mod settings;
+pub mod simd;
 pub mod sync;
 
 #[cfg(feature = "gui")]
