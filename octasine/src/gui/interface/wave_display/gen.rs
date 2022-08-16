@@ -26,10 +26,10 @@ pub(super) fn recalculate_canvas_points(
                     let end_offset = offset + 2;
 
                     Avx::gen_segment(
-                        &mut self.canvas_left.values[offset..end_offset],
-                        &mut self.canvas_right.values[offset..end_offset],
-                        self.operator_index,
-                        &self.operators,
+                        &mut lefts[offset..end_offset],
+                        &mut rights[offset..end_offset],
+                        operator_index,
+                        operators,
                         offset as usize,
                     );
 
@@ -44,18 +44,18 @@ pub(super) fn recalculate_canvas_points(
                                 if #[cfg(target_arch = "x86_64")] {
                                     // SSE2 is always supported on x86_64
                                     Sse2::gen_segment(
-                                        &mut self.canvas_left.values[offset..end_offset],
-                                        &mut self.canvas_right.values[offset..end_offset],
-                                        self.operator_index,
-                                        &self.operators,
+                                        &mut lefts[offset..end_offset],
+                                        &mut rights[offset..end_offset],
+                                        operator_index,
+                                        operators,
                                         offset as usize,
                                     );
                                 } else {
                                     FallbackSleef::gen_segment(
-                                        &mut self.canvas_left.values[offset..end_offset],
-                                        &mut self.canvas_right.values[offset..end_offset],
-                                        self.operator_index,
-                                        &self.operators,
+                                        &mut lefts[offset..end_offset],
+                                        &mut rights[offset..end_offset],
+                                        operator_index,
+                                        operators,
                                         offset as usize,
                                     );
                                 }
