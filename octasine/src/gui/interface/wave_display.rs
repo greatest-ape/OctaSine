@@ -18,6 +18,7 @@ use crate::parameters::operator_mod_target::{
 };
 use crate::parameters::operator_panning::OperatorPanningValue;
 use crate::parameters::operator_volume::OperatorVolumeValue;
+use crate::parameters::operator_wave_type::OperatorWaveTypeValue;
 use crate::parameters::{Parameter, ParameterValue};
 use crate::simd::*;
 use crate::sync::GuiSyncHandle;
@@ -50,6 +51,7 @@ enum OperatorModTargets {
 }
 
 struct OperatorData {
+    wave_type: OperatorWaveTypeValue,
     active: OperatorActiveValue,
     volume: OperatorVolumeValue,
     frequency_ratio: OperatorFrequencyRatioValue,
@@ -78,6 +80,7 @@ impl OperatorData {
         };
 
         Self {
+            wave_type: Default::default(),
             active: Default::default(),
             volume: Default::default(),
             frequency_free: Default::default(),
@@ -101,6 +104,9 @@ impl OperatorData {
         for (i, operator) in operators.iter_mut().enumerate() {
             let i = i as u8;
 
+            operator.wave_type.replace_from_patch(
+                sync_handle.get_parameter(Parameter::Operator(i, OperatorParameter::WaveType)),
+            );
             operator.active.replace_from_patch(
                 sync_handle.get_parameter(Parameter::Operator(i, OperatorParameter::Active)),
             );
@@ -200,6 +206,9 @@ impl WaveDisplay {
                 | OperatorParameter::ModOut
                 | OperatorParameter::ModTargets,
             ) if (i as usize) <= self.operator_index => return,
+            Parameter::Operator(i, OperatorParameter::WaveType) => self.operators[i as usize]
+                .wave_type
+                .replace_from_patch(value),
             Parameter::Operator(i, OperatorParameter::Active) => {
                 self.operators[i as usize].active.replace_from_patch(value)
             }
@@ -471,6 +480,9 @@ mod gen {
     use std::f64::consts::TAU;
 
     #[feature_gate]
+    use crate::parameters::operator_wave_type::WaveType;
+
+    #[feature_gate]
     use crate::simd::Simd;
 
     #[feature_gate]
@@ -489,18 +501,18 @@ mod gen {
             assert_eq!(lefts.len(), S::SAMPLES);
             assert_eq!(rights.len(), S::SAMPLES);
 
-            let mut phases = [0.0; S::PD_WIDTH];
+            let mut phases_arr = [0.0; S::PD_WIDTH];
 
             for sample_index in 0..S::SAMPLES {
                 let phase = ((offset + sample_index) as f64) / (WIDTH - 1) as f64;
 
                 let sample_index_offset = sample_index * 2;
 
-                phases[sample_index_offset] = phase;
-                phases[sample_index_offset + 1] = phase;
+                phases_arr[sample_index_offset] = phase;
+                phases_arr[sample_index_offset + 1] = phase;
             }
 
-            let phases = S::pd_mul(S::pd_loadu(phases.as_ptr()), S::pd_set1(TAU));
+            let phases = S::pd_mul(S::pd_loadu(phases_arr.as_ptr()), S::pd_set1(TAU));
 
             let mut mod_inputs = [
                 S::pd_setzero(),
@@ -512,40 +524,65 @@ mod gen {
             let operator_frequency = operator_data[operator_index].frequency();
 
             for i in (operator_index..4).rev() {
-                let phases = {
-                    let relative_frequency =
-                        S::pd_set1(operator_data[i].frequency() / operator_frequency);
+                let samples = match operator_data[i].wave_type.get() {
+                    WaveType::Sine => {
+                        let phases = {
+                            let relative_frequency =
+                                S::pd_set1(operator_data[i].frequency() / operator_frequency);
 
-                    S::pd_mul(phases, relative_frequency)
+                            S::pd_mul(phases, relative_frequency)
+                        };
+
+                        let feedback = S::pd_mul(
+                            S::pd_fast_sin(phases),
+                            S::pd_set1(operator_data[i].feedback.get() as f64),
+                        );
+
+                        // Modulation input panning. See audio gen code for more info
+                        let modulation_in = {
+                            let pan = S::pd_set1(operator_data[i].pan.get() as f64);
+
+                            // Get panning as value between -1 and 1
+                            let pan = S::pd_mul(S::pd_set1(2.0), S::pd_sub(pan, S::pd_set1(0.5)));
+
+                            let pan_tendency = S::pd_max(
+                                S::pd_mul(pan, S::pd_distribute_left_right(-1.0, 1.0)),
+                                S::pd_setzero(),
+                            );
+                            let one_minus_pan_tendency = S::pd_sub(S::pd_set1(1.0), pan_tendency);
+
+                            let modulation_in_channel_sum =
+                                S::pd_pairwise_horizontal_sum(mod_inputs[i]);
+
+                            S::pd_add(
+                                S::pd_mul(pan_tendency, modulation_in_channel_sum),
+                                S::pd_mul(one_minus_pan_tendency, mod_inputs[i]),
+                            )
+                        };
+
+                        S::pd_fast_sin(S::pd_add(S::pd_add(feedback, modulation_in), phases))
+                    }
+                    WaveType::WhiteNoise => {
+                        let mut samples = [0.0f64; S::PD_WIDTH];
+
+                        for sample_index in 0..S::SAMPLES {
+                            let sample_index_offset = sample_index * 2;
+
+                            // Generate random numbers like this to get same
+                            // output as in WavePicker
+                            let seed = phases_arr[sample_index_offset].to_bits() + 2;
+                            let random_value = fastrand::Rng::with_seed(seed).f64();
+
+                            samples[sample_index_offset] = random_value;
+                            samples[sample_index_offset + 1] = random_value;
+                        }
+
+                        S::pd_mul(
+                            S::pd_sub(S::pd_loadu(samples.as_ptr()), S::pd_set1(0.5)),
+                            S::pd_set1(2.0),
+                        )
+                    }
                 };
-
-                let feedback = S::pd_mul(
-                    S::pd_fast_sin(phases),
-                    S::pd_set1(operator_data[i].feedback.get() as f64),
-                );
-
-                // Modulation input panning. See audio gen code for more info
-                let modulation_in = {
-                    let pan = S::pd_set1(operator_data[i].pan.get() as f64);
-
-                    // Get panning as value between -1 and 1
-                    let pan = S::pd_mul(S::pd_set1(2.0), S::pd_sub(pan, S::pd_set1(0.5)));
-
-                    let pan_tendency = S::pd_max(
-                        S::pd_mul(pan, S::pd_distribute_left_right(-1.0, 1.0)),
-                        S::pd_setzero(),
-                    );
-                    let one_minus_pan_tendency = S::pd_sub(S::pd_set1(1.0), pan_tendency);
-
-                    let modulation_in_channel_sum = S::pd_pairwise_horizontal_sum(mod_inputs[i]);
-
-                    S::pd_add(
-                        S::pd_mul(pan_tendency, modulation_in_channel_sum),
-                        S::pd_mul(one_minus_pan_tendency, mod_inputs[i]),
-                    )
-                };
-
-                let samples = S::pd_fast_sin(S::pd_add(S::pd_add(feedback, modulation_in), phases));
 
                 let constant_power_panning = {
                     let [l, r] = operator_data[i].constant_power_panning;
