@@ -2,8 +2,6 @@
 
 ## High priority
 
-* Add ParameterValue::as_ref or similar to borrow inner value, then make
-  mod target parameter values inner value private
 * GUI
   * Wave display
     * Better colors to indicate that it can not be interacted with?
