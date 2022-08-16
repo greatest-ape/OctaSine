@@ -195,14 +195,13 @@ impl WaveDisplay {
         match parameter {
             // Any changes pertaining to lower-index operators can be ignored
             Parameter::Operator(i, _) if (i as usize) < self.operator_index => return,
-            // Any changes to frequencies, panning, mod out or mod targets of
-            // this or lower-index operators can be ignored
+            // Any changes to frequencies, mod out or mod targets of this or
+            // lower-index operators can be ignored
             Parameter::Operator(
                 i,
                 OperatorParameter::FrequencyRatio
                 | OperatorParameter::FrequencyFree
                 | OperatorParameter::FrequencyFine
-                | OperatorParameter::Panning
                 | OperatorParameter::ModOut
                 | OperatorParameter::ModTargets,
             ) if (i as usize) <= self.operator_index => return,
