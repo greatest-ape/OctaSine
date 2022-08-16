@@ -176,13 +176,13 @@ impl WaveDisplay {
             }
         }
 
-        let values = ::std::array::from_fn(|i| Point::new(0.5 + i as f32, 0.0));
+        let canvas_points = ::std::array::from_fn(|i| Point::new(0.5 + i as f32, 0.0));
 
         let mut display = Self {
             operator_index,
             style,
-            canvas_left: WaveDisplayCanvas::new(style, values),
-            canvas_right: WaveDisplayCanvas::new(style, values),
+            canvas_left: WaveDisplayCanvas::new(style, canvas_points),
+            canvas_right: WaveDisplayCanvas::new(style, canvas_points),
             operators,
         };
 
@@ -259,8 +259,8 @@ impl WaveDisplay {
 
     fn recalculate_canvas_points(&mut self) {
         gen::recalculate_canvas_points(
-            &mut self.canvas_left.values,
-            &mut self.canvas_right.values,
+            &mut self.canvas_left.points,
+            &mut self.canvas_right.points,
             self.operator_index,
             &self.operators,
         );
@@ -293,11 +293,11 @@ struct WaveDisplayCanvas {
     bounds_path: Path,
     cache: Cache,
     style: Theme,
-    values: [Point; WIDTH as usize],
+    points: PointArray,
 }
 
 impl WaveDisplayCanvas {
-    fn new(style: Theme, values: [Point; WIDTH as usize]) -> Self {
+    fn new(style: Theme, points: PointArray) -> Self {
         let bounds_path = Path::rectangle(
             Point::new(0.5, 0.5),
             Size::new((WIDTH - 1) as f32, (HEIGHT - 1) as f32),
@@ -308,7 +308,7 @@ impl WaveDisplayCanvas {
             bounds_path,
             cache,
             style,
-            values,
+            points,
         }
     }
 
@@ -355,9 +355,9 @@ impl WaveDisplayCanvas {
 
         let mut path = path::Builder::new();
 
-        path.move_to(self.values[0]);
+        path.move_to(self.points[0]);
 
-        for point in self.values[1..].iter().copied() {
+        for point in self.points[1..].iter().copied() {
             path.line_to(point);
         }
 
