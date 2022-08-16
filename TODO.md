@@ -5,7 +5,6 @@
 * Add ParameterValue::as_ref or similar to borrow inner value, then make
   mod target parameter values inner value private
 * GUI
-  * Reverse display order of LFOs?
   * Move LFO mute button to left side?
   * Wave display
     * Better colors to indicate that it can not be interacted with?
