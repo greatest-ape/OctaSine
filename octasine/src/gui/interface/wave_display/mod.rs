@@ -53,7 +53,17 @@ enum OperatorModTargets {
     Four(Operator4ModulationTargetValue),
 }
 
-pub struct OperatorData {
+impl OperatorModTargets {
+    fn active_indices<'a>(&'a self) -> impl Iterator<Item = usize> + 'a {
+        match self {
+            Self::Two(v) => v.0.active_indices(),
+            Self::Three(v) => v.0.active_indices(),
+            Self::Four(v) => v.0.active_indices(),
+        }
+    }
+}
+
+struct OperatorData {
     wave_type: OperatorWaveTypeValue,
     active: OperatorActiveValue,
     volume: OperatorVolumeValue,

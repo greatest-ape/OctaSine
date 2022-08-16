@@ -8,7 +8,7 @@ use super::{HEIGHT_MIDDLE, NUM_POINTS, WAVE_HEIGHT_RANGE};
 
 use super::{OperatorData, PointArray};
 
-pub fn recalculate_canvas_points(
+pub(super) fn recalculate_canvas_points(
     lefts: &mut PointArray,
     rights: &mut PointArray,
     operator_index: usize,
@@ -116,9 +116,6 @@ trait PathGen {
 mod gen {
     #[feature_gate]
     use std::f64::consts::TAU;
-
-    #[feature_gate]
-    use crate::gui::interface::wave_display::OperatorModTargets;
 
     #[feature_gate]
     use crate::parameters::operator_wave_type::WaveType;
@@ -243,12 +240,6 @@ mod gen {
                     operator_data[i].mod_targets.as_ref(),
                 ) {
                     (Some(mod_out), Some(mod_targets)) if mod_out > 0.0 => {
-                        let mod_targets = match mod_targets {
-                            OperatorModTargets::Two(v) => v.get(),
-                            OperatorModTargets::Three(v) => v.get(),
-                            OperatorModTargets::Four(v) => v.get(),
-                        };
-
                         let mod_out = S::pd_mul(S::pd_set1(mod_out), samples);
 
                         for target_index in mod_targets.active_indices() {
