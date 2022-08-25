@@ -533,6 +533,7 @@ mod gen {
         let sample = S::pd_mul(sample, S::pd_loadu(operator_data.volume.as_ptr()));
         let sample = S::pd_mul(sample, S::pd_loadu(operator_data.envelope_volume.as_ptr()));
 
+        // FIXME: remove this
         // Mix channels depending on panning of current operator. If panned to
         // the middle, just pass through the stereo signals. If panned to any
         // side, mix out the original stereo signals and mix in mono.
@@ -557,6 +558,7 @@ mod gen {
         };
 
         let mix_out = {
+            // FIXME: use true stereo panning here (mixing channels) (constant power)
             let pan_factor = S::pd_loadu(operator_data.constant_power_panning.as_ptr());
 
             S::pd_mul(
@@ -565,6 +567,7 @@ mod gen {
             )
         };
         let mod_out = {
+            // FIXME: use true stereo panning here (mixing channels) (but just linear)
             let pan_factor = {
                 let factor = S::pd_loadu(operator_data.panning.as_ptr());
                 let factor = S::pd_interleave(S::pd_sub(S::pd_set1(1.0), factor), factor);
