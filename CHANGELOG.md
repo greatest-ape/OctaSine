@@ -9,12 +9,18 @@ All notable changes to this project will be documented in this file.
 - Display (part of) left and right channel waveforms for all operators
 - Add patch section dropdown with actions for opening patch/bank files, saving
   patches/banks, renaming patches and clearing current patch/bank
-- Add feature for setting parameter values by text input, by clicking on them
+- Add functionality for setting parameter values exactly. Click on values to
+  display a value input window.
 - Reintroduce master volume and master frequency parameters as LFO targets
   (removed in version 0.7)
 
 ### Changed
 
+- Stop using constant power panning for modulation output. Previously, when
+  an operator was panned to the center, its modulation output would scale at
+  approximately 0.7071 (`cos(π/4)`) the rate of feedback, which is not very
+  intuitive. Additionally, modulation would increase when panning away from
+  the center. Constant power panning remains for mix output.
 - When note off message is received during envelope attack phase, always go to
   release phase, even if it means that with low sustain volumes and a long
   release time, short notes might be loud for a lot longer than longer
