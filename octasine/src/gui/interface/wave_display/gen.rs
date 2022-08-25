@@ -224,15 +224,20 @@ mod gen {
                     }
                 };
 
-                let constant_power_panning = {
-                    let [l, r] = operator_data[i].constant_power_panning;
-
-                    S::pd_distribute_left_right(l as f64, r as f64)
-                };
-
                 let samples = S::pd_mul(samples, S::pd_set1(operator_data[i].active.get() as f64));
                 let samples = S::pd_mul(samples, S::pd_set1(operator_data[i].volume.get() as f64));
-                let samples = S::pd_mul(samples, constant_power_panning);
+
+                if i == operator_index {
+                    let constant_power_panning = {
+                        let [l, r] = operator_data[i].constant_power_panning;
+
+                        S::pd_distribute_left_right(l as f64, r as f64)
+                    };
+
+                    out_samples = S::pd_mul(samples, constant_power_panning);
+
+                    break;
+                }
 
                 // Store modulation outputs
                 match (
@@ -240,17 +245,23 @@ mod gen {
                     operator_data[i].mod_targets.as_ref(),
                 ) {
                     (Some(mod_out), Some(mod_targets)) if mod_out > 0.0 => {
-                        let mod_out = S::pd_mul(S::pd_set1(mod_out), samples);
+                        let pan_factor = {
+                            let factor = S::pd_set1(operator_data[i].pan.get() as f64);
+                            let factor =
+                                S::pd_interleave(S::pd_sub(S::pd_set1(1.0), factor), factor);
+                            let factor = S::pd_mul(factor, S::pd_set1(2.0));
+
+                            S::pd_min(factor, S::pd_set1(1.0))
+                        };
+
+                        let mod_out =
+                            S::pd_mul(S::pd_mul(samples, pan_factor), S::pd_set1(mod_out));
 
                         for target_index in mod_targets.active_indices() {
                             mod_inputs[target_index] = S::pd_add(mod_inputs[target_index], mod_out);
                         }
                     }
                     _ => (),
-                }
-
-                if i == operator_index {
-                    out_samples = samples;
                 }
             }
 

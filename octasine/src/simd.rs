@@ -46,6 +46,7 @@ pub trait Simd {
     unsafe fn pd_min(a: Self::PackedDouble, b: Self::PackedDouble) -> Self::PackedDouble;
     unsafe fn pd_max(a: Self::PackedDouble, b: Self::PackedDouble) -> Self::PackedDouble;
     unsafe fn pd_fast_sin(a: Self::PackedDouble) -> Self::PackedDouble;
+    unsafe fn pd_interleave(a: Self::PackedDouble, b: Self::PackedDouble) -> Self::PackedDouble;
     unsafe fn pd_pairwise_horizontal_sum(a: Self::PackedDouble) -> Self::PackedDouble;
     unsafe fn pd_distribute_left_right(l: f64, r: f64) -> Self::PackedDouble;
     unsafe fn pd_any_over_zero(volume: Self::PackedDouble) -> bool;
@@ -90,6 +91,9 @@ impl<T: FallbackSine> Simd for Fallback<T> {
     }
     unsafe fn pd_fast_sin(a: [f64; 2]) -> [f64; 2] {
         T::sin(a)
+    }
+    unsafe fn pd_interleave(a: [f64; 2], b: [f64; 2]) -> [f64; 2] {
+        [a[0], b[1]]
     }
     unsafe fn pd_pairwise_horizontal_sum([l, r]: [f64; 2]) -> [f64; 2] {
         [l + r, l + r]
@@ -151,6 +155,10 @@ impl Simd for Sse2 {
     #[target_feature(enable = "sse2")]
     unsafe fn pd_fast_sin(a: __m128d) -> __m128d {
         sleef_sys::Sleef_cinz_sind2_u35sse2(a)
+    }
+    #[target_feature(enable = "sse2")]
+    unsafe fn pd_interleave(a: __m128d, b: __m128d) -> __m128d {
+        _mm_move_sd(b, a)
     }
     #[target_feature(enable = "sse2")]
     unsafe fn pd_pairwise_horizontal_sum(a: __m128d) -> __m128d {
@@ -217,6 +225,10 @@ impl Simd for Avx {
     #[target_feature(enable = "avx")]
     unsafe fn pd_fast_sin(a: __m256d) -> __m256d {
         sleef_sys::Sleef_cinz_sind4_u35avx(a)
+    }
+    #[target_feature(enable = "avx")]
+    unsafe fn pd_interleave(a: __m256d, b: __m256d) -> __m256d {
+        _mm256_blend_pd(a, b, 0b1010)
     }
     #[target_feature(enable = "avx")]
     unsafe fn pd_pairwise_horizontal_sum(a: __m256d) -> __m256d {

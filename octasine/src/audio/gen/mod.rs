@@ -559,13 +559,29 @@ mod gen {
         let sample = S::pd_mul(sample, key_velocity);
         let sample = S::pd_mul(sample, S::pd_loadu(operator_data.volume.as_ptr()));
         let sample = S::pd_mul(sample, S::pd_loadu(operator_data.envelope_volume.as_ptr()));
-        let sample = S::pd_mul(
-            sample,
-            S::pd_loadu(operator_data.constant_power_panning.as_ptr()),
-        );
 
-        let mix_out = S::pd_mul(sample, S::pd_loadu(operator_data.mix_out.as_ptr()));
-        let mod_out = S::pd_mul(sample, S::pd_loadu(operator_data.mod_out.as_ptr()));
+        let mix_out = {
+            let pan_factor = S::pd_loadu(operator_data.constant_power_panning.as_ptr());
+
+            S::pd_mul(
+                S::pd_mul(sample, pan_factor),
+                S::pd_loadu(operator_data.mix_out.as_ptr()),
+            )
+        };
+        let mod_out = {
+            let pan_factor = {
+                let factor = S::pd_loadu(operator_data.panning.as_ptr());
+                let factor = S::pd_interleave(S::pd_sub(S::pd_set1(1.0), factor), factor);
+                let factor = S::pd_mul(factor, S::pd_set1(2.0));
+
+                S::pd_min(factor, S::pd_set1(1.0))
+            };
+
+            S::pd_mul(
+                S::pd_mul(sample, pan_factor),
+                S::pd_loadu(operator_data.mod_out.as_ptr()),
+            )
+        };
 
         (mix_out, mod_out)
     }
