@@ -2,6 +2,7 @@
 
 ## High priority
 
+* Add fxp/fxb headers or use custom file extensions
 * GUI
   * Wave display
     * Better colors to indicate that it can not be interacted with?
