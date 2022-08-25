@@ -516,33 +516,6 @@ mod gen {
             // Convert random numbers to range -1.0 to 1.0
             S::pd_mul(S::pd_set1(2.0), S::pd_sub(random_numbers, S::pd_set1(0.5)))
         } else {
-            // Weird modulation input panning
-            // Mix modulator into current operator depending on
-            // panning of current operator. If panned to the
-            // middle, just pass through the stereo signals. If
-            // panned to any side, mix out the original stereo
-            // signals and mix in mono.
-            // Note: breaks unless S::PD_WIDTH >= 2
-            let modulation_in = {
-                let pan = S::pd_loadu(operator_data.panning.as_ptr());
-
-                // Get panning as value between -1 and 1
-                let pan = S::pd_mul(S::pd_set1(2.0), S::pd_sub(pan, S::pd_set1(0.5)));
-
-                let pan_tendency = S::pd_max(
-                    S::pd_mul(pan, S::pd_distribute_left_right(-1.0, 1.0)),
-                    S::pd_setzero(),
-                );
-                let one_minus_pan_tendency = S::pd_sub(S::pd_set1(1.0), pan_tendency);
-
-                let modulation_in_channel_sum = S::pd_pairwise_horizontal_sum(modulation_inputs);
-
-                S::pd_add(
-                    S::pd_mul(pan_tendency, modulation_in_channel_sum),
-                    S::pd_mul(one_minus_pan_tendency, modulation_inputs),
-                )
-            };
-
             let phase = S::pd_mul(S::pd_loadu(operator_data.phase.as_ptr()), S::pd_set1(TAU));
 
             let feedback = S::pd_mul(
@@ -553,12 +526,35 @@ mod gen {
                 ),
             );
 
-            S::pd_fast_sin(S::pd_add(phase, S::pd_add(feedback, modulation_in)))
+            S::pd_fast_sin(S::pd_add(phase, S::pd_add(feedback, modulation_inputs)))
         };
 
         let sample = S::pd_mul(sample, key_velocity);
         let sample = S::pd_mul(sample, S::pd_loadu(operator_data.volume.as_ptr()));
         let sample = S::pd_mul(sample, S::pd_loadu(operator_data.envelope_volume.as_ptr()));
+
+        // Mix channels depending on panning of current operator. If panned to
+        // the middle, just pass through the stereo signals. If panned to any
+        // side, mix out the original stereo signals and mix in mono.
+        let sample = {
+            let pan = S::pd_loadu(operator_data.panning.as_ptr());
+
+            // Get panning as value between -1 and 1
+            let pan = S::pd_mul(S::pd_set1(2.0), S::pd_sub(pan, S::pd_set1(0.5)));
+
+            let pan_tendency = S::pd_max(
+                S::pd_mul(pan, S::pd_distribute_left_right(-1.0, 1.0)),
+                S::pd_setzero(),
+            );
+            let one_minus_pan_tendency = S::pd_sub(S::pd_set1(1.0), pan_tendency);
+
+            let mono = S::pd_mul(S::pd_pairwise_horizontal_sum(sample), S::pd_set1(0.5));
+
+            S::pd_add(
+                S::pd_mul(pan_tendency, mono),
+                S::pd_mul(one_minus_pan_tendency, sample),
+            )
+        };
 
         let mix_out = {
             let pan_factor = S::pd_loadu(operator_data.constant_power_panning.as_ptr());
