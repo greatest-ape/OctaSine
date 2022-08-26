@@ -33,6 +33,7 @@ impl FallbackSine for FallbackSineSleef {
 #[allow(clippy::missing_safety_doc)]
 pub trait Simd {
     type PackedDouble;
+    type DoubleArray;
     const PD_WIDTH: usize;
     const SAMPLES: usize;
 
@@ -40,6 +41,7 @@ pub trait Simd {
     unsafe fn pd_setzero() -> Self::PackedDouble;
     unsafe fn pd_loadu(source: *const f64) -> Self::PackedDouble;
     unsafe fn pd_storeu(target: *mut f64, a: Self::PackedDouble);
+    unsafe fn pd_to_array(a: Self::PackedDouble) -> Self::DoubleArray;
     unsafe fn pd_add(a: Self::PackedDouble, b: Self::PackedDouble) -> Self::PackedDouble;
     unsafe fn pd_sub(a: Self::PackedDouble, b: Self::PackedDouble) -> Self::PackedDouble;
     unsafe fn pd_mul(a: Self::PackedDouble, b: Self::PackedDouble) -> Self::PackedDouble;
@@ -59,6 +61,7 @@ pub struct Fallback<T> {
 #[allow(clippy::missing_safety_doc)]
 impl<T: FallbackSine> Simd for Fallback<T> {
     type PackedDouble = [f64; 2];
+    type DoubleArray = [f64; 2];
     const PD_WIDTH: usize = 2;
     const SAMPLES: usize = 1;
 
@@ -73,6 +76,9 @@ impl<T: FallbackSine> Simd for Fallback<T> {
     }
     unsafe fn pd_storeu(target: *mut f64, a: [f64; 2]) {
         ::std::ptr::write(target as *mut [f64; 2], a);
+    }
+    unsafe fn pd_to_array(a: Self::PackedDouble) -> Self::DoubleArray {
+        a
     }
     unsafe fn pd_add([a1, a2]: [f64; 2], [b1, b2]: [f64; 2]) -> [f64; 2] {
         [a1 + b1, a2 + b2]
@@ -113,6 +119,7 @@ pub struct Sse2;
 #[allow(clippy::missing_safety_doc)]
 impl Simd for Sse2 {
     type PackedDouble = __m128d;
+    type DoubleArray = [f64; 2];
     const PD_WIDTH: usize = 2;
     const SAMPLES: usize = 1;
 
@@ -131,6 +138,14 @@ impl Simd for Sse2 {
     #[target_feature(enable = "sse2")]
     unsafe fn pd_storeu(target: *mut f64, a: __m128d) {
         _mm_storeu_pd(target, a)
+    }
+    #[target_feature(enable = "sse2")]
+    unsafe fn pd_to_array(a: Self::PackedDouble) -> Self::DoubleArray {
+        let mut arr = Self::DoubleArray::default();
+
+        _mm_storeu_pd(arr.as_mut_ptr(), a);
+
+        arr
     }
     #[target_feature(enable = "sse2")]
     unsafe fn pd_add(a: __m128d, b: __m128d) -> __m128d {
@@ -183,6 +198,7 @@ pub struct Avx;
 #[allow(clippy::missing_safety_doc)]
 impl Simd for Avx {
     type PackedDouble = __m256d;
+    type DoubleArray = [f64; 4];
     const PD_WIDTH: usize = 4;
     const SAMPLES: usize = 2;
 
@@ -201,6 +217,14 @@ impl Simd for Avx {
     #[target_feature(enable = "avx")]
     unsafe fn pd_storeu(target: *mut f64, a: __m256d) {
         _mm256_storeu_pd(target, a)
+    }
+    #[target_feature(enable = "avx")]
+    unsafe fn pd_to_array(a: Self::PackedDouble) -> Self::DoubleArray {
+        let mut arr = Self::DoubleArray::default();
+
+        _mm256_storeu_pd(arr.as_mut_ptr(), a);
+
+        arr
     }
     #[target_feature(enable = "avx")]
     unsafe fn pd_add(a: __m256d, b: __m256d) -> __m256d {

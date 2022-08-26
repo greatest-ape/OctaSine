@@ -657,24 +657,24 @@ mod gen {
         fn test_linear_panning_factor() {
             unsafe {
                 assert_eq!(
-                    linear_panning_factor(S::pd_set1(0.0)),
-                    S::pd_distribute_left_right(1.0, 0.0)
+                    S::pd_to_array(linear_panning_factor(S::pd_set1(0.0))),
+                    S::pd_to_array(S::pd_distribute_left_right(1.0, 0.0))
                 );
                 assert_eq!(
-                    linear_panning_factor(S::pd_set1(0.25)),
-                    S::pd_distribute_left_right(1.0, 0.5)
+                    S::pd_to_array(linear_panning_factor(S::pd_set1(0.25))),
+                    S::pd_to_array(S::pd_distribute_left_right(1.0, 0.5))
                 );
                 assert_eq!(
-                    linear_panning_factor(S::pd_set1(0.5)),
-                    S::pd_distribute_left_right(1.0, 1.0)
+                    S::pd_to_array(linear_panning_factor(S::pd_set1(0.5))),
+                    S::pd_to_array(S::pd_distribute_left_right(1.0, 1.0))
                 );
                 assert_eq!(
-                    linear_panning_factor(S::pd_set1(0.75)),
-                    S::pd_distribute_left_right(0.5, 1.0)
+                    S::pd_to_array(linear_panning_factor(S::pd_set1(0.75))),
+                    S::pd_to_array(S::pd_distribute_left_right(0.5, 1.0))
                 );
                 assert_eq!(
-                    linear_panning_factor(S::pd_set1(1.0)),
-                    S::pd_distribute_left_right(0.0, 1.0)
+                    S::pd_to_array(linear_panning_factor(S::pd_set1(1.0))),
+                    S::pd_to_array(S::pd_distribute_left_right(0.0, 1.0))
                 );
             }
         }
@@ -685,24 +685,24 @@ mod gen {
         fn test_mono_mix_factor() {
             unsafe {
                 assert_eq!(
-                    mono_mix_factor(S::pd_set1(0.0)),
-                    S::pd_distribute_left_right(1.0, 0.0)
+                    S::pd_to_array(mono_mix_factor(S::pd_set1(0.0))),
+                    S::pd_to_array(S::pd_distribute_left_right(1.0, 0.0))
                 );
                 assert_eq!(
-                    mono_mix_factor(S::pd_set1(0.25)),
-                    S::pd_distribute_left_right(0.5, 0.0)
+                    S::pd_to_array(mono_mix_factor(S::pd_set1(0.25))),
+                    S::pd_to_array(S::pd_distribute_left_right(0.5, 0.0))
                 );
                 assert_eq!(
-                    mono_mix_factor(S::pd_set1(0.5)),
-                    S::pd_distribute_left_right(0.0, 0.0)
+                    S::pd_to_array(mono_mix_factor(S::pd_set1(0.5))),
+                    S::pd_to_array(S::pd_distribute_left_right(0.0, 0.0))
                 );
                 assert_eq!(
-                    mono_mix_factor(S::pd_set1(0.75)),
-                    S::pd_distribute_left_right(0.0, 0.5)
+                    S::pd_to_array(mono_mix_factor(S::pd_set1(0.75))),
+                    S::pd_to_array(S::pd_distribute_left_right(0.0, 0.5))
                 );
                 assert_eq!(
-                    mono_mix_factor(S::pd_set1(1.0)),
-                    S::pd_distribute_left_right(0.0, 1.0)
+                    S::pd_to_array(mono_mix_factor(S::pd_set1(1.0))),
+                    S::pd_to_array(S::pd_distribute_left_right(0.0, 1.0))
                 );
             }
         }
