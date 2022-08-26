@@ -483,15 +483,13 @@ mod gen {
 
         // Write additive outputs to audio buffer
 
-        let mut out = [0.0f64; S::PD_WIDTH];
-
-        S::pd_storeu(out.as_mut_ptr(), mix_out_sum);
+        let out_arr = S::pd_to_array(mix_out_sum);
 
         for sample_index in 0..S::SAMPLES {
             let sample_index_offset = sample_index * 2;
 
-            audio_buffer_lefts[sample_index] = out[sample_index_offset] as f32;
-            audio_buffer_rights[sample_index] = out[sample_index_offset + 1] as f32;
+            audio_buffer_lefts[sample_index] = out_arr[sample_index_offset] as f32;
+            audio_buffer_rights[sample_index] = out_arr[sample_index_offset + 1] as f32;
         }
     }
 

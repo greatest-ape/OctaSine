@@ -257,9 +257,7 @@ mod gen {
                 S::pd_mul(out_samples, S::pd_set1(WAVE_HEIGHT_RANGE as f64)),
             );
 
-            let mut out_arr = [0.0f64; S::PD_WIDTH];
-
-            S::pd_storeu(out_arr.as_mut_ptr(), out);
+            let out_arr = S::pd_to_array(out);
 
             for sample_index in 0..S::SAMPLES {
                 let sample_index_offset = sample_index * 2;
