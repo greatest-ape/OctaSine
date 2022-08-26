@@ -533,7 +533,6 @@ mod gen {
         let sample = S::pd_mul(sample, S::pd_loadu(operator_data.volume.as_ptr()));
         let sample = S::pd_mul(sample, S::pd_loadu(operator_data.envelope_volume.as_ptr()));
 
-        // FIXME: remove this
         // Mix channels depending on panning of current operator. If panned to
         // the middle, just pass through the stereo signals. If panned to any
         // side, mix out the original stereo signals and mix in mono.
@@ -543,22 +542,25 @@ mod gen {
             // Get panning as value between -1 and 1
             let pan = S::pd_mul(S::pd_set1(2.0), S::pd_sub(pan, S::pd_set1(0.5)));
 
-            let pan_tendency = S::pd_max(
+            // For each channel, calculate value between 0.0 and 1.0 of how far
+            // from the center panning is directed in that channels direction,
+            // with 0.0 indicating center panning or panning towards the other
+            // side.
+            let mono_mix_factor = S::pd_max(
                 S::pd_mul(pan, S::pd_distribute_left_right(-1.0, 1.0)),
                 S::pd_setzero(),
             );
-            let one_minus_pan_tendency = S::pd_sub(S::pd_set1(1.0), pan_tendency);
 
             let mono = S::pd_mul(S::pd_pairwise_horizontal_sum(sample), S::pd_set1(0.5));
 
             S::pd_add(
-                S::pd_mul(pan_tendency, mono),
-                S::pd_mul(one_minus_pan_tendency, sample),
+                S::pd_mul(mono_mix_factor, mono),
+                S::pd_mul(S::pd_sub(S::pd_set1(1.0), mono_mix_factor), sample),
             )
         };
 
         let mix_out = {
-            // FIXME: use true stereo panning here (mixing channels) (constant power)
+            // Constant power panning
             let pan_factor = S::pd_loadu(operator_data.constant_power_panning.as_ptr());
 
             S::pd_mul(
@@ -567,7 +569,7 @@ mod gen {
             )
         };
         let mod_out = {
-            // FIXME: use true stereo panning here (mixing channels) (but just linear)
+            // Linear panning. Get channel volume as number between 0.0 and 1.0
             let pan_factor = {
                 let factor = S::pd_loadu(operator_data.panning.as_ptr());
                 let factor = S::pd_interleave(S::pd_sub(S::pd_set1(1.0), factor), factor);
