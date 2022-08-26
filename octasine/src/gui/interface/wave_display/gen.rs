@@ -206,24 +206,23 @@ mod gen {
                 let samples = S::pd_mul(samples, S::pd_set1(operator_data[i].active.get() as f64));
                 let samples = S::pd_mul(samples, S::pd_set1(operator_data[i].volume.get() as f64));
 
-                // Channel mixing; see audio gen code for more info
+                // Channel mixing (see audio gen code for more info)
                 let samples = {
                     let pan = S::pd_set1(operator_data[i].pan.get() as f64);
 
                     // Get panning as value between -1 and 1
                     let pan = S::pd_mul(S::pd_set1(2.0), S::pd_sub(pan, S::pd_set1(0.5)));
 
-                    let pan_tendency = S::pd_max(
+                    let mono_mix_factor = S::pd_max(
                         S::pd_mul(pan, S::pd_distribute_left_right(-1.0, 1.0)),
                         S::pd_setzero(),
                     );
-                    let one_minus_pan_tendency = S::pd_sub(S::pd_set1(1.0), pan_tendency);
 
                     let mono = S::pd_mul(S::pd_pairwise_horizontal_sum(samples), S::pd_set1(0.5));
 
                     S::pd_add(
-                        S::pd_mul(pan_tendency, mono),
-                        S::pd_mul(one_minus_pan_tendency, samples),
+                        S::pd_mul(mono_mix_factor, mono),
+                        S::pd_mul(S::pd_sub(S::pd_set1(1.0), mono_mix_factor), samples),
                     )
                 };
 
