@@ -147,21 +147,25 @@ pub fn process_f32_runtime_select(
         S [ FallbackStd ]
         target_feature_enable [ cfg(not(feature = "fake-feature")) ]
         feature_gate [ cfg(not(feature = "fake-feature")) ]
+        test_feature_gate [ cfg(not(feature = "fake-feature")) ]
     ]
     [
         S [ FallbackSleef ]
         target_feature_enable [ cfg(not(feature = "fake-feature")) ]
         feature_gate [ cfg(all(feature = "simd")) ]
+        test_feature_gate [ cfg(not(feature = "fake-feature")) ]
     ]
     [
         S [ Sse2 ]
         target_feature_enable [ target_feature(enable = "sse2") ]
         feature_gate [ cfg(all(feature = "simd", target_arch = "x86_64")) ]
+        test_feature_gate [ cfg(target_feature = "sse2") ]
     ]
     [
         S [ Avx ]
         target_feature_enable [ target_feature(enable = "avx") ]
         feature_gate [ cfg(all(feature = "simd", target_arch = "x86_64")) ]
+        test_feature_gate [ cfg(target_feature = "avx") ]
     ]
 )]
 mod gen {
@@ -627,6 +631,8 @@ mod gen {
         S::pd_min(factor, S::pd_set1(1.0))
     }
 
+    /// Get amount of channel that should be derived from mono for stereo mix
+    /// panning
     #[feature_gate]
     #[target_feature_enable]
     unsafe fn mono_mix_factor(panning: <S as Simd>::PackedDouble) -> <S as Simd>::PackedDouble {
@@ -637,5 +643,67 @@ mod gen {
             S::pd_mul(pan, S::pd_distribute_left_right(-1.0, 1.0)),
             S::pd_setzero(),
         )
+    }
+
+    #[cfg(test)]
+    mod tests {
+        #[feature_gate]
+        use super::*;
+
+        #[feature_gate]
+        #[test_feature_gate]
+        #[test]
+        fn test_linear_panning_factor() {
+            unsafe {
+                assert_eq!(
+                    linear_panning_factor(S::pd_set1(0.0)),
+                    S::pd_distribute_left_right(1.0, 0.0)
+                );
+                assert_eq!(
+                    linear_panning_factor(S::pd_set1(0.25)),
+                    S::pd_distribute_left_right(1.0, 0.5)
+                );
+                assert_eq!(
+                    linear_panning_factor(S::pd_set1(0.5)),
+                    S::pd_distribute_left_right(1.0, 1.0)
+                );
+                assert_eq!(
+                    linear_panning_factor(S::pd_set1(0.75)),
+                    S::pd_distribute_left_right(0.5, 1.0)
+                );
+                assert_eq!(
+                    linear_panning_factor(S::pd_set1(1.0)),
+                    S::pd_distribute_left_right(0.0, 1.0)
+                );
+            }
+        }
+
+        #[feature_gate]
+        #[test_feature_gate]
+        #[test]
+        fn test_mono_mix_factor() {
+            unsafe {
+                assert_eq!(
+                    mono_mix_factor(S::pd_set1(0.0)),
+                    S::pd_distribute_left_right(1.0, 0.0)
+                );
+                assert_eq!(
+                    mono_mix_factor(S::pd_set1(0.25)),
+                    S::pd_distribute_left_right(0.5, 0.0)
+                );
+                assert_eq!(
+                    mono_mix_factor(S::pd_set1(0.5)),
+                    S::pd_distribute_left_right(0.0, 0.0)
+                );
+                assert_eq!(
+                    mono_mix_factor(S::pd_set1(0.75)),
+                    S::pd_distribute_left_right(0.0, 0.5)
+                );
+                assert_eq!(
+                    mono_mix_factor(S::pd_set1(1.0)),
+                    S::pd_distribute_left_right(0.0, 1.0)
+                );
+            }
+        }
     }
 }
