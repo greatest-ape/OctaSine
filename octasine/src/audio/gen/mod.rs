@@ -542,10 +542,6 @@ mod gen {
             // Get panning as value between -1 and 1
             let pan = S::pd_mul(S::pd_set1(2.0), S::pd_sub(pan, S::pd_set1(0.5)));
 
-            // For each channel, calculate value between 0.0 and 1.0 of how far
-            // from the center panning is directed in that channels direction,
-            // with 0.0 indicating center panning or panning towards the other
-            // side.
             let mono_mix_factor = S::pd_max(
                 S::pd_mul(pan, S::pd_distribute_left_right(-1.0, 1.0)),
                 S::pd_setzero(),
