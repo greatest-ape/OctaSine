@@ -537,17 +537,8 @@ mod gen {
         // the middle, just pass through the stereo signals. If panned to any
         // side, mix out the original stereo signals and mix in mono.
         let sample = {
-            let pan = S::pd_loadu(operator_data.panning.as_ptr());
-
-            // Get panning as value between -1 and 1
-            let pan = S::pd_mul(S::pd_set1(2.0), S::pd_sub(pan, S::pd_set1(0.5)));
-
-            let mono_mix_factor = S::pd_max(
-                S::pd_mul(pan, S::pd_distribute_left_right(-1.0, 1.0)),
-                S::pd_setzero(),
-            );
-
             let mono = S::pd_mul(S::pd_pairwise_horizontal_sum(sample), S::pd_set1(0.5));
+            let mono_mix_factor = mono_mix_factor(S::pd_loadu(operator_data.panning.as_ptr()));
 
             S::pd_add(
                 S::pd_mul(mono_mix_factor, mono),
@@ -565,14 +556,7 @@ mod gen {
             )
         };
         let mod_out = {
-            // Linear panning. Get channel volume as number between 0.0 and 1.0
-            let pan_factor = {
-                let factor = S::pd_loadu(operator_data.panning.as_ptr());
-                let factor = S::pd_interleave(S::pd_sub(S::pd_set1(1.0), factor), factor);
-                let factor = S::pd_mul(factor, S::pd_set1(2.0));
-
-                S::pd_min(factor, S::pd_set1(1.0))
-            };
+            let pan_factor = linear_panning_factor(S::pd_loadu(operator_data.panning.as_ptr()));
 
             S::pd_mul(
                 S::pd_mul(sample, pan_factor),
@@ -629,5 +613,29 @@ mod gen {
 
         target[offset] = value;
         target[offset + 1] = value;
+    }
+
+    /// Linear panning. Get channel volume as number between 0.0 and 1.0
+    #[feature_gate]
+    #[target_feature_enable]
+    unsafe fn linear_panning_factor(
+        panning: <S as Simd>::PackedDouble,
+    ) -> <S as Simd>::PackedDouble {
+        let factor = S::pd_interleave(S::pd_sub(S::pd_set1(1.0), panning), panning);
+        let factor = S::pd_mul(factor, S::pd_set1(2.0));
+
+        S::pd_min(factor, S::pd_set1(1.0))
+    }
+
+    #[feature_gate]
+    #[target_feature_enable]
+    unsafe fn mono_mix_factor(panning: <S as Simd>::PackedDouble) -> <S as Simd>::PackedDouble {
+        // Get panning as value between -1 and 1
+        let pan = S::pd_mul(S::pd_set1(2.0), S::pd_sub(panning, S::pd_set1(0.5)));
+
+        S::pd_max(
+            S::pd_mul(pan, S::pd_distribute_left_right(-1.0, 1.0)),
+            S::pd_setzero(),
+        )
     }
 }
