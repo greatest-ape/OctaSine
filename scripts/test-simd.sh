@@ -1,5 +1,3 @@
 #!/bin/sh
 
-cd octasine
-
-cargo +nightly test --release --features "simd"
+RUSTFLAGS="-C target-cpu=native" cargo +nightly test --features "simd"
