@@ -206,19 +206,12 @@ mod gen {
                 let samples = S::pd_mul(samples, S::pd_set1(operator_data[i].active.get() as f64));
                 let samples = S::pd_mul(samples, S::pd_set1(operator_data[i].volume.get() as f64));
 
+                let panning = S::pd_set1(operator_data[i].pan.get() as f64);
+
                 // Channel mixing (see audio gen code for more info)
                 let samples = {
-                    let pan = S::pd_set1(operator_data[i].pan.get() as f64);
-
-                    // Get panning as value between -1 and 1
-                    let pan = S::pd_mul(S::pd_set1(2.0), S::pd_sub(pan, S::pd_set1(0.5)));
-
-                    let mono_mix_factor = S::pd_max(
-                        S::pd_mul(pan, S::pd_distribute_left_right(-1.0, 1.0)),
-                        S::pd_setzero(),
-                    );
-
                     let mono = S::pd_mul(S::pd_pairwise_horizontal_sum(samples), S::pd_set1(0.5));
+                    let mono_mix_factor = mono_mix_factor(panning);
 
                     S::pd_add(
                         S::pd_mul(mono_mix_factor, mono),
@@ -244,14 +237,7 @@ mod gen {
                     operator_data[i].mod_targets.as_ref(),
                 ) {
                     (Some(mod_out), Some(mod_targets)) if mod_out > 0.0 => {
-                        let pan_factor = {
-                            let factor = S::pd_set1(operator_data[i].pan.get() as f64);
-                            let factor =
-                                S::pd_interleave(S::pd_sub(S::pd_set1(1.0), factor), factor);
-                            let factor = S::pd_mul(factor, S::pd_set1(2.0));
-
-                            S::pd_min(factor, S::pd_set1(1.0))
-                        };
+                        let pan_factor = linear_panning_factor(panning);
 
                         let mod_out =
                             S::pd_mul(S::pd_mul(samples, pan_factor), S::pd_set1(mod_out));
@@ -282,5 +268,31 @@ mod gen {
                 rights[sample_index].y = out_arr[sample_index_offset + 1] as f32;
             }
         }
+    }
+
+    /// Linear panning. Get channel volume as number between 0.0 and 1.0
+    #[feature_gate]
+    #[target_feature_enable]
+    unsafe fn linear_panning_factor(
+        panning: <S as Simd>::PackedDouble,
+    ) -> <S as Simd>::PackedDouble {
+        let factor = S::pd_interleave(S::pd_sub(S::pd_set1(1.0), panning), panning);
+        let factor = S::pd_mul(factor, S::pd_set1(2.0));
+
+        S::pd_min(factor, S::pd_set1(1.0))
+    }
+
+    /// Get amount of channel that should be derived from mono for stereo mix
+    /// panning
+    #[feature_gate]
+    #[target_feature_enable]
+    unsafe fn mono_mix_factor(panning: <S as Simd>::PackedDouble) -> <S as Simd>::PackedDouble {
+        // Get panning as value between -1 and 1
+        let pan = S::pd_mul(S::pd_set1(2.0), S::pd_sub(panning, S::pd_set1(0.5)));
+
+        S::pd_max(
+            S::pd_mul(pan, S::pd_distribute_left_right(-1.0, 1.0)),
+            S::pd_setzero(),
+        )
     }
 }
