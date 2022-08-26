@@ -25,7 +25,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-10.15, macos-latest, ubuntu-20.04, windows-latest]
+        os: [macos-latest, ubuntu-20.04, windows-latest]
 
     steps:
     - uses: actions/checkout@v2
@@ -60,6 +60,8 @@ jobs:
 
     - name: Run tests
       run: cargo +nightly test --workspace --features "simd" --verbose
+      env:
+        RUSTFLAGS: "-C target-cpu=native"
     - name: Build plugin in release mode
       run: cargo +nightly build --release --features "simd" -p octasine-vst2-plugin --verbose
 
