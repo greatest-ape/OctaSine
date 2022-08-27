@@ -24,9 +24,13 @@ impl Default for Patch {
 impl Patch {
     pub fn new(name: &str, parameters: Vec<PatchParameter>) -> Self {
         Self {
-            name: ArcSwap::new(Arc::new(name.to_owned())),
+            name: ArcSwap::new(Arc::new(Self::process_name(name))),
             parameters,
         }
+    }
+
+    fn process_name(name: &str) -> String {
+        name.chars().into_iter().filter(|c| c.is_ascii()).collect()
     }
 
     pub fn get_name(&self) -> String {
@@ -34,7 +38,7 @@ impl Patch {
     }
 
     pub fn set_name(&self, name: String) {
-        self.name.store(Arc::new(name));
+        self.name.store(Arc::new(Self::process_name(&name)));
     }
 
     pub fn import_bytes(&self, bytes: &[u8]) -> bool {
@@ -174,7 +178,7 @@ impl PatchBank {
     }
 
     pub fn set_patch_name(&self, name: String) {
-        self.get_current_patch().name.store(Arc::new(name));
+        self.get_current_patch().set_name(name);
         self.patches_changed.store(true, Ordering::SeqCst);
     }
 
