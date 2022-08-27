@@ -1,7 +1,10 @@
-use std::{io::Read, path::Path};
+use std::{io::Read, iter::repeat, path::Path};
 
+use byteorder::{BigEndian, WriteBytesExt};
 use flate2::{read::GzDecoder, write::GzEncoder, Compression};
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
+
+use crate::{crate_version, crate_version_to_vst_format, PLUGIN_UNIQUE_ID};
 
 use super::patch_bank::{Patch, PatchBank};
 
@@ -96,6 +99,52 @@ impl SerdePatch {
             parameters,
         }
     }
+
+    pub fn to_bytes(&self) -> anyhow::Result<Vec<u8>> {
+        to_bytes(self)
+    }
+
+    pub fn to_fxp_bytes(&self) -> anyhow::Result<Vec<u8>> {
+        let patch_bytes = to_bytes(self)?;
+
+        let mut bytes = Vec::new();
+
+        bytes.extend_from_slice(b"CcnK"); // fxp/fxp identifier
+        bytes.write_i32::<BigEndian>((5 * 4 + 28 + 4 + patch_bytes.len()).try_into()?)?;
+
+        bytes.extend_from_slice(b"FPCh"); // fxp opaque chunk
+        bytes.write_i32::<BigEndian>(1)?; // fxp version
+        bytes.write_i32::<BigEndian>(PLUGIN_UNIQUE_ID)?;
+        bytes.write_i32::<BigEndian>(crate_version_to_vst_format(crate_version!()))?;
+
+        bytes.write_i32::<BigEndian>(self.parameters.len().try_into()?)?;
+
+        let name_buf = {
+            let mut name_buf = [0u8; 28];
+            let mut chars_written = 0;
+
+            for (b, c) in name_buf.iter_mut().zip(self.name.chars()) {
+                if c.is_ascii() {
+                    *b = c as u8;
+                } else {
+                    *b = b' ';
+                }
+
+                chars_written += 1;
+            }
+
+            name_buf[chars_written.min(name_buf.len() - 1)] = 0;
+
+            name_buf
+        };
+
+        bytes.extend_from_slice(&name_buf);
+
+        bytes.write_i32::<BigEndian>(patch_bytes.len().try_into()?)?;
+        bytes.extend_from_slice(&patch_bytes);
+
+        Ok(bytes)
+    }
 }
 
 #[derive(Serialize, Deserialize)]
@@ -115,9 +164,35 @@ impl SerdePatchBank {
                 .collect(),
         }
     }
+
+    pub fn to_bytes(&self) -> anyhow::Result<Vec<u8>> {
+        to_bytes(self)
+    }
+
+    pub fn to_fxb_bytes(&self) -> anyhow::Result<Vec<u8>> {
+        let bank_bytes = to_bytes(self)?;
+
+        let mut bytes = Vec::new();
+
+        bytes.extend_from_slice(b"CcnK"); // fxp/fxp identifier
+        bytes.write_i32::<BigEndian>((5 * 4 + 128 + 4 + bank_bytes.len()).try_into()?)?;
+
+        bytes.extend_from_slice(b"FBCh"); // fxb opaque chunk
+        bytes.write_i32::<BigEndian>(1)?; // fxb version (1 or 2)
+        bytes.write_i32::<BigEndian>(PLUGIN_UNIQUE_ID)?;
+        bytes.write_i32::<BigEndian>(crate_version_to_vst_format(crate_version!()))?;
+
+        bytes.write_i32::<BigEndian>(self.patches.len().try_into()?)?;
+        bytes.extend(repeat(0).take(128)); // reserved padding for fxb version 1
+
+        bytes.write_i32::<BigEndian>(bank_bytes.len().try_into()?)?;
+        bytes.extend_from_slice(&bank_bytes);
+
+        Ok(bytes)
+    }
 }
 
-pub fn to_bytes<T: Serialize>(t: &T) -> anyhow::Result<Vec<u8>> {
+fn to_bytes<T: Serialize>(t: &T) -> anyhow::Result<Vec<u8>> {
     let mut bytes = Vec::from(PREFIX);
 
     let mut encoder = GzEncoder::new(&mut bytes, Compression::best());

@@ -1793,6 +1793,7 @@ dependencies = [
  "arrayvec 0.7.2",
  "assert_approx_eq",
  "baseview",
+ "byteorder",
  "cfg-if",
  "directories",
  "duplicate",

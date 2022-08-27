@@ -60,7 +60,15 @@ impl Patch {
     }
 
     pub fn export_bytes(&self) -> Vec<u8> {
-        to_bytes(&self.export_serde_preset()).expect("serialize preset")
+        self.export_serde_preset()
+            .to_bytes()
+            .expect("serialize preset")
+    }
+
+    pub fn export_fxp_bytes(&self) -> Vec<u8> {
+        self.export_serde_preset()
+            .to_fxp_bytes()
+            .expect("serialize preset")
     }
 
     pub fn export_serde_preset(&self) -> SerdePatch {
@@ -326,11 +334,23 @@ impl PatchBank {
     }
 
     pub fn export_bank_as_bytes(&self) -> Vec<u8> {
-        to_bytes(&SerdePatchBank::new(self)).expect("serialize preset bank")
+        SerdePatchBank::new(self)
+            .to_bytes()
+            .expect("serialize preset bank")
+    }
+
+    pub fn export_bank_as_fxb_bytes(&self) -> Vec<u8> {
+        SerdePatchBank::new(self)
+            .to_fxb_bytes()
+            .expect("serialize preset bank")
     }
 
     pub fn export_current_patch_bytes(&self) -> Vec<u8> {
         self.get_current_patch().export_bytes()
+    }
+
+    pub fn export_current_patch_fxp_bytes(&self) -> Vec<u8> {
+        self.get_current_patch().export_fxp_bytes()
     }
 
     pub fn new_from_bytes(bytes: &[u8]) -> Self {
