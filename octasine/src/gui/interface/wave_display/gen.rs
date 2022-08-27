@@ -177,28 +177,7 @@ mod gen {
                             S::pd_fast_sin(phases),
                             S::pd_set1(operator_data[i].feedback.get() as f64),
                         );
-
-                        // Modulation input panning. See audio gen code for more info
-                        let modulation_in = {
-                            let pan = S::pd_set1(operator_data[i].pan.get() as f64);
-
-                            // Get panning as value between -1 and 1
-                            let pan = S::pd_mul(S::pd_set1(2.0), S::pd_sub(pan, S::pd_set1(0.5)));
-
-                            let pan_tendency = S::pd_max(
-                                S::pd_mul(pan, S::pd_distribute_left_right(-1.0, 1.0)),
-                                S::pd_setzero(),
-                            );
-                            let one_minus_pan_tendency = S::pd_sub(S::pd_set1(1.0), pan_tendency);
-
-                            let modulation_in_channel_sum =
-                                S::pd_pairwise_horizontal_sum(mod_inputs[i]);
-
-                            S::pd_add(
-                                S::pd_mul(pan_tendency, modulation_in_channel_sum),
-                                S::pd_mul(one_minus_pan_tendency, mod_inputs[i]),
-                            )
-                        };
+                        let modulation_in = mod_inputs[i];
 
                         S::pd_fast_sin(S::pd_add(S::pd_add(feedback, modulation_in), phases))
                     }
@@ -224,15 +203,33 @@ mod gen {
                     }
                 };
 
-                let constant_power_panning = {
-                    let [l, r] = operator_data[i].constant_power_panning;
-
-                    S::pd_distribute_left_right(l as f64, r as f64)
-                };
-
                 let samples = S::pd_mul(samples, S::pd_set1(operator_data[i].active.get() as f64));
                 let samples = S::pd_mul(samples, S::pd_set1(operator_data[i].volume.get() as f64));
-                let samples = S::pd_mul(samples, constant_power_panning);
+
+                let panning = S::pd_set1(operator_data[i].pan.get() as f64);
+
+                // Channel mixing (see audio gen code for more info)
+                let samples = {
+                    let mono = S::pd_mul(S::pd_pairwise_horizontal_sum(samples), S::pd_set1(0.5));
+                    let mono_mix_factor = mono_mix_factor(panning);
+
+                    S::pd_add(
+                        S::pd_mul(mono_mix_factor, mono),
+                        S::pd_mul(S::pd_sub(S::pd_set1(1.0), mono_mix_factor), samples),
+                    )
+                };
+
+                if i == operator_index {
+                    let constant_power_panning = {
+                        let [l, r] = operator_data[i].constant_power_panning;
+
+                        S::pd_distribute_left_right(l as f64, r as f64)
+                    };
+
+                    out_samples = S::pd_mul(samples, constant_power_panning);
+
+                    break;
+                }
 
                 // Store modulation outputs
                 match (
@@ -240,17 +237,16 @@ mod gen {
                     operator_data[i].mod_targets.as_ref(),
                 ) {
                     (Some(mod_out), Some(mod_targets)) if mod_out > 0.0 => {
-                        let mod_out = S::pd_mul(S::pd_set1(mod_out), samples);
+                        let pan_factor = linear_panning_factor(panning);
+
+                        let mod_out =
+                            S::pd_mul(S::pd_mul(samples, pan_factor), S::pd_set1(mod_out));
 
                         for target_index in mod_targets.active_indices() {
                             mod_inputs[target_index] = S::pd_add(mod_inputs[target_index], mod_out);
                         }
                     }
                     _ => (),
-                }
-
-                if i == operator_index {
-                    out_samples = samples;
                 }
             }
 
@@ -261,9 +257,7 @@ mod gen {
                 S::pd_mul(out_samples, S::pd_set1(WAVE_HEIGHT_RANGE as f64)),
             );
 
-            let mut out_arr = [0.0f64; S::PD_WIDTH];
-
-            S::pd_storeu(out_arr.as_mut_ptr(), out);
+            let out_arr = S::pd_to_array(out);
 
             for sample_index in 0..S::SAMPLES {
                 let sample_index_offset = sample_index * 2;
@@ -272,5 +266,31 @@ mod gen {
                 rights[sample_index].y = out_arr[sample_index_offset + 1] as f32;
             }
         }
+    }
+
+    /// Linear panning. Get channel volume as number between 0.0 and 1.0
+    #[feature_gate]
+    #[target_feature_enable]
+    unsafe fn linear_panning_factor(
+        panning: <S as Simd>::PackedDouble,
+    ) -> <S as Simd>::PackedDouble {
+        let factor = S::pd_interleave(S::pd_sub(S::pd_set1(1.0), panning), panning);
+        let factor = S::pd_mul(factor, S::pd_set1(2.0));
+
+        S::pd_min(factor, S::pd_set1(1.0))
+    }
+
+    /// Get amount of channel that should be derived from mono for stereo mix
+    /// panning
+    #[feature_gate]
+    #[target_feature_enable]
+    unsafe fn mono_mix_factor(panning: <S as Simd>::PackedDouble) -> <S as Simd>::PackedDouble {
+        // Get panning as value between -1 and 1
+        let pan = S::pd_mul(S::pd_set1(2.0), S::pd_sub(panning, S::pd_set1(0.5)));
+
+        S::pd_max(
+            S::pd_mul(pan, S::pd_distribute_left_right(-1.0, 1.0)),
+            S::pd_setzero(),
+        )
     }
 }

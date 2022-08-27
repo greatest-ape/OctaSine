@@ -147,21 +147,25 @@ pub fn process_f32_runtime_select(
         S [ FallbackStd ]
         target_feature_enable [ cfg(not(feature = "fake-feature")) ]
         feature_gate [ cfg(not(feature = "fake-feature")) ]
+        test_feature_gate [ cfg(not(feature = "fake-feature")) ]
     ]
     [
         S [ FallbackSleef ]
         target_feature_enable [ cfg(not(feature = "fake-feature")) ]
         feature_gate [ cfg(all(feature = "simd")) ]
+        test_feature_gate [ cfg(not(feature = "fake-feature")) ]
     ]
     [
         S [ Sse2 ]
         target_feature_enable [ target_feature(enable = "sse2") ]
         feature_gate [ cfg(all(feature = "simd", target_arch = "x86_64")) ]
+        test_feature_gate [ cfg(target_feature = "sse2") ]
     ]
     [
         S [ Avx ]
         target_feature_enable [ target_feature(enable = "avx") ]
         feature_gate [ cfg(all(feature = "simd", target_arch = "x86_64")) ]
+        test_feature_gate [ cfg(target_feature = "avx") ]
     ]
 )]
 mod gen {
@@ -479,15 +483,13 @@ mod gen {
 
         // Write additive outputs to audio buffer
 
-        let mut out = [0.0f64; S::PD_WIDTH];
-
-        S::pd_storeu(out.as_mut_ptr(), mix_out_sum);
+        let out_arr = S::pd_to_array(mix_out_sum);
 
         for sample_index in 0..S::SAMPLES {
             let sample_index_offset = sample_index * 2;
 
-            audio_buffer_lefts[sample_index] = out[sample_index_offset] as f32;
-            audio_buffer_rights[sample_index] = out[sample_index_offset + 1] as f32;
+            audio_buffer_lefts[sample_index] = out_arr[sample_index_offset] as f32;
+            audio_buffer_rights[sample_index] = out_arr[sample_index_offset + 1] as f32;
         }
     }
 
@@ -516,33 +518,6 @@ mod gen {
             // Convert random numbers to range -1.0 to 1.0
             S::pd_mul(S::pd_set1(2.0), S::pd_sub(random_numbers, S::pd_set1(0.5)))
         } else {
-            // Weird modulation input panning
-            // Mix modulator into current operator depending on
-            // panning of current operator. If panned to the
-            // middle, just pass through the stereo signals. If
-            // panned to any side, mix out the original stereo
-            // signals and mix in mono.
-            // Note: breaks unless S::PD_WIDTH >= 2
-            let modulation_in = {
-                let pan = S::pd_loadu(operator_data.panning.as_ptr());
-
-                // Get panning as value between -1 and 1
-                let pan = S::pd_mul(S::pd_set1(2.0), S::pd_sub(pan, S::pd_set1(0.5)));
-
-                let pan_tendency = S::pd_max(
-                    S::pd_mul(pan, S::pd_distribute_left_right(-1.0, 1.0)),
-                    S::pd_setzero(),
-                );
-                let one_minus_pan_tendency = S::pd_sub(S::pd_set1(1.0), pan_tendency);
-
-                let modulation_in_channel_sum = S::pd_pairwise_horizontal_sum(modulation_inputs);
-
-                S::pd_add(
-                    S::pd_mul(pan_tendency, modulation_in_channel_sum),
-                    S::pd_mul(one_minus_pan_tendency, modulation_inputs),
-                )
-            };
-
             let phase = S::pd_mul(S::pd_loadu(operator_data.phase.as_ptr()), S::pd_set1(TAU));
 
             let feedback = S::pd_mul(
@@ -553,19 +528,44 @@ mod gen {
                 ),
             );
 
-            S::pd_fast_sin(S::pd_add(phase, S::pd_add(feedback, modulation_in)))
+            S::pd_fast_sin(S::pd_add(phase, S::pd_add(feedback, modulation_inputs)))
         };
 
         let sample = S::pd_mul(sample, key_velocity);
         let sample = S::pd_mul(sample, S::pd_loadu(operator_data.volume.as_ptr()));
         let sample = S::pd_mul(sample, S::pd_loadu(operator_data.envelope_volume.as_ptr()));
-        let sample = S::pd_mul(
-            sample,
-            S::pd_loadu(operator_data.constant_power_panning.as_ptr()),
-        );
 
-        let mix_out = S::pd_mul(sample, S::pd_loadu(operator_data.mix_out.as_ptr()));
-        let mod_out = S::pd_mul(sample, S::pd_loadu(operator_data.mod_out.as_ptr()));
+        let panning = S::pd_loadu(operator_data.panning.as_ptr());
+
+        // Mix channels depending on panning of current operator. If panned to
+        // the middle, just pass through the stereo signals. If panned to any
+        // side, mix out the original stereo signals and mix in mono.
+        let sample = {
+            let mono = S::pd_mul(S::pd_pairwise_horizontal_sum(sample), S::pd_set1(0.5));
+            let mono_mix_factor = mono_mix_factor(panning);
+
+            S::pd_add(
+                S::pd_mul(mono_mix_factor, mono),
+                S::pd_mul(S::pd_sub(S::pd_set1(1.0), mono_mix_factor), sample),
+            )
+        };
+
+        let mix_out = {
+            let pan_factor = S::pd_loadu(operator_data.constant_power_panning.as_ptr());
+
+            S::pd_mul(
+                S::pd_mul(sample, pan_factor),
+                S::pd_loadu(operator_data.mix_out.as_ptr()),
+            )
+        };
+        let mod_out = {
+            let pan_factor = linear_panning_factor(panning);
+
+            S::pd_mul(
+                S::pd_mul(sample, pan_factor),
+                S::pd_loadu(operator_data.mod_out.as_ptr()),
+            )
+        };
 
         (mix_out, mod_out)
     }
@@ -616,5 +616,93 @@ mod gen {
 
         target[offset] = value;
         target[offset + 1] = value;
+    }
+
+    /// Linear panning. Get channel volume as number between 0.0 and 1.0
+    #[feature_gate]
+    #[target_feature_enable]
+    unsafe fn linear_panning_factor(
+        panning: <S as Simd>::PackedDouble,
+    ) -> <S as Simd>::PackedDouble {
+        let factor = S::pd_interleave(S::pd_sub(S::pd_set1(1.0), panning), panning);
+        let factor = S::pd_mul(factor, S::pd_set1(2.0));
+
+        S::pd_min(factor, S::pd_set1(1.0))
+    }
+
+    /// Get amount of channel that should be derived from mono for stereo mix
+    /// panning
+    #[feature_gate]
+    #[target_feature_enable]
+    unsafe fn mono_mix_factor(panning: <S as Simd>::PackedDouble) -> <S as Simd>::PackedDouble {
+        // Get panning as value between -1 and 1
+        let pan = S::pd_mul(S::pd_set1(2.0), S::pd_sub(panning, S::pd_set1(0.5)));
+
+        S::pd_max(
+            S::pd_mul(pan, S::pd_distribute_left_right(-1.0, 1.0)),
+            S::pd_setzero(),
+        )
+    }
+
+    #[cfg(test)]
+    mod tests {
+        #[feature_gate]
+        use super::*;
+
+        #[feature_gate]
+        #[test_feature_gate]
+        #[test]
+        fn test_linear_panning_factor() {
+            unsafe {
+                assert_eq!(
+                    S::pd_to_array(linear_panning_factor(S::pd_set1(0.0))),
+                    S::pd_to_array(S::pd_distribute_left_right(1.0, 0.0))
+                );
+                assert_eq!(
+                    S::pd_to_array(linear_panning_factor(S::pd_set1(0.25))),
+                    S::pd_to_array(S::pd_distribute_left_right(1.0, 0.5))
+                );
+                assert_eq!(
+                    S::pd_to_array(linear_panning_factor(S::pd_set1(0.5))),
+                    S::pd_to_array(S::pd_distribute_left_right(1.0, 1.0))
+                );
+                assert_eq!(
+                    S::pd_to_array(linear_panning_factor(S::pd_set1(0.75))),
+                    S::pd_to_array(S::pd_distribute_left_right(0.5, 1.0))
+                );
+                assert_eq!(
+                    S::pd_to_array(linear_panning_factor(S::pd_set1(1.0))),
+                    S::pd_to_array(S::pd_distribute_left_right(0.0, 1.0))
+                );
+            }
+        }
+
+        #[feature_gate]
+        #[test_feature_gate]
+        #[test]
+        fn test_mono_mix_factor() {
+            unsafe {
+                assert_eq!(
+                    S::pd_to_array(mono_mix_factor(S::pd_set1(0.0))),
+                    S::pd_to_array(S::pd_distribute_left_right(1.0, 0.0))
+                );
+                assert_eq!(
+                    S::pd_to_array(mono_mix_factor(S::pd_set1(0.25))),
+                    S::pd_to_array(S::pd_distribute_left_right(0.5, 0.0))
+                );
+                assert_eq!(
+                    S::pd_to_array(mono_mix_factor(S::pd_set1(0.5))),
+                    S::pd_to_array(S::pd_distribute_left_right(0.0, 0.0))
+                );
+                assert_eq!(
+                    S::pd_to_array(mono_mix_factor(S::pd_set1(0.75))),
+                    S::pd_to_array(S::pd_distribute_left_right(0.0, 0.5))
+                );
+                assert_eq!(
+                    S::pd_to_array(mono_mix_factor(S::pd_set1(1.0))),
+                    S::pd_to_array(S::pd_distribute_left_right(0.0, 1.0))
+                );
+            }
+        }
     }
 }

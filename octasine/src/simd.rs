@@ -33,6 +33,7 @@ impl FallbackSine for FallbackSineSleef {
 #[allow(clippy::missing_safety_doc)]
 pub trait Simd {
     type PackedDouble;
+    type DoubleArray;
     const PD_WIDTH: usize;
     const SAMPLES: usize;
 
@@ -40,12 +41,14 @@ pub trait Simd {
     unsafe fn pd_setzero() -> Self::PackedDouble;
     unsafe fn pd_loadu(source: *const f64) -> Self::PackedDouble;
     unsafe fn pd_storeu(target: *mut f64, a: Self::PackedDouble);
+    unsafe fn pd_to_array(a: Self::PackedDouble) -> Self::DoubleArray;
     unsafe fn pd_add(a: Self::PackedDouble, b: Self::PackedDouble) -> Self::PackedDouble;
     unsafe fn pd_sub(a: Self::PackedDouble, b: Self::PackedDouble) -> Self::PackedDouble;
     unsafe fn pd_mul(a: Self::PackedDouble, b: Self::PackedDouble) -> Self::PackedDouble;
     unsafe fn pd_min(a: Self::PackedDouble, b: Self::PackedDouble) -> Self::PackedDouble;
     unsafe fn pd_max(a: Self::PackedDouble, b: Self::PackedDouble) -> Self::PackedDouble;
     unsafe fn pd_fast_sin(a: Self::PackedDouble) -> Self::PackedDouble;
+    unsafe fn pd_interleave(a: Self::PackedDouble, b: Self::PackedDouble) -> Self::PackedDouble;
     unsafe fn pd_pairwise_horizontal_sum(a: Self::PackedDouble) -> Self::PackedDouble;
     unsafe fn pd_distribute_left_right(l: f64, r: f64) -> Self::PackedDouble;
     unsafe fn pd_any_over_zero(volume: Self::PackedDouble) -> bool;
@@ -58,6 +61,7 @@ pub struct Fallback<T> {
 #[allow(clippy::missing_safety_doc)]
 impl<T: FallbackSine> Simd for Fallback<T> {
     type PackedDouble = [f64; 2];
+    type DoubleArray = [f64; 2];
     const PD_WIDTH: usize = 2;
     const SAMPLES: usize = 1;
 
@@ -72,6 +76,9 @@ impl<T: FallbackSine> Simd for Fallback<T> {
     }
     unsafe fn pd_storeu(target: *mut f64, a: [f64; 2]) {
         ::std::ptr::write(target as *mut [f64; 2], a);
+    }
+    unsafe fn pd_to_array(a: Self::PackedDouble) -> Self::DoubleArray {
+        a
     }
     unsafe fn pd_add([a1, a2]: [f64; 2], [b1, b2]: [f64; 2]) -> [f64; 2] {
         [a1 + b1, a2 + b2]
@@ -91,6 +98,9 @@ impl<T: FallbackSine> Simd for Fallback<T> {
     unsafe fn pd_fast_sin(a: [f64; 2]) -> [f64; 2] {
         T::sin(a)
     }
+    unsafe fn pd_interleave(a: [f64; 2], b: [f64; 2]) -> [f64; 2] {
+        [a[0], b[1]]
+    }
     unsafe fn pd_pairwise_horizontal_sum([l, r]: [f64; 2]) -> [f64; 2] {
         [l + r, l + r]
     }
@@ -109,6 +119,7 @@ pub struct Sse2;
 #[allow(clippy::missing_safety_doc)]
 impl Simd for Sse2 {
     type PackedDouble = __m128d;
+    type DoubleArray = [f64; 2];
     const PD_WIDTH: usize = 2;
     const SAMPLES: usize = 1;
 
@@ -127,6 +138,14 @@ impl Simd for Sse2 {
     #[target_feature(enable = "sse2")]
     unsafe fn pd_storeu(target: *mut f64, a: __m128d) {
         _mm_storeu_pd(target, a)
+    }
+    #[target_feature(enable = "sse2")]
+    unsafe fn pd_to_array(a: Self::PackedDouble) -> Self::DoubleArray {
+        let mut arr = Self::DoubleArray::default();
+
+        _mm_storeu_pd(arr.as_mut_ptr(), a);
+
+        arr
     }
     #[target_feature(enable = "sse2")]
     unsafe fn pd_add(a: __m128d, b: __m128d) -> __m128d {
@@ -153,6 +172,10 @@ impl Simd for Sse2 {
         sleef_sys::Sleef_cinz_sind2_u35sse2(a)
     }
     #[target_feature(enable = "sse2")]
+    unsafe fn pd_interleave(a: __m128d, b: __m128d) -> __m128d {
+        _mm_move_sd(b, a)
+    }
+    #[target_feature(enable = "sse2")]
     unsafe fn pd_pairwise_horizontal_sum(a: __m128d) -> __m128d {
         _mm_add_pd(a, _mm_shuffle_pd(a, a, 0b01))
     }
@@ -175,6 +198,7 @@ pub struct Avx;
 #[allow(clippy::missing_safety_doc)]
 impl Simd for Avx {
     type PackedDouble = __m256d;
+    type DoubleArray = [f64; 4];
     const PD_WIDTH: usize = 4;
     const SAMPLES: usize = 2;
 
@@ -193,6 +217,14 @@ impl Simd for Avx {
     #[target_feature(enable = "avx")]
     unsafe fn pd_storeu(target: *mut f64, a: __m256d) {
         _mm256_storeu_pd(target, a)
+    }
+    #[target_feature(enable = "avx")]
+    unsafe fn pd_to_array(a: Self::PackedDouble) -> Self::DoubleArray {
+        let mut arr = Self::DoubleArray::default();
+
+        _mm256_storeu_pd(arr.as_mut_ptr(), a);
+
+        arr
     }
     #[target_feature(enable = "avx")]
     unsafe fn pd_add(a: __m256d, b: __m256d) -> __m256d {
@@ -217,6 +249,10 @@ impl Simd for Avx {
     #[target_feature(enable = "avx")]
     unsafe fn pd_fast_sin(a: __m256d) -> __m256d {
         sleef_sys::Sleef_cinz_sind4_u35avx(a)
+    }
+    #[target_feature(enable = "avx")]
+    unsafe fn pd_interleave(a: __m256d, b: __m256d) -> __m256d {
+        _mm256_blend_pd(a, b, 0b1010)
     }
     #[target_feature(enable = "avx")]
     unsafe fn pd_pairwise_horizontal_sum(a: __m256d) -> __m256d {
