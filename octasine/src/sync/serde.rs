@@ -120,22 +120,22 @@ impl SerdePatch {
         bytes.write_i32::<BigEndian>(self.parameters.len().try_into()?)?;
 
         let name_buf = {
-            let mut name_buf = [0u8; 28];
-            let mut chars_written = 0;
+            let mut buf = [0u8; 28];
 
-            for (b, c) in name_buf.iter_mut().zip(self.name.chars()) {
-                if c.is_ascii() {
-                    *b = c as u8;
-                } else {
-                    *b = b' ';
-                }
-
-                chars_written += 1;
+            // Iterate through all buffer items except last, where a null
+            // terminator must be left in place. If there are less than 27
+            // chars, the last one will automatically be followed by a null
+            // byte.
+            for (b, c) in buf[..27].iter_mut().zip(
+                self.name
+                    .chars()
+                    .into_iter()
+                    .filter_map(|c| c.is_ascii().then_some(c as u8)),
+            ) {
+                *b = c;
             }
 
-            name_buf[chars_written.min(name_buf.len() - 1)] = 0;
-
-            name_buf
+            buf
         };
 
         bytes.extend_from_slice(&name_buf);
