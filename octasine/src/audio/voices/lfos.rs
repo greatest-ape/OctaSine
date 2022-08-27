@@ -4,19 +4,18 @@ use crate::{
     parameters::{lfo_mode::LfoMode, lfo_shape::LfoShape},
 };
 
-const INTERPOLATION_DURATION: InterpolationDuration = InterpolationDuration::approx_3ms();
+const INTERPOLATION_DURATION_SHORT: InterpolationDuration = InterpolationDuration::exactly_10ms();
+const INTERPOLATION_DURATION_LONG: InterpolationDuration = InterpolationDuration::approx_3ms();
 
 #[derive(Debug, Clone)]
 enum LfoStage {
     Interpolate {
         from_value: f32,
         samples_done: usize,
+        samples_to_interpolate: usize,
     },
     Running,
-    Stopping {
-        from_value: f32,
-        samples_done: usize,
-    },
+    OneshotComplete,
     Stopped,
 }
 
@@ -27,13 +26,11 @@ pub struct VoiceLfo {
     phase: Phase,
     last_value: f32,
     sample_rate: SampleRate,
-    samples_to_interpolate: usize,
 }
 
 impl Default for VoiceLfo {
     fn default() -> Self {
         let sample_rate = SampleRate::default();
-        let samples_to_interpolate = INTERPOLATION_DURATION.samples(sample_rate);
 
         Self {
             stage: LfoStage::Stopped,
@@ -41,7 +38,6 @@ impl Default for VoiceLfo {
             phase: Phase(0.0),
             last_value: 0.0,
             sample_rate,
-            samples_to_interpolate,
         }
     }
 }
@@ -56,7 +52,7 @@ impl VoiceLfo {
         mode: LfoMode,
         frequency: f64,
     ) {
-        if let LfoStage::Stopped = self.stage {
+        if let LfoStage::Stopped | LfoStage::OneshotComplete = self.stage {
             return;
         }
 
@@ -66,20 +62,16 @@ impl VoiceLfo {
 
         if self.sample_rate != sample_rate {
             self.sample_rate = sample_rate;
-            self.samples_to_interpolate = INTERPOLATION_DURATION.samples(sample_rate);
 
             // Restart interpolation
             self.stage = match self.stage {
                 LfoStage::Interpolate { .. } => LfoStage::Interpolate {
                     from_value: self.last_value,
                     samples_done: 0,
+                    samples_to_interpolate: INTERPOLATION_DURATION_SHORT.samples(sample_rate),
                 },
                 LfoStage::Running => LfoStage::Running,
-                LfoStage::Stopping { .. } => LfoStage::Stopping {
-                    from_value: self.last_value,
-                    samples_done: 0,
-                },
-                LfoStage::Stopped => unreachable!(),
+                LfoStage::OneshotComplete | LfoStage::Stopped => unreachable!(),
             };
         }
 
@@ -91,33 +83,38 @@ impl VoiceLfo {
             LfoStage::Interpolate {
                 from_value,
                 mut samples_done,
+                samples_to_interpolate,
             } => {
                 if new_phase >= 1.0 {
                     if mode == LfoMode::Once {
-                        self.request_stop();
+                        self.stage = LfoStage::OneshotComplete;
                     } else {
                         self.stage = LfoStage::Interpolate {
                             from_value: self.last_value,
                             samples_done: 0,
+                            samples_to_interpolate: INTERPOLATION_DURATION_SHORT
+                                .samples(self.sample_rate),
                         };
                     }
                 } else {
                     samples_done += 1;
 
-                    if samples_done == self.samples_to_interpolate {
+                    if samples_done == samples_to_interpolate {
                         self.stage = LfoStage::Running;
                     } else {
                         self.stage = LfoStage::Interpolate {
                             from_value,
                             samples_done,
-                        }
+                            samples_to_interpolate: INTERPOLATION_DURATION_SHORT
+                                .samples(self.sample_rate),
+                        };
                     }
                 }
             }
             LfoStage::Running => {
                 if new_phase >= 1.0 {
                     if mode == LfoMode::Once {
-                        self.request_stop();
+                        self.stage = LfoStage::OneshotComplete;
                     } else {
                         match (self.current_shape, shape) {
                             (Some(LfoShape::Sine), LfoShape::Sine)
@@ -128,29 +125,15 @@ impl VoiceLfo {
                                 self.stage = LfoStage::Interpolate {
                                     from_value: self.last_value,
                                     samples_done: 0,
-                                }
+                                    samples_to_interpolate: INTERPOLATION_DURATION_SHORT
+                                        .samples(self.sample_rate),
+                                };
                             }
                         }
                     }
                 }
             }
-            LfoStage::Stopping {
-                from_value,
-                mut samples_done,
-            } => {
-                samples_done += 1;
-
-                if samples_done == self.samples_to_interpolate {
-                    self.stage = LfoStage::Stopped;
-                    self.last_value = 0.0;
-                } else {
-                    self.stage = LfoStage::Stopping {
-                        from_value,
-                        samples_done,
-                    }
-                }
-            }
-            LfoStage::Stopped => {
+            LfoStage::OneshotComplete | LfoStage::Stopped => {
                 unreachable!()
             }
         }
@@ -171,20 +154,14 @@ impl VoiceLfo {
             LfoStage::Interpolate {
                 from_value,
                 samples_done,
+                samples_to_interpolate,
             } => {
-                let progress = samples_done as f32 / self.samples_to_interpolate as f32;
+                let progress = samples_done as f32 / samples_to_interpolate as f32;
 
                 progress * shape.calculate(self.phase) + (1.0 - progress) * from_value
             }
             LfoStage::Running => shape.calculate(self.phase),
-            LfoStage::Stopping {
-                from_value,
-                samples_done,
-            } => {
-                let progress = samples_done as f32 / self.samples_to_interpolate as f32;
-
-                from_value - from_value * progress
-            }
+            LfoStage::OneshotComplete => self.last_value,
             LfoStage::Stopped => {
                 unreachable!()
             }
@@ -199,24 +176,29 @@ impl VoiceLfo {
         self.phase = Phase(0.0);
         self.current_shape = None;
 
-        self.stage = if let LfoStage::Stopped = self.stage {
-            LfoStage::Interpolate {
-                from_value: 0.0,
-                samples_done: 0,
+        match self.stage {
+            LfoStage::Stopped => {
+                self.stage = LfoStage::Interpolate {
+                    from_value: 0.0,
+                    samples_done: 0,
+                    samples_to_interpolate: INTERPOLATION_DURATION_SHORT.samples(self.sample_rate),
+                };
             }
-        } else {
-            LfoStage::Interpolate {
-                from_value: self.last_value,
-                samples_done: 0,
+            LfoStage::OneshotComplete => {
+                self.stage = LfoStage::Interpolate {
+                    from_value: self.last_value,
+                    samples_done: 0,
+                    samples_to_interpolate: INTERPOLATION_DURATION_LONG.samples(self.sample_rate),
+                };
             }
-        };
-    }
-
-    fn request_stop(&mut self) {
-        self.stage = LfoStage::Stopping {
-            from_value: self.last_value,
-            samples_done: 0,
-        };
+            _ => {
+                self.stage = LfoStage::Interpolate {
+                    from_value: self.last_value,
+                    samples_done: 0,
+                    samples_to_interpolate: INTERPOLATION_DURATION_SHORT.samples(self.sample_rate),
+                };
+            }
+        }
     }
 
     pub fn envelope_ended(&mut self) {
