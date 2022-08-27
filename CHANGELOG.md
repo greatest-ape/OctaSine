@@ -20,7 +20,7 @@ All notable changes to this project will be documented in this file.
   - Use true stereo panning (not just balance) for mix and modulation output
   - Stop using constant power panning for modulation output. Previously, when
     an operator was panned to the center, its modulation output would scale at
-    approximately 0.7071 (`cos(π/4)`) the rate of feedback but at the same
+    `cos(π/4)` (approximately 0.7071) the rate of feedback but at the same
     rate when panned hard to a side, which is not very intuitive. 
 - When note off message is received during envelope attack phase, always go to
   release phase, even if it means that with low sustain volumes and a long
