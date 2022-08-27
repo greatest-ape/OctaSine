@@ -257,12 +257,12 @@ cfg_if::cfg_if! {
             }
             fn export_patch(&self) -> (String, Vec<u8>) {
                 let name = self.patches.get_current_patch_filename_for_export();
-                let data = self.patches.export_current_patch_bytes();
+                let data = self.patches.export_current_patch_fxp_bytes();
 
                 (name, data)
             }
             fn export_bank(&self) -> Vec<u8> {
-                self.patches.export_bank_as_bytes()
+                self.patches.export_bank_as_fxb_bytes()
             }
             fn import_bank_from_serde(&self, serde_bank: SerdePatchBank) {
                 self.patches.import_bank_from_serde(serde_bank);

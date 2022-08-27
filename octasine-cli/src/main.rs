@@ -10,6 +10,8 @@ use std::{
 };
 
 use clap::{Parser, Subcommand};
+use octasine::sync::serde::{SerdePatch, SerdePatchBank};
+use serde::Deserialize;
 
 #[derive(Parser)]
 #[clap(author, version, about, long_about = None)]
@@ -61,13 +63,24 @@ fn main() -> anyhow::Result<()> {
             }
         }
         Commands::PackPatch { path } => {
-            use octasine::sync::serde::to_bytes;
+            let mut file = File::open(path)?;
+            let mut bytes = Vec::new();
 
-            let file = File::open(path)?;
-            let patch_bank: serde_json::Value = serde_json::from_reader(&file)?;
-            let bytes = to_bytes(&patch_bank)?;
+            file.read_to_end(&mut bytes)?;
 
-            stdout().lock().write_all(&bytes)?;
+            #[derive(Deserialize)]
+            #[serde(untagged)]
+            enum PatchOrBank {
+                Patch(SerdePatch),
+                Bank(SerdePatchBank),
+            }
+
+            let bla: PatchOrBank = serde_json::from_slice(&bytes)?;
+
+            stdout().lock().write_all(&match bla {
+                PatchOrBank::Patch(patch) => patch.to_fxp_bytes()?,
+                PatchOrBank::Bank(bank) => bank.to_fxb_bytes()?,
+            })?;
 
             Ok(())
         }
