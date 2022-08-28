@@ -22,6 +22,7 @@ All notable changes to this project will be documented in this file.
     an operator was panned to the center, its modulation output would scale at
     `cos(π/4)` (approximately 0.7071) the rate of feedback but at the same
     rate when panned hard to a side, which is not very intuitive. 
+- Decrease minimum envelope stage duration from 10ms to 3ms
 - When note off message is received during envelope attack phase, always go to
   release phase, even if it means that with low sustain volumes and a long
   release time, short notes might be loud for a lot longer than longer
@@ -31,6 +32,8 @@ All notable changes to this project will be documented in this file.
 
 - When note off message is received during envelope decay phase, go to release
   phase
+- For LFOs in oneshot mode, after running once, stay at the end value instead
+  of going back to zero
 
 ## 0.7.0 - 2022-06-08
 
