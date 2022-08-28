@@ -22,7 +22,6 @@ pub struct SyncState {
     /// option of leaving this field empty is useful when benchmarking.
     host: Option<HostCallback>,
     pub patches: PatchBank,
-    settings: Settings,
 }
 
 impl SyncState {
@@ -30,7 +29,6 @@ impl SyncState {
         Self {
             host,
             patches: built_in_patch_bank(),
-            settings: Settings::load_or_default(),
         }
     }
 
@@ -253,7 +251,7 @@ cfg_if::cfg_if! {
                 self.patches.have_patches_changed()
             }
             fn get_gui_settings(&self) -> crate::gui::GuiSettings {
-                self.settings.gui.clone()
+                Settings::load_or_default().gui
             }
             fn export_patch(&self) -> (String, Vec<u8>) {
                 let name = self.patches.get_current_patch_filename_for_export();
