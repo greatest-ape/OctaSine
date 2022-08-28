@@ -30,7 +30,7 @@ Frequency modulation synthesizer plugin. Runs on macOS, Windows and Linux (X11) 
 * Flexible routing allows setting the operator modulation targets (with some limitations) as well as the amount of signal that is simply added to the final output, enabling additive synthesis.
 * Four LFOs with multiple waveforms, oneshot and loop modes and optional DAW BPM sync. They can target most operator parameters and most parameters of lower-index LFOs.
 * Each operator is connected to an attack-decay-sustain-release volume envelope with logarithmic slopes.
-* Per-operator white noise mode makes it easy to create percussive sounds such as hi-hats and cymbals.
+* Per-operator white noise mode makes it easy to create percussive sounds such as hi-hats.
 * Runs on macOS (definitely 10.15.7, probably later versions too), Windows 10 and Linux (X11 only) in VST2-compatible DAWs on 64-bit computers. Synthesis is SIMD-accelerated in many cases (SSE2, AVX).
 * Master volume and master frequency parameters
 * 128 voices (using them all simultaneously might consume quite a bit of CPU time though)
@@ -64,7 +64,7 @@ cd OctaSine
 * Unless you want to use the bleeding edge development branch, switch to the latest stable version, e.g.:
 
 ```sh
-git checkout tags/v0.7.0
+git checkout tags/v0.8.0
 ```
 
 * Build and install:
@@ -84,7 +84,7 @@ git checkout tags/v0.7.0
 * Unless you want to use the bleeding edge development branch, switch to the latest stable version, e.g.:
 
 ```sh
-git checkout tags/v0.7.0
+git checkout tags/v0.8.0
 ```
 
 * Build OctaSine:
@@ -122,7 +122,7 @@ cd OctaSine
 * Unless you want to use the bleeding edge development branch, switch to the latest stable version, e.g.:
 
 ```sh
-git checkout tags/v0.7.0
+git checkout tags/v0.8.0
 ```
 
 * Build the OctaSine plugin:
