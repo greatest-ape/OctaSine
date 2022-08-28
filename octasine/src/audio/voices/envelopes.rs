@@ -6,7 +6,7 @@ use crate::parameters::ENVELOPE_CURVE_TAKEOVER_RECIP;
 use super::log10_table::Log10Table;
 use super::VoiceDuration;
 
-const INTERPOLATION_DURATION: f64 = 0.01;
+const INTERPOLATION_DURATION: f64 = 0.00333;
 
 #[derive(Debug, Copy, Clone)]
 pub struct VoiceOperatorVolumeEnvelope {

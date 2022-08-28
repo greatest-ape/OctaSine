@@ -6,7 +6,7 @@ use super::{
 };
 
 pub const ENVELOPE_MAX_DURATION: f64 = 4.0;
-pub const ENVELOPE_MIN_DURATION: f64 = 0.01;
+pub const ENVELOPE_MIN_DURATION: f64 = 0.00333;
 
 /// After this duration, the envelope slope does not get mixed with linear
 /// slope at all

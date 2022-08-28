@@ -75,12 +75,12 @@ fn main() -> anyhow::Result<()> {
                 Bank(SerdePatchBank),
             }
 
-            let bla: PatchOrBank = serde_json::from_slice(&bytes)?;
-
-            stdout().lock().write_all(&match bla {
-                PatchOrBank::Patch(patch) => patch.to_fxp_bytes()?,
-                PatchOrBank::Bank(bank) => bank.to_fxb_bytes()?,
-            })?;
+            stdout()
+                .lock()
+                .write_all(&match serde_json::from_slice(&bytes)? {
+                    PatchOrBank::Patch(patch) => patch.to_fxp_bytes()?,
+                    PatchOrBank::Bank(bank) => bank.to_fxb_bytes()?,
+                })?;
 
             Ok(())
         }

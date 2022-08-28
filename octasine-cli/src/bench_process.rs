@@ -17,10 +17,10 @@ pub fn run() -> anyhow::Result<()> {
     // depending on std sine implementation
     #[allow(unused_variables)]
     let (_, fallback_std) =
-        benchmark::<octasine::simd::FallbackStd>("fallback (std)", "b3 51 ed 9a c4 71 fe 08 ");
+        benchmark::<octasine::simd::FallbackStd>("fallback (std)", "17 8d b0 3b 97 df 2d 98 ");
 
     // Don't forget trailing space
-    let hash = "81 c9 28 fd 3c 0e 9e f7 ";
+    let hash = "08 bd 63 6c 7b 93 83 8e ";
 
     let mut all_sleef_hashes_match = true;
 
