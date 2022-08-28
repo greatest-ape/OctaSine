@@ -1787,7 +1787,7 @@ dependencies = [
 
 [[package]]
 name = "octasine"
-version = "0.7.0"
+version = "0.8.0"
 dependencies = [
  "anyhow",
  "arc-swap",
@@ -1823,7 +1823,7 @@ dependencies = [
 
 [[package]]
 name = "octasine-cli"
-version = "0.7.0"
+version = "0.8.0"
 dependencies = [
  "anyhow",
  "clap",
@@ -1840,7 +1840,7 @@ dependencies = [
 
 [[package]]
 name = "octasine-vst2-plugin"
-version = "0.7.0"
+version = "0.8.0"
 dependencies = [
  "octasine",
  "vst",

@@ -1,6 +1,6 @@
 [package]
 name = "octasine-vst2-plugin"
-version = "0.7.0"
+version = "0.8.0"
 authors = ["Joakim Frostegård <joakim.frostegard@gmail.com>"]
 license = "AGPL-3.0"
 edition = "2021"
@@ -16,5 +16,5 @@ glow = ["octasine/gui_glow"]
 wgpu = ["octasine/gui_wgpu"]
 
 [dependencies]
-octasine = { path = "../octasine", version = "0.7.0", default-features = false }
+octasine = { path = "../octasine", version = "0.8.0", default-features = false }
 vst = "0.3.0"
