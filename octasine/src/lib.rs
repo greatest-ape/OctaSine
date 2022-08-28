@@ -22,8 +22,8 @@ use vst::plugin::{CanDo, Category, HostCallback, Info, Plugin, PluginParameters}
 
 use common::*;
 
-pub const PLUGIN_NAME: &str = "OctaSine v0.7";
-pub const PLUGIN_UNIQUE_ID: i32 = 1_438_048_624;
+pub const PLUGIN_NAME: &str = "OctaSine v0.8";
+pub const PLUGIN_UNIQUE_ID: i32 = 1_438_048_625;
 
 pub struct OctaSine {
     pub audio: AudioState,

@@ -2,7 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
-## Unreleased
+## 0.8.0 - 2022-08-28
+
+This release features revamped stereo panning, shorter minimum envelope stage
+lengths, improved patch management, displaying of waveforms and various fixes.
+
+This release contains breaking changes. Patches might not be able to be fully
+migrated. However, in many cases, importing patches from 0.7.0 and doing two
+changes will work:
+  - Setting `mod out` values to 0.7071 of what they previously were
+  - Setting LFO targets to the correct value (they may have been changed)
+
+You can keep version 0.7.0 alongside this release, since they use different
+VST2 plugin IDs.
 
 ### Added
 
