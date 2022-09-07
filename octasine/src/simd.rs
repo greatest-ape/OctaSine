@@ -4,7 +4,7 @@
 use core::arch::x86_64::*;
 use std::{
     marker::PhantomData,
-    ops::{Add, Mul, Sub},
+    ops::{Add, AddAssign, Mul, Sub},
 };
 
 pub trait FallbackSine: Copy {
@@ -127,6 +127,15 @@ impl<T> Add for FallbackPackedDouble<T> {
     }
 }
 
+impl<T> AddAssign for FallbackPackedDouble<T>
+where
+    FallbackPackedDouble<T>: Copy,
+{
+    fn add_assign(&mut self, rhs: Self) {
+        *self = *self + rhs;
+    }
+}
+
 impl<T> Sub for FallbackPackedDouble<T> {
     type Output = Self;
 
@@ -224,6 +233,13 @@ impl Add for AvxPackedDouble {
     #[inline(always)]
     fn add(self, rhs: Self) -> Self::Output {
         unsafe { Self(_mm256_add_pd(self.0, rhs.0)) }
+    }
+}
+
+#[cfg(feature = "simd")]
+impl AddAssign for AvxPackedDouble {
+    fn add_assign(&mut self, rhs: Self) {
+        *self = *self + rhs;
     }
 }
 

@@ -444,11 +444,11 @@ mod gen {
                     key_velocity,
                 );
 
-                mix_out_sum = mix_out_sum + mix_out * master_volume;
+                mix_out_sum += mix_out * master_volume;
 
                 // Add modulation output to target operators' modulation inputs
                 for target in operator_voice_data.modulation_targets.active_indices() {
-                    voice_modulation_inputs[target] = voice_modulation_inputs[target] + mod_out;
+                    voice_modulation_inputs[target] += mod_out;
                 }
             }
         }
