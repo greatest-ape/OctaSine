@@ -453,16 +453,12 @@ mod gen {
             }
         }
 
-        mix_out_sum = mix_out_sum
-            * Pd::new(MASTER_VOLUME_FACTOR)
-                .min(Pd::new(LIMIT))
-                .max(Pd::new(-LIMIT));
+        let mix_out_arr = (mix_out_sum * Pd::new(MASTER_VOLUME_FACTOR))
+            .min(Pd::new(LIMIT))
+            .max(Pd::new(-LIMIT))
+            .to_arr();
 
-        // Write additive outputs to audio buffer
-
-        let out_arr = mix_out_sum.to_arr();
-
-        for (sample_index, chunk) in out_arr.chunks_exact(2).enumerate() {
+        for (sample_index, chunk) in mix_out_arr.chunks_exact(2).enumerate() {
             audio_buffer_lefts[sample_index] = chunk[0] as f32;
             audio_buffer_rights[sample_index] = chunk[1] as f32;
         }
