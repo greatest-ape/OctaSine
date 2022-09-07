@@ -444,10 +444,7 @@ mod gen {
                     key_velocity,
                 );
 
-                // Apply master volume
-                let mix_out = mix_out * master_volume;
-
-                mix_out_sum = mix_out_sum + mix_out;
+                mix_out_sum = mix_out_sum + mix_out * master_volume;
 
                 // Add modulation output to target operators' modulation inputs
                 for target in operator_voice_data.modulation_targets.active_indices() {
@@ -456,21 +453,18 @@ mod gen {
             }
         }
 
-        // Apply master volume factor and hard limit
-
-        mix_out_sum = mix_out_sum * Pd::new(MASTER_VOLUME_FACTOR);
-        mix_out_sum = mix_out_sum.min(Pd::new(LIMIT));
-        mix_out_sum = mix_out_sum.max(Pd::new(-LIMIT));
+        mix_out_sum = mix_out_sum
+            * Pd::new(MASTER_VOLUME_FACTOR)
+                .min(Pd::new(LIMIT))
+                .max(Pd::new(-LIMIT));
 
         // Write additive outputs to audio buffer
 
         let out_arr = mix_out_sum.to_arr();
 
-        for sample_index in 0..Pd::SAMPLES {
-            let sample_index_offset = sample_index * 2;
-
-            audio_buffer_lefts[sample_index] = out_arr[sample_index_offset] as f32;
-            audio_buffer_rights[sample_index] = out_arr[sample_index_offset + 1] as f32;
+        for (sample_index, chunk) in out_arr.chunks_exact(2).enumerate() {
+            audio_buffer_lefts[sample_index] = chunk[0] as f32;
+            audio_buffer_rights[sample_index] = chunk[1] as f32;
         }
     }
 
