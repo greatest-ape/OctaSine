@@ -507,9 +507,10 @@ mod gen {
             (phase + (feedback + modulation_inputs)).fast_sin()
         };
 
-        let sample = sample * key_velocity;
-        let sample = sample * Pd::new_from_slice_ptr(operator_data.volume.as_ptr());
-        let sample = sample * Pd::new_from_slice_ptr(operator_data.envelope_volume.as_ptr());
+        let volume = Pd::new_from_slice_ptr(operator_data.volume.as_ptr());
+        let envelope_volume = Pd::new_from_slice_ptr(operator_data.envelope_volume.as_ptr());
+
+        let sample = sample * key_velocity * volume * envelope_volume;
 
         let panning = Pd::new_from_slice_ptr(operator_data.panning.as_ptr());
 
@@ -592,10 +593,7 @@ mod gen {
     #[feature_gate]
     #[target_feature_enable]
     unsafe fn linear_panning_factor(panning: Pd) -> Pd {
-        let factor = (Pd::new(1.0) - panning).interleave(panning);
-        let factor = factor * Pd::new(2.0);
-
-        factor.min(Pd::new(1.0))
+        ((Pd::new(1.0) - panning).interleave(panning) * Pd::new(2.0)).min(Pd::new(1.0))
     }
 
     /// Get amount of channel that should be derived from mono for stereo mix
