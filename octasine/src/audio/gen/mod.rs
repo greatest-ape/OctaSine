@@ -485,19 +485,15 @@ mod gen {
         let sample = if operator_data.wave_type == WaveType::WhiteNoise {
             let mut random_numbers = [0.0f64; Pd::PD_WIDTH];
 
-            for sample_index in 0..Pd::SAMPLES {
+            for chunk in random_numbers.chunks_exact_mut(2) {
                 let random = rng.f64();
 
-                let sample_index_offset = sample_index * 2;
-
-                random_numbers[sample_index_offset] = random;
-                random_numbers[sample_index_offset + 1] = random;
+                chunk[0] = random;
+                chunk[1] = random;
             }
 
-            let random_numbers = Pd::from_arr(random_numbers);
-
             // Convert random numbers to range -1.0 to 1.0
-            Pd::new(2.0) * (random_numbers - Pd::new(0.5))
+            Pd::new(2.0) * (Pd::from_arr(random_numbers) - Pd::new(0.5))
         } else {
             let phase = Pd::load_ptr(operator_data.phase.as_ptr());
             let feedback = Pd::load_ptr(operator_data.feedback.as_ptr());
