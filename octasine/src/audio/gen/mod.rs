@@ -517,21 +517,23 @@ mod gen {
         // the middle, just pass through the stereo signals. If panned to any
         // side, mix out the original stereo signals and mix in mono.
         let sample = {
-            let mono = sample.pairwise_horizontal_sum() * Pd::new(0.5);
             let mono_mix_factor = mono_mix_factor(panning);
+            let mono = sample.pairwise_horizontal_sum() * Pd::new(0.5);
 
             (mono_mix_factor * mono) + ((Pd::new(1.0) - mono_mix_factor) * sample)
         };
 
         let mix_out = {
             let pan_factor = Pd::load_ptr(operator_data.constant_power_panning.as_ptr());
+            let mix_out = Pd::load_ptr(operator_data.mix_out.as_ptr());
 
-            (sample * pan_factor) * Pd::load_ptr(operator_data.mix_out.as_ptr())
+            sample * pan_factor * mix_out
         };
         let mod_out = {
             let pan_factor = linear_panning_factor(panning);
+            let mod_out = Pd::load_ptr(operator_data.mod_out.as_ptr());
 
-            (sample * pan_factor) * Pd::load_ptr(operator_data.mod_out.as_ptr())
+            sample * pan_factor * mod_out
         };
 
         (mix_out, mod_out)
