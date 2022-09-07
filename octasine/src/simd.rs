@@ -185,6 +185,7 @@ impl SimdPackedDouble for AvxPackedDouble {
 
         Self(_mm256_loadu_pd(lr.as_ptr()))
     }
+    #[target_feature(enable = "avx")]
     unsafe fn from_arr(arr: Self::DoubleArray) -> Self {
         Self(_mm256_loadu_pd(arr.as_ptr()))
     }
