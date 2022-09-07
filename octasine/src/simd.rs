@@ -46,16 +46,16 @@ pub trait SimdPackedDouble: Copy {
 
     type DoubleArray;
 
-    unsafe fn new_from_slice_ptr(source: *const f64) -> Self;
+    unsafe fn new(value: f64) -> Self;
     unsafe fn new_zeroed() -> Self;
-    unsafe fn new_splat(value: f64) -> Self;
+    unsafe fn new_from_pair(l: f64, r: f64) -> Self;
+    unsafe fn new_from_slice_ptr(source: *const f64) -> Self;
     unsafe fn to_arr(&self) -> Self::DoubleArray;
     unsafe fn min(&self, other: Self) -> Self;
     unsafe fn max(&self, other: Self) -> Self;
     unsafe fn fast_sin(&self) -> Self;
     unsafe fn pairwise_horizontal_sum(&self) -> Self;
     unsafe fn interleave(&self, other: Self) -> Self;
-    unsafe fn distribute_left_right(l: f64, r: f64) -> Self;
     unsafe fn any_over_zero(&self) -> bool;
 }
 
@@ -68,14 +68,17 @@ impl<T: FallbackSine> SimdPackedDouble for FallbackPackedDouble<T> {
 
     type DoubleArray = [f64; 2];
 
-    unsafe fn new_from_slice_ptr(source: *const f64) -> Self {
-        Self(*(source as *const [f64; 2]), Default::default())
+    unsafe fn new(value: f64) -> Self {
+        Self([value, value], Default::default())
     }
     unsafe fn new_zeroed() -> Self {
         Self([0.0, 0.0], Default::default())
     }
-    unsafe fn new_splat(value: f64) -> Self {
-        Self([value, value], Default::default())
+    unsafe fn new_from_pair(l: f64, r: f64) -> Self {
+        Self([l, r], Default::default())
+    }
+    unsafe fn new_from_slice_ptr(source: *const f64) -> Self {
+        Self(*(source as *const [f64; 2]), Default::default())
     }
     unsafe fn to_arr(&self) -> Self::DoubleArray {
         self.0
@@ -102,9 +105,6 @@ impl<T: FallbackSine> SimdPackedDouble for FallbackPackedDouble<T> {
     }
     unsafe fn interleave(&self, other: Self) -> Self {
         Self([self.0[0], other.0[1]], self.1)
-    }
-    unsafe fn distribute_left_right(l: f64, r: f64) -> Self {
-        Self([l, r], Default::default())
     }
     unsafe fn any_over_zero(&self) -> bool {
         (self.0[0] > 0.0) | (self.0[1] > 0.0)
@@ -159,16 +159,22 @@ impl SimdPackedDouble for AvxPackedDouble {
     type DoubleArray = [f64; 4];
 
     #[target_feature(enable = "avx")]
-    unsafe fn new_from_slice_ptr(source: *const f64) -> Self {
-        Self(_mm256_loadu_pd(source))
+    unsafe fn new(value: f64) -> Self {
+        Self(_mm256_set1_pd(value))
     }
     #[target_feature(enable = "avx")]
     unsafe fn new_zeroed() -> Self {
         Self(_mm256_setzero_pd())
     }
     #[target_feature(enable = "avx")]
-    unsafe fn new_splat(value: f64) -> Self {
-        Self(_mm256_set1_pd(value))
+    unsafe fn new_from_pair(l: f64, r: f64) -> Self {
+        let lr = [l, r, l, r];
+
+        Self(_mm256_loadu_pd(lr.as_ptr()))
+    }
+    #[target_feature(enable = "avx")]
+    unsafe fn new_from_slice_ptr(source: *const f64) -> Self {
+        Self(_mm256_loadu_pd(source))
     }
     #[target_feature(enable = "avx")]
     unsafe fn to_arr(&self) -> Self::DoubleArray {
@@ -197,12 +203,6 @@ impl SimdPackedDouble for AvxPackedDouble {
     #[target_feature(enable = "avx")]
     unsafe fn interleave(&self, other: Self) -> Self {
         Self(_mm256_blend_pd(self.0, other.0, 0b1010))
-    }
-    #[target_feature(enable = "avx")]
-    unsafe fn distribute_left_right(l: f64, r: f64) -> Self {
-        let lr = [l, r, l, r];
-
-        Self(_mm256_loadu_pd(lr.as_ptr()))
     }
     #[target_feature(enable = "avx")]
     unsafe fn any_over_zero(&self) -> bool {

@@ -132,19 +132,19 @@ pub fn process_f32_runtime_select(
 
 #[duplicate_item(
     [
-        S [ FallbackPackedDoubleStd ]
+        Pd [ FallbackPackedDoubleStd ]
         target_feature_enable [ cfg(not(feature = "fake-feature")) ]
         feature_gate [ cfg(not(feature = "fake-feature")) ]
         test_feature_gate [ cfg(not(feature = "fake-feature")) ]
     ]
     [
-        S [ FallbackPackedDoubleSleef ]
+        Pd [ FallbackPackedDoubleSleef ]
         target_feature_enable [ cfg(not(feature = "fake-feature")) ]
         feature_gate [ cfg(all(feature = "simd")) ]
         test_feature_gate [ cfg(not(feature = "fake-feature")) ]
     ]
     [
-        S [ AvxPackedDouble ]
+        Pd [ AvxPackedDouble ]
         target_feature_enable [ target_feature(enable = "avx") ]
         feature_gate [ cfg(all(feature = "simd", target_arch = "x86_64")) ]
         test_feature_gate [ cfg(target_feature = "avx") ]
@@ -155,7 +155,7 @@ mod gen {
     use super::*;
 
     #[feature_gate]
-    impl AudioGen for S {
+    impl AudioGen for Pd {
         #[target_feature_enable]
         unsafe fn process_f32(
             audio_state: &mut AudioState,
@@ -163,8 +163,8 @@ mod gen {
             rights: &mut [f32],
             position: usize,
         ) {
-            assert_eq!(lefts.len(), S::SAMPLES);
-            assert_eq!(rights.len(), S::SAMPLES);
+            assert_eq!(lefts.len(), Pd::SAMPLES);
+            assert_eq!(rights.len(), Pd::SAMPLES);
 
             if audio_state.pending_midi_events.is_empty()
                 && !audio_state.voices.iter().any(|v| v.active)
@@ -194,7 +194,7 @@ mod gen {
             voice_data.active = false;
         }
 
-        for sample_index in 0..S::SAMPLES {
+        for sample_index in 0..Pd::SAMPLES {
             let time_per_sample = audio_state.time_per_sample;
 
             audio_state
@@ -223,7 +223,7 @@ mod gen {
                     // Since we deactivate envelopes the sample after they ended, we know
                     // at this point that valid data was written for the previous sample, meaning
                     // that we don't need to worry about setting it to zero.
-                    if (S::SAMPLES == 2) & (sample_index == 0) {
+                    if (Pd::SAMPLES == 2) & (sample_index == 0) {
                         for operator in voice_data.operators.iter_mut() {
                             set_value_for_both_channels(&mut operator.envelope_volume, 1, 0.0);
                         }
@@ -412,8 +412,8 @@ mod gen {
         audio_buffer_lefts: &mut [f32],
         audio_buffer_rights: &mut [f32],
     ) {
-        // S::SAMPLES * 2 because of two channels. Even index = left channel
-        let mut mix_out_sum = S::new_zeroed();
+        // Pd::SAMPLES * 2 because of two channels. Even index = left channel
+        let mut mix_out_sum = Pd::new_zeroed();
 
         for voice_data in audio_gen_data
             .voices
@@ -423,10 +423,10 @@ mod gen {
             let operator_generate_audio = run_operator_dependency_analysis(voice_data);
 
             // Voice modulation input storage, indexed by operator
-            let mut voice_modulation_inputs = [S::new_zeroed(); 4];
+            let mut voice_modulation_inputs = [Pd::new_zeroed(); 4];
 
-            let key_velocity = S::new_from_slice_ptr(voice_data.key_velocity.as_ptr());
-            let master_volume = S::new_from_slice_ptr(voice_data.master_volume.as_ptr());
+            let key_velocity = Pd::new_from_slice_ptr(voice_data.key_velocity.as_ptr());
+            let master_volume = Pd::new_from_slice_ptr(voice_data.master_volume.as_ptr());
 
             // Go through operators downwards, starting with operator 4
             for operator_index in (0..4).map(|i| 3 - i) {
@@ -458,15 +458,15 @@ mod gen {
 
         // Apply master volume factor and hard limit
 
-        mix_out_sum = mix_out_sum * S::new_splat(MASTER_VOLUME_FACTOR);
-        mix_out_sum = mix_out_sum.min(S::new_splat(LIMIT));
-        mix_out_sum = mix_out_sum.max(S::new_splat(-LIMIT));
+        mix_out_sum = mix_out_sum * Pd::new(MASTER_VOLUME_FACTOR);
+        mix_out_sum = mix_out_sum.min(Pd::new(LIMIT));
+        mix_out_sum = mix_out_sum.max(Pd::new(-LIMIT));
 
         // Write additive outputs to audio buffer
 
         let out_arr = mix_out_sum.to_arr();
 
-        for sample_index in 0..S::SAMPLES {
+        for sample_index in 0..Pd::SAMPLES {
             let sample_index_offset = sample_index * 2;
 
             audio_buffer_lefts[sample_index] = out_arr[sample_index_offset] as f32;
@@ -479,13 +479,13 @@ mod gen {
     unsafe fn gen_voice_operator_audio(
         rng: &mut fastrand::Rng,
         operator_data: &VoiceOperatorData,
-        modulation_inputs: S,
-        key_velocity: S,
-    ) -> (S, S) {
+        modulation_inputs: Pd,
+        key_velocity: Pd,
+    ) -> (Pd, Pd) {
         let sample = if operator_data.wave_type == WaveType::WhiteNoise {
-            let mut random_numbers = [0.0f64; S::PD_WIDTH];
+            let mut random_numbers = [0.0f64; Pd::PD_WIDTH];
 
-            for sample_index in 0..S::SAMPLES {
+            for sample_index in 0..Pd::SAMPLES {
                 let random = rng.f64();
 
                 let sample_index_offset = sample_index * 2;
@@ -494,44 +494,44 @@ mod gen {
                 random_numbers[sample_index_offset + 1] = random;
             }
 
-            let random_numbers = S::new_from_slice_ptr(random_numbers.as_ptr());
+            let random_numbers = Pd::new_from_slice_ptr(random_numbers.as_ptr());
 
             // Convert random numbers to range -1.0 to 1.0
-            S::new_splat(2.0) * (random_numbers - S::new_splat(0.5))
+            Pd::new(2.0) * (random_numbers - Pd::new(0.5))
         } else {
-            let phase = S::new_from_slice_ptr(operator_data.phase.as_ptr()) * S::new_splat(TAU);
+            let phase = Pd::new_from_slice_ptr(operator_data.phase.as_ptr()) * Pd::new(TAU);
 
             let feedback = key_velocity
-                * (S::new_from_slice_ptr(operator_data.feedback.as_ptr()) * phase.fast_sin());
+                * (Pd::new_from_slice_ptr(operator_data.feedback.as_ptr()) * phase.fast_sin());
 
             (phase + (feedback + modulation_inputs)).fast_sin()
         };
 
         let sample = sample * key_velocity;
-        let sample = sample * S::new_from_slice_ptr(operator_data.volume.as_ptr());
-        let sample = sample * S::new_from_slice_ptr(operator_data.envelope_volume.as_ptr());
+        let sample = sample * Pd::new_from_slice_ptr(operator_data.volume.as_ptr());
+        let sample = sample * Pd::new_from_slice_ptr(operator_data.envelope_volume.as_ptr());
 
-        let panning = S::new_from_slice_ptr(operator_data.panning.as_ptr());
+        let panning = Pd::new_from_slice_ptr(operator_data.panning.as_ptr());
 
         // Mix channels depending on panning of current operator. If panned to
         // the middle, just pass through the stereo signals. If panned to any
         // side, mix out the original stereo signals and mix in mono.
         let sample = {
-            let mono = sample.pairwise_horizontal_sum() * S::new_splat(0.5);
+            let mono = sample.pairwise_horizontal_sum() * Pd::new(0.5);
             let mono_mix_factor = mono_mix_factor(panning);
 
-            (mono_mix_factor * mono) + ((S::new_splat(1.0) - mono_mix_factor) * sample)
+            (mono_mix_factor * mono) + ((Pd::new(1.0) - mono_mix_factor) * sample)
         };
 
         let mix_out = {
-            let pan_factor = S::new_from_slice_ptr(operator_data.constant_power_panning.as_ptr());
+            let pan_factor = Pd::new_from_slice_ptr(operator_data.constant_power_panning.as_ptr());
 
-            (sample * pan_factor) * S::new_from_slice_ptr(operator_data.mix_out.as_ptr())
+            (sample * pan_factor) * Pd::new_from_slice_ptr(operator_data.mix_out.as_ptr())
         };
         let mod_out = {
             let pan_factor = linear_panning_factor(panning);
 
-            (sample * pan_factor) * S::new_from_slice_ptr(operator_data.mod_out.as_ptr())
+            (sample * pan_factor) * Pd::new_from_slice_ptr(operator_data.mod_out.as_ptr())
         };
 
         (mix_out, mod_out)
@@ -546,11 +546,11 @@ mod gen {
 
         for operator_index in 0..4 {
             let volume =
-                S::new_from_slice_ptr(voice_data.operators[operator_index].volume.as_ptr());
+                Pd::new_from_slice_ptr(voice_data.operators[operator_index].volume.as_ptr());
             let mix_out =
-                S::new_from_slice_ptr(voice_data.operators[operator_index].mix_out.as_ptr());
+                Pd::new_from_slice_ptr(voice_data.operators[operator_index].mix_out.as_ptr());
             let mod_out =
-                S::new_from_slice_ptr(voice_data.operators[operator_index].mod_out.as_ptr());
+                Pd::new_from_slice_ptr(voice_data.operators[operator_index].mod_out.as_ptr());
 
             let volume_active = volume.any_over_zero();
             let mix_out_active = mix_out.any_over_zero();
@@ -591,22 +591,22 @@ mod gen {
     /// Linear panning. Get channel volume as number between 0.0 and 1.0
     #[feature_gate]
     #[target_feature_enable]
-    unsafe fn linear_panning_factor(panning: S) -> S {
-        let factor = (S::new_splat(1.0) - panning).interleave(panning);
-        let factor = factor * S::new_splat(2.0);
+    unsafe fn linear_panning_factor(panning: Pd) -> Pd {
+        let factor = (Pd::new(1.0) - panning).interleave(panning);
+        let factor = factor * Pd::new(2.0);
 
-        factor.min(S::new_splat(1.0))
+        factor.min(Pd::new(1.0))
     }
 
     /// Get amount of channel that should be derived from mono for stereo mix
     /// panning
     #[feature_gate]
     #[target_feature_enable]
-    unsafe fn mono_mix_factor(panning: S) -> S {
+    unsafe fn mono_mix_factor(panning: Pd) -> Pd {
         // Get panning as value between -1 and 1
-        let pan = (S::new_splat(2.0) * (panning - S::new_splat(0.5)));
+        let pan = Pd::new(2.0) * (panning - Pd::new(0.5));
 
-        (pan * S::distribute_left_right(-1.0, 1.0)).max(S::new_zeroed())
+        (pan * Pd::new_from_pair(-1.0, 1.0)).max(Pd::new_zeroed())
     }
 
     #[cfg(test)]
@@ -620,24 +620,24 @@ mod gen {
         fn test_linear_panning_factor() {
             unsafe {
                 assert_eq!(
-                    S::to_arr(&linear_panning_factor(S::new_splat(0.0))),
-                    S::to_arr(&S::distribute_left_right(1.0, 0.0))
+                    Pd::to_arr(&linear_panning_factor(Pd::new(0.0))),
+                    Pd::to_arr(&Pd::new_from_pair(1.0, 0.0))
                 );
                 assert_eq!(
-                    S::to_arr(&linear_panning_factor(S::new_splat(0.25))),
-                    S::to_arr(&S::distribute_left_right(1.0, 0.5))
+                    Pd::to_arr(&linear_panning_factor(Pd::new(0.25))),
+                    Pd::to_arr(&Pd::new_from_pair(1.0, 0.5))
                 );
                 assert_eq!(
-                    S::to_arr(&linear_panning_factor(S::new_splat(0.5))),
-                    S::to_arr(&S::distribute_left_right(1.0, 1.0))
+                    Pd::to_arr(&linear_panning_factor(Pd::new(0.5))),
+                    Pd::to_arr(&Pd::new_from_pair(1.0, 1.0))
                 );
                 assert_eq!(
-                    S::to_arr(&linear_panning_factor(S::new_splat(0.75))),
-                    S::to_arr(&S::distribute_left_right(0.5, 1.0))
+                    Pd::to_arr(&linear_panning_factor(Pd::new(0.75))),
+                    Pd::to_arr(&Pd::new_from_pair(0.5, 1.0))
                 );
                 assert_eq!(
-                    S::to_arr(&linear_panning_factor(S::new_splat(1.0))),
-                    S::to_arr(&S::distribute_left_right(0.0, 1.0))
+                    Pd::to_arr(&linear_panning_factor(Pd::new(1.0))),
+                    Pd::to_arr(&Pd::new_from_pair(0.0, 1.0))
                 );
             }
         }
@@ -648,24 +648,24 @@ mod gen {
         fn test_mono_mix_factor() {
             unsafe {
                 assert_eq!(
-                    S::to_arr(&mono_mix_factor(S::new_splat(0.0))),
-                    S::to_arr(&S::distribute_left_right(1.0, 0.0))
+                    Pd::to_arr(&mono_mix_factor(Pd::new(0.0))),
+                    Pd::to_arr(&Pd::new_from_pair(1.0, 0.0))
                 );
                 assert_eq!(
-                    S::to_arr(&mono_mix_factor(S::new_splat(0.25))),
-                    S::to_arr(&S::distribute_left_right(0.5, 0.0))
+                    Pd::to_arr(&mono_mix_factor(Pd::new(0.25))),
+                    Pd::to_arr(&Pd::new_from_pair(0.5, 0.0))
                 );
                 assert_eq!(
-                    S::to_arr(&mono_mix_factor(S::new_splat(0.5))),
-                    S::to_arr(&S::distribute_left_right(0.0, 0.0))
+                    Pd::to_arr(&mono_mix_factor(Pd::new(0.5))),
+                    Pd::to_arr(&Pd::new_from_pair(0.0, 0.0))
                 );
                 assert_eq!(
-                    S::to_arr(&mono_mix_factor(S::new_splat(0.75))),
-                    S::to_arr(&S::distribute_left_right(0.0, 0.5))
+                    Pd::to_arr(&mono_mix_factor(Pd::new(0.75))),
+                    Pd::to_arr(&Pd::new_from_pair(0.0, 0.5))
                 );
                 assert_eq!(
-                    S::to_arr(&mono_mix_factor(S::new_splat(1.0))),
-                    S::to_arr(&S::distribute_left_right(0.0, 1.0))
+                    Pd::to_arr(&mono_mix_factor(Pd::new(1.0))),
+                    Pd::to_arr(&Pd::new_from_pair(0.0, 1.0))
                 );
             }
         }
