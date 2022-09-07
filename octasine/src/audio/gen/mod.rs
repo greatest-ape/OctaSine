@@ -90,7 +90,7 @@ pub fn process_f32_runtime_select(
                 (2..) if is_x86_feature_detected!("avx") => {
                     let new_position = position + 2;
 
-                    Avx::process_f32(
+                    AvxPackedDouble::process_f32(
                         audio_state,
                         &mut lefts[position..new_position],
                         &mut rights[position..new_position],
@@ -104,26 +104,14 @@ pub fn process_f32_runtime_select(
 
                     cfg_if::cfg_if!(
                         if #[cfg(feature = "simd")] {
-                            cfg_if::cfg_if!(
-                                if #[cfg(target_arch = "x86_64")] {
-                                    // SSE2 is always supported on x86_64
-                                    Sse2::process_f32(
-                                        audio_state,
-                                        &mut lefts[position..new_position],
-                                        &mut rights[position..new_position],
-                                        position,
-                                    );
-                                } else {
-                                    FallbackSleef::process_f32(
-                                        audio_state,
-                                        &mut lefts[position..new_position],
-                                        &mut rights[position..new_position],
-                                        position,
-                                    );
-                                }
-                            )
+                            FallbackPackedDoubleSleef::process_f32(
+                                audio_state,
+                                &mut lefts[position..new_position],
+                                &mut rights[position..new_position],
+                                position,
+                            );
                         } else {
-                            FallbackStd::process_f32(
+                            FallbackPackedDoubleStd::process_f32(
                                 audio_state,
                                 &mut lefts[position..new_position],
                                 &mut rights[position..new_position],
@@ -144,25 +132,19 @@ pub fn process_f32_runtime_select(
 
 #[duplicate_item(
     [
-        S [ FallbackStd ]
+        S [ FallbackPackedDoubleStd ]
         target_feature_enable [ cfg(not(feature = "fake-feature")) ]
         feature_gate [ cfg(not(feature = "fake-feature")) ]
         test_feature_gate [ cfg(not(feature = "fake-feature")) ]
     ]
     [
-        S [ FallbackSleef ]
+        S [ FallbackPackedDoubleSleef ]
         target_feature_enable [ cfg(not(feature = "fake-feature")) ]
         feature_gate [ cfg(all(feature = "simd")) ]
         test_feature_gate [ cfg(not(feature = "fake-feature")) ]
     ]
     [
-        S [ Sse2 ]
-        target_feature_enable [ target_feature(enable = "sse2") ]
-        feature_gate [ cfg(all(feature = "simd", target_arch = "x86_64")) ]
-        test_feature_gate [ cfg(target_feature = "sse2") ]
-    ]
-    [
-        S [ Avx ]
+        S [ AvxPackedDouble ]
         target_feature_enable [ target_feature(enable = "avx") ]
         feature_gate [ cfg(all(feature = "simd", target_arch = "x86_64")) ]
         test_feature_gate [ cfg(target_feature = "avx") ]
@@ -431,7 +413,7 @@ mod gen {
         audio_buffer_rights: &mut [f32],
     ) {
         // S::SAMPLES * 2 because of two channels. Even index = left channel
-        let mut mix_out_sum = S::pd_setzero();
+        let mut mix_out_sum = S::new_zeroed();
 
         for voice_data in audio_gen_data
             .voices
@@ -441,10 +423,10 @@ mod gen {
             let operator_generate_audio = run_operator_dependency_analysis(voice_data);
 
             // Voice modulation input storage, indexed by operator
-            let mut voice_modulation_inputs = [S::pd_setzero(); 4];
+            let mut voice_modulation_inputs = [S::new_zeroed(); 4];
 
-            let key_velocity = S::pd_loadu(voice_data.key_velocity.as_ptr());
-            let master_volume = S::pd_loadu(voice_data.master_volume.as_ptr());
+            let key_velocity = S::new_from_slice_ptr(voice_data.key_velocity.as_ptr());
+            let master_volume = S::new_from_slice_ptr(voice_data.master_volume.as_ptr());
 
             // Go through operators downwards, starting with operator 4
             for operator_index in (0..4).map(|i| 3 - i) {
@@ -463,27 +445,26 @@ mod gen {
                 );
 
                 // Apply master volume
-                let mix_out = S::pd_mul(mix_out, master_volume);
+                let mix_out = mix_out * master_volume;
 
-                mix_out_sum = S::pd_add(mix_out_sum, mix_out);
+                mix_out_sum = mix_out_sum + mix_out;
 
                 // Add modulation output to target operators' modulation inputs
                 for target in operator_voice_data.modulation_targets.active_indices() {
-                    voice_modulation_inputs[target] =
-                        S::pd_add(voice_modulation_inputs[target], mod_out);
+                    voice_modulation_inputs[target] = voice_modulation_inputs[target] + mod_out;
                 }
             }
         }
 
         // Apply master volume factor and hard limit
 
-        mix_out_sum = S::pd_mul(mix_out_sum, S::pd_set1(MASTER_VOLUME_FACTOR));
-        mix_out_sum = S::pd_min(mix_out_sum, S::pd_set1(LIMIT));
-        mix_out_sum = S::pd_max(mix_out_sum, S::pd_set1(-LIMIT));
+        mix_out_sum = mix_out_sum * S::new_splat(MASTER_VOLUME_FACTOR);
+        mix_out_sum = mix_out_sum.min(S::new_splat(LIMIT));
+        mix_out_sum = mix_out_sum.max(S::new_splat(-LIMIT));
 
         // Write additive outputs to audio buffer
 
-        let out_arr = S::pd_to_array(mix_out_sum);
+        let out_arr = mix_out_sum.to_arr();
 
         for sample_index in 0..S::SAMPLES {
             let sample_index_offset = sample_index * 2;
@@ -498,9 +479,9 @@ mod gen {
     unsafe fn gen_voice_operator_audio(
         rng: &mut fastrand::Rng,
         operator_data: &VoiceOperatorData,
-        modulation_inputs: <S as Simd>::PackedDouble,
-        key_velocity: <S as Simd>::PackedDouble,
-    ) -> (<S as Simd>::PackedDouble, <S as Simd>::PackedDouble) {
+        modulation_inputs: S,
+        key_velocity: S,
+    ) -> (S, S) {
         let sample = if operator_data.wave_type == WaveType::WhiteNoise {
             let mut random_numbers = [0.0f64; S::PD_WIDTH];
 
@@ -513,58 +494,44 @@ mod gen {
                 random_numbers[sample_index_offset + 1] = random;
             }
 
-            let random_numbers = S::pd_loadu(random_numbers.as_ptr());
+            let random_numbers = S::new_from_slice_ptr(random_numbers.as_ptr());
 
             // Convert random numbers to range -1.0 to 1.0
-            S::pd_mul(S::pd_set1(2.0), S::pd_sub(random_numbers, S::pd_set1(0.5)))
+            S::new_splat(2.0) * (random_numbers - S::new_splat(0.5))
         } else {
-            let phase = S::pd_mul(S::pd_loadu(operator_data.phase.as_ptr()), S::pd_set1(TAU));
+            let phase = S::new_from_slice_ptr(operator_data.phase.as_ptr()) * S::new_splat(TAU);
 
-            let feedback = S::pd_mul(
-                key_velocity,
-                S::pd_mul(
-                    S::pd_loadu(operator_data.feedback.as_ptr()),
-                    S::pd_fast_sin(phase),
-                ),
-            );
+            let feedback = key_velocity
+                * (S::new_from_slice_ptr(operator_data.feedback.as_ptr()) * phase.fast_sin());
 
-            S::pd_fast_sin(S::pd_add(phase, S::pd_add(feedback, modulation_inputs)))
+            (phase + (feedback + modulation_inputs)).fast_sin()
         };
 
-        let sample = S::pd_mul(sample, key_velocity);
-        let sample = S::pd_mul(sample, S::pd_loadu(operator_data.volume.as_ptr()));
-        let sample = S::pd_mul(sample, S::pd_loadu(operator_data.envelope_volume.as_ptr()));
+        let sample = sample * key_velocity;
+        let sample = sample * S::new_from_slice_ptr(operator_data.volume.as_ptr());
+        let sample = sample * S::new_from_slice_ptr(operator_data.envelope_volume.as_ptr());
 
-        let panning = S::pd_loadu(operator_data.panning.as_ptr());
+        let panning = S::new_from_slice_ptr(operator_data.panning.as_ptr());
 
         // Mix channels depending on panning of current operator. If panned to
         // the middle, just pass through the stereo signals. If panned to any
         // side, mix out the original stereo signals and mix in mono.
         let sample = {
-            let mono = S::pd_mul(S::pd_pairwise_horizontal_sum(sample), S::pd_set1(0.5));
+            let mono = sample.pairwise_horizontal_sum() * S::new_splat(0.5);
             let mono_mix_factor = mono_mix_factor(panning);
 
-            S::pd_add(
-                S::pd_mul(mono_mix_factor, mono),
-                S::pd_mul(S::pd_sub(S::pd_set1(1.0), mono_mix_factor), sample),
-            )
+            (mono_mix_factor * mono) + ((S::new_splat(1.0) - mono_mix_factor) * sample)
         };
 
         let mix_out = {
-            let pan_factor = S::pd_loadu(operator_data.constant_power_panning.as_ptr());
+            let pan_factor = S::new_from_slice_ptr(operator_data.constant_power_panning.as_ptr());
 
-            S::pd_mul(
-                S::pd_mul(sample, pan_factor),
-                S::pd_loadu(operator_data.mix_out.as_ptr()),
-            )
+            (sample * pan_factor) * S::new_from_slice_ptr(operator_data.mix_out.as_ptr())
         };
         let mod_out = {
             let pan_factor = linear_panning_factor(panning);
 
-            S::pd_mul(
-                S::pd_mul(sample, pan_factor),
-                S::pd_loadu(operator_data.mod_out.as_ptr()),
-            )
+            (sample * pan_factor) * S::new_from_slice_ptr(operator_data.mod_out.as_ptr())
         };
 
         (mix_out, mod_out)
@@ -578,13 +545,16 @@ mod gen {
         let mut operator_mix_out_active = [false; 4];
 
         for operator_index in 0..4 {
-            let volume = S::pd_loadu(voice_data.operators[operator_index].volume.as_ptr());
-            let mix_out = S::pd_loadu(voice_data.operators[operator_index].mix_out.as_ptr());
-            let mod_out = S::pd_loadu(voice_data.operators[operator_index].mod_out.as_ptr());
+            let volume =
+                S::new_from_slice_ptr(voice_data.operators[operator_index].volume.as_ptr());
+            let mix_out =
+                S::new_from_slice_ptr(voice_data.operators[operator_index].mix_out.as_ptr());
+            let mod_out =
+                S::new_from_slice_ptr(voice_data.operators[operator_index].mod_out.as_ptr());
 
-            let volume_active = S::pd_any_over_zero(volume);
-            let mix_out_active = S::pd_any_over_zero(mix_out);
-            let mod_out_active = S::pd_any_over_zero(mod_out);
+            let volume_active = volume.any_over_zero();
+            let mix_out_active = mix_out.any_over_zero();
+            let mod_out_active = mod_out.any_over_zero();
 
             operator_generate_audio[operator_index] =
                 volume_active & (mod_out_active | mix_out_active);
@@ -621,27 +591,22 @@ mod gen {
     /// Linear panning. Get channel volume as number between 0.0 and 1.0
     #[feature_gate]
     #[target_feature_enable]
-    unsafe fn linear_panning_factor(
-        panning: <S as Simd>::PackedDouble,
-    ) -> <S as Simd>::PackedDouble {
-        let factor = S::pd_interleave(S::pd_sub(S::pd_set1(1.0), panning), panning);
-        let factor = S::pd_mul(factor, S::pd_set1(2.0));
+    unsafe fn linear_panning_factor(panning: S) -> S {
+        let factor = (S::new_splat(1.0) - panning).interleave(panning);
+        let factor = factor * S::new_splat(2.0);
 
-        S::pd_min(factor, S::pd_set1(1.0))
+        factor.min(S::new_splat(1.0))
     }
 
     /// Get amount of channel that should be derived from mono for stereo mix
     /// panning
     #[feature_gate]
     #[target_feature_enable]
-    unsafe fn mono_mix_factor(panning: <S as Simd>::PackedDouble) -> <S as Simd>::PackedDouble {
+    unsafe fn mono_mix_factor(panning: S) -> S {
         // Get panning as value between -1 and 1
-        let pan = S::pd_mul(S::pd_set1(2.0), S::pd_sub(panning, S::pd_set1(0.5)));
+        let pan = (S::new_splat(2.0) * (panning - S::new_splat(0.5)));
 
-        S::pd_max(
-            S::pd_mul(pan, S::pd_distribute_left_right(-1.0, 1.0)),
-            S::pd_setzero(),
-        )
+        (pan * S::distribute_left_right(-1.0, 1.0)).max(S::new_zeroed())
     }
 
     #[cfg(test)]
@@ -655,24 +620,24 @@ mod gen {
         fn test_linear_panning_factor() {
             unsafe {
                 assert_eq!(
-                    S::pd_to_array(linear_panning_factor(S::pd_set1(0.0))),
-                    S::pd_to_array(S::pd_distribute_left_right(1.0, 0.0))
+                    S::to_arr(&linear_panning_factor(S::new_splat(0.0))),
+                    S::to_arr(&S::distribute_left_right(1.0, 0.0))
                 );
                 assert_eq!(
-                    S::pd_to_array(linear_panning_factor(S::pd_set1(0.25))),
-                    S::pd_to_array(S::pd_distribute_left_right(1.0, 0.5))
+                    S::to_arr(&linear_panning_factor(S::new_splat(0.25))),
+                    S::to_arr(&S::distribute_left_right(1.0, 0.5))
                 );
                 assert_eq!(
-                    S::pd_to_array(linear_panning_factor(S::pd_set1(0.5))),
-                    S::pd_to_array(S::pd_distribute_left_right(1.0, 1.0))
+                    S::to_arr(&linear_panning_factor(S::new_splat(0.5))),
+                    S::to_arr(&S::distribute_left_right(1.0, 1.0))
                 );
                 assert_eq!(
-                    S::pd_to_array(linear_panning_factor(S::pd_set1(0.75))),
-                    S::pd_to_array(S::pd_distribute_left_right(0.5, 1.0))
+                    S::to_arr(&linear_panning_factor(S::new_splat(0.75))),
+                    S::to_arr(&S::distribute_left_right(0.5, 1.0))
                 );
                 assert_eq!(
-                    S::pd_to_array(linear_panning_factor(S::pd_set1(1.0))),
-                    S::pd_to_array(S::pd_distribute_left_right(0.0, 1.0))
+                    S::to_arr(&linear_panning_factor(S::new_splat(1.0))),
+                    S::to_arr(&S::distribute_left_right(0.0, 1.0))
                 );
             }
         }
@@ -683,24 +648,24 @@ mod gen {
         fn test_mono_mix_factor() {
             unsafe {
                 assert_eq!(
-                    S::pd_to_array(mono_mix_factor(S::pd_set1(0.0))),
-                    S::pd_to_array(S::pd_distribute_left_right(1.0, 0.0))
+                    S::to_arr(&mono_mix_factor(S::new_splat(0.0))),
+                    S::to_arr(&S::distribute_left_right(1.0, 0.0))
                 );
                 assert_eq!(
-                    S::pd_to_array(mono_mix_factor(S::pd_set1(0.25))),
-                    S::pd_to_array(S::pd_distribute_left_right(0.5, 0.0))
+                    S::to_arr(&mono_mix_factor(S::new_splat(0.25))),
+                    S::to_arr(&S::distribute_left_right(0.5, 0.0))
                 );
                 assert_eq!(
-                    S::pd_to_array(mono_mix_factor(S::pd_set1(0.5))),
-                    S::pd_to_array(S::pd_distribute_left_right(0.0, 0.0))
+                    S::to_arr(&mono_mix_factor(S::new_splat(0.5))),
+                    S::to_arr(&S::distribute_left_right(0.0, 0.0))
                 );
                 assert_eq!(
-                    S::pd_to_array(mono_mix_factor(S::pd_set1(0.75))),
-                    S::pd_to_array(S::pd_distribute_left_right(0.0, 0.5))
+                    S::to_arr(&mono_mix_factor(S::new_splat(0.75))),
+                    S::to_arr(&S::distribute_left_right(0.0, 0.5))
                 );
                 assert_eq!(
-                    S::pd_to_array(mono_mix_factor(S::pd_set1(1.0))),
-                    S::pd_to_array(S::pd_distribute_left_right(0.0, 1.0))
+                    S::to_arr(&mono_mix_factor(S::new_splat(1.0))),
+                    S::to_arr(&S::distribute_left_right(0.0, 1.0))
                 );
             }
         }
