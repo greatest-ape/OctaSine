@@ -69,47 +69,59 @@ impl<T: FallbackSine> SimdPackedDouble for FallbackPackedDouble<T> {
 
     type DoubleArray = [f64; 2];
 
+    #[inline]
     unsafe fn new(value: f64) -> Self {
         Self([value, value], Default::default())
     }
+    #[inline]
     unsafe fn new_zeroed() -> Self {
         Self([0.0, 0.0], Default::default())
     }
+    #[inline]
     unsafe fn new_from_pair(l: f64, r: f64) -> Self {
         Self([l, r], Default::default())
     }
+    #[inline]
     unsafe fn from_arr(arr: Self::DoubleArray) -> Self {
         Self(arr, Default::default())
     }
+    #[inline]
     unsafe fn load_ptr(source: *const f64) -> Self {
         Self(*(source as *const [f64; 2]), Default::default())
     }
+    #[inline]
     unsafe fn to_arr(&self) -> Self::DoubleArray {
         self.0
     }
+    #[inline]
     unsafe fn min(&self, other: Self) -> Self {
         let [a1, a2] = self.0;
         let [b1, b2] = other.0;
 
         Self([a1.min(b1), a2.min(b2)], self.1)
     }
+    #[inline]
     unsafe fn max(&self, other: Self) -> Self {
         let [a1, a2] = self.0;
         let [b1, b2] = other.0;
 
         Self([a1.max(b1), a2.max(b2)], self.1)
     }
+    #[inline]
     unsafe fn fast_sin(&self) -> Self {
         Self(T::sin(self.0), self.1)
     }
+    #[inline]
     unsafe fn pairwise_horizontal_sum(&self) -> Self {
         let [l, r] = self.0;
 
         Self([l + r, l + r], self.1)
     }
+    #[inline]
     unsafe fn interleave(&self, other: Self) -> Self {
         Self([self.0[0], other.0[1]], self.1)
     }
+    #[inline]
     unsafe fn any_over_zero(&self) -> bool {
         (self.0[0] > 0.0) | (self.0[1] > 0.0)
     }
@@ -131,6 +143,7 @@ impl<T> AddAssign for FallbackPackedDouble<T>
 where
     FallbackPackedDouble<T>: Copy,
 {
+    #[inline(always)]
     fn add_assign(&mut self, rhs: Self) {
         *self = *self + rhs;
     }
@@ -172,28 +185,34 @@ impl SimdPackedDouble for AvxPackedDouble {
     type DoubleArray = [f64; 4];
 
     #[target_feature(enable = "avx")]
+    #[inline]
     unsafe fn new(value: f64) -> Self {
         Self(_mm256_set1_pd(value))
     }
     #[target_feature(enable = "avx")]
+    #[inline]
     unsafe fn new_zeroed() -> Self {
         Self(_mm256_setzero_pd())
     }
     #[target_feature(enable = "avx")]
+    #[inline]
     unsafe fn new_from_pair(l: f64, r: f64) -> Self {
         let lr = [l, r, l, r];
 
         Self(_mm256_loadu_pd(lr.as_ptr()))
     }
     #[target_feature(enable = "avx")]
+    #[inline]
     unsafe fn from_arr(arr: Self::DoubleArray) -> Self {
         Self(_mm256_loadu_pd(arr.as_ptr()))
     }
     #[target_feature(enable = "avx")]
+    #[inline]
     unsafe fn load_ptr(source: *const f64) -> Self {
         Self(_mm256_loadu_pd(source))
     }
     #[target_feature(enable = "avx")]
+    #[inline]
     unsafe fn to_arr(&self) -> Self::DoubleArray {
         let mut arr = Self::DoubleArray::default();
 
@@ -202,26 +221,32 @@ impl SimdPackedDouble for AvxPackedDouble {
         arr
     }
     #[target_feature(enable = "avx")]
+    #[inline]
     unsafe fn min(&self, other: Self) -> Self {
         Self(_mm256_min_pd(self.0, other.0))
     }
     #[target_feature(enable = "avx")]
+    #[inline]
     unsafe fn max(&self, other: Self) -> Self {
         Self(_mm256_max_pd(self.0, other.0))
     }
     #[target_feature(enable = "avx")]
+    #[inline]
     unsafe fn fast_sin(&self) -> Self {
         Self(sleef_sys::Sleef_cinz_sind4_u35avx(self.0))
     }
     #[target_feature(enable = "avx")]
+    #[inline]
     unsafe fn pairwise_horizontal_sum(&self) -> Self {
         Self(_mm256_add_pd(self.0, _mm256_permute_pd(self.0, 0b0101)))
     }
     #[target_feature(enable = "avx")]
+    #[inline]
     unsafe fn interleave(&self, other: Self) -> Self {
         Self(_mm256_blend_pd(self.0, other.0, 0b1010))
     }
     #[target_feature(enable = "avx")]
+    #[inline]
     unsafe fn any_over_zero(&self) -> bool {
         _mm256_movemask_pd(_mm256_cmp_pd::<{ _CMP_GT_OQ }>(self.0, _mm256_setzero_pd())) != 0
     }
@@ -239,6 +264,7 @@ impl Add for AvxPackedDouble {
 
 #[cfg(feature = "simd")]
 impl AddAssign for AvxPackedDouble {
+    #[inline(always)]
     fn add_assign(&mut self, rhs: Self) {
         *self = *self + rhs;
     }
