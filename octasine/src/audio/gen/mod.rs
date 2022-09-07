@@ -494,17 +494,17 @@ mod gen {
                 random_numbers[sample_index_offset + 1] = random;
             }
 
-            let random_numbers = Pd::load_ptr(random_numbers.as_ptr());
+            let random_numbers = Pd::from_arr(random_numbers);
 
             // Convert random numbers to range -1.0 to 1.0
             Pd::new(2.0) * (random_numbers - Pd::new(0.5))
         } else {
-            let phase = Pd::load_ptr(operator_data.phase.as_ptr()) * Pd::new(TAU);
+            let phase = Pd::load_ptr(operator_data.phase.as_ptr());
+            let feedback = Pd::load_ptr(operator_data.feedback.as_ptr());
 
-            let feedback =
-                key_velocity * (Pd::load_ptr(operator_data.feedback.as_ptr()) * phase.fast_sin());
+            let phase = phase * Pd::new(TAU);
 
-            (phase + (feedback + modulation_inputs)).fast_sin()
+            (phase + (key_velocity * (feedback * phase.fast_sin()) + modulation_inputs)).fast_sin()
         };
 
         let volume = Pd::load_ptr(operator_data.volume.as_ptr());
