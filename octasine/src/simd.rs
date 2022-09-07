@@ -49,7 +49,7 @@ pub trait SimdPackedDouble: Copy {
     unsafe fn new(value: f64) -> Self;
     unsafe fn new_zeroed() -> Self;
     unsafe fn new_from_pair(l: f64, r: f64) -> Self;
-    unsafe fn new_from_slice_ptr(source: *const f64) -> Self;
+    unsafe fn load_ptr(source: *const f64) -> Self;
     unsafe fn to_arr(&self) -> Self::DoubleArray;
     unsafe fn min(&self, other: Self) -> Self;
     unsafe fn max(&self, other: Self) -> Self;
@@ -77,7 +77,7 @@ impl<T: FallbackSine> SimdPackedDouble for FallbackPackedDouble<T> {
     unsafe fn new_from_pair(l: f64, r: f64) -> Self {
         Self([l, r], Default::default())
     }
-    unsafe fn new_from_slice_ptr(source: *const f64) -> Self {
+    unsafe fn load_ptr(source: *const f64) -> Self {
         Self(*(source as *const [f64; 2]), Default::default())
     }
     unsafe fn to_arr(&self) -> Self::DoubleArray {
@@ -173,7 +173,7 @@ impl SimdPackedDouble for AvxPackedDouble {
         Self(_mm256_loadu_pd(lr.as_ptr()))
     }
     #[target_feature(enable = "avx")]
-    unsafe fn new_from_slice_ptr(source: *const f64) -> Self {
+    unsafe fn load_ptr(source: *const f64) -> Self {
         Self(_mm256_loadu_pd(source))
     }
     #[target_feature(enable = "avx")]

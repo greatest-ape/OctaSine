@@ -425,8 +425,8 @@ mod gen {
             // Voice modulation input storage, indexed by operator
             let mut voice_modulation_inputs = [Pd::new_zeroed(); 4];
 
-            let key_velocity = Pd::new_from_slice_ptr(voice_data.key_velocity.as_ptr());
-            let master_volume = Pd::new_from_slice_ptr(voice_data.master_volume.as_ptr());
+            let key_velocity = Pd::load_ptr(voice_data.key_velocity.as_ptr());
+            let master_volume = Pd::load_ptr(voice_data.master_volume.as_ptr());
 
             // Go through operators downwards, starting with operator 4
             for operator_index in (0..4).map(|i| 3 - i) {
@@ -494,25 +494,24 @@ mod gen {
                 random_numbers[sample_index_offset + 1] = random;
             }
 
-            let random_numbers = Pd::new_from_slice_ptr(random_numbers.as_ptr());
+            let random_numbers = Pd::load_ptr(random_numbers.as_ptr());
 
             // Convert random numbers to range -1.0 to 1.0
             Pd::new(2.0) * (random_numbers - Pd::new(0.5))
         } else {
-            let phase = Pd::new_from_slice_ptr(operator_data.phase.as_ptr()) * Pd::new(TAU);
+            let phase = Pd::load_ptr(operator_data.phase.as_ptr()) * Pd::new(TAU);
 
-            let feedback = key_velocity
-                * (Pd::new_from_slice_ptr(operator_data.feedback.as_ptr()) * phase.fast_sin());
+            let feedback =
+                key_velocity * (Pd::load_ptr(operator_data.feedback.as_ptr()) * phase.fast_sin());
 
             (phase + (feedback + modulation_inputs)).fast_sin()
         };
 
-        let volume = Pd::new_from_slice_ptr(operator_data.volume.as_ptr());
-        let envelope_volume = Pd::new_from_slice_ptr(operator_data.envelope_volume.as_ptr());
+        let volume = Pd::load_ptr(operator_data.volume.as_ptr());
+        let envelope_volume = Pd::load_ptr(operator_data.envelope_volume.as_ptr());
+        let panning = Pd::load_ptr(operator_data.panning.as_ptr());
 
         let sample = sample * key_velocity * volume * envelope_volume;
-
-        let panning = Pd::new_from_slice_ptr(operator_data.panning.as_ptr());
 
         // Mix channels depending on panning of current operator. If panned to
         // the middle, just pass through the stereo signals. If panned to any
@@ -525,14 +524,14 @@ mod gen {
         };
 
         let mix_out = {
-            let pan_factor = Pd::new_from_slice_ptr(operator_data.constant_power_panning.as_ptr());
+            let pan_factor = Pd::load_ptr(operator_data.constant_power_panning.as_ptr());
 
-            (sample * pan_factor) * Pd::new_from_slice_ptr(operator_data.mix_out.as_ptr())
+            (sample * pan_factor) * Pd::load_ptr(operator_data.mix_out.as_ptr())
         };
         let mod_out = {
             let pan_factor = linear_panning_factor(panning);
 
-            (sample * pan_factor) * Pd::new_from_slice_ptr(operator_data.mod_out.as_ptr())
+            (sample * pan_factor) * Pd::load_ptr(operator_data.mod_out.as_ptr())
         };
 
         (mix_out, mod_out)
@@ -546,12 +545,9 @@ mod gen {
         let mut operator_mix_out_active = [false; 4];
 
         for operator_index in 0..4 {
-            let volume =
-                Pd::new_from_slice_ptr(voice_data.operators[operator_index].volume.as_ptr());
-            let mix_out =
-                Pd::new_from_slice_ptr(voice_data.operators[operator_index].mix_out.as_ptr());
-            let mod_out =
-                Pd::new_from_slice_ptr(voice_data.operators[operator_index].mod_out.as_ptr());
+            let volume = Pd::load_ptr(voice_data.operators[operator_index].volume.as_ptr());
+            let mix_out = Pd::load_ptr(voice_data.operators[operator_index].mix_out.as_ptr());
+            let mod_out = Pd::load_ptr(voice_data.operators[operator_index].mod_out.as_ptr());
 
             let volume_active = volume.any_over_zero();
             let mix_out_active = mix_out.any_over_zero();
