@@ -41,17 +41,16 @@ pub type FallbackPackedDoubleStd = FallbackPackedDouble<FallbackSineStd>;
 pub type FallbackPackedDoubleSleef = FallbackPackedDouble<FallbackSineSleef>;
 
 pub trait SimdPackedDouble: Copy {
-    const PD_WIDTH: usize;
     const SAMPLES: usize;
 
-    type DoubleArray;
+    type Arr;
 
     unsafe fn new(value: f64) -> Self;
     unsafe fn new_zeroed() -> Self;
     unsafe fn new_from_pair(l: f64, r: f64) -> Self;
     unsafe fn load_ptr(source: *const f64) -> Self;
-    unsafe fn from_arr(arr: Self::DoubleArray) -> Self;
-    unsafe fn to_arr(&self) -> Self::DoubleArray;
+    unsafe fn from_arr(arr: Self::Arr) -> Self;
+    unsafe fn to_arr(&self) -> Self::Arr;
     unsafe fn min(&self, other: Self) -> Self;
     unsafe fn max(&self, other: Self) -> Self;
     unsafe fn fast_sin(&self) -> Self;
@@ -64,10 +63,9 @@ pub trait SimdPackedDouble: Copy {
 pub struct FallbackPackedDouble<T>([f64; 2], PhantomData<T>);
 
 impl<T: FallbackSine> SimdPackedDouble for FallbackPackedDouble<T> {
-    const PD_WIDTH: usize = 2;
     const SAMPLES: usize = 1;
 
-    type DoubleArray = [f64; 2];
+    type Arr = [f64; 2];
 
     #[inline]
     unsafe fn new(value: f64) -> Self {
@@ -82,7 +80,7 @@ impl<T: FallbackSine> SimdPackedDouble for FallbackPackedDouble<T> {
         Self([l, r], Default::default())
     }
     #[inline]
-    unsafe fn from_arr(arr: Self::DoubleArray) -> Self {
+    unsafe fn from_arr(arr: Self::Arr) -> Self {
         Self(arr, Default::default())
     }
     #[inline]
@@ -90,7 +88,7 @@ impl<T: FallbackSine> SimdPackedDouble for FallbackPackedDouble<T> {
         Self(*(source as *const [f64; 2]), Default::default())
     }
     #[inline]
-    unsafe fn to_arr(&self) -> Self::DoubleArray {
+    unsafe fn to_arr(&self) -> Self::Arr {
         self.0
     }
     #[inline]
@@ -179,10 +177,9 @@ pub struct AvxPackedDouble(__m256d);
 
 #[cfg(feature = "simd")]
 impl SimdPackedDouble for AvxPackedDouble {
-    const PD_WIDTH: usize = 4;
     const SAMPLES: usize = 2;
 
-    type DoubleArray = [f64; 4];
+    type Arr = [f64; 4];
 
     #[target_feature(enable = "avx")]
     #[inline]
@@ -203,7 +200,7 @@ impl SimdPackedDouble for AvxPackedDouble {
     }
     #[target_feature(enable = "avx")]
     #[inline]
-    unsafe fn from_arr(arr: Self::DoubleArray) -> Self {
+    unsafe fn from_arr(arr: Self::Arr) -> Self {
         Self(_mm256_loadu_pd(arr.as_ptr()))
     }
     #[target_feature(enable = "avx")]
@@ -213,8 +210,8 @@ impl SimdPackedDouble for AvxPackedDouble {
     }
     #[target_feature(enable = "avx")]
     #[inline]
-    unsafe fn to_arr(&self) -> Self::DoubleArray {
-        let mut arr = Self::DoubleArray::default();
+    unsafe fn to_arr(&self) -> Self::Arr {
+        let mut arr = Self::Arr::default();
 
         _mm256_storeu_pd(arr.as_mut_ptr(), self.0);
 

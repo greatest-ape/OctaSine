@@ -121,15 +121,13 @@ mod gen {
             assert_eq!(lefts.len(), Pd::SAMPLES);
             assert_eq!(rights.len(), Pd::SAMPLES);
 
-            let mut phases_arr = [0.0; Pd::PD_WIDTH];
+            let mut phases_arr = <Pd as SimdPackedDouble>::Arr::default();
 
-            for sample_index in 0..Pd::SAMPLES {
+            for (sample_index, chunk) in phases_arr.chunks_exact_mut(2).enumerate() {
                 let phase = ((offset + sample_index) as f64) / (NUM_POINTS - 1) as f64;
 
-                let sample_index_offset = sample_index * 2;
-
-                phases_arr[sample_index_offset] = phase;
-                phases_arr[sample_index_offset + 1] = phase;
+                chunk[0] = phase;
+                chunk[1] = phase;
             }
 
             let phases = Pd::load_ptr(phases_arr.as_ptr()) * Pd::new(TAU);
@@ -161,18 +159,17 @@ mod gen {
                         ((feedback * phases.fast_sin()) + modulation_in + phases).fast_sin()
                     }
                     WaveType::WhiteNoise => {
-                        let mut random_numbers = [0.0f64; Pd::PD_WIDTH];
+                        let mut random_numbers = <Pd as SimdPackedDouble>::Arr::default();
 
-                        for sample_index in 0..Pd::SAMPLES {
-                            let sample_index_offset = sample_index * 2;
-
+                        for (sample_index, chunk) in random_numbers.chunks_exact_mut(2).enumerate()
+                        {
                             // Generate random numbers like this to get same
                             // output as in WavePicker
-                            let seed = phases_arr[sample_index_offset].to_bits() + 2;
+                            let seed = phases_arr[sample_index * 2].to_bits() + 2;
                             let random_value = fastrand::Rng::with_seed(seed).f64();
 
-                            random_numbers[sample_index_offset] = random_value;
-                            random_numbers[sample_index_offset + 1] = random_value;
+                            chunk[0] = random_value;
+                            chunk[1] = random_value;
                         }
 
                         // Convert random numbers to range -1.0 to 1.0
@@ -226,16 +223,13 @@ mod gen {
 
             // Set output point y values
 
-            let out =
-                Pd::new(HEIGHT_MIDDLE as f64) - (out_samples * Pd::new(WAVE_HEIGHT_RANGE as f64));
+            let out_arr = (Pd::new(HEIGHT_MIDDLE as f64)
+                - (out_samples * Pd::new(WAVE_HEIGHT_RANGE as f64)))
+            .to_arr();
 
-            let out_arr = out.to_arr();
-
-            for sample_index in 0..Pd::SAMPLES {
-                let sample_index_offset = sample_index * 2;
-
-                lefts[sample_index].y = out_arr[sample_index_offset] as f32;
-                rights[sample_index].y = out_arr[sample_index_offset + 1] as f32;
+            for (sample_index, chunk) in out_arr.chunks_exact(2).enumerate() {
+                lefts[sample_index].y = chunk[0] as f32;
+                rights[sample_index].y = chunk[1] as f32;
             }
         }
     }

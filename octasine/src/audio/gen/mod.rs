@@ -473,7 +473,7 @@ mod gen {
         key_velocity: Pd,
     ) -> (Pd, Pd) {
         let sample = if operator_data.wave_type == WaveType::WhiteNoise {
-            let mut random_numbers = [0.0f64; Pd::PD_WIDTH];
+            let mut random_numbers = <Pd as SimdPackedDouble>::Arr::default();
 
             for chunk in random_numbers.chunks_exact_mut(2) {
                 let random = rng.f64();
