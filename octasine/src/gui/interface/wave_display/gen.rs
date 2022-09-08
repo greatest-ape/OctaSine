@@ -25,7 +25,7 @@ pub(super) fn recalculate_canvas_points(
                 (2..) if is_x86_feature_detected!("avx") => {
                     let end_offset = offset + 2;
 
-                    Avx::gen_segment(
+                    AvxPackedDouble::gen_segment(
                         &mut lefts[offset..end_offset],
                         &mut rights[offset..end_offset],
                         operator_index,
@@ -40,28 +40,15 @@ pub(super) fn recalculate_canvas_points(
 
                     cfg_if::cfg_if!(
                         if #[cfg(feature = "simd")] {
-                            cfg_if::cfg_if!(
-                                if #[cfg(target_arch = "x86_64")] {
-                                    // SSE2 is always supported on x86_64
-                                    Sse2::gen_segment(
-                                        &mut lefts[offset..end_offset],
-                                        &mut rights[offset..end_offset],
-                                        operator_index,
-                                        operators,
-                                        offset as usize,
-                                    );
-                                } else {
-                                    FallbackSleef::gen_segment(
-                                        &mut lefts[offset..end_offset],
-                                        &mut rights[offset..end_offset],
-                                        operator_index,
-                                        operators,
-                                        offset as usize,
-                                    );
-                                }
-                            )
+                            FallbackPackedDoubleSleef::gen_segment(
+                                &mut lefts[offset..end_offset],
+                                &mut rights[offset..end_offset],
+                                operator_index,
+                                operators,
+                                offset as usize,
+                            );
                         } else {
-                            FallbackStd::gen_segment(
+                            FallbackPackedDoubleStd::gen_segment(
                                 &mut lefts[offset..end_offset],
                                 &mut rights[offset..end_offset],
                                 operator_index,
@@ -93,22 +80,17 @@ trait PathGen {
 
 #[duplicate_item(
     [
-        S [ FallbackStd ]
+        Pd [ FallbackPackedDoubleStd ]
         target_feature_enable [ cfg(not(feature = "fake-feature")) ]
         feature_gate [ cfg(not(feature = "fake-feature")) ]
     ]
     [
-        S [ FallbackSleef ]
+        Pd [ FallbackPackedDoubleSleef ]
         target_feature_enable [ cfg(not(feature = "fake-feature")) ]
         feature_gate [ cfg(all(feature = "simd")) ]
     ]
     [
-        S [ Sse2 ]
-        target_feature_enable [ target_feature(enable = "sse2") ]
-        feature_gate [ cfg(all(feature = "simd", target_arch = "x86_64")) ]
-    ]
-    [
-        S [ Avx ]
+        Pd [ AvxPackedDouble ]
         target_feature_enable [ target_feature(enable = "avx") ]
         feature_gate [ cfg(all(feature = "simd", target_arch = "x86_64")) ]
     ]
@@ -121,13 +103,13 @@ mod gen {
     use crate::parameters::operator_wave_type::WaveType;
 
     #[feature_gate]
-    use crate::simd::Simd;
+    use crate::simd::SimdPackedDouble;
 
     #[feature_gate]
     use super::*;
 
     #[feature_gate]
-    impl PathGen for S {
+    impl PathGen for Pd {
         #[target_feature_enable]
         unsafe fn gen_segment(
             lefts: &mut [Point],
@@ -136,30 +118,28 @@ mod gen {
             operator_data: &[OperatorData; 4],
             offset: usize,
         ) {
-            assert_eq!(lefts.len(), S::SAMPLES);
-            assert_eq!(rights.len(), S::SAMPLES);
+            assert_eq!(lefts.len(), Pd::SAMPLES);
+            assert_eq!(rights.len(), Pd::SAMPLES);
 
-            let mut phases_arr = [0.0; S::PD_WIDTH];
+            let mut phases_arr = <Pd as SimdPackedDouble>::Arr::default();
 
-            for sample_index in 0..S::SAMPLES {
+            for (sample_index, chunk) in phases_arr.chunks_exact_mut(2).enumerate() {
                 let phase = ((offset + sample_index) as f64) / (NUM_POINTS - 1) as f64;
 
-                let sample_index_offset = sample_index * 2;
-
-                phases_arr[sample_index_offset] = phase;
-                phases_arr[sample_index_offset + 1] = phase;
+                chunk[0] = phase;
+                chunk[1] = phase;
             }
 
-            let phases = S::pd_mul(S::pd_loadu(phases_arr.as_ptr()), S::pd_set1(TAU));
+            let phases = Pd::load_ptr(phases_arr.as_ptr()) * Pd::new(TAU);
 
             let mut mod_inputs = [
-                S::pd_setzero(),
-                S::pd_setzero(),
-                S::pd_setzero(),
-                S::pd_setzero(),
+                Pd::new_zeroed(),
+                Pd::new_zeroed(),
+                Pd::new_zeroed(),
+                Pd::new_zeroed(),
             ];
 
-            let mut out_samples = S::pd_setzero();
+            let mut out_samples = Pd::new_zeroed();
 
             let operator_frequency = operator_data[operator_index].frequency();
 
@@ -168,65 +148,57 @@ mod gen {
                     WaveType::Sine => {
                         let phases = {
                             let relative_frequency =
-                                S::pd_set1(operator_data[i].frequency() / operator_frequency);
+                                Pd::new(operator_data[i].frequency() / operator_frequency);
 
-                            S::pd_mul(phases, relative_frequency)
+                            phases * relative_frequency
                         };
 
-                        let feedback = S::pd_mul(
-                            S::pd_fast_sin(phases),
-                            S::pd_set1(operator_data[i].feedback.get() as f64),
-                        );
+                        let feedback = Pd::new(operator_data[i].feedback.get() as f64);
                         let modulation_in = mod_inputs[i];
 
-                        S::pd_fast_sin(S::pd_add(S::pd_add(feedback, modulation_in), phases))
+                        ((feedback * phases.fast_sin()) + modulation_in + phases).fast_sin()
                     }
                     WaveType::WhiteNoise => {
-                        let mut samples = [0.0f64; S::PD_WIDTH];
+                        let mut random_numbers = <Pd as SimdPackedDouble>::Arr::default();
 
-                        for sample_index in 0..S::SAMPLES {
-                            let sample_index_offset = sample_index * 2;
-
+                        for (sample_index, chunk) in random_numbers.chunks_exact_mut(2).enumerate()
+                        {
                             // Generate random numbers like this to get same
                             // output as in WavePicker
-                            let seed = phases_arr[sample_index_offset].to_bits() + 2;
+                            let seed = phases_arr[sample_index * 2].to_bits() + 2;
                             let random_value = fastrand::Rng::with_seed(seed).f64();
 
-                            samples[sample_index_offset] = random_value;
-                            samples[sample_index_offset + 1] = random_value;
+                            chunk[0] = random_value;
+                            chunk[1] = random_value;
                         }
 
-                        S::pd_mul(
-                            S::pd_sub(S::pd_loadu(samples.as_ptr()), S::pd_set1(0.5)),
-                            S::pd_set1(2.0),
-                        )
+                        // Convert random numbers to range -1.0 to 1.0
+                        Pd::new(2.0) * (Pd::from_arr(random_numbers) - Pd::new(0.5))
                     }
                 };
 
-                let samples = S::pd_mul(samples, S::pd_set1(operator_data[i].active.get() as f64));
-                let samples = S::pd_mul(samples, S::pd_set1(operator_data[i].volume.get() as f64));
+                let samples = samples
+                    * Pd::new(operator_data[i].active.get() as f64)
+                    * Pd::new(operator_data[i].volume.get() as f64);
 
-                let panning = S::pd_set1(operator_data[i].pan.get() as f64);
+                let panning = Pd::new(operator_data[i].pan.get() as f64);
 
                 // Channel mixing (see audio gen code for more info)
                 let samples = {
-                    let mono = S::pd_mul(S::pd_pairwise_horizontal_sum(samples), S::pd_set1(0.5));
                     let mono_mix_factor = mono_mix_factor(panning);
+                    let mono = samples.pairwise_horizontal_sum() * Pd::new(0.5);
 
-                    S::pd_add(
-                        S::pd_mul(mono_mix_factor, mono),
-                        S::pd_mul(S::pd_sub(S::pd_set1(1.0), mono_mix_factor), samples),
-                    )
+                    (mono_mix_factor * mono) + ((Pd::new(1.0) - mono_mix_factor) * samples)
                 };
 
                 if i == operator_index {
                     let constant_power_panning = {
                         let [l, r] = operator_data[i].constant_power_panning;
 
-                        S::pd_distribute_left_right(l as f64, r as f64)
+                        Pd::new_from_pair(l as f64, r as f64)
                     };
 
-                    out_samples = S::pd_mul(samples, constant_power_panning);
+                    out_samples = samples * constant_power_panning;
 
                     break;
                 }
@@ -239,11 +211,10 @@ mod gen {
                     (Some(mod_out), Some(mod_targets)) if mod_out > 0.0 => {
                         let pan_factor = linear_panning_factor(panning);
 
-                        let mod_out =
-                            S::pd_mul(S::pd_mul(samples, pan_factor), S::pd_set1(mod_out));
+                        let mod_out = samples * pan_factor * Pd::new(mod_out);
 
                         for target_index in mod_targets.active_indices() {
-                            mod_inputs[target_index] = S::pd_add(mod_inputs[target_index], mod_out);
+                            mod_inputs[target_index] += mod_out;
                         }
                     }
                     _ => (),
@@ -252,18 +223,13 @@ mod gen {
 
             // Set output point y values
 
-            let out = S::pd_sub(
-                S::pd_set1(HEIGHT_MIDDLE as f64),
-                S::pd_mul(out_samples, S::pd_set1(WAVE_HEIGHT_RANGE as f64)),
-            );
+            let out_arr = (Pd::new(HEIGHT_MIDDLE as f64)
+                - (out_samples * Pd::new(WAVE_HEIGHT_RANGE as f64)))
+            .to_arr();
 
-            let out_arr = S::pd_to_array(out);
-
-            for sample_index in 0..S::SAMPLES {
-                let sample_index_offset = sample_index * 2;
-
-                lefts[sample_index].y = out_arr[sample_index_offset] as f32;
-                rights[sample_index].y = out_arr[sample_index_offset + 1] as f32;
+            for (sample_index, chunk) in out_arr.chunks_exact(2).enumerate() {
+                lefts[sample_index].y = chunk[0] as f32;
+                rights[sample_index].y = chunk[1] as f32;
             }
         }
     }
@@ -271,26 +237,18 @@ mod gen {
     /// Linear panning. Get channel volume as number between 0.0 and 1.0
     #[feature_gate]
     #[target_feature_enable]
-    unsafe fn linear_panning_factor(
-        panning: <S as Simd>::PackedDouble,
-    ) -> <S as Simd>::PackedDouble {
-        let factor = S::pd_interleave(S::pd_sub(S::pd_set1(1.0), panning), panning);
-        let factor = S::pd_mul(factor, S::pd_set1(2.0));
-
-        S::pd_min(factor, S::pd_set1(1.0))
+    unsafe fn linear_panning_factor(panning: Pd) -> Pd {
+        ((Pd::new(1.0) - panning).interleave(panning) * Pd::new(2.0)).min(Pd::new(1.0))
     }
 
     /// Get amount of channel that should be derived from mono for stereo mix
     /// panning
     #[feature_gate]
     #[target_feature_enable]
-    unsafe fn mono_mix_factor(panning: <S as Simd>::PackedDouble) -> <S as Simd>::PackedDouble {
+    unsafe fn mono_mix_factor(panning: Pd) -> Pd {
         // Get panning as value between -1 and 1
-        let pan = S::pd_mul(S::pd_set1(2.0), S::pd_sub(panning, S::pd_set1(0.5)));
+        let pan = Pd::new(2.0) * (panning - Pd::new(0.5));
 
-        S::pd_max(
-            S::pd_mul(pan, S::pd_distribute_left_right(-1.0, 1.0)),
-            S::pd_setzero(),
-        )
+        (pan * Pd::new_from_pair(-1.0, 1.0)).max(Pd::new_zeroed())
     }
 }
