@@ -7,42 +7,15 @@ use std::{
     ops::{Add, AddAssign, Mul, Sub},
 };
 
-pub trait FallbackSine: Copy {
-    fn sin(a: [f64; 2]) -> [f64; 2];
-}
-
-#[derive(Clone, Copy)]
-pub struct FallbackSineStd;
-
-impl FallbackSine for FallbackSineStd {
-    fn sin([a1, a2]: [f64; 2]) -> [f64; 2] {
-        [a1.sin(), a2.sin()]
-    }
-}
-
-#[cfg(feature = "simd")]
-#[derive(Clone, Copy)]
-pub struct FallbackSineSleef;
-
-#[cfg(feature = "simd")]
-impl FallbackSine for FallbackSineSleef {
-    fn sin([a1, a2]: [f64; 2]) -> [f64; 2] {
-        unsafe {
-            [
-                sleef_sys::Sleef_cinz_sind1_u35purec(a1),
-                sleef_sys::Sleef_cinz_sind1_u35purec(a2),
-            ]
-        }
-    }
-}
-
 pub type FallbackPackedDoubleStd = FallbackPackedDouble<FallbackSineStd>;
 #[cfg(feature = "simd")]
 pub type FallbackPackedDoubleSleef = FallbackPackedDouble<FallbackSineSleef>;
 
 pub trait SimdPackedDouble: Copy {
+    /// Number of stereo audio samples that this packed double fits
     const SAMPLES: usize;
 
+    /// f64 array with same number of members as this packed double
     type Arr;
 
     unsafe fn new(value: f64) -> Self;
@@ -284,5 +257,34 @@ impl Mul for AvxPackedDouble {
     #[inline(always)]
     fn mul(self, rhs: Self) -> Self::Output {
         unsafe { Self(_mm256_mul_pd(self.0, rhs.0)) }
+    }
+}
+
+pub trait FallbackSine: Copy {
+    fn sin(a: [f64; 2]) -> [f64; 2];
+}
+
+#[derive(Clone, Copy)]
+pub struct FallbackSineStd;
+
+impl FallbackSine for FallbackSineStd {
+    fn sin([a1, a2]: [f64; 2]) -> [f64; 2] {
+        [a1.sin(), a2.sin()]
+    }
+}
+
+#[cfg(feature = "simd")]
+#[derive(Clone, Copy)]
+pub struct FallbackSineSleef;
+
+#[cfg(feature = "simd")]
+impl FallbackSine for FallbackSineSleef {
+    fn sin([a1, a2]: [f64; 2]) -> [f64; 2] {
+        unsafe {
+            [
+                sleef_sys::Sleef_cinz_sind1_u35purec(a1),
+                sleef_sys::Sleef_cinz_sind1_u35purec(a2),
+            ]
+        }
     }
 }
