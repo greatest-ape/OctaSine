@@ -2,7 +2,6 @@ pub mod lfo;
 
 use std::f64::consts::TAU;
 
-use array_init::array_init;
 use duplicate::duplicate_item;
 use vst::buffer::AudioBuffer;
 
@@ -31,6 +30,10 @@ pub trait AudioGen {
     );
 }
 
+/// Audio gen data cache.
+///
+/// Data is only valid for the duration of the processing of one or two
+/// (stereo) samples, depending on the SIMD instruction width.
 pub struct AudioGenData {
     lfo_target_values: LfoTargetValues,
     voices: [VoiceData; 128],
@@ -40,21 +43,21 @@ impl Default for AudioGenData {
     fn default() -> Self {
         Self {
             lfo_target_values: Default::default(),
-            voices: array_init(|_| VoiceData::default()),
+            voices: array_init::array_init(|_| Default::default()),
         }
     }
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone, Copy)]
 struct VoiceData {
-    active: bool,
+    voice_index: u8,
     key_velocity: [f64; MAX_PD_WIDTH],
     /// Master volume is calculated per-voice, since it can be an LFO target
     master_volume: [f64; MAX_PD_WIDTH],
     operators: [VoiceOperatorData; 4],
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone, Copy)]
 struct VoiceOperatorData {
     volume: [f64; MAX_PD_WIDTH],
     mix_out: [f64; MAX_PD_WIDTH],
@@ -177,10 +180,11 @@ mod gen {
                 return;
             }
 
-            extract_voice_data(audio_state, position);
+            let num_valid_voice_datas = extract_voice_data(audio_state, position);
+
             gen_audio(
                 &mut audio_state.rng,
-                &audio_state.audio_gen_data,
+                &audio_state.audio_gen_data.voices[..num_valid_voice_datas],
                 lefts,
                 rights,
             );
@@ -189,10 +193,8 @@ mod gen {
 
     #[feature_gate]
     #[target_feature_enable]
-    unsafe fn extract_voice_data(audio_state: &mut AudioState, position: usize) {
-        for voice_data in audio_state.audio_gen_data.voices.iter_mut() {
-            voice_data.active = false;
-        }
+    unsafe fn extract_voice_data(audio_state: &mut AudioState, position: usize) -> usize {
+        let mut num_valid_voice_datas = 0;
 
         for sample_index in 0..Pd::SAMPLES {
             let time_per_sample = audio_state.time_per_sample;
@@ -205,17 +207,22 @@ mod gen {
             let operators = &mut audio_state.parameters.operators;
             let lfo_values = &mut audio_state.audio_gen_data.lfo_target_values;
 
-            for (voice, voice_data) in audio_state
+            for (voice_index, voice) in audio_state
                 .voices
                 .iter_mut()
-                .zip(audio_state.audio_gen_data.voices.iter_mut())
-                .filter(|(voice, _)| voice.active)
+                .enumerate()
+                .filter(|(_, voice)| voice.active)
             {
                 voice.deactivate_if_envelopes_ended();
 
-                if voice.active {
-                    voice_data.active = true;
-                } else {
+                // Select an appropriate VoiceData item to fill with data
+                let voice_data = if sample_index == 0 {
+                    let voice_data = &mut audio_state.audio_gen_data.voices[num_valid_voice_datas];
+
+                    voice_data.voice_index = voice_index as u8;
+
+                    num_valid_voice_datas += 1;
+
                     // If voice was deactivated this sample in avx mode, ensure that audio isn't
                     // generated for next sample due to lingering data from previous passes. If
                     // voice gets activated though midi events next sample, new data gets written.
@@ -223,12 +230,41 @@ mod gen {
                     // Since we deactivate envelopes the sample after they ended, we know
                     // at this point that valid data was written for the previous sample, meaning
                     // that we don't need to worry about setting it to zero.
-                    if (Pd::SAMPLES == 2) & (sample_index == 0) {
+                    if (!voice.active) & (Pd::SAMPLES == 2) {
                         for operator in voice_data.operators.iter_mut() {
                             set_value_for_both_channels(&mut operator.envelope_volume, 1, 0.0);
                         }
                     }
-                }
+
+                    voice_data
+                } else {
+                    // During second sample in AVX mode, look for the relevant voice data cache
+                    // among the ones filled while processing sample 1. If it is not found because
+                    // the voice was activated this sample, use a new one.
+                    if let Some(voice_data) = audio_state.audio_gen_data.voices
+                        [..num_valid_voice_datas]
+                        .iter_mut()
+                        .find(|voice_data| voice_data.voice_index == voice_index as u8)
+                    {
+                        voice_data
+                    } else {
+                        let voice_data =
+                            &mut audio_state.audio_gen_data.voices[num_valid_voice_datas];
+
+                        voice_data.voice_index = voice_index as u8;
+
+                        // Since sample 1 of this voice data cache item contains invalid data
+                        // from previous passes, set envelope volume to zero for it to prevent
+                        // audio from being generated
+                        for operator in voice_data.operators.iter_mut() {
+                            set_value_for_both_channels(&mut operator.envelope_volume, 0, 0.0);
+                        }
+
+                        num_valid_voice_datas += 1;
+
+                        voice_data
+                    }
+                };
 
                 voice.advance_velocity_interpolator_one_sample(audio_state.sample_rate);
 
@@ -296,6 +332,8 @@ mod gen {
                 }
             }
         }
+
+        num_valid_voice_datas
     }
 
     #[feature_gate]
@@ -408,18 +446,14 @@ mod gen {
     #[target_feature_enable]
     unsafe fn gen_audio(
         rng: &mut fastrand::Rng,
-        audio_gen_data: &AudioGenData,
+        voices: &[VoiceData],
         audio_buffer_lefts: &mut [f32],
         audio_buffer_rights: &mut [f32],
     ) {
         // Pd::SAMPLES * 2 because of two channels. Even index = left channel
         let mut mix_out_sum = Pd::new_zeroed();
 
-        for voice_data in audio_gen_data
-            .voices
-            .iter()
-            .filter(|voice_data| voice_data.active)
-        {
+        for voice_data in voices.iter() {
             let operator_generate_audio = run_operator_dependency_analysis(voice_data);
 
             // Voice modulation input storage, indexed by operator
