@@ -607,8 +607,7 @@ mod gen {
     ) {
         let offset = sample_index * 2;
 
-        target[offset] = value;
-        target[offset + 1] = value;
+        target[offset..offset + 2].copy_from_slice(&[value, value]);
     }
 
     /// Linear panning. Get channel volume as number between 0.0 and 1.0
