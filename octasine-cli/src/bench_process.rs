@@ -8,7 +8,7 @@ use vst::plugin::PluginParameters;
 
 use octasine::audio::gen::AudioGen;
 use octasine::parameters::{OperatorParameter, Parameter, PARAMETERS};
-use octasine::simd::SimdPackedDouble;
+use octasine::simd::{Simd, SimdPackedDouble};
 use octasine::OctaSine;
 
 /// Benchmark OctaSine process functions and check output sample accuracy
@@ -16,10 +16,8 @@ pub fn run() -> anyhow::Result<()> {
     // Ignore success status here, since output differs across platforms
     // depending on std sine implementation
     #[allow(unused_variables)]
-    let (_, fallback_std) = benchmark::<octasine::simd::FallbackPackedDoubleStd>(
-        "fallback (std)",
-        "17 8d b0 3b 97 df 2d 98 ",
-    );
+    let (_, fallback_std) =
+        benchmark::<octasine::simd::FallbackStd>("fallback (std)", "17 8d b0 3b 97 df 2d 98 ");
 
     // Don't forget trailing space
     let hash = "08 bd 63 6c 7b 93 83 8e ";
@@ -27,8 +25,7 @@ pub fn run() -> anyhow::Result<()> {
     let mut all_sleef_hashes_match = true;
 
     {
-        let (success, r) =
-            benchmark::<octasine::simd::FallbackPackedDoubleSleef>("fallback (sleef)", hash);
+        let (success, r) = benchmark::<octasine::simd::FallbackSleef>("fallback (sleef)", hash);
 
         all_sleef_hashes_match &= success;
 
@@ -36,7 +33,7 @@ pub fn run() -> anyhow::Result<()> {
     }
 
     if is_x86_feature_detected!("avx") {
-        let (success, r) = benchmark::<octasine::simd::AvxPackedDouble>("avx", hash);
+        let (success, r) = benchmark::<octasine::simd::Avx>("avx", hash);
 
         all_sleef_hashes_match &= success;
 
@@ -60,7 +57,7 @@ pub fn run() -> anyhow::Result<()> {
     }
 }
 
-fn benchmark<A: AudioGen + SimdPackedDouble>(name: &str, expected_hash: &str) -> (bool, f32) {
+fn benchmark<A: AudioGen + Simd>(name: &str, expected_hash: &str) -> (bool, f32) {
     const BUFFER_LEN: usize = 256;
     const BUFFER_ITERATIONS: usize = 1024 * 8;
     const NUM_VOICES: usize = 4;
@@ -157,12 +154,12 @@ fn benchmark<A: AudioGen + SimdPackedDouble>(name: &str, expected_hash: &str) ->
         octasine.update_audio_parameters();
 
         for (j, (lefts, rights)) in lefts
-            .chunks_exact_mut(A::SAMPLES)
-            .zip(rights.chunks_exact_mut(A::SAMPLES))
+            .chunks_exact_mut(A::Pd::SAMPLES)
+            .zip(rights.chunks_exact_mut(A::Pd::SAMPLES))
             .enumerate()
         {
             unsafe {
-                A::process_f32(&mut octasine.audio, lefts, rights, j * A::SAMPLES);
+                A::process_f32(&mut octasine.audio, lefts, rights, j * A::Pd::SAMPLES);
             }
         }
 

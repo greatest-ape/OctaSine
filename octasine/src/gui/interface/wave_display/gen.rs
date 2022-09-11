@@ -25,7 +25,7 @@ pub(super) fn recalculate_canvas_points(
                 (2..) if is_x86_feature_detected!("avx") => {
                     let end_offset = offset + 2;
 
-                    AvxPackedDouble::gen_segment(
+                    Avx::gen_segment(
                         &mut lefts[offset..end_offset],
                         &mut rights[offset..end_offset],
                         operator_index,
@@ -40,7 +40,7 @@ pub(super) fn recalculate_canvas_points(
 
                     cfg_if::cfg_if!(
                         if #[cfg(feature = "simd")] {
-                            FallbackPackedDoubleSleef::gen_segment(
+                            FallbackSleef::gen_segment(
                                 &mut lefts[offset..end_offset],
                                 &mut rights[offset..end_offset],
                                 operator_index,
@@ -48,7 +48,7 @@ pub(super) fn recalculate_canvas_points(
                                 offset as usize,
                             );
                         } else {
-                            FallbackPackedDoubleStd::gen_segment(
+                            FallbackStd::gen_segment(
                                 &mut lefts[offset..end_offset],
                                 &mut rights[offset..end_offset],
                                 operator_index,
@@ -80,17 +80,17 @@ trait PathGen {
 
 #[duplicate_item(
     [
-        Pd [ FallbackPackedDoubleStd ]
+        S [ FallbackStd ]
         target_feature_enable [ cfg(not(feature = "fake-feature")) ]
         feature_gate [ cfg(not(feature = "fake-feature")) ]
     ]
     [
-        Pd [ FallbackPackedDoubleSleef ]
+        S [ FallbackSleef ]
         target_feature_enable [ cfg(not(feature = "fake-feature")) ]
         feature_gate [ cfg(all(feature = "simd")) ]
     ]
     [
-        Pd [ AvxPackedDouble ]
+        S [ Avx ]
         target_feature_enable [ target_feature(enable = "avx") ]
         feature_gate [ cfg(all(feature = "simd", target_arch = "x86_64")) ]
     ]
@@ -109,7 +109,10 @@ mod gen {
     use super::*;
 
     #[feature_gate]
-    impl PathGen for Pd {
+    type Pd = <S as Simd>::Pd;
+
+    #[feature_gate]
+    impl PathGen for S {
         #[target_feature_enable]
         unsafe fn gen_segment(
             lefts: &mut [Point],
