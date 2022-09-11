@@ -93,7 +93,7 @@ pub fn process_f32_runtime_select(
                 (2..) if is_x86_feature_detected!("avx") => {
                     let new_position = position + 2;
 
-                    AvxPackedDouble::process_f32(
+                    Avx::process_f32(
                         audio_state,
                         &mut lefts[position..new_position],
                         &mut rights[position..new_position],
@@ -107,14 +107,14 @@ pub fn process_f32_runtime_select(
 
                     cfg_if::cfg_if!(
                         if #[cfg(feature = "simd")] {
-                            FallbackPackedDoubleSleef::process_f32(
+                            FallbackSleef::process_f32(
                                 audio_state,
                                 &mut lefts[position..new_position],
                                 &mut rights[position..new_position],
                                 position,
                             );
                         } else {
-                            FallbackPackedDoubleStd::process_f32(
+                            FallbackStd::process_f32(
                                 audio_state,
                                 &mut lefts[position..new_position],
                                 &mut rights[position..new_position],
@@ -135,19 +135,19 @@ pub fn process_f32_runtime_select(
 
 #[duplicate_item(
     [
-        Pd [ FallbackPackedDoubleStd ]
+        S [ FallbackStd ]
         target_feature_enable [ cfg(not(feature = "fake-feature")) ]
         feature_gate [ cfg(not(feature = "fake-feature")) ]
         test_feature_gate [ cfg(not(feature = "fake-feature")) ]
     ]
     [
-        Pd [ FallbackPackedDoubleSleef ]
+        S [ FallbackSleef ]
         target_feature_enable [ cfg(not(feature = "fake-feature")) ]
         feature_gate [ cfg(all(feature = "simd")) ]
         test_feature_gate [ cfg(not(feature = "fake-feature")) ]
     ]
     [
-        Pd [ AvxPackedDouble ]
+        S [ Avx ]
         target_feature_enable [ target_feature(enable = "avx") ]
         feature_gate [ cfg(all(feature = "simd", target_arch = "x86_64")) ]
         test_feature_gate [ cfg(target_feature = "avx") ]
@@ -158,7 +158,10 @@ mod gen {
     use super::*;
 
     #[feature_gate]
-    impl AudioGen for Pd {
+    type Pd = <S as Simd>::Pd;
+
+    #[feature_gate]
+    impl AudioGen for S {
         #[target_feature_enable]
         unsafe fn process_f32(
             audio_state: &mut AudioState,
