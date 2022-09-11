@@ -2,7 +2,7 @@ use super::{Simd, SimdPackedDouble};
 
 use std::{
     marker::PhantomData,
-    ops::{Add, AddAssign, Mul, Sub},
+    ops::{Add, AddAssign, Div, Mul, Sub},
 };
 
 pub type FallbackStd = Fallback<FallbackSineStd>;
@@ -79,6 +79,12 @@ impl<T: FallbackSine> SimdPackedDouble for FallbackPackedDouble<T> {
     unsafe fn any_over_zero(&self) -> bool {
         (self.0[0] > 0.0) | (self.0[1] > 0.0)
     }
+    #[inline]
+    unsafe fn log10(&self) -> Self {
+        let [a, b] = self.0;
+
+        Self([a.log10(), b.log10()], self.1)
+    }
 }
 
 impl<T> Add for FallbackPackedDouble<T> {
@@ -124,6 +130,18 @@ impl<T> Mul for FallbackPackedDouble<T> {
         let [b1, b2] = rhs.0;
 
         Self([a1 * b1, a2 * b2], self.1)
+    }
+}
+
+impl<T> Div for FallbackPackedDouble<T> {
+    type Output = Self;
+
+    #[inline(always)]
+    fn div(self, rhs: Self) -> Self::Output {
+        let [a1, a2] = self.0;
+        let [b1, b2] = rhs.0;
+
+        Self([a1 / b1, a2 / b2], self.1)
     }
 }
 

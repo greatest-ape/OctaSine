@@ -31,4 +31,5 @@ pub trait SimdPackedDouble: Copy {
     unsafe fn pairwise_horizontal_sum(&self) -> Self;
     unsafe fn interleave(&self, other: Self) -> Self;
     unsafe fn any_over_zero(&self) -> bool;
+    unsafe fn log10(&self) -> Self;
 }

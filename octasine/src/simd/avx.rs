@@ -1,6 +1,6 @@
 use std::{
     arch::x86_64::*,
-    ops::{Add, AddAssign, Mul, Sub},
+    ops::{Add, AddAssign, Div, Mul, Sub},
 };
 
 use super::{Simd, SimdPackedDouble};
@@ -86,6 +86,11 @@ impl SimdPackedDouble for AvxPackedDouble {
     unsafe fn any_over_zero(&self) -> bool {
         _mm256_movemask_pd(_mm256_cmp_pd::<{ _CMP_GT_OQ }>(self.0, _mm256_setzero_pd())) != 0
     }
+    #[target_feature(enable = "avx")]
+    #[inline]
+    unsafe fn log10(&self) -> Self {
+        Self(sleef_sys::Sleef_cinz_log10d4_u10avx(self.0))
+    }
 }
 
 impl Add for AvxPackedDouble {
@@ -119,5 +124,14 @@ impl Mul for AvxPackedDouble {
     #[inline(always)]
     fn mul(self, rhs: Self) -> Self::Output {
         unsafe { Self(_mm256_mul_pd(self.0, rhs.0)) }
+    }
+}
+
+impl Div for AvxPackedDouble {
+    type Output = Self;
+
+    #[inline(always)]
+    fn div(self, rhs: Self) -> Self::Output {
+        unsafe { Self(_mm256_div_pd(self.0, rhs.0)) }
     }
 }

@@ -20,6 +20,18 @@ const LIMIT: f64 = 10.0;
 
 const MAX_PD_WIDTH: usize = 4;
 
+#[derive(Default)]
+struct EnvelopeVolumeValueArrays {
+    start_volume: [f64; 4],
+    end_volume: [f64; 4],
+    time_so_far_this_stage: [f64; 4],
+    stage_length: [f64; 4],
+    restart_volume: [f64; 4],
+    duration: [f64; 4],
+    restarting: [bool; 4],
+    ended: [bool; 4],
+}
+
 pub trait AudioGen {
     #[allow(clippy::missing_safety_doc)]
     unsafe fn process_f32(
@@ -197,6 +209,8 @@ mod gen {
     #[feature_gate]
     #[target_feature_enable]
     unsafe fn extract_voice_data(audio_state: &mut AudioState, position: usize) -> usize {
+        use crate::audio::voices::envelopes::EnvelopeVolumeValues;
+
         let mut num_valid_voice_datas = 0;
 
         for sample_index in 0..Pd::SAMPLES {
@@ -321,6 +335,8 @@ mod gen {
 
                 let voice_base_frequency = voice.midi_pitch.get_frequency(master_frequency);
 
+                let mut envelope_values = EnvelopeVolumeValueArrays::default();
+
                 for (operator_index, operator) in operators.iter_mut().enumerate() {
                     extract_voice_operator_data(
                         &audio_state.log10table,
@@ -332,12 +348,131 @@ mod gen {
                         &lfo_values,
                         time_per_sample,
                         voice_base_frequency,
-                    )
+                    );
+
+                    match voice.operators[operator_index]
+                        .volume_envelope
+                        .get_volume_values(&operator.volume_envelope)
+                    {
+                        EnvelopeVolumeValues::Calculate {
+                            start_volume,
+                            end_volume,
+                            time_so_far_this_stage,
+                            stage_length,
+                            restarting_from_volume,
+                            duration,
+                        } => {
+                            envelope_values.start_volume[operator_index] = start_volume as f64;
+                            envelope_values.end_volume[operator_index] = end_volume as f64;
+                            envelope_values.time_so_far_this_stage[operator_index] =
+                                time_so_far_this_stage;
+                            envelope_values.stage_length[operator_index] = stage_length;
+                            envelope_values.duration[operator_index] = duration;
+
+                            if let Some(restart_volume) = restarting_from_volume {
+                                envelope_values.restart_volume[operator_index] =
+                                    restart_volume as f64;
+                                envelope_values.restarting[operator_index] = true;
+                            }
+                        }
+                        EnvelopeVolumeValues::Sustain {
+                            volume,
+                            restarting_from_volume
+                        } => {
+                            envelope_values.start_volume[operator_index] = volume as f64;
+                            envelope_values.stage_length[operator_index] = 1.0;
+
+                            if let Some(restart_volume) = restarting_from_volume {
+                                envelope_values.restart_volume[operator_index] =
+                                    restart_volume as f64;
+                                envelope_values.restarting[operator_index] = true;
+                            }
+                        }
+                        EnvelopeVolumeValues::Ended => {
+                            envelope_values.stage_length[operator_index] = 1.0;
+                            envelope_values.ended[operator_index] = true;
+                        }
+                    }
+                }
+
+                let envelope_volume =
+                    extract_envelope_volume(&audio_state.log10table, envelope_values);
+
+                for (operator_index, envelope_volume) in envelope_volume.into_iter().enumerate() {
+                    set_value_for_both_channels(
+                        &mut voice_data.operators[operator_index].envelope_volume,
+                        sample_index,
+                        envelope_volume as f64,
+                    );
                 }
             }
         }
 
         num_valid_voice_datas
+    }
+
+    #[feature_gate]
+    #[target_feature_enable]
+    unsafe fn extract_envelope_volume(
+        log10table: &Log10Table,
+        EnvelopeVolumeValueArrays {
+            start_volume,
+            end_volume,
+            time_so_far_this_stage,
+            stage_length,
+            restart_volume,
+            duration,
+            restarting,
+            ended,
+        }: EnvelopeVolumeValueArrays,
+    ) -> [f64; 4] {
+        use crate::parameters::ENVELOPE_CURVE_TAKEOVER_RECIP;
+
+        let mut output = [0.0; 4];
+
+        let width = Pd::SAMPLES * 2;
+
+        for i in 0..(4 / width) {
+            let start = i * width;
+            let end = start + width;
+
+            let start_volume = Pd::load_ptr(start_volume[start..end].as_ptr());
+            let end_volume = Pd::load_ptr(end_volume[start..end].as_ptr());
+            let time_so_far_this_stage = Pd::load_ptr(time_so_far_this_stage[start..end].as_ptr());
+            let stage_length = Pd::load_ptr(stage_length[start..end].as_ptr());
+            let restart_volume = Pd::load_ptr(restart_volume[start..end].as_ptr());
+            let duration = Pd::load_ptr(duration[start..end].as_ptr());
+            let restarting = &restarting[start..end];
+            let ended = &ended[start..end];
+
+            if ended.iter().all(|ended| *ended) {
+                continue;
+            }
+
+            let time_progress = time_so_far_this_stage / stage_length;
+
+            let log10factor = (Pd::new(1.0) + time_progress * Pd::new(9.0)).log10();
+
+            let curve_factor =
+                (stage_length * Pd::new(ENVELOPE_CURVE_TAKEOVER_RECIP)).min(Pd::new(1.0));
+            let linear_factor = Pd::new(1.0) - curve_factor;
+            let curve = curve_factor * log10factor;
+            let linear = linear_factor * time_progress;
+
+            let volume = start_volume + (end_volume - start_volume) * (curve + linear);
+
+            //let volume_with_restart_interpolation = {
+            //    let progress = duration / Pd::new(INTERPOLATION_DURATION);
+            //
+            //    progress * volume + (1.0 - progress) * restart_volume
+            //};
+
+            let volume = volume.to_arr();
+
+            output[start..end].copy_from_slice(&volume);
+        }
+
+        output
     }
 
     #[feature_gate]
@@ -370,16 +505,6 @@ mod gen {
         if let Some(p) = &mut operator_parameters.mod_targets {
             operator_data.modulation_targets = p.get_value();
         }
-
-        let envelope_volume = voice_operator
-            .volume_envelope
-            .get_volume(log10table, &operator_parameters.volume_envelope);
-
-        set_value_for_both_channels(
-            &mut operator_data.envelope_volume,
-            sample_index,
-            envelope_volume as f64,
-        );
 
         let volume = operator_parameters
             .volume

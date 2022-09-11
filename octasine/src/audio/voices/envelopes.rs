@@ -8,6 +8,29 @@ use super::VoiceDuration;
 
 const INTERPOLATION_DURATION: f64 = 0.00333;
 
+#[derive(Clone, Copy)]
+pub enum EnvelopeVolumeValues {
+    Calculate {
+        start_volume: f32,
+        end_volume: f32,
+        time_so_far_this_stage: f64,
+        stage_length: f64,
+        restarting_from_volume: Option<f32>,
+        duration: f64,
+    },
+    Sustain {
+        volume: f32,
+        restarting_from_volume: Option<f32>,
+    },
+    Ended,
+}
+
+impl Default for EnvelopeVolumeValues {
+    fn default() -> Self {
+        Self::Ended
+    }
+}
+
 #[derive(Debug, Copy, Clone)]
 pub struct VoiceOperatorVolumeEnvelope {
     stage: EnvelopeStage,
@@ -69,6 +92,43 @@ impl VoiceOperatorVolumeEnvelope {
                 self.volume_at_stage_change = 0.0;
             }
             _ => {}
+        }
+    }
+
+    pub fn get_volume_values(
+        &mut self,
+        parameters: &OperatorEnvelopeAudioParameters,
+    ) -> EnvelopeVolumeValues {
+        match self.stage {
+            EnvelopeStage::Attack => EnvelopeVolumeValues::Calculate {
+                start_volume: 0.0,
+                end_volume: 1.0,
+                time_so_far_this_stage: self.duration_since_stage_change(),
+                stage_length: parameters.attack_duration.get_value(),
+                restarting_from_volume: self.restarting_from_volume,
+                duration: self.duration.0,
+            },
+            EnvelopeStage::Decay => EnvelopeVolumeValues::Calculate {
+                start_volume: self.volume_at_stage_change,
+                end_volume: parameters.sustain_volume.get_value(),
+                time_so_far_this_stage: self.duration_since_stage_change(),
+                stage_length: parameters.decay_duration.get_value(),
+                restarting_from_volume: self.restarting_from_volume,
+                duration: self.duration.0,
+            },
+            EnvelopeStage::Sustain => EnvelopeVolumeValues::Sustain {
+                volume: parameters.sustain_volume.get_value(),
+                restarting_from_volume: self.restarting_from_volume,
+            },
+            EnvelopeStage::Release => EnvelopeVolumeValues::Calculate {
+                start_volume: self.volume_at_stage_change,
+                end_volume: 0.0,
+                time_so_far_this_stage: self.duration_since_stage_change(),
+                stage_length: parameters.release_duration.get_value(),
+                restarting_from_volume: self.restarting_from_volume,
+                duration: self.duration.0,
+            },
+            EnvelopeStage::Ended => EnvelopeVolumeValues::Ended,
         }
     }
 
