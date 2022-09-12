@@ -215,6 +215,7 @@ mod gen {
                 .iter_mut()
                 .enumerate()
                 .filter(|(_, voice)| voice.active)
+                .map(|(voice_index, voice)| (voice_index as u8, voice))
             {
                 voice.deactivate_if_envelopes_ended();
 
@@ -222,7 +223,7 @@ mod gen {
                 let voice_data = if sample_index == 0 {
                     let voice_data = &mut audio_state.audio_gen_data.voices[num_valid_voice_datas];
 
-                    voice_data.voice_index = voice_index as u8;
+                    voice_data.voice_index = voice_index;
 
                     num_valid_voice_datas += 1;
 
@@ -247,14 +248,14 @@ mod gen {
                     if let Some(voice_data) = audio_state.audio_gen_data.voices
                         [..num_valid_voice_datas]
                         .iter_mut()
-                        .find(|voice_data| voice_data.voice_index == voice_index as u8)
+                        .find(|voice_data| voice_data.voice_index == voice_index)
                     {
                         voice_data
                     } else {
                         let voice_data =
                             &mut audio_state.audio_gen_data.voices[num_valid_voice_datas];
 
-                        voice_data.voice_index = voice_index as u8;
+                        voice_data.voice_index = voice_index;
 
                         // Since sample 1 of this voice data cache item contains invalid data
                         // from previous passes, set envelope volume to zero for it to prevent
@@ -606,8 +607,7 @@ mod gen {
     ) {
         let offset = sample_index * 2;
 
-        target[offset] = value;
-        target[offset + 1] = value;
+        target[offset..offset + 2].copy_from_slice(&[value, value]);
     }
 
     /// Linear panning. Get channel volume as number between 0.0 and 1.0
