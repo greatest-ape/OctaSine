@@ -9,8 +9,9 @@
     later
   * Consider using the Bhaskara function for constant power panning
     sine and cosine calculations
-  * Consider implementing my own Chebyshev approximation for sine
-    wave form to avoid having to rely on nightly Rust for sleef
+  * Consider implementing Chebyshev approximation for sine wave form to
+    avoid having to rely on nightly Rust for sleef. Take inspiration
+    from http://mooooo.ooo/chebyshev-sine-approximation/
 * Consider adding saw, square and triangle waves. Maybe look at
   TX81Z waveforms. https://www.reddit.com/r/synthesizers/comments/rkyk6j/comment/hpgcu6r/?utm_source=share&utm_medium=web2x&context=3
 * Build for Apple silicon
