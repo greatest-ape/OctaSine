@@ -129,8 +129,7 @@ impl AvxPackedDouble {
         self - ((self * Self::new(1.0 / TAU)).round_towards_zero() * Self::new(TAU))
     }
 
-    #[inline]
-    #[target_feature(enable = "avx")]
+    #[inline(never)]
     unsafe fn constrain_to_tau_fmod(self) -> Self {
         let arr = self.to_arr();
 
@@ -299,15 +298,15 @@ mod tests {
                         constrain_to_tau(arr)
                     };
 
-                    println!("input:       {}", input);
-                    println!("result:      {}", result);
-                    println!("reference:   {}", reference);
-                    println!("result rem:  {}", result_rem[i]);
-                    println!("diff:        {}", diff);
-                    println!("rem diff:    {}", (result_rem[i] - reference).abs());
-                    println!("index:       {}", i);
-                    println!("constrained: {}", constrained[i]);
-                    println!("rem:         {}", input % TAU);
+                    println!("input:            {}", input);
+                    println!("result:           {}", result);
+                    println!("reference:        {}", reference);
+                    println!("result (pre rem): {}", result_rem[i]);
+                    println!("diff:             {}", diff);
+                    println!("diff (pre rem):   {}", (result_rem[i] - reference).abs());
+                    println!("index:            {}", i);
+                    println!("constrained:      {}", constrained[i]);
+                    println!("rem:              {}", input % TAU);
                     println!();
 
                     return TestResult::failed();
