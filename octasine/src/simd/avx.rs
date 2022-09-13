@@ -90,7 +90,10 @@ impl SimdPackedDouble for AvxPackedDouble {
     #[inline]
     unsafe fn multiply_negative_sign(&self, other: Self) -> Self {
         // _mm256_blendv_pd(other.0, other.0 * _mm256_set1(-1.0), self.0)
-        _mm256_xor_pd(other, _mm256_and_pd(_mm256_set1_pd(f64::from_bits(1 << 63)), self.0))
+        _mm256_xor_pd(
+            other,
+            _mm256_and_pd(_mm256_set1_pd(f64::from_bits(1 << 63)), self.0),
+        )
     }
 }
 

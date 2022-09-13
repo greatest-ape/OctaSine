@@ -84,15 +84,15 @@ impl<T: FallbackSine> SimdPackedDouble for FallbackPackedDouble<T> {
     unsafe fn multiply_negative_sign(&self, other: Self) -> Self {
         const MASK: u64 = 1 << 63;
 
-        let mask = [
-            MASK & self.0[0].to_bits(),
-            MASK & self.0[1].to_bits(),
-        ];
+        let mask = [MASK & self.0[0].to_bits(), MASK & self.0[1].to_bits()];
 
-        Self([
-            f64::from_bits(other.0[0].to_bits() ^ mask[0]),
-            f64::from_bits(other.0[1].to_bits() ^ mask[1]),
-        ], self.1)
+        Self(
+            [
+                f64::from_bits(other.0[0].to_bits() ^ mask[0]),
+                f64::from_bits(other.0[1].to_bits() ^ mask[1]),
+            ],
+            self.1,
+        )
     }
 }
 
