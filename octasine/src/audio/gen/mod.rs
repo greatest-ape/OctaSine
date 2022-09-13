@@ -439,8 +439,15 @@ mod gen {
         let frequency =
             voice_base_frequency * frequency_ratio.value * frequency_free * frequency_fine;
         let new_phase = voice_operator.last_phase.0 + frequency * time_per_sample.0;
+        let new_phase = new_phase.fract();
 
-        set_value_for_both_channels(&mut operator_data.phase, sample_index, new_phase);
+        let modified_phase = if new_phase > 0.5 {
+            new_phase - 1.0
+        } else {
+            new_phase
+        };
+
+        set_value_for_both_channels(&mut operator_data.phase, sample_index, modified_phase);
 
         // Save phase
         voice_operator.last_phase.0 = new_phase;
@@ -626,6 +633,43 @@ mod gen {
         let pan = Pd::new(2.0) * (panning - Pd::new(0.5));
 
         (pan * Pd::new_from_pair(-1.0, 1.0)).max(Pd::new_zeroed())
+    }
+
+    #[feature_gate]
+    #[target_feature_enable]
+    unsafe fn fast_sin(phase: Pd) -> Pd {
+        // TODO: run fract, then subtract 1 from values larger than 0.5,
+        // then run sin_tau with multiply_negative_sign implementation
+        phase.multiply_negative_sign(chebyshev_sin(phase))
+    }
+
+    /// Fast sine approximation valid for range (-pi, pi)
+    /// 
+    /// Adapted from http://mooooo.ooo/chebyshev-sine-approximation/
+    /// TODO: should be replaced with sin_tau implementation
+    #[feature_gate]
+    #[target_feature_enable]
+    unsafe fn chebyshev_sin(x: Pd) -> Pd {
+        const COEFFICIENT_X: f64 = -0.10132118; // x
+        const COEFFICIENT_X3: f64 = 0.0066208798; // x^3
+        const COEFFICIENT_X5: f64 = -0.00017350505; // x^5
+        const COEFFICIENT_X7: f64 = 0.0000025222919; // x^7
+        const COEFFICIENT_X9: f64 = -0.000000023317787; // x^9
+        const COEFFICIENT_X11: f64 = 0.00000000013291342; // x^11
+
+        let pi_major = Pd::new(3.1415927);
+        let pi_minor = Pd::new(-0.00000008742278);
+
+        let x2 = x * x;
+
+        let p11 = Pd::new(COEFFICIENT_X11);
+        let p9  = p11 * x2 + Pd::new(COEFFICIENT_X9);
+        let p7  = p9 * x2 + Pd::new(COEFFICIENT_X7);
+        let p5  = p7 * x2 + Pd::new(COEFFICIENT_X5);
+        let p3  = p5 * x2 + Pd::new(COEFFICIENT_X3);
+        let p1  = p3 * x2 + Pd::new(COEFFICIENT_X);
+
+        (x - pi_major - pi_minor) * (x + pi_major + pi_minor) * p1 * x
     }
 
     #[cfg(test)]

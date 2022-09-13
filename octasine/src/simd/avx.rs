@@ -86,6 +86,12 @@ impl SimdPackedDouble for AvxPackedDouble {
     unsafe fn any_over_zero(&self) -> bool {
         _mm256_movemask_pd(_mm256_cmp_pd::<{ _CMP_GT_OQ }>(self.0, _mm256_setzero_pd())) != 0
     }
+    #[target_feature(enable = "avx")]
+    #[inline]
+    unsafe fn multiply_negative_sign(&self, other: Self) -> Self {
+        // _mm256_blendv_pd(other.0, other.0 * _mm256_set1(-1.0), self.0)
+        _mm256_xor_pd(other, _mm256_and_pd(_mm256_set1_pd(f64::from_bits(1 << 63)), self.0))
+    }
 }
 
 impl Add for AvxPackedDouble {

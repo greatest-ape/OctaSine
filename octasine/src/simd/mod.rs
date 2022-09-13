@@ -31,4 +31,10 @@ pub trait SimdPackedDouble: Copy {
     unsafe fn pairwise_horizontal_sum(&self) -> Self;
     unsafe fn interleave(&self, other: Self) -> Self;
     unsafe fn any_over_zero(&self) -> bool;
+    /// For members of self with negative sign, multiply members of other with -1.0
+    unsafe fn multiply_negative_sign(&self, other: Self) -> Self;
+}
+
+trait FastSin {
+
 }
