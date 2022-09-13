@@ -2,8 +2,40 @@ use super::{Simd, SimdPackedDouble};
 
 use std::{
     marker::PhantomData,
-    ops::{Add, AddAssign, Mul, Sub},
+    ops::{Add, AddAssign, Mul, Sub, BitAnd, BitOr, BitXor},
 };
+
+macro_rules! apply_to_arrays {
+    ($f:expr, $a:expr) => {
+        {
+            let [a1, a2] = $a;
+
+            [$f(a1), $f(a2)]
+        }
+    };
+    ($f:expr, $a:expr, $b:expr) => {
+        {
+            let [a1, a2] = $a;
+            let [b1, b2] = $b;
+
+            [$f(a1, b1), $f(a2, b2)]
+        }
+    };
+}
+
+macro_rules! apply_to_arrays_as_bits {
+    ($f:expr, $a:expr, $b:expr) => {
+        {
+            let [a1, a2] = $a;
+            let [b1, b2] = $b;
+
+            [
+                f64::from_bits($f(a1.to_bits(), b1.to_bits())),
+                f64::from_bits($f(a2.to_bits(), b2.to_bits()))
+            ]
+        }
+    };
+}
 
 pub type FallbackStd = Fallback<FallbackSineStd>;
 #[cfg(feature = "simd")]
@@ -49,20 +81,14 @@ impl<T: FallbackSine> SimdPackedDouble for FallbackPackedDouble<T> {
     }
     #[inline]
     unsafe fn min(&self, other: Self) -> Self {
-        let [a1, a2] = self.0;
-        let [b1, b2] = other.0;
-
-        Self([a1.min(b1), a2.min(b2)], self.1)
+        Self(apply_to_arrays!(f64::min, self.0, other.0), self.1)
     }
     #[inline]
     unsafe fn max(&self, other: Self) -> Self {
-        let [a1, a2] = self.0;
-        let [b1, b2] = other.0;
-
-        Self([a1.max(b1), a2.max(b2)], self.1)
+        Self(apply_to_arrays!(f64::max, self.0, other.0), self.1)
     }
     #[inline]
-    unsafe fn fast_sin(&self) -> Self {
+    unsafe fn fast_sin(self) -> Self {
         Self(T::sin(self.0), self.1)
     }
     #[inline]
@@ -81,18 +107,8 @@ impl<T: FallbackSine> SimdPackedDouble for FallbackPackedDouble<T> {
     }
 
     #[inline]
-    unsafe fn multiply_negative_sign(&self, other: Self) -> Self {
-        const MASK: u64 = 1 << 63;
-
-        let mask = [MASK & self.0[0].to_bits(), MASK & self.0[1].to_bits()];
-
-        Self(
-            [
-                f64::from_bits(other.0[0].to_bits() ^ mask[0]),
-                f64::from_bits(other.0[1].to_bits() ^ mask[1]),
-            ],
-            self.1,
-        )
+    unsafe fn multiply_negative_sign(self, other: Self) -> Self {
+        self ^ (Self::new(f64::from_bits(1 << 63)) & other)
     }
 }
 
@@ -101,10 +117,7 @@ impl<T> Add for FallbackPackedDouble<T> {
 
     #[inline(always)]
     fn add(self, rhs: Self) -> Self::Output {
-        let [a1, a2] = self.0;
-        let [b1, b2] = rhs.0;
-
-        Self([a1 + b1, a2 + b2], self.1)
+        Self(apply_to_arrays!(Add::add, self.0, rhs.0), self.1)
     }
 }
 
@@ -123,10 +136,7 @@ impl<T> Sub for FallbackPackedDouble<T> {
 
     #[inline(always)]
     fn sub(self, rhs: Self) -> Self::Output {
-        let [a1, a2] = self.0;
-        let [b1, b2] = rhs.0;
-
-        Self([a1 - b1, a2 - b2], self.1)
+        Self(apply_to_arrays!(Sub::sub, self.0, rhs.0), self.1)
     }
 }
 
@@ -135,10 +145,34 @@ impl<T> Mul for FallbackPackedDouble<T> {
 
     #[inline(always)]
     fn mul(self, rhs: Self) -> Self::Output {
-        let [a1, a2] = self.0;
-        let [b1, b2] = rhs.0;
+        Self(apply_to_arrays!(Mul::mul, self.0, rhs.0), self.1)
+    }
+}
 
-        Self([a1 * b1, a2 * b2], self.1)
+impl<T> BitAnd for FallbackPackedDouble<T> {
+    type Output = Self;
+
+    #[inline(always)]
+    fn bitand(self, rhs: Self) -> Self::Output {
+        Self(apply_to_arrays_as_bits!(BitAnd::bitand, self.0, rhs.0), self.1)
+    }
+}
+
+impl<T> BitOr for FallbackPackedDouble<T> {
+    type Output = Self;
+
+    #[inline(always)]
+    fn bitor(self, rhs: Self) -> Self::Output {
+        Self(apply_to_arrays_as_bits!(BitOr::bitor, self.0, rhs.0), self.1)
+    }
+}
+
+impl<T> BitXor for FallbackPackedDouble<T> {
+    type Output = Self;
+
+    #[inline(always)]
+    fn bitxor(self, rhs: Self) -> Self::Output {
+        Self(apply_to_arrays_as_bits!(BitXor::bitxor, self.0, rhs.0), self.1)
     }
 }
 

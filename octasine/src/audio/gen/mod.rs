@@ -1,6 +1,6 @@
 pub mod lfo;
 
-use std::f64::consts::TAU;
+use std::f64::consts::{TAU, PI, FRAC_1_PI};
 
 use duplicate::duplicate_item;
 use vst::buffer::AudioBuffer;
@@ -439,15 +439,8 @@ mod gen {
         let frequency =
             voice_base_frequency * frequency_ratio.value * frequency_free * frequency_fine;
         let new_phase = voice_operator.last_phase.0 + frequency * time_per_sample.0;
-        let new_phase = new_phase.fract();
 
-        let modified_phase = if new_phase > 0.5 {
-            new_phase - 1.0
-        } else {
-            new_phase
-        };
-
-        set_value_for_both_channels(&mut operator_data.phase, sample_index, modified_phase);
+        set_value_for_both_channels(&mut operator_data.phase, sample_index, new_phase);
 
         // Save phase
         voice_operator.last_phase.0 = new_phase;
@@ -633,16 +626,6 @@ mod gen {
         let pan = Pd::new(2.0) * (panning - Pd::new(0.5));
 
         (pan * Pd::new_from_pair(-1.0, 1.0)).max(Pd::new_zeroed())
-    }
-
-    #[feature_gate]
-    #[target_feature_enable]
-    unsafe fn fast_sin(phase: Pd) -> Pd {
-        // TODO: run fract, then subtract 1 from values larger than 0.5,
-        // then run (to be created) sin_tau with multiply_negative_sign
-        // implementation
-
-        phase.multiply_negative_sign(crate::simd::chebyshev_sin::<Pd>(phase))
     }
 
     #[cfg(test)]

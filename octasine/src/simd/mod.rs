@@ -8,7 +8,7 @@ pub mod fallback;
 pub use avx::*;
 pub use fallback::*;
 
-use std::ops::{Add, AddAssign, Mul, Sub};
+use std::ops::{Add, AddAssign, Mul, Sub, BitAnd, BitOr, BitXor};
 
 pub trait Simd {
     type Pd: SimdPackedDouble;
@@ -16,6 +16,7 @@ pub trait Simd {
 
 pub trait SimdPackedDouble:
     Copy + Add<Output = Self> + AddAssign + Sub<Output = Self> + Mul<Output = Self>
+ + BitAnd<Output = Self> + BitOr<Output = Self> + BitXor<Output = Self>
 {
     /// Number of stereo audio samples that this packed double fits
     const SAMPLES: usize;
@@ -31,19 +32,18 @@ pub trait SimdPackedDouble:
     unsafe fn to_arr(&self) -> Self::Arr;
     unsafe fn min(&self, other: Self) -> Self;
     unsafe fn max(&self, other: Self) -> Self;
-    unsafe fn fast_sin(&self) -> Self;
+    unsafe fn fast_sin(self) -> Self;
     unsafe fn pairwise_horizontal_sum(&self) -> Self;
     unsafe fn interleave(&self, other: Self) -> Self;
     unsafe fn any_over_zero(&self) -> bool;
     /// For members of self with negative sign, multiply members of other with -1.0
-    unsafe fn multiply_negative_sign(&self, other: Self) -> Self;
+    unsafe fn multiply_negative_sign(self, other: Self) -> Self;
 }
 
 /// Fast sine approximation valid for range (-pi, pi)
 ///
 /// Adapted from http://mooooo.ooo/chebyshev-sine-approximation/
-/// TODO: should be replaced with sin_tau implementation
-pub unsafe fn chebyshev_sin<Pd: SimdPackedDouble>(x: Pd) -> Pd {
+pub unsafe fn chebyshev_sin_x<Pd: SimdPackedDouble>(x: Pd) -> Pd {
     const COEFFICIENT_X: f64 = -0.10132118; // x
     const COEFFICIENT_X3: f64 = 0.0066208798; // x^3
     const COEFFICIENT_X5: f64 = -0.00017350505; // x^5
