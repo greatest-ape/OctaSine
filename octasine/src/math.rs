@@ -45,7 +45,7 @@ pub fn bhaskara_sin_frac_pi_2(a: f32) -> f32 {
 
 /// Approximate [cos(a * PI / 2), sin(a * PI / 2)] for range 0.0 to 1.0
 #[allow(dead_code)]
-pub fn constant_power_panning(pan: f32) -> [f32; 2] {
+pub fn bhaskara_constant_power_panning(pan: f32) -> [f32; 2] {
     cfg_if::cfg_if! {
         if #[cfg(target_arch = "x86_64")] {
             unsafe {
@@ -104,7 +104,7 @@ mod tests {
                 0.005
             );
 
-            let [l, r] = constant_power_panning(a);
+            let [l, r] = bhaskara_constant_power_panning(a);
 
             assert_approx_eq::assert_approx_eq!(l, (a * FRAC_PI_2).cos(), 0.005);
             assert_approx_eq::assert_approx_eq!(r, (a * FRAC_PI_2).sin(), 0.005);
