@@ -1,7 +1,5 @@
 use std::f32::consts::FRAC_PI_2;
 
-use crate::math::{cos, sin};
-
 use super::{utils::parse_valid_f32, ParameterValue};
 
 #[derive(Debug, Clone, Copy)]
@@ -11,7 +9,10 @@ impl OperatorPanningValue {
     pub fn calculate_left_and_right(&self) -> [f32; 2] {
         let pan_phase = self.0 * FRAC_PI_2;
 
-        [cos(pan_phase), sin(pan_phase)]
+        [
+            ::sleef_trig::Sleef_cosf1_u35purec_range125(pan_phase),
+            ::sleef_trig::Sleef_sinf1_u35purec_range125(pan_phase),
+        ]
     }
 }
 

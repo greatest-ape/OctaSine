@@ -30,3 +30,9 @@ inherits = "release"
 [profile.release-debug]
 inherits = "release"
 debug = true
+
+[profile.release.package.sleef-trig]
+codegen-units = 1
+
+[profile.release-debug.package.sleef-trig]
+codegen-units = 1

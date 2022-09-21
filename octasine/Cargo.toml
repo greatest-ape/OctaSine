@@ -6,7 +6,6 @@ license = "AGPL-3.0"
 edition = "2021"
 
 [features]
-simd = ["sleef-sys"]
 gui_glow = ["gui", "iced_baseview/glow", "iced_baseview/glow_canvas"]
 gui_wgpu = ["gui", "iced_baseview/wgpu", "iced_baseview/wgpu_canvas"]
 gui = ["baseview", "iced_baseview", "iced_audio", "palette", "raw-window-handle", "rfd", "tinyfiledialogs"]
@@ -38,6 +37,7 @@ os_info = "3"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 simplelog = { version = "0.12", default-features = false, features = ["local-offset"] }
+sleef-trig = { git = "https://github.com/greatest-ape/sleef-trig.git", rev = "4713dfd" }
 vst = "0.3"
 
 # GUI
@@ -57,13 +57,4 @@ optional = true
 git = "https://github.com/BillyDM/iced_baseview.git"
 rev = "b78fa8057d1b7ba0adf0351a59173ec4e8ec9ee4" # branch: main
 default-features = false
-optional = true
-
-# SIMD
-
-# sleef-sys fork with static linking and avx instruction generation
-[dependencies.sleef-sys]
-git = 'https://github.com/greatest-ape/sleef-sys.git'
-rev = "9625d96e64bc83ec18202e206c5fe1e5423df35b" # branch: octasine
-features = ["static"]
 optional = true

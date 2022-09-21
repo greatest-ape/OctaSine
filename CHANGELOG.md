@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## Unreleased
+
+### Changed
+
+- Remove need to use nightly Rust for best performance by porting relevant
+  SLEEF functions ([sleef-trig](https://github.com/greatest-ape/sleef-trig))
+
 ## 0.8.0 - 2022-08-28
 
 This release features revamped stereo panning, shorter minimum envelope stage

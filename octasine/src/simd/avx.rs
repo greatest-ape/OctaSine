@@ -69,7 +69,7 @@ impl SimdPackedDouble for AvxPackedDouble {
     #[target_feature(enable = "avx")]
     #[inline]
     unsafe fn fast_sin(&self) -> Self {
-        Self(sleef_sys::Sleef_cinz_sind4_u35avx(self.0))
+        Self(sleef_trig::Sleef_sind4_u35avx(self.0))
     }
     #[target_feature(enable = "avx")]
     #[inline]

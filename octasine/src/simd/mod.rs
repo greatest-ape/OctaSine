@@ -1,10 +1,10 @@
 //! SIMD abstraction
 
-#[cfg(all(feature = "simd", target_arch = "x86_64"))]
+#[cfg(target_arch = "x86_64")]
 pub mod avx;
 pub mod fallback;
 
-#[cfg(all(feature = "simd", target_arch = "x86_64"))]
+#[cfg(target_arch = "x86_64")]
 pub use avx::*;
 pub use fallback::*;
 
