@@ -52,18 +52,18 @@ jobs:
       uses: ilammy/msvc-dev-cmd@v1
       if: contains(matrix.os, 'windows')
 
-    - name: Install latest nightly Rust
+    - name: Install latest Rust
       uses: actions-rs/toolchain@v1
       with:
-          toolchain: nightly
+          toolchain: stable
           override: true
 
     - name: Run tests
-      run: cargo +nightly test --workspace --features "simd" --verbose
+      run: cargo test --workspace --verbose
       env:
         RUSTFLAGS: "-C target-cpu=native"
     - name: Build plugin in release mode
-      run: cargo +nightly build --release --features "simd" -p octasine-vst2-plugin --verbose
+      run: cargo build --release -p octasine-vst2-plugin --verbose
 
     - name: Display size of build artifacts
       run: ls -lh target/release

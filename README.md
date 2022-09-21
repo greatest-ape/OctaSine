@@ -43,7 +43,7 @@ is to [download an official release](https://www.octasine.com), not to build it 
 
 ### macOS
 
-* [Install the Rust compiler](https://rustup.rs/). Choose the nightly toolchain
+* [Install the Rust compiler](https://rustup.rs/). Choose the stable toolchain
   when prompted. The compiler requires Apple's XCode build tools. You will
   probably be prompted to install them.
 * Install git and cmake. If you're using [homebrew](https://brew.sh), run:
@@ -76,7 +76,7 @@ git checkout tags/v0.8.0
 ### Windows
 
 * Install [Microsoft C++ Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/). Make sure that the Windows 10 SDK and the English language pack components are included during installation.
-* [Install the Rust compiler](https://rustup.rs/). When prompted, choose the nightly toolchain and to modify the path variable.
+* [Install the Rust compiler](https://rustup.rs/). When prompted, choose the stable toolchain and to modify the path variable.
 * Install LLVM
 * Install [cmake](https://cmake.org/download/). When prompted, choose the option to add cmake to the system executable path.
 * Install [git](https://git-scm.com/downloads).
@@ -90,14 +90,14 @@ git checkout tags/v0.8.0
 * Build OctaSine:
 
 ```cmd
-cargo +nightly build --release --features "simd" -p octasine-vst2-plugin
+cargo build --release -p octasine-vst2-plugin
 ```
 
 * Copy `target\release\octasine.dll` to your VST plugin folder.
 
 ### Linux
 
-* [Install the Rust compiler](https://rustup.rs/). Choose the nightly toolchain when prompted. 
+* [Install the Rust compiler](https://rustup.rs/). Choose the stable toolchain when prompted. 
 * Install dependencies, e.g.,
 
 ```sh
@@ -128,13 +128,7 @@ git checkout tags/v0.8.0
 * Build the OctaSine plugin:
 
 ```sh
-cargo +nightly build --release --features "simd" -p octasine-vst2-plugin
-```
-
-If build fails, please try building without sleef SIMD acceleration:
-
-```sh
-cargo +nightly build --release -p octasine-vst2-plugin
+cargo build --release -p octasine-vst2-plugin
 ```
 
 * Copy `target/release/liboctasine.so` to your VST plugin folder 
