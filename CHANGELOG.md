@@ -6,8 +6,10 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- Remove need to use nightly Rust for best performance by porting relevant
-  SLEEF functions ([sleef-trig](https://github.com/greatest-ape/sleef-trig))
+- Improve performance by around 10% in many cases by improving CPU cache
+  behaviour
+- Remove need to use nightly Rust for best performance by
+  [porting relevant SLEEF functions](https://github.com/greatest-ape/sleef-trig))
 
 ## 0.8.0 - 2022-08-28
 
