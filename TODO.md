@@ -2,16 +2,15 @@
 
 ## High priority
 
+* Release 0.8.1
 * Audio gen optimizations
-  * Consider doing audio gen with single precision
   * When selecting new VoiceData, just set envelope volume to zero
     for all members, and there won't be a need to check for that
     later
-  * Consider using the Bhaskara function for constant power panning
-    sine and cosine calculations
-  * Consider implementing Chebyshev approximation for sine wave form to
-    avoid having to rely on nightly Rust for sleef. Take inspiration
-    from http://mooooo.ooo/chebyshev-sine-approximation/
+  * Try out sleef-trig for sin and cos
+  * Consider not extracting voice data for stopped envelopes
+  * Consider running fract on phases if they get too high (notably over 1e+14)
+    to improve performance
 * Consider adding saw, square and triangle waves. Maybe look at
   TX81Z waveforms. https://www.reddit.com/r/synthesizers/comments/rkyk6j/comment/hpgcu6r/?utm_source=share&utm_medium=web2x&context=3
 * Build for Apple silicon

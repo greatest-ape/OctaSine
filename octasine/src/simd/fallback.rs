@@ -5,6 +5,20 @@ use std::{
     ops::{Add, AddAssign, Mul, Sub},
 };
 
+macro_rules! apply_to_arrays {
+    ($f:expr, $a:expr) => {{
+        let [a1, a2] = $a;
+
+        [$f(a1), $f(a2)]
+    }};
+    ($f:expr, $a:expr, $b:expr) => {{
+        let [a1, a2] = $a;
+        let [b1, b2] = $b;
+
+        [$f(a1, b1), $f(a2, b2)]
+    }};
+}
+
 pub type FallbackStd = Fallback<FallbackSineStd>;
 #[cfg(feature = "simd")]
 pub type FallbackSleef = Fallback<FallbackSineSleef>;
@@ -49,17 +63,11 @@ impl<T: FallbackSine> SimdPackedDouble for FallbackPackedDouble<T> {
     }
     #[inline]
     unsafe fn min(&self, other: Self) -> Self {
-        let [a1, a2] = self.0;
-        let [b1, b2] = other.0;
-
-        Self([a1.min(b1), a2.min(b2)], self.1)
+        Self(apply_to_arrays!(f64::min, self.0, other.0), self.1)
     }
     #[inline]
     unsafe fn max(&self, other: Self) -> Self {
-        let [a1, a2] = self.0;
-        let [b1, b2] = other.0;
-
-        Self([a1.max(b1), a2.max(b2)], self.1)
+        Self(apply_to_arrays!(f64::max, self.0, other.0), self.1)
     }
     #[inline]
     unsafe fn fast_sin(&self) -> Self {
@@ -86,10 +94,7 @@ impl<T> Add for FallbackPackedDouble<T> {
 
     #[inline(always)]
     fn add(self, rhs: Self) -> Self::Output {
-        let [a1, a2] = self.0;
-        let [b1, b2] = rhs.0;
-
-        Self([a1 + b1, a2 + b2], self.1)
+        Self(apply_to_arrays!(Add::add, self.0, rhs.0), self.1)
     }
 }
 
@@ -108,10 +113,7 @@ impl<T> Sub for FallbackPackedDouble<T> {
 
     #[inline(always)]
     fn sub(self, rhs: Self) -> Self::Output {
-        let [a1, a2] = self.0;
-        let [b1, b2] = rhs.0;
-
-        Self([a1 - b1, a2 - b2], self.1)
+        Self(apply_to_arrays!(Sub::sub, self.0, rhs.0), self.1)
     }
 }
 
@@ -120,10 +122,7 @@ impl<T> Mul for FallbackPackedDouble<T> {
 
     #[inline(always)]
     fn mul(self, rhs: Self) -> Self::Output {
-        let [a1, a2] = self.0;
-        let [b1, b2] = rhs.0;
-
-        Self([a1 * b1, a2 * b2], self.1)
+        Self(apply_to_arrays!(Mul::mul, self.0, rhs.0), self.1)
     }
 }
 
@@ -135,8 +134,8 @@ pub trait FallbackSine: Copy {
 pub struct FallbackSineStd;
 
 impl FallbackSine for FallbackSineStd {
-    fn sin([a1, a2]: [f64; 2]) -> [f64; 2] {
-        [a1.sin(), a2.sin()]
+    fn sin(arr: [f64; 2]) -> [f64; 2] {
+        apply_to_arrays!(f64::sin, arr)
     }
 }
 
@@ -146,12 +145,7 @@ pub struct FallbackSineSleef;
 
 #[cfg(feature = "simd")]
 impl FallbackSine for FallbackSineSleef {
-    fn sin([a1, a2]: [f64; 2]) -> [f64; 2] {
-        unsafe {
-            [
-                sleef_sys::Sleef_cinz_sind1_u35purec(a1),
-                sleef_sys::Sleef_cinz_sind1_u35purec(a2),
-            ]
-        }
+    fn sin(arr: [f64; 2]) -> [f64; 2] {
+        unsafe { apply_to_arrays!(sleef_sys::Sleef_cinz_sind1_u35purec, arr) }
     }
 }
