@@ -89,7 +89,7 @@ pub fn process_f32_runtime_select(
 
         unsafe {
             match num_remaining_samples {
-                #[cfg(all(feature = "simd", target_arch = "x86_64"))]
+                #[cfg(target_arch = "x86_64")]
                 (2..) if is_x86_feature_detected!("avx") => {
                     let new_position = position + 2;
 
@@ -102,25 +102,28 @@ pub fn process_f32_runtime_select(
 
                     position = new_position;
                 }
+                #[cfg(target_arch = "x86_64")]
                 1.. => {
                     let new_position = position + 1;
 
-                    cfg_if::cfg_if!(
-                        if #[cfg(feature = "simd")] {
-                            FallbackSleef::process_f32(
-                                audio_state,
-                                &mut lefts[position..new_position],
-                                &mut rights[position..new_position],
-                                position,
-                            );
-                        } else {
-                            FallbackStd::process_f32(
-                                audio_state,
-                                &mut lefts[position..new_position],
-                                &mut rights[position..new_position],
-                                position,
-                            );
-                        }
+                    Sse2::process_f32(
+                        audio_state,
+                        &mut lefts[position..new_position],
+                        &mut rights[position..new_position],
+                        position,
+                    );
+
+                    position = new_position;
+                }
+                #[cfg(not(target_arch = "x86_64"))]
+                1.. => {
+                    let new_position = position + 1;
+
+                    Fallback::process_f32(
+                        audio_state,
+                        &mut lefts[position..new_position],
+                        &mut rights[position..new_position],
+                        position,
                     );
 
                     position = new_position;
@@ -135,22 +138,22 @@ pub fn process_f32_runtime_select(
 
 #[duplicate_item(
     [
-        S [ FallbackStd ]
+        S [ Fallback ]
         target_feature_enable [ cfg(not(feature = "fake-feature")) ]
         feature_gate [ cfg(not(feature = "fake-feature")) ]
         test_feature_gate [ cfg(not(feature = "fake-feature")) ]
     ]
     [
-        S [ FallbackSleef ]
+        S [ Sse2 ]
         target_feature_enable [ cfg(not(feature = "fake-feature")) ]
-        feature_gate [ cfg(all(feature = "simd")) ]
-        test_feature_gate [ cfg(not(feature = "fake-feature")) ]
+        feature_gate [ cfg(target_arch = "x86_64") ]
+        test_feature_gate [ cfg(all(target_arch = "x86_64")) ]
     ]
     [
         S [ Avx ]
         target_feature_enable [ target_feature(enable = "avx") ]
-        feature_gate [ cfg(all(feature = "simd", target_arch = "x86_64")) ]
-        test_feature_gate [ cfg(target_feature = "avx") ]
+        feature_gate [ cfg(target_arch = "x86_64") ]
+        test_feature_gate [ cfg(all(target_arch = "x86_64", target_feature = "avx")) ]
     ]
 )]
 mod gen {
@@ -630,33 +633,32 @@ mod gen {
 
     #[cfg(test)]
     mod tests {
-        #[feature_gate]
+        #[test_feature_gate]
         use super::*;
 
-        #[feature_gate]
         #[test_feature_gate]
         #[test]
         fn test_linear_panning_factor() {
             unsafe {
                 assert_eq!(
-                    Pd::to_arr(&linear_panning_factor(Pd::new(0.0))),
-                    Pd::to_arr(&Pd::new_from_pair(1.0, 0.0))
+                    Pd::to_arr(linear_panning_factor(Pd::new(0.0))),
+                    Pd::to_arr(Pd::new_from_pair(1.0, 0.0))
                 );
                 assert_eq!(
-                    Pd::to_arr(&linear_panning_factor(Pd::new(0.25))),
-                    Pd::to_arr(&Pd::new_from_pair(1.0, 0.5))
+                    Pd::to_arr(linear_panning_factor(Pd::new(0.25))),
+                    Pd::to_arr(Pd::new_from_pair(1.0, 0.5))
                 );
                 assert_eq!(
-                    Pd::to_arr(&linear_panning_factor(Pd::new(0.5))),
-                    Pd::to_arr(&Pd::new_from_pair(1.0, 1.0))
+                    Pd::to_arr(linear_panning_factor(Pd::new(0.5))),
+                    Pd::to_arr(Pd::new_from_pair(1.0, 1.0))
                 );
                 assert_eq!(
-                    Pd::to_arr(&linear_panning_factor(Pd::new(0.75))),
-                    Pd::to_arr(&Pd::new_from_pair(0.5, 1.0))
+                    Pd::to_arr(linear_panning_factor(Pd::new(0.75))),
+                    Pd::to_arr(Pd::new_from_pair(0.5, 1.0))
                 );
                 assert_eq!(
-                    Pd::to_arr(&linear_panning_factor(Pd::new(1.0))),
-                    Pd::to_arr(&Pd::new_from_pair(0.0, 1.0))
+                    Pd::to_arr(linear_panning_factor(Pd::new(1.0))),
+                    Pd::to_arr(Pd::new_from_pair(0.0, 1.0))
                 );
             }
         }
@@ -667,24 +669,24 @@ mod gen {
         fn test_mono_mix_factor() {
             unsafe {
                 assert_eq!(
-                    Pd::to_arr(&mono_mix_factor(Pd::new(0.0))),
-                    Pd::to_arr(&Pd::new_from_pair(1.0, 0.0))
+                    Pd::to_arr(mono_mix_factor(Pd::new(0.0))),
+                    Pd::to_arr(Pd::new_from_pair(1.0, 0.0))
                 );
                 assert_eq!(
-                    Pd::to_arr(&mono_mix_factor(Pd::new(0.25))),
-                    Pd::to_arr(&Pd::new_from_pair(0.5, 0.0))
+                    Pd::to_arr(mono_mix_factor(Pd::new(0.25))),
+                    Pd::to_arr(Pd::new_from_pair(0.5, 0.0))
                 );
                 assert_eq!(
-                    Pd::to_arr(&mono_mix_factor(Pd::new(0.5))),
-                    Pd::to_arr(&Pd::new_from_pair(0.0, 0.0))
+                    Pd::to_arr(mono_mix_factor(Pd::new(0.5))),
+                    Pd::to_arr(Pd::new_from_pair(0.0, 0.0))
                 );
                 assert_eq!(
-                    Pd::to_arr(&mono_mix_factor(Pd::new(0.75))),
-                    Pd::to_arr(&Pd::new_from_pair(0.0, 0.5))
+                    Pd::to_arr(mono_mix_factor(Pd::new(0.75))),
+                    Pd::to_arr(Pd::new_from_pair(0.0, 0.5))
                 );
                 assert_eq!(
-                    Pd::to_arr(&mono_mix_factor(Pd::new(1.0))),
-                    Pd::to_arr(&Pd::new_from_pair(0.0, 1.0))
+                    Pd::to_arr(mono_mix_factor(Pd::new(1.0))),
+                    Pd::to_arr(Pd::new_from_pair(0.0, 1.0))
                 );
             }
         }

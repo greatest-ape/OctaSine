@@ -1,4 +1,3 @@
-#[cfg(feature = "bench")]
 mod bench_process;
 #[cfg(feature = "plot")]
 mod plot;
@@ -31,7 +30,6 @@ enum Commands {
     #[cfg(any(feature = "glow", feature = "wgpu"))]
     RunGui,
     /// Benchmark OctaSine process functions and check output sample accuracy
-    #[cfg(feature = "bench")]
     BenchProcess,
     /// Plot envelope and LFO curves (useful during development)
     #[cfg(feature = "plot")]
@@ -106,7 +104,6 @@ fn main() -> anyhow::Result<()> {
 
             Ok(())
         }
-        #[cfg(feature = "bench")]
         Commands::BenchProcess => bench_process::run(),
         #[cfg(feature = "plot")]
         Commands::Plot => plot::run(),

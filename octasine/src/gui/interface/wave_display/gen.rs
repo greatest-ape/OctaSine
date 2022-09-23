@@ -21,7 +21,7 @@ pub(super) fn recalculate_canvas_points(
 
         unsafe {
             match num_remaining_samples {
-                #[cfg(all(feature = "simd", target_arch = "x86_64"))]
+                #[cfg(target_arch = "x86_64")]
                 (2..) if is_x86_feature_detected!("avx") => {
                     let end_offset = offset + 2;
 
@@ -35,27 +35,30 @@ pub(super) fn recalculate_canvas_points(
 
                     offset = end_offset;
                 }
+                #[cfg(target_arch = "x86_64")]
                 1.. => {
                     let end_offset = offset + 1;
 
-                    cfg_if::cfg_if!(
-                        if #[cfg(feature = "simd")] {
-                            FallbackSleef::gen_segment(
-                                &mut lefts[offset..end_offset],
-                                &mut rights[offset..end_offset],
-                                operator_index,
-                                operators,
-                                offset as usize,
-                            );
-                        } else {
-                            FallbackStd::gen_segment(
-                                &mut lefts[offset..end_offset],
-                                &mut rights[offset..end_offset],
-                                operator_index,
-                                operators,
-                                offset as usize,
-                            );
-                        }
+                    Sse2::gen_segment(
+                        &mut lefts[offset..end_offset],
+                        &mut rights[offset..end_offset],
+                        operator_index,
+                        operators,
+                        offset as usize,
+                    );
+
+                    offset = end_offset;
+                }
+                #[cfg(not(target_arch = "x86_64"))]
+                1.. => {
+                    let end_offset = offset + 1;
+
+                    Fallback::gen_segment(
+                        &mut lefts[offset..end_offset],
+                        &mut rights[offset..end_offset],
+                        operator_index,
+                        operators,
+                        offset as usize,
                     );
 
                     offset = end_offset;
@@ -80,19 +83,19 @@ trait PathGen {
 
 #[duplicate_item(
     [
-        S [ FallbackStd ]
+        S [ Fallback ]
         target_feature_enable [ cfg(not(feature = "fake-feature")) ]
         feature_gate [ cfg(not(feature = "fake-feature")) ]
     ]
     [
-        S [ FallbackSleef ]
+        S [ Sse2 ]
         target_feature_enable [ cfg(not(feature = "fake-feature")) ]
-        feature_gate [ cfg(all(feature = "simd")) ]
+        feature_gate [ cfg(target_arch = "x86_64") ]
     ]
     [
         S [ Avx ]
         target_feature_enable [ target_feature(enable = "avx") ]
-        feature_gate [ cfg(all(feature = "simd", target_arch = "x86_64")) ]
+        feature_gate [ cfg(target_arch = "x86_64") ]
     ]
 )]
 mod gen {

@@ -7,10 +7,10 @@
   * When selecting new VoiceData, just set envelope volume to zero
     for all members, and there won't be a need to check for that
     later
-  * Try out sleef-trig for sin and cos
   * Consider not extracting voice data for stopped envelopes
   * Consider running fract on phases if they get too high (notably over 1e+14)
     to improve performance
+  * Reset phases to 0 when all envelopes have ended?
 * Consider adding saw, square and triangle waves. Maybe look at
   TX81Z waveforms. https://www.reddit.com/r/synthesizers/comments/rkyk6j/comment/hpgcu6r/?utm_source=share&utm_medium=web2x&context=3
 * Build for Apple silicon

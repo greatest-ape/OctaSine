@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## Unreleased
+
+### Changed
+
+- Improve performance by around 10% in many cases by improving CPU cache
+  behaviour
+- [Port several SLEEF functions to Rust](https://github.com/greatest-ape/sleef-trig))
+  to avoid relying on undefined behaviour, remove the need to use a nightly
+  compiler and ease cross-compilation to aarch64 (e.g., Apple Silicon.)
+
 ## 0.8.0 - 2022-08-28
 
 This release features revamped stereo panning, shorter minimum envelope stage

@@ -13,31 +13,35 @@ use octasine::OctaSine;
 
 /// Benchmark OctaSine process functions and check output sample accuracy
 pub fn run() -> anyhow::Result<()> {
-    // Ignore success status here, since output differs across platforms
-    // depending on std sine implementation
-    #[allow(unused_variables)]
-    let (_, fallback_std) =
-        benchmark::<octasine::simd::FallbackStd>("fallback (std)", "17 8d b0 3b 97 df 2d 98 ");
-
     // Don't forget trailing space
     let hash = "08 bd 63 6c 7b 93 83 8e ";
 
     let mut all_sleef_hashes_match = true;
 
-    {
-        let (success, r) = benchmark::<octasine::simd::FallbackSleef>("fallback (sleef)", hash);
+    let fallback_speed = {
+        let (success, r) = benchmark::<octasine::simd::Fallback>("fallback", hash);
 
         all_sleef_hashes_match &= success;
 
-        println!("Speed compared to std fallback: {}x", fallback_std / r);
+        r
+    };
+
+    #[cfg(target_arch = "x86_64")]
+    {
+        let (success, r) = benchmark::<octasine::simd::Sse2>("sse2", hash);
+
+        all_sleef_hashes_match &= success;
+
+        println!("Speed compared to fallback:     {}x", fallback_speed / r);
     }
 
+    #[cfg(target_arch = "x86_64")]
     if is_x86_feature_detected!("avx") {
         let (success, r) = benchmark::<octasine::simd::Avx>("avx", hash);
 
         all_sleef_hashes_match &= success;
 
-        println!("Speed compared to std fallback: {}x", fallback_std / r);
+        println!("Speed compared to fallback:     {}x", fallback_speed / r);
     }
 
     if all_sleef_hashes_match {

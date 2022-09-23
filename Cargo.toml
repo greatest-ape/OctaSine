@@ -16,6 +16,9 @@ members = [
 # [patch.'https://github.com/iced-rs/iced_audio']
 # iced_audio = { path = "../iced_audio" }
 
+# [patch.'https://github.com/greatest-ape/sleef-trig']
+# sleef-trig = { path = "../sleef-trig" }
+
 [profile.release]
 debug = false
 lto = "thin"
@@ -30,3 +33,9 @@ inherits = "release"
 [profile.release-debug]
 inherits = "release"
 debug = true
+
+[profile.release.package.sleef-trig]
+codegen-units = 1
+
+[profile.release-debug.package.sleef-trig]
+codegen-units = 1

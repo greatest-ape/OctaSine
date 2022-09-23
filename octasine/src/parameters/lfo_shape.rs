@@ -125,16 +125,6 @@ fn square(phase: Phase) -> f32 {
     }
 }
 
-cfg_if::cfg_if! {
-    if #[cfg(feature = "simd")] {
-        pub fn sine(phase: Phase) -> f32 {
-            unsafe {
-                ::sleef_sys::Sleef_cinz_sinf1_u35purec(phase.0 as f32 * TAU)
-            }
-        }
-    } else {
-        pub fn sine(phase: Phase) -> f32 {
-            (phase.0 as f32 * TAU).sin()
-        }
-    }
+pub fn sine(phase: Phase) -> f32 {
+    ::sleef_trig::Sleef_sinf1_u35purec_range125(phase.0 as f32 * TAU)
 }
