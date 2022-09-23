@@ -28,11 +28,11 @@ pub trait SimdPackedDouble: Copy {
     unsafe fn new_from_pair(l: f64, r: f64) -> Self;
     unsafe fn load_ptr(source: *const f64) -> Self;
     unsafe fn from_arr(arr: Self::Arr) -> Self;
-    unsafe fn to_arr(&self) -> Self::Arr;
-    unsafe fn min(&self, other: Self) -> Self;
-    unsafe fn max(&self, other: Self) -> Self;
-    unsafe fn fast_sin(&self) -> Self;
-    unsafe fn pairwise_horizontal_sum(&self) -> Self;
-    unsafe fn interleave(&self, other: Self) -> Self;
-    unsafe fn any_over_zero(&self) -> bool;
+    unsafe fn to_arr(self) -> Self::Arr;
+    unsafe fn min(self, other: Self) -> Self;
+    unsafe fn max(self, other: Self) -> Self;
+    unsafe fn fast_sin(self) -> Self;
+    unsafe fn pairwise_horizontal_sum(self) -> Self;
+    unsafe fn interleave(self, other: Self) -> Self;
+    unsafe fn any_over_zero(self) -> bool;
 }

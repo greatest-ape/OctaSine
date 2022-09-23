@@ -33,7 +33,7 @@ impl SimdPackedDouble for Sse2PackedDouble {
         Self(_mm_loadu_pd(arr.as_ptr()))
     }
     #[inline(always)]
-    unsafe fn to_arr(&self) -> Self::Arr {
+    unsafe fn to_arr(self) -> Self::Arr {
         let mut arr = Self::Arr::default();
 
         _mm_storeu_pd(arr.as_mut_ptr(), self.0);
@@ -41,23 +41,23 @@ impl SimdPackedDouble for Sse2PackedDouble {
         arr
     }
     #[inline(always)]
-    unsafe fn min(&self, other: Self) -> Self {
+    unsafe fn min(self, other: Self) -> Self {
         Self(_mm_min_pd(self.0, other.0))
     }
     #[inline(always)]
-    unsafe fn max(&self, other: Self) -> Self {
+    unsafe fn max(self, other: Self) -> Self {
         Self(_mm_max_pd(self.0, other.0))
     }
     #[inline(always)]
-    unsafe fn fast_sin(&self) -> Self {
+    unsafe fn fast_sin(self) -> Self {
         Self(sleef_trig::Sleef_sind2_u35sse2(self.0))
     }
     #[inline(always)]
-    unsafe fn interleave(&self, other: Self) -> Self {
+    unsafe fn interleave(self, other: Self) -> Self {
         Self(_mm_move_sd(other.0, self.0))
     }
     #[inline(always)]
-    unsafe fn pairwise_horizontal_sum(&self) -> Self {
+    unsafe fn pairwise_horizontal_sum(self) -> Self {
         Self(_mm_add_pd(self.0, _mm_shuffle_pd(self.0, self.0, 0b01)))
     }
     #[inline(always)]
@@ -67,7 +67,7 @@ impl SimdPackedDouble for Sse2PackedDouble {
         Self(_mm_loadu_pd(lr.as_ptr()))
     }
     #[inline(always)]
-    unsafe fn any_over_zero(&self) -> bool {
+    unsafe fn any_over_zero(self) -> bool {
         _mm_movemask_pd(_mm_cmpgt_pd(self.0, _mm_setzero_pd())) != 0
     }
 }

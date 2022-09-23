@@ -51,33 +51,33 @@ impl SimdPackedDouble for FallbackPackedDouble {
         Self(*(source as *const [f64; 2]))
     }
     #[inline]
-    unsafe fn to_arr(&self) -> Self::Arr {
+    unsafe fn to_arr(self) -> Self::Arr {
         self.0
     }
     #[inline]
-    unsafe fn min(&self, other: Self) -> Self {
+    unsafe fn min(self, other: Self) -> Self {
         Self(apply_to_arrays!(f64::min, self.0, other.0))
     }
     #[inline]
-    unsafe fn max(&self, other: Self) -> Self {
+    unsafe fn max(self, other: Self) -> Self {
         Self(apply_to_arrays!(f64::max, self.0, other.0))
     }
     #[inline]
-    unsafe fn fast_sin(&self) -> Self {
+    unsafe fn fast_sin(self) -> Self {
         Self(apply_to_arrays!(sleef_trig::Sleef_sind1_u35purec, self.0))
     }
     #[inline]
-    unsafe fn pairwise_horizontal_sum(&self) -> Self {
+    unsafe fn pairwise_horizontal_sum(self) -> Self {
         let [l, r] = self.0;
 
         Self([l + r, l + r])
     }
     #[inline]
-    unsafe fn interleave(&self, other: Self) -> Self {
+    unsafe fn interleave(self, other: Self) -> Self {
         Self([self.0[0], other.0[1]])
     }
     #[inline]
-    unsafe fn any_over_zero(&self) -> bool {
+    unsafe fn any_over_zero(self) -> bool {
         (self.0[0] > 0.0) | (self.0[1] > 0.0)
     }
 }

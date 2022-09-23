@@ -641,24 +641,24 @@ mod gen {
         fn test_linear_panning_factor() {
             unsafe {
                 assert_eq!(
-                    Pd::to_arr(&linear_panning_factor(Pd::new(0.0))),
-                    Pd::to_arr(&Pd::new_from_pair(1.0, 0.0))
+                    Pd::to_arr(linear_panning_factor(Pd::new(0.0))),
+                    Pd::to_arr(Pd::new_from_pair(1.0, 0.0))
                 );
                 assert_eq!(
-                    Pd::to_arr(&linear_panning_factor(Pd::new(0.25))),
-                    Pd::to_arr(&Pd::new_from_pair(1.0, 0.5))
+                    Pd::to_arr(linear_panning_factor(Pd::new(0.25))),
+                    Pd::to_arr(Pd::new_from_pair(1.0, 0.5))
                 );
                 assert_eq!(
-                    Pd::to_arr(&linear_panning_factor(Pd::new(0.5))),
-                    Pd::to_arr(&Pd::new_from_pair(1.0, 1.0))
+                    Pd::to_arr(linear_panning_factor(Pd::new(0.5))),
+                    Pd::to_arr(Pd::new_from_pair(1.0, 1.0))
                 );
                 assert_eq!(
-                    Pd::to_arr(&linear_panning_factor(Pd::new(0.75))),
-                    Pd::to_arr(&Pd::new_from_pair(0.5, 1.0))
+                    Pd::to_arr(linear_panning_factor(Pd::new(0.75))),
+                    Pd::to_arr(Pd::new_from_pair(0.5, 1.0))
                 );
                 assert_eq!(
-                    Pd::to_arr(&linear_panning_factor(Pd::new(1.0))),
-                    Pd::to_arr(&Pd::new_from_pair(0.0, 1.0))
+                    Pd::to_arr(linear_panning_factor(Pd::new(1.0))),
+                    Pd::to_arr(Pd::new_from_pair(0.0, 1.0))
                 );
             }
         }
@@ -669,24 +669,24 @@ mod gen {
         fn test_mono_mix_factor() {
             unsafe {
                 assert_eq!(
-                    Pd::to_arr(&mono_mix_factor(Pd::new(0.0))),
-                    Pd::to_arr(&Pd::new_from_pair(1.0, 0.0))
+                    Pd::to_arr(mono_mix_factor(Pd::new(0.0))),
+                    Pd::to_arr(Pd::new_from_pair(1.0, 0.0))
                 );
                 assert_eq!(
-                    Pd::to_arr(&mono_mix_factor(Pd::new(0.25))),
-                    Pd::to_arr(&Pd::new_from_pair(0.5, 0.0))
+                    Pd::to_arr(mono_mix_factor(Pd::new(0.25))),
+                    Pd::to_arr(Pd::new_from_pair(0.5, 0.0))
                 );
                 assert_eq!(
-                    Pd::to_arr(&mono_mix_factor(Pd::new(0.5))),
-                    Pd::to_arr(&Pd::new_from_pair(0.0, 0.0))
+                    Pd::to_arr(mono_mix_factor(Pd::new(0.5))),
+                    Pd::to_arr(Pd::new_from_pair(0.0, 0.0))
                 );
                 assert_eq!(
-                    Pd::to_arr(&mono_mix_factor(Pd::new(0.75))),
-                    Pd::to_arr(&Pd::new_from_pair(0.0, 0.5))
+                    Pd::to_arr(mono_mix_factor(Pd::new(0.75))),
+                    Pd::to_arr(Pd::new_from_pair(0.0, 0.5))
                 );
                 assert_eq!(
-                    Pd::to_arr(&mono_mix_factor(Pd::new(1.0))),
-                    Pd::to_arr(&Pd::new_from_pair(0.0, 1.0))
+                    Pd::to_arr(mono_mix_factor(Pd::new(1.0))),
+                    Pd::to_arr(Pd::new_from_pair(0.0, 1.0))
                 );
             }
         }

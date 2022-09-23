@@ -49,7 +49,7 @@ impl SimdPackedDouble for AvxPackedDouble {
     }
     #[target_feature(enable = "avx")]
     #[inline]
-    unsafe fn to_arr(&self) -> Self::Arr {
+    unsafe fn to_arr(self) -> Self::Arr {
         let mut arr = Self::Arr::default();
 
         _mm256_storeu_pd(arr.as_mut_ptr(), self.0);
@@ -58,32 +58,32 @@ impl SimdPackedDouble for AvxPackedDouble {
     }
     #[target_feature(enable = "avx")]
     #[inline]
-    unsafe fn min(&self, other: Self) -> Self {
+    unsafe fn min(self, other: Self) -> Self {
         Self(_mm256_min_pd(self.0, other.0))
     }
     #[target_feature(enable = "avx")]
     #[inline]
-    unsafe fn max(&self, other: Self) -> Self {
+    unsafe fn max(self, other: Self) -> Self {
         Self(_mm256_max_pd(self.0, other.0))
     }
     #[target_feature(enable = "avx")]
     #[inline]
-    unsafe fn fast_sin(&self) -> Self {
+    unsafe fn fast_sin(self) -> Self {
         Self(sleef_trig::Sleef_sind4_u35avx(self.0))
     }
     #[target_feature(enable = "avx")]
     #[inline]
-    unsafe fn pairwise_horizontal_sum(&self) -> Self {
+    unsafe fn pairwise_horizontal_sum(self) -> Self {
         Self(_mm256_add_pd(self.0, _mm256_permute_pd(self.0, 0b0101)))
     }
     #[target_feature(enable = "avx")]
     #[inline]
-    unsafe fn interleave(&self, other: Self) -> Self {
+    unsafe fn interleave(self, other: Self) -> Self {
         Self(_mm256_blend_pd(self.0, other.0, 0b1010))
     }
     #[target_feature(enable = "avx")]
     #[inline]
-    unsafe fn any_over_zero(&self) -> bool {
+    unsafe fn any_over_zero(self) -> bool {
         _mm256_movemask_pd(_mm256_cmp_pd::<{ _CMP_GT_OQ }>(self.0, _mm256_setzero_pd())) != 0
     }
 }
