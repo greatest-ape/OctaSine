@@ -35,6 +35,21 @@ pub(super) fn recalculate_canvas_points(
 
                     offset = end_offset;
                 }
+                #[cfg(target_arch = "x86_64")]
+                1.. => {
+                    let end_offset = offset + 1;
+
+                    Sse2::gen_segment(
+                        &mut lefts[offset..end_offset],
+                        &mut rights[offset..end_offset],
+                        operator_index,
+                        operators,
+                        offset as usize,
+                    );
+
+                    offset = end_offset;
+                }
+                #[cfg(not(target_arch = "x86_64"))]
                 1.. => {
                     let end_offset = offset + 1;
 
@@ -71,6 +86,11 @@ trait PathGen {
         S [ Fallback ]
         target_feature_enable [ cfg(not(feature = "fake-feature")) ]
         feature_gate [ cfg(not(feature = "fake-feature")) ]
+    ]
+    [
+        S [ Sse2 ]
+        target_feature_enable [ cfg(not(feature = "fake-feature")) ]
+        feature_gate [ cfg(target_arch = "x86_64") ]
     ]
     [
         S [ Avx ]

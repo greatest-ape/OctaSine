@@ -26,6 +26,16 @@ pub fn run() -> anyhow::Result<()> {
         r
     };
 
+    #[cfg(target_arch = "x86_64")]
+    {
+        let (success, r) = benchmark::<octasine::simd::Sse2>("sse2", hash);
+
+        all_sleef_hashes_match &= success;
+
+        println!("Speed compared to fallback:     {}x", fallback_speed / r);
+    }
+
+    #[cfg(target_arch = "x86_64")]
     if is_x86_feature_detected!("avx") {
         let (success, r) = benchmark::<octasine::simd::Avx>("avx", hash);
 

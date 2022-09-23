@@ -2344,7 +2344,7 @@ dependencies = [
 [[package]]
 name = "sleef-trig"
 version = "0.1.0"
-source = "git+https://github.com/greatest-ape/sleef-trig.git?rev=4713dfd#4713dfdb9ef9a6b69005081bdc5dca223c181081"
+source = "git+https://github.com/greatest-ape/sleef-trig.git?rev=ae48649#ae486496f042a70cfe0dac5b604d7c974846e55a"
 
 [[package]]
 name = "slotmap"

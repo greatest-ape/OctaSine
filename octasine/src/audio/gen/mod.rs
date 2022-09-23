@@ -102,6 +102,20 @@ pub fn process_f32_runtime_select(
 
                     position = new_position;
                 }
+                #[cfg(target_arch = "x86_64")]
+                1.. => {
+                    let new_position = position + 1;
+
+                    Sse2::process_f32(
+                        audio_state,
+                        &mut lefts[position..new_position],
+                        &mut rights[position..new_position],
+                        position,
+                    );
+
+                    position = new_position;
+                }
+                #[cfg(not(target_arch = "x86_64"))]
                 1.. => {
                     let new_position = position + 1;
 
@@ -128,6 +142,12 @@ pub fn process_f32_runtime_select(
         target_feature_enable [ cfg(not(feature = "fake-feature")) ]
         feature_gate [ cfg(not(feature = "fake-feature")) ]
         test_feature_gate [ cfg(not(feature = "fake-feature")) ]
+    ]
+    [
+        S [ Sse2 ]
+        target_feature_enable [ cfg(not(feature = "fake-feature")) ]
+        feature_gate [ cfg(target_arch = "x86_64") ]
+        test_feature_gate [ cfg(all(target_arch = "x86_64")) ]
     ]
     [
         S [ Avx ]

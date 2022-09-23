@@ -3,10 +3,14 @@
 #[cfg(target_arch = "x86_64")]
 pub mod avx;
 pub mod fallback;
+#[cfg(target_arch = "x86_64")]
+pub mod sse2;
 
 #[cfg(target_arch = "x86_64")]
 pub use avx::*;
 pub use fallback::*;
+#[cfg(target_arch = "x86_64")]
+pub use sse2::*;
 
 pub trait Simd {
     type Pd: SimdPackedDouble;
