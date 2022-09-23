@@ -10,7 +10,9 @@
   * Consider not extracting voice data for stopped envelopes
   * Consider running fract on phases if they get too high (notably over 1e+14)
     to improve performance
-  * Reset phases to 0 when all envelopes have ended?
+  * Reset phases to 0 when all envelopes have ended and/or when restarting
+    voices
+  * Use bhaskara_constant_power_panning
 * Consider adding saw, square and triangle waves. Maybe look at
   TX81Z waveforms. https://www.reddit.com/r/synthesizers/comments/rkyk6j/comment/hpgcu6r/?utm_source=share&utm_medium=web2x&context=3
 * Build for Apple silicon
