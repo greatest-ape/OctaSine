@@ -240,9 +240,7 @@ mod gen {
 
                     voice_data.voice_index = voice_index;
 
-                    if Pd::SAMPLES == 2 {
-                        voice_data.reset_envelope_volumes();
-                    }
+                    voice_data.reset_envelope_volumes();
 
                     num_valid_voice_datas += 1;
 
@@ -323,6 +321,10 @@ mod gen {
                 let voice_base_frequency = voice.midi_pitch.get_frequency(master_frequency);
 
                 for (operator_index, operator) in operators.iter_mut().enumerate() {
+                    if voice.operators[operator_index].volume_envelope.is_ended() {
+                        continue;
+                    }
+
                     extract_voice_operator_data(
                         &audio_state.log10table,
                         sample_index,

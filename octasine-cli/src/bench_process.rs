@@ -14,7 +14,7 @@ use octasine::OctaSine;
 /// Benchmark OctaSine process functions and check output sample accuracy
 pub fn run() -> anyhow::Result<()> {
     // Don't forget trailing space
-    let hash = "c1 29 c3 0c a0 a7 5c e5 ";
+    let hash = "a4 f9 7d 03 ec ae 51 e0 ";
 
     let mut all_sleef_hashes_match = true;
 
