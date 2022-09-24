@@ -57,6 +57,20 @@ struct VoiceData {
     operators: [VoiceOperatorData; 4],
 }
 
+impl VoiceData {
+    /// Set envelope volumes to zero to prevent audio from being generated due to
+    /// invalid data from previous passes
+    #[inline]
+    fn reset_envelope_volumes(&mut self) {
+        const ZEROED: &[f64] = &[0.0; MAX_PD_WIDTH];
+
+        self.operators[0].envelope_volume.copy_from_slice(ZEROED);
+        self.operators[1].envelope_volume.copy_from_slice(ZEROED);
+        self.operators[2].envelope_volume.copy_from_slice(ZEROED);
+        self.operators[3].envelope_volume.copy_from_slice(ZEROED);
+    }
+}
+
 #[derive(Debug, Default, Clone, Copy)]
 struct VoiceOperatorData {
     volume: [f64; MAX_PD_WIDTH],
@@ -220,28 +234,17 @@ mod gen {
                 .filter(|(_, voice)| voice.active)
                 .map(|(voice_index, voice)| (voice_index as u8, voice))
             {
-                voice.deactivate_if_envelopes_ended();
-
                 // Select an appropriate VoiceData item to fill with data
                 let voice_data = if sample_index == 0 {
                     let voice_data = &mut audio_state.audio_gen_data.voices[num_valid_voice_datas];
 
                     voice_data.voice_index = voice_index;
 
-                    num_valid_voice_datas += 1;
-
-                    // If voice was deactivated this sample in avx mode, ensure that audio isn't
-                    // generated for next sample due to lingering data from previous passes. If
-                    // voice gets activated though midi events next sample, new data gets written.
-                    //
-                    // Since we deactivate envelopes the sample after they ended, we know
-                    // at this point that valid data was written for the previous sample, meaning
-                    // that we don't need to worry about setting it to zero.
-                    if (!voice.active) & (Pd::SAMPLES == 2) {
-                        for operator in voice_data.operators.iter_mut() {
-                            set_value_for_both_channels(&mut operator.envelope_volume, 1, 0.0);
-                        }
+                    if Pd::SAMPLES == 2 {
+                        voice_data.reset_envelope_volumes();
                     }
+
+                    num_valid_voice_datas += 1;
 
                     voice_data
                 } else {
@@ -260,12 +263,7 @@ mod gen {
 
                         voice_data.voice_index = voice_index;
 
-                        // Since sample 1 of this voice data cache item contains invalid data
-                        // from previous passes, set envelope volume to zero for it to prevent
-                        // audio from being generated
-                        for operator in voice_data.operators.iter_mut() {
-                            set_value_for_both_channels(&mut operator.envelope_volume, 0, 0.0);
-                        }
+                        voice_data.reset_envelope_volumes();
 
                         num_valid_voice_datas += 1;
 
@@ -337,6 +335,8 @@ mod gen {
                         voice_base_frequency,
                     )
                 }
+
+                voice.deactivate_if_envelopes_ended();
             }
         }
 
