@@ -90,7 +90,7 @@ fn benchmark<A: AudioGen + Simd>(name: &str, expected_hash: &str) -> (bool, f32)
 
     let key_on_events: Vec<MidiEvent> = (0..NUM_VOICES)
         .map(|i| MidiEvent {
-            data: [144, i as u8, 100],
+            data: [144, i as u8, 100 + i as u8],
             delta_frames: (i % BUFFER_LEN) as i32,
             live: false,
             note_length: None,
@@ -122,7 +122,21 @@ fn benchmark<A: AudioGen + Simd>(name: &str, expected_hash: &str) -> (bool, f32)
     let mut output_hasher = Sha256::new();
 
     for p in envelope_duration_parameters.iter() {
-        octasine.sync.set_parameter(p.to_index() as i32, 0.1);
+        match p {
+            Parameter::Operator(0, _) => {
+                octasine.sync.set_parameter(p.to_index() as i32, 0.5);
+            }
+            Parameter::Operator(1, _) => {
+                octasine.sync.set_parameter(p.to_index() as i32, 0.2);
+            }
+            Parameter::Operator(2, _) => {
+                octasine.sync.set_parameter(p.to_index() as i32, 0.1);
+            }
+            Parameter::Operator(3, _) => {
+                octasine.sync.set_parameter(p.to_index() as i32, 0.0);
+            }
+            _ => unreachable!(),
+        }
     }
     for p in wave_type_parameters.iter() {
         octasine.sync.set_parameter(p.to_index() as i32, 0.0);
@@ -137,7 +151,7 @@ fn benchmark<A: AudioGen + Simd>(name: &str, expected_hash: &str) -> (bool, f32)
                     .audio
                     .enqueue_midi_events(key_on_events.iter().copied());
             }
-            512 => {
+            256 => {
                 octasine
                     .audio
                     .enqueue_midi_events(key_off_events.iter().copied());
