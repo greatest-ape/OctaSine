@@ -276,6 +276,7 @@ mod gen {
                         .volume_envelope
                         .advance_one_sample(
                             &operator.volume_envelope,
+                            &mut voice.operators[operator_index].last_phase,
                             voice.key_pressed,
                             time_per_sample,
                         );
