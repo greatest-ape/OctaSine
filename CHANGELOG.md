@@ -7,10 +7,16 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 - Improve performance by around 10% in many cases by improving CPU cache
-  behaviour
-- [Port several SLEEF functions to Rust](https://github.com/greatest-ape/sleef-trig))
+  behaviour in audio generation
+- [Port several SLEEF functions to Rust](https://github.com/greatest-ape/sleef-trig)
   to avoid relying on undefined behaviour, remove the need to use a nightly
   compiler and ease future cross-compilation, e.g., for Apple Silicon
+- In audio generation, skip extracting voice data if envelope is ended
+
+### Fixed
+
+- Tweak audio gen to fix (very minor) differences between simd widths
+- When envelope ends, set voice operator phase to 0.0
 
 ## 0.8.0 - 2022-08-28
 
