@@ -4,14 +4,6 @@
 
 * Release 0.8.1
 * Audio gen optimizations
-  * When selecting new VoiceData, just set envelope volume to zero
-    for all members, and there won't be a need to check for that
-    later
-  * Consider not extracting voice data for stopped envelopes
-  * Consider running fract on phases if they get too high (notably over 1e+14)
-    to improve performance
-  * Reset phases to 0 when all envelopes have ended and/or when restarting
-    voices
   * Use bhaskara_constant_power_panning
 * Consider adding saw, square and triangle waves. Maybe look at
   TX81Z waveforms. https://www.reddit.com/r/synthesizers/comments/rkyk6j/comment/hpgcu6r/?utm_source=share&utm_medium=web2x&context=3

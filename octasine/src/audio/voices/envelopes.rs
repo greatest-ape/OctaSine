@@ -22,6 +22,7 @@ impl VoiceOperatorVolumeEnvelope {
     pub fn advance_one_sample(
         &mut self,
         parameters: &OperatorEnvelopeAudioParameters,
+        voice_operator_phase: &mut Phase,
         key_pressed: bool,
         time_per_sample: TimePerSample,
     ) {
@@ -67,6 +68,9 @@ impl VoiceOperatorVolumeEnvelope {
                 self.stage = Ended;
                 self.duration_at_stage_change = VoiceDuration(0.0);
                 self.volume_at_stage_change = 0.0;
+
+                // Set voice operator phase to zero if envelope just ended
+                voice_operator_phase.0 = 0.0;
             }
             _ => {}
         }
