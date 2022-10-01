@@ -37,7 +37,7 @@ os_info = "3"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 simplelog = { version = "0.12", default-features = false, features = ["local-offset"] }
-sleef-trig = { git = "https://github.com/greatest-ape/sleef-trig.git", rev = "929a83b" }
+sleef-trig = "0.1.0"
 vst = "0.3"
 
 # GUI
