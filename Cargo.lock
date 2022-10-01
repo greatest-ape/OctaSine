@@ -2344,7 +2344,8 @@ dependencies = [
 [[package]]
 name = "sleef-trig"
 version = "0.1.0"
-source = "git+https://github.com/greatest-ape/sleef-trig.git?rev=929a83b#929a83b83d01519aa89441dd49a41446416268ea"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1ac6a968ecaa05dfcd5384c5920db8e7f251b3cac858aed62c934650de040525"
 
 [[package]]
 name = "slotmap"
