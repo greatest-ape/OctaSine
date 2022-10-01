@@ -14,6 +14,7 @@ Frequency modulation synthesizer plugin. Runs on macOS, Windows and Linux (X11) 
   <a href="https://soundcloud.com/octasine">SoundCloud</a>
 </p>
 
+
 ## Screenshots
 
 ### Light mode
@@ -24,17 +25,31 @@ Frequency modulation synthesizer plugin. Runs on macOS, Windows and Linux (X11) 
 
 ![Screenshot of OctaSine in dark mode](images/screenshot-dark.png)
 
-## About
+## Features
 
-* Four FM operators with parameters for volume, panning, modulation output, feedback, frequency modifiers (ratio, free and fine), envelope values (attack, decay, sustain, release) and toggling of white noise mode.
-* Flexible routing allows setting the operator modulation targets (with some limitations) as well as the amount of signal that is simply added to the final output, enabling additive synthesis.
-* Four LFOs with multiple waveforms, oneshot and loop modes and optional DAW BPM sync. They can target most operator parameters and most parameters of lower-index LFOs.
-* Each operator is connected to an attack-decay-sustain-release volume envelope with logarithmic slopes.
-* Per-operator white noise mode makes it easy to create percussive sounds such as hi-hats.
-* Runs on macOS (definitely 10.15.7, probably later versions too), Windows 10 and Linux (X11 only) in VST2-compatible DAWs on 64-bit computers. Synthesis is SIMD-accelerated in many cases (SSE2, AVX).
-* Master volume and master frequency parameters
-* 128 voices (using them all simultaneously might consume quite a bit of CPU time though)
-* Fully automatable
+### Four operators
+
+Four FM operators with parameters for wave form (sine or noise), volume, panning, feedback and frequency (ratio, free and fine), with visualizations of stereo wave forms after modulation.
+
+### Flexible routing
+
+Flexible routing allows setting the operator modulation targets (with some limitations) as well as the amount of signal that is simply added to the final output, enabling additive synthesis.
+
+### Four LFOs
+
+Four LFOs with multiple waveforms, oneshot and loop modes and optional DAW BPM sync. They can target most operator parameters and most parameters of lower-index LFOs.
+
+### ADSR envelopes
+
+Each operator is connected to an attack-decay-sustain-release volume envelope with logarithmic slopes. Envelope groups make synchronizing changes a breeze.
+
+### Modulation panning
+
+A unique feature of OctaSine is that modulation can be panned, enabling positioning FM within the stereo image. Additionally, true stereo panning is implemented, not just balance.
+
+### Cross-platform
+
+Runs on macOS (definitely 10.15.7, probably later versions too), Windows 10/11 and Linux (X11 only) in VST2-compatible DAWs on 64-bit computers. Synthesis is SIMD-accelerated in many cases (SSE2, AVX).
 
 ## Installation from source code
 
