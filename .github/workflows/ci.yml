@@ -21,6 +21,7 @@ jobs:
         log-level: warn
         command: check licenses
         arguments: --all-features --workspace
+
   build:
     runs-on: ${{ matrix.os }}
     strategy:
@@ -28,7 +29,7 @@ jobs:
         os: [macos-latest, ubuntu-20.04, windows-latest]
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
     - name: Install baseview dependencies
       run: |
@@ -36,35 +37,45 @@ jobs:
         sudo apt install libgl-dev libx11-xcb-dev libxcb1-dev libxcb-dri2-0-dev libxcb-icccm4-dev libxcursor-dev libxkbcommon-dev libxcb-shape0-dev libxcb-xfixes0-dev
       if: contains(matrix.os, 'ubuntu')
 
-    # Required for bindgen on Windows, see https://github.com/rust-lang/rust-bindgen/issues/1797
-    - name: Install LLVM and Clang (Windows)
-      uses: KyleMayes/install-llvm-action@v1
-      if: contains(matrix.os, 'windows')
-      with:
-        version: "14.0"
-        directory: ${{ runner.temp }}/llvm
-
-    - name: Set LIBCLANG_PATH (Windows)
-      run: echo "LIBCLANG_PATH=$((gcm clang).source -replace "clang.exe")" >> $env:GITHUB_ENV
-      if: contains(matrix.os, 'windows')
-
-    - name: Setup MSVC shell (Windows)
-      uses: ilammy/msvc-dev-cmd@v1
-      if: contains(matrix.os, 'windows')
-
     - name: Install latest Rust
       uses: actions-rs/toolchain@v1
       with:
           toolchain: stable
+          profile: minimal
           override: true
 
-    - name: Run tests
-      run: cargo test --workspace --verbose
-      env:
-        RUSTFLAGS: "-C target-cpu=native"
+    - name: Setup Rust dependency caching
+      uses: Swatinem/rust-cache@v2
+
     - name: Build plugin in release mode
       run: cargo build --release -p octasine-vst2-plugin --verbose
 
     - name: Display size of build artifacts
       run: ls -lh target/release
       if: contains(matrix.os, 'ubuntu') || contains(matrix.os, 'macos')
+
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install baseview dependencies
+      run: |
+        sudo apt update
+        sudo apt install libgl-dev libx11-xcb-dev libxcb1-dev libxcb-dri2-0-dev libxcb-icccm4-dev libxcursor-dev libxkbcommon-dev libxcb-shape0-dev libxcb-xfixes0-dev
+
+    - name: Install latest Rust
+      uses: actions-rs/toolchain@v1
+      with:
+          toolchain: stable
+          profile: minimal
+          override: true
+
+    - name: Setup Rust dependency caching
+      uses: Swatinem/rust-cache@v2
+
+    - name: Run tests
+      run: cargo test --workspace --verbose
+      env:
+        RUSTFLAGS: "-C target-cpu=native"
