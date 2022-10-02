@@ -1,5 +1,7 @@
 //! SIMD abstraction
 
+use std::ops::{Add, AddAssign, Mul, Sub};
+
 #[cfg(target_arch = "x86_64")]
 pub mod avx;
 pub mod fallback;
@@ -16,7 +18,7 @@ pub trait Simd {
     type Pd: SimdPackedDouble;
 }
 
-pub trait SimdPackedDouble: Copy {
+pub trait SimdPackedDouble: Copy + Add + AddAssign + Sub + Mul {
     /// Number of stereo audio samples that this packed double fits
     const SAMPLES: usize;
 
