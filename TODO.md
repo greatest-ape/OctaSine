@@ -8,7 +8,6 @@
       target feature. I'm not sure about how that is done when cross-compiling.
 * Audio gen optimizations
   * Use bhaskara_constant_power_panning?
-* Cache dependencies in CI?
 * Consider adding saw, square and triangle waves. Maybe look at
   TX81Z waveforms. https://www.reddit.com/r/synthesizers/comments/rkyk6j/comment/hpgcu6r/?utm_source=share&utm_medium=web2x&context=3
 * Check for available updates at plugin start?
