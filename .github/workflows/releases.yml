@@ -43,7 +43,9 @@ jobs:
     - name: Build plugin for aarch64
       run: |
         export SDKROOT=$(xcrun -sdk macosx11.1 --show-sdk-path)
+        echo "SDKROOT=$SDKROOT"
         export MACOSX_DEPLOYMENT_TARGET=$(xcrun -sdk macosx11.1 --show-sdk-platform-version)
+        echo "MACOSX_DEPLOYMENT_TARGET=$MACOSX_DEPLOYMENT_TARGET"
         cargo build --release -p octasine-vst2-plugin --target=aarch64-apple-darwin
       env:
         DEVELOPER_DIR: /Applications/Xcode_12.4.app/Contents/Developer
