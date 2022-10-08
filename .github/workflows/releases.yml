@@ -45,11 +45,23 @@ jobs:
       run: echo "LIBCLANG_PATH=$((gcm clang).source -replace "clang.exe")" >> $env:GITHUB_ENV
       if: contains(matrix.os, 'windows')
 
-    - name: Install latest Rust
+    - name: Install latest Rust (macOS)
       uses: actions-rs/toolchain@v1
       with:
           toolchain: stable
+          target: aarch64-apple-darwin
+          profile: minimal
           override: true
+
+    - name: Install latest Rust (Windows / Linux)
+      uses: actions-rs/toolchain@v1
+      with:
+          toolchain: stable
+          profile: minimal
+          override: true
+
+    - name: Setup Rust dependency caching
+      uses: Swatinem/rust-cache@v2
 
     - name: Setup MSVC shell (Windows)
       uses: ilammy/msvc-dev-cmd@v1
@@ -57,6 +69,12 @@ jobs:
 
     - name: Build plugin in release mode
       run: cargo build --release -p octasine-vst2-plugin --verbose
+
+    - name: Cross-compile for Apple Silicon (macOS)
+      run: |
+        export SDKROOT=$(xcrun -sdk macosx11.1 --show-sdk-path)
+        export MACOSX_DEPLOYMENT_TARGET=$(xcrun -sdk macosx11.1 --show-sdk-platform-version)
+        cargo build --release -p octasine-vst2-plugin --target=aarch64-apple-darwin
 
     - name: Install cargo-about
       run: cargo install --debug --locked cargo-about
@@ -69,10 +87,12 @@ jobs:
       run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
       shell: bash
 
-    - name: Create release file (macOS)
+    - name: Create release files (macOS)
       run: |
-        bash ./scripts/macos/bundle.sh "./target/release/liboctasine.dylib" "OctaSine $OCTASINE_SEMVER_VERSION"
-        bash ./scripts/unix/package.sh "OctaSine $OCTASINE_SEMVER_VERSION.vst" "../releases/OctaSine-${{ steps.get_version.outputs.VERSION }}-macOS-Intel"
+        bash ./scripts/macos/bundle.sh "./target/release/liboctasine.dylib" "OctaSine $OCTASINE_SEMVER_VERSION (Intel)"
+        bash ./scripts/unix/package.sh "OctaSine $OCTASINE_SEMVER_VERSION (Intel).vst" "../releases/OctaSine-${{ steps.get_version.outputs.VERSION }}-macOS-Intel"
+        bash ./scripts/macos/bundle.sh "./target/aarch64-apple-darwin/release/liboctasine.dylib" "OctaSine $OCTASINE_SEMVER_VERSION (Apple Silicon)"
+        bash ./scripts/unix/package.sh "OctaSine $OCTASINE_SEMVER_VERSION (Apple Silicon).vst" "../releases/OctaSine-${{ steps.get_version.outputs.VERSION }}-macOS-AppleSilicon"
       if: contains(matrix.os, 'macos')
   
     - name: Create release file (Windows)
