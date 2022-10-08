@@ -31,24 +31,45 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - name: Install baseview dependencies
+    - name: Install baseview dependencies (Linux)
       run: |
         sudo apt update
         sudo apt install libgl-dev libx11-xcb-dev libxcb1-dev libxcb-dri2-0-dev libxcb-icccm4-dev libxcursor-dev libxkbcommon-dev libxcb-shape0-dev libxcb-xfixes0-dev
       if: contains(matrix.os, 'ubuntu')
 
-    - name: Install latest Rust
+    - name: Install latest Rust (Windows/Linux)
       uses: actions-rs/toolchain@v1
       with:
           toolchain: stable
           profile: minimal
           override: true
 
+    - name: Install latest Rust (macOS)
+      uses: actions-rs/toolchain@v1
+      with:
+          toolchain: stable
+          target: aarch64-apple-darwin
+          profile: minimal
+          override: true
+      if: contains(matrix.os, 'macos')
+
     - name: Setup Rust dependency caching
       uses: Swatinem/rust-cache@v2
 
-    - name: Build plugin in release mode
+    - name: Build plugin
       run: cargo build --release -p octasine-vst2-plugin --verbose
+
+    - name: Build plugin for aarch64 (macOS)
+      run: |
+        export SDKROOT=$(xcrun -sdk macosx11.1 --show-sdk-path)
+        echo "SDKROOT=$SDKROOT"
+        export MACOSX_DEPLOYMENT_TARGET=$(xcrun -sdk macosx11.1 --show-sdk-platform-version)
+        echo "MACOSX_DEPLOYMENT_TARGET=$MACOSX_DEPLOYMENT_TARGET"
+        cargo build --release -p octasine-vst2-plugin --target=aarch64-apple-darwin
+      env:
+        DEVELOPER_DIR: /Applications/Xcode_12.4.app/Contents/Developer
+      shell: bash
+      if: contains(matrix.os, 'macos')
 
     - name: Display size of build artifacts
       run: ls -lh target/release
