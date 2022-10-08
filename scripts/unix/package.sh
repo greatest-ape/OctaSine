@@ -21,7 +21,7 @@ else
 
     cp -r "$FROM" "OctaSine/"
 
-    cargo-about generate -o "OctaSine/LICENSES.html" "../about.hbs" --features "simd" -m "../octasine-vst2-plugin/Cargo.toml" 
+    cargo-about generate -o "OctaSine/LICENSES.html" "../about.hbs" -m "../octasine-vst2-plugin/Cargo.toml" 
     # cp ../LICENSE "OctaSine/LICENSE.txt"
 
     if [ -f "$TO" ]; then
