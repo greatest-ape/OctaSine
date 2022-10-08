@@ -19,41 +19,81 @@ jobs:
         log-level: warn
         command: check licenses
         arguments: --all-features --workspace
-  build:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [macos-latest, ubuntu-20.04, windows-latest]
+
+  build-macos:
+    runs-on: macos-11
 
     steps:
     - uses: actions/checkout@v2
-
-    - name: Install baseview dependencies (Linux)
-      run: |
-        sudo apt update
-        sudo apt install libgl-dev libx11-xcb-dev libxcb1-dev libxcb-dri2-0-dev libxcb-icccm4-dev libxcursor-dev libxkbcommon-dev libxcb-shape0-dev libxcb-xfixes0-dev
-      if: contains(matrix.os, 'ubuntu')
-
-    # Required for bindgen on Windows, see https://github.com/rust-lang/rust-bindgen/issues/1797
-    - name: Install LLVM and Clang (Windows)
-      uses: KyleMayes/install-llvm-action@v1
-      if: contains(matrix.os, 'windows')
-      with:
-        version: "14.0"
-        directory: ${{ runner.temp }}/llvm
-    - name: Set LIBCLANG_PATH (Windows)
-      run: echo "LIBCLANG_PATH=$((gcm clang).source -replace "clang.exe")" >> $env:GITHUB_ENV
-      if: contains(matrix.os, 'windows')
 
     - name: Install latest Rust
       uses: actions-rs/toolchain@v1
       with:
           toolchain: stable
+          target: aarch64-apple-darwin
+          profile: minimal
           override: true
 
-    - name: Setup MSVC shell (Windows)
+    - name: Setup Rust dependency caching
+      uses: Swatinem/rust-cache@v2
+
+    - name: Build plugin for x86_64
+      run: cargo build --release -p octasine-vst2-plugin --verbose
+
+    - name: Build plugin for aarch64
+      run: |
+        export SDKROOT=$(xcrun -sdk macosx11.1 --show-sdk-path)
+        echo "SDKROOT=$SDKROOT"
+        export MACOSX_DEPLOYMENT_TARGET=$(xcrun -sdk macosx11.1 --show-sdk-platform-version)
+        echo "MACOSX_DEPLOYMENT_TARGET=$MACOSX_DEPLOYMENT_TARGET"
+        cargo build --release -p octasine-vst2-plugin --target=aarch64-apple-darwin
+      env:
+        DEVELOPER_DIR: /Applications/Xcode_12.4.app/Contents/Developer
+      shell: bash
+
+    - name: Install cargo-about
+      run: cargo install --debug --locked cargo-about
+
+    - name: Get the version
+      id: get_version
+      run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+      shell: bash
+
+    - name: Create release files
+      run: |
+        mkdir releases
+        bash ./scripts/macos/bundle.sh "./target/release/liboctasine.dylib" "OctaSine $OCTASINE_SEMVER_VERSION (Intel)"
+        bash ./scripts/unix/package.sh "OctaSine $OCTASINE_SEMVER_VERSION (Intel).vst" "../releases/OctaSine-${{ steps.get_version.outputs.VERSION }}-macOS-Intel"
+        bash ./scripts/macos/bundle.sh "./target/aarch64-apple-darwin/release/liboctasine.dylib" "OctaSine $OCTASINE_SEMVER_VERSION (Apple Silicon)"
+        bash ./scripts/unix/package.sh "OctaSine $OCTASINE_SEMVER_VERSION (Apple Silicon).vst" "../releases/OctaSine-${{ steps.get_version.outputs.VERSION }}-macOS-AppleSilicon"
+
+    - uses: ncipollo/release-action@v1
+      with:
+        artifacts: "releases/*.zip"
+        draft: true
+        allowUpdates: true
+        artifactErrorsFailBuild: true
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install latest Rust
+      uses: actions-rs/toolchain@v1
+      with:
+          toolchain: stable
+          profile: minimal
+          override: true
+
+    - name: Setup Rust dependency caching
+      uses: Swatinem/rust-cache@v2
+
+    - name: Setup MSVC shell
       uses: ilammy/msvc-dev-cmd@v1
-      if: contains(matrix.os, 'windows')
 
     - name: Build plugin in release mode
       run: cargo build --release -p octasine-vst2-plugin --verbose
@@ -61,36 +101,67 @@ jobs:
     - name: Install cargo-about
       run: cargo install --debug --locked cargo-about
 
-    - name: Create release directory
-      run: mkdir releases
-
     - name: Get the version
       id: get_version
       run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
       shell: bash
-
-    - name: Create release file (macOS)
-      run: |
-        bash ./scripts/macos/bundle.sh "./target/release/liboctasine.dylib" "OctaSine $OCTASINE_SEMVER_VERSION"
-        bash ./scripts/unix/package.sh "OctaSine $OCTASINE_SEMVER_VERSION.vst" "../releases/OctaSine-${{ steps.get_version.outputs.VERSION }}-macOS-Intel"
-      if: contains(matrix.os, 'macos')
   
-    - name: Create release file (Windows)
+    - name: Create release file
       run: |
+        mkdir releases
         New-Item "tmp\OctaSine" -ItemType Directory -ea 0
         Copy-Item "LICENSE" -Destination "tmp\OctaSine\LICENSE.txt"
         cargo-about generate -o "tmp\OctaSine\LICENSES.html" "about.hbs" -m "octasine-vst2-plugin\Cargo.toml" 
         $version = $env:OCTASINE_SEMVER_VERSION
         Copy-Item "target\release\octasine.dll" -Destination "tmp\OctaSine\OctaSine $version.dll"
         Compress-Archive -Path "tmp\OctaSine" -DestinationPath releases\OctaSine-${{ steps.get_version.outputs.VERSION }}-Windows.zip -CompressionLevel Optimal
-      if: contains(matrix.os, 'windows')
 
-    - name: Create release file (Linux)
+    - uses: ncipollo/release-action@v1
+      with:
+        artifacts: "releases/*.zip"
+        draft: true
+        allowUpdates: true
+        artifactErrorsFailBuild: true
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+  build-linux:
+    runs-on: ubuntu-20.04
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install baseview dependencies
       run: |
+        sudo apt update
+        sudo apt install libgl-dev libx11-xcb-dev libxcb1-dev libxcb-dri2-0-dev libxcb-icccm4-dev libxcursor-dev libxkbcommon-dev libxcb-shape0-dev libxcb-xfixes0-dev
+
+    - name: Install latest Rust
+      uses: actions-rs/toolchain@v1
+      with:
+          toolchain: stable
+          profile: minimal
+          override: true
+
+    - name: Setup Rust dependency caching
+      uses: Swatinem/rust-cache@v2
+
+    - name: Build plugin in release mode
+      run: cargo build --release -p octasine-vst2-plugin --verbose
+
+    - name: Install cargo-about
+      run: cargo install --debug --locked cargo-about
+
+    - name: Get the version
+      id: get_version
+      run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+      shell: bash
+
+    - name: Create release file
+      run: |
+        mkdir releases
         mkdir -p tmp
         cp "./target/release/liboctasine.so" "tmp/OctaSine $OCTASINE_SEMVER_VERSION.so"
         bash ./scripts/unix/package.sh "OctaSine $OCTASINE_SEMVER_VERSION.so" "../releases/OctaSine-${{ steps.get_version.outputs.VERSION }}-Ubuntu-20_04"
-      if: contains(matrix.os, 'ubuntu')
 
     - uses: ncipollo/release-action@v1
       with:
