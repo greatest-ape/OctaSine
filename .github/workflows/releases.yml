@@ -42,9 +42,12 @@ jobs:
 
     - name: Build plugin for aarch64
       run: |
-        SDKROOT=$(xcrun -sdk macosx11.1 --show-sdk-path) \
-        MACOSX_DEPLOYMENT_TARGET=$(xcrun -sdk macosx11.1 --show-sdk-platform-version) \
+        export SDKROOT=$(xcrun -sdk macosx11.1 --show-sdk-path)
+        export MACOSX_DEPLOYMENT_TARGET=$(xcrun -sdk macosx11.1 --show-sdk-platform-version)
         cargo build --release -p octasine-vst2-plugin --target=aarch64-apple-darwin
+      env:
+        DEVELOPER_DIR: /Applications/Xcode_12.4.app/Contents/Developer
+      shell: bash
 
     - name: Install cargo-about
       run: cargo install --debug --locked cargo-about
