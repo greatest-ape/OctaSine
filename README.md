@@ -49,7 +49,7 @@ A unique feature of OctaSine is that modulation can be panned, enabling position
 
 ### Cross-platform
 
-Runs on macOS (definitely 10.15.7, probably later versions too), Windows 10/11 and Linux (X11 only) in VST2-compatible DAWs on 64-bit computers. Synthesis is SIMD-accelerated in many cases (SSE2, AVX).
+Runs on macOS (10.15 or later), Windows 10/11 and Linux (X11 only) in VST2-compatible DAWs on 64-bit computers. Synthesis is SIMD-accelerated in many cases (SSE2, AVX).
 
 ## Installation from source code
 
@@ -61,10 +61,10 @@ is to [download an official release](https://www.octasine.com), not to build it 
 * [Install the Rust compiler](https://rustup.rs/). Choose the stable toolchain
   when prompted. The compiler requires Apple's XCode build tools. You will
   probably be prompted to install them.
-* Install git and cmake. If you're using [homebrew](https://brew.sh), run:
+* Install git unless it's already installed. If you're using [homebrew](https://brew.sh), run:
 
 ```sh
-brew install git cmake
+brew install git
 ```
 
 * Clone this repository to a folder on your computer:
@@ -92,8 +92,6 @@ git checkout tags/v0.8.0
 
 * Install [Microsoft C++ Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/). Make sure that the Windows 10 SDK and the English language pack components are included during installation.
 * [Install the Rust compiler](https://rustup.rs/). When prompted, choose the stable toolchain and to modify the path variable.
-* Install LLVM
-* Install [cmake](https://cmake.org/download/). When prompted, choose the option to add cmake to the system executable path.
 * Install [git](https://git-scm.com/downloads).
 * Clone this repository to a folder on your computer and enter it
 * Unless you want to use the bleeding edge development branch, switch to the latest stable version, e.g.:
@@ -116,7 +114,7 @@ cargo build --release -p octasine-vst2-plugin
 * Install dependencies, e.g.,
 
 ```sh
-sudo apt-get install cmake git build-essential llvm clang libx11-dev libxcursor-dev libxcb-dri2-0-dev libxcb-icccm4-dev libx11-xcb-dev
+sudo apt-get install cmake git build-essential libx11-dev libxcursor-dev libxcb-dri2-0-dev libxcb-icccm4-dev libx11-xcb-dev
 ```
 
 On Debian 10, you might need to install some more dependencies:
