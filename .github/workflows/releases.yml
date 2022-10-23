@@ -62,10 +62,10 @@ jobs:
     - name: Create release files
       run: |
         mkdir releases
-        bash ./scripts/macos/bundle.sh "./target/release/liboctasine.dylib" "OctaSine $OCTASINE_SEMVER_VERSION (Intel)"
-        bash ./scripts/unix/package.sh "OctaSine $OCTASINE_SEMVER_VERSION (Intel).vst" "../releases/OctaSine-${{ steps.get_version.outputs.VERSION }}-macOS-Intel"
-        bash ./scripts/macos/bundle.sh "./target/aarch64-apple-darwin/release/liboctasine.dylib" "OctaSine $OCTASINE_SEMVER_VERSION (Apple Silicon)"
-        bash ./scripts/unix/package.sh "OctaSine $OCTASINE_SEMVER_VERSION (Apple Silicon).vst" "../releases/OctaSine-${{ steps.get_version.outputs.VERSION }}-macOS-AppleSilicon"
+        mkdir -p tmp
+        lipo "./target/release/liboctasine.dylib" "./target/aarch64-apple-darwin/release/liboctasine.dylib" -output "./tmp/liboctasine.dylib" -create
+        bash ./scripts/macos/bundle.sh "./tmp/liboctasine.dylib" "OctaSine $OCTASINE_SEMVER_VERSION"
+        bash ./scripts/unix/package.sh "OctaSine $OCTASINE_SEMVER_VERSION.vst" "../releases/OctaSine-${{ steps.get_version.outputs.VERSION }}-macOS"
 
     - uses: ncipollo/release-action@v1
       with:
