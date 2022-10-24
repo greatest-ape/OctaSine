@@ -4,13 +4,18 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+### Added
+
+- Add Apple Silicon support. The macOS release is now built as a universal binary
+
 ### Changed
 
 - Improve performance by around 10% in many cases by improving CPU cache
   behaviour in audio generation
 - [Port several SLEEF functions to Rust](https://github.com/greatest-ape/sleef-trig)
   to avoid relying on undefined behaviour, remove the need to use a nightly
-  compiler and ease future cross-compilation, e.g., for Apple Silicon
+  compiler and ease cross-compilation, e.g., for Apple Silicon. Unfortunately
+  performance is decreased somewhat.
 - In audio generation, skip extracting voice data if envelope is ended
 
 ### Fixed
