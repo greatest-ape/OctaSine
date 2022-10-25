@@ -27,7 +27,8 @@ pub struct AudioState {
     log10table: Log10Table,
     voices: [Voice; 128],
     pending_midi_events: VecDeque<MidiEvent>,
-    audio_gen_data: AudioGenData,
+    audio_gen_data_w2: AudioGenData<2>,
+    audio_gen_data_w4: AudioGenData<4>,
 }
 
 impl Default for AudioState {
@@ -43,7 +44,8 @@ impl Default for AudioState {
             voices: array_init(|i| Voice::new(MidiPitch::new(i as u8))),
             // Start with some capacity to cut down on later allocations
             pending_midi_events: VecDeque::with_capacity(128),
-            audio_gen_data: Default::default(),
+            audio_gen_data_w2: Default::default(),
+            audio_gen_data_w4: Default::default(),
         }
     }
 }
