@@ -13,8 +13,9 @@ impl Simd for Sse2 {
 pub struct Sse2PackedDouble(__m128d);
 
 impl SimdPackedDouble for Sse2PackedDouble {
-    type Arr = [f64; 2];
-    const SAMPLES: usize = 1;
+    const WIDTH: usize = 2;
+
+    type Arr = [f64; Self::WIDTH];
 
     #[inline(always)]
     unsafe fn new(value: f64) -> Self {

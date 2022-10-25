@@ -182,7 +182,6 @@ pub fn process_f32_runtime_select(
         feature_gate [ cfg(not(feature = "fake-feature")) ]
         test_feature_gate [ cfg(not(feature = "fake-feature")) ]
         audio_gen_data_field [ audio_gen_data_w2 ]
-        pd_width [ 2 ]
     ]
     [
         S [ Sse2 ]
@@ -190,7 +189,6 @@ pub fn process_f32_runtime_select(
         feature_gate [ cfg(target_arch = "x86_64") ]
         test_feature_gate [ cfg(all(target_arch = "x86_64")) ]
         audio_gen_data_field [ audio_gen_data_w2 ]
-        pd_width [ 2 ]
     ]
     [
         S [ Avx ]
@@ -198,7 +196,6 @@ pub fn process_f32_runtime_select(
         feature_gate [ cfg(target_arch = "x86_64") ]
         test_feature_gate [ cfg(all(target_arch = "x86_64", target_feature = "avx")) ]
         audio_gen_data_field [ audio_gen_data_w4 ]
-        pd_width [ 4 ]
     ]
 )]
 mod gen {
@@ -386,7 +383,7 @@ mod gen {
         operator_index: usize,
         operator_parameters: &mut OperatorAudioParameters,
         voice_operator: &mut crate::audio::voices::VoiceOperator,
-        operator_data: &mut VoiceOperatorData<pd_width>,
+        operator_data: &mut VoiceOperatorData<{ Pd::WIDTH }>,
         lfo_values: &LfoTargetValues,
         time_per_sample: TimePerSample,
         voice_base_frequency: f64,
@@ -488,7 +485,7 @@ mod gen {
     #[target_feature_enable]
     unsafe fn gen_audio(
         rng: &mut fastrand::Rng,
-        voices: &[VoiceData<pd_width>],
+        voices: &[VoiceData<{ Pd::WIDTH }>],
         audio_buffer_lefts: &mut [f32],
         audio_buffer_rights: &mut [f32],
     ) {
@@ -544,7 +541,7 @@ mod gen {
     #[target_feature_enable]
     unsafe fn gen_voice_operator_audio(
         rng: &mut fastrand::Rng,
-        operator_data: &VoiceOperatorData<pd_width>,
+        operator_data: &VoiceOperatorData<{ Pd::WIDTH }>,
         modulation_inputs: Pd,
         key_velocity: Pd,
     ) -> (Pd, Pd) {
@@ -604,7 +601,7 @@ mod gen {
     /// Operator dependency analysis to allow skipping audio generation when possible
     #[feature_gate]
     #[target_feature_enable]
-    unsafe fn run_operator_dependency_analysis(voice_data: &VoiceData<pd_width>) -> [bool; 4] {
+    unsafe fn run_operator_dependency_analysis(voice_data: &VoiceData<{ Pd::WIDTH }>) -> [bool; 4] {
         let mut operator_generate_audio = [true; 4];
         let mut operator_mix_out_active = [false; 4];
 
@@ -639,7 +636,7 @@ mod gen {
     #[feature_gate]
     #[target_feature_enable]
     unsafe fn set_value_for_both_channels(
-        target: &mut [f64; pd_width],
+        target: &mut [f64; Pd::WIDTH],
         sample_index: usize,
         value: f64,
     ) {

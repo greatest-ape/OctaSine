@@ -19,8 +19,10 @@ pub trait Simd {
 }
 
 pub trait SimdPackedDouble: Copy + Add + AddAssign + Sub + Mul {
+    // Number of doubles that this packed double fits
+    const WIDTH: usize;
     /// Number of stereo audio samples that this packed double fits
-    const SAMPLES: usize;
+    const SAMPLES: usize = Self::WIDTH / 2;
 
     /// f64 array with same number of members as this packed double
     type Arr;

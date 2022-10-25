@@ -16,9 +16,9 @@ impl Simd for Avx {
 pub struct AvxPackedDouble(__m256d);
 
 impl SimdPackedDouble for AvxPackedDouble {
-    const SAMPLES: usize = 2;
+    const WIDTH: usize = 4;
 
-    type Arr = [f64; 4];
+    type Arr = [f64; Self::WIDTH];
 
     #[target_feature(enable = "avx")]
     #[inline]
