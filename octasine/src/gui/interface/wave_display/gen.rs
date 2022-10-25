@@ -136,7 +136,7 @@ mod gen {
                 chunk[1] = phase;
             }
 
-            let phases = Pd::load_ptr(phases_arr.as_ptr()) * Pd::new(TAU);
+            let phases = Pd::from_arr(phases_arr) * Pd::new(TAU);
 
             let mut mod_inputs = [
                 Pd::new_zeroed(),

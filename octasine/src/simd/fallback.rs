@@ -47,10 +47,6 @@ impl SimdPackedDouble for FallbackPackedDouble {
         Self(arr)
     }
     #[inline(always)]
-    unsafe fn load_ptr(source: *const f64) -> Self {
-        Self(*(source as *const [f64; 2]))
-    }
-    #[inline(always)]
     unsafe fn to_arr(self) -> Self::Arr {
         self.0
     }

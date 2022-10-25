@@ -25,10 +25,6 @@ impl SimdPackedDouble for Sse2PackedDouble {
         Self(_mm_setzero_pd())
     }
     #[inline(always)]
-    unsafe fn load_ptr(source: *const f64) -> Self {
-        Self(_mm_loadu_pd(source))
-    }
-    #[inline(always)]
     unsafe fn from_arr(arr: Self::Arr) -> Self {
         Self(_mm_loadu_pd(arr.as_ptr()))
     }

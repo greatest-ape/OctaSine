@@ -28,7 +28,6 @@ pub trait SimdPackedDouble: Copy + Add + AddAssign + Sub + Mul {
     unsafe fn new(value: f64) -> Self;
     unsafe fn new_zeroed() -> Self;
     unsafe fn new_from_pair(l: f64, r: f64) -> Self;
-    unsafe fn load_ptr(source: *const f64) -> Self;
     unsafe fn from_arr(arr: Self::Arr) -> Self;
     unsafe fn to_arr(self) -> Self::Arr;
     unsafe fn min(self, other: Self) -> Self;

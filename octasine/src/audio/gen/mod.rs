@@ -501,8 +501,8 @@ mod gen {
             // Voice modulation input storage, indexed by operator
             let mut voice_modulation_inputs = [Pd::new_zeroed(); 4];
 
-            let key_velocity = Pd::load_ptr(voice_data.key_velocity.as_ptr());
-            let master_volume = Pd::load_ptr(voice_data.master_volume.as_ptr());
+            let key_velocity = Pd::from_arr(voice_data.key_velocity);
+            let master_volume = Pd::from_arr(voice_data.master_volume);
 
             // Go through operators downwards, starting with operator 4
             for operator_index in (0..4).map(|i| 3 - i) {
@@ -561,17 +561,17 @@ mod gen {
             // Convert random numbers to range -1.0 to 1.0
             Pd::new(2.0) * (Pd::from_arr(random_numbers) - Pd::new(0.5))
         } else {
-            let phase = Pd::load_ptr(operator_data.phase.as_ptr());
-            let feedback = Pd::load_ptr(operator_data.feedback.as_ptr());
+            let phase = Pd::from_arr(operator_data.phase);
+            let feedback = Pd::from_arr(operator_data.feedback);
 
             let phase = phase * Pd::new(TAU);
 
             (phase + (key_velocity * (feedback * phase.fast_sin()) + modulation_inputs)).fast_sin()
         };
 
-        let volume = Pd::load_ptr(operator_data.volume.as_ptr());
-        let envelope_volume = Pd::load_ptr(operator_data.envelope_volume.as_ptr());
-        let panning = Pd::load_ptr(operator_data.panning.as_ptr());
+        let volume = Pd::from_arr(operator_data.volume);
+        let envelope_volume = Pd::from_arr(operator_data.envelope_volume);
+        let panning = Pd::from_arr(operator_data.panning);
 
         let sample = sample * key_velocity * volume * envelope_volume;
 
@@ -586,14 +586,14 @@ mod gen {
         };
 
         let mix_out = {
-            let pan_factor = Pd::load_ptr(operator_data.constant_power_panning.as_ptr());
-            let mix_out = Pd::load_ptr(operator_data.mix_out.as_ptr());
+            let pan_factor = Pd::from_arr(operator_data.constant_power_panning);
+            let mix_out = Pd::from_arr(operator_data.mix_out);
 
             sample * pan_factor * mix_out
         };
         let mod_out = {
             let pan_factor = linear_panning_factor(panning);
-            let mod_out = Pd::load_ptr(operator_data.mod_out.as_ptr());
+            let mod_out = Pd::from_arr(operator_data.mod_out);
 
             sample * pan_factor * mod_out
         };
@@ -609,9 +609,9 @@ mod gen {
         let mut operator_mix_out_active = [false; 4];
 
         for operator_index in 0..4 {
-            let volume = Pd::load_ptr(voice_data.operators[operator_index].volume.as_ptr());
-            let mix_out = Pd::load_ptr(voice_data.operators[operator_index].mix_out.as_ptr());
-            let mod_out = Pd::load_ptr(voice_data.operators[operator_index].mod_out.as_ptr());
+            let volume = Pd::from_arr(voice_data.operators[operator_index].volume);
+            let mix_out = Pd::from_arr(voice_data.operators[operator_index].mix_out);
+            let mod_out = Pd::from_arr(voice_data.operators[operator_index].mod_out);
 
             let volume_active = volume.any_over_zero();
             let mix_out_active = mix_out.any_over_zero();

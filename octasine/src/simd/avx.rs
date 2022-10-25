@@ -44,11 +44,6 @@ impl SimdPackedDouble for AvxPackedDouble {
     }
     #[target_feature(enable = "avx")]
     #[inline]
-    unsafe fn load_ptr(source: *const f64) -> Self {
-        Self(_mm256_loadu_pd(source))
-    }
-    #[target_feature(enable = "avx")]
-    #[inline]
     unsafe fn to_arr(self) -> Self::Arr {
         let mut arr = Self::Arr::default();
 
