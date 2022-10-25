@@ -58,9 +58,7 @@ impl SimdPackedDouble for Sse2PackedDouble {
     }
     #[inline(always)]
     unsafe fn new_from_pair(l: f64, r: f64) -> Self {
-        let lr = [l, r];
-
-        Self(_mm_loadu_pd(lr.as_ptr()))
+        Self(_mm_set_pd(r, l))
     }
     #[inline(always)]
     unsafe fn any_over_zero(self) -> bool {
