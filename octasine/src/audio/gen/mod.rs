@@ -18,8 +18,6 @@ use lfo::*;
 const MASTER_VOLUME_FACTOR: f64 = 0.2;
 const LIMIT: f64 = 10.0;
 
-const MAX_PD_WIDTH: usize = 4;
-
 pub trait AudioGen {
     #[allow(clippy::missing_safety_doc)]
     unsafe fn process_f32(
@@ -34,12 +32,12 @@ pub trait AudioGen {
 ///
 /// Data is only valid for the duration of the processing of one or two
 /// (stereo) samples, depending on the SIMD instruction width.
-pub struct AudioGenData {
+pub struct AudioGenData<const W: usize> {
     lfo_target_values: LfoTargetValues,
-    voices: [VoiceData; 128],
+    voices: [VoiceData<W>; 128],
 }
 
-impl Default for AudioGenData {
+impl<const W: usize> Default for AudioGenData<W> {
     fn default() -> Self {
         Self {
             lfo_target_values: Default::default(),
@@ -48,41 +46,68 @@ impl Default for AudioGenData {
     }
 }
 
-#[derive(Debug, Default, Clone, Copy)]
-struct VoiceData {
+#[derive(Debug, Clone, Copy)]
+struct VoiceData<const W: usize> {
     voice_index: u8,
-    key_velocity: [f64; MAX_PD_WIDTH],
+    key_velocity: [f64; W],
     /// Master volume is calculated per-voice, since it can be an LFO target
-    master_volume: [f64; MAX_PD_WIDTH],
-    operators: [VoiceOperatorData; 4],
+    master_volume: [f64; W],
+    operators: [VoiceOperatorData<W>; 4],
 }
 
-impl VoiceData {
+impl<const W: usize> Default for VoiceData<W> {
+    fn default() -> Self {
+        Self {
+            voice_index: 0,
+            key_velocity: [0.0; W],
+            /// Master volume is calculated per-voice, since it can be an LFO target
+            master_volume: [0.0; W],
+            operators: Default::default(),
+        }
+    }
+}
+
+impl<const W: usize> VoiceData<W> {
     /// Set envelope volumes to zero to prevent audio from being generated due to
     /// invalid data from previous passes
     #[inline]
     fn reset_envelope_volumes(&mut self) {
-        const ZEROED: &[f64] = &[0.0; MAX_PD_WIDTH];
-
-        self.operators[0].envelope_volume.copy_from_slice(ZEROED);
-        self.operators[1].envelope_volume.copy_from_slice(ZEROED);
-        self.operators[2].envelope_volume.copy_from_slice(ZEROED);
-        self.operators[3].envelope_volume.copy_from_slice(ZEROED);
+        self.operators[0].envelope_volume.copy_from_slice(&[0.0; W]);
+        self.operators[1].envelope_volume.copy_from_slice(&[0.0; W]);
+        self.operators[2].envelope_volume.copy_from_slice(&[0.0; W]);
+        self.operators[3].envelope_volume.copy_from_slice(&[0.0; W]);
     }
 }
 
-#[derive(Debug, Default, Clone, Copy)]
-struct VoiceOperatorData {
-    volume: [f64; MAX_PD_WIDTH],
-    mix_out: [f64; MAX_PD_WIDTH],
-    mod_out: [f64; MAX_PD_WIDTH],
-    feedback: [f64; MAX_PD_WIDTH],
-    panning: [f64; MAX_PD_WIDTH],
-    constant_power_panning: [f64; MAX_PD_WIDTH],
-    envelope_volume: [f64; MAX_PD_WIDTH],
-    phase: [f64; MAX_PD_WIDTH],
+#[derive(Debug, Clone, Copy)]
+struct VoiceOperatorData<const W: usize> {
+    volume: [f64; W],
+    mix_out: [f64; W],
+    mod_out: [f64; W],
+    feedback: [f64; W],
+    panning: [f64; W],
+    constant_power_panning: [f64; W],
+    envelope_volume: [f64; W],
+    phase: [f64; W],
     wave_type: WaveType,
     modulation_targets: ModTargetStorage,
+}
+
+impl<const W: usize> Default for VoiceOperatorData<W> {
+    fn default() -> Self {
+        Self {
+            volume: [0.0; W],
+            mix_out: [0.0; W],
+            mod_out: [0.0; W],
+            feedback: [0.0; W],
+            panning: [0.0; W],
+            constant_power_panning: [0.0; W],
+            envelope_volume: [0.0; W],
+            phase: [0.0; W],
+            wave_type: Default::default(),
+            modulation_targets: Default::default(),
+        }
+    }
 }
 
 #[inline]
@@ -156,18 +181,21 @@ pub fn process_f32_runtime_select(
         target_feature_enable [ cfg(not(feature = "fake-feature")) ]
         feature_gate [ cfg(not(feature = "fake-feature")) ]
         test_feature_gate [ cfg(not(feature = "fake-feature")) ]
+        audio_gen_data_field [ audio_gen_data_w2 ]
     ]
     [
         S [ Sse2 ]
         target_feature_enable [ cfg(not(feature = "fake-feature")) ]
         feature_gate [ cfg(target_arch = "x86_64") ]
         test_feature_gate [ cfg(all(target_arch = "x86_64")) ]
+        audio_gen_data_field [ audio_gen_data_w2 ]
     ]
     [
         S [ Avx ]
         target_feature_enable [ target_feature(enable = "avx") ]
         feature_gate [ cfg(target_arch = "x86_64") ]
         test_feature_gate [ cfg(all(target_arch = "x86_64", target_feature = "avx")) ]
+        audio_gen_data_field [ audio_gen_data_w4 ]
     ]
 )]
 mod gen {
@@ -204,7 +232,7 @@ mod gen {
 
             gen_audio(
                 &mut audio_state.rng,
-                &audio_state.audio_gen_data.voices[..num_valid_voice_datas],
+                &audio_state.audio_gen_data_field.voices[..num_valid_voice_datas],
                 lefts,
                 rights,
             );
@@ -225,7 +253,7 @@ mod gen {
             audio_state.process_events_for_sample(position + sample_index);
 
             let operators = &mut audio_state.parameters.operators;
-            let lfo_values = &mut audio_state.audio_gen_data.lfo_target_values;
+            let lfo_values = &mut audio_state.audio_gen_data_field.lfo_target_values;
 
             for (voice_index, voice) in audio_state
                 .voices
@@ -236,7 +264,8 @@ mod gen {
             {
                 // Select an appropriate VoiceData item to fill with data
                 let voice_data = if sample_index == 0 {
-                    let voice_data = &mut audio_state.audio_gen_data.voices[num_valid_voice_datas];
+                    let voice_data =
+                        &mut audio_state.audio_gen_data_field.voices[num_valid_voice_datas];
 
                     voice_data.voice_index = voice_index;
 
@@ -249,7 +278,7 @@ mod gen {
                     // During second sample in AVX mode, look for the relevant voice data cache
                     // among the ones filled while processing sample 1. If it is not found because
                     // the voice was activated this sample, use a new one.
-                    if let Some(voice_data) = audio_state.audio_gen_data.voices
+                    if let Some(voice_data) = audio_state.audio_gen_data_field.voices
                         [..num_valid_voice_datas]
                         .iter_mut()
                         .find(|voice_data| voice_data.voice_index == voice_index)
@@ -257,7 +286,7 @@ mod gen {
                         voice_data
                     } else {
                         let voice_data =
-                            &mut audio_state.audio_gen_data.voices[num_valid_voice_datas];
+                            &mut audio_state.audio_gen_data_field.voices[num_valid_voice_datas];
 
                         voice_data.voice_index = voice_index;
 
@@ -354,7 +383,7 @@ mod gen {
         operator_index: usize,
         operator_parameters: &mut OperatorAudioParameters,
         voice_operator: &mut crate::audio::voices::VoiceOperator,
-        operator_data: &mut VoiceOperatorData,
+        operator_data: &mut VoiceOperatorData<{ Pd::WIDTH }>,
         lfo_values: &LfoTargetValues,
         time_per_sample: TimePerSample,
         voice_base_frequency: f64,
@@ -456,7 +485,7 @@ mod gen {
     #[target_feature_enable]
     unsafe fn gen_audio(
         rng: &mut fastrand::Rng,
-        voices: &[VoiceData],
+        voices: &[VoiceData<{ Pd::WIDTH }>],
         audio_buffer_lefts: &mut [f32],
         audio_buffer_rights: &mut [f32],
     ) {
@@ -469,8 +498,8 @@ mod gen {
             // Voice modulation input storage, indexed by operator
             let mut voice_modulation_inputs = [Pd::new_zeroed(); 4];
 
-            let key_velocity = Pd::load_ptr(voice_data.key_velocity.as_ptr());
-            let master_volume = Pd::load_ptr(voice_data.master_volume.as_ptr());
+            let key_velocity = Pd::from_arr(voice_data.key_velocity);
+            let master_volume = Pd::from_arr(voice_data.master_volume);
 
             // Go through operators downwards, starting with operator 4
             for operator_index in (0..4).map(|i| 3 - i) {
@@ -512,7 +541,7 @@ mod gen {
     #[target_feature_enable]
     unsafe fn gen_voice_operator_audio(
         rng: &mut fastrand::Rng,
-        operator_data: &VoiceOperatorData,
+        operator_data: &VoiceOperatorData<{ Pd::WIDTH }>,
         modulation_inputs: Pd,
         key_velocity: Pd,
     ) -> (Pd, Pd) {
@@ -529,17 +558,17 @@ mod gen {
             // Convert random numbers to range -1.0 to 1.0
             Pd::new(2.0) * (Pd::from_arr(random_numbers) - Pd::new(0.5))
         } else {
-            let phase = Pd::load_ptr(operator_data.phase.as_ptr());
-            let feedback = Pd::load_ptr(operator_data.feedback.as_ptr());
+            let phase = Pd::from_arr(operator_data.phase);
+            let feedback = Pd::from_arr(operator_data.feedback);
 
             let phase = phase * Pd::new(TAU);
 
             (phase + (key_velocity * (feedback * phase.fast_sin()) + modulation_inputs)).fast_sin()
         };
 
-        let volume = Pd::load_ptr(operator_data.volume.as_ptr());
-        let envelope_volume = Pd::load_ptr(operator_data.envelope_volume.as_ptr());
-        let panning = Pd::load_ptr(operator_data.panning.as_ptr());
+        let volume = Pd::from_arr(operator_data.volume);
+        let envelope_volume = Pd::from_arr(operator_data.envelope_volume);
+        let panning = Pd::from_arr(operator_data.panning);
 
         let sample = sample * key_velocity * volume * envelope_volume;
 
@@ -554,14 +583,14 @@ mod gen {
         };
 
         let mix_out = {
-            let pan_factor = Pd::load_ptr(operator_data.constant_power_panning.as_ptr());
-            let mix_out = Pd::load_ptr(operator_data.mix_out.as_ptr());
+            let pan_factor = Pd::from_arr(operator_data.constant_power_panning);
+            let mix_out = Pd::from_arr(operator_data.mix_out);
 
             sample * pan_factor * mix_out
         };
         let mod_out = {
             let pan_factor = linear_panning_factor(panning);
-            let mod_out = Pd::load_ptr(operator_data.mod_out.as_ptr());
+            let mod_out = Pd::from_arr(operator_data.mod_out);
 
             sample * pan_factor * mod_out
         };
@@ -572,14 +601,14 @@ mod gen {
     /// Operator dependency analysis to allow skipping audio generation when possible
     #[feature_gate]
     #[target_feature_enable]
-    unsafe fn run_operator_dependency_analysis(voice_data: &VoiceData) -> [bool; 4] {
+    unsafe fn run_operator_dependency_analysis(voice_data: &VoiceData<{ Pd::WIDTH }>) -> [bool; 4] {
         let mut operator_generate_audio = [true; 4];
         let mut operator_mix_out_active = [false; 4];
 
         for operator_index in 0..4 {
-            let volume = Pd::load_ptr(voice_data.operators[operator_index].volume.as_ptr());
-            let mix_out = Pd::load_ptr(voice_data.operators[operator_index].mix_out.as_ptr());
-            let mod_out = Pd::load_ptr(voice_data.operators[operator_index].mod_out.as_ptr());
+            let volume = Pd::from_arr(voice_data.operators[operator_index].volume);
+            let mix_out = Pd::from_arr(voice_data.operators[operator_index].mix_out);
+            let mod_out = Pd::from_arr(voice_data.operators[operator_index].mod_out);
 
             let volume_active = volume.any_over_zero();
             let mix_out_active = mix_out.any_over_zero();
@@ -607,7 +636,7 @@ mod gen {
     #[feature_gate]
     #[target_feature_enable]
     unsafe fn set_value_for_both_channels(
-        target: &mut [f64; MAX_PD_WIDTH],
+        target: &mut [f64; Pd::WIDTH],
         sample_index: usize,
         value: f64,
     ) {

@@ -14,7 +14,7 @@ All notable changes to this project will be documented in this file.
   behaviour in audio generation
 - [Port several SLEEF functions to Rust](https://github.com/greatest-ape/sleef-trig)
   to avoid relying on undefined behaviour, remove the need to use a nightly
-  compiler and ease cross-compilation, e.g., for Apple Silicon. Unfortunately
+  compiler and ease cross-compilation, e.g., for Apple Silicon. Unfortunately,
   performance is decreased somewhat.
 - In audio generation, skip extracting voice data if envelope is ended
 

@@ -113,16 +113,20 @@ fn saw(phase: Phase) -> f32 {
 }
 
 fn square(phase: Phase) -> f32 {
-    let peak_end = 32.0 / 64.0;
-    let base_start = 33.0 / 64.0;
+    // To check absense of branches, make function public and run:
+    // `cargo asm --lib -p octasine "octasine::parameters::lfo_shape::square" --rust --color`
 
-    if phase.0 as f32 <= peak_end {
-        1.0
-    } else if phase.0 as f32 <= base_start {
-        1.0 - 2.0 * ((phase.0 as f32 - peak_end) / (base_start - peak_end))
-    } else {
-        -1.0
-    }
+    const PEAK_END: f32 = 32.0 / 64.0;
+    const BASE_START: f32 = 33.0 / 64.0;
+
+    let transitioning = 1.0 - 2.0 * ((phase.0 as f32 - PEAK_END) / (BASE_START - PEAK_END));
+
+    let mut v = -1.0;
+
+    v = if phase.0 as f32 <= BASE_START { transitioning } else { v };
+    v = if phase.0 as f32 <= PEAK_END { 1.0 } else { v };
+
+    v
 }
 
 pub fn sine(phase: Phase) -> f32 {

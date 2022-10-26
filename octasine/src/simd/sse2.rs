@@ -13,8 +13,9 @@ impl Simd for Sse2 {
 pub struct Sse2PackedDouble(__m128d);
 
 impl SimdPackedDouble for Sse2PackedDouble {
-    type Arr = [f64; 2];
-    const SAMPLES: usize = 1;
+    const WIDTH: usize = 2;
+
+    type Arr = [f64; Self::WIDTH];
 
     #[inline(always)]
     unsafe fn new(value: f64) -> Self {
@@ -23,10 +24,6 @@ impl SimdPackedDouble for Sse2PackedDouble {
     #[inline(always)]
     unsafe fn new_zeroed() -> Self {
         Self(_mm_setzero_pd())
-    }
-    #[inline(always)]
-    unsafe fn load_ptr(source: *const f64) -> Self {
-        Self(_mm_loadu_pd(source))
     }
     #[inline(always)]
     unsafe fn from_arr(arr: Self::Arr) -> Self {
@@ -62,9 +59,7 @@ impl SimdPackedDouble for Sse2PackedDouble {
     }
     #[inline(always)]
     unsafe fn new_from_pair(l: f64, r: f64) -> Self {
-        let lr = [l, r];
-
-        Self(_mm_loadu_pd(lr.as_ptr()))
+        Self(_mm_set_pd(r, l))
     }
     #[inline(always)]
     unsafe fn any_over_zero(self) -> bool {

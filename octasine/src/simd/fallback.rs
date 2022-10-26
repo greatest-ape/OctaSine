@@ -26,9 +26,9 @@ impl Simd for Fallback {
 pub struct FallbackPackedDouble([f64; 2]);
 
 impl SimdPackedDouble for FallbackPackedDouble {
-    const SAMPLES: usize = 1;
+    const WIDTH: usize = 2;
 
-    type Arr = [f64; 2];
+    type Arr = [f64; Self::WIDTH];
 
     #[inline(always)]
     unsafe fn new(value: f64) -> Self {
@@ -45,10 +45,6 @@ impl SimdPackedDouble for FallbackPackedDouble {
     #[inline(always)]
     unsafe fn from_arr(arr: Self::Arr) -> Self {
         Self(arr)
-    }
-    #[inline(always)]
-    unsafe fn load_ptr(source: *const f64) -> Self {
-        Self(*(source as *const [f64; 2]))
     }
     #[inline(always)]
     unsafe fn to_arr(self) -> Self::Arr {

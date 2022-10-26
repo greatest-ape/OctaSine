@@ -16,9 +16,9 @@ impl Simd for Avx {
 pub struct AvxPackedDouble(__m256d);
 
 impl SimdPackedDouble for AvxPackedDouble {
-    const SAMPLES: usize = 2;
+    const WIDTH: usize = 4;
 
-    type Arr = [f64; 4];
+    type Arr = [f64; Self::WIDTH];
 
     #[target_feature(enable = "avx")]
     #[inline]
@@ -33,19 +33,12 @@ impl SimdPackedDouble for AvxPackedDouble {
     #[target_feature(enable = "avx")]
     #[inline]
     unsafe fn new_from_pair(l: f64, r: f64) -> Self {
-        let lr = [l, r, l, r];
-
-        Self(_mm256_loadu_pd(lr.as_ptr()))
+        Self(_mm256_set_pd(r, l, r, l))
     }
     #[target_feature(enable = "avx")]
     #[inline]
     unsafe fn from_arr(arr: Self::Arr) -> Self {
         Self(_mm256_loadu_pd(arr.as_ptr()))
-    }
-    #[target_feature(enable = "avx")]
-    #[inline]
-    unsafe fn load_ptr(source: *const f64) -> Self {
-        Self(_mm256_loadu_pd(source))
     }
     #[target_feature(enable = "avx")]
     #[inline]
