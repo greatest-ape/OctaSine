@@ -123,7 +123,11 @@ fn square(phase: Phase) -> f32 {
 
     let mut v = -1.0;
 
-    v = if phase.0 as f32 <= BASE_START { transitioning } else { v };
+    v = if phase.0 as f32 <= BASE_START {
+        transitioning
+    } else {
+        v
+    };
     v = if phase.0 as f32 <= PEAK_END { 1.0 } else { v };
 
     v

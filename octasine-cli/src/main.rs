@@ -13,10 +13,9 @@ use octasine::sync::serde::{SerdePatch, SerdePatchBank};
 use serde::Deserialize;
 
 #[derive(Parser)]
-#[clap(author, version, about, long_about = None)]
-#[clap(propagate_version = true)]
+#[command(author, version, about, long_about = None)]
 struct Cli {
-    #[clap(subcommand)]
+    #[command(subcommand)]
     command: Commands,
 }
 
@@ -108,4 +107,10 @@ fn main() -> anyhow::Result<()> {
         #[cfg(feature = "plot")]
         Commands::Plot => plot::run(),
     }
+}
+
+#[test]
+fn verify_cli() {
+    use clap::CommandFactory;
+    Cli::command().debug_assert()
 }

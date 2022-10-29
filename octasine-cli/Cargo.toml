@@ -16,7 +16,7 @@ wgpu = ["octasine/gui_wgpu", "simplelog"]
 octasine = { path = "../octasine", version = "0.8.0", default-features = false }
 
 anyhow = "1"
-clap = { version = "3", features = ["derive"] }
+clap = { version = "4", features = ["derive"] }
 colored = "2"
 fastrand = "1"
 serde = "1"

@@ -89,7 +89,7 @@ impl vst::plugin::PluginParameters for SyncState {
 
     /// Return whether parameter at `index` can be automated.
     fn can_be_automated(&self, index: i32) -> bool {
-        self.patches.num_parameters() < index as usize
+        (index as usize) < self.patches.num_parameters()
     }
 
     /// Set the current preset to the index specified by `preset`.
