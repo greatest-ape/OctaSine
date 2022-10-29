@@ -27,8 +27,8 @@ pub struct AudioState {
     log10table: Log10Table,
     voices: [Voice; 128],
     pending_midi_events: VecDeque<MidiEvent>,
-    audio_gen_data_w2: AudioGenData<2>,
-    audio_gen_data_w4: AudioGenData<4>,
+    audio_gen_data_w2: Box<AudioGenData<2>>,
+    audio_gen_data_w4: Box<AudioGenData<4>>,
 }
 
 impl Default for AudioState {
