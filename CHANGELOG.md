@@ -20,6 +20,8 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+- Fix bug where plugin didn't properly tell host about automatable parameters,
+  causing them not to be picked up by BitWig, Carla and possibly other hosts
 - Tweak audio gen to fix (very minor) differences between simd widths
 - When envelope ends, set voice operator phase to 0.0
 
