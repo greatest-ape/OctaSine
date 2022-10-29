@@ -2,7 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
-## Unreleased
+## 0.8.1 - 2022-10-29
+
+This release features native Apple Silicon support, performance improvements
+and bug fixes, including making parameters automatable in Bitwig Studio and
+Carla.
+
+Audio output is not bit-for-bit identical to version 0.8.0, but there should be
+no audible differences.
 
 ### Added
 
@@ -15,13 +22,14 @@ All notable changes to this project will be documented in this file.
 - [Port several SLEEF functions to Rust](https://github.com/greatest-ape/sleef-trig)
   to avoid relying on undefined behaviour, remove the need to use a nightly
   compiler and ease cross-compilation, e.g., for Apple Silicon. Unfortunately,
-  performance is decreased somewhat.
+  performance of these functions is decreased somewhat.
 - In audio generation, skip extracting voice data if envelope is ended
+- Update dependencies
 
 ### Fixed
 
 - Fix bug where plugin didn't properly tell host about automatable parameters,
-  causing them not to be picked up by BitWig, Carla and possibly other hosts
+  causing them not to be picked up by Bitwig, Carla and possibly other hosts
 - Tweak audio gen to fix (very minor) differences between simd widths
 - When envelope ends, set voice operator phase to 0.0
 
