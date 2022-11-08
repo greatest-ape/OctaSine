@@ -23,7 +23,7 @@ impl VoiceOperatorVolumeEnvelope {
         &mut self,
         parameters: &OperatorEnvelopeAudioParameters,
         voice_operator_phase: &mut Phase,
-        key_pressed: bool,
+        key_or_sustain_pedal_pressed: bool,
         time_per_sample: TimePerSample,
     ) {
         use EnvelopeStage::*;
@@ -38,7 +38,7 @@ impl VoiceOperatorVolumeEnvelope {
             self.restarting_from_volume = None;
         }
 
-        if !key_pressed {
+        if !key_or_sustain_pedal_pressed {
             match self.stage {
                 Attack | Decay | Sustain => {
                     self.stage = Release;
