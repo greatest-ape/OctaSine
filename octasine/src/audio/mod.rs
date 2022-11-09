@@ -22,6 +22,7 @@ pub struct AudioState {
     time_per_sample: TimePerSample,
     bpm: BeatsPerMinute,
     bpm_lfo_multiplier: BpmLfoMultiplier,
+    sustain_pedal_on: bool,
     parameters: AudioParameters,
     rng: Rng,
     log10table: Log10Table,
@@ -38,6 +39,7 @@ impl Default for AudioState {
             time_per_sample: SampleRate::default().into(),
             bpm: Default::default(),
             bpm_lfo_multiplier: BeatsPerMinute::default().into(),
+            sustain_pedal_on: false,
             parameters: AudioParameters::default(),
             rng: Rng::new(),
             log10table: Default::default(),
@@ -93,12 +95,16 @@ impl AudioState {
     }
 
     fn process_midi_event(&mut self, mut event: MidiEvent) {
+        // Discard channel bits of status byte
         event.data[0] >>= 4;
 
         match event.data {
             [0b_1000, pitch, _] => self.key_off(pitch),
             [0b_1001, pitch, 0] => self.key_off(pitch),
             [0b_1001, pitch, velocity] => self.key_on(pitch, velocity),
+            [0b_1011, 64, v] => {
+                self.sustain_pedal_on = v >= 64;
+            }
             _ => (),
         }
     }

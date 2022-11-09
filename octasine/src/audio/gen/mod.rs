@@ -306,7 +306,7 @@ mod gen {
                         .advance_one_sample(
                             &operator.volume_envelope,
                             &mut voice.operators[operator_index].last_phase,
-                            voice.key_pressed,
+                            voice.key_pressed | audio_state.sustain_pedal_on,
                             time_per_sample,
                         );
                 }
