@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## Unreleased
+
+### Added
+
+- Support sustain pedals (MIDI CC 64)
+
 ## 0.8.1 - 2022-10-29
 
 This release features native Apple Silicon support, performance improvements
