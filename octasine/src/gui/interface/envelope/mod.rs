@@ -21,10 +21,6 @@ pub struct Envelope {
     group: OperatorEnvelopeGroupValue,
     group_synced: bool,
     pub widget: widget::Envelope,
-    pub zoom_in: button::State,
-    pub zoom_out: button::State,
-    pub sync_viewport: button::State,
-    pub zoom_to_fit: button::State,
     pub group_a: BooleanButton,
     pub group_b: BooleanButton,
 }
@@ -47,10 +43,6 @@ impl Envelope {
             group,
             group_synced,
             widget: widget::Envelope::new(sync_handle, operator_index, style),
-            zoom_in: button::State::default(),
-            zoom_out: button::State::default(),
-            sync_viewport: button::State::default(),
-            zoom_to_fit: button::State::default(),
             group_a: envelope_group_a_button(sync_handle, operator_index, style),
             group_b: envelope_group_b_button(sync_handle, operator_index, style),
         }
@@ -114,7 +106,6 @@ impl Envelope {
 
         let zoom_out = button_with_tooltip(
             self.style,
-            &mut self.zoom_out,
             self.style.font_extra_bold(),
             "−",
             Message::EnvelopeChangeViewport {
@@ -127,7 +118,6 @@ impl Envelope {
 
         let zoom_in = button_with_tooltip(
             self.style,
-            &mut self.zoom_in,
             self.style.font_extra_bold(),
             "+",
             Message::EnvelopeChangeViewport {
@@ -140,7 +130,6 @@ impl Envelope {
 
         let fit = button_with_tooltip(
             self.style,
-            &mut self.zoom_to_fit,
             self.style.font_regular(),
             "F",
             Message::EnvelopeChangeViewport {
@@ -153,7 +142,6 @@ impl Envelope {
 
         let distribute = button_with_tooltip(
             self.style,
-            &mut self.sync_viewport,
             self.style.font_regular(),
             "D",
             Message::EnvelopeDistributeViewports {
@@ -217,7 +205,6 @@ impl Envelope {
 
 fn button_with_tooltip<'a>(
     style: Theme,
-    button_state: &'a mut button::State,
     button_font: Font,
     button_text: &'static str,
     button_message: Message,
@@ -225,7 +212,6 @@ fn button_with_tooltip<'a>(
 ) -> Element<'a, Message> {
     Tooltip::new(
         Button::new(
-            button_state,
             Text::new(button_text)
                 .font(button_font)
                 .height(Length::Units(LINE_HEIGHT))

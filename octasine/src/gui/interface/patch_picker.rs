@@ -65,7 +65,6 @@ impl Display for Patch {
 }
 
 pub struct PatchPicker {
-    patch_state: pick_list::State<Patch>,
     patch_options: Vec<Patch>,
     patch_index: usize,
     actions_state: pick_list::State<Action>,
@@ -83,7 +82,6 @@ impl PatchPicker {
             .collect();
 
         Self {
-            patch_state: pick_list::State::default(),
             actions_state: Default::default(),
             patch_options,
             patch_index,
@@ -93,7 +91,6 @@ impl PatchPicker {
 
     pub fn view(&mut self) -> Element<Message> {
         let patch_picker = PickList::new(
-            &mut self.patch_state,
             &self.patch_options[..],
             Some(self.patch_options[self.patch_index].clone()),
             |option| Message::ChangePatch(option.index),
@@ -104,14 +101,13 @@ impl PatchPicker {
         .style(self.style.pick_list())
         .width(Length::Fill);
 
-        let action_picker =
-            PickList::new(&mut self.actions_state, ACTIONS, None, Action::to_message)
-                .font(self.style.font_regular())
-                .text_size(FONT_SIZE)
-                .padding(self.style.picklist_padding())
-                .style(self.style.pick_list())
-                .placeholder("ACTIONS..")
-                .width(Length::Fill);
+        let action_picker = PickList::new(ACTIONS, None, Action::to_message)
+            .font(self.style.font_regular())
+            .text_size(FONT_SIZE)
+            .padding(self.style.picklist_padding())
+            .style(self.style.pick_list())
+            .placeholder("ACTIONS..")
+            .width(Length::Fill);
 
         Container::new(
             Column::new()

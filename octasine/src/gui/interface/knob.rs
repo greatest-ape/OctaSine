@@ -254,12 +254,12 @@ where
 #[derive(Debug, Clone)]
 pub struct OctaSineKnob<P: ParameterValue> {
     style: Theme,
-    knob_state: knob::State,
     text_marks: Option<text_marks::Group>,
     tick_marks: Option<tick_marks::Group>,
     title: String,
+    value: Normal,
+    default_value: Normal,
     value_text: ValueText<P>,
-    default_patch_value: f32,
     parameter: Parameter,
     phantom_data: ::std::marker::PhantomData<P>,
     style_extractor: fn(Theme) -> Box<dyn iced_audio::knob::StyleSheet>,
@@ -297,13 +297,9 @@ where
         style: Theme,
         style_extractor: fn(Theme) -> Box<dyn iced_audio::knob::StyleSheet>,
     ) -> Self {
-        let sync_value = sync_handle.get_parameter(parameter);
+        let value = Normal::new(sync_handle.get_parameter(parameter) as f32);
         let value_text = ValueText::new(sync_handle, style, parameter);
-
-        let knob_state = knob::State::new(NormalParam {
-            value: Normal::new(sync_value as f32),
-            default: Normal::new(default_patch_value),
-        });
+        let default_value = Normal::new(default_patch_value);
 
         let tick_marks = match tick_mark_type {
             TickMarkType::MinMaxAndDefault => {
@@ -313,12 +309,12 @@ where
 
         Self {
             style,
-            knob_state,
             text_marks: None,
             tick_marks: Some(tick_marks),
             title: title.to_string(),
+            value,
+            default_value,
             value_text,
-            default_patch_value,
             parameter,
             phantom_data: ::std::marker::PhantomData::default(),
             style_extractor,
@@ -338,7 +334,7 @@ where
         self.value_text.style = style;
     }
 
-    pub fn view(&mut self) -> Element<Message> {
+    pub fn view(&self) -> Element<Message> {
         let title = Text::new(self.title.clone())
             .horizontal_alignment(Horizontal::Center)
             .font(self.style.font_bold())
@@ -348,15 +344,14 @@ where
 
         let modifier_keys = Modifiers::SHIFT;
 
-        let mut knob = knob::Knob::new(
-            &mut self.knob_state,
-            move |value| Message::ChangeSingleParameterSetValue(parameter, value.as_f32()),
-            move || Some(Message::ChangeSingleParameterBegin(parameter)),
-            move || Some(Message::ChangeSingleParameterEnd(parameter)),
-        )
+        let mut knob = knob::Knob::new(&mut self.knob_state, move |value| {
+            Message::ChangeSingleParameterSetValue(parameter, value.as_f32())
+        })
+        .on_press(move || Some(Message::ChangeSingleParameterBegin(parameter))) // FIXME
+        .on_release(move || Some(Message::ChangeSingleParameterEnd(parameter)))
         .size(Length::from(KNOB_SIZE))
         .modifier_keys(modifier_keys)
-        .bipolar_center(iced_audio::Normal::new(self.default_patch_value as f32))
+        .bipolar_center(self.default_value)
         .style((self.style_extractor)(self.style));
 
         if let Some(text_marks) = self.text_marks.as_ref() {

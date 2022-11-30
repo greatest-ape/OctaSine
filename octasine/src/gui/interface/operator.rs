@@ -119,7 +119,7 @@ impl OperatorWidgets {
         self.wave_display.set_style(style);
     }
 
-    pub fn view(&mut self) -> Element<Message> {
+    pub fn view(&self) -> Element<Message> {
         let heading = {
             let mute_button = Tooltip::new(self.mute_button.view(), "Toggle mute", Position::Top)
                 .style(self.style.tooltip())

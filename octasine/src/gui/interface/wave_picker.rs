@@ -86,7 +86,7 @@ where
         }
     }
 
-    pub fn view(&mut self) -> Element<Message> {
+    pub fn view(&self) -> Element<Message> {
         let title = Text::new(&self.title)
             .horizontal_alignment(Horizontal::Center)
             .font(self.style.font_bold())

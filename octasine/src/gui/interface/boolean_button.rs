@@ -228,7 +228,7 @@ impl BooleanButton {
         self.cache.clear();
     }
 
-    pub fn view(&mut self) -> Element<Message> {
+    pub fn view(&self) -> Element<Message> {
         let width = self.width;
         let height = self.height;
 

@@ -12,7 +12,6 @@ use super::{style::Theme, GuiSyncHandle, Message};
 
 #[derive(Debug, Clone)]
 pub struct ValueText<P: ParameterValue> {
-    state: button::State,
     parameter: Parameter,
     text: String,
     pub style: Theme,
@@ -25,7 +24,6 @@ impl<P: ParameterValue> ValueText<P> {
         let text = P::new_from_patch(value).get_formatted();
 
         Self {
-            state: Default::default(),
             parameter,
             text,
             style,
@@ -37,9 +35,8 @@ impl<P: ParameterValue> ValueText<P> {
         self.text = P::new_from_patch(value).get_formatted();
     }
 
-    pub fn view(&mut self) -> Element<Message> {
+    pub fn view(&self) -> Element<Message> {
         Button::new(
-            &mut self.state,
             Text::new(self.text.clone())
                 .horizontal_alignment(Horizontal::Center)
                 .width(Length::Fill)

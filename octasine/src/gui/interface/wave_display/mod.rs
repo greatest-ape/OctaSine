@@ -272,7 +272,7 @@ impl WaveDisplay {
         self.canvas_right.cache.clear();
     }
 
-    pub fn view(&mut self) -> Element<Message> {
+    pub fn view(&self) -> Element<Message> {
         let canvas_left = Tooltip::new(self.canvas_left.view(), "Left channel", Position::Bottom)
             .style(self.style.tooltip())
             .font(self.style.font_regular())

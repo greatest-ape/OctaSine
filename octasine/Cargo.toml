@@ -6,7 +6,8 @@ license = "AGPL-3.0"
 edition = "2021"
 
 [features]
-gui_glow = ["gui", "iced_baseview/glow"]
+default = ["gui_glow"]
+gui_glow = ["gui", "iced_baseview/glow", "baseview/opengl"]
 gui_wgpu = ["gui", "iced_baseview/wgpu"]
 gui = ["baseview", "iced_baseview/canvas", "iced_audio", "palette", "raw-window-handle", "rfd", "tinyfiledialogs"]
 

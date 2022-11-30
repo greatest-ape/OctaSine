@@ -783,7 +783,7 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
         Command::none()
     }
 
-    fn view(&mut self) -> Element<'_, Self::Message> {
+    fn view(&self) -> Element<'_, Self::Message> {
         Container::new(
             Column::new()
                 .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))

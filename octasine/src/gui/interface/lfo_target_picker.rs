@@ -22,7 +22,6 @@ impl ToString for LfoTarget {
 }
 
 pub struct LfoTargetPicker {
-    state: pick_list::State<LfoTarget>,
     options: Vec<LfoTarget>,
     selected: usize,
     lfo_index: usize,
@@ -46,7 +45,6 @@ impl LfoTargetPicker {
             .collect();
 
         Self {
-            state: pick_list::State::default(),
             options,
             selected,
             lfo_index,
@@ -79,12 +77,11 @@ impl LfoTargetPicker {
         self.selected = Self::get_index_from_sync(self.lfo_index, sync_value);
     }
 
-    pub fn view(&mut self) -> Element<Message> {
+    pub fn view(&self) -> Element<Message> {
         let lfo_index = self.lfo_index;
         let parameter = self.parameter;
 
         PickList::new(
-            &mut self.state,
             &self.options[..],
             Some(self.options[self.selected].clone()),
             move |option| {

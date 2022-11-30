@@ -24,8 +24,6 @@ pub struct CornerWidgets {
     pub master_frequency: OctaSineKnob<MasterFrequencyValue>,
     pub modulation_matrix: ModulationMatrix,
     pub patch_picker: PatchPicker,
-    toggle_info_state: button::State,
-    toggle_style_state: button::State,
 }
 
 impl CornerWidgets {
@@ -43,8 +41,6 @@ impl CornerWidgets {
             master_frequency,
             modulation_matrix,
             patch_picker,
-            toggle_info_state: button::State::default(),
-            toggle_style_state: button::State::default(),
         }
     }
 
@@ -56,7 +52,7 @@ impl CornerWidgets {
         self.patch_picker.style = style;
     }
 
-    pub fn view(&mut self) -> Element<'_, Message> {
+    pub fn view(&self) -> Element<'_, Message> {
         let mod_matrix = Container::new(
             Column::new()
                 .push(Space::with_height(Length::Units(LINE_HEIGHT)))
@@ -88,7 +84,6 @@ impl CornerWidgets {
         let logo = {
             let theme_button = Tooltip::new(
                 Button::new(
-                    &mut self.toggle_style_state,
                     Text::new("THEME")
                         .font(self.style.font_regular())
                         .height(Length::Units(LINE_HEIGHT)),
@@ -103,7 +98,6 @@ impl CornerWidgets {
 
             let info_button = Tooltip::new(
                 Button::new(
-                    &mut self.toggle_info_state,
                     Text::new("INFO")
                         .font(self.style.font_regular())
                         .height(Length::Units(LINE_HEIGHT)),
