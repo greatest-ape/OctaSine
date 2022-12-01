@@ -9,10 +9,10 @@
   * Marker lengths - OctaSine issue?
 
 * iced 0.5 adjustments
-  * Rewrite widgets. Maybe all state changes in `update` need to happen through messages
+  * Rewrite envelope and mod matrix widgets to work with iced 0.5
   * Text styles
   * Ideally rewrite style handling to be idiomatic
-    * Reorganize code with widgets and nested light/dark modules
+    * Reorganize code with widgets and nested light/dark modules?
     * Can I even use custom Theme struct? Maybe not
   * Export baseview in iced_baseview?
 
