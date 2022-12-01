@@ -104,12 +104,16 @@ where
     }
 }
 
+#[derive(Default)]
+struct CanvasState {
+    cursor_within_bounds: bool,
+    click_started: bool,
+}
+
 struct WavePickerCanvas<P: ParameterValue> {
     parameter: Parameter,
     cache: Cache,
     bounds_path: Path,
-    cursor_within_bounds: bool,
-    click_started: bool,
     shape: P::Value,
     style: Theme,
 }
@@ -129,8 +133,6 @@ where
             parameter,
             cache: Cache::new(),
             bounds_path,
-            cursor_within_bounds: false,
-            click_started: false,
             style,
             shape,
         }
@@ -159,10 +161,15 @@ where
         frame.fill(&self.bounds_path, style.background_color);
     }
 
-    fn draw_border(&self, frame: &mut Frame, style_sheet: Box<dyn StyleSheet>) {
+    fn draw_border(
+        &self,
+        state: &CanvasState,
+        frame: &mut Frame,
+        style_sheet: Box<dyn StyleSheet>,
+    ) {
         let style = style_sheet.active();
 
-        let color = if self.cursor_within_bounds {
+        let color = if state.cursor_within_bounds {
             style.border_color_hovered
         } else {
             style.border_color_active
@@ -185,7 +192,12 @@ where
         frame.stroke(&path, stroke)
     }
 
-    fn draw_shape_line(&self, frame: &mut Frame, style_sheet: Box<dyn StyleSheet>) {
+    fn draw_shape_line(
+        &self,
+        state: &CanvasState,
+        frame: &mut Frame,
+        style_sheet: Box<dyn StyleSheet>,
+    ) {
         let style = style_sheet.active();
 
         let mut path = path::Builder::new();
@@ -206,7 +218,7 @@ where
 
         let path = path.build();
 
-        let color = if self.cursor_within_bounds {
+        let color = if state.cursor_within_bounds {
             style.shape_line_color_hovered
         } else {
             style.shape_line_color_active
@@ -223,93 +235,90 @@ where
     P: ParameterValue + Copy + 'static,
     P::Value: CalculateCurve,
 {
-    type State = ();
+    type State = CanvasState;
 
     fn draw(
         &self,
         state: &Self::State,
-        theme: &iced_baseview::Theme,
+        _theme: &iced_baseview::Theme,
         bounds: Rectangle,
         _cursor: Cursor,
     ) -> Vec<Geometry> {
         let geometry = self.cache.draw(bounds.size(), |frame| {
             self.draw_background(frame, self.style.wave_picker());
             self.draw_middle_line(frame, self.style.wave_picker());
-            self.draw_shape_line(frame, self.style.wave_picker());
-            self.draw_border(frame, self.style.wave_picker());
+            self.draw_shape_line(state, frame, self.style.wave_picker());
+            self.draw_border(state, frame, self.style.wave_picker());
         });
 
         vec![geometry]
     }
 
-    /*
-       fn update(
-           &self,
-           state: &mut Self::State,
-           event: event::Event,
-           bounds: Rectangle,
-           _cursor: Cursor,
-       ) -> (event::Status, Option<Message>) {
-           match event {
-               event::Event::Mouse(iced_baseview::mouse::Event::CursorMoved { position }) => {
-                   let cursor_within_bounds = bounds.contains(position);
+    fn update(
+        &self,
+        state: &mut Self::State,
+        event: event::Event,
+        bounds: Rectangle,
+        _cursor: Cursor,
+    ) -> (event::Status, Option<Message>) {
+        match event {
+            event::Event::Mouse(iced_baseview::mouse::Event::CursorMoved { position }) => {
+                let cursor_within_bounds = bounds.contains(position);
 
-                   if self.cursor_within_bounds != cursor_within_bounds {
-                       self.cursor_within_bounds = cursor_within_bounds;
+                if state.cursor_within_bounds != cursor_within_bounds {
+                    state.cursor_within_bounds = cursor_within_bounds;
 
-                       self.cache.clear();
-                   }
+                    self.cache.clear();
+                }
 
-                   (event::Status::Ignored, None)
-               }
-               event::Event::Mouse(iced_baseview::mouse::Event::ButtonPressed(
-                   iced_baseview::mouse::Button::Left | iced_baseview::mouse::Button::Right,
-               )) if self.cursor_within_bounds => {
-                   self.click_started = true;
+                (event::Status::Ignored, None)
+            }
+            event::Event::Mouse(iced_baseview::mouse::Event::ButtonPressed(
+                iced_baseview::mouse::Button::Left | iced_baseview::mouse::Button::Right,
+            )) if state.cursor_within_bounds => {
+                state.click_started = true;
 
-                   (event::Status::Captured, None)
-               }
-               event::Event::Mouse(iced_baseview::mouse::Event::ButtonReleased(
-                   button @ (iced_baseview::mouse::Button::Left | iced_baseview::mouse::Button::Right),
-               )) if self.click_started => {
-                   if self.cursor_within_bounds {
-                       let shape_index = P::Value::steps()
-                           .iter()
-                           .position(|s| *s == self.shape)
-                           .unwrap();
+                (event::Status::Captured, None)
+            }
+            event::Event::Mouse(iced_baseview::mouse::Event::ButtonReleased(
+                button @ (iced_baseview::mouse::Button::Left | iced_baseview::mouse::Button::Right),
+            )) if state.click_started => {
+                if state.cursor_within_bounds {
+                    let shape_index = P::Value::steps()
+                        .iter()
+                        .position(|s| *s == self.shape)
+                        .unwrap();
 
-                       let new_shape_index = match button {
-                           iced_baseview::mouse::Button::Left => {
-                               (shape_index + 1) % P::Value::steps().len()
-                           }
-                           iced_baseview::mouse::Button::Right if shape_index == 0 => {
-                               P::Value::steps().len() - 1
-                           }
-                           iced_baseview::mouse::Button::Right => shape_index - 1,
-                           _ => unreachable!(),
-                       };
+                    let new_shape_index = match button {
+                        iced_baseview::mouse::Button::Left => {
+                            (shape_index + 1) % P::Value::steps().len()
+                        }
+                        iced_baseview::mouse::Button::Right if shape_index == 0 => {
+                            P::Value::steps().len() - 1
+                        }
+                        iced_baseview::mouse::Button::Right => shape_index - 1,
+                        _ => unreachable!(),
+                    };
 
-                       let new_shape = P::Value::steps()[new_shape_index];
-                       let new_value = P::new_from_audio(new_shape).to_patch();
+                    let new_shape = P::Value::steps()[new_shape_index];
+                    let new_value = P::new_from_audio(new_shape).to_patch();
 
-                       self.set_value(new_value);
-                       self.click_started = false;
+                    state.click_started = false;
 
-                       (
-                           event::Status::Captured,
-                           Some(Message::ChangeSingleParameterImmediate(
-                               self.parameter,
-                               new_value,
-                           )),
-                       )
-                   } else {
-                       self.click_started = false;
+                    (
+                        event::Status::Captured,
+                        Some(Message::ChangeSingleParameterImmediate(
+                            self.parameter,
+                            new_value,
+                        )),
+                    )
+                } else {
+                    state.click_started = false;
 
-                       (event::Status::Ignored, None)
-                   }
-               }
-               _ => (event::Status::Ignored, None),
-           }
-       }
-    */
+                    (event::Status::Ignored, None)
+                }
+            }
+            _ => (event::Status::Ignored, None),
+        }
+    }
 }
