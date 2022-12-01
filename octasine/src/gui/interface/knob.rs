@@ -19,6 +19,11 @@ use super::{Message, LINE_HEIGHT};
 
 const KNOB_SIZE: Length = Length::Units(LINE_HEIGHT * 2);
 
+type StyleSetter = fn(
+    knob::Knob<Message, iced_baseview::Theme>,
+    Theme,
+) -> knob::Knob<Message, iced_baseview::Theme>;
+
 enum TickMarkType {
     MinMaxAndDefault,
 }
@@ -33,7 +38,8 @@ where
         "VOLUME",
         TickMarkType::MinMaxAndDefault,
         style,
-        |theme| theme.knob_regular(),
+        // |theme| theme.knob_regular(),
+        |knob, theme| knob.style(theme.knob_regular()),
     )
 }
 
@@ -47,7 +53,7 @@ where
         "FREQ",
         TickMarkType::MinMaxAndDefault,
         style,
-        |theme| theme.knob_bipolar(),
+        |knob, theme| knob.style(theme.knob_bipolar()),
     )
 }
 
@@ -66,7 +72,7 @@ where
         TickMarkType::MinMaxAndDefault,
         OperatorVolumeValue::default().to_patch(),
         style,
-        |theme| theme.knob_regular(),
+        |knob, theme| knob.style(theme.knob_regular()),
     )
 }
 
@@ -85,7 +91,7 @@ where
         TickMarkType::MinMaxAndDefault,
         OperatorMixOutValue::new(operator_index).to_patch(),
         style,
-        |theme| theme.knob_regular(),
+        |knob, theme| knob.style(theme.knob_regular()),
     )
 }
 
@@ -103,7 +109,7 @@ where
         "PAN",
         TickMarkType::MinMaxAndDefault,
         style,
-        |theme| theme.knob_bipolar(),
+        |knob, theme| knob.style(theme.knob_bipolar()),
     )
 }
 
@@ -121,7 +127,7 @@ where
         "MOD OUT",
         TickMarkType::MinMaxAndDefault,
         style,
-        |theme| theme.knob_regular(),
+        |knob, theme| knob.style(theme.knob_regular()),
     )
 }
 
@@ -139,7 +145,7 @@ where
         "FEEDBACK",
         TickMarkType::MinMaxAndDefault,
         style,
-        |theme| theme.knob_regular(),
+        |knob, theme| knob.style(theme.knob_regular()),
     )
 }
 
@@ -157,7 +163,7 @@ where
         "RATIO",
         TickMarkType::MinMaxAndDefault,
         style,
-        |theme| theme.knob_bipolar(),
+        |knob, theme| knob.style(theme.knob_bipolar()),
     )
 }
 
@@ -175,7 +181,7 @@ where
         "FREE",
         TickMarkType::MinMaxAndDefault,
         style,
-        |theme| theme.knob_bipolar(),
+        |knob, theme| knob.style(theme.knob_bipolar()),
     )
 }
 
@@ -193,7 +199,7 @@ where
         "FINE",
         TickMarkType::MinMaxAndDefault,
         style,
-        |theme| theme.knob_bipolar(),
+        |knob, theme| knob.style(theme.knob_bipolar()),
     )
 }
 
@@ -211,7 +217,7 @@ where
         "RATIO",
         TickMarkType::MinMaxAndDefault,
         style,
-        |theme| theme.knob_bipolar(),
+        |knob, theme| knob.style(theme.knob_bipolar()),
     )
 }
 
@@ -229,7 +235,7 @@ where
         "FREE",
         TickMarkType::MinMaxAndDefault,
         style,
-        |theme| theme.knob_bipolar(),
+        |knob, theme| knob.style(theme.knob_bipolar()),
     )
 }
 
@@ -247,11 +253,11 @@ where
         "AMOUNT",
         TickMarkType::MinMaxAndDefault,
         style,
-        |theme| theme.knob_regular(),
+        |knob, theme| knob.style(theme.knob_regular()),
     )
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct OctaSineKnob<P: ParameterValue> {
     style: Theme,
     text_marks: Option<text_marks::Group>,
@@ -262,7 +268,7 @@ pub struct OctaSineKnob<P: ParameterValue> {
     default_value: Normal,
     parameter: Parameter,
     phantom_data: ::std::marker::PhantomData<P>,
-    style_extractor: fn(Theme) -> Box<dyn iced_audio::knob::StyleSheet<Style = Theme>>,
+    style_setter: StyleSetter,
 }
 
 impl<P> OctaSineKnob<P>
@@ -275,7 +281,7 @@ where
         title: &str,
         tick_mark_type: TickMarkType,
         style: Theme,
-        style_extractor: fn(Theme) -> Box<dyn iced_audio::knob::StyleSheet<Style = Theme>>,
+        style_setter: StyleSetter,
     ) -> Self {
         Self::new_with_default_sync_value(
             sync_handle,
@@ -284,7 +290,7 @@ where
             tick_mark_type,
             P::default().to_patch(),
             style,
-            style_extractor,
+            style_setter,
         )
     }
 
@@ -295,7 +301,7 @@ where
         tick_mark_type: TickMarkType,
         default_patch_value: f32,
         style: Theme,
-        style_extractor: fn(Theme) -> Box<dyn iced_audio::knob::StyleSheet<Style = Theme>>,
+        style_setter: StyleSetter,
     ) -> Self {
         let default_value = Normal::new(default_patch_value);
         let value = NormalParam {
@@ -320,7 +326,7 @@ where
             default_value,
             parameter,
             phantom_data: ::std::marker::PhantomData::default(),
-            style_extractor,
+            style_setter,
         }
     }
 
@@ -357,7 +363,8 @@ where
             .size(Length::from(KNOB_SIZE))
             .modifier_keys(modifier_keys)
             .bipolar_center(self.default_value);
-        // .style((self.style_extractor)(self.style)); // FIXME
+
+        knob = (self.style_setter)(knob, self.style);
 
         if let Some(text_marks) = self.text_marks.as_ref() {
             knob = knob.text_marks(text_marks);
@@ -372,7 +379,7 @@ where
                 .align_items(Alignment::Center)
                 .push(title)
                 .push(Space::with_height(Length::Units(LINE_HEIGHT)))
-                .push(knob) // FIXME
+                .push(knob)
                 .push(Space::with_height(Length::Units(LINE_HEIGHT)))
                 .push(self.value_text.view()),
         )

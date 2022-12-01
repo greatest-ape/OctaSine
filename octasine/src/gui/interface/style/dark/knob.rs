@@ -1,7 +1,5 @@
 use iced_audio::{knob::*, style::tick_marks};
-use iced_baseview::Color;
-
-use crate::gui::interface::style::Theme;
+use iced_baseview::{Color, Theme};
 
 use super::colors::*;
 
