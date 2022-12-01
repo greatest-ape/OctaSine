@@ -331,7 +331,7 @@ impl Envelope {
         envelope
     }
 
-    pub fn view(&mut self) -> Element<Message> {
+    pub fn view(&self) -> Element<Message> {
         Container::new(
             Canvas::new(self)
                 .width(Length::Units(WIDTH))
@@ -995,15 +995,15 @@ impl Envelope {
             .with_width(1.0)
             .with_color(style.drag_border_color);
 
-        frame.stroke(&top_drag_border, drag_border_stroke);
+        frame.stroke(&top_drag_border, drag_border_stroke.clone());
         frame.stroke(&bottom_drag_border, drag_border_stroke);
 
         let stage_path_stroke = Stroke::default()
             .with_width(1.0)
             .with_color(style.path_color);
 
-        frame.stroke(&self.attack_stage_path.path, stage_path_stroke);
-        frame.stroke(&self.decay_stage_path.path, stage_path_stroke);
+        frame.stroke(&self.attack_stage_path.path, stage_path_stroke.clone());
+        frame.stroke(&self.decay_stage_path.path, stage_path_stroke.clone());
         frame.stroke(&self.release_stage_path.path, stage_path_stroke);
 
         // Hide stage path parts that extend beyond scaled bounds, draw borders
@@ -1054,9 +1054,9 @@ impl Envelope {
             .with_width(1.0)
             .with_color(style.border_color);
 
-        frame.stroke(&top_border, border_stroke);
-        frame.stroke(&bottom_border, border_stroke);
-        frame.stroke(&left_border, border_stroke);
+        frame.stroke(&top_border, border_stroke.clone());
+        frame.stroke(&bottom_border, border_stroke.clone());
+        frame.stroke(&left_border, border_stroke.clone());
         frame.stroke(&right_border, border_stroke);
     }
 
@@ -1142,7 +1142,15 @@ impl Envelope {
 }
 
 impl Program<Message> for Envelope {
-    fn draw(&self, bounds: Rectangle, _cursor: Cursor) -> Vec<Geometry> {
+    type State = ();
+
+    fn draw(
+        &self,
+        state: &Self::State,
+        theme: &iced_baseview::Theme,
+        bounds: Rectangle,
+        _cursor: Cursor,
+    ) -> Vec<Geometry> {
         let geometry = self.cache.draw(bounds.size(), |frame| {
             self.draw_time_markers(frame, self.style);
             self.draw_stage_paths(frame, self.style.envelope());
@@ -1157,8 +1165,10 @@ impl Program<Message> for Envelope {
         vec![geometry]
     }
 
+    /*
     fn update(
-        &mut self,
+        &self,
+        state: &mut Self::State,
         event: event::Event,
         bounds: Rectangle,
         _cursor: Cursor,
@@ -1176,6 +1186,7 @@ impl Program<Message> for Envelope {
             _ => (event::Status::Ignored, None),
         }
     }
+    */
 }
 
 fn scale_point(size: Size, point: Point) -> Point {

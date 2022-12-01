@@ -320,7 +320,7 @@ impl WaveDisplayCanvas {
         self.cache.clear();
     }
 
-    pub fn view(&mut self) -> Element<Message> {
+    pub fn view(&self) -> Element<Message> {
         Canvas::new(self)
             .width(Length::Units(WIDTH))
             .height(Length::Units(HEIGHT))
@@ -372,7 +372,15 @@ impl WaveDisplayCanvas {
 }
 
 impl Program<Message> for WaveDisplayCanvas {
-    fn draw(&self, bounds: Rectangle, _cursor: Cursor) -> Vec<Geometry> {
+    type State = ();
+
+    fn draw(
+        &self,
+        state: &Self::State,
+        theme: &iced_baseview::Theme,
+        bounds: Rectangle,
+        _cursor: Cursor,
+    ) -> Vec<Geometry> {
         let geometry = self.cache.draw(bounds.size(), |frame| {
             self.draw_background(frame, self.style.wave_display());
             self.draw_middle_line(frame, self.style.wave_display());
@@ -384,7 +392,8 @@ impl Program<Message> for WaveDisplayCanvas {
     }
 
     fn update(
-        &mut self,
+        &self,
+        state: &mut Self::State,
         _event: event::Event,
         _bounds: Rectangle,
         _cursor: Cursor,

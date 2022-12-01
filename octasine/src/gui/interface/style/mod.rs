@@ -2,7 +2,9 @@ mod dark;
 mod light;
 mod macros;
 
-use iced_baseview::{Color, Font};
+use std::rc::Rc;
+
+use iced_baseview::{theme, Color, Font};
 use serde::{Deserialize, Serialize};
 
 const OPEN_SANS_REGULAR: Font = Font::External {
@@ -94,75 +96,75 @@ impl Theme {
         3
     }
 
-    pub fn container_l0(&self) -> Box<dyn iced_baseview::container::StyleSheet> {
+    pub fn container_l0(&self) -> theme::Container {
         match self {
-            Self::Light => Box::new(light::ContainerL0),
-            Self::Dark => Box::new(dark::ContainerL0),
+            Self::Light => theme::Container::Custom(Box::new(light::ContainerL0)),
+            Self::Dark => theme::Container::Custom(Box::new(dark::ContainerL0)),
         }
     }
-    pub fn container_l1(&self) -> Box<dyn iced_baseview::container::StyleSheet> {
+    pub fn container_l1(&self) -> theme::Container {
         match self {
-            Self::Light => Box::new(light::ContainerL1),
-            Self::Dark => Box::new(dark::ContainerL1),
+            Self::Light => theme::Container::Custom(Box::new(light::ContainerL1)),
+            Self::Dark => theme::Container::Custom(Box::new(dark::ContainerL1)),
         }
     }
-    pub fn container_l2(&self) -> Box<dyn iced_baseview::container::StyleSheet> {
+    pub fn container_l2(&self) -> theme::Container {
         match self {
-            Self::Light => Box::new(light::ContainerL2),
-            Self::Dark => Box::new(dark::ContainerL2),
+            Self::Light => theme::Container::Custom(Box::new(light::ContainerL2)),
+            Self::Dark => theme::Container::Custom(Box::new(dark::ContainerL2)),
         }
     }
-    pub fn container_l3(&self) -> Box<dyn iced_baseview::container::StyleSheet> {
+    pub fn container_l3(&self) -> theme::Container {
         match self {
-            Self::Light => Box::new(light::ContainerL3),
-            Self::Dark => Box::new(dark::ContainerL3),
-        }
-    }
-
-    pub fn checkbox(&self) -> Box<dyn iced_baseview::checkbox::StyleSheet> {
-        match self {
-            Self::Light => Box::new(light::Checkbox),
-            Self::Dark => Box::new(dark::Checkbox),
-        }
-    }
-    pub fn radio(&self) -> Box<dyn iced_baseview::radio::StyleSheet> {
-        match self {
-            Self::Light => Box::new(light::Radio),
-            Self::Dark => Box::new(dark::Radio),
-        }
-    }
-    pub fn button(&self) -> Box<dyn iced_baseview::button::StyleSheet> {
-        match self {
-            Self::Light => Box::new(light::Button),
-            Self::Dark => Box::new(dark::Button),
-        }
-    }
-    pub fn value_button(&self) -> Box<dyn iced_baseview::button::StyleSheet> {
-        match self {
-            Self::Light => Box::new(light::ValueButton),
-            Self::Dark => Box::new(dark::ValueButton),
-        }
-    }
-    pub fn pick_list(&self) -> Box<dyn iced_baseview::pick_list::StyleSheet> {
-        match self {
-            Self::Light => Box::new(light::PickList),
-            Self::Dark => Box::new(dark::PickList),
-        }
-    }
-    pub fn tooltip(&self) -> Box<dyn iced_baseview::container::StyleSheet> {
-        match self {
-            Self::Light => Box::new(light::Tooltip),
-            Self::Dark => Box::new(dark::Tooltip),
+            Self::Light => theme::Container::Custom(Box::new(light::ContainerL3)),
+            Self::Dark => theme::Container::Custom(Box::new(dark::ContainerL3)),
         }
     }
 
-    pub fn knob_regular(&self) -> Box<dyn iced_audio::knob::StyleSheet> {
+    pub fn checkbox(&self) -> theme::Checkbox {
+        match self {
+            Self::Light => theme::Checkbox::Custom(Box::new(light::Checkbox)),
+            Self::Dark => theme::Checkbox::Custom(Box::new(dark::Checkbox)),
+        }
+    }
+    pub fn radio(&self) -> theme::Radio {
+        match self {
+            Self::Light => theme::Radio::Custom(Box::new(light::Radio)),
+            Self::Dark => theme::Radio::Custom(Box::new(dark::Radio)),
+        }
+    }
+    pub fn button(&self) -> theme::Button {
+        match self {
+            Self::Light => theme::Button::Custom(Box::new(light::Button)),
+            Self::Dark => theme::Button::Custom(Box::new(dark::Button)),
+        }
+    }
+    pub fn value_button(&self) -> theme::Button {
+        match self {
+            Self::Light => theme::Button::Custom(Box::new(light::ValueButton)),
+            Self::Dark => theme::Button::Custom(Box::new(dark::ValueButton)),
+        }
+    }
+    pub fn pick_list(&self) -> theme::PickList {
+        match self {
+            Self::Light => theme::PickList::Custom(Rc::new(light::PickList), Rc::new(light::Menu)),
+            Self::Dark => theme::PickList::Custom(Rc::new(dark::PickList), Rc::new(dark::Menu)),
+        }
+    }
+    pub fn tooltip(&self) -> theme::Container {
+        match self {
+            Self::Light => theme::Container::Custom(Box::new(light::Tooltip)),
+            Self::Dark => theme::Container::Custom(Box::new(dark::Tooltip)),
+        }
+    }
+
+    pub fn knob_regular(&self) -> Box<dyn iced_audio::knob::StyleSheet<Style = Theme>> {
         match self {
             Self::Light => Box::new(light::knob::KnobRegular),
             Self::Dark => Box::new(dark::knob::KnobRegular),
         }
     }
-    pub fn knob_bipolar(&self) -> Box<dyn iced_audio::knob::StyleSheet> {
+    pub fn knob_bipolar(&self) -> Box<dyn iced_audio::knob::StyleSheet<Style = Theme>> {
         match self {
             Self::Light => Box::new(light::knob::KnobBipolar),
             Self::Dark => Box::new(dark::knob::KnobBipolar),

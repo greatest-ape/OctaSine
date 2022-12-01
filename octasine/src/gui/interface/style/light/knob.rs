@@ -1,7 +1,9 @@
 use iced_audio::{knob::*, style::tick_marks};
+use iced_baseview::Color;
+
+use crate::gui::interface::style::Theme;
 
 use super::colors::*;
-use super::*;
 
 const COLOR_TICK_MARKS_1: Color = GRAY_600;
 const COLOR_TICK_MARKS_2: Color = GRAY_300;
@@ -43,16 +45,18 @@ const TICK_MARK_STYLE: tick_marks::Style = tick_marks::Style {
 pub struct KnobRegular;
 
 impl iced_audio::knob::StyleSheet for KnobRegular {
-    fn active(&self) -> iced_audio::knob::Style {
-        Style::Arc(ARC_STYLE)
+    type Style = Theme;
+
+    fn active(&self, style: &Self::Style) -> iced_audio::knob::Appearance {
+        Appearance::Arc(ARC_STYLE)
     }
-    fn hovered(&self) -> iced_audio::knob::Style {
-        self.active()
+    fn hovered(&self, style: &Self::Style) -> iced_audio::knob::Appearance {
+        self.active(style)
     }
-    fn dragging(&self) -> iced_audio::knob::Style {
-        self.active()
+    fn dragging(&self, style: &Self::Style) -> iced_audio::knob::Appearance {
+        self.active(style)
     }
-    fn tick_marks_style(&self) -> Option<TickMarksStyle> {
+    fn tick_marks_style(&self, style: &Self::Style) -> Option<TickMarksStyle> {
         Some(TickMarksStyle {
             style: TICK_MARK_STYLE,
             offset: 3.0,
@@ -73,16 +77,18 @@ const ARC_BIPOLAR_STYLE: ArcBipolarStyle = ArcBipolarStyle {
 pub struct KnobBipolar;
 
 impl iced_audio::knob::StyleSheet for KnobBipolar {
-    fn active(&self) -> iced_audio::knob::Style {
-        Style::ArcBipolar(ARC_BIPOLAR_STYLE)
+    type Style = Theme;
+
+    fn active(&self, style: &Self::Style) -> iced_audio::knob::Appearance {
+        Appearance::ArcBipolar(ARC_BIPOLAR_STYLE)
     }
-    fn hovered(&self) -> iced_audio::knob::Style {
-        self.active()
+    fn hovered(&self, style: &Self::Style) -> iced_audio::knob::Appearance {
+        self.active(style)
     }
-    fn dragging(&self) -> iced_audio::knob::Style {
-        self.active()
+    fn dragging(&self, style: &Self::Style) -> iced_audio::knob::Appearance {
+        self.active(style)
     }
-    fn tick_marks_style(&self) -> Option<TickMarksStyle> {
+    fn tick_marks_style(&self, style: &Self::Style) -> Option<TickMarksStyle> {
         Some(TickMarksStyle {
             style: TICK_MARK_STYLE,
             offset: 3.0,

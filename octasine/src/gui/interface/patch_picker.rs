@@ -67,7 +67,6 @@ impl Display for Patch {
 pub struct PatchPicker {
     patch_options: Vec<Patch>,
     patch_index: usize,
-    actions_state: pick_list::State<Action>,
     pub style: Theme,
 }
 
@@ -82,14 +81,13 @@ impl PatchPicker {
             .collect();
 
         Self {
-            actions_state: Default::default(),
             patch_options,
             patch_index,
             style,
         }
     }
 
-    pub fn view(&mut self) -> Element<Message> {
+    pub fn view(&self) -> Element<Message> {
         let patch_picker = PickList::new(
             &self.patch_options[..],
             Some(self.patch_options[self.patch_index].clone()),
@@ -122,7 +120,7 @@ impl PatchPicker {
                         .height(Length::Units(FONT_SIZE * 3 / 2))
                         .width(Length::Units(LINE_HEIGHT * 10))
                         .font(self.style.font_heading())
-                        .color(self.style.heading_color())
+                        // .color(self.style.heading_color()) // FIXME
                         .horizontal_alignment(Horizontal::Center),
                 )
                 .push(Space::with_height(Length::Units(

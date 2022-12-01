@@ -479,7 +479,15 @@ impl ModulationMatrix {
 }
 
 impl Program<Message> for ModulationMatrix {
-    fn draw(&self, bounds: Rectangle, _cursor: Cursor) -> Vec<Geometry> {
+    type State = ();
+
+    fn draw(
+        &self,
+        state: &Self::State,
+        theme: &iced_baseview::Theme,
+        bounds: Rectangle,
+        _cursor: Cursor,
+    ) -> Vec<Geometry> {
         let geometry = self.cache.draw(bounds.size(), |frame| {
             self.draw_background(frame, self.style.mod_matrix());
 
@@ -490,8 +498,10 @@ impl Program<Message> for ModulationMatrix {
         vec![geometry]
     }
 
+    /*
     fn update(
-        &mut self,
+        &self,
+        state: &mut Self::State,
         event: event::Event,
         bounds: Rectangle,
         _cursor: Cursor,
@@ -554,4 +564,5 @@ impl Program<Message> for ModulationMatrix {
 
         (event::Status::Ignored, None)
     }
+    */
 }

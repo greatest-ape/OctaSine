@@ -127,7 +127,7 @@ impl CornerWidgets {
                             .height(Length::Units(FONT_SIZE * 3 / 2))
                             .width(Length::Units(LINE_HEIGHT * 8))
                             .font(self.style.font_heading())
-                            .color(self.style.heading_color())
+                            // .color(self.style.heading_color()) // FIXME
                             .horizontal_alignment(Horizontal::Center),
                     )
                     .push(Space::with_height(Length::Units(LINE_HEIGHT)))

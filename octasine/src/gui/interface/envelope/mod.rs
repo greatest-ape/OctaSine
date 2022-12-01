@@ -77,14 +77,14 @@ impl Envelope {
         group == self.group && group != OperatorEnvelopeGroupValue::Off
     }
 
-    pub fn view(&mut self) -> Element<Message> {
+    pub fn view(&self) -> Element<Message> {
         let group_synced: Element<Message> = if self.group_synced {
             Space::with_width(Length::Units(1)).into()
         } else {
             let text = Text::new("≠")
                 .font(self.style.font_bold())
                 .size(FONT_SIZE)
-                .color(self.style.text_color())
+                // .color(self.style.text_color()) // FIXME
                 .height(Length::Units(LINE_HEIGHT))
                 .width(Length::Units(6))
                 .horizontal_alignment(Horizontal::Center);

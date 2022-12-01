@@ -278,7 +278,15 @@ impl BooleanButton {
 }
 
 impl Program<Message> for BooleanButton {
-    fn draw(&self, bounds: Rectangle, _cursor: Cursor) -> Vec<Geometry> {
+    type State = ();
+
+    fn draw(
+        &self,
+        state: &Self::State,
+        theme: &iced_baseview::Theme,
+        bounds: Rectangle,
+        _cursor: Cursor,
+    ) -> Vec<Geometry> {
         let geometry = self.cache.draw(bounds.size(), |frame| {
             self.draw_background(frame);
             self.draw_border(frame);
@@ -288,49 +296,52 @@ impl Program<Message> for BooleanButton {
         vec![geometry]
     }
 
-    fn update(
-        &mut self,
-        event: event::Event,
-        bounds: Rectangle,
-        _cursor: Cursor,
-    ) -> (event::Status, Option<Message>) {
-        match event {
-            event::Event::Mouse(iced_baseview::mouse::Event::CursorMoved { position }) => {
-                let cursor_within_bounds = bounds.contains(position);
+    /*
+       fn update(
+           &self,
+           state: &mut Self::State,
+           event: event::Event,
+           bounds: Rectangle,
+           _cursor: Cursor,
+       ) -> (event::Status, Option<Message>) {
+           match event {
+               event::Event::Mouse(iced_baseview::mouse::Event::CursorMoved { position }) => {
+                   let cursor_within_bounds = bounds.contains(position);
 
-                if self.cursor_within_bounds != cursor_within_bounds {
-                    self.cursor_within_bounds = cursor_within_bounds;
+                   if self.cursor_within_bounds != cursor_within_bounds {
+                       self.cursor_within_bounds = cursor_within_bounds;
 
-                    self.cache.clear();
-                }
+                       self.cache.clear();
+                   }
 
-                (event::Status::Ignored, None)
-            }
-            event::Event::Mouse(iced_baseview::mouse::Event::ButtonPressed(
-                iced_baseview::mouse::Button::Left | iced_baseview::mouse::Button::Right,
-            )) if self.cursor_within_bounds => {
-                self.click_started = true;
+                   (event::Status::Ignored, None)
+               }
+               event::Event::Mouse(iced_baseview::mouse::Event::ButtonPressed(
+                   iced_baseview::mouse::Button::Left | iced_baseview::mouse::Button::Right,
+               )) if self.cursor_within_bounds => {
+                   self.click_started = true;
 
-                (event::Status::Captured, None)
-            }
-            event::Event::Mouse(iced_baseview::mouse::Event::ButtonReleased(
-                iced_baseview::mouse::Button::Left | iced_baseview::mouse::Button::Right,
-            )) if self.click_started => {
-                if self.cursor_within_bounds {
-                    let message = {
-                        let patch_value = (self.is_on_to_patch_value)(!self.on);
+                   (event::Status::Captured, None)
+               }
+               event::Event::Mouse(iced_baseview::mouse::Event::ButtonReleased(
+                   iced_baseview::mouse::Button::Left | iced_baseview::mouse::Button::Right,
+               )) if self.click_started => {
+                   if self.cursor_within_bounds {
+                       let message = {
+                           let patch_value = (self.is_on_to_patch_value)(!self.on);
 
-                        Message::ChangeSingleParameterImmediate(self.parameter, patch_value)
-                    };
+                           Message::ChangeSingleParameterImmediate(self.parameter, patch_value)
+                       };
 
-                    (event::Status::Captured, Some(message))
-                } else {
-                    self.click_started = false;
+                       (event::Status::Captured, Some(message))
+                   } else {
+                       self.click_started = false;
 
-                    (event::Status::Ignored, None)
-                }
-            }
-            _ => (event::Status::Ignored, None),
-        }
-    }
+                       (event::Status::Ignored, None)
+                   }
+               }
+               _ => (event::Status::Ignored, None),
+           }
+       }
+    */
 }

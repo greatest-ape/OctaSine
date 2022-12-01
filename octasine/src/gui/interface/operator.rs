@@ -143,7 +143,7 @@ impl OperatorWidgets {
                             .size(FONT_SIZE + FONT_SIZE / 2)
                             .height(Length::Units(FONT_SIZE + FONT_SIZE / 2))
                             .font(self.style.font_heading())
-                            .color(self.style.heading_color())
+                            // .color(self.style.heading_color()) // FIXME
                             .horizontal_alignment(Horizontal::Center),
                     )
                     .push(Space::with_height(Length::Units(LINE_HEIGHT / 2)))
@@ -168,7 +168,7 @@ impl OperatorWidgets {
                 .push(container_l3(self.style, self.mix.view()))
                 .push(space_l3());
 
-            if let Some(mod_index) = self.mod_index.as_mut() {
+            if let Some(mod_index) = self.mod_index.as_ref() {
                 group = group.push(container_l3(self.style, mod_index.view()));
             } else {
                 group = group.push(Space::with_width(Length::Units(LINE_HEIGHT * 5)));
@@ -176,7 +176,7 @@ impl OperatorWidgets {
 
             group = group.push(space_l3());
 
-            match self.mod_target.as_mut() {
+            match self.mod_target.as_ref() {
                 Some(ModTargetPicker::Operator2(picker)) => {
                     group = group.push(container_l3(self.style, picker.view()))
                 }

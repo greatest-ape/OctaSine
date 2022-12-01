@@ -1,4 +1,4 @@
-use iced_audio::{knob, text_marks, tick_marks, Normal, NormalParam};
+use iced_audio::{knob, text_marks, tick_marks, Knob, Normal, NormalParam};
 use iced_baseview::Container;
 use iced_baseview::{
     alignment::Horizontal, keyboard::Modifiers, Alignment, Column, Element, Length, Space, Text,
@@ -257,12 +257,12 @@ pub struct OctaSineKnob<P: ParameterValue> {
     text_marks: Option<text_marks::Group>,
     tick_marks: Option<tick_marks::Group>,
     title: String,
-    value: Normal,
-    default_value: Normal,
+    value: NormalParam,
     value_text: ValueText<P>,
+    default_value: Normal,
     parameter: Parameter,
     phantom_data: ::std::marker::PhantomData<P>,
-    style_extractor: fn(Theme) -> Box<dyn iced_audio::knob::StyleSheet>,
+    style_extractor: fn(Theme) -> Box<dyn iced_audio::knob::StyleSheet<Style = Theme>>,
 }
 
 impl<P> OctaSineKnob<P>
@@ -275,7 +275,7 @@ where
         title: &str,
         tick_mark_type: TickMarkType,
         style: Theme,
-        style_extractor: fn(Theme) -> Box<dyn iced_audio::knob::StyleSheet>,
+        style_extractor: fn(Theme) -> Box<dyn iced_audio::knob::StyleSheet<Style = Theme>>,
     ) -> Self {
         Self::new_with_default_sync_value(
             sync_handle,
@@ -295,11 +295,14 @@ where
         tick_mark_type: TickMarkType,
         default_patch_value: f32,
         style: Theme,
-        style_extractor: fn(Theme) -> Box<dyn iced_audio::knob::StyleSheet>,
+        style_extractor: fn(Theme) -> Box<dyn iced_audio::knob::StyleSheet<Style = Theme>>,
     ) -> Self {
-        let value = Normal::new(sync_handle.get_parameter(parameter) as f32);
-        let value_text = ValueText::new(sync_handle, style, parameter);
         let default_value = Normal::new(default_patch_value);
+        let value = NormalParam {
+            value: Normal::new(sync_handle.get_parameter(parameter) as f32),
+            default: default_value,
+        };
+        let value_text = ValueText::new(sync_handle, style, parameter);
 
         let tick_marks = match tick_mark_type {
             TickMarkType::MinMaxAndDefault => {
@@ -313,8 +316,8 @@ where
             tick_marks: Some(tick_marks),
             title: title.to_string(),
             value,
-            default_value,
             value_text,
+            default_value,
             parameter,
             phantom_data: ::std::marker::PhantomData::default(),
             style_extractor,
@@ -322,9 +325,10 @@ where
     }
 
     pub fn set_value(&mut self, value: f32) {
-        if !self.knob_state.is_dragging() {
-            self.knob_state.set_normal(Normal::new(value as f32));
-        }
+        // FIXME
+        // if !self.knob_state.is_dragging() {
+        //     self.knob_state.set_normal(Normal::new(value as f32));
+        // }
 
         self.value_text.set_value(value);
     }
@@ -334,7 +338,7 @@ where
         self.value_text.style = style;
     }
 
-    pub fn view(&self) -> Element<Message> {
+    pub fn view<'a>(&'a self) -> Element<Message> {
         let title = Text::new(self.title.clone())
             .horizontal_alignment(Horizontal::Center)
             .font(self.style.font_bold())
@@ -344,15 +348,16 @@ where
 
         let modifier_keys = Modifiers::SHIFT;
 
-        let mut knob = knob::Knob::new(&mut self.knob_state, move |value| {
-            Message::ChangeSingleParameterSetValue(parameter, value.as_f32())
-        })
-        .on_press(move || Some(Message::ChangeSingleParameterBegin(parameter))) // FIXME
-        .on_release(move || Some(Message::ChangeSingleParameterEnd(parameter)))
-        .size(Length::from(KNOB_SIZE))
-        .modifier_keys(modifier_keys)
-        .bipolar_center(self.default_value)
-        .style((self.style_extractor)(self.style));
+        let mut knob: Knob<'a, Message, iced_baseview::Theme> =
+            knob::Knob::new(self.value, move |value| {
+                Message::ChangeSingleParameterSetValue(parameter, value.as_f32())
+            })
+            // .on_press(move || Some(Message::ChangeSingleParameterBegin(parameter))) // FIXME
+            .on_release(Message::ChangeSingleParameterEnd(parameter))
+            .size(Length::from(KNOB_SIZE))
+            .modifier_keys(modifier_keys)
+            .bipolar_center(self.default_value);
+        // .style((self.style_extractor)(self.style)); // FIXME
 
         if let Some(text_marks) = self.text_marks.as_ref() {
             knob = knob.text_marks(text_marks);
@@ -367,7 +372,7 @@ where
                 .align_items(Alignment::Center)
                 .push(title)
                 .push(Space::with_height(Length::Units(LINE_HEIGHT)))
-                .push(knob)
+                .push(knob) // FIXME
                 .push(Space::with_height(Length::Units(LINE_HEIGHT)))
                 .push(self.value_text.view()),
         )

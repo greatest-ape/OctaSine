@@ -818,6 +818,14 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
         .style(self.style.container_l0())
         .into()
     }
+
+    fn title(&self) -> String {
+        crate::PLUGIN_NAME.into()
+    }
+
+    fn theme(&self) -> iced_baseview::Theme {
+        Default::default() // FIXME
+    }
 }
 
 fn save_data_to_file(path_buf: PathBuf, mut bytes: Vec<u8>) -> anyhow::Result<()> {
