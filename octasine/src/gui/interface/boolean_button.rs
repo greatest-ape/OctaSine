@@ -172,8 +172,6 @@ pub struct BooleanButton {
     style: Theme,
     cache: Cache,
     bounds_path: Path,
-    cursor_within_bounds: bool,
-    click_started: bool,
     patch_value_to_is_on: fn(f32) -> bool,
     is_on_to_patch_value: fn(bool) -> f32,
     get_stylesheet: fn(Theme) -> Box<dyn StyleSheet>,
@@ -205,8 +203,6 @@ impl BooleanButton {
             style,
             cache: Cache::new(),
             bounds_path,
-            cursor_within_bounds: false,
-            click_started: false,
             patch_value_to_is_on: f,
             is_on_to_patch_value: g,
             get_stylesheet: h,
@@ -238,10 +234,10 @@ impl BooleanButton {
             .into()
     }
 
-    fn style(&self) -> Style {
+    fn style(&self, state: &CanvasState) -> Style {
         let stylesheet = (self.get_stylesheet)(self.style);
 
-        match (self.on, self.cursor_within_bounds) {
+        match (self.on, state.cursor_within_bounds) {
             (true, false) => stylesheet.active(),
             (true, true) => stylesheet.active_hover(),
             (false, false) => stylesheet.inactive(),
@@ -249,22 +245,22 @@ impl BooleanButton {
         }
     }
 
-    fn draw_background(&self, frame: &mut Frame) {
-        frame.fill(&self.bounds_path, self.style().background_color);
+    fn draw_background(&self, state: &CanvasState, frame: &mut Frame) {
+        frame.fill(&self.bounds_path, self.style(state).background_color);
     }
 
-    fn draw_border(&self, frame: &mut Frame) {
-        let stroke = Stroke::default().with_color(self.style().border_color);
+    fn draw_border(&self, state: &CanvasState, frame: &mut Frame) {
+        let stroke = Stroke::default().with_color(self.style(state).border_color);
 
         frame.stroke(&self.bounds_path, stroke);
     }
 
-    fn draw_text(&self, frame: &mut Frame) {
+    fn draw_text(&self, state: &CanvasState, frame: &mut Frame) {
         let position = Point::new(f32::from(self.width) / 2.0, f32::from(self.height) / 2.0);
 
         let text = Text {
             content: self.text.to_string(),
-            color: self.style().text_color,
+            color: self.style(state).text_color,
             size: f32::from(FONT_SIZE),
             font: self.style.font_regular(),
             horizontal_alignment: Horizontal::Center,
@@ -277,71 +273,75 @@ impl BooleanButton {
     }
 }
 
+#[derive(Default)]
+pub struct CanvasState {
+    cursor_within_bounds: bool,
+    click_started: bool,
+}
+
 impl Program<Message> for BooleanButton {
-    type State = ();
+    type State = CanvasState;
 
     fn draw(
         &self,
         state: &Self::State,
-        theme: &iced_baseview::Theme,
+        _theme: &iced_baseview::Theme,
         bounds: Rectangle,
         _cursor: Cursor,
     ) -> Vec<Geometry> {
         let geometry = self.cache.draw(bounds.size(), |frame| {
-            self.draw_background(frame);
-            self.draw_border(frame);
-            self.draw_text(frame);
+            self.draw_background(state, frame);
+            self.draw_border(state, frame);
+            self.draw_text(state, frame);
         });
 
         vec![geometry]
     }
 
-    /*
-       fn update(
-           &self,
-           state: &mut Self::State,
-           event: event::Event,
-           bounds: Rectangle,
-           _cursor: Cursor,
-       ) -> (event::Status, Option<Message>) {
-           match event {
-               event::Event::Mouse(iced_baseview::mouse::Event::CursorMoved { position }) => {
-                   let cursor_within_bounds = bounds.contains(position);
+    fn update(
+        &self,
+        state: &mut Self::State,
+        event: event::Event,
+        bounds: Rectangle,
+        _cursor: Cursor,
+    ) -> (event::Status, Option<Message>) {
+        match event {
+            event::Event::Mouse(iced_baseview::mouse::Event::CursorMoved { position }) => {
+                let cursor_within_bounds = bounds.contains(position);
 
-                   if self.cursor_within_bounds != cursor_within_bounds {
-                       self.cursor_within_bounds = cursor_within_bounds;
+                if state.cursor_within_bounds != cursor_within_bounds {
+                    state.cursor_within_bounds = cursor_within_bounds;
 
-                       self.cache.clear();
-                   }
+                    self.cache.clear();
+                }
 
-                   (event::Status::Ignored, None)
-               }
-               event::Event::Mouse(iced_baseview::mouse::Event::ButtonPressed(
-                   iced_baseview::mouse::Button::Left | iced_baseview::mouse::Button::Right,
-               )) if self.cursor_within_bounds => {
-                   self.click_started = true;
+                (event::Status::Ignored, None)
+            }
+            event::Event::Mouse(iced_baseview::mouse::Event::ButtonPressed(
+                iced_baseview::mouse::Button::Left | iced_baseview::mouse::Button::Right,
+            )) if state.cursor_within_bounds => {
+                state.click_started = true;
 
-                   (event::Status::Captured, None)
-               }
-               event::Event::Mouse(iced_baseview::mouse::Event::ButtonReleased(
-                   iced_baseview::mouse::Button::Left | iced_baseview::mouse::Button::Right,
-               )) if self.click_started => {
-                   if self.cursor_within_bounds {
-                       let message = {
-                           let patch_value = (self.is_on_to_patch_value)(!self.on);
+                (event::Status::Captured, None)
+            }
+            event::Event::Mouse(iced_baseview::mouse::Event::ButtonReleased(
+                iced_baseview::mouse::Button::Left | iced_baseview::mouse::Button::Right,
+            )) if state.click_started => {
+                if state.cursor_within_bounds {
+                    let message = {
+                        let patch_value = (self.is_on_to_patch_value)(!self.on);
 
-                           Message::ChangeSingleParameterImmediate(self.parameter, patch_value)
-                       };
+                        Message::ChangeSingleParameterImmediate(self.parameter, patch_value)
+                    };
 
-                       (event::Status::Captured, Some(message))
-                   } else {
-                       self.click_started = false;
+                    (event::Status::Captured, Some(message))
+                } else {
+                    state.click_started = false;
 
-                       (event::Status::Ignored, None)
-                   }
-               }
-               _ => (event::Status::Ignored, None),
-           }
-       }
-    */
+                    (event::Status::Ignored, None)
+                }
+            }
+            _ => (event::Status::Ignored, None),
+        }
+    }
 }
