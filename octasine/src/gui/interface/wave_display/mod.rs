@@ -2,9 +2,7 @@ mod gen;
 
 use std::borrow::Borrow;
 
-use iced_baseview::canvas::{
-    event, path, Cache, Canvas, Cursor, Frame, Geometry, Path, Program, Stroke,
-};
+use iced_baseview::canvas::{path, Cache, Canvas, Cursor, Frame, Geometry, Path, Program, Stroke};
 use iced_baseview::tooltip::Position;
 use iced_baseview::{Color, Element, Length, Point, Rectangle, Row, Size, Space, Tooltip};
 
@@ -376,8 +374,8 @@ impl Program<Message> for WaveDisplayCanvas {
 
     fn draw(
         &self,
-        state: &Self::State,
-        theme: &iced_baseview::Theme,
+        _state: &Self::State,
+        _theme: &iced_baseview::Theme,
         bounds: Rectangle,
         _cursor: Cursor,
     ) -> Vec<Geometry> {
@@ -389,15 +387,5 @@ impl Program<Message> for WaveDisplayCanvas {
         });
 
         vec![geometry]
-    }
-
-    fn update(
-        &self,
-        state: &mut Self::State,
-        _event: event::Event,
-        _bounds: Rectangle,
-        _cursor: Cursor,
-    ) -> (event::Status, Option<Message>) {
-        (event::Status::Ignored, None)
     }
 }
