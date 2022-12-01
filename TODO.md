@@ -2,6 +2,20 @@
 
 ## High priority
 
+* iced_audio
+  * Needs better support for setting style from e.g. `Box<dyn iced_audio::knob::StyleSheet<Style = Theme>>>`
+  * Needs wgpu and glow features?
+  * Ideally needs way to check if it is currently dragging
+  * Rendering issues when changing themes, could it be fixed in OctaSine?
+  * Values don't update correctly - OctaSine issue?
+
+* iced 0.5 adjustments
+  * Rewrite widgets. Maybe all state changes in `update` need to happen through messages
+  * Text styles
+  * Ideally rewrite style handling to be idiomatic
+    * Reorganize code with widgets and nested light/dark modules
+    * Can I even use custom Theme struct? Maybe not
+
 * Release 0.8.1
 * Audio gen optimizations
   * Use bhaskara_constant_power_panning?
