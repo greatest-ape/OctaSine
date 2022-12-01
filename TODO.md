@@ -4,8 +4,8 @@
 
 * iced_audio
   * Needs wgpu and glow features?
-  * Ideally needs way to check if it is currently dragging
-  * Values don't update correctly - OctaSine issue?
+  * Ideally needs way to check if it is currently dragging to prevent external
+    updates in that case
   * Marker lengths - OctaSine issue?
 
 * iced 0.5 adjustments
