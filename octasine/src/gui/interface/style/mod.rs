@@ -158,19 +158,21 @@ impl Theme {
         }
     }
 
-    /*
-    pub fn knob_regular(&self) -> Box<dyn iced_audio::knob::StyleSheet<Style = iced_baseview::Theme>> {
+    pub fn knob_regular(&self) -> iced_audio::style::theme::Knob {
         match self {
-            Self::Light => Box::new(light::knob::KnobRegular),
-            Self::Dark => Box::new(dark::knob::KnobRegular),
+            Self::Light => {
+                iced_audio::style::theme::Knob::Custom(Box::new(light::knob::KnobRegular))
+            }
+            Self::Dark => iced_audio::style::theme::Knob::Custom(Box::new(dark::knob::KnobRegular)),
         }
     }
-    */
-    pub fn knob_regular(&self) -> impl iced_audio::knob::StyleSheet<Style = iced_baseview::Theme> {
-        KnobRegular
-    }
-    pub fn knob_bipolar(&self) -> impl iced_audio::knob::StyleSheet<Style = iced_baseview::Theme> {
-        KnobBipolar
+    pub fn knob_bipolar(&self) -> iced_audio::style::theme::Knob {
+        match self {
+            Self::Light => {
+                iced_audio::style::theme::Knob::Custom(Box::new(light::knob::KnobBipolar))
+            }
+            Self::Dark => iced_audio::style::theme::Knob::Custom(Box::new(dark::knob::KnobBipolar)),
+        }
     }
 
     pub fn envelope(&self) -> Box<dyn super::envelope::widget::StyleSheet> {
@@ -213,71 +215,6 @@ impl Theme {
         match self {
             Self::Light => Box::new(light::BooleanButton),
             Self::Dark => Box::new(dark::BooleanButton),
-        }
-    }
-}
-
-struct KnobRegular;
-
-impl iced_audio::knob::StyleSheet for KnobRegular {
-    type Style = iced_baseview::Theme;
-
-    fn active(&self, style: &Self::Style) -> iced_audio::knob::Appearance {
-        match style {
-            iced_baseview::Theme::Light => light::knob::KnobRegular.active(style),
-            iced_baseview::Theme::Dark | _ => dark::knob::KnobRegular.active(style),
-        }
-    }
-
-    fn hovered(&self, style: &Self::Style) -> iced_audio::knob::Appearance {
-        match style {
-            iced_baseview::Theme::Light => light::knob::KnobRegular.hovered(style),
-            iced_baseview::Theme::Dark | _ => dark::knob::KnobRegular.hovered(style),
-        }
-    }
-
-    fn dragging(&self, style: &Self::Style) -> iced_audio::knob::Appearance {
-        match style {
-            iced_baseview::Theme::Light => light::knob::KnobRegular.dragging(style),
-            iced_baseview::Theme::Dark | _ => dark::knob::KnobRegular.dragging(style),
-        }
-    }
-    fn tick_marks_style(&self, style: &Self::Style) -> Option<iced_audio::knob::TickMarksStyle> {
-        match style {
-            iced_baseview::Theme::Light => light::knob::KnobRegular.tick_marks_style(style),
-            iced_baseview::Theme::Dark | _ => dark::knob::KnobRegular.tick_marks_style(style),
-        }
-    }
-}
-struct KnobBipolar;
-
-impl iced_audio::knob::StyleSheet for KnobBipolar {
-    type Style = iced_baseview::Theme;
-
-    fn active(&self, style: &Self::Style) -> iced_audio::knob::Appearance {
-        match style {
-            iced_baseview::Theme::Light => light::knob::KnobBipolar.active(style),
-            iced_baseview::Theme::Dark | _ => dark::knob::KnobBipolar.active(style),
-        }
-    }
-
-    fn hovered(&self, style: &Self::Style) -> iced_audio::knob::Appearance {
-        match style {
-            iced_baseview::Theme::Light => light::knob::KnobBipolar.hovered(style),
-            iced_baseview::Theme::Dark | _ => dark::knob::KnobBipolar.hovered(style),
-        }
-    }
-
-    fn dragging(&self, style: &Self::Style) -> iced_audio::knob::Appearance {
-        match style {
-            iced_baseview::Theme::Light => light::knob::KnobBipolar.dragging(style),
-            iced_baseview::Theme::Dark | _ => dark::knob::KnobBipolar.dragging(style),
-        }
-    }
-    fn tick_marks_style(&self, style: &Self::Style) -> Option<iced_audio::knob::TickMarksStyle> {
-        match style {
-            iced_baseview::Theme::Light => light::knob::KnobBipolar.tick_marks_style(style),
-            iced_baseview::Theme::Dark | _ => dark::knob::KnobBipolar.tick_marks_style(style),
         }
     }
 }

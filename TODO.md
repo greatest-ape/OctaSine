@@ -3,11 +3,10 @@
 ## High priority
 
 * iced_audio
-  * Needs better support for setting style from e.g. `Box<dyn iced_audio::knob::StyleSheet<Style = Theme>>>`
   * Needs wgpu and glow features?
   * Ideally needs way to check if it is currently dragging
-  * Rendering issues when changing themes, could it be fixed in OctaSine?
   * Values don't update correctly - OctaSine issue?
+  * Marker lengths - OctaSine issue?
 
 * iced 0.5 adjustments
   * Rewrite widgets. Maybe all state changes in `update` need to happen through messages
