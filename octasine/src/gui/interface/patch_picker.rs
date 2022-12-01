@@ -1,7 +1,7 @@
 use std::fmt::Display;
 
 use iced_baseview::alignment::Horizontal;
-use iced_baseview::widget::{pick_list, PickList};
+use iced_baseview::widget::PickList;
 use iced_baseview::{Alignment, Column, Container, Element, Length, Space, Text};
 
 use super::LINE_HEIGHT;

@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use iced_baseview::alignment::Horizontal;
 use iced_baseview::widget::Text;
-use iced_baseview::{button, Button, Element, Length};
+use iced_baseview::{Button, Element, Length};
 
 use crate::parameters::list::Parameter;
 use crate::parameters::ParameterValue;

@@ -1,6 +1,6 @@
 use iced_baseview::{
-    alignment::Horizontal, button, tooltip::Position, Alignment, Button, Column, Container,
-    Element, Length, Row, Space, Text, Tooltip,
+    alignment::Horizontal, tooltip::Position, Alignment, Button, Column, Container, Element,
+    Length, Row, Space, Text, Tooltip,
 };
 
 use crate::{
