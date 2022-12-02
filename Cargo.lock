@@ -1545,6 +1545,7 @@ dependencies = [
 [[package]]
 name = "iced_audio"
 version = "0.8.0"
+source = "git+https://github.com/iced-rs/iced_audio?rev=8fdde84#8fdde84b532c9562ec3f124d7c5d4ff96ff623da"
 dependencies = [
  "iced",
  "iced_graphics",

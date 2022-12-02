@@ -43,8 +43,7 @@ vst = "0.3"
 
 # GUI
 
-iced_audio = { version = "0.8", optional = true, default-features = false }
-# iced_audio = { git = "https://github.com/fengalin/iced_audio", branch = "pure-widgets", optional = true }
+iced_audio = { git = "https://github.com/iced-rs/iced_audio", rev = "8fdde84", optional = true }
 palette = { version = "0.6", optional = true }
 raw-window-handle = { version = "0.5", optional = true }
 rfd = { version = "0.10", optional = true, default-features = false, features = ["xdg-portal"] }

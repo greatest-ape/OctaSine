@@ -359,8 +359,8 @@ where
             knob::Knob::new(self.value, move |value| {
                 Message::ChangeSingleParameterSetValue(parameter, value.as_f32())
             })
-            // .on_press(move || Some(Message::ChangeSingleParameterBegin(parameter))) // FIXME
-            .on_release(Message::ChangeSingleParameterEnd(parameter))
+            .on_grab(move || Some(Message::ChangeSingleParameterBegin(parameter)))
+            .on_release(move || Some(Message::ChangeSingleParameterEnd(parameter)))
             .size(Length::from(KNOB_SIZE))
             .modifier_keys(modifier_keys)
             .bipolar_center(self.default_value);

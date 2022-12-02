@@ -13,8 +13,8 @@ baseview = { path = "../baseview" }
 [patch.'https://github.com/BillyDM/iced_baseview']
 iced_baseview = { path = "../iced_baseview" }
 
-[patch.crates-io]
-iced_audio = { path = "../fengalin/iced_audio" }
+# [patch.crates-io]
+# iced_audio = { path = "../fengalin/iced_audio" }
 
 # [patch.'https://github.com/greatest-ape/sleef-trig']
 # sleef-trig = { path = "../sleef-trig" }
