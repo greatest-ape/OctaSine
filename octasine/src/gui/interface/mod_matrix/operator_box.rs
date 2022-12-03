@@ -19,28 +19,11 @@ pub enum OperatorBoxChange {
     None,
 }
 
-#[derive(Default)]
-pub enum BoxStatus {
-    #[default]
-    Normal,
-    Hover,
-    Dragging {
-        from: Point,
-        original_value: f32,
-    },
-}
-
-impl BoxStatus {
-    fn is_dragging(&self) -> bool {
-        matches!(self, BoxStatus::Dragging { .. })
-    }
-}
-
 pub struct OperatorBox {
     index: usize,
     text_position: Point,
     path: Path,
-    pub center: Point,
+    center: Point,
     hitbox: Rectangle,
 }
 
@@ -98,6 +81,10 @@ impl OperatorBox {
 
     fn get_parameter(&self) -> Parameter {
         Parameter::Operator(self.index as u8, OperatorParameter::MixOut)
+    }
+
+    pub fn get_center(&self) -> Point {
+        self.center
     }
 
     pub fn update(

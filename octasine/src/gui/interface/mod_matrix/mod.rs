@@ -201,33 +201,36 @@ impl ModulationMatrixComponents {
         let output_box = OutputBox::new(bounds);
 
         let operator_4_mix_out_line = MixOutLine::new(
-            operator_4_box.center,
+            operator_4_box.get_center(),
             output_box.y,
             parameters.operator_4_mix,
             style.mod_matrix(),
         );
         let operator_3_mix_out_line = MixOutLine::new(
-            operator_3_box.center,
+            operator_3_box.get_center(),
             output_box.y,
             parameters.operator_3_mix,
             style.mod_matrix(),
         );
         let operator_2_mix_out_line = MixOutLine::new(
-            operator_2_box.center,
+            operator_2_box.get_center(),
             output_box.y,
             parameters.operator_2_mix,
             style.mod_matrix(),
         );
         let operator_1_mix_out_line = MixOutLine::new(
-            operator_1_box.center,
+            operator_1_box.get_center(),
             output_box.y,
             parameters.operator_1_mix,
             style.mod_matrix(),
         );
 
-        let operator_4_mod_out_line = ModOutLine::new(operator_4_box.center, style.mod_matrix());
-        let operator_3_mod_out_line = ModOutLine::new(operator_3_box.center, style.mod_matrix());
-        let operator_2_mod_out_line = ModOutLine::new(operator_2_box.center, style.mod_matrix());
+        let operator_4_mod_out_line =
+            ModOutLine::new(operator_4_box.get_center(), style.mod_matrix());
+        let operator_3_mod_out_line =
+            ModOutLine::new(operator_3_box.get_center(), style.mod_matrix());
+        let operator_2_mod_out_line =
+            ModOutLine::new(operator_2_box.get_center(), style.mod_matrix());
 
         let mut components = Self {
             operator_1_box,
@@ -277,9 +280,18 @@ impl ModulationMatrixComponents {
 
             for mod_target in parameters.operator_4_targets.active_indices() {
                 let (mod_box, operator_box) = match mod_target {
-                    0 => (self.operator_4_mod_1_box.center, self.operator_1_box.center),
-                    1 => (self.operator_4_mod_2_box.center, self.operator_2_box.center),
-                    2 => (self.operator_4_mod_3_box.center, self.operator_3_box.center),
+                    0 => (
+                        self.operator_4_mod_1_box.get_center(),
+                        self.operator_1_box.get_center(),
+                    ),
+                    1 => (
+                        self.operator_4_mod_2_box.get_center(),
+                        self.operator_2_box.get_center(),
+                    ),
+                    2 => (
+                        self.operator_4_mod_3_box.get_center(),
+                        self.operator_3_box.get_center(),
+                    ),
                     _ => unreachable!(),
                 };
 
@@ -297,8 +309,14 @@ impl ModulationMatrixComponents {
 
             for mod_target in parameters.operator_3_targets.active_indices() {
                 let (mod_box, operator_box) = match mod_target {
-                    0 => (self.operator_3_mod_1_box.center, self.operator_1_box.center),
-                    1 => (self.operator_3_mod_2_box.center, self.operator_2_box.center),
+                    0 => (
+                        self.operator_3_mod_1_box.get_center(),
+                        self.operator_1_box.get_center(),
+                    ),
+                    1 => (
+                        self.operator_3_mod_2_box.get_center(),
+                        self.operator_2_box.get_center(),
+                    ),
                     _ => unreachable!(),
                 };
 
@@ -316,7 +334,10 @@ impl ModulationMatrixComponents {
 
             for mod_target in parameters.operator_2_targets.active_indices() {
                 let (mod_box, operator_box) = match mod_target {
-                    0 => (self.operator_2_mod_1_box.center, self.operator_1_box.center),
+                    0 => (
+                        self.operator_2_mod_1_box.get_center(),
+                        self.operator_1_box.get_center(),
+                    ),
                     _ => unreachable!(),
                 };
 

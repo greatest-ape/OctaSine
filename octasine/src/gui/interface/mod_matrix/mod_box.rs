@@ -9,18 +9,10 @@ use crate::gui::interface::{Message, SnapPoint};
 use super::common::*;
 use super::StyleSheet;
 
+#[derive(Default)]
 pub struct ModulationBoxCanvasState {
     hover: bool,
     click_started: bool,
-}
-
-impl Default for ModulationBoxCanvasState {
-    fn default() -> Self {
-        Self {
-            hover: false,
-            click_started: false,
-        }
-    }
 }
 
 pub enum ModulationBoxChange {
@@ -40,7 +32,7 @@ pub trait ModulationBoxUpdate {
 
 pub struct ModulationBox<P: ParameterValue> {
     path: Path,
-    pub center: Point,
+    center: Point,
     rect: Rectangle,
     parameter: Parameter,
     target_index: usize,
@@ -91,6 +83,10 @@ where
             target_index,
             v,
         }
+    }
+
+    pub fn get_center(&self) -> Point {
+        self.center
     }
 
     fn active(&self) -> bool {
