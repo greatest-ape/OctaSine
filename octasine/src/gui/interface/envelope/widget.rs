@@ -1,5 +1,3 @@
-use std::sync::atomic::{AtomicBool, Ordering};
-
 use iced_baseview::canvas::{
     event, path, Cache, Canvas, Cursor, Frame, Geometry, Path, Program, Stroke, Text,
 };
@@ -186,8 +184,9 @@ impl Default for EnvelopeStagePath {
     }
 }
 
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Default)]
 enum EnvelopeDraggerStatus {
+    #[default]
     Normal,
     Hover,
     Dragging {
@@ -197,11 +196,22 @@ enum EnvelopeDraggerStatus {
     },
 }
 
+impl EnvelopeDraggerStatus {
+    fn is_dragging(&self) -> bool {
+        matches!(self, Self::Dragging { .. })
+    }
+
+    fn set_to_normal_if_in_hover_state(&mut self) {
+        if let Self::Hover = self {
+            *self = Self::Normal;
+        }
+    }
+}
+
 struct EnvelopeDragger {
     center: Point,
     radius: f32,
     pub hitbox: Rectangle,
-    pub status: EnvelopeDraggerStatus,
 }
 
 impl EnvelopeDragger {
@@ -214,17 +224,12 @@ impl EnvelopeDragger {
         self.hitbox.y = (center.y - self.radius / 2.0).max(0.0);
     }
 
-    fn is_dragging(&self) -> bool {
-        matches!(self.status, EnvelopeDraggerStatus::Dragging { .. })
-    }
-
-    fn set_to_normal_if_in_hover_state(&mut self) {
-        if let EnvelopeDraggerStatus::Hover = self.status {
-            self.status = EnvelopeDraggerStatus::Normal;
-        }
-    }
-
-    fn draw(&self, frame: &mut Frame, style_sheet: Box<dyn StyleSheet>) {
+    fn draw(
+        &self,
+        frame: &mut Frame,
+        style_sheet: Box<dyn StyleSheet>,
+        status: &EnvelopeDraggerStatus,
+    ) {
         let size = frame.size();
         let style = style_sheet.active();
 
@@ -244,7 +249,7 @@ impl EnvelopeDragger {
             builder.build()
         };
 
-        let fill_color = match self.status {
+        let fill_color = match status {
             EnvelopeDraggerStatus::Normal => style_sheet.active().dragger_fill_color_active,
             EnvelopeDraggerStatus::Hover => style_sheet.active().dragger_fill_color_hover,
             EnvelopeDraggerStatus::Dragging { .. } => {
@@ -268,7 +273,6 @@ impl Default for EnvelopeDragger {
             center: Point::default(),
             radius: DRAGGER_RADIUS,
             hitbox: Rectangle::default(),
-            status: EnvelopeDraggerStatus::Normal,
         }
     }
 }
@@ -289,99 +293,12 @@ struct DoubleClickData {
 
 #[derive(Default)]
 pub struct CanvasState {
-    attack_stage_path: EnvelopeStagePath,
-    decay_stage_path: EnvelopeStagePath,
-    release_stage_path: EnvelopeStagePath,
-    attack_dragger: EnvelopeDragger,
-    decay_dragger: EnvelopeDragger,
-    release_dragger: EnvelopeDragger,
     last_cursor_position: Point,
     dragging_background_from: Option<DraggingBackground>,
     double_click_data: Option<DoubleClickData>,
-}
-
-impl CanvasState {
-    fn draw_stage_paths(&self, frame: &mut Frame, style_sheet: Box<dyn StyleSheet>) {
-        let style = style_sheet.active();
-        let size = frame.size();
-
-        let top_drag_border = Path::line(
-            scale_point(size, Point::ORIGIN).snap(),
-            scale_point(size, Point::new(size.width, 0.0)).snap(),
-        );
-        let bottom_drag_border = Path::line(
-            scale_point(size, Point::new(0.0, size.height)).snap(),
-            scale_point(size, Point::new(size.width, size.height)).snap(),
-        );
-
-        let drag_border_stroke = Stroke::default()
-            .with_width(1.0)
-            .with_color(style.drag_border_color);
-
-        frame.stroke(&top_drag_border, drag_border_stroke.clone());
-        frame.stroke(&bottom_drag_border, drag_border_stroke);
-
-        let stage_path_stroke = Stroke::default()
-            .with_width(1.0)
-            .with_color(style.path_color);
-
-        frame.stroke(&self.attack_stage_path.path, stage_path_stroke.clone());
-        frame.stroke(&self.decay_stage_path.path, stage_path_stroke.clone());
-        frame.stroke(&self.release_stage_path.path, stage_path_stroke);
-
-        // Hide stage path parts that extend beyond scaled bounds, draw borders
-
-        let left_bg_x = scale_point_x(size, Point::ORIGIN).snap().x - 1.0;
-        let left_bg = Path::rectangle(Point::ORIGIN, Size::new(left_bg_x, size.height));
-        frame.fill(&left_bg, style.background_color);
-        frame.stroke(
-            &left_bg,
-            Stroke::default().with_color(style.background_color),
-        );
-
-        let right_bg_x = scale_point_x(size, Point::new(size.width, 0.0)).snap().x + 1.0;
-        let right_bg = Path::rectangle(
-            Point::new(right_bg_x, 0.0),
-            Size::new(size.width, size.height),
-        );
-        frame.fill(&right_bg, style.background_color);
-        frame.stroke(
-            &right_bg,
-            Stroke::default().with_color(style.background_color),
-        );
-
-        let top_border = Path::line(
-            scale_point_x(size, Point::ORIGIN).snap(),
-            scale_point_x(size, Point::new(size.width, 0.0)).snap(),
-        );
-        let bottom_border = {
-            let left = scale_point_x(size, Point::new(0.0, size.height)).snap().x;
-            let right = scale_point_x(size, Point::new(size.width, size.height))
-                .snap()
-                .x;
-
-            Path::line(
-                Point::new(left, size.height - 1.0).snap(),
-                Point::new(right, size.height - 1.0).snap(),
-            )
-        };
-        let left_border = Path::line(
-            scale_point_x(size, Point::new(0.0, 0.0)).snap(),
-            scale_point_x(size, Point::new(0.0, size.height)).snap(),
-        );
-        let right_border = Path::line(
-            scale_point_x(size, Point::new(size.width, 0.0)).snap(),
-            scale_point_x(size, Point::new(size.width, size.height)).snap(),
-        );
-        let border_stroke = Stroke::default()
-            .with_width(1.0)
-            .with_color(style.border_color);
-
-        frame.stroke(&top_border, border_stroke.clone());
-        frame.stroke(&bottom_border, border_stroke.clone());
-        frame.stroke(&left_border, border_stroke.clone());
-        frame.stroke(&right_border, border_stroke);
-    }
+    attack_dragger_status: EnvelopeDraggerStatus,
+    decay_dragger_status: EnvelopeDraggerStatus,
+    release_dragger_status: EnvelopeDraggerStatus,
 }
 
 pub struct Envelope {
@@ -398,7 +315,12 @@ pub struct Envelope {
     size: Size,
     viewport_factor: f32,
     x_offset: f32,
-    updates_available: AtomicBool,
+    attack_stage_path: EnvelopeStagePath,
+    decay_stage_path: EnvelopeStagePath,
+    release_stage_path: EnvelopeStagePath,
+    attack_dragger: EnvelopeDragger,
+    decay_dragger: EnvelopeDragger,
+    release_dragger: EnvelopeDragger,
 }
 
 impl Envelope {
@@ -441,7 +363,12 @@ impl Envelope {
             size: SIZE,
             viewport_factor: 1.0,
             x_offset: 0.0,
-            updates_available: AtomicBool::new(true),
+            attack_stage_path: Default::default(),
+            decay_stage_path: Default::default(),
+            release_stage_path: Default::default(),
+            attack_dragger: Default::default(),
+            decay_dragger: Default::default(),
+            release_dragger: Default::default(),
         };
 
         let (viewport_factor, x_offset) = envelope.get_zoom_to_fit_data();
@@ -527,6 +454,19 @@ impl Envelope {
             self.modified_by_automation = !internal;
         }
     }
+
+    fn update_data(&mut self) {
+        self.update_stage_paths();
+
+        self.attack_dragger
+            .set_center(self.attack_stage_path.end_point);
+        self.decay_dragger
+            .set_center(self.decay_stage_path.end_point);
+        self.release_dragger
+            .set_center(self.release_stage_path.end_point);
+
+        self.cache.clear();
+    }
 }
 
 /// Public value getters
@@ -608,21 +548,15 @@ impl Envelope {
 
         (new_viewport_factor, new_x_offset)
     }
-
-    fn update_data(&mut self) {
-        self.updates_available.store(true, Ordering::SeqCst);
-
-        self.cache.clear();
-    }
 }
 
 /// Internal data update helpers
 impl Envelope {
-    fn update_stage_paths(&self, state: &mut CanvasState) {
+    fn update_stage_paths(&mut self) {
         let total_duration = self.viewport_factor * TOTAL_DURATION;
         let x_offset = self.x_offset / self.viewport_factor;
 
-        state.attack_stage_path = EnvelopeStagePath::new(
+        self.attack_stage_path = EnvelopeStagePath::new(
             &self.log10table,
             self.size,
             total_duration,
@@ -633,7 +567,7 @@ impl Envelope {
             1.0,
         );
 
-        state.decay_stage_path = EnvelopeStagePath::new(
+        self.decay_stage_path = EnvelopeStagePath::new(
             &self.log10table,
             self.size,
             total_duration,
@@ -644,7 +578,7 @@ impl Envelope {
             self.sustain_volume as f32,
         );
 
-        state.release_stage_path = EnvelopeStagePath::new(
+        self.release_stage_path = EnvelopeStagePath::new(
             &self.log10table,
             self.size,
             total_duration,
@@ -668,7 +602,7 @@ impl Envelope {
     }
 }
 
-/// Event handlers
+/// Canvas event handlers
 impl Envelope {
     fn handle_button_pressed(
         &self,
@@ -681,26 +615,26 @@ impl Envelope {
                 state.last_cursor_position.y - bounds.y,
             );
 
-            if state.release_dragger.hitbox.contains(relative_position)
-                && !state.release_dragger.is_dragging()
+            if self.release_dragger.hitbox.contains(relative_position)
+                && !state.release_dragger_status.is_dragging()
             {
-                state.release_dragger.status = EnvelopeDraggerStatus::Dragging {
+                state.release_dragger_status = EnvelopeDraggerStatus::Dragging {
                     from: state.last_cursor_position,
                     original_duration: self.release_duration,
                     original_end_value: 0.0,
                 };
-            } else if state.decay_dragger.hitbox.contains(relative_position)
-                && !state.decay_dragger.is_dragging()
+            } else if self.decay_dragger.hitbox.contains(relative_position)
+                && !state.decay_dragger_status.is_dragging()
             {
-                state.decay_dragger.status = EnvelopeDraggerStatus::Dragging {
+                state.decay_dragger_status = EnvelopeDraggerStatus::Dragging {
                     from: state.last_cursor_position,
                     original_duration: self.decay_duration,
                     original_end_value: self.sustain_volume,
                 };
-            } else if state.attack_dragger.hitbox.contains(relative_position)
-                && !state.attack_dragger.is_dragging()
+            } else if self.attack_dragger.hitbox.contains(relative_position)
+                && !state.attack_dragger_status.is_dragging()
             {
-                state.attack_dragger.status = EnvelopeDraggerStatus::Dragging {
+                state.attack_dragger_status = EnvelopeDraggerStatus::Dragging {
                     from: state.last_cursor_position,
                     original_duration: self.attack_duration,
                     original_end_value: 1.0,
@@ -735,9 +669,6 @@ impl Envelope {
         }
     }
 
-    /// Handle cursor moved event
-    ///
-    /// Updates display state and ADSR parameter values on self
     fn handle_cursor_moved(
         &self,
         state: &mut CanvasState,
@@ -755,19 +686,19 @@ impl Envelope {
 
         let relative_position = Point::new(x - bounds.x, y - bounds.y);
 
-        let attack_hitbox_hit = state.attack_dragger.hitbox.contains(relative_position);
+        let attack_hitbox_hit = self.attack_dragger.hitbox.contains(relative_position);
 
-        match state.attack_dragger.status {
+        match state.attack_dragger_status {
             EnvelopeDraggerStatus::Normal => {
                 if attack_hitbox_hit {
-                    state.attack_dragger.status = EnvelopeDraggerStatus::Hover;
+                    state.attack_dragger_status = EnvelopeDraggerStatus::Hover;
 
                     self.cache.clear();
                 }
             }
             EnvelopeDraggerStatus::Hover => {
                 if !attack_hitbox_hit {
-                    state.attack_dragger.status = EnvelopeDraggerStatus::Normal;
+                    state.attack_dragger_status = EnvelopeDraggerStatus::Normal;
 
                     self.cache.clear();
                 }
@@ -777,18 +708,12 @@ impl Envelope {
                 original_duration,
                 ..
             } => {
-                let attack_duration =
-                    dragging_to_duration(self.viewport_factor, x, from, original_duration);
-
-                // FIXME
-                // self.modified_by_automation = false;
-                // self.update_data();
-
                 let message = Message::ChangeEnvelopeParametersSetValue {
                     operator_index: self.operator_index,
                     parameter_1: (
                         Parameter::Operator(self.operator_index, OperatorParameter::AttackDuration),
-                        attack_duration as f32,
+                        dragging_to_duration(self.viewport_factor, x, from, original_duration)
+                            as f32,
                     ),
                     parameter_2: None,
                 };
@@ -797,23 +722,25 @@ impl Envelope {
             }
         }
 
-        let decay_hitbox_hit = state.decay_dragger.hitbox.contains(relative_position);
+        let decay_hitbox_hit = self.decay_dragger.hitbox.contains(relative_position);
 
         if decay_hitbox_hit {
-            state.attack_dragger.set_to_normal_if_in_hover_state();
+            state
+                .attack_dragger_status
+                .set_to_normal_if_in_hover_state();
         }
 
-        match state.decay_dragger.status {
+        match state.decay_dragger_status {
             EnvelopeDraggerStatus::Normal => {
                 if decay_hitbox_hit {
-                    state.decay_dragger.status = EnvelopeDraggerStatus::Hover;
+                    state.decay_dragger_status = EnvelopeDraggerStatus::Hover;
 
                     self.cache.clear();
                 }
             }
             EnvelopeDraggerStatus::Hover => {
                 if !decay_hitbox_hit {
-                    state.decay_dragger.status = EnvelopeDraggerStatus::Normal;
+                    state.decay_dragger_status = EnvelopeDraggerStatus::Normal;
 
                     self.cache.clear();
                 }
@@ -823,23 +750,16 @@ impl Envelope {
                 original_duration,
                 original_end_value,
             } => {
-                let decay_duration =
-                    dragging_to_duration(self.viewport_factor, x, from, original_duration);
-                let sustain_volume = dragging_to_end_value(y, from, original_end_value);
-
-                // FIXME
-                // self.modified_by_automation = false;
-                // self.update_data();
-
                 let message = Message::ChangeEnvelopeParametersSetValue {
                     operator_index: self.operator_index,
                     parameter_1: (
                         Parameter::Operator(self.operator_index, OperatorParameter::DecayDuration),
-                        decay_duration as f32,
+                        dragging_to_duration(self.viewport_factor, x, from, original_duration)
+                            as f32,
                     ),
                     parameter_2: Some((
                         Parameter::Operator(self.operator_index, OperatorParameter::SustainVolume),
-                        sustain_volume as f32,
+                        dragging_to_end_value(y, from, original_end_value) as f32,
                     )),
                 };
 
@@ -847,27 +767,31 @@ impl Envelope {
             }
         }
 
-        let release_hitbox_hit = state.release_dragger.hitbox.contains(relative_position);
+        let release_hitbox_hit = self.release_dragger.hitbox.contains(relative_position);
 
         if release_hitbox_hit {
-            state.attack_dragger.set_to_normal_if_in_hover_state();
-            state.decay_dragger.set_to_normal_if_in_hover_state();
+            state
+                .attack_dragger_status
+                .set_to_normal_if_in_hover_state();
+            state.decay_dragger_status.set_to_normal_if_in_hover_state();
         }
 
-        match state.release_dragger.status {
+        match state.release_dragger_status {
             EnvelopeDraggerStatus::Normal => {
                 if release_hitbox_hit {
-                    state.release_dragger.status = EnvelopeDraggerStatus::Hover;
+                    state.release_dragger_status = EnvelopeDraggerStatus::Hover;
 
-                    state.attack_dragger.set_to_normal_if_in_hover_state();
-                    state.decay_dragger.set_to_normal_if_in_hover_state();
+                    state
+                        .attack_dragger_status
+                        .set_to_normal_if_in_hover_state();
+                    state.decay_dragger_status.set_to_normal_if_in_hover_state();
 
                     self.cache.clear();
                 }
             }
             EnvelopeDraggerStatus::Hover => {
                 if !release_hitbox_hit {
-                    state.release_dragger.status = EnvelopeDraggerStatus::Normal;
+                    state.release_dragger_status = EnvelopeDraggerStatus::Normal;
 
                     self.cache.clear();
                 }
@@ -877,13 +801,6 @@ impl Envelope {
                 original_duration,
                 ..
             } => {
-                let release_duration =
-                    dragging_to_duration(self.viewport_factor, x, from, original_duration);
-
-                // FIXME
-                // self.modified_by_automation = false;
-                // self.update_data();
-
                 let message = Message::ChangeEnvelopeParametersSetValue {
                     operator_index: self.operator_index,
                     parameter_1: (
@@ -891,7 +808,8 @@ impl Envelope {
                             self.operator_index,
                             OperatorParameter::ReleaseDuration,
                         ),
-                        release_duration as f32,
+                        dragging_to_duration(self.viewport_factor, x, from, original_duration)
+                            as f32,
                     ),
                     parameter_2: None,
                 };
@@ -935,8 +853,8 @@ impl Envelope {
     }
 
     fn handle_button_released(&self, state: &mut CanvasState) -> (event::Status, Option<Message>) {
-        if state.release_dragger.is_dragging() {
-            state.release_dragger.status = EnvelopeDraggerStatus::Normal;
+        if state.release_dragger_status.is_dragging() {
+            state.release_dragger_status = EnvelopeDraggerStatus::Normal;
 
             let message = Message::ChangeEnvelopeParametersEnd {
                 operator_index: self.operator_index as u8,
@@ -950,8 +868,8 @@ impl Envelope {
             self.cache.clear();
 
             (event::Status::Captured, Some(message))
-        } else if state.decay_dragger.is_dragging() {
-            state.decay_dragger.status = EnvelopeDraggerStatus::Normal;
+        } else if state.decay_dragger_status.is_dragging() {
+            state.decay_dragger_status = EnvelopeDraggerStatus::Normal;
 
             let message = Message::ChangeEnvelopeParametersEnd {
                 operator_index: self.operator_index as u8,
@@ -968,8 +886,8 @@ impl Envelope {
             self.cache.clear();
 
             (event::Status::Captured, Some(message))
-        } else if state.attack_dragger.is_dragging() {
-            state.attack_dragger.status = EnvelopeDraggerStatus::Normal;
+        } else if state.attack_dragger_status.is_dragging() {
+            state.attack_dragger_status = EnvelopeDraggerStatus::Normal;
 
             let message = Message::ChangeEnvelopeParametersEnd {
                 operator_index: self.operator_index as u8,
@@ -1023,7 +941,7 @@ impl Envelope {
     }
 }
 
-/// Display logic
+/// Canvas display logic
 impl Envelope {
     fn draw_time_markers(&self, frame: &mut Frame, style: Theme) {
         let font_regular = style.font_regular();
@@ -1091,6 +1009,88 @@ impl Envelope {
         }
     }
 
+    fn draw_stage_paths(&self, frame: &mut Frame, style_sheet: Box<dyn StyleSheet>) {
+        let style = style_sheet.active();
+        let size = frame.size();
+
+        let top_drag_border = Path::line(
+            scale_point(size, Point::ORIGIN).snap(),
+            scale_point(size, Point::new(size.width, 0.0)).snap(),
+        );
+        let bottom_drag_border = Path::line(
+            scale_point(size, Point::new(0.0, size.height)).snap(),
+            scale_point(size, Point::new(size.width, size.height)).snap(),
+        );
+
+        let drag_border_stroke = Stroke::default()
+            .with_width(1.0)
+            .with_color(style.drag_border_color);
+
+        frame.stroke(&top_drag_border, drag_border_stroke.clone());
+        frame.stroke(&bottom_drag_border, drag_border_stroke);
+
+        let stage_path_stroke = Stroke::default()
+            .with_width(1.0)
+            .with_color(style.path_color);
+
+        frame.stroke(&self.attack_stage_path.path, stage_path_stroke.clone());
+        frame.stroke(&self.decay_stage_path.path, stage_path_stroke.clone());
+        frame.stroke(&self.release_stage_path.path, stage_path_stroke);
+
+        // Hide stage path parts that extend beyond scaled bounds, draw borders
+
+        let left_bg_x = scale_point_x(size, Point::ORIGIN).snap().x - 1.0;
+        let left_bg = Path::rectangle(Point::ORIGIN, Size::new(left_bg_x, size.height));
+        frame.fill(&left_bg, style.background_color);
+        frame.stroke(
+            &left_bg,
+            Stroke::default().with_color(style.background_color),
+        );
+
+        let right_bg_x = scale_point_x(size, Point::new(size.width, 0.0)).snap().x + 1.0;
+        let right_bg = Path::rectangle(
+            Point::new(right_bg_x, 0.0),
+            Size::new(size.width, size.height),
+        );
+        frame.fill(&right_bg, style.background_color);
+        frame.stroke(
+            &right_bg,
+            Stroke::default().with_color(style.background_color),
+        );
+
+        let top_border = Path::line(
+            scale_point_x(size, Point::ORIGIN).snap(),
+            scale_point_x(size, Point::new(size.width, 0.0)).snap(),
+        );
+        let bottom_border = {
+            let left = scale_point_x(size, Point::new(0.0, size.height)).snap().x;
+            let right = scale_point_x(size, Point::new(size.width, size.height))
+                .snap()
+                .x;
+
+            Path::line(
+                Point::new(left, size.height - 1.0).snap(),
+                Point::new(right, size.height - 1.0).snap(),
+            )
+        };
+        let left_border = Path::line(
+            scale_point_x(size, Point::new(0.0, 0.0)).snap(),
+            scale_point_x(size, Point::new(0.0, size.height)).snap(),
+        );
+        let right_border = Path::line(
+            scale_point_x(size, Point::new(size.width, 0.0)).snap(),
+            scale_point_x(size, Point::new(size.width, size.height)).snap(),
+        );
+        let border_stroke = Stroke::default()
+            .with_width(1.0)
+            .with_color(style.border_color);
+
+        frame.stroke(&top_border, border_stroke.clone());
+        frame.stroke(&bottom_border, border_stroke.clone());
+        frame.stroke(&left_border, border_stroke.clone());
+        frame.stroke(&right_border, border_stroke);
+    }
+
     fn draw_viewport_indicator(&self, frame: &mut Frame, style_sheet: Box<dyn StyleSheet>) {
         const WIDTH: f32 = 60.0;
         const HEIGHT: f32 = 6.0;
@@ -1143,12 +1143,14 @@ impl Program<Message> for Envelope {
     ) -> Vec<Geometry> {
         let geometry = self.cache.draw(bounds.size(), |frame| {
             self.draw_time_markers(frame, self.style);
+            self.draw_stage_paths(frame, self.style.envelope());
 
-            state.draw_stage_paths(frame, self.style.envelope());
-
-            state.attack_dragger.draw(frame, self.style.envelope());
-            state.decay_dragger.draw(frame, self.style.envelope());
-            state.release_dragger.draw(frame, self.style.envelope());
+            self.attack_dragger
+                .draw(frame, self.style.envelope(), &state.attack_dragger_status);
+            self.decay_dragger
+                .draw(frame, self.style.envelope(), &state.decay_dragger_status);
+            self.release_dragger
+                .draw(frame, self.style.envelope(), &state.release_dragger_status);
 
             self.draw_viewport_indicator(frame, self.style.envelope());
         });
@@ -1163,22 +1165,6 @@ impl Program<Message> for Envelope {
         bounds: Rectangle,
         _cursor: Cursor,
     ) -> (event::Status, Option<Message>) {
-        if self.updates_available.fetch_and(false, Ordering::SeqCst) {
-            self.update_stage_paths(state);
-
-            state
-                .attack_dragger
-                .set_center(state.attack_stage_path.end_point);
-            state
-                .decay_dragger
-                .set_center(state.decay_stage_path.end_point);
-            state
-                .release_dragger
-                .set_center(state.release_stage_path.end_point);
-
-            self.cache.clear();
-        }
-
         match event {
             event::Event::Mouse(iced_baseview::mouse::Event::CursorMoved {
                 position: Point { x, y },
