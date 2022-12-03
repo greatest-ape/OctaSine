@@ -1,10 +1,11 @@
 mod common;
 mod mix_line;
 mod mod_box;
-mod mod_line;
+mod mod_lines;
 mod operator_box;
 mod output_box;
 
+use arrayvec::ArrayVec;
 use iced_baseview::canvas::{event, Cache, Canvas, Cursor, Frame, Geometry, Path, Program, Stroke};
 use iced_baseview::{Color, Element, Length, Point, Rectangle, Size};
 
@@ -18,12 +19,12 @@ use self::mix_line::MixOutLine;
 use self::mod_box::{
     ModulationBox, ModulationBoxCanvasState, ModulationBoxChange, ModulationBoxUpdate,
 };
-use self::mod_line::ModOutLine;
+use self::mod_lines::ModOutLines;
 use self::operator_box::{OperatorBox, OperatorBoxCanvasState, OperatorBoxChange};
 use self::output_box::OutputBox;
 
 use super::style::Theme;
-use super::{Message, LINE_HEIGHT};
+use super::{Message, SnapPoint, LINE_HEIGHT};
 
 /// Canvas width
 const WIDTH: u16 = LINE_HEIGHT * 5 + 2;
@@ -137,9 +138,9 @@ struct ModulationMatrixComponents {
     operator_3_mix_out_line: MixOutLine,
     operator_2_mix_out_line: MixOutLine,
     operator_1_mix_out_line: MixOutLine,
-    operator_4_mod_out_line: ModOutLine,
-    operator_3_mod_out_line: ModOutLine,
-    operator_2_mod_out_line: ModOutLine,
+    operator_4_mod_out_line: ModOutLines,
+    operator_3_mod_out_line: ModOutLines,
+    operator_2_mod_out_line: ModOutLines,
 }
 
 impl ModulationMatrixComponents {
@@ -226,11 +227,11 @@ impl ModulationMatrixComponents {
         );
 
         let operator_4_mod_out_line =
-            ModOutLine::new(operator_4_box.get_center(), style.mod_matrix());
+            ModOutLines::new(operator_4_box.get_center(), style.mod_matrix());
         let operator_3_mod_out_line =
-            ModOutLine::new(operator_3_box.get_center(), style.mod_matrix());
+            ModOutLines::new(operator_3_box.get_center(), style.mod_matrix());
         let operator_2_mod_out_line =
-            ModOutLine::new(operator_2_box.get_center(), style.mod_matrix());
+            ModOutLines::new(operator_2_box.get_center(), style.mod_matrix());
 
         let mut components = Self {
             operator_1_box,
@@ -276,9 +277,11 @@ impl ModulationMatrixComponents {
             .update(parameters.operator_1_mix, style.mod_matrix());
 
         {
-            let mut points = Vec::new();
+            let mut lines = Vec::new();
 
             for mod_target in parameters.operator_4_targets.active_indices() {
+                let mut points = ArrayVec::new();
+
                 let (mod_box, operator_box) = match mod_target {
                     0 => (
                         self.operator_4_mod_1_box.get_center(),
@@ -295,19 +298,22 @@ impl ModulationMatrixComponents {
                     _ => unreachable!(),
                 };
 
-                points.push(mod_box);
-                points.push(operator_box);
-                points.push(mod_box);
+                points.push(mod_box.snap());
+                points.push(operator_box.snap());
+
+                lines.push(points);
             }
 
             self.operator_4_mod_out_line
-                .update(points, style.mod_matrix());
+                .update(lines, style.mod_matrix());
         }
 
         {
-            let mut points = Vec::new();
+            let mut lines = Vec::new();
 
             for mod_target in parameters.operator_3_targets.active_indices() {
+                let mut points = ArrayVec::new();
+
                 let (mod_box, operator_box) = match mod_target {
                     0 => (
                         self.operator_3_mod_1_box.get_center(),
@@ -320,19 +326,22 @@ impl ModulationMatrixComponents {
                     _ => unreachable!(),
                 };
 
-                points.push(mod_box);
-                points.push(operator_box);
-                points.push(mod_box);
+                points.push(mod_box.snap());
+                points.push(operator_box.snap());
+
+                lines.push(points);
             }
 
             self.operator_3_mod_out_line
-                .update(points, style.mod_matrix());
+                .update(lines, style.mod_matrix());
         };
 
         {
-            let mut points = Vec::new();
+            let mut lines = Vec::new();
 
             for mod_target in parameters.operator_2_targets.active_indices() {
+                let mut points = ArrayVec::new();
+
                 let (mod_box, operator_box) = match mod_target {
                     0 => (
                         self.operator_2_mod_1_box.get_center(),
@@ -341,13 +350,14 @@ impl ModulationMatrixComponents {
                     _ => unreachable!(),
                 };
 
-                points.push(mod_box);
-                points.push(operator_box);
-                points.push(mod_box);
+                points.push(mod_box.snap());
+                points.push(operator_box.snap());
+
+                lines.push(points);
             }
 
             self.operator_2_mod_out_line
-                .update(points, style.mod_matrix());
+                .update(lines, style.mod_matrix());
         }
     }
 
