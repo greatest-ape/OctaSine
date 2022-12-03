@@ -3,7 +3,6 @@
 ## High priority
 
 * iced 0.5 adjustments
-  * Rewrite mod matrix widget to work with iced 0.5
   * Text styles
   * Ideally rewrite style handling to be idiomatic
     * Reorganize code with widgets and nested light/dark modules?

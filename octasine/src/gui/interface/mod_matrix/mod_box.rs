@@ -9,6 +9,20 @@ use crate::gui::interface::{Message, SnapPoint};
 use super::common::*;
 use super::StyleSheet;
 
+pub struct ModulationBoxCanvasState {
+    hover: bool,
+    click_started: bool,
+}
+
+impl Default for ModulationBoxCanvasState {
+    fn default() -> Self {
+        Self {
+            hover: false,
+            click_started: false,
+        }
+    }
+}
+
 pub enum ModulationBoxChange {
     Update(Message),
     ClearCache(Option<Message>),
@@ -16,16 +30,18 @@ pub enum ModulationBoxChange {
 }
 
 pub trait ModulationBoxUpdate {
-    fn update(&mut self, bounds: Rectangle, event: event::Event) -> ModulationBoxChange;
+    fn update(
+        &self,
+        state: &mut ModulationBoxCanvasState,
+        bounds: Rectangle,
+        event: event::Event,
+    ) -> ModulationBoxChange;
 }
 
 pub struct ModulationBox<P: ParameterValue> {
     path: Path,
     pub center: Point,
     rect: Rectangle,
-    hover: bool,
-    click_started: bool,
-    mouse_left_after_click: bool,
     parameter: Parameter,
     target_index: usize,
     pub v: P::Value,
@@ -71,9 +87,6 @@ where
             path,
             center,
             rect,
-            hover: false,
-            click_started: false,
-            mouse_left_after_click: true,
             parameter,
             target_index,
             v,
@@ -84,14 +97,19 @@ where
         self.v.index_active(self.target_index)
     }
 
-    pub fn draw(&self, frame: &mut Frame, style_sheet: Box<dyn StyleSheet>) {
+    pub fn draw(
+        &self,
+        state: &ModulationBoxCanvasState,
+        frame: &mut Frame,
+        style_sheet: Box<dyn StyleSheet>,
+    ) {
         let style = style_sheet.active();
 
         let stroke = Stroke::default()
             .with_color(style.box_border_color)
             .with_width(1.0);
 
-        let fill_color = match (self.active(), self.hover) {
+        let fill_color = match (self.active(), state.hover) {
             (true, false) => style.modulation_box_color_active,
             (true, true) => style.modulation_box_color_hover,
             (false, false) => style.modulation_box_color_inactive,
@@ -107,22 +125,26 @@ impl<P> ModulationBoxUpdate for ModulationBox<P>
 where
     P: ParameterValue<Value = ModTargetStorage>,
 {
-    fn update(&mut self, bounds: Rectangle, event: event::Event) -> ModulationBoxChange {
+    fn update(
+        &self,
+        state: &mut ModulationBoxCanvasState,
+        bounds: Rectangle,
+        event: event::Event,
+    ) -> ModulationBoxChange {
         match event {
             event::Event::Mouse(mouse::Event::CursorMoved {
                 position: Point { x, y },
             }) => {
                 let cursor = Point::new(x - bounds.x, y - bounds.y);
 
-                match (self.hover, self.rect.contains(cursor)) {
+                match (state.hover, self.rect.contains(cursor)) {
                     (false, true) => {
-                        self.hover = true;
+                        state.hover = true;
 
                         return ModulationBoxChange::ClearCache(None);
                     }
                     (true, false) => {
-                        self.hover = false;
-                        self.mouse_left_after_click = true;
+                        state.hover = false;
 
                         return ModulationBoxChange::ClearCache(None);
                     }
@@ -130,17 +152,21 @@ where
                 }
             }
             event::Event::Mouse(mouse::Event::ButtonPressed(_)) => {
-                if self.hover {
-                    self.click_started = true;
+                if state.hover {
+                    state.click_started = true;
                 }
             }
             event::Event::Mouse(mouse::Event::ButtonReleased(_)) => {
-                if self.hover && self.click_started {
-                    self.click_started = false;
-                    self.mouse_left_after_click = false;
+                if state.hover && state.click_started {
+                    state.click_started = false;
 
-                    self.v.set_index(self.target_index, !self.active());
-                    let sync_value = P::new_from_audio(self.v).to_patch();
+                    let sync_value = {
+                        let mut v = self.v;
+
+                        v.set_index(self.target_index, !self.active());
+
+                        P::new_from_audio(v).to_patch()
+                    };
 
                     return ModulationBoxChange::Update(Message::ChangeSingleParameterImmediate(
                         self.parameter,

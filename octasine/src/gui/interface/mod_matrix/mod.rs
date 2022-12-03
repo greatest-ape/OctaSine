@@ -15,9 +15,11 @@ use crate::parameters::{
 use crate::sync::GuiSyncHandle;
 
 use self::mix_line::MixOutLine;
-use self::mod_box::{ModulationBox, ModulationBoxChange, ModulationBoxUpdate};
+use self::mod_box::{
+    ModulationBox, ModulationBoxCanvasState, ModulationBoxChange, ModulationBoxUpdate,
+};
 use self::mod_line::ModOutLine;
-use self::operator_box::{OperatorBox, OperatorBoxChange};
+use self::operator_box::{OperatorBox, OperatorBoxCanvasState, OperatorBoxChange};
 use self::output_box::OutputBox;
 
 use super::style::Theme;
@@ -339,18 +341,28 @@ impl ModulationMatrixComponents {
         self.operator_2_mod_out_line.draw(frame);
     }
 
-    fn draw_boxes(&self, frame: &mut Frame, style: Theme) {
-        self.operator_1_box.draw(frame, style);
-        self.operator_2_box.draw(frame, style);
-        self.operator_3_box.draw(frame, style);
-        self.operator_4_box.draw(frame, style);
+    fn draw_boxes(&self, state: &CanvasState, frame: &mut Frame, style: Theme) {
+        self.operator_1_box
+            .draw(&state.operator_1_box, frame, style);
+        self.operator_2_box
+            .draw(&state.operator_2_box, frame, style);
+        self.operator_3_box
+            .draw(&state.operator_3_box, frame, style);
+        self.operator_4_box
+            .draw(&state.operator_4_box, frame, style);
 
-        self.operator_4_mod_3_box.draw(frame, style.mod_matrix());
-        self.operator_4_mod_2_box.draw(frame, style.mod_matrix());
-        self.operator_4_mod_1_box.draw(frame, style.mod_matrix());
-        self.operator_3_mod_2_box.draw(frame, style.mod_matrix());
-        self.operator_3_mod_1_box.draw(frame, style.mod_matrix());
-        self.operator_2_mod_1_box.draw(frame, style.mod_matrix());
+        self.operator_4_mod_3_box
+            .draw(&state.operator_4_mod_3_box, frame, style.mod_matrix());
+        self.operator_4_mod_2_box
+            .draw(&state.operator_4_mod_2_box, frame, style.mod_matrix());
+        self.operator_4_mod_1_box
+            .draw(&state.operator_4_mod_1_box, frame, style.mod_matrix());
+        self.operator_3_mod_2_box
+            .draw(&state.operator_3_mod_2_box, frame, style.mod_matrix());
+        self.operator_3_mod_1_box
+            .draw(&state.operator_3_mod_1_box, frame, style.mod_matrix());
+        self.operator_2_mod_1_box
+            .draw(&state.operator_2_mod_1_box, frame, style.mod_matrix());
 
         self.output_box.draw(frame, style.mod_matrix());
     }
@@ -478,13 +490,27 @@ impl ModulationMatrix {
     }
 }
 
+#[derive(Default)]
+pub struct CanvasState {
+    operator_1_box: OperatorBoxCanvasState,
+    operator_2_box: OperatorBoxCanvasState,
+    operator_3_box: OperatorBoxCanvasState,
+    operator_4_box: OperatorBoxCanvasState,
+    operator_4_mod_3_box: ModulationBoxCanvasState,
+    operator_4_mod_2_box: ModulationBoxCanvasState,
+    operator_4_mod_1_box: ModulationBoxCanvasState,
+    operator_3_mod_2_box: ModulationBoxCanvasState,
+    operator_3_mod_1_box: ModulationBoxCanvasState,
+    operator_2_mod_1_box: ModulationBoxCanvasState,
+}
+
 impl Program<Message> for ModulationMatrix {
-    type State = ();
+    type State = CanvasState;
 
     fn draw(
         &self,
         state: &Self::State,
-        theme: &iced_baseview::Theme,
+        _theme: &iced_baseview::Theme,
         bounds: Rectangle,
         _cursor: Cursor,
     ) -> Vec<Geometry> {
@@ -492,13 +518,12 @@ impl Program<Message> for ModulationMatrix {
             self.draw_background(frame, self.style.mod_matrix());
 
             self.components.draw_lines(frame);
-            self.components.draw_boxes(frame, self.style);
+            self.components.draw_boxes(state, frame, self.style);
         });
 
         vec![geometry]
     }
 
-    /*
     fn update(
         &self,
         state: &mut Self::State,
@@ -506,27 +531,31 @@ impl Program<Message> for ModulationMatrix {
         bounds: Rectangle,
         _cursor: Cursor,
     ) -> (event::Status, Option<Message>) {
-        let operator_boxes = vec![
+        let operator_boxes = [
             (
-                &mut self.components.operator_1_box,
+                &self.components.operator_1_box,
+                &mut state.operator_1_box,
                 self.parameters.operator_1_mix,
             ),
             (
-                &mut self.components.operator_2_box,
+                &self.components.operator_2_box,
+                &mut state.operator_2_box,
                 self.parameters.operator_2_mix,
             ),
             (
-                &mut self.components.operator_3_box,
+                &self.components.operator_3_box,
+                &mut state.operator_3_box,
                 self.parameters.operator_3_mix,
             ),
             (
-                &mut self.components.operator_4_box,
+                &self.components.operator_4_box,
+                &mut state.operator_4_box,
                 self.parameters.operator_4_mix,
             ),
         ];
 
-        for (operator_box, value) in operator_boxes.into_iter() {
-            match operator_box.update(bounds, event, value) {
+        for (operator_box, state, value) in operator_boxes.into_iter() {
+            match operator_box.update(state, bounds, event, value) {
                 OperatorBoxChange::Update(message) => {
                     return (event::Status::Captured, Some(message));
                 }
@@ -540,8 +569,8 @@ impl Program<Message> for ModulationMatrix {
         }
 
         macro_rules! update_mod_box {
-            ($mod_box:expr) => {
-                match $mod_box.update(bounds, event) {
+            ($mod_box:expr, $state:expr) => {
+                match $mod_box.update($state, bounds, event) {
                     ModulationBoxChange::Update(message) => {
                         return (event::Status::Captured, Some(message));
                     }
@@ -555,14 +584,31 @@ impl Program<Message> for ModulationMatrix {
             };
         }
 
-        update_mod_box!(self.components.operator_4_mod_3_box);
-        update_mod_box!(self.components.operator_4_mod_2_box);
-        update_mod_box!(self.components.operator_4_mod_1_box);
-        update_mod_box!(self.components.operator_3_mod_2_box);
-        update_mod_box!(self.components.operator_3_mod_1_box);
-        update_mod_box!(self.components.operator_2_mod_1_box);
+        update_mod_box!(
+            self.components.operator_4_mod_3_box,
+            &mut state.operator_4_mod_3_box
+        );
+        update_mod_box!(
+            self.components.operator_4_mod_2_box,
+            &mut state.operator_4_mod_2_box
+        );
+        update_mod_box!(
+            self.components.operator_4_mod_1_box,
+            &mut state.operator_4_mod_1_box
+        );
+        update_mod_box!(
+            self.components.operator_3_mod_2_box,
+            &mut state.operator_3_mod_2_box
+        );
+        update_mod_box!(
+            self.components.operator_3_mod_1_box,
+            &mut state.operator_3_mod_1_box
+        );
+        update_mod_box!(
+            self.components.operator_2_mod_1_box,
+            &mut state.operator_2_mod_1_box
+        );
 
         (event::Status::Ignored, None)
     }
-    */
 }

@@ -7,16 +7,27 @@ use iced_baseview::{mouse, Point, Rectangle, Size};
 use super::common::*;
 use super::OPERATOR_BOX_SCALE;
 
+#[derive(Default)]
+pub struct OperatorBoxCanvasState {
+    status: BoxStatus,
+    last_cursor_position: Point,
+}
+
 pub enum OperatorBoxChange {
     Update(Message),
     ClearCache(Option<Message>),
     None,
 }
 
+#[derive(Default)]
 pub enum BoxStatus {
+    #[default]
     Normal,
     Hover,
-    Dragging { from: Point, original_value: f32 },
+    Dragging {
+        from: Point,
+        original_value: f32,
+    },
 }
 
 impl BoxStatus {
@@ -30,8 +41,6 @@ pub struct OperatorBox {
     text_position: Point,
     path: Path,
     pub center: Point,
-    status: BoxStatus,
-    last_cursor_position: Point,
     hitbox: Rectangle,
 }
 
@@ -83,8 +92,6 @@ impl OperatorBox {
             text_position,
             path,
             center,
-            status: BoxStatus::Normal,
-            last_cursor_position: Point::new(-1.0, -1.0),
             hitbox: rect,
         }
     }
@@ -94,7 +101,8 @@ impl OperatorBox {
     }
 
     pub fn update(
-        &mut self,
+        &self,
+        state: &mut OperatorBoxCanvasState,
         bounds: Rectangle,
         event: event::Event,
         value: f32,
@@ -105,18 +113,18 @@ impl OperatorBox {
             }) => {
                 let cursor = Point::new(x - bounds.x, y - bounds.y);
 
-                self.last_cursor_position = cursor;
+                state.last_cursor_position = cursor;
 
                 let hit = self.hitbox.contains(cursor);
 
-                match self.status {
+                match state.status {
                     BoxStatus::Normal if hit => {
-                        self.status = BoxStatus::Hover;
+                        state.status = BoxStatus::Hover;
 
                         return OperatorBoxChange::ClearCache(None);
                     }
                     BoxStatus::Hover if !hit => {
-                        self.status = BoxStatus::Normal;
+                        state.status = BoxStatus::Normal;
 
                         return OperatorBoxChange::ClearCache(None);
                     }
@@ -135,9 +143,9 @@ impl OperatorBox {
                 }
             }
             event::Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)) => {
-                if !self.status.is_dragging() && self.hitbox.contains(self.last_cursor_position) {
-                    self.status = BoxStatus::Dragging {
-                        from: self.last_cursor_position,
+                if !state.status.is_dragging() && self.hitbox.contains(state.last_cursor_position) {
+                    state.status = BoxStatus::Dragging {
+                        from: state.last_cursor_position,
                         original_value: value,
                     };
 
@@ -147,11 +155,11 @@ impl OperatorBox {
                 }
             }
             event::Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left)) => {
-                if self.status.is_dragging() {
-                    if self.hitbox.contains(self.last_cursor_position) {
-                        self.status = BoxStatus::Hover;
+                if state.status.is_dragging() {
+                    if self.hitbox.contains(state.last_cursor_position) {
+                        state.status = BoxStatus::Hover;
                     } else {
-                        self.status = BoxStatus::Normal;
+                        state.status = BoxStatus::Normal;
                     }
 
                     return OperatorBoxChange::ClearCache(Some(Message::ChangeSingleParameterEnd(
@@ -165,7 +173,7 @@ impl OperatorBox {
         OperatorBoxChange::None
     }
 
-    pub fn draw(&self, frame: &mut Frame, style: Theme) {
+    pub fn draw(&self, state: &OperatorBoxCanvasState, frame: &mut Frame, style: Theme) {
         let font_bold = style.font_bold();
         let style = style.mod_matrix().active();
 
@@ -178,7 +186,7 @@ impl OperatorBox {
             ..Default::default()
         };
 
-        let background_color = match self.status {
+        let background_color = match state.status {
             BoxStatus::Normal => style.operator_box_color_active,
             BoxStatus::Hover => style.operator_box_color_hover,
             BoxStatus::Dragging { .. } => style.operator_box_color_dragging,
