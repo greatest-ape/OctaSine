@@ -1,4 +1,3 @@
-use arrayvec::ArrayVec;
 use iced_baseview::canvas::{path, Frame, Stroke};
 use iced_baseview::{Color, Point};
 
@@ -6,7 +5,7 @@ use super::StyleSheet;
 
 pub struct ModOutLines {
     from: Point,
-    lines: Vec<ArrayVec<Point, 2>>,
+    lines: Vec<[Point; 2]>,
     color: Color,
 }
 
@@ -23,7 +22,7 @@ impl ModOutLines {
         line
     }
 
-    pub fn update(&mut self, lines: Vec<ArrayVec<Point, 2>>, style_sheet: Box<dyn StyleSheet>) {
+    pub fn update(&mut self, lines: Vec<[Point; 2]>, style_sheet: Box<dyn StyleSheet>) {
         self.lines = lines;
         self.color = style_sheet.active().mod_out_line_color;
     }

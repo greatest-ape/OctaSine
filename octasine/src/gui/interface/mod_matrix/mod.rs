@@ -5,7 +5,6 @@ mod mod_lines;
 mod operator_box;
 mod output_box;
 
-use arrayvec::ArrayVec;
 use iced_baseview::canvas::{event, Cache, Canvas, Cursor, Frame, Geometry, Path, Program, Stroke};
 use iced_baseview::{Color, Element, Length, Point, Rectangle, Size};
 
@@ -138,9 +137,9 @@ struct ModulationMatrixComponents {
     operator_3_mix_out_line: MixOutLine,
     operator_2_mix_out_line: MixOutLine,
     operator_1_mix_out_line: MixOutLine,
-    operator_4_mod_out_line: ModOutLines,
-    operator_3_mod_out_line: ModOutLines,
-    operator_2_mod_out_line: ModOutLines,
+    operator_4_mod_out_lines: ModOutLines,
+    operator_3_mod_out_lines: ModOutLines,
+    operator_2_mod_out_lines: ModOutLines,
 }
 
 impl ModulationMatrixComponents {
@@ -249,9 +248,9 @@ impl ModulationMatrixComponents {
             operator_3_mix_out_line,
             operator_2_mix_out_line,
             operator_1_mix_out_line,
-            operator_4_mod_out_line,
-            operator_3_mod_out_line,
-            operator_2_mod_out_line,
+            operator_4_mod_out_lines: operator_4_mod_out_line,
+            operator_3_mod_out_lines: operator_3_mod_out_line,
+            operator_2_mod_out_lines: operator_2_mod_out_line,
         };
 
         components.update(parameters, style);
@@ -277,86 +276,65 @@ impl ModulationMatrixComponents {
             .update(parameters.operator_1_mix, style.mod_matrix());
 
         {
-            let mut lines = Vec::new();
-
-            for mod_target in parameters.operator_4_targets.active_indices() {
-                let mut points = ArrayVec::new();
-
-                let (mod_box, operator_box) = match mod_target {
-                    0 => (
-                        self.operator_4_mod_1_box.get_center(),
-                        self.operator_1_box.get_center(),
-                    ),
-                    1 => (
-                        self.operator_4_mod_2_box.get_center(),
-                        self.operator_2_box.get_center(),
-                    ),
-                    2 => (
-                        self.operator_4_mod_3_box.get_center(),
-                        self.operator_3_box.get_center(),
-                    ),
+            let lines = parameters
+                .operator_4_targets
+                .active_indices()
+                .map(|mod_target| match mod_target {
+                    0 => [
+                        self.operator_4_mod_1_box.get_center().snap(),
+                        self.operator_1_box.get_center().snap(),
+                    ],
+                    1 => [
+                        self.operator_4_mod_2_box.get_center().snap(),
+                        self.operator_2_box.get_center().snap(),
+                    ],
+                    2 => [
+                        self.operator_4_mod_3_box.get_center().snap(),
+                        self.operator_3_box.get_center().snap(),
+                    ],
                     _ => unreachable!(),
-                };
+                })
+                .collect();
 
-                points.push(mod_box.snap());
-                points.push(operator_box.snap());
-
-                lines.push(points);
-            }
-
-            self.operator_4_mod_out_line
+            self.operator_4_mod_out_lines
                 .update(lines, style.mod_matrix());
         }
 
         {
-            let mut lines = Vec::new();
-
-            for mod_target in parameters.operator_3_targets.active_indices() {
-                let mut points = ArrayVec::new();
-
-                let (mod_box, operator_box) = match mod_target {
-                    0 => (
-                        self.operator_3_mod_1_box.get_center(),
-                        self.operator_1_box.get_center(),
-                    ),
-                    1 => (
-                        self.operator_3_mod_2_box.get_center(),
-                        self.operator_2_box.get_center(),
-                    ),
+            let lines = parameters
+                .operator_3_targets
+                .active_indices()
+                .map(|mod_target| match mod_target {
+                    0 => [
+                        self.operator_3_mod_1_box.get_center().snap(),
+                        self.operator_1_box.get_center().snap(),
+                    ],
+                    1 => [
+                        self.operator_3_mod_2_box.get_center().snap(),
+                        self.operator_2_box.get_center().snap(),
+                    ],
                     _ => unreachable!(),
-                };
+                })
+                .collect();
 
-                points.push(mod_box.snap());
-                points.push(operator_box.snap());
-
-                lines.push(points);
-            }
-
-            self.operator_3_mod_out_line
+            self.operator_3_mod_out_lines
                 .update(lines, style.mod_matrix());
         };
 
         {
-            let mut lines = Vec::new();
-
-            for mod_target in parameters.operator_2_targets.active_indices() {
-                let mut points = ArrayVec::new();
-
-                let (mod_box, operator_box) = match mod_target {
-                    0 => (
-                        self.operator_2_mod_1_box.get_center(),
-                        self.operator_1_box.get_center(),
-                    ),
+            let lines = parameters
+                .operator_2_targets
+                .active_indices()
+                .map(|mod_target| match mod_target {
+                    0 => [
+                        self.operator_2_mod_1_box.get_center().snap(),
+                        self.operator_1_box.get_center().snap(),
+                    ],
                     _ => unreachable!(),
-                };
+                })
+                .collect();
 
-                points.push(mod_box.snap());
-                points.push(operator_box.snap());
-
-                lines.push(points);
-            }
-
-            self.operator_2_mod_out_line
+            self.operator_2_mod_out_lines
                 .update(lines, style.mod_matrix());
         }
     }
@@ -367,9 +345,9 @@ impl ModulationMatrixComponents {
         self.operator_2_mix_out_line.draw(frame);
         self.operator_1_mix_out_line.draw(frame);
 
-        self.operator_4_mod_out_line.draw(frame);
-        self.operator_3_mod_out_line.draw(frame);
-        self.operator_2_mod_out_line.draw(frame);
+        self.operator_4_mod_out_lines.draw(frame);
+        self.operator_3_mod_out_lines.draw(frame);
+        self.operator_2_mod_out_lines.draw(frame);
     }
 
     fn draw_boxes(&self, state: &CanvasState, frame: &mut Frame, style: Theme) {
