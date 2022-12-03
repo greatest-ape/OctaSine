@@ -175,7 +175,7 @@ impl Theme {
         }
     }
 
-    pub fn envelope(&self) -> Box<dyn super::envelope::widget::StyleSheet> {
+    pub fn envelope(&self) -> Box<dyn super::envelope::canvas::StyleSheet> {
         match self {
             Self::Light => Box::new(light::Envelope),
             Self::Dark => Box::new(dark::Envelope),

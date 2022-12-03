@@ -1,8 +1,8 @@
-pub mod widget;
+pub mod canvas;
 
 use iced_baseview::alignment::Horizontal;
 use iced_baseview::tooltip::Position;
-use iced_baseview::{button, Alignment, Button, Column, Element, Length, Row, Space, Text};
+use iced_baseview::{Alignment, Button, Column, Element, Length, Row, Space, Text};
 use iced_baseview::{Font, Tooltip};
 
 use crate::parameters::list::{OperatorParameter, Parameter};
@@ -20,7 +20,7 @@ pub struct Envelope {
     style: Theme,
     group: OperatorEnvelopeGroupValue,
     group_synced: bool,
-    pub widget: widget::Envelope,
+    pub widget: canvas::EnvelopeCanvas,
     pub group_a: BooleanButton,
     pub group_b: BooleanButton,
 }
@@ -42,7 +42,7 @@ impl Envelope {
             style,
             group,
             group_synced,
-            widget: widget::Envelope::new(sync_handle, operator_index, style),
+            widget: canvas::EnvelopeCanvas::new(sync_handle, operator_index, style),
             group_a: envelope_group_a_button(sync_handle, operator_index, style),
             group_b: envelope_group_b_button(sync_handle, operator_index, style),
         }
