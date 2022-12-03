@@ -294,8 +294,7 @@ impl ModulationMatrixComponents {
                         self.operator_3_box.get_center().snap(),
                     ],
                     _ => unreachable!(),
-                })
-                .collect();
+                });
 
             self.operator_4_mod_out_lines
                 .update(lines, style.mod_matrix());
@@ -315,8 +314,7 @@ impl ModulationMatrixComponents {
                         self.operator_2_box.get_center().snap(),
                     ],
                     _ => unreachable!(),
-                })
-                .collect();
+                });
 
             self.operator_3_mod_out_lines
                 .update(lines, style.mod_matrix());
@@ -332,8 +330,7 @@ impl ModulationMatrixComponents {
                         self.operator_1_box.get_center().snap(),
                     ],
                     _ => unreachable!(),
-                })
-                .collect();
+                });
 
             self.operator_2_mod_out_lines
                 .update(lines, style.mod_matrix());
