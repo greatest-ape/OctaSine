@@ -24,7 +24,7 @@ impl ModOutLines {
 
     pub fn update(&mut self, lines: Vec<[Point; 2]>, style_sheet: Box<dyn StyleSheet>) {
         self.lines = lines;
-        self.color = style_sheet.active().mod_out_line_color;
+        self.color = style_sheet.appearance().mod_out_line_color;
     }
 
     pub fn draw(&self, frame: &mut Frame) {

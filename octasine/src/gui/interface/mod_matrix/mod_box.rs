@@ -15,19 +15,19 @@ pub struct ModulationBoxCanvasState {
     click_started: bool,
 }
 
-pub enum ModulationBoxChange {
+pub enum ModulationBoxCanvasUpdateResult {
     Update(Message),
     ClearCache(Option<Message>),
     None,
 }
 
-pub trait ModulationBoxUpdate {
+pub trait ModulationBoxCanvasUpdate {
     fn update(
         &self,
         state: &mut ModulationBoxCanvasState,
         bounds: Rectangle,
         event: event::Event,
-    ) -> ModulationBoxChange;
+    ) -> ModulationBoxCanvasUpdateResult;
 }
 
 pub struct ModulationBox<P: ParameterValue> {
@@ -99,7 +99,7 @@ where
         frame: &mut Frame,
         style_sheet: Box<dyn StyleSheet>,
     ) {
-        let style = style_sheet.active();
+        let style = style_sheet.appearance();
 
         let stroke = Stroke::default()
             .with_color(style.box_border_color)
@@ -117,7 +117,7 @@ where
     }
 }
 
-impl<P> ModulationBoxUpdate for ModulationBox<P>
+impl<P> ModulationBoxCanvasUpdate for ModulationBox<P>
 where
     P: ParameterValue<Value = ModTargetStorage>,
 {
@@ -126,7 +126,7 @@ where
         state: &mut ModulationBoxCanvasState,
         bounds: Rectangle,
         event: event::Event,
-    ) -> ModulationBoxChange {
+    ) -> ModulationBoxCanvasUpdateResult {
         match event {
             event::Event::Mouse(mouse::Event::CursorMoved {
                 position: Point { x, y },
@@ -137,12 +137,12 @@ where
                     (false, true) => {
                         state.hover = true;
 
-                        return ModulationBoxChange::ClearCache(None);
+                        return ModulationBoxCanvasUpdateResult::ClearCache(None);
                     }
                     (true, false) => {
                         state.hover = false;
 
-                        return ModulationBoxChange::ClearCache(None);
+                        return ModulationBoxCanvasUpdateResult::ClearCache(None);
                     }
                     _ => (),
                 }
@@ -164,15 +164,14 @@ where
                         P::new_from_audio(v).to_patch()
                     };
 
-                    return ModulationBoxChange::Update(Message::ChangeSingleParameterImmediate(
-                        self.parameter,
-                        sync_value,
-                    ));
+                    return ModulationBoxCanvasUpdateResult::Update(
+                        Message::ChangeSingleParameterImmediate(self.parameter, sync_value),
+                    );
                 }
             }
             _ => (),
         }
 
-        ModulationBoxChange::None
+        ModulationBoxCanvasUpdateResult::None
     }
 }

@@ -42,7 +42,7 @@ impl OutputBox {
 
     pub fn draw(&self, frame: &mut Frame, style_sheet: Box<dyn StyleSheet>) {
         let stroke = Stroke::default()
-            .with_color(style_sheet.active().box_border_color)
+            .with_color(style_sheet.appearance().box_border_color)
             .with_width(1.0);
 
         frame.stroke(&self.path, stroke);

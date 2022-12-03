@@ -16,7 +16,8 @@ use crate::sync::GuiSyncHandle;
 
 use self::mix_line::MixOutLine;
 use self::mod_box::{
-    ModulationBox, ModulationBoxCanvasState, ModulationBoxChange, ModulationBoxUpdate,
+    ModulationBox, ModulationBoxCanvasState, ModulationBoxCanvasUpdate,
+    ModulationBoxCanvasUpdateResult,
 };
 use self::mod_lines::ModOutLines;
 use self::operator_box::{OperatorBox, OperatorBoxCanvasState, OperatorBoxChange};
@@ -41,7 +42,7 @@ const SIZE: Size = Size {
 const OPERATOR_BOX_SCALE: f32 = BIG_BOX_SIZE as f32 / SMALL_BOX_SIZE as f32;
 
 #[derive(Debug, Clone)]
-pub struct Style {
+pub struct Appearance {
     pub background_color: Color,
     pub border_color: Color,
     pub text_color: Color,
@@ -59,7 +60,7 @@ pub struct Style {
 }
 
 pub trait StyleSheet {
-    fn active(&self) -> Style;
+    fn appearance(&self) -> Appearance;
 }
 
 struct ModulationMatrixParameters {
@@ -483,7 +484,7 @@ impl ModulationMatrix {
 
     fn draw_background(&self, frame: &mut Frame, style_sheet: Box<dyn StyleSheet>) {
         let mut size = frame.size();
-        let style = style_sheet.active();
+        let style = style_sheet.appearance();
 
         size.width -= 1.0;
         size.height -= 1.0;
@@ -580,15 +581,15 @@ impl Program<Message> for ModulationMatrix {
         macro_rules! update_mod_box {
             ($mod_box:expr, $state:expr) => {
                 match $mod_box.update($state, bounds, event) {
-                    ModulationBoxChange::Update(message) => {
+                    ModulationBoxCanvasUpdateResult::Update(message) => {
                         return (event::Status::Captured, Some(message));
                     }
-                    ModulationBoxChange::ClearCache(opt_message) => {
+                    ModulationBoxCanvasUpdateResult::ClearCache(opt_message) => {
                         self.cache.clear();
 
                         return (event::Status::Ignored, opt_message);
                     }
-                    ModulationBoxChange::None => (),
+                    ModulationBoxCanvasUpdateResult::None => (),
                 }
             };
         }

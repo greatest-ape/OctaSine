@@ -23,7 +23,7 @@ impl MixOutLine {
 
         let mut line = Self {
             path,
-            line_color: style_sheet.active().mix_out_line_color,
+            line_color: style_sheet.appearance().mix_out_line_color,
             calculated_color: Color::TRANSPARENT,
         };
 
@@ -37,8 +37,8 @@ impl MixOutLine {
     }
 
     fn calculate_color(&self, additive: f32, style_sheet: Box<dyn StyleSheet>) -> Color {
-        let bg = style_sheet.active().background_color;
-        let c = style_sheet.active().line_max_color;
+        let bg = style_sheet.appearance().background_color;
+        let c = style_sheet.appearance().line_max_color;
 
         let gradient = Gradient::new(vec![
             Srgba::new(bg.r, bg.g, bg.b, 1.0).into_linear(),

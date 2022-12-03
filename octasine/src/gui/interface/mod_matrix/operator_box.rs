@@ -162,7 +162,7 @@ impl OperatorBox {
 
     pub fn draw(&self, state: &OperatorBoxCanvasState, frame: &mut Frame, style: Theme) {
         let font_bold = style.font_bold();
-        let style = style.mod_matrix().active();
+        let style = style.mod_matrix().appearance();
 
         let text = Text {
             content: format!("{}", self.index + 1),

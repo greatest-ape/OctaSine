@@ -234,8 +234,8 @@ impl envelope::canvas::StyleSheet for Envelope {
 pub struct ModulationMatrix;
 
 impl mod_matrix::StyleSheet for ModulationMatrix {
-    fn active(&self) -> mod_matrix::Style {
-        mod_matrix::Style {
+    fn appearance(&self) -> mod_matrix::Appearance {
+        mod_matrix::Appearance {
             background_color: Color::WHITE,
             border_color: Color::TRANSPARENT,
             text_color: TEXT_FG,
