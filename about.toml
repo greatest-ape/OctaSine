@@ -12,6 +12,7 @@ accepted = [
     "BSL-1.0",
     "Unicode-DFS-2016",
     "zlib-acknowledgement",
+    "MIT-0",
 ]
 
 targets = [
