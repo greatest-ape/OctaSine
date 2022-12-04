@@ -1,5 +1,7 @@
-use baseview::{Size, WindowOpenOptions, WindowScalePolicy};
-use iced_baseview::{IcedWindow, Settings};
+use iced_baseview::{
+    baseview::{Size, WindowOpenOptions, WindowScalePolicy},
+    IcedWindow, Settings,
+};
 use raw_window_handle::{HasRawWindowHandle, RawWindowHandle};
 use serde::{Deserialize, Serialize};
 use vst::editor::Editor;
@@ -45,7 +47,7 @@ impl<H: GuiSyncHandle> Gui<H> {
                 scale: WindowScalePolicy::ScaleFactor(1.0),
                 title: PLUGIN_NAME.to_string(),
                 #[cfg(feature = "gui_glow")]
-                gl_config: Some(baseview::gl::GlConfig {
+                gl_config: Some(iced_baseview::baseview::gl::GlConfig {
                     samples: Some(8),
                     ..Default::default()
                 }),
@@ -105,7 +107,7 @@ pub struct ParentWindow(pub *mut ::core::ffi::c_void);
 unsafe impl HasRawWindowHandle for ParentWindow {
     #[cfg(target_os = "macos")]
     fn raw_window_handle(&self) -> RawWindowHandle {
-        let mut handle = raw_window_handle::AppKitWindowHandle::empty();
+        let mut handle = raw_window_handle::AppKitHandle::empty();
 
         handle.ns_view = self.0;
 

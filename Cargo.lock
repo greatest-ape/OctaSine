@@ -265,13 +265,14 @@ dependencies = [
 [[package]]
 name = "baseview"
 version = "0.1.0"
+source = "git+https://github.com/RustAudio/baseview.git?rev=ee156fb#ee156fb8840452984b5f9946635e9a35b2857c41"
 dependencies = [
  "cocoa",
  "core-foundation",
  "keyboard-types",
  "nix 0.22.3",
  "objc",
- "raw-window-handle 0.5.0",
+ "raw-window-handle 0.4.3",
  "uuid",
  "winapi",
  "x11",
@@ -1555,6 +1556,7 @@ dependencies = [
 [[package]]
 name = "iced_baseview"
 version = "0.0.3"
+source = "git+https://github.com/greatest-ape/iced_baseview.git?branch=iced-0.5#8478d45cbc4c083f91d29b0c9c6126d592e2f600"
 dependencies = [
  "baseview",
  "cfg-if",
@@ -1566,6 +1568,7 @@ dependencies = [
  "iced_native",
  "iced_wgpu",
  "keyboard-types",
+ "raw-window-handle 0.4.3",
  "raw-window-handle 0.5.0",
 ]
 
@@ -2274,7 +2277,6 @@ dependencies = [
  "array-init",
  "arrayvec 0.7.2",
  "assert_approx_eq",
- "baseview",
  "byteorder",
  "cfg-if",
  "directories",
@@ -2291,7 +2293,7 @@ dependencies = [
  "os_info",
  "palette",
  "quickcheck",
- "raw-window-handle 0.5.0",
+ "raw-window-handle 0.4.3",
  "rfd",
  "serde",
  "serde_json",
