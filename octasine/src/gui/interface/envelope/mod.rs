@@ -84,7 +84,6 @@ impl Envelope {
             let text = Text::new("≠")
                 .font(self.style.font_bold())
                 .size(FONT_SIZE)
-                // .color(self.style.text_color()) // FIXME
                 .height(Length::Units(LINE_HEIGHT))
                 .width(Length::Units(6))
                 .horizontal_alignment(Horizontal::Center);

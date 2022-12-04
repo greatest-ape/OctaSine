@@ -69,7 +69,6 @@ impl LfoWidgets {
             .height(Length::Units(FONT_SIZE + FONT_SIZE / 2))
             .font(self.style.font_heading())
             .width(Length::Units(LINE_HEIGHT * 9))
-            // .color(self.style.heading_color()) // FIXME
             .horizontal_alignment(Horizontal::Center)
             .vertical_alignment(Vertical::Center);
 

@@ -17,7 +17,7 @@ impl container::StyleSheet for ContainerL0 {
     fn appearance(&self, style: &Self::Style) -> container::Appearance {
         container::Appearance {
             background: BACKGROUND.into(),
-            text_color: TEXT_BG.into(),
+            text_color: TEXT.into(),
             ..Default::default()
         }
     }
@@ -64,7 +64,6 @@ impl iced_baseview::container::StyleSheet for ContainerL3 {
         }
     }
 }
-
 pub struct Radio;
 
 impl radio::StyleSheet for Radio {
@@ -73,8 +72,8 @@ impl radio::StyleSheet for Radio {
     fn active(&self, _style: &Self::Style, _is_selected: bool) -> radio::Appearance {
         radio::Appearance {
             background: SURFACE.into(),
-            dot_color: TEXT_FG,
-            text_color: Some(TEXT_FG),
+            dot_color: TEXT,
+            text_color: Some(TEXT),
             border_width: 1.0,
             border_color: BORDER,
         }
@@ -97,7 +96,7 @@ impl checkbox::StyleSheet for Checkbox {
         checkbox::Appearance {
             background: SURFACE.into(),
             checkmark_color: BLUE,
-            text_color: Some(TEXT_FG),
+            text_color: Some(TEXT),
             border_width: 1.0,
             border_color: BORDER,
             border_radius: 3.0,
@@ -123,7 +122,7 @@ impl button::StyleSheet for Button {
             border_radius: 3.0,
             border_width: 1.0,
             border_color: BORDER,
-            text_color: TEXT_FG,
+            text_color: TEXT,
             ..Default::default()
         }
     }
@@ -151,7 +150,7 @@ impl button::StyleSheet for ValueButton {
             border_radius: 3.0,
             border_width: 0.0,
             border_color: Color::TRANSPARENT,
-            text_color: TEXT_FG,
+            text_color: TEXT,
             ..Default::default()
         }
     }
@@ -176,9 +175,9 @@ impl menu::StyleSheet for Menu {
     fn appearance(&self, style: &Self::Style) -> menu::Appearance {
         menu::Appearance {
             background: SURFACE.into(),
-            text_color: TEXT_FG,
+            text_color: TEXT,
             selected_background: SURFACE_HOVER.into(),
-            selected_text_color: TEXT_FG,
+            selected_text_color: TEXT,
             border_width: 1.0,
             border_color: BORDER,
             border_radius: 0.0, // FIXME
@@ -193,11 +192,11 @@ impl pick_list::StyleSheet for PickList {
     fn active(&self, style: &Self::Style) -> pick_list::Appearance {
         pick_list::Appearance {
             background: SURFACE.into(),
-            text_color: TEXT_FG,
+            text_color: TEXT,
             border_color: BORDER,
             border_width: 1.0,
             border_radius: 3.0,
-            placeholder_color: TEXT_FG,
+            placeholder_color: TEXT,
             icon_size: 0.6,
         }
     }
@@ -217,7 +216,7 @@ impl envelope::canvas::StyleSheet for Envelope {
             background_color: Color::WHITE,
             border_color: BORDER,
             drag_border_color: GRAY_700,
-            text_color: TEXT_FG,
+            text_color: TEXT,
             time_marker_minor_color: GRAY_900,
             time_marker_color_major: GRAY_700,
             path_color: BLUE,
@@ -238,7 +237,7 @@ impl mod_matrix::StyleSheet for ModulationMatrix {
         mod_matrix::Appearance {
             background_color: Color::WHITE,
             border_color: Color::TRANSPARENT,
-            text_color: TEXT_FG,
+            text_color: TEXT,
             box_border_color: BORDER,
             operator_box_color_active: SURFACE,
             operator_box_border_color: Some(BORDER),
@@ -303,14 +302,14 @@ impl boolean_button::StyleSheet for MuteButton {
         boolean_button::Style {
             background_color: SURFACE,
             border_color: BORDER,
-            text_color: TEXT_FG,
+            text_color: TEXT,
         }
     }
     fn inactive_hover(&self) -> boolean_button::Style {
         boolean_button::Style {
             background_color: SURFACE_HOVER,
             border_color: BORDER,
-            text_color: TEXT_FG,
+            text_color: TEXT,
         }
     }
 }
@@ -352,14 +351,14 @@ impl boolean_button::StyleSheet for BooleanButton {
         boolean_button::Style {
             background_color: SURFACE,
             border_color: BORDER,
-            text_color: TEXT_FG,
+            text_color: TEXT,
         }
     }
     fn inactive_hover(&self) -> boolean_button::Style {
         boolean_button::Style {
             background_color: SURFACE_HOVER,
             border_color: BORDER,
-            text_color: TEXT_FG,
+            text_color: TEXT,
         }
     }
 }

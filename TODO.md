@@ -3,7 +3,6 @@
 ## High priority
 
 * iced 0.5 adjustments
-  * Text styles
   * Ideally rewrite style handling to be idiomatic
     * Reorganize code with widgets and nested light/dark modules?
     * Can I even use custom Theme struct? Maybe not

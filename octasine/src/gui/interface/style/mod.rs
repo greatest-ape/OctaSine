@@ -46,18 +46,6 @@ impl Theme {
             Theme::Light => Color::WHITE,
         }
     }
-    pub fn text_color(&self) -> Color {
-        match self {
-            Theme::Dark => dark::colors::TEXT_FG,
-            Theme::Light => Color::BLACK,
-        }
-    }
-    pub fn heading_color(&self) -> Color {
-        match self {
-            Theme::Dark => dark::colors::TEXT_FG,
-            Theme::Light => Color::BLACK,
-        }
-    }
 
     pub fn font_regular(&self) -> Font {
         match self {

@@ -57,9 +57,9 @@ rev = "b3712638bacb3fdf2883cb5aa3f6caed0e91ac8c"
 optional = true
 
 [dependencies.iced_baseview]
-git = "https://github.com/BillyDM/iced_baseview.git"
-rev = "b78fa8057d1b7ba0adf0351a59173ec4e8ec9ee4" # branch: main
-# path = "../../iced_baseview"
+# git = "https://github.com/BillyDM/iced_baseview.git"
+# rev = "b78fa8057d1b7ba0adf0351a59173ec4e8ec9ee4" # branch: main
+path = "../../iced_baseview"
 # git = "https://github.com/greatest-ape/iced_baseview.git"
 # branch = "iced-0.5"
 default-features = false

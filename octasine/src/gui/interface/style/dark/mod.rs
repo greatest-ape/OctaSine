@@ -17,7 +17,7 @@ impl container::StyleSheet for ContainerL0 {
     fn appearance(&self, style: &Self::Style) -> container::Appearance {
         container::Appearance {
             background: BACKGROUND.into(),
-            text_color: TEXT_BG.into(),
+            text_color: TEXT.into(),
             ..container::Appearance::default()
         }
     }
@@ -73,10 +73,10 @@ impl radio::StyleSheet for Radio {
     fn active(&self, style: &Self::Style, _is_selected: bool) -> radio::Appearance {
         radio::Appearance {
             background: SURFACE.into(),
-            dot_color: TEXT_FG,
-            text_color: Some(TEXT_FG),
+            dot_color: TEXT,
+            text_color: Some(TEXT),
             border_width: 1.0,
-            border_color: TEXT_FG,
+            border_color: TEXT,
         }
     }
 
@@ -97,7 +97,7 @@ impl checkbox::StyleSheet for Checkbox {
         checkbox::Appearance {
             background: Color::TRANSPARENT.into(),
             checkmark_color: BLUE,
-            text_color: Some(TEXT_FG),
+            text_color: Some(TEXT),
             border_width: 1.0,
             border_color: BORDER,
             border_radius: 3.0,
@@ -122,8 +122,8 @@ impl button::StyleSheet for Button {
             background: SURFACE.into(),
             border_radius: 3.0,
             border_width: 0.0,
-            border_color: TEXT_BG,
-            text_color: TEXT_FG,
+            border_color: TEXT,
+            text_color: TEXT,
             ..Default::default()
         }
     }
@@ -152,7 +152,7 @@ impl button::StyleSheet for ValueButton {
             border_radius: 3.0,
             border_width: 0.0,
             border_color: Color::TRANSPARENT,
-            text_color: TEXT_FG,
+            text_color: TEXT,
             ..Default::default()
         }
     }
@@ -179,10 +179,10 @@ impl menu::StyleSheet for Menu {
         menu::Appearance {
             background: GRAY_300.into(),
             selected_background: SURFACE_HOVER.into(),
-            text_color: TEXT_FG,
+            text_color: TEXT,
             selected_text_color: HOVERED,
             border_width: 0.0,
-            border_color: TEXT_BG,
+            border_color: TEXT,
             border_radius: 0.0, // FIXME
         }
     }
@@ -196,12 +196,12 @@ impl pick_list::StyleSheet for PickList {
     fn active(&self, style: &Self::Style) -> pick_list::Appearance {
         pick_list::Appearance {
             background: SURFACE.into(),
-            text_color: TEXT_FG,
-            border_color: TEXT_BG,
+            text_color: TEXT,
+            border_color: TEXT,
             border_width: 0.0,
             border_radius: 3.0,
             icon_size: 0.6,
-            placeholder_color: TEXT_FG,
+            placeholder_color: TEXT,
         }
     }
     fn hovered(&self, style: &Self::Style) -> pick_list::Appearance {
@@ -221,11 +221,11 @@ impl envelope::canvas::StyleSheet for Envelope {
             background_color: GRAY_200,
             border_color: BORDER_DARK,
             drag_border_color: GRAY_400,
-            text_color: TEXT_BG,
+            text_color: TEXT,
             time_marker_minor_color: GRAY_300,
             time_marker_color_major: GRAY_500,
             path_color: BLUE,
-            dragger_fill_color_active: TEXT_FG,
+            dragger_fill_color_active: TEXT,
             dragger_fill_color_hover: HOVERED,
             dragger_fill_color_dragging: PRESSED,
             dragger_border_color: SURFACE,
@@ -242,13 +242,13 @@ impl mod_matrix::StyleSheet for ModulationMatrix {
         mod_matrix::Appearance {
             background_color: GRAY_200,
             border_color: Color::TRANSPARENT,
-            text_color: TEXT_FG,
+            text_color: TEXT,
             box_border_color: GRAY_500,
             operator_box_border_color: None,
             operator_box_color_active: SURFACE,
             operator_box_color_hover: SURFACE_HOVER,
             operator_box_color_dragging: GRAY_600,
-            modulation_box_color_active: TEXT_FG,
+            modulation_box_color_active: TEXT,
             modulation_box_color_inactive: Color::TRANSPARENT,
             modulation_box_color_hover: HOVERED,
             line_max_color: Color::WHITE,
@@ -323,7 +323,7 @@ impl container::StyleSheet for Tooltip {
     fn appearance(&self, style: &Self::Style) -> container::Appearance {
         container::Appearance {
             background: GRAY_200.into(),
-            text_color: TEXT_FG.into(),
+            text_color: TEXT.into(),
             border_width: 3.0,
             border_radius: 3.0,
             border_color: GRAY_200,

@@ -6,7 +6,7 @@ use super::colors::*;
 const COLOR_TICK_MARKS_1: Color = GRAY_600;
 const COLOR_TICK_MARKS_2: Color = GRAY_300;
 const COLOR_EMPTY: Color = GRAY_600;
-const COLOR_NOTCH: Color = TEXT_FG;
+const COLOR_NOTCH: Color = TEXT;
 
 const NOTCH_STYLE: LineNotch = LineNotch {
     color: COLOR_NOTCH,

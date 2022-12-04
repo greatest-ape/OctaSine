@@ -143,7 +143,6 @@ impl OperatorWidgets {
                             .size(FONT_SIZE + FONT_SIZE / 2)
                             .height(Length::Units(FONT_SIZE + FONT_SIZE / 2))
                             .font(self.style.font_heading())
-                            // .color(self.style.heading_color()) // FIXME
                             .horizontal_alignment(Horizontal::Center),
                     )
                     .push(Space::with_height(Length::Units(LINE_HEIGHT / 2)))
