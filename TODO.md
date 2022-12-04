@@ -7,7 +7,6 @@
     * Reorganize code with widgets and nested light/dark modules?
     * Can I even use custom Theme struct? Maybe not
   * How handle external updates when knobs are dragged?
-  * Export baseview in iced_baseview?
 * Audio gen optimizations
   * Use bhaskara_constant_power_panning?
 * Consider adding saw, square and triangle waves. Maybe look at
