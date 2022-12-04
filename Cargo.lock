@@ -1556,7 +1556,7 @@ dependencies = [
 [[package]]
 name = "iced_baseview"
 version = "0.0.3"
-source = "git+https://github.com/greatest-ape/iced_baseview.git?branch=iced-0.5#8478d45cbc4c083f91d29b0c9c6126d592e2f600"
+source = "git+https://github.com/BillyDM/iced_baseview.git?rev=236db06#236db06bc5845607f823d43b2cc86b35f5da0b1f"
 dependencies = [
  "baseview",
  "cfg-if",

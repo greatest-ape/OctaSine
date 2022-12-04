@@ -50,7 +50,7 @@ rfd = { version = "0.10", optional = true, default-features = false, features = 
 tinyfiledialogs = { version = "3", optional = true }
 
 [dependencies.iced_baseview]
-git = "https://github.com/greatest-ape/iced_baseview.git"
-branch = "iced-0.5"
+git = "https://github.com/BillyDM/iced_baseview.git"
+rev = "236db06"
 default-features = false
 optional = true
