@@ -13,8 +13,6 @@ pub mod radio;
 pub mod scrollable;
 pub mod text;
 
-use std::rc::Rc;
-
 use iced_baseview::{Color, Font};
 use serde::{Deserialize, Serialize};
 

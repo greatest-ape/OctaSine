@@ -8,6 +8,7 @@ use super::{dark, light, Theme};
 #[derive(Default)]
 pub enum ContainerStyle {
     #[default]
+    Transparent,
     L0,
     L1,
     L2,
@@ -24,6 +25,13 @@ impl StyleSheet for Theme {
                 use dark::colors::*;
 
                 match style {
+                    Self::Style::Transparent => Appearance {
+                        text_color: None,
+                        background: Color::TRANSPARENT.into(),
+                        border_radius: 0.0,
+                        border_width: 0.0,
+                        border_color: Color::TRANSPARENT,
+                    },
                     Self::Style::L0 => Appearance {
                         background: BACKGROUND.into(),
                         text_color: TEXT.into(),
@@ -57,6 +65,13 @@ impl StyleSheet for Theme {
                 use light::colors::*;
 
                 match style {
+                    Self::Style::Transparent => Appearance {
+                        text_color: None,
+                        background: Color::TRANSPARENT.into(),
+                        border_radius: 0.0,
+                        border_width: 0.0,
+                        border_color: Color::TRANSPARENT,
+                    },
                     Self::Style::L0 => Appearance {
                         background: BACKGROUND.into(),
                         text_color: TEXT.into(),

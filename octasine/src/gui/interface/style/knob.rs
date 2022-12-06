@@ -107,7 +107,7 @@ mod dark {
     };
 }
 
-use iced_audio::knob::{Appearance, StyleSheet, TickMarksStyle};
+use iced_audio::style::knob::{Appearance, StyleSheet, TickMarksStyle};
 
 use super::Theme;
 

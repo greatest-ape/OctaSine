@@ -1,4 +1,4 @@
-use iced_audio::{knob, text_marks, tick_marks, Knob, Normal, NormalParam};
+use iced_audio::{native::knob, text_marks, tick_marks, Normal, NormalParam};
 use iced_baseview::widget::Container;
 use iced_baseview::{
     alignment::Horizontal, keyboard::Modifiers, widget::Column, widget::Space, widget::Text,
@@ -14,16 +14,12 @@ use crate::parameters::{
 };
 use crate::sync::GuiSyncHandle;
 
+use super::style::knob::KnobStyle;
 use super::style::Theme;
 use super::value_text::ValueText;
 use super::{Message, LINE_HEIGHT};
 
 const KNOB_SIZE: Length = Length::Units(LINE_HEIGHT * 2);
-
-type StyleSetter = fn(
-    knob::Knob<Message, iced_baseview::renderer::Theme>,
-    Theme,
-) -> knob::Knob<Message, iced_baseview::renderer::Theme>;
 
 enum TickMarkType {
     MinMaxAndDefault,
@@ -40,7 +36,7 @@ where
         TickMarkType::MinMaxAndDefault,
         style,
         // |theme| theme.knob_regular(),
-        |knob, theme| knob.style(theme.knob_regular()),
+        KnobStyle::Regular,
     )
 }
 
@@ -54,7 +50,7 @@ where
         "FREQ",
         TickMarkType::MinMaxAndDefault,
         style,
-        |knob, theme| knob.style(theme.knob_bipolar()),
+        KnobStyle::Bipolar,
     )
 }
 
@@ -73,7 +69,7 @@ where
         TickMarkType::MinMaxAndDefault,
         OperatorVolumeValue::default().to_patch(),
         style,
-        |knob, theme| knob.style(theme.knob_regular()),
+        KnobStyle::Regular,
     )
 }
 
@@ -92,7 +88,7 @@ where
         TickMarkType::MinMaxAndDefault,
         OperatorMixOutValue::new(operator_index).to_patch(),
         style,
-        |knob, theme| knob.style(theme.knob_regular()),
+        KnobStyle::Regular,
     )
 }
 
@@ -110,7 +106,7 @@ where
         "PAN",
         TickMarkType::MinMaxAndDefault,
         style,
-        |knob, theme| knob.style(theme.knob_bipolar()),
+        KnobStyle::Bipolar,
     )
 }
 
@@ -128,7 +124,7 @@ where
         "MOD OUT",
         TickMarkType::MinMaxAndDefault,
         style,
-        |knob, theme| knob.style(theme.knob_regular()),
+        KnobStyle::Regular,
     )
 }
 
@@ -146,7 +142,7 @@ where
         "FEEDBACK",
         TickMarkType::MinMaxAndDefault,
         style,
-        |knob, theme| knob.style(theme.knob_regular()),
+        KnobStyle::Regular,
     )
 }
 
@@ -164,7 +160,7 @@ where
         "RATIO",
         TickMarkType::MinMaxAndDefault,
         style,
-        |knob, theme| knob.style(theme.knob_bipolar()),
+        KnobStyle::Bipolar,
     )
 }
 
@@ -182,7 +178,7 @@ where
         "FREE",
         TickMarkType::MinMaxAndDefault,
         style,
-        |knob, theme| knob.style(theme.knob_bipolar()),
+        KnobStyle::Bipolar,
     )
 }
 
@@ -200,7 +196,7 @@ where
         "FINE",
         TickMarkType::MinMaxAndDefault,
         style,
-        |knob, theme| knob.style(theme.knob_bipolar()),
+        KnobStyle::Bipolar,
     )
 }
 
@@ -218,7 +214,7 @@ where
         "RATIO",
         TickMarkType::MinMaxAndDefault,
         style,
-        |knob, theme| knob.style(theme.knob_bipolar()),
+        KnobStyle::Bipolar,
     )
 }
 
@@ -236,7 +232,7 @@ where
         "FREE",
         TickMarkType::MinMaxAndDefault,
         style,
-        |knob, theme| knob.style(theme.knob_bipolar()),
+        KnobStyle::Bipolar,
     )
 }
 
@@ -254,11 +250,10 @@ where
         "AMOUNT",
         TickMarkType::MinMaxAndDefault,
         style,
-        |knob, theme| knob.style(theme.knob_regular()),
+        KnobStyle::Regular,
     )
 }
 
-#[derive(Clone)]
 pub struct OctaSineKnob<P: ParameterValue> {
     style: Theme,
     text_marks: Option<text_marks::Group>,
@@ -269,7 +264,7 @@ pub struct OctaSineKnob<P: ParameterValue> {
     default_value: Normal,
     parameter: Parameter,
     phantom_data: ::std::marker::PhantomData<P>,
-    style_setter: StyleSetter,
+    knob_style: KnobStyle,
 }
 
 impl<P> OctaSineKnob<P>
@@ -282,7 +277,7 @@ where
         title: &str,
         tick_mark_type: TickMarkType,
         style: Theme,
-        style_setter: StyleSetter,
+        knob_style: KnobStyle,
     ) -> Self {
         Self::new_with_default_sync_value(
             sync_handle,
@@ -291,7 +286,7 @@ where
             tick_mark_type,
             P::default().to_patch(),
             style,
-            style_setter,
+            knob_style,
         )
     }
 
@@ -302,7 +297,7 @@ where
         tick_mark_type: TickMarkType,
         default_patch_value: f32,
         style: Theme,
-        style_setter: StyleSetter,
+        knob_style: KnobStyle,
     ) -> Self {
         let default_value = Normal::new(default_patch_value);
         let value = NormalParam {
@@ -327,7 +322,7 @@ where
             default_value,
             parameter,
             phantom_data: ::std::marker::PhantomData::default(),
-            style_setter,
+            knob_style,
         }
     }
 
@@ -356,16 +351,19 @@ where
 
         let modifier_keys = Modifiers::SHIFT;
 
-        let mut knob: Knob<'a, Message, Theme> = knob::Knob::new(self.value, move |value| {
+        type Knob<'a> = knob::Knob<'a, Message, iced_baseview::renderer::Renderer<Theme>>;
+
+        // FIXME
+        /*
+        let mut knob: Knob<'a> = knob::Knob::new(self.value, move |value| {
             Message::ChangeSingleParameterSetValue(parameter, value.as_f32())
         })
         .on_grab(move || Some(Message::ChangeSingleParameterBegin(parameter)))
         .on_release(move || Some(Message::ChangeSingleParameterEnd(parameter)))
         .size(Length::from(KNOB_SIZE))
         .modifier_keys(modifier_keys)
+        .style(self.knob_style)
         .bipolar_center(self.default_value);
-
-        knob = (self.style_setter)(knob, self.style);
 
         if let Some(text_marks) = self.text_marks.as_ref() {
             knob = knob.text_marks(text_marks);
@@ -373,6 +371,7 @@ where
         if let Some(tick_marks) = self.tick_marks.as_ref() {
             knob = knob.tick_marks(tick_marks);
         }
+        */
 
         Container::new(
             Column::new()
@@ -380,7 +379,7 @@ where
                 .align_items(Alignment::Center)
                 .push(title)
                 .push(Space::with_height(Length::Units(LINE_HEIGHT)))
-                .push(knob)
+                // .push(knob)
                 .push(Space::with_height(Length::Units(LINE_HEIGHT)))
                 .push(self.value_text.view()),
         )

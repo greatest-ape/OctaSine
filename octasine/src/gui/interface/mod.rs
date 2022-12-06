@@ -831,7 +831,7 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
     }
 
     fn theme(&self) -> Self::Theme {
-        Default::default()
+        self.style
     }
 }
 
