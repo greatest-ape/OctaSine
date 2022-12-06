@@ -70,17 +70,13 @@ impl CornerWidgets {
         .width(Length::Units(LINE_HEIGHT * 7))
         .style(ContainerStyle::L3);
 
-        let master = container_l1(
-            self.style,
-            container_l2(
-                self.style,
-                Row::new()
-                    .push(container_l3(self.style, self.master_volume.view()))
-                    .push(space_l3())
-                    .push(container_l3(self.style, self.master_frequency.view()))
-                    .push(Space::with_width(Length::Units(LINE_HEIGHT * 3))), // Extend to end
-            ),
-        );
+        let master = container_l1(container_l2(
+            Row::new()
+                .push(container_l3(self.master_volume.view()))
+                .push(space_l3())
+                .push(container_l3(self.master_frequency.view()))
+                .push(Space::with_width(Length::Units(LINE_HEIGHT * 3))), // Extend to end
+        ));
 
         let logo = {
             let theme_button = Tooltip::new(
@@ -153,9 +149,9 @@ impl CornerWidgets {
             .push(Space::with_height(Length::Units(LINE_HEIGHT)))
             .push(
                 Row::new()
-                    .push(triple_container(self.style, self.patch_picker.view()))
+                    .push(triple_container(self.patch_picker.view()))
                     .push(Space::with_width(Length::Units(LINE_HEIGHT)))
-                    .push(triple_container(self.style, logo)),
+                    .push(triple_container(logo)),
             )
             .into()
     }

@@ -9,14 +9,14 @@ use super::{
     Message,
 };
 
-pub fn container_l1<'a, T>(theme: Theme, contents: T) -> Container<'a, Message, Theme>
+pub fn container_l1<'a, T>(contents: T) -> Container<'a, Message, Theme>
 where
     T: Into<Element<'a, Message, Theme>>,
 {
     Container::new(contents).style(ContainerStyle::L1)
 }
 
-pub fn container_l2<'a, T>(theme: Theme, contents: T) -> Container<'a, Message, Theme>
+pub fn container_l2<'a, T>(contents: T) -> Container<'a, Message, Theme>
 where
     T: Into<Element<'a, Message, Theme>>,
 {
@@ -39,7 +39,7 @@ where
         .into()
 }
 
-pub fn container_l3<'a, T>(theme: Theme, contents: T) -> Container<'a, Message, Theme>
+pub fn container_l3<'a, T>(contents: T) -> Container<'a, Message, Theme>
 where
     T: Into<Element<'a, Message, Theme>>,
 {
@@ -62,11 +62,11 @@ where
         .into()
 }
 
-pub fn triple_container<'a, T>(theme: Theme, contents: T) -> Container<'a, Message, Theme>
+pub fn triple_container<'a, T>(contents: T) -> Container<'a, Message, Theme>
 where
     T: Into<Element<'a, Message, Theme>>,
 {
-    container_l1(theme, container_l2(theme, container_l3(theme, contents)))
+    container_l1(container_l2(container_l3(contents)))
 }
 
 pub fn space_l2<'a>() -> Container<'a, Message, Theme> {

@@ -154,22 +154,21 @@ impl OperatorWidgets {
         };
 
         let group_1 = container_l2(
-            self.style,
             Row::new()
-                .push(container_l3(self.style, self.wave_type.view()))
+                .push(container_l3(self.wave_type.view()))
                 .push(space_l3())
-                .push(container_l3(self.style, self.volume.view()))
+                .push(container_l3(self.volume.view()))
                 .push(space_l3())
-                .push(container_l3(self.style, self.panning.view())),
+                .push(container_l3(self.panning.view())),
         );
 
         let routing_group = {
             let mut group = Row::new()
-                .push(container_l3(self.style, self.mix.view()))
+                .push(container_l3(self.mix.view()))
                 .push(space_l3());
 
             if let Some(mod_index) = self.mod_index.as_ref() {
-                group = group.push(container_l3(self.style, mod_index.view()));
+                group = group.push(container_l3(mod_index.view()));
             } else {
                 group = group.push(Space::with_width(Length::Units(LINE_HEIGHT * 5)));
             }
@@ -178,38 +177,35 @@ impl OperatorWidgets {
 
             match self.mod_target.as_ref() {
                 Some(ModTargetPicker::Operator2(picker)) => {
-                    group = group.push(container_l3(self.style, picker.view()))
+                    group = group.push(container_l3(picker.view()))
                 }
                 Some(ModTargetPicker::Operator3(picker)) => {
-                    group = group.push(container_l3(self.style, picker.view()))
+                    group = group.push(container_l3(picker.view()))
                 }
                 Some(ModTargetPicker::Operator4(picker)) => {
-                    group = group.push(container_l3(self.style, picker.view()))
+                    group = group.push(container_l3(picker.view()))
                 }
                 None => group = group.push(Space::with_width(Length::Units(LINE_HEIGHT * 3))),
             }
 
             group = group.push(space_l3());
-            group = group.push(container_l3(self.style, self.feedback.view()));
+            group = group.push(container_l3(self.feedback.view()));
 
-            container_l2(self.style, group)
+            container_l2(group)
         };
 
         let frequency_group = container_l2(
-            self.style,
             Row::new()
-                .push(container_l3(self.style, self.frequency_ratio.view()))
+                .push(container_l3(self.frequency_ratio.view()))
                 .push(space_l3())
-                .push(container_l3(self.style, self.frequency_free.view()))
+                .push(container_l3(self.frequency_free.view()))
                 .push(space_l3())
-                .push(container_l3(self.style, self.frequency_fine.view())),
+                .push(container_l3(self.frequency_fine.view())),
         );
 
-        let envelope =
-            container_l2(self.style, self.envelope.view()).height(Length::Units(LINE_HEIGHT * 8));
+        let envelope = container_l2(self.envelope.view()).height(Length::Units(LINE_HEIGHT * 8));
 
         container_l1(
-            self.style,
             Row::new()
                 .push(heading)
                 .push(group_1)

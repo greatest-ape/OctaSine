@@ -172,9 +172,8 @@ impl Envelope {
         .padding(self.style.tooltip_padding());
 
         Row::new()
-            .push(container_l3(self.style, self.widget.view()))
+            .push(container_l3(self.widget.view()))
             .push(container_l3(
-                self.style,
                 Column::new()
                     .width(Length::Units(LINE_HEIGHT * 3))
                     .align_items(Alignment::End)
