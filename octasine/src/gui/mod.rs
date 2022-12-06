@@ -1,6 +1,8 @@
 use iced_baseview::{
     baseview::{Size, WindowOpenOptions, WindowScalePolicy},
-    Settings, settings::IcedBaseviewSettings, open_parented, open_blocking,
+    open_blocking, open_parented,
+    settings::IcedBaseviewSettings,
+    Settings,
 };
 use raw_window_handle::{HasRawWindowHandle, RawWindowHandle};
 use serde::{Deserialize, Serialize};

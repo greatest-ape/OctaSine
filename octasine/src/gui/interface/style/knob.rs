@@ -2,7 +2,7 @@ mod light {
     use super::super::light::colors::*;
 
     use iced_audio::{knob::*, style::tick_marks};
-    use iced_baseview::{Color};
+    use iced_baseview::Color;
 
     const COLOR_TICK_MARKS_1: Color = GRAY_600;
     const COLOR_TICK_MARKS_2: Color = GRAY_300;
@@ -55,7 +55,7 @@ mod light {
 mod dark {
 
     use iced_audio::{knob::*, style::tick_marks};
-    use iced_baseview::{Color};
+    use iced_baseview::Color;
 
     use super::super::dark::colors::*;
 
@@ -105,10 +105,9 @@ mod dark {
         notch_center: NotchShape::Line(NOTCH_STYLE),
         notch_left_right: None,
     };
-
 }
 
-use iced_audio::knob::{StyleSheet, Appearance, TickMarksStyle};
+use iced_audio::knob::{Appearance, StyleSheet, TickMarksStyle};
 
 use super::Theme;
 
@@ -116,7 +115,7 @@ use super::Theme;
 pub enum KnobStyle {
     #[default]
     Regular,
-    Bipolar
+    Bipolar,
 }
 
 impl StyleSheet for Theme {
@@ -124,18 +123,10 @@ impl StyleSheet for Theme {
 
     fn active(&self, style: &Self::Style) -> Appearance {
         match (self, style) {
-            (Self::Dark, Self::Style::Regular) => {
-                Appearance::Arc(dark::ARC_STYLE)
-            }
-            (Self::Dark, Self::Style::Bipolar) => {
-                Appearance::ArcBipolar(dark::ARC_BIPOLAR_STYLE)
-            }
-            (Self::Light, Self::Style::Regular) => {
-                Appearance::Arc(light::ARC_STYLE)
-            }
-            (Self::Light, Self::Style::Bipolar) => {
-                Appearance::ArcBipolar(light::ARC_BIPOLAR_STYLE)
-            }
+            (Self::Dark, Self::Style::Regular) => Appearance::Arc(dark::ARC_STYLE),
+            (Self::Dark, Self::Style::Bipolar) => Appearance::ArcBipolar(dark::ARC_BIPOLAR_STYLE),
+            (Self::Light, Self::Style::Regular) => Appearance::Arc(light::ARC_STYLE),
+            (Self::Light, Self::Style::Bipolar) => Appearance::ArcBipolar(light::ARC_BIPOLAR_STYLE),
         }
     }
     fn hovered(&self, style: &Self::Style) -> Appearance {
@@ -146,17 +137,10 @@ impl StyleSheet for Theme {
     }
     fn tick_marks_style(&self, style: &Self::Style) -> Option<TickMarksStyle> {
         let style = match self {
-            Self::Dark => {
-                dark::TICK_MARK_STYLE
-            },
-            Self::Light => {
-                light::TICK_MARK_STYLE
-            },
+            Self::Dark => dark::TICK_MARK_STYLE,
+            Self::Light => light::TICK_MARK_STYLE,
         };
 
-        Some(TickMarksStyle {
-            style,
-            offset: 3.0,
-        })
+        Some(TickMarksStyle { style, offset: 3.0 })
     }
 }

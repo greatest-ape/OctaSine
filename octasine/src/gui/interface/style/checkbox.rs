@@ -1,7 +1,9 @@
-use iced_baseview::{widget::checkbox::{Appearance, StyleSheet}, Color};
+use iced_baseview::{
+    widget::checkbox::{Appearance, StyleSheet},
+    Color,
+};
 
 use super::Theme;
-
 
 impl StyleSheet for Theme {
     type Style = ();

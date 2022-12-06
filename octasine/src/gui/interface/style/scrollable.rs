@@ -1,10 +1,13 @@
-use iced_baseview::{widget::scrollable::{Scrollbar, Scroller, StyleSheet}, Color};
+use iced_baseview::{
+    widget::scrollable::{Scrollbar, Scroller, StyleSheet},
+    Color,
+};
 
 use super::Theme;
 
 // FIXME
 impl StyleSheet for Theme {
-	type Style = ();
+    type Style = ();
 
     fn active(&self, style: &Self::Style) -> Scrollbar {
         Scrollbar {
@@ -16,8 +19,8 @@ impl StyleSheet for Theme {
                 color: Color::WHITE,
                 border_radius: 0.0,
                 border_width: 0.0,
-                border_color: Color::WHITE
-            }
+                border_color: Color::WHITE,
+            },
         }
     }
 

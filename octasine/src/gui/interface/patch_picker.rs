@@ -2,7 +2,9 @@ use std::fmt::Display;
 
 use iced_baseview::alignment::Horizontal;
 use iced_baseview::widget::PickList;
-use iced_baseview::{Alignment, widget::Column, widget::Container, Element, Length, widget::Space, widget::Text};
+use iced_baseview::{
+    widget::Column, widget::Container, widget::Space, widget::Text, Alignment, Element, Length,
+};
 
 use super::LINE_HEIGHT;
 use super::{style::Theme, GuiSyncHandle, Message, FONT_SIZE};

@@ -2,9 +2,13 @@ mod gen;
 
 use std::borrow::Borrow;
 
-use iced_baseview::widget::canvas::{path, Cache, Canvas, Cursor, Frame, Geometry, Path, Program, Stroke};
+use iced_baseview::widget::canvas::{
+    path, Cache, Canvas, Cursor, Frame, Geometry, Path, Program, Stroke,
+};
 use iced_baseview::widget::tooltip::Position;
-use iced_baseview::{Color, Element, Length, Point, Rectangle, widget::Row, Size, widget::Space, widget::Tooltip};
+use iced_baseview::{
+    widget::Row, widget::Space, widget::Tooltip, Color, Element, Length, Point, Rectangle, Size,
+};
 
 use crate::parameters::list::OperatorParameter;
 use crate::parameters::operator_active::OperatorActiveValue;

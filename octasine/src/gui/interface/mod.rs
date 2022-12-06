@@ -20,8 +20,11 @@ use std::path::PathBuf;
 use anyhow::Context;
 use cfg_if::cfg_if;
 use iced_baseview::command::Action;
-use iced_baseview::{executor, Application, Command, Subscription, window::WindowSubs};
-use iced_baseview::{widget::Column, widget::Container, Element, Length, Point, widget::Row, widget::Space, window::WindowQueue};
+use iced_baseview::{executor, window::WindowSubs, Application, Command, Subscription};
+use iced_baseview::{
+    widget::Column, widget::Container, widget::Row, widget::Space, window::WindowQueue, Element,
+    Length, Point,
+};
 
 use crate::common::NUM_OPERATORS;
 use crate::parameters::*;

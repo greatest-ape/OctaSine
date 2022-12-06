@@ -1,11 +1,17 @@
 pub mod colors;
 pub mod knob;
 
-use iced_baseview::{widget::button, widget::checkbox, widget::container, overlay::menu, widget::pick_list, widget::radio, Color};
+use iced_baseview::{
+    overlay::menu, widget::button, widget::checkbox, widget::container, widget::pick_list,
+    widget::radio, Color,
+};
 
 use crate::gui::interface::wave_display;
 
-use super::{super::{boolean_button, envelope, mod_matrix, wave_picker}, Theme};
+use super::{
+    super::{boolean_button, envelope, mod_matrix, wave_picker},
+    Theme,
+};
 
 use colors::*;
 
@@ -114,7 +120,6 @@ impl boolean_button::StyleSheet for MuteButton {
         }
     }
 }
-
 
 pub struct BooleanButton;
 

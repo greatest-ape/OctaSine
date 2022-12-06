@@ -1,6 +1,7 @@
 use iced_baseview::{
-    alignment::Horizontal, widget::tooltip::Position, Alignment, widget::Button, widget::Column, widget::Container, Element,
-    Length, widget::Row, widget::Space, widget::Text, widget::Tooltip,
+    alignment::Horizontal, widget::tooltip::Position, widget::Button, widget::Column,
+    widget::Container, widget::Row, widget::Space, widget::Text, widget::Tooltip, Alignment,
+    Element, Length,
 };
 
 use crate::{
@@ -14,7 +15,7 @@ use super::{
     knob::{self, OctaSineKnob},
     mod_matrix::ModulationMatrix,
     patch_picker::PatchPicker,
-    style::{Theme, container::ContainerStyle},
+    style::{container::ContainerStyle, Theme},
     Message, FONT_SIZE, LINE_HEIGHT,
 };
 

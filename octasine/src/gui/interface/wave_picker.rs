@@ -2,8 +2,8 @@ use iced_baseview::widget::canvas::{
     event, path, Cache, Canvas, Cursor, Frame, Geometry, Path, Program, Stroke,
 };
 use iced_baseview::{
-    alignment::Horizontal, Alignment, Color, widget::Column, Element, Length, Point, Rectangle, Size,
-    widget::Space, widget::Text,
+    alignment::Horizontal, widget::Column, widget::Space, widget::Text, Alignment, Color, Element,
+    Length, Point, Rectangle, Size,
 };
 
 use crate::common::{CalculateCurve, Phase};

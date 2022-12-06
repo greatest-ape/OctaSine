@@ -8,5 +8,4 @@ impl StyleSheet for Theme {
     fn appearance(&self, style: Self::Style) -> Appearance {
         Appearance { color: None }
     }
-	
 }

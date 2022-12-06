@@ -1,7 +1,8 @@
 use iced_audio::{knob, text_marks, tick_marks, Knob, Normal, NormalParam};
 use iced_baseview::widget::Container;
 use iced_baseview::{
-    alignment::Horizontal, keyboard::Modifiers, Alignment, widget::Column, Element, Length, widget::Space, widget::Text,
+    alignment::Horizontal, keyboard::Modifiers, widget::Column, widget::Space, widget::Text,
+    Alignment, Element, Length,
 };
 
 use crate::parameters::{
@@ -355,15 +356,14 @@ where
 
         let modifier_keys = Modifiers::SHIFT;
 
-        let mut knob: Knob<'a, Message, Theme> =
-            knob::Knob::new(self.value, move |value| {
-                Message::ChangeSingleParameterSetValue(parameter, value.as_f32())
-            })
-            .on_grab(move || Some(Message::ChangeSingleParameterBegin(parameter)))
-            .on_release(move || Some(Message::ChangeSingleParameterEnd(parameter)))
-            .size(Length::from(KNOB_SIZE))
-            .modifier_keys(modifier_keys)
-            .bipolar_center(self.default_value);
+        let mut knob: Knob<'a, Message, Theme> = knob::Knob::new(self.value, move |value| {
+            Message::ChangeSingleParameterSetValue(parameter, value.as_f32())
+        })
+        .on_grab(move || Some(Message::ChangeSingleParameterBegin(parameter)))
+        .on_release(move || Some(Message::ChangeSingleParameterEnd(parameter)))
+        .size(Length::from(KNOB_SIZE))
+        .modifier_keys(modifier_keys)
+        .bipolar_center(self.default_value);
 
         knob = (self.style_setter)(knob, self.style);
 

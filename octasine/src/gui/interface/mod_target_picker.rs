@@ -1,5 +1,6 @@
 use iced_baseview::{
-    alignment::Horizontal, Alignment, widget::Checkbox, widget::Column, Element, Length, widget::Space, widget::Text,
+    alignment::Horizontal, widget::Checkbox, widget::Column, widget::Space, widget::Text,
+    Alignment, Element, Length,
 };
 
 use crate::parameters::operator_mod_target::ModTargetStorage;

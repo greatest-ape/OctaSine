@@ -1,8 +1,13 @@
-use iced_baseview::{widget::Column, widget::Container, Element, Length, widget::Row, widget::Space};
+use iced_baseview::{
+    widget::Column, widget::Container, widget::Row, widget::Space, Element, Length,
+};
 
 use crate::gui::interface::LINE_HEIGHT;
 
-use super::{style::{Theme, container::ContainerStyle}, Message};
+use super::{
+    style::{container::ContainerStyle, Theme},
+    Message,
+};
 
 pub fn container_l1<'a, T>(theme: Theme, contents: T) -> Container<'a, Message, Theme>
 where

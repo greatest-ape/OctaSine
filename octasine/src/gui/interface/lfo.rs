@@ -1,8 +1,9 @@
 use iced_baseview::widget::tooltip::Position;
-use iced_baseview::{
-    alignment::Horizontal, alignment::Vertical, widget::Column, Element, Length, widget::Row, widget::Space, widget::Text,
-};
 use iced_baseview::widget::{Container, Tooltip};
+use iced_baseview::{
+    alignment::Horizontal, alignment::Vertical, widget::Column, widget::Row, widget::Space,
+    widget::Text, Element, Length,
+};
 
 use crate::parameters::{
     LfoAmountValue, LfoFrequencyFreeValue, LfoFrequencyRatioValue, LfoParameter, LfoShapeValue,

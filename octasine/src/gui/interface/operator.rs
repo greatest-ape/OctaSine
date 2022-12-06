@@ -1,7 +1,8 @@
 use iced_baseview::widget::tooltip::Position;
 use iced_baseview::widget::Tooltip;
 use iced_baseview::{
-    alignment::Horizontal, Alignment, widget::Column, widget::Container, Element, Length, widget::Row, widget::Space, widget::Text,
+    alignment::Horizontal, widget::Column, widget::Container, widget::Row, widget::Space,
+    widget::Text, Alignment, Element, Length,
 };
 
 use crate::parameters::{

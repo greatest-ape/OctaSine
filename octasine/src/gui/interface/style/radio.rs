@@ -30,7 +30,6 @@ impl StyleSheet for Theme {
                 }
             }
         }
-
     }
 
     fn hovered(&self, style: &Self::Style, is_selected: bool) -> Appearance {
