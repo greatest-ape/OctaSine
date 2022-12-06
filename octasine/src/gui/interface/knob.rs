@@ -1,4 +1,4 @@
-use iced_audio::{native::knob, text_marks, tick_marks, Normal, NormalParam};
+use iced_audio::{graphics::knob, text_marks, tick_marks, Normal, NormalParam};
 use iced_baseview::widget::Container;
 use iced_baseview::{
     alignment::Horizontal, keyboard::Modifiers, widget::Column, widget::Space, widget::Text,
@@ -299,9 +299,9 @@ where
         style: Theme,
         knob_style: KnobStyle,
     ) -> Self {
-        let default_value = Normal::new(default_patch_value);
+        let default_value = Normal::from_clipped(default_patch_value);
         let value = NormalParam {
-            value: Normal::new(sync_handle.get_parameter(parameter) as f32),
+            value: Normal::from_clipped(sync_handle.get_parameter(parameter) as f32),
             default: default_value,
         };
         let value_text = ValueText::new(sync_handle, style, parameter);
@@ -331,7 +331,7 @@ where
         // if !self.knob_state.is_dragging() {
         //     self.knob_state.set_normal(Normal::new(value as f32));
         // }
-        self.value.update(Normal::new(value as f32));
+        self.value.update(Normal::from_clipped(value as f32));
 
         self.value_text.set_value(value);
     }
@@ -351,11 +351,7 @@ where
 
         let modifier_keys = Modifiers::SHIFT;
 
-        type Knob<'a> = knob::Knob<'a, Message, iced_baseview::renderer::Renderer<Theme>>;
-
-        // FIXME
-        /*
-        let mut knob: Knob<'a> = knob::Knob::new(self.value, move |value| {
+        let mut knob: knob::Knob<'a, Message, Theme> = knob::Knob::new(self.value, move |value| {
             Message::ChangeSingleParameterSetValue(parameter, value.as_f32())
         })
         .on_grab(move || Some(Message::ChangeSingleParameterBegin(parameter)))
@@ -371,7 +367,6 @@ where
         if let Some(tick_marks) = self.tick_marks.as_ref() {
             knob = knob.tick_marks(tick_marks);
         }
-        */
 
         Container::new(
             Column::new()
@@ -379,7 +374,7 @@ where
                 .align_items(Alignment::Center)
                 .push(title)
                 .push(Space::with_height(Length::Units(LINE_HEIGHT)))
-                // .push(knob)
+                .push(knob)
                 .push(Space::with_height(Length::Units(LINE_HEIGHT)))
                 .push(self.value_text.view()),
         )
@@ -390,9 +385,12 @@ where
 
 fn tick_marks_from_min_max_and_value(patch_value: f32) -> tick_marks::Group {
     let marks = vec![
-        (Normal::new(0.0), tick_marks::Tier::One),
-        (Normal::new(patch_value as f32), tick_marks::Tier::Two),
-        (Normal::new(1.0), tick_marks::Tier::One),
+        (Normal::from_clipped(0.0), tick_marks::Tier::One),
+        (
+            Normal::from_clipped(patch_value as f32),
+            tick_marks::Tier::Two,
+        ),
+        (Normal::from_clipped(1.0), tick_marks::Tier::One),
     ];
 
     tick_marks::Group::from(marks)

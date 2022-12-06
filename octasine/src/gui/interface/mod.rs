@@ -452,7 +452,7 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
             present_mode: iced_baseview::renderer::wgpu::PresentMode::Immediate,
             default_font: Some(OPEN_SANS_BYTES_SEMI_BOLD),
             default_text_size: FONT_SIZE,
-            antialiasing: Some(iced_baseview::renderer::settings::Antialiasing::MSAAx8),
+            antialiasing: Some(iced_baseview::renderer::settings::Antialiasing::MSAAx4),
             ..Default::default()
         }
     }

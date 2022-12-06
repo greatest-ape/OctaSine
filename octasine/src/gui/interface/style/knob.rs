@@ -111,7 +111,7 @@ use iced_audio::style::knob::{Appearance, StyleSheet, TickMarksStyle};
 
 use super::Theme;
 
-#[derive(Default)]
+#[derive(Default, Clone, Copy)]
 pub enum KnobStyle {
     #[default]
     Regular,
