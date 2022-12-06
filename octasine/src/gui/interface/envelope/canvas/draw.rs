@@ -1,4 +1,4 @@
-use iced_baseview::canvas::{Frame, Path, Stroke, Text};
+use iced_baseview::widget::canvas::{Frame, Path, Stroke, Text};
 use iced_baseview::{Point, Size, Vector};
 
 use crate::gui::interface::style::Theme;

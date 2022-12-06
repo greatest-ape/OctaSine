@@ -1,4 +1,4 @@
-use iced_baseview::canvas::{Frame, Path, Stroke};
+use iced_baseview::widget::canvas::{Frame, Path, Stroke};
 use iced_baseview::{Color, Point};
 use palette::gradient::Gradient;
 use palette::Srgba;

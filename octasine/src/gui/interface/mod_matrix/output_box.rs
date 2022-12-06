@@ -1,4 +1,4 @@
-use iced_baseview::canvas::{Frame, Path, Stroke};
+use iced_baseview::widget::canvas::{Frame, Path, Stroke};
 use iced_baseview::{Point, Size};
 
 use crate::gui::interface::SnapPoint;

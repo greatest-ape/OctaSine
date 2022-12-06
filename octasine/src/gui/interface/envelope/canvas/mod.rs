@@ -2,8 +2,8 @@ mod common;
 mod draw;
 mod events;
 
-use iced_baseview::canvas::{event, Cache, Canvas, Cursor, Geometry, Program};
-use iced_baseview::{Container, Element, Length, Point, Rectangle, Size};
+use iced_baseview::widget::canvas::{event, Cache, Canvas, Cursor, Geometry, Program};
+use iced_baseview::{widget::Container, Element, Length, Point, Rectangle, Size};
 
 use crate::audio::voices::log10_table::Log10Table;
 use crate::parameters::operator_envelope::{
@@ -106,7 +106,7 @@ impl EnvelopeCanvas {
         envelope
     }
 
-    pub fn view(&self) -> Element<Message> {
+    pub fn view(&self) -> Element<Message, Theme> {
         Container::new(
             Canvas::new(self)
                 .width(Length::Units(WIDTH))
@@ -324,13 +324,13 @@ impl EnvelopeCanvas {
     }
 }
 
-impl Program<Message> for EnvelopeCanvas {
+impl Program<Message, Theme> for EnvelopeCanvas {
     type State = EnvelopeCanvasState;
 
     fn draw(
         &self,
         state: &Self::State,
-        _theme: &iced_baseview::Theme,
+        _theme: &Theme,
         bounds: Rectangle,
         _cursor: Cursor,
     ) -> Vec<Geometry> {

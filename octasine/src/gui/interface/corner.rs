@@ -1,6 +1,6 @@
 use iced_baseview::{
-    alignment::Horizontal, tooltip::Position, Alignment, Button, Column, Container, Element,
-    Length, Row, Space, Text, Tooltip,
+    alignment::Horizontal, widget::tooltip::Position, Alignment, widget::Button, widget::Column, widget::Container, Element,
+    Length, widget::Row, widget::Space, widget::Text, widget::Tooltip,
 };
 
 use crate::{
@@ -14,7 +14,7 @@ use super::{
     knob::{self, OctaSineKnob},
     mod_matrix::ModulationMatrix,
     patch_picker::PatchPicker,
-    style::Theme,
+    style::{Theme, container::ContainerStyle},
     Message, FONT_SIZE, LINE_HEIGHT,
 };
 
@@ -52,7 +52,7 @@ impl CornerWidgets {
         self.patch_picker.style = style;
     }
 
-    pub fn view(&self) -> Element<'_, Message> {
+    pub fn view(&self) -> Element<'_, Message, Theme> {
         let mod_matrix = Container::new(
             Column::new()
                 .push(Space::with_height(Length::Units(LINE_HEIGHT)))
@@ -67,7 +67,7 @@ impl CornerWidgets {
         )
         .height(Length::Units(LINE_HEIGHT * 8))
         .width(Length::Units(LINE_HEIGHT * 7))
-        .style(self.style.container_l3());
+        .style(ContainerStyle::L3);
 
         let master = container_l1(
             self.style,

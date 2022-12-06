@@ -1,7 +1,7 @@
-use iced_baseview::tooltip::Position;
-use iced_baseview::Tooltip;
+use iced_baseview::widget::tooltip::Position;
+use iced_baseview::widget::Tooltip;
 use iced_baseview::{
-    alignment::Horizontal, Alignment, Column, Container, Element, Length, Row, Space, Text,
+    alignment::Horizontal, Alignment, widget::Column, widget::Container, Element, Length, widget::Row, widget::Space, widget::Text,
 };
 
 use crate::parameters::{
@@ -119,7 +119,7 @@ impl OperatorWidgets {
         self.wave_display.set_style(style);
     }
 
-    pub fn view(&self) -> Element<Message> {
+    pub fn view(&self) -> Element<Message, Theme> {
         let heading = {
             let mute_button = Tooltip::new(self.mute_button.view(), "Toggle mute", Position::Top)
                 .style(self.style.tooltip())

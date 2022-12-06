@@ -1,7 +1,7 @@
 use iced_audio::{knob, text_marks, tick_marks, Knob, Normal, NormalParam};
-use iced_baseview::Container;
+use iced_baseview::widget::Container;
 use iced_baseview::{
-    alignment::Horizontal, keyboard::Modifiers, Alignment, Column, Element, Length, Space, Text,
+    alignment::Horizontal, keyboard::Modifiers, Alignment, widget::Column, Element, Length, widget::Space, widget::Text,
 };
 
 use crate::parameters::{
@@ -20,9 +20,9 @@ use super::{Message, LINE_HEIGHT};
 const KNOB_SIZE: Length = Length::Units(LINE_HEIGHT * 2);
 
 type StyleSetter = fn(
-    knob::Knob<Message, iced_baseview::Theme>,
+    knob::Knob<Message, iced_baseview::renderer::Theme>,
     Theme,
-) -> knob::Knob<Message, iced_baseview::Theme>;
+) -> knob::Knob<Message, iced_baseview::renderer::Theme>;
 
 enum TickMarkType {
     MinMaxAndDefault,
@@ -345,7 +345,7 @@ where
         self.value_text.style = style;
     }
 
-    pub fn view<'a>(&'a self) -> Element<Message> {
+    pub fn view<'a>(&'a self) -> Element<Message, Theme> {
         let title = Text::new(self.title.clone())
             .horizontal_alignment(Horizontal::Center)
             .font(self.style.font_bold())
@@ -355,7 +355,7 @@ where
 
         let modifier_keys = Modifiers::SHIFT;
 
-        let mut knob: Knob<'a, Message, iced_baseview::Theme> =
+        let mut knob: Knob<'a, Message, Theme> =
             knob::Knob::new(self.value, move |value| {
                 Message::ChangeSingleParameterSetValue(parameter, value.as_f32())
             })

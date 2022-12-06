@@ -1,8 +1,8 @@
-use iced_baseview::tooltip::Position;
+use iced_baseview::widget::tooltip::Position;
 use iced_baseview::{
-    alignment::Horizontal, alignment::Vertical, Column, Element, Length, Row, Space, Text,
+    alignment::Horizontal, alignment::Vertical, widget::Column, Element, Length, widget::Row, widget::Space, widget::Text,
 };
-use iced_baseview::{Container, Tooltip};
+use iced_baseview::widget::{Container, Tooltip};
 
 use crate::parameters::{
     LfoAmountValue, LfoFrequencyFreeValue, LfoFrequencyRatioValue, LfoParameter, LfoShapeValue,
@@ -63,7 +63,7 @@ impl LfoWidgets {
         self.active.set_style(style);
     }
 
-    pub fn view(&self) -> Element<Message> {
+    pub fn view(&self) -> Element<Message, Theme> {
         let title = Text::new(format!("LFO {}", self.index + 1))
             .size(FONT_SIZE + FONT_SIZE / 2)
             .height(Length::Units(FONT_SIZE + FONT_SIZE / 2))

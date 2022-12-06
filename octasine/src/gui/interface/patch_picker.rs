@@ -2,7 +2,7 @@ use std::fmt::Display;
 
 use iced_baseview::alignment::Horizontal;
 use iced_baseview::widget::PickList;
-use iced_baseview::{Alignment, Column, Container, Element, Length, Space, Text};
+use iced_baseview::{Alignment, widget::Column, widget::Container, Element, Length, widget::Space, widget::Text};
 
 use super::LINE_HEIGHT;
 use super::{style::Theme, GuiSyncHandle, Message, FONT_SIZE};
@@ -87,7 +87,7 @@ impl PatchPicker {
         }
     }
 
-    pub fn view(&self) -> Element<Message> {
+    pub fn view(&self) -> Element<Message, Theme> {
         let patch_picker = PickList::new(
             &self.patch_options[..],
             Some(self.patch_options[self.patch_index].clone()),

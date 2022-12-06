@@ -5,7 +5,7 @@ mod mod_lines;
 mod operator_box;
 mod output_box;
 
-use iced_baseview::canvas::{event, Cache, Canvas, Cursor, Frame, Geometry, Path, Program, Stroke};
+use iced_baseview::widget::canvas::{event, Cache, Canvas, Cursor, Frame, Geometry, Path, Program, Stroke};
 use iced_baseview::{Color, Element, Length, Point, Rectangle, Size};
 
 use crate::parameters::{
@@ -472,7 +472,7 @@ impl ModulationMatrix {
         self.cache.clear();
     }
 
-    pub fn view(&self) -> Element<Message> {
+    pub fn view(&self) -> Element<Message, Theme> {
         Canvas::new(self)
             .width(Length::Units(WIDTH))
             .height(Length::Units(HEIGHT))
@@ -511,13 +511,13 @@ pub struct CanvasState {
     operator_2_mod_1_box: ModulationBoxCanvasState,
 }
 
-impl Program<Message> for ModulationMatrix {
+impl Program<Message, Theme> for ModulationMatrix {
     type State = CanvasState;
 
     fn draw(
         &self,
         state: &Self::State,
-        _theme: &iced_baseview::Theme,
+        _theme: &Theme,
         bounds: Rectangle,
         _cursor: Cursor,
     ) -> Vec<Geometry> {

@@ -77,7 +77,7 @@ impl LfoTargetPicker {
         self.selected = Self::get_index_from_sync(self.lfo_index, sync_value);
     }
 
-    pub fn view(&self) -> Element<Message> {
+    pub fn view(&self) -> Element<Message, Theme> {
         let lfo_index = self.lfo_index;
         let parameter = self.parameter;
 

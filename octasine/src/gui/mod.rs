@@ -1,6 +1,6 @@
 use iced_baseview::{
     baseview::{Size, WindowOpenOptions, WindowScalePolicy},
-    IcedWindow, Settings,
+    Settings, settings::IcedBaseviewSettings, open_parented, open_blocking,
 };
 use raw_window_handle::{HasRawWindowHandle, RawWindowHandle};
 use serde::{Deserialize, Serialize};
@@ -52,7 +52,7 @@ impl<H: GuiSyncHandle> Gui<H> {
                     ..Default::default()
                 }),
             },
-            iced_baseview: iced_baseview::IcedBaseviewSettings {
+            iced_baseview: IcedBaseviewSettings {
                 ignore_non_modifier_keys: true,
                 always_redraw: true,
             },
@@ -61,7 +61,7 @@ impl<H: GuiSyncHandle> Gui<H> {
     }
 
     pub fn open_parented(parent: ParentWindow, sync_handle: H) {
-        IcedWindow::<OctaSineIcedApplication<_>>::open_parented(
+        open_parented::<OctaSineIcedApplication<H>, ParentWindow>(
             &parent,
             Self::get_iced_baseview_settings(sync_handle),
         );
@@ -70,7 +70,7 @@ impl<H: GuiSyncHandle> Gui<H> {
     pub fn open_blocking(sync_handle: H) {
         let settings = Self::get_iced_baseview_settings(sync_handle);
 
-        IcedWindow::<OctaSineIcedApplication<_>>::open_blocking(settings);
+        open_blocking::<OctaSineIcedApplication<H>>(settings);
     }
 }
 

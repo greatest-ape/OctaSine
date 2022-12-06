@@ -1,4 +1,4 @@
-use iced_baseview::canvas::{event, Frame, Path, Stroke};
+use iced_baseview::widget::canvas::{event, Frame, Path, Stroke};
 use iced_baseview::{mouse, Point, Rectangle, Size};
 
 use crate::parameters::operator_mod_target::ModTargetStorage;

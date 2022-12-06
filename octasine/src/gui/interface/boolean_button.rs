@@ -1,5 +1,5 @@
 use iced_baseview::alignment::{Horizontal, Vertical};
-use iced_baseview::canvas::{
+use iced_baseview::widget::canvas::{
     event, Cache, Canvas, Cursor, Frame, Geometry, Path, Program, Stroke, Text,
 };
 use iced_baseview::{Color, Element, Length, Point, Rectangle, Size};
@@ -224,7 +224,7 @@ impl BooleanButton {
         self.cache.clear();
     }
 
-    pub fn view(&self) -> Element<Message> {
+    pub fn view(&self) -> Element<Message, Theme> {
         let width = self.width;
         let height = self.height;
 
@@ -279,13 +279,13 @@ pub struct CanvasState {
     click_started: bool,
 }
 
-impl Program<Message> for BooleanButton {
+impl Program<Message, Theme> for BooleanButton {
     type State = CanvasState;
 
     fn draw(
         &self,
         state: &Self::State,
-        _theme: &iced_baseview::Theme,
+        _theme: &Theme,
         bounds: Rectangle,
         _cursor: Cursor,
     ) -> Vec<Geometry> {

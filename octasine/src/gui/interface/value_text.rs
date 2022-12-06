@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use iced_baseview::alignment::Horizontal;
 use iced_baseview::widget::Text;
-use iced_baseview::{Button, Element, Length};
+use iced_baseview::{widget::Button, Element, Length};
 
 use crate::parameters::list::Parameter;
 use crate::parameters::ParameterValue;
@@ -35,7 +35,7 @@ impl<P: ParameterValue> ValueText<P> {
         self.text = P::new_from_patch(value).get_formatted();
     }
 
-    pub fn view(&self) -> Element<Message> {
+    pub fn view(&self) -> Element<Message, Theme> {
         Button::new(
             Text::new(self.text.clone())
                 .horizontal_alignment(Horizontal::Center)

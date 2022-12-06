@@ -1,4 +1,4 @@
-use iced_baseview::canvas::{path, Frame, Path, Stroke};
+use iced_baseview::widget::canvas::{path, Frame, Path, Stroke};
 use iced_baseview::{Color, Point, Rectangle, Size, Vector};
 
 use crate::audio::voices::envelopes::VoiceOperatorVolumeEnvelope;

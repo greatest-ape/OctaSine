@@ -53,4 +53,5 @@ tinyfiledialogs = { version = "3", optional = true }
 git = "https://github.com/BillyDM/iced_baseview.git"
 rev = "236db06"
 default-features = false
+features = ["canvas"]
 optional = true

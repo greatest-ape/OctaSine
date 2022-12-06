@@ -1,9 +1,9 @@
 pub mod canvas;
 
 use iced_baseview::alignment::Horizontal;
-use iced_baseview::tooltip::Position;
-use iced_baseview::{Alignment, Button, Column, Element, Length, Row, Space, Text};
-use iced_baseview::{Font, Tooltip};
+use iced_baseview::widget::tooltip::Position;
+use iced_baseview::{Alignment, widget::Button, widget::Column, Element, Length, widget::Row, widget::Space, widget::Text};
+use iced_baseview::{Font, widget::Tooltip};
 
 use crate::parameters::list::{OperatorParameter, Parameter};
 use crate::parameters::operator_envelope::OperatorEnvelopeGroupValue;
@@ -77,8 +77,8 @@ impl Envelope {
         group == self.group && group != OperatorEnvelopeGroupValue::Off
     }
 
-    pub fn view(&self) -> Element<Message> {
-        let group_synced: Element<Message> = if self.group_synced {
+    pub fn view(&self) -> Element<Message, Theme> {
+        let group_synced: Element<Message, Theme> = if self.group_synced {
             Space::with_width(Length::Units(1)).into()
         } else {
             let text = Text::new("≠")
@@ -208,7 +208,7 @@ fn button_with_tooltip<'a>(
     button_text: &'static str,
     button_message: Message,
     tooltip_text: &'static str,
-) -> Element<'a, Message> {
+) -> Element<'a, Message, Theme> {
     Tooltip::new(
         Button::new(
             Text::new(button_text)

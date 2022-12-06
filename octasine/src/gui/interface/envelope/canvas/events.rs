@@ -1,4 +1,4 @@
-use iced_baseview::canvas::event;
+use iced_baseview::widget::canvas::event;
 use iced_baseview::{Point, Rectangle};
 
 use crate::gui::interface::Message;

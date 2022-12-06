@@ -1,9 +1,9 @@
-use iced_baseview::canvas::{
+use iced_baseview::widget::canvas::{
     event, path, Cache, Canvas, Cursor, Frame, Geometry, Path, Program, Stroke,
 };
 use iced_baseview::{
-    alignment::Horizontal, Alignment, Color, Column, Element, Length, Point, Rectangle, Size,
-    Space, Text,
+    alignment::Horizontal, Alignment, Color, widget::Column, Element, Length, Point, Rectangle, Size,
+    widget::Space, widget::Text,
 };
 
 use crate::common::{CalculateCurve, Phase};
@@ -86,7 +86,7 @@ where
         }
     }
 
-    pub fn view(&self) -> Element<Message> {
+    pub fn view(&self) -> Element<Message, Theme> {
         let title = Text::new(&self.title)
             .horizontal_alignment(Horizontal::Center)
             .font(self.style.font_bold())
@@ -138,7 +138,7 @@ where
         }
     }
 
-    pub fn view(&self) -> Element<Message> {
+    pub fn view(&self) -> Element<Message, Theme> {
         Canvas::new(self)
             .width(Length::Units(WIDTH))
             .height(Length::Units(HEIGHT))
@@ -230,7 +230,7 @@ where
     }
 }
 
-impl<P> Program<Message> for WavePickerCanvas<P>
+impl<P> Program<Message, Theme> for WavePickerCanvas<P>
 where
     P: ParameterValue + Copy + 'static,
     P::Value: CalculateCurve,
@@ -240,7 +240,7 @@ where
     fn draw(
         &self,
         state: &Self::State,
-        _theme: &iced_baseview::Theme,
+        _theme: &Theme,
         bounds: Rectangle,
         _cursor: Cursor,
     ) -> Vec<Geometry> {
