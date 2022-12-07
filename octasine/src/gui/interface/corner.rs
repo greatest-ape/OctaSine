@@ -86,8 +86,7 @@ impl CornerWidgets {
                         .height(Length::Units(LINE_HEIGHT)),
                 )
                 .on_press(Message::SwitchTheme)
-                .padding(self.style.button_padding())
-                .style(self.style.button()),
+                .padding(self.style.button_padding()),
                 "Switch color theme",
                 Position::Top,
             )
@@ -100,8 +99,7 @@ impl CornerWidgets {
                         .height(Length::Units(LINE_HEIGHT)),
                 )
                 .on_press(Message::NoOp)
-                .padding(self.style.button_padding())
-                .style(self.style.button()),
+                .padding(self.style.button_padding()),
                 get_info_text(),
                 Position::FollowCursor,
             )

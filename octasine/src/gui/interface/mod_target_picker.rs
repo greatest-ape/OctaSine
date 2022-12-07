@@ -99,8 +99,7 @@ where
             .font(self.style.font_regular())
             .size(FONT_SIZE)
             .text_size(FONT_SIZE)
-            .spacing(4)
-            .style(self.style.checkbox());
+            .spacing(4);
 
             checkboxes = checkboxes.push(checkbox);
         }

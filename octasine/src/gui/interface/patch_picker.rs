@@ -98,14 +98,12 @@ impl PatchPicker {
         .font(self.style.font_regular())
         .text_size(FONT_SIZE)
         .padding(self.style.picklist_padding())
-        .style(self.style.pick_list())
         .width(Length::Fill);
 
         let action_picker = PickList::new(ACTIONS, None, Action::to_message)
             .font(self.style.font_regular())
             .text_size(FONT_SIZE)
             .padding(self.style.picklist_padding())
-            .style(self.style.pick_list())
             .placeholder("ACTIONS..")
             .width(Length::Fill);
 

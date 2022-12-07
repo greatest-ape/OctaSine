@@ -97,39 +97,7 @@ impl Theme {
         3
     }
 
-    pub fn checkbox(&self) -> () {
-        ()
-    }
-    pub fn radio(&self) -> () {
-        ()
-    }
-    pub fn button(&self) -> button::ButtonStyle {
-        button::ButtonStyle::Regular
-    }
-    pub fn value_button(&self) -> button::ButtonStyle {
-        button::ButtonStyle::Value
-    }
-    pub fn pick_list(&self) -> () {
-        ()
-    }
     pub fn tooltip(&self) -> container::ContainerStyle {
         container::ContainerStyle::Tooltip
-    }
-
-    pub fn knob_regular(&self) -> knob::KnobStyle {
-        knob::KnobStyle::Regular
-    }
-    pub fn knob_bipolar(&self) -> knob::KnobStyle {
-        knob::KnobStyle::Bipolar
-    }
-
-    pub fn mute_button(&self) -> boolean_button::BooleanButtonStyle {
-        boolean_button::BooleanButtonStyle::Mute
-    }
-    pub fn bpm_sync_button(&self) -> boolean_button::BooleanButtonStyle {
-        boolean_button::BooleanButtonStyle::Regular
-    }
-    pub fn envelope_group_button(&self) -> boolean_button::BooleanButtonStyle {
-        boolean_button::BooleanButtonStyle::Regular
     }
 }

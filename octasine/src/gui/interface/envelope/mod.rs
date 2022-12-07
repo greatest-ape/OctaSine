@@ -220,8 +220,7 @@ fn button_with_tooltip<'a>(
                 .horizontal_alignment(Horizontal::Center),
         )
         .on_press(button_message)
-        .padding(style.button_padding())
-        .style(style.button()),
+        .padding(style.button_padding()),
         tooltip_text,
         Position::Top,
     )
