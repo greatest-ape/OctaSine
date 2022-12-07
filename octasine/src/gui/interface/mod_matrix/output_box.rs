@@ -1,6 +1,7 @@
-use iced_baseview::canvas::{Frame, Path, Stroke};
+use iced_baseview::widget::canvas::{Frame, Path, Stroke};
 use iced_baseview::{Point, Size};
 
+use crate::gui::interface::style::Theme;
 use crate::gui::interface::SnapPoint;
 
 use super::{common::*, StyleSheet, OPERATOR_BOX_SCALE};
@@ -40,9 +41,9 @@ impl OutputBox {
         Self { path, y: left.y }
     }
 
-    pub fn draw(&self, frame: &mut Frame, style_sheet: Box<dyn StyleSheet>) {
+    pub fn draw(&self, frame: &mut Frame, theme: &Theme) {
         let stroke = Stroke::default()
-            .with_color(style_sheet.active().box_border_color)
+            .with_color(theme.appearance().box_border_color)
             .with_width(1.0);
 
         frame.stroke(&self.path, stroke);

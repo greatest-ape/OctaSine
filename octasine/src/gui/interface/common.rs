@@ -1,19 +1,24 @@
-use iced_baseview::{Column, Container, Element, Length, Row, Space};
+use iced_baseview::{
+    widget::Column, widget::Container, widget::Row, widget::Space, Element, Length,
+};
 
 use crate::gui::interface::LINE_HEIGHT;
 
-use super::{style::Theme, Message};
+use super::{
+    style::{container::ContainerStyle, Theme},
+    Message,
+};
 
-pub fn container_l1<'a, T>(theme: Theme, contents: T) -> Container<'a, Message>
+pub fn container_l1<'a, T>(contents: T) -> Container<'a, Message, Theme>
 where
-    T: Into<Element<'a, Message>>,
+    T: Into<Element<'a, Message, Theme>>,
 {
-    Container::new(contents).style(theme.container_l1())
+    Container::new(contents).style(ContainerStyle::L1)
 }
 
-pub fn container_l2<'a, T>(theme: Theme, contents: T) -> Container<'a, Message>
+pub fn container_l2<'a, T>(contents: T) -> Container<'a, Message, Theme>
 where
-    T: Into<Element<'a, Message>>,
+    T: Into<Element<'a, Message, Theme>>,
 {
     let padding_x = LINE_HEIGHT;
     let padding_y = 0;
@@ -30,13 +35,13 @@ where
 
     Container::new(contents)
         .padding(0)
-        .style(theme.container_l2())
+        .style(ContainerStyle::L2)
         .into()
 }
 
-pub fn container_l3<'a, T>(theme: Theme, contents: T) -> Container<'a, Message>
+pub fn container_l3<'a, T>(contents: T) -> Container<'a, Message, Theme>
 where
-    T: Into<Element<'a, Message>>,
+    T: Into<Element<'a, Message, Theme>>,
 {
     let padding_x = 0;
     let padding_y = LINE_HEIGHT;
@@ -53,21 +58,21 @@ where
 
     Container::new(contents)
         .padding(0)
-        .style(theme.container_l3())
+        .style(ContainerStyle::L3)
         .into()
 }
 
-pub fn triple_container<'a, T>(theme: Theme, contents: T) -> Container<'a, Message>
+pub fn triple_container<'a, T>(contents: T) -> Container<'a, Message, Theme>
 where
-    T: Into<Element<'a, Message>>,
+    T: Into<Element<'a, Message, Theme>>,
 {
-    container_l1(theme, container_l2(theme, container_l3(theme, contents)))
+    container_l1(container_l2(container_l3(contents)))
 }
 
-pub fn space_l2<'a>() -> Container<'a, Message> {
+pub fn space_l2<'a>() -> Container<'a, Message, Theme> {
     Container::new(Space::with_width(Length::Units(LINE_HEIGHT)))
 }
 
-pub fn space_l3<'a>() -> Container<'a, Message> {
+pub fn space_l3<'a>() -> Container<'a, Message, Theme> {
     Container::new(Space::with_width(Length::Units(0)))
 }

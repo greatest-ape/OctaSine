@@ -1,9 +1,12 @@
-pub mod widget;
+pub mod canvas;
 
 use iced_baseview::alignment::Horizontal;
-use iced_baseview::tooltip::Position;
-use iced_baseview::{button, Alignment, Button, Column, Element, Length, Row, Space, Text};
-use iced_baseview::{Font, Tooltip};
+use iced_baseview::widget::tooltip::Position;
+use iced_baseview::{
+    widget::Button, widget::Column, widget::Row, widget::Space, widget::Text, Alignment, Element,
+    Length,
+};
+use iced_baseview::{widget::Tooltip, Font};
 
 use crate::parameters::list::{OperatorParameter, Parameter};
 use crate::parameters::operator_envelope::OperatorEnvelopeGroupValue;
@@ -20,11 +23,7 @@ pub struct Envelope {
     style: Theme,
     group: OperatorEnvelopeGroupValue,
     group_synced: bool,
-    pub widget: widget::Envelope,
-    pub zoom_in: button::State,
-    pub zoom_out: button::State,
-    pub sync_viewport: button::State,
-    pub zoom_to_fit: button::State,
+    pub widget: canvas::EnvelopeCanvas,
     pub group_a: BooleanButton,
     pub group_b: BooleanButton,
 }
@@ -46,21 +45,17 @@ impl Envelope {
             style,
             group,
             group_synced,
-            widget: widget::Envelope::new(sync_handle, operator_index, style),
-            zoom_in: button::State::default(),
-            zoom_out: button::State::default(),
-            sync_viewport: button::State::default(),
-            zoom_to_fit: button::State::default(),
-            group_a: envelope_group_a_button(sync_handle, operator_index, style),
-            group_b: envelope_group_b_button(sync_handle, operator_index, style),
+            widget: canvas::EnvelopeCanvas::new(sync_handle, operator_index),
+            group_a: envelope_group_a_button(sync_handle, operator_index),
+            group_b: envelope_group_b_button(sync_handle, operator_index),
         }
     }
 
     pub fn set_style(&mut self, style: Theme) {
         self.style = style;
-        self.widget.set_style(style);
-        self.group_a.set_style(style);
-        self.group_b.set_style(style);
+        self.widget.theme_changed();
+        self.group_a.theme_changed();
+        self.group_b.theme_changed();
     }
 
     pub fn set_group(&mut self, value: f32, internal: bool) {
@@ -85,14 +80,13 @@ impl Envelope {
         group == self.group && group != OperatorEnvelopeGroupValue::Off
     }
 
-    pub fn view(&mut self) -> Element<Message> {
-        let group_synced: Element<Message> = if self.group_synced {
+    pub fn view(&self) -> Element<Message, Theme> {
+        let group_synced: Element<Message, Theme> = if self.group_synced {
             Space::with_width(Length::Units(1)).into()
         } else {
             let text = Text::new("≠")
                 .font(self.style.font_bold())
                 .size(FONT_SIZE)
-                .color(self.style.text_color())
                 .height(Length::Units(LINE_HEIGHT))
                 .width(Length::Units(6))
                 .horizontal_alignment(Horizontal::Center);
@@ -114,7 +108,6 @@ impl Envelope {
 
         let zoom_out = button_with_tooltip(
             self.style,
-            &mut self.zoom_out,
             self.style.font_extra_bold(),
             "−",
             Message::EnvelopeChangeViewport {
@@ -127,7 +120,6 @@ impl Envelope {
 
         let zoom_in = button_with_tooltip(
             self.style,
-            &mut self.zoom_in,
             self.style.font_extra_bold(),
             "+",
             Message::EnvelopeChangeViewport {
@@ -140,7 +132,6 @@ impl Envelope {
 
         let fit = button_with_tooltip(
             self.style,
-            &mut self.zoom_to_fit,
             self.style.font_regular(),
             "F",
             Message::EnvelopeChangeViewport {
@@ -153,7 +144,6 @@ impl Envelope {
 
         let distribute = button_with_tooltip(
             self.style,
-            &mut self.sync_viewport,
             self.style.font_regular(),
             "D",
             Message::EnvelopeDistributeViewports {
@@ -182,9 +172,8 @@ impl Envelope {
         .padding(self.style.tooltip_padding());
 
         Row::new()
-            .push(container_l3(self.style, self.widget.view()))
+            .push(container_l3(self.widget.view()))
             .push(container_l3(
-                self.style,
                 Column::new()
                     .width(Length::Units(LINE_HEIGHT * 3))
                     .align_items(Alignment::End)
@@ -217,15 +206,13 @@ impl Envelope {
 
 fn button_with_tooltip<'a>(
     style: Theme,
-    button_state: &'a mut button::State,
     button_font: Font,
     button_text: &'static str,
     button_message: Message,
     tooltip_text: &'static str,
-) -> Element<'a, Message> {
+) -> Element<'a, Message, Theme> {
     Tooltip::new(
         Button::new(
-            button_state,
             Text::new(button_text)
                 .font(button_font)
                 .height(Length::Units(LINE_HEIGHT))
@@ -233,8 +220,7 @@ fn button_with_tooltip<'a>(
                 .horizontal_alignment(Horizontal::Center),
         )
         .on_press(button_message)
-        .padding(style.button_padding())
-        .style(style.button()),
+        .padding(style.button_padding()),
         tooltip_text,
         Position::Top,
     )

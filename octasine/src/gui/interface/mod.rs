@@ -20,8 +20,11 @@ use std::path::PathBuf;
 use anyhow::Context;
 use cfg_if::cfg_if;
 use iced_baseview::command::Action;
-use iced_baseview::{executor, Application, Command, Subscription, WindowSubs};
-use iced_baseview::{Column, Container, Element, Length, Point, Row, Space, WindowQueue};
+use iced_baseview::{executor, window::WindowSubs, Application, Command, Subscription};
+use iced_baseview::{
+    widget::Column, widget::Container, widget::Row, widget::Space, window::WindowQueue, Element,
+    Length, Point,
+};
 
 use crate::common::NUM_OPERATORS;
 use crate::parameters::*;
@@ -35,6 +38,7 @@ use style::Theme;
 
 use self::corner::CornerWidgets;
 use self::operator::ModTargetPicker;
+use self::style::container::ContainerStyle;
 
 use super::GuiSettings;
 use crate::settings::Settings;
@@ -399,6 +403,7 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
     type Executor = executor::Default;
     type Message = Message;
     type Flags = H;
+    type Theme = Theme;
 
     fn new(sync_handle: Self::Flags) -> (Self, Command<Self::Message>) {
         let style = sync_handle.get_gui_settings().theme;
@@ -436,29 +441,29 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
         &self,
         window_subs: &mut WindowSubs<Self::Message>,
     ) -> Subscription<Self::Message> {
-        window_subs.on_frame = Some(Message::Frame);
+        window_subs.on_frame = Some(|| Message::Frame);
 
         Subscription::none()
     }
 
     #[cfg(feature = "gui_wgpu")]
-    fn renderer_settings() -> iced_baseview::backend::Settings {
-        iced_baseview::backend::Settings {
-            present_mode: iced_baseview::backend::wgpu::PresentMode::Immediate,
+    fn renderer_settings() -> iced_baseview::renderer::Settings {
+        iced_baseview::renderer::Settings {
+            present_mode: iced_baseview::renderer::wgpu::PresentMode::Immediate,
             default_font: Some(OPEN_SANS_BYTES_SEMI_BOLD),
             default_text_size: FONT_SIZE,
-            antialiasing: Some(iced_baseview::backend::settings::Antialiasing::MSAAx8),
+            antialiasing: Some(iced_baseview::renderer::settings::Antialiasing::MSAAx4),
             ..Default::default()
         }
     }
 
     /// Renderer settings with glow
     #[cfg(feature = "gui_glow")]
-    fn renderer_settings() -> iced_baseview::backend::Settings {
-        iced_baseview::backend::Settings {
+    fn renderer_settings() -> iced_baseview::renderer::Settings {
+        iced_baseview::renderer::Settings {
             default_font: Some(OPEN_SANS_BYTES_SEMI_BOLD),
             default_text_size: FONT_SIZE,
-            antialiasing: Some(iced_baseview::backend::settings::Antialiasing::MSAAx8),
+            antialiasing: Some(iced_baseview::renderer::settings::Antialiasing::MSAAx8),
             text_multithreading: false,
         }
     }
@@ -520,14 +525,15 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                 parameter_1,
                 parameter_2,
             } => {
-                // There is not need to call self.set_value, since values were
-                // already set internally in sender while dragging
+                self.set_value(parameter_1.0, parameter_1.1, true);
 
                 self.sync_handle.begin_edit(parameter_1.0);
                 self.sync_handle.set_parameter(parameter_1.0, parameter_1.1);
                 self.sync_handle.end_edit(parameter_1.0);
 
                 if let Some((p, v)) = parameter_2 {
+                    self.set_value(p, v, true);
+
                     self.sync_handle.begin_edit(p);
                     self.sync_handle.set_parameter(p, v);
                     self.sync_handle.end_edit(p);
@@ -540,13 +546,14 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                 parameter_1,
                 parameter_2,
             } => {
-                // Skip calling self.set_value, since envelopes update their
-                // internal data when dragging
+                self.set_value(parameter_1.0, parameter_1.1, true);
 
                 self.sync_handle
                     .set_parameter_audio_only(parameter_1.0, parameter_1.1);
 
                 if let Some((p, v)) = parameter_2 {
+                    self.set_value(p, v, true);
+
                     self.sync_handle.set_parameter_audio_only(p, v);
                 }
 
@@ -783,7 +790,7 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
         Command::none()
     }
 
-    fn view(&mut self) -> Element<'_, Self::Message> {
+    fn view(&self) -> Element<'_, Self::Message, Self::Theme> {
         Container::new(
             Column::new()
                 .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
@@ -815,8 +822,16 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                 ),
         )
         .height(Length::Fill)
-        .style(self.style.container_l0())
+        .style(ContainerStyle::L0)
         .into()
+    }
+
+    fn title(&self) -> String {
+        crate::PLUGIN_NAME.into()
+    }
+
+    fn theme(&self) -> Self::Theme {
+        self.style
     }
 }
 

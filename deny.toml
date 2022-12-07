@@ -82,6 +82,7 @@ allow = [
     "CC0-1.0",
     "Unicode-DFS-2016",
     "zlib-acknowledgement",
+    "MIT-0",
     # "FTL",
     #"Apache-2.0 WITH LLVM-exception",
 ]

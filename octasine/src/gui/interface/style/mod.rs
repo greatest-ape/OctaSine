@@ -1,6 +1,21 @@
-mod dark;
-mod light;
 mod macros;
+
+pub mod application;
+pub mod boolean_button;
+pub mod button;
+pub mod checkbox;
+pub mod colors;
+pub mod container;
+pub mod envelope;
+pub mod knob;
+pub mod menu;
+pub mod mod_matrix;
+pub mod pick_list;
+pub mod radio;
+pub mod scrollable;
+pub mod text;
+pub mod wave_display;
+pub mod wave_picker;
 
 use iced_baseview::{Color, Font};
 use serde::{Deserialize, Serialize};
@@ -40,20 +55,8 @@ impl Theme {
 
     pub fn background_color(&self) -> Color {
         match self {
-            Theme::Dark => dark::colors::BACKGROUND,
+            Theme::Dark => colors::dark::BACKGROUND,
             Theme::Light => Color::WHITE,
-        }
-    }
-    pub fn text_color(&self) -> Color {
-        match self {
-            Theme::Dark => dark::colors::TEXT_FG,
-            Theme::Light => Color::BLACK,
-        }
-    }
-    pub fn heading_color(&self) -> Color {
-        match self {
-            Theme::Dark => dark::colors::TEXT_FG,
-            Theme::Light => Color::BLACK,
         }
     }
 
@@ -94,121 +97,7 @@ impl Theme {
         3
     }
 
-    pub fn container_l0(&self) -> Box<dyn iced_baseview::container::StyleSheet> {
-        match self {
-            Self::Light => Box::new(light::ContainerL0),
-            Self::Dark => Box::new(dark::ContainerL0),
-        }
-    }
-    pub fn container_l1(&self) -> Box<dyn iced_baseview::container::StyleSheet> {
-        match self {
-            Self::Light => Box::new(light::ContainerL1),
-            Self::Dark => Box::new(dark::ContainerL1),
-        }
-    }
-    pub fn container_l2(&self) -> Box<dyn iced_baseview::container::StyleSheet> {
-        match self {
-            Self::Light => Box::new(light::ContainerL2),
-            Self::Dark => Box::new(dark::ContainerL2),
-        }
-    }
-    pub fn container_l3(&self) -> Box<dyn iced_baseview::container::StyleSheet> {
-        match self {
-            Self::Light => Box::new(light::ContainerL3),
-            Self::Dark => Box::new(dark::ContainerL3),
-        }
-    }
-
-    pub fn checkbox(&self) -> Box<dyn iced_baseview::checkbox::StyleSheet> {
-        match self {
-            Self::Light => Box::new(light::Checkbox),
-            Self::Dark => Box::new(dark::Checkbox),
-        }
-    }
-    pub fn radio(&self) -> Box<dyn iced_baseview::radio::StyleSheet> {
-        match self {
-            Self::Light => Box::new(light::Radio),
-            Self::Dark => Box::new(dark::Radio),
-        }
-    }
-    pub fn button(&self) -> Box<dyn iced_baseview::button::StyleSheet> {
-        match self {
-            Self::Light => Box::new(light::Button),
-            Self::Dark => Box::new(dark::Button),
-        }
-    }
-    pub fn value_button(&self) -> Box<dyn iced_baseview::button::StyleSheet> {
-        match self {
-            Self::Light => Box::new(light::ValueButton),
-            Self::Dark => Box::new(dark::ValueButton),
-        }
-    }
-    pub fn pick_list(&self) -> Box<dyn iced_baseview::pick_list::StyleSheet> {
-        match self {
-            Self::Light => Box::new(light::PickList),
-            Self::Dark => Box::new(dark::PickList),
-        }
-    }
-    pub fn tooltip(&self) -> Box<dyn iced_baseview::container::StyleSheet> {
-        match self {
-            Self::Light => Box::new(light::Tooltip),
-            Self::Dark => Box::new(dark::Tooltip),
-        }
-    }
-
-    pub fn knob_regular(&self) -> Box<dyn iced_audio::knob::StyleSheet> {
-        match self {
-            Self::Light => Box::new(light::knob::KnobRegular),
-            Self::Dark => Box::new(dark::knob::KnobRegular),
-        }
-    }
-    pub fn knob_bipolar(&self) -> Box<dyn iced_audio::knob::StyleSheet> {
-        match self {
-            Self::Light => Box::new(light::knob::KnobBipolar),
-            Self::Dark => Box::new(dark::knob::KnobBipolar),
-        }
-    }
-
-    pub fn envelope(&self) -> Box<dyn super::envelope::widget::StyleSheet> {
-        match self {
-            Self::Light => Box::new(light::Envelope),
-            Self::Dark => Box::new(dark::Envelope),
-        }
-    }
-    pub fn mod_matrix(&self) -> Box<dyn super::mod_matrix::StyleSheet> {
-        match self {
-            Self::Light => Box::new(light::ModulationMatrix),
-            Self::Dark => Box::new(dark::ModulationMatrix),
-        }
-    }
-    pub fn wave_picker(&self) -> Box<dyn super::wave_picker::StyleSheet> {
-        match self {
-            Self::Light => Box::new(light::WavePicker),
-            Self::Dark => Box::new(dark::WavePicker),
-        }
-    }
-    pub fn wave_display(&self) -> Box<dyn super::wave_display::StyleSheet> {
-        match self {
-            Self::Light => Box::new(light::WaveDisplay),
-            Self::Dark => Box::new(dark::WaveDisplay),
-        }
-    }
-    pub fn mute_button(&self) -> Box<dyn super::boolean_button::StyleSheet> {
-        match self {
-            Self::Light => Box::new(light::MuteButton),
-            Self::Dark => Box::new(dark::MuteButton),
-        }
-    }
-    pub fn bpm_sync_button(&self) -> Box<dyn super::boolean_button::StyleSheet> {
-        match self {
-            Self::Light => Box::new(light::BooleanButton),
-            Self::Dark => Box::new(dark::BooleanButton),
-        }
-    }
-    pub fn envelope_group_button(&self) -> Box<dyn super::boolean_button::StyleSheet> {
-        match self {
-            Self::Light => Box::new(light::BooleanButton),
-            Self::Dark => Box::new(dark::BooleanButton),
-        }
+    pub fn tooltip(&self) -> container::ContainerStyle {
+        container::ContainerStyle::Tooltip
     }
 }

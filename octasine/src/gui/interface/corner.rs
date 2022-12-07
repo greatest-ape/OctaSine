@@ -1,6 +1,7 @@
 use iced_baseview::{
-    alignment::Horizontal, button, tooltip::Position, Alignment, Button, Column, Container,
-    Element, Length, Row, Space, Text, Tooltip,
+    alignment::Horizontal, widget::tooltip::Position, widget::Button, widget::Column,
+    widget::Container, widget::Row, widget::Space, widget::Text, widget::Tooltip, Alignment,
+    Element, Length,
 };
 
 use crate::{
@@ -14,7 +15,7 @@ use super::{
     knob::{self, OctaSineKnob},
     mod_matrix::ModulationMatrix,
     patch_picker::PatchPicker,
-    style::Theme,
+    style::{container::ContainerStyle, Theme},
     Message, FONT_SIZE, LINE_HEIGHT,
 };
 
@@ -24,8 +25,6 @@ pub struct CornerWidgets {
     pub master_frequency: OctaSineKnob<MasterFrequencyValue>,
     pub modulation_matrix: ModulationMatrix,
     pub patch_picker: PatchPicker,
-    toggle_info_state: button::State,
-    toggle_style_state: button::State,
 }
 
 impl CornerWidgets {
@@ -34,7 +33,7 @@ impl CornerWidgets {
 
         let master_volume = knob::master_volume(sync_handle, style);
         let master_frequency = knob::master_frequency(sync_handle, style);
-        let modulation_matrix = ModulationMatrix::new(sync_handle, style);
+        let modulation_matrix = ModulationMatrix::new(sync_handle);
         let patch_picker = PatchPicker::new(sync_handle, style);
 
         Self {
@@ -43,8 +42,6 @@ impl CornerWidgets {
             master_frequency,
             modulation_matrix,
             patch_picker,
-            toggle_info_state: button::State::default(),
-            toggle_style_state: button::State::default(),
         }
     }
 
@@ -52,11 +49,11 @@ impl CornerWidgets {
         self.style = style;
         self.master_volume.set_style(style);
         self.master_frequency.set_style(style);
-        self.modulation_matrix.set_style(style);
+        self.modulation_matrix.theme_changed();
         self.patch_picker.style = style;
     }
 
-    pub fn view(&mut self) -> Element<'_, Message> {
+    pub fn view(&self) -> Element<'_, Message, Theme> {
         let mod_matrix = Container::new(
             Column::new()
                 .push(Space::with_height(Length::Units(LINE_HEIGHT)))
@@ -71,31 +68,25 @@ impl CornerWidgets {
         )
         .height(Length::Units(LINE_HEIGHT * 8))
         .width(Length::Units(LINE_HEIGHT * 7))
-        .style(self.style.container_l3());
+        .style(ContainerStyle::L3);
 
-        let master = container_l1(
-            self.style,
-            container_l2(
-                self.style,
-                Row::new()
-                    .push(container_l3(self.style, self.master_volume.view()))
-                    .push(space_l3())
-                    .push(container_l3(self.style, self.master_frequency.view()))
-                    .push(Space::with_width(Length::Units(LINE_HEIGHT * 3))), // Extend to end
-            ),
-        );
+        let master = container_l1(container_l2(
+            Row::new()
+                .push(container_l3(self.master_volume.view()))
+                .push(space_l3())
+                .push(container_l3(self.master_frequency.view()))
+                .push(Space::with_width(Length::Units(LINE_HEIGHT * 3))), // Extend to end
+        ));
 
         let logo = {
             let theme_button = Tooltip::new(
                 Button::new(
-                    &mut self.toggle_style_state,
                     Text::new("THEME")
                         .font(self.style.font_regular())
                         .height(Length::Units(LINE_HEIGHT)),
                 )
                 .on_press(Message::SwitchTheme)
-                .padding(self.style.button_padding())
-                .style(self.style.button()),
+                .padding(self.style.button_padding()),
                 "Switch color theme",
                 Position::Top,
             )
@@ -103,14 +94,12 @@ impl CornerWidgets {
 
             let info_button = Tooltip::new(
                 Button::new(
-                    &mut self.toggle_info_state,
                     Text::new("INFO")
                         .font(self.style.font_regular())
                         .height(Length::Units(LINE_HEIGHT)),
                 )
                 .on_press(Message::NoOp)
-                .padding(self.style.button_padding())
-                .style(self.style.button()),
+                .padding(self.style.button_padding()),
                 get_info_text(),
                 Position::FollowCursor,
             )
@@ -133,7 +122,6 @@ impl CornerWidgets {
                             .height(Length::Units(FONT_SIZE * 3 / 2))
                             .width(Length::Units(LINE_HEIGHT * 8))
                             .font(self.style.font_heading())
-                            .color(self.style.heading_color())
                             .horizontal_alignment(Horizontal::Center),
                     )
                     .push(Space::with_height(Length::Units(LINE_HEIGHT)))
@@ -159,9 +147,9 @@ impl CornerWidgets {
             .push(Space::with_height(Length::Units(LINE_HEIGHT)))
             .push(
                 Row::new()
-                    .push(triple_container(self.style, self.patch_picker.view()))
+                    .push(triple_container(self.patch_picker.view()))
                     .push(Space::with_width(Length::Units(LINE_HEIGHT)))
-                    .push(triple_container(self.style, logo)),
+                    .push(triple_container(logo)),
             )
             .into()
     }

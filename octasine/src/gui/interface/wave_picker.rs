@@ -1,9 +1,9 @@
-use iced_baseview::canvas::{
+use iced_baseview::widget::canvas::{
     event, path, Cache, Canvas, Cursor, Frame, Geometry, Path, Program, Stroke,
 };
 use iced_baseview::{
-    alignment::Horizontal, Alignment, Color, Column, Element, Length, Point, Rectangle, Size,
-    Space, Text,
+    alignment::Horizontal, widget::Column, widget::Space, widget::Text, Alignment, Color, Element,
+    Length, Point, Rectangle, Size,
 };
 
 use crate::common::{CalculateCurve, Phase};
@@ -21,7 +21,7 @@ const HEIGHT_MIDDLE: f32 = HEIGHT as f32 / 2.0 - 0.5;
 const SHAPE_HEIGHT_RANGE: f32 = HEIGHT as f32 / 4.0;
 
 #[derive(Debug, Clone)]
-pub struct Style {
+pub struct Appearance {
     pub background_color: Color,
     pub middle_line_color: Color,
     pub border_color_active: Color,
@@ -31,7 +31,7 @@ pub struct Style {
 }
 
 pub trait StyleSheet {
-    fn active(&self) -> Style;
+    fn appearance(&self) -> Appearance;
 }
 
 pub struct WavePicker<P: ParameterValue> {
@@ -56,7 +56,7 @@ where
         let value = P::new_from_patch(sync_handle.get_parameter(parameter));
         let shape = value.get();
 
-        let canvas = WavePickerCanvas::new(parameter, shape, style);
+        let canvas = WavePickerCanvas::new(parameter, shape);
         let value_text = ValueText::new(sync_handle, style, parameter);
 
         Self {
@@ -69,9 +69,7 @@ where
     }
 
     pub fn set_style(&mut self, style: Theme) {
-        self.style = style;
-
-        self.canvas.set_style(style);
+        self.canvas.theme_changed();
         self.value_text.style = style;
     }
 
@@ -86,7 +84,7 @@ where
         }
     }
 
-    pub fn view(&mut self) -> Element<Message> {
+    pub fn view(&self) -> Element<Message, Theme> {
         let title = Text::new(&self.title)
             .horizontal_alignment(Horizontal::Center)
             .font(self.style.font_bold())
@@ -104,14 +102,17 @@ where
     }
 }
 
+#[derive(Default)]
+struct CanvasState {
+    cursor_within_bounds: bool,
+    click_started: bool,
+}
+
 struct WavePickerCanvas<P: ParameterValue> {
     parameter: Parameter,
     cache: Cache,
     bounds_path: Path,
-    cursor_within_bounds: bool,
-    click_started: bool,
     shape: P::Value,
-    style: Theme,
 }
 
 impl<P> WavePickerCanvas<P>
@@ -119,7 +120,7 @@ where
     P: ParameterValue + Copy + 'static,
     P::Value: CalculateCurve,
 {
-    pub fn new(parameter: Parameter, shape: P::Value, style: Theme) -> Self {
+    pub fn new(parameter: Parameter, shape: P::Value) -> Self {
         let bounds_path = Path::rectangle(
             Point::new(0.5, 0.5),
             Size::new((WIDTH - 1) as f32, (HEIGHT - 1) as f32),
@@ -129,22 +130,18 @@ where
             parameter,
             cache: Cache::new(),
             bounds_path,
-            cursor_within_bounds: false,
-            click_started: false,
-            style,
             shape,
         }
     }
 
-    pub fn view(&mut self) -> Element<Message> {
+    pub fn view(&self) -> Element<Message, Theme> {
         Canvas::new(self)
             .width(Length::Units(WIDTH))
             .height(Length::Units(HEIGHT))
             .into()
     }
 
-    pub fn set_style(&mut self, style: Theme) {
-        self.style = style;
+    pub fn theme_changed(&mut self) {
         self.cache.clear();
     }
 
@@ -153,19 +150,19 @@ where
         self.cache.clear();
     }
 
-    fn draw_background(&self, frame: &mut Frame, style_sheet: Box<dyn StyleSheet>) {
-        let style = style_sheet.active();
+    fn draw_background(&self, frame: &mut Frame, theme: &Theme) {
+        let apparence = theme.appearance();
 
-        frame.fill(&self.bounds_path, style.background_color);
+        frame.fill(&self.bounds_path, apparence.background_color);
     }
 
-    fn draw_border(&self, frame: &mut Frame, style_sheet: Box<dyn StyleSheet>) {
-        let style = style_sheet.active();
+    fn draw_border(&self, state: &CanvasState, frame: &mut Frame, theme: &Theme) {
+        let appearance = theme.appearance();
 
-        let color = if self.cursor_within_bounds {
-            style.border_color_hovered
+        let color = if state.cursor_within_bounds {
+            appearance.border_color_hovered
         } else {
-            style.border_color_active
+            appearance.border_color_active
         };
 
         let stroke = Stroke::default().with_color(color);
@@ -173,20 +170,20 @@ where
         frame.stroke(&self.bounds_path, stroke);
     }
 
-    fn draw_middle_line(&self, frame: &mut Frame, style_sheet: Box<dyn StyleSheet>) {
-        let style = style_sheet.active();
+    fn draw_middle_line(&self, frame: &mut Frame, theme: &Theme) {
+        let appearance = theme.appearance();
 
         let path = Path::line(
             Point::new(0.5, HEIGHT_MIDDLE),
             Point::new(WIDTH as f32 - 0.5, HEIGHT_MIDDLE),
         );
-        let stroke = Stroke::default().with_color(style.middle_line_color);
+        let stroke = Stroke::default().with_color(appearance.middle_line_color);
 
         frame.stroke(&path, stroke)
     }
 
-    fn draw_shape_line(&self, frame: &mut Frame, style_sheet: Box<dyn StyleSheet>) {
-        let style = style_sheet.active();
+    fn draw_shape_line(&self, state: &CanvasState, frame: &mut Frame, theme: &Theme) {
+        let appearance = theme.appearance();
 
         let mut path = path::Builder::new();
 
@@ -206,10 +203,10 @@ where
 
         let path = path.build();
 
-        let color = if self.cursor_within_bounds {
-            style.shape_line_color_hovered
+        let color = if state.cursor_within_bounds {
+            appearance.shape_line_color_hovered
         } else {
-            style.shape_line_color_active
+            appearance.shape_line_color_active
         };
 
         let stroke = Stroke::default().with_color(color);
@@ -218,24 +215,33 @@ where
     }
 }
 
-impl<P> Program<Message> for WavePickerCanvas<P>
+impl<P> Program<Message, Theme> for WavePickerCanvas<P>
 where
     P: ParameterValue + Copy + 'static,
     P::Value: CalculateCurve,
 {
-    fn draw(&self, bounds: Rectangle, _cursor: Cursor) -> Vec<Geometry> {
+    type State = CanvasState;
+
+    fn draw(
+        &self,
+        state: &Self::State,
+        theme: &Theme,
+        bounds: Rectangle,
+        _cursor: Cursor,
+    ) -> Vec<Geometry> {
         let geometry = self.cache.draw(bounds.size(), |frame| {
-            self.draw_background(frame, self.style.wave_picker());
-            self.draw_middle_line(frame, self.style.wave_picker());
-            self.draw_shape_line(frame, self.style.wave_picker());
-            self.draw_border(frame, self.style.wave_picker());
+            self.draw_background(frame, theme);
+            self.draw_middle_line(frame, theme);
+            self.draw_shape_line(state, frame, theme);
+            self.draw_border(state, frame, theme);
         });
 
         vec![geometry]
     }
 
     fn update(
-        &mut self,
+        &self,
+        state: &mut Self::State,
         event: event::Event,
         bounds: Rectangle,
         _cursor: Cursor,
@@ -244,8 +250,8 @@ where
             event::Event::Mouse(iced_baseview::mouse::Event::CursorMoved { position }) => {
                 let cursor_within_bounds = bounds.contains(position);
 
-                if self.cursor_within_bounds != cursor_within_bounds {
-                    self.cursor_within_bounds = cursor_within_bounds;
+                if state.cursor_within_bounds != cursor_within_bounds {
+                    state.cursor_within_bounds = cursor_within_bounds;
 
                     self.cache.clear();
                 }
@@ -254,15 +260,15 @@ where
             }
             event::Event::Mouse(iced_baseview::mouse::Event::ButtonPressed(
                 iced_baseview::mouse::Button::Left | iced_baseview::mouse::Button::Right,
-            )) if self.cursor_within_bounds => {
-                self.click_started = true;
+            )) if state.cursor_within_bounds => {
+                state.click_started = true;
 
                 (event::Status::Captured, None)
             }
             event::Event::Mouse(iced_baseview::mouse::Event::ButtonReleased(
                 button @ (iced_baseview::mouse::Button::Left | iced_baseview::mouse::Button::Right),
-            )) if self.click_started => {
-                if self.cursor_within_bounds {
+            )) if state.click_started => {
+                if state.cursor_within_bounds {
                     let shape_index = P::Value::steps()
                         .iter()
                         .position(|s| *s == self.shape)
@@ -282,8 +288,7 @@ where
                     let new_shape = P::Value::steps()[new_shape_index];
                     let new_value = P::new_from_audio(new_shape).to_patch();
 
-                    self.set_value(new_value);
-                    self.click_started = false;
+                    state.click_started = false;
 
                     (
                         event::Status::Captured,
@@ -293,7 +298,7 @@ where
                         )),
                     )
                 } else {
-                    self.click_started = false;
+                    state.click_started = false;
 
                     (event::Status::Ignored, None)
                 }

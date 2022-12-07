@@ -8,6 +8,10 @@ All notable changes to this project will be documented in this file.
 
 - Support sustain pedals (MIDI CC 64)
 
+### Changed
+
+- Upgrade to [iced](https://github.com/iced-rs/iced) v0.5
+
 ## 0.8.1 - 2022-10-29
 
 This release features native Apple Silicon support, performance improvements

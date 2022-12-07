@@ -6,9 +6,10 @@ license = "AGPL-3.0"
 edition = "2021"
 
 [features]
-gui_glow = ["gui", "iced_baseview/glow", "iced_baseview/glow_canvas"]
-gui_wgpu = ["gui", "iced_baseview/wgpu", "iced_baseview/wgpu_canvas"]
-gui = ["baseview", "iced_baseview", "iced_audio", "palette", "raw-window-handle", "rfd", "tinyfiledialogs"]
+default = ["gui_glow"]
+gui_glow = ["gui", "iced_baseview/glow", "iced_audio/glow"]
+gui_wgpu = ["gui", "iced_baseview/wgpu", "iced_audio/wgpu"]
+gui = ["iced_baseview/canvas", "iced_audio", "palette", "raw-window-handle", "rfd", "tinyfiledialogs"]
 
 [lib]
 name = "octasine"
@@ -42,19 +43,20 @@ vst = "0.3"
 
 # GUI
 
-iced_audio = { version = "0.8", optional = true }
 palette = { version = "0.6", optional = true }
 raw-window-handle = { version = "0.4", optional = true }
 rfd = { version = "0.10", optional = true, default-features = false, features = ["xdg-portal"] }
 tinyfiledialogs = { version = "3", optional = true }
 
-[dependencies.baseview]
-git = "https://github.com/rustaudio/baseview.git"
-rev = "b3712638bacb3fdf2883cb5aa3f6caed0e91ac8c"
+[dependencies.iced_audio]
+git = "https://github.com/iced-rs/iced_audio"
+rev = "4863b18"
+default-features = false
 optional = true
 
 [dependencies.iced_baseview]
 git = "https://github.com/BillyDM/iced_baseview.git"
-rev = "b78fa8057d1b7ba0adf0351a59173ec4e8ec9ee4" # branch: main
+rev = "ad13282"
 default-features = false
+features = ["canvas"]
 optional = true

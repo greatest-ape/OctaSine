@@ -1,5 +1,6 @@
 use iced_baseview::{
-    alignment::Horizontal, Alignment, Checkbox, Column, Element, Length, Space, Text,
+    alignment::Horizontal, widget::Checkbox, widget::Column, widget::Space, widget::Text,
+    Alignment, Element, Length,
 };
 
 use crate::parameters::operator_mod_target::ModTargetStorage;
@@ -72,7 +73,7 @@ where
         self.parameter_value = P::new_from_patch(value);
     }
 
-    pub fn view(&mut self) -> Element<Message> {
+    pub fn view(&self) -> Element<Message, Theme> {
         let title = Text::new(self.title.clone())
             .horizontal_alignment(Horizontal::Center)
             .font(self.style.font_bold())
@@ -98,8 +99,7 @@ where
             .font(self.style.font_regular())
             .size(FONT_SIZE)
             .text_size(FONT_SIZE)
-            .spacing(4)
-            .style(self.style.checkbox());
+            .spacing(4);
 
             checkboxes = checkboxes.push(checkbox);
         }

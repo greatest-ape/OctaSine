@@ -1,8 +1,10 @@
 use std::fmt::Display;
 
 use iced_baseview::alignment::Horizontal;
-use iced_baseview::widget::{pick_list, PickList};
-use iced_baseview::{Alignment, Column, Container, Element, Length, Space, Text};
+use iced_baseview::widget::PickList;
+use iced_baseview::{
+    widget::Column, widget::Container, widget::Space, widget::Text, Alignment, Element, Length,
+};
 
 use super::LINE_HEIGHT;
 use super::{style::Theme, GuiSyncHandle, Message, FONT_SIZE};
@@ -65,10 +67,8 @@ impl Display for Patch {
 }
 
 pub struct PatchPicker {
-    patch_state: pick_list::State<Patch>,
     patch_options: Vec<Patch>,
     patch_index: usize,
-    actions_state: pick_list::State<Action>,
     pub style: Theme,
 }
 
@@ -83,17 +83,14 @@ impl PatchPicker {
             .collect();
 
         Self {
-            patch_state: pick_list::State::default(),
-            actions_state: Default::default(),
             patch_options,
             patch_index,
             style,
         }
     }
 
-    pub fn view(&mut self) -> Element<Message> {
+    pub fn view(&self) -> Element<Message, Theme> {
         let patch_picker = PickList::new(
-            &mut self.patch_state,
             &self.patch_options[..],
             Some(self.patch_options[self.patch_index].clone()),
             |option| Message::ChangePatch(option.index),
@@ -101,17 +98,14 @@ impl PatchPicker {
         .font(self.style.font_regular())
         .text_size(FONT_SIZE)
         .padding(self.style.picklist_padding())
-        .style(self.style.pick_list())
         .width(Length::Fill);
 
-        let action_picker =
-            PickList::new(&mut self.actions_state, ACTIONS, None, Action::to_message)
-                .font(self.style.font_regular())
-                .text_size(FONT_SIZE)
-                .padding(self.style.picklist_padding())
-                .style(self.style.pick_list())
-                .placeholder("ACTIONS..")
-                .width(Length::Fill);
+        let action_picker = PickList::new(ACTIONS, None, Action::to_message)
+            .font(self.style.font_regular())
+            .text_size(FONT_SIZE)
+            .padding(self.style.picklist_padding())
+            .placeholder("ACTIONS..")
+            .width(Length::Fill);
 
         Container::new(
             Column::new()
@@ -126,7 +120,7 @@ impl PatchPicker {
                         .height(Length::Units(FONT_SIZE * 3 / 2))
                         .width(Length::Units(LINE_HEIGHT * 10))
                         .font(self.style.font_heading())
-                        .color(self.style.heading_color())
+                        // .color(self.style.heading_color()) // FIXME
                         .horizontal_alignment(Horizontal::Center),
                 )
                 .push(Space::with_height(Length::Units(

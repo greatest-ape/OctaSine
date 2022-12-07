@@ -1,6 +1,7 @@
-use iced_baseview::canvas::{event, Frame, Path, Stroke};
+use iced_baseview::widget::canvas::{event, Frame, Path, Stroke};
 use iced_baseview::{mouse, Point, Rectangle, Size};
 
+use crate::gui::interface::style::Theme;
 use crate::parameters::operator_mod_target::ModTargetStorage;
 use crate::parameters::{Parameter, ParameterValue};
 
@@ -9,23 +10,31 @@ use crate::gui::interface::{Message, SnapPoint};
 use super::common::*;
 use super::StyleSheet;
 
-pub enum ModulationBoxChange {
+#[derive(Default)]
+pub struct ModulationBoxCanvasState {
+    hover: bool,
+    click_started: bool,
+}
+
+pub enum ModulationBoxCanvasUpdateResult {
     Update(Message),
     ClearCache(Option<Message>),
     None,
 }
 
-pub trait ModulationBoxUpdate {
-    fn update(&mut self, bounds: Rectangle, event: event::Event) -> ModulationBoxChange;
+pub trait ModulationBoxCanvasUpdate {
+    fn update(
+        &self,
+        state: &mut ModulationBoxCanvasState,
+        bounds: Rectangle,
+        event: event::Event,
+    ) -> ModulationBoxCanvasUpdateResult;
 }
 
 pub struct ModulationBox<P: ParameterValue> {
     path: Path,
-    pub center: Point,
+    center: Point,
     rect: Rectangle,
-    hover: bool,
-    click_started: bool,
-    mouse_left_after_click: bool,
     parameter: Parameter,
     target_index: usize,
     pub v: P::Value,
@@ -71,31 +80,32 @@ where
             path,
             center,
             rect,
-            hover: false,
-            click_started: false,
-            mouse_left_after_click: true,
             parameter,
             target_index,
             v,
         }
     }
 
+    pub fn get_center(&self) -> Point {
+        self.center
+    }
+
     fn active(&self) -> bool {
         self.v.index_active(self.target_index)
     }
 
-    pub fn draw(&self, frame: &mut Frame, style_sheet: Box<dyn StyleSheet>) {
-        let style = style_sheet.active();
+    pub fn draw(&self, state: &ModulationBoxCanvasState, frame: &mut Frame, theme: &Theme) {
+        let apparence = theme.appearance();
 
         let stroke = Stroke::default()
-            .with_color(style.box_border_color)
+            .with_color(apparence.box_border_color)
             .with_width(1.0);
 
-        let fill_color = match (self.active(), self.hover) {
-            (true, false) => style.modulation_box_color_active,
-            (true, true) => style.modulation_box_color_hover,
-            (false, false) => style.modulation_box_color_inactive,
-            (false, true) => style.modulation_box_color_hover,
+        let fill_color = match (self.active(), state.hover) {
+            (true, false) => apparence.modulation_box_color_active,
+            (true, true) => apparence.modulation_box_color_hover,
+            (false, false) => apparence.modulation_box_color_inactive,
+            (false, true) => apparence.modulation_box_color_hover,
         };
 
         frame.fill(&self.path, fill_color);
@@ -103,54 +113,61 @@ where
     }
 }
 
-impl<P> ModulationBoxUpdate for ModulationBox<P>
+impl<P> ModulationBoxCanvasUpdate for ModulationBox<P>
 where
     P: ParameterValue<Value = ModTargetStorage>,
 {
-    fn update(&mut self, bounds: Rectangle, event: event::Event) -> ModulationBoxChange {
+    fn update(
+        &self,
+        state: &mut ModulationBoxCanvasState,
+        bounds: Rectangle,
+        event: event::Event,
+    ) -> ModulationBoxCanvasUpdateResult {
         match event {
             event::Event::Mouse(mouse::Event::CursorMoved {
                 position: Point { x, y },
             }) => {
                 let cursor = Point::new(x - bounds.x, y - bounds.y);
 
-                match (self.hover, self.rect.contains(cursor)) {
+                match (state.hover, self.rect.contains(cursor)) {
                     (false, true) => {
-                        self.hover = true;
+                        state.hover = true;
 
-                        return ModulationBoxChange::ClearCache(None);
+                        return ModulationBoxCanvasUpdateResult::ClearCache(None);
                     }
                     (true, false) => {
-                        self.hover = false;
-                        self.mouse_left_after_click = true;
+                        state.hover = false;
 
-                        return ModulationBoxChange::ClearCache(None);
+                        return ModulationBoxCanvasUpdateResult::ClearCache(None);
                     }
                     _ => (),
                 }
             }
             event::Event::Mouse(mouse::Event::ButtonPressed(_)) => {
-                if self.hover {
-                    self.click_started = true;
+                if state.hover {
+                    state.click_started = true;
                 }
             }
             event::Event::Mouse(mouse::Event::ButtonReleased(_)) => {
-                if self.hover && self.click_started {
-                    self.click_started = false;
-                    self.mouse_left_after_click = false;
+                if state.hover && state.click_started {
+                    state.click_started = false;
 
-                    self.v.set_index(self.target_index, !self.active());
-                    let sync_value = P::new_from_audio(self.v).to_patch();
+                    let sync_value = {
+                        let mut v = self.v;
 
-                    return ModulationBoxChange::Update(Message::ChangeSingleParameterImmediate(
-                        self.parameter,
-                        sync_value,
-                    ));
+                        v.set_index(self.target_index, !self.active());
+
+                        P::new_from_audio(v).to_patch()
+                    };
+
+                    return ModulationBoxCanvasUpdateResult::Update(
+                        Message::ChangeSingleParameterImmediate(self.parameter, sync_value),
+                    );
                 }
             }
             _ => (),
         }
 
-        ModulationBoxChange::None
+        ModulationBoxCanvasUpdateResult::None
     }
 }
