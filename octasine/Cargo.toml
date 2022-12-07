@@ -43,15 +43,20 @@ vst = "0.3"
 
 # GUI
 
-iced_audio = { git = "https://github.com/iced-rs/iced_audio", rev = "8fdde84", optional = true }
 palette = { version = "0.6", optional = true }
 raw-window-handle = { version = "0.4", optional = true }
 rfd = { version = "0.10", optional = true, default-features = false, features = ["xdg-portal"] }
 tinyfiledialogs = { version = "3", optional = true }
 
+[dependencies.iced_audio]
+git = "https://github.com/iced-rs/iced_audio"
+rev = "4863b18"
+default-features = false
+optional = true
+
 [dependencies.iced_baseview]
 git = "https://github.com/BillyDM/iced_baseview.git"
-rev = "236db06"
+rev = "ad13282"
 default-features = false
 features = ["canvas"]
 optional = true

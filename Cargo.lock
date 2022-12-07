@@ -1237,6 +1237,7 @@ checksum = "dfa686283ad6dd069f105e5ab091b04c62850d3e4cf5d67debad1933f55023df"
 [[package]]
 name = "iced_audio"
 version = "0.8.0"
+source = "git+https://github.com/iced-rs/iced_audio?rev=4863b18#4863b1881acf09a5a10fd6f193511dae08f3bd59"
 dependencies = [
  "iced_core",
  "iced_glow",
@@ -1248,6 +1249,7 @@ dependencies = [
 [[package]]
 name = "iced_baseview"
 version = "0.0.3"
+source = "git+https://github.com/BillyDM/iced_baseview.git?rev=ad13282#ad13282bbd851d69e9e62733fe192679968c2b0a"
 dependencies = [
  "baseview",
  "cfg-if",
