@@ -7,30 +7,6 @@ use crate::gui::interface::wave_display;
 use super::super::{boolean_button, envelope, mod_matrix, wave_picker};
 
 use colors::*;
-
-pub struct ModulationMatrix;
-
-impl mod_matrix::StyleSheet for ModulationMatrix {
-    fn appearance(&self) -> mod_matrix::Appearance {
-        mod_matrix::Appearance {
-            background_color: GRAY_200,
-            border_color: Color::TRANSPARENT,
-            text_color: TEXT,
-            box_border_color: GRAY_500,
-            operator_box_border_color: None,
-            operator_box_color_active: SURFACE,
-            operator_box_color_hover: SURFACE_HOVER,
-            operator_box_color_dragging: GRAY_600,
-            modulation_box_color_active: TEXT,
-            modulation_box_color_inactive: Color::TRANSPARENT,
-            modulation_box_color_hover: HOVERED,
-            line_max_color: Color::WHITE,
-            mod_out_line_color: BLUE,
-            mix_out_line_color: GREEN,
-        }
-    }
-}
-
 pub struct WavePicker;
 
 impl wave_picker::StyleSheet for WavePicker {

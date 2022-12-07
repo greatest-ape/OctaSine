@@ -1,6 +1,7 @@
 use iced_baseview::widget::canvas::{event, Frame, Path, Stroke};
 use iced_baseview::{mouse, Point, Rectangle, Size};
 
+use crate::gui::interface::style::Theme;
 use crate::parameters::operator_mod_target::ModTargetStorage;
 use crate::parameters::{Parameter, ParameterValue};
 
@@ -93,23 +94,18 @@ where
         self.v.index_active(self.target_index)
     }
 
-    pub fn draw(
-        &self,
-        state: &ModulationBoxCanvasState,
-        frame: &mut Frame,
-        style_sheet: Box<dyn StyleSheet>,
-    ) {
-        let style = style_sheet.appearance();
+    pub fn draw(&self, state: &ModulationBoxCanvasState, frame: &mut Frame, theme: &Theme) {
+        let apparence = theme.appearance();
 
         let stroke = Stroke::default()
-            .with_color(style.box_border_color)
+            .with_color(apparence.box_border_color)
             .with_width(1.0);
 
         let fill_color = match (self.active(), state.hover) {
-            (true, false) => style.modulation_box_color_active,
-            (true, true) => style.modulation_box_color_hover,
-            (false, false) => style.modulation_box_color_inactive,
-            (false, true) => style.modulation_box_color_hover,
+            (true, false) => apparence.modulation_box_color_active,
+            (true, true) => apparence.modulation_box_color_hover,
+            (false, false) => apparence.modulation_box_color_inactive,
+            (false, true) => apparence.modulation_box_color_hover,
         };
 
         frame.fill(&self.path, fill_color);

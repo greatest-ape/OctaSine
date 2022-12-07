@@ -146,7 +146,7 @@ struct ModulationMatrixComponents {
 }
 
 impl ModulationMatrixComponents {
-    fn new(parameters: &ModulationMatrixParameters, bounds: Size, style: Theme) -> Self {
+    fn new(parameters: &ModulationMatrixParameters, bounds: Size, theme: &Theme) -> Self {
         let operator_1_box = OperatorBox::new(bounds, 0);
         let operator_2_box = OperatorBox::new(bounds, 1);
         let operator_3_box = OperatorBox::new(bounds, 2);
@@ -207,33 +207,30 @@ impl ModulationMatrixComponents {
             operator_4_box.get_center(),
             output_box.y,
             parameters.operator_4_mix,
-            style.mod_matrix(),
+            theme,
         );
         let operator_3_mix_out_line = MixOutLine::new(
             operator_3_box.get_center(),
             output_box.y,
             parameters.operator_3_mix,
-            style.mod_matrix(),
+            theme,
         );
         let operator_2_mix_out_line = MixOutLine::new(
             operator_2_box.get_center(),
             output_box.y,
             parameters.operator_2_mix,
-            style.mod_matrix(),
+            theme,
         );
         let operator_1_mix_out_line = MixOutLine::new(
             operator_1_box.get_center(),
             output_box.y,
             parameters.operator_1_mix,
-            style.mod_matrix(),
+            theme,
         );
 
-        let operator_4_mod_out_line =
-            ModOutLines::new(operator_4_box.get_center(), style.mod_matrix());
-        let operator_3_mod_out_line =
-            ModOutLines::new(operator_3_box.get_center(), style.mod_matrix());
-        let operator_2_mod_out_line =
-            ModOutLines::new(operator_2_box.get_center(), style.mod_matrix());
+        let operator_4_mod_out_line = ModOutLines::new(operator_4_box.get_center(), theme);
+        let operator_3_mod_out_line = ModOutLines::new(operator_3_box.get_center(), theme);
+        let operator_2_mod_out_line = ModOutLines::new(operator_2_box.get_center(), theme);
 
         let mut components = Self {
             operator_1_box,
@@ -256,12 +253,12 @@ impl ModulationMatrixComponents {
             operator_2_mod_out_lines: operator_2_mod_out_line,
         };
 
-        components.update(parameters, style);
+        components.update(parameters, theme);
 
         components
     }
 
-    fn update(&mut self, parameters: &ModulationMatrixParameters, style: Theme) {
+    fn update(&mut self, parameters: &ModulationMatrixParameters, theme: &Theme) {
         self.operator_4_mod_3_box.v = parameters.operator_4_targets;
         self.operator_4_mod_2_box.v = parameters.operator_4_targets;
         self.operator_4_mod_1_box.v = parameters.operator_4_targets;
@@ -269,14 +266,14 @@ impl ModulationMatrixComponents {
         self.operator_3_mod_1_box.v = parameters.operator_3_targets;
 
         self.operator_4_mix_out_line
-            .update(parameters.operator_4_mix, style.mod_matrix());
+            .update(parameters.operator_4_mix, theme);
 
         self.operator_3_mix_out_line
-            .update(parameters.operator_3_mix, style.mod_matrix());
+            .update(parameters.operator_3_mix, theme);
         self.operator_2_mix_out_line
-            .update(parameters.operator_2_mix, style.mod_matrix());
+            .update(parameters.operator_2_mix, theme);
         self.operator_1_mix_out_line
-            .update(parameters.operator_1_mix, style.mod_matrix());
+            .update(parameters.operator_1_mix, theme);
 
         {
             let lines = parameters
@@ -298,8 +295,7 @@ impl ModulationMatrixComponents {
                     _ => unreachable!(),
                 });
 
-            self.operator_4_mod_out_lines
-                .update(lines, style.mod_matrix());
+            self.operator_4_mod_out_lines.update(lines, theme);
         }
 
         {
@@ -318,8 +314,7 @@ impl ModulationMatrixComponents {
                     _ => unreachable!(),
                 });
 
-            self.operator_3_mod_out_lines
-                .update(lines, style.mod_matrix());
+            self.operator_3_mod_out_lines.update(lines, theme);
         };
 
         {
@@ -334,8 +329,7 @@ impl ModulationMatrixComponents {
                     _ => unreachable!(),
                 });
 
-            self.operator_2_mod_out_lines
-                .update(lines, style.mod_matrix());
+            self.operator_2_mod_out_lines.update(lines, theme);
         }
     }
 
@@ -350,55 +344,55 @@ impl ModulationMatrixComponents {
         self.operator_2_mod_out_lines.draw(frame);
     }
 
-    fn draw_boxes(&self, state: &CanvasState, frame: &mut Frame, style: Theme) {
+    fn draw_boxes(&self, state: &CanvasState, frame: &mut Frame, theme: &Theme) {
         self.operator_1_box
-            .draw(&state.operator_1_box, frame, style);
+            .draw(&state.operator_1_box, frame, theme);
         self.operator_2_box
-            .draw(&state.operator_2_box, frame, style);
+            .draw(&state.operator_2_box, frame, theme);
         self.operator_3_box
-            .draw(&state.operator_3_box, frame, style);
+            .draw(&state.operator_3_box, frame, theme);
         self.operator_4_box
-            .draw(&state.operator_4_box, frame, style);
+            .draw(&state.operator_4_box, frame, theme);
 
         self.operator_4_mod_3_box
-            .draw(&state.operator_4_mod_3_box, frame, style.mod_matrix());
+            .draw(&state.operator_4_mod_3_box, frame, theme);
         self.operator_4_mod_2_box
-            .draw(&state.operator_4_mod_2_box, frame, style.mod_matrix());
+            .draw(&state.operator_4_mod_2_box, frame, theme);
         self.operator_4_mod_1_box
-            .draw(&state.operator_4_mod_1_box, frame, style.mod_matrix());
+            .draw(&state.operator_4_mod_1_box, frame, theme);
         self.operator_3_mod_2_box
-            .draw(&state.operator_3_mod_2_box, frame, style.mod_matrix());
+            .draw(&state.operator_3_mod_2_box, frame, theme);
         self.operator_3_mod_1_box
-            .draw(&state.operator_3_mod_1_box, frame, style.mod_matrix());
+            .draw(&state.operator_3_mod_1_box, frame, theme);
         self.operator_2_mod_1_box
-            .draw(&state.operator_2_mod_1_box, frame, style.mod_matrix());
+            .draw(&state.operator_2_mod_1_box, frame, theme);
 
-        self.output_box.draw(frame, style.mod_matrix());
+        self.output_box.draw(frame, theme);
     }
 }
 
 pub struct ModulationMatrix {
     cache: Cache,
-    style: Theme,
+    theme: Theme,
     parameters: ModulationMatrixParameters,
     components: ModulationMatrixComponents,
 }
 
 impl ModulationMatrix {
-    pub fn new<H: GuiSyncHandle>(sync_handle: &H, style: Theme) -> Self {
+    pub fn new<H: GuiSyncHandle>(sync_handle: &H, theme: Theme) -> Self {
         let parameters = ModulationMatrixParameters::new(sync_handle);
-        let components = ModulationMatrixComponents::new(&parameters, SIZE, style);
+        let components = ModulationMatrixComponents::new(&parameters, SIZE, &theme);
 
         Self {
             cache: Cache::default(),
-            style,
+            theme,
             parameters,
             components,
         }
     }
 
     pub fn set_style(&mut self, style: Theme) {
-        self.style = style;
+        self.theme = style;
 
         self.update_components();
 
@@ -469,7 +463,7 @@ impl ModulationMatrix {
     }
 
     fn update_components(&mut self) {
-        self.components.update(&self.parameters, self.style);
+        self.components.update(&self.parameters, &self.theme);
 
         self.cache.clear();
     }
@@ -481,9 +475,9 @@ impl ModulationMatrix {
             .into()
     }
 
-    fn draw_background(&self, frame: &mut Frame, style_sheet: Box<dyn StyleSheet>) {
+    fn draw_background(&self, frame: &mut Frame, theme: &Theme) {
         let mut size = frame.size();
-        let style = style_sheet.appearance();
+        let appearance = theme.appearance();
 
         size.width -= 1.0;
         size.height -= 1.0;
@@ -491,10 +485,10 @@ impl ModulationMatrix {
         let background = Path::rectangle(Point::new(0.5, 0.5), size);
 
         let stroke = Stroke::default()
-            .with_color(style.border_color)
+            .with_color(appearance.border_color)
             .with_width(1.0);
 
-        frame.fill(&background, style.background_color);
+        frame.fill(&background, appearance.background_color);
         frame.stroke(&background, stroke);
     }
 }
@@ -519,15 +513,15 @@ impl Program<Message, Theme> for ModulationMatrix {
     fn draw(
         &self,
         state: &Self::State,
-        _theme: &Theme,
+        theme: &Theme,
         bounds: Rectangle,
         _cursor: Cursor,
     ) -> Vec<Geometry> {
         let geometry = self.cache.draw(bounds.size(), |frame| {
-            self.draw_background(frame, self.style.mod_matrix());
+            self.draw_background(frame, theme);
 
             self.components.draw_lines(frame);
-            self.components.draw_boxes(state, frame, self.style);
+            self.components.draw_boxes(state, frame, theme);
         });
 
         vec![geometry]

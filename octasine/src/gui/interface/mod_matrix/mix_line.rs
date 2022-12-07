@@ -3,6 +3,7 @@ use iced_baseview::{Color, Point};
 use palette::gradient::Gradient;
 use palette::Srgba;
 
+use crate::gui::interface::style::Theme;
 use crate::gui::interface::SnapPoint;
 
 use super::StyleSheet;
@@ -14,7 +15,7 @@ pub struct MixOutLine {
 }
 
 impl MixOutLine {
-    pub fn new(from: Point, to_y: f32, additive: f32, style_sheet: Box<dyn StyleSheet>) -> Self {
+    pub fn new(from: Point, to_y: f32, additive: f32, theme: &Theme) -> Self {
         let mut to = from;
 
         to.y = to_y;
@@ -23,22 +24,22 @@ impl MixOutLine {
 
         let mut line = Self {
             path,
-            line_color: style_sheet.appearance().mix_out_line_color,
+            line_color: theme.appearance().mix_out_line_color,
             calculated_color: Color::TRANSPARENT,
         };
 
-        line.update(additive, style_sheet);
+        line.update(additive, theme);
 
         line
     }
 
-    pub fn update(&mut self, additive: f32, style_sheet: Box<dyn StyleSheet>) {
-        self.calculated_color = self.calculate_color(additive, style_sheet);
+    pub fn update(&mut self, additive: f32, theme: &Theme) {
+        self.calculated_color = self.calculate_color(additive, theme);
     }
 
-    fn calculate_color(&self, additive: f32, style_sheet: Box<dyn StyleSheet>) -> Color {
-        let bg = style_sheet.appearance().background_color;
-        let c = style_sheet.appearance().line_max_color;
+    fn calculate_color(&self, additive: f32, theme: &Theme) -> Color {
+        let bg = theme.appearance().background_color;
+        let c = theme.appearance().line_max_color;
 
         let gradient = Gradient::new(vec![
             Srgba::new(bg.r, bg.g, bg.b, 1.0).into_linear(),

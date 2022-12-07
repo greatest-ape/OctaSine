@@ -9,6 +9,7 @@ pub mod container;
 pub mod envelope;
 pub mod knob;
 pub mod menu;
+pub mod mod_matrix;
 pub mod pick_list;
 pub mod radio;
 pub mod scrollable;
@@ -120,12 +121,6 @@ impl Theme {
         knob::KnobStyle::Bipolar
     }
 
-    pub fn mod_matrix(&self) -> Box<dyn super::mod_matrix::StyleSheet> {
-        match self {
-            Self::Light => Box::new(light::ModulationMatrix),
-            Self::Dark => Box::new(dark::ModulationMatrix),
-        }
-    }
     pub fn wave_picker(&self) -> Box<dyn super::wave_picker::StyleSheet> {
         match self {
             Self::Light => Box::new(light::WavePicker),

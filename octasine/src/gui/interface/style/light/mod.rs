@@ -10,30 +10,6 @@ use super::{
 };
 
 use colors::*;
-
-pub struct ModulationMatrix;
-
-impl mod_matrix::StyleSheet for ModulationMatrix {
-    fn appearance(&self) -> mod_matrix::Appearance {
-        mod_matrix::Appearance {
-            background_color: Color::WHITE,
-            border_color: Color::TRANSPARENT,
-            text_color: TEXT,
-            box_border_color: BORDER,
-            operator_box_color_active: SURFACE,
-            operator_box_border_color: Some(BORDER),
-            operator_box_color_hover: SURFACE_HOVER,
-            operator_box_color_dragging: SURFACE_PRESS,
-            modulation_box_color_active: SURFACE,
-            modulation_box_color_inactive: Color::TRANSPARENT,
-            modulation_box_color_hover: SURFACE_HOVER,
-            line_max_color: Color::BLACK,
-            mod_out_line_color: BLUE,
-            mix_out_line_color: GREEN,
-        }
-    }
-}
-
 pub struct WavePicker;
 
 impl wave_picker::StyleSheet for WavePicker {

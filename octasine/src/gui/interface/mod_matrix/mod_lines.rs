@@ -2,6 +2,8 @@ use arrayvec::ArrayVec;
 use iced_baseview::widget::canvas::{path, Frame, Path, Stroke};
 use iced_baseview::{Color, Point};
 
+use crate::gui::interface::style::Theme;
+
 use super::StyleSheet;
 
 pub struct ModOutLines {
@@ -11,20 +13,16 @@ pub struct ModOutLines {
 }
 
 impl ModOutLines {
-    pub fn new(from: Point, style_sheet: Box<dyn StyleSheet>) -> Self {
+    pub fn new(from: Point, theme: &Theme) -> Self {
         Self {
             from,
-            color: style_sheet.appearance().mod_out_line_color,
+            color: theme.appearance().mod_out_line_color,
             paths: Default::default(),
         }
     }
 
-    pub fn update<I: Iterator<Item = [Point; 2]>>(
-        &mut self,
-        lines: I,
-        style_sheet: Box<dyn StyleSheet>,
-    ) {
-        self.color = style_sheet.appearance().mod_out_line_color;
+    pub fn update<I: Iterator<Item = [Point; 2]>>(&mut self, lines: I, theme: &Theme) {
+        self.color = theme.appearance().mod_out_line_color;
 
         self.paths = lines
             .map(|points| {

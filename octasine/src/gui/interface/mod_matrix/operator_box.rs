@@ -4,8 +4,8 @@ use crate::parameters::{OperatorParameter, Parameter};
 use iced_baseview::widget::canvas::{event, Frame, Path, Stroke, Text};
 use iced_baseview::{mouse, Point, Rectangle, Size};
 
-use super::common::*;
 use super::OPERATOR_BOX_SCALE;
+use super::{common::*, StyleSheet};
 
 #[derive(Default)]
 pub struct OperatorBoxCanvasState {
@@ -160,26 +160,26 @@ impl OperatorBox {
         OperatorBoxChange::None
     }
 
-    pub fn draw(&self, state: &OperatorBoxCanvasState, frame: &mut Frame, style: Theme) {
-        let font_bold = style.font_bold();
-        let style = style.mod_matrix().appearance();
+    pub fn draw(&self, state: &OperatorBoxCanvasState, frame: &mut Frame, theme: &Theme) {
+        let font_bold = theme.font_bold();
+        let apparence = theme.appearance();
 
         let text = Text {
             content: format!("{}", self.index + 1),
             position: self.text_position,
             font: font_bold,
             size: FONT_SIZE as f32,
-            color: style.text_color,
+            color: apparence.text_color,
             ..Default::default()
         };
 
         let background_color = match state.status {
-            BoxStatus::Normal => style.operator_box_color_active,
-            BoxStatus::Hover => style.operator_box_color_hover,
-            BoxStatus::Dragging { .. } => style.operator_box_color_dragging,
+            BoxStatus::Normal => apparence.operator_box_color_active,
+            BoxStatus::Hover => apparence.operator_box_color_hover,
+            BoxStatus::Dragging { .. } => apparence.operator_box_color_dragging,
         };
 
-        let border_color = if let Some(color) = style.operator_box_border_color {
+        let border_color = if let Some(color) = apparence.operator_box_border_color {
             color
         } else {
             background_color
