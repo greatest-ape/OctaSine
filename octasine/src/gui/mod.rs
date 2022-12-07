@@ -1,5 +1,9 @@
-use baseview::{Size, WindowOpenOptions, WindowScalePolicy};
-use iced_baseview::{IcedWindow, Settings};
+use iced_baseview::{
+    baseview::{Size, WindowOpenOptions, WindowScalePolicy},
+    open_blocking, open_parented,
+    settings::IcedBaseviewSettings,
+    Settings,
+};
 use raw_window_handle::{HasRawWindowHandle, RawWindowHandle};
 use serde::{Deserialize, Serialize};
 use vst::editor::Editor;
@@ -45,12 +49,12 @@ impl<H: GuiSyncHandle> Gui<H> {
                 scale: WindowScalePolicy::ScaleFactor(1.0),
                 title: PLUGIN_NAME.to_string(),
                 #[cfg(feature = "gui_glow")]
-                gl_config: Some(baseview::gl::GlConfig {
+                gl_config: Some(iced_baseview::baseview::gl::GlConfig {
                     samples: Some(8),
                     ..Default::default()
                 }),
             },
-            iced_baseview: iced_baseview::IcedBaseviewSettings {
+            iced_baseview: IcedBaseviewSettings {
                 ignore_non_modifier_keys: true,
                 always_redraw: true,
             },
@@ -59,7 +63,7 @@ impl<H: GuiSyncHandle> Gui<H> {
     }
 
     pub fn open_parented(parent: ParentWindow, sync_handle: H) {
-        IcedWindow::<OctaSineIcedApplication<_>>::open_parented(
+        open_parented::<OctaSineIcedApplication<H>, ParentWindow>(
             &parent,
             Self::get_iced_baseview_settings(sync_handle),
         );
@@ -68,7 +72,7 @@ impl<H: GuiSyncHandle> Gui<H> {
     pub fn open_blocking(sync_handle: H) {
         let settings = Self::get_iced_baseview_settings(sync_handle);
 
-        IcedWindow::<OctaSineIcedApplication<_>>::open_blocking(settings);
+        open_blocking::<OctaSineIcedApplication<H>>(settings);
     }
 }
 

@@ -2,6 +2,23 @@ use iced_baseview::{Point, Size, Vector};
 
 use super::SCALE;
 
+#[derive(Default)]
+pub enum BoxStatus {
+    #[default]
+    Normal,
+    Hover,
+    Dragging {
+        from: Point,
+        original_value: f32,
+    },
+}
+
+impl BoxStatus {
+    pub fn is_dragging(&self) -> bool {
+        matches!(self, Self::Dragging { .. })
+    }
+}
+
 pub fn get_box_base_point_and_size(bounds: Size, x: usize, y: usize) -> (Point, Size) {
     let x_bla = bounds.width / 7.0;
     let y_bla = bounds.height / 8.0;

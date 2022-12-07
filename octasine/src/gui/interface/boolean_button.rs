@@ -1,5 +1,5 @@
 use iced_baseview::alignment::{Horizontal, Vertical};
-use iced_baseview::canvas::{
+use iced_baseview::widget::canvas::{
     event, Cache, Canvas, Cursor, Frame, Geometry, Path, Program, Stroke, Text,
 };
 use iced_baseview::{Color, Element, Length, Point, Rectangle, Size};
@@ -12,31 +12,30 @@ use crate::parameters::{
 };
 use crate::sync::GuiSyncHandle;
 
+use super::style::boolean_button::BooleanButtonStyle;
 use super::{style::Theme, Message, FONT_SIZE, LINE_HEIGHT};
 
 #[derive(Debug, Clone)]
-pub struct Style {
+pub struct Appearance {
     pub background_color: Color,
     pub border_color: Color,
     pub text_color: Color,
 }
 
 pub trait StyleSheet {
-    fn active(&self) -> Style;
-    fn active_hover(&self) -> Style;
-    fn inactive(&self) -> Style;
-    fn inactive_hover(&self) -> Style;
+    type Style: Default + Copy;
+
+    fn active(&self, style: &Self::Style, hover: bool) -> Appearance;
+    fn inactive(&self, style: &Self::Style, hover: bool) -> Appearance;
 }
 
 pub fn operator_mute_button<H: GuiSyncHandle>(
     sync_handle: &H,
     operator_index: usize,
-    style: Theme,
 ) -> BooleanButton {
     BooleanButton::new(
         sync_handle,
         Parameter::Operator(operator_index as u8, OperatorParameter::Active),
-        style,
         "M",
         LINE_HEIGHT,
         LINE_HEIGHT,
@@ -48,37 +47,27 @@ pub fn operator_mute_button<H: GuiSyncHandle>(
                 1.0
             }
         },
-        |theme| theme.mute_button(),
+        BooleanButtonStyle::Mute,
     )
 }
 
-pub fn lfo_bpm_sync_button<H: GuiSyncHandle>(
-    sync_handle: &H,
-    lfo_index: usize,
-    style: Theme,
-) -> BooleanButton {
+pub fn lfo_bpm_sync_button<H: GuiSyncHandle>(sync_handle: &H, lfo_index: usize) -> BooleanButton {
     BooleanButton::new(
         sync_handle,
         Parameter::Lfo(lfo_index as u8, LfoParameter::BpmSync),
-        style,
         "B",
         LINE_HEIGHT,
         LINE_HEIGHT,
         |v| LfoBpmSyncValue::new_from_patch(v).get(),
         |on| LfoBpmSyncValue::new_from_audio(on).to_patch(),
-        |theme| theme.bpm_sync_button(),
+        BooleanButtonStyle::Regular,
     )
 }
 
-pub fn lfo_mode_button<H: GuiSyncHandle>(
-    sync_handle: &H,
-    lfo_index: usize,
-    style: Theme,
-) -> BooleanButton {
+pub fn lfo_mode_button<H: GuiSyncHandle>(sync_handle: &H, lfo_index: usize) -> BooleanButton {
     BooleanButton::new(
         sync_handle,
         Parameter::Lfo(lfo_index as u8, LfoParameter::Mode),
-        style,
         "1",
         LINE_HEIGHT,
         LINE_HEIGHT,
@@ -90,19 +79,14 @@ pub fn lfo_mode_button<H: GuiSyncHandle>(
                 LfoModeValue::new_from_audio(LfoMode::Forever).to_patch()
             }
         },
-        |theme| theme.bpm_sync_button(),
+        BooleanButtonStyle::Regular,
     )
 }
 
-pub fn lfo_active_button<H: GuiSyncHandle>(
-    sync_handle: &H,
-    lfo_index: usize,
-    style: Theme,
-) -> BooleanButton {
+pub fn lfo_active_button<H: GuiSyncHandle>(sync_handle: &H, lfo_index: usize) -> BooleanButton {
     BooleanButton::new(
         sync_handle,
         Parameter::Lfo(lfo_index as u8, LfoParameter::Active),
-        style,
         "M",
         LINE_HEIGHT,
         LINE_HEIGHT,
@@ -114,19 +98,17 @@ pub fn lfo_active_button<H: GuiSyncHandle>(
                 1.0
             }
         },
-        |theme| theme.mute_button(),
+        BooleanButtonStyle::Mute,
     )
 }
 
 pub fn envelope_group_a_button<H: GuiSyncHandle>(
     sync_handle: &H,
     operator_index: usize,
-    style: Theme,
 ) -> BooleanButton {
     BooleanButton::new(
         sync_handle,
         Parameter::Operator(operator_index as u8, OperatorParameter::EnvelopeLockGroup),
-        style,
         "A",
         LINE_HEIGHT,
         LINE_HEIGHT,
@@ -138,19 +120,17 @@ pub fn envelope_group_a_button<H: GuiSyncHandle>(
                 OperatorEnvelopeGroupValue::Off.to_patch()
             }
         },
-        |theme| theme.envelope_group_button(),
+        BooleanButtonStyle::Regular,
     )
 }
 
 pub fn envelope_group_b_button<H: GuiSyncHandle>(
     sync_handle: &H,
     operator_index: usize,
-    style: Theme,
 ) -> BooleanButton {
     BooleanButton::new(
         sync_handle,
         Parameter::Operator(operator_index as u8, OperatorParameter::EnvelopeLockGroup),
-        style,
         "B",
         LINE_HEIGHT,
         LINE_HEIGHT,
@@ -162,21 +142,18 @@ pub fn envelope_group_b_button<H: GuiSyncHandle>(
                 OperatorEnvelopeGroupValue::Off.to_patch()
             }
         },
-        |theme| theme.envelope_group_button(),
+        BooleanButtonStyle::Regular,
     )
 }
 
 pub struct BooleanButton {
     parameter: Parameter,
     on: bool,
-    style: Theme,
     cache: Cache,
     bounds_path: Path,
-    cursor_within_bounds: bool,
-    click_started: bool,
     patch_value_to_is_on: fn(f32) -> bool,
     is_on_to_patch_value: fn(bool) -> f32,
-    get_stylesheet: fn(Theme) -> Box<dyn StyleSheet>,
+    button_style: BooleanButtonStyle,
     text: &'static str,
     width: u16,
     height: u16,
@@ -186,13 +163,12 @@ impl BooleanButton {
     pub fn new<H: GuiSyncHandle>(
         sync_handle: &H,
         parameter: Parameter,
-        style: Theme,
         text: &'static str,
         width: u16,
         height: u16,
         f: fn(f32) -> bool,
         g: fn(bool) -> f32,
-        h: fn(Theme) -> Box<dyn StyleSheet>,
+        button_style: BooleanButtonStyle,
     ) -> Self {
         let bounds_path = Path::rectangle(
             Point::new(0.5, 0.5),
@@ -202,14 +178,11 @@ impl BooleanButton {
         Self {
             parameter,
             on: f(sync_handle.get_parameter(parameter)),
-            style,
             cache: Cache::new(),
             bounds_path,
-            cursor_within_bounds: false,
-            click_started: false,
             patch_value_to_is_on: f,
             is_on_to_patch_value: g,
-            get_stylesheet: h,
+            button_style,
             text: text.into(),
             width,
             height,
@@ -222,13 +195,11 @@ impl BooleanButton {
         self.cache.clear();
     }
 
-    pub fn set_style(&mut self, style: Theme) {
-        self.style = style;
-
+    pub fn theme_changed(&mut self) {
         self.cache.clear();
     }
 
-    pub fn view(&mut self) -> Element<Message> {
+    pub fn view(&self) -> Element<Message, Theme> {
         let width = self.width;
         let height = self.height;
 
@@ -238,35 +209,37 @@ impl BooleanButton {
             .into()
     }
 
-    fn style(&self) -> Style {
-        let stylesheet = (self.get_stylesheet)(self.style);
+    fn appearance(&self, state: &CanvasState, theme: &Theme) -> Appearance {
+        let hover = state.cursor_within_bounds;
 
-        match (self.on, self.cursor_within_bounds) {
-            (true, false) => stylesheet.active(),
-            (true, true) => stylesheet.active_hover(),
-            (false, false) => stylesheet.inactive(),
-            (false, true) => stylesheet.inactive_hover(),
+        if self.on {
+            theme.active(&self.button_style, hover)
+        } else {
+            theme.inactive(&self.button_style, hover)
         }
     }
 
-    fn draw_background(&self, frame: &mut Frame) {
-        frame.fill(&self.bounds_path, self.style().background_color);
+    fn draw_background(&self, state: &CanvasState, frame: &mut Frame, theme: &Theme) {
+        frame.fill(
+            &self.bounds_path,
+            self.appearance(state, theme).background_color,
+        );
     }
 
-    fn draw_border(&self, frame: &mut Frame) {
-        let stroke = Stroke::default().with_color(self.style().border_color);
+    fn draw_border(&self, state: &CanvasState, frame: &mut Frame, theme: &Theme) {
+        let stroke = Stroke::default().with_color(self.appearance(state, theme).border_color);
 
         frame.stroke(&self.bounds_path, stroke);
     }
 
-    fn draw_text(&self, frame: &mut Frame) {
+    fn draw_text(&self, state: &CanvasState, frame: &mut Frame, theme: &Theme) {
         let position = Point::new(f32::from(self.width) / 2.0, f32::from(self.height) / 2.0);
 
         let text = Text {
             content: self.text.to_string(),
-            color: self.style().text_color,
+            color: self.appearance(state, theme).text_color,
             size: f32::from(FONT_SIZE),
-            font: self.style.font_regular(),
+            font: theme.font_regular(),
             horizontal_alignment: Horizontal::Center,
             vertical_alignment: Vertical::Center,
             position,
@@ -277,19 +250,34 @@ impl BooleanButton {
     }
 }
 
-impl Program<Message> for BooleanButton {
-    fn draw(&self, bounds: Rectangle, _cursor: Cursor) -> Vec<Geometry> {
+#[derive(Default)]
+pub struct CanvasState {
+    cursor_within_bounds: bool,
+    click_started: bool,
+}
+
+impl Program<Message, Theme> for BooleanButton {
+    type State = CanvasState;
+
+    fn draw(
+        &self,
+        state: &Self::State,
+        theme: &Theme,
+        bounds: Rectangle,
+        _cursor: Cursor,
+    ) -> Vec<Geometry> {
         let geometry = self.cache.draw(bounds.size(), |frame| {
-            self.draw_background(frame);
-            self.draw_border(frame);
-            self.draw_text(frame);
+            self.draw_background(state, frame, theme);
+            self.draw_border(state, frame, theme);
+            self.draw_text(state, frame, theme);
         });
 
         vec![geometry]
     }
 
     fn update(
-        &mut self,
+        &self,
+        state: &mut Self::State,
         event: event::Event,
         bounds: Rectangle,
         _cursor: Cursor,
@@ -298,8 +286,8 @@ impl Program<Message> for BooleanButton {
             event::Event::Mouse(iced_baseview::mouse::Event::CursorMoved { position }) => {
                 let cursor_within_bounds = bounds.contains(position);
 
-                if self.cursor_within_bounds != cursor_within_bounds {
-                    self.cursor_within_bounds = cursor_within_bounds;
+                if state.cursor_within_bounds != cursor_within_bounds {
+                    state.cursor_within_bounds = cursor_within_bounds;
 
                     self.cache.clear();
                 }
@@ -308,15 +296,15 @@ impl Program<Message> for BooleanButton {
             }
             event::Event::Mouse(iced_baseview::mouse::Event::ButtonPressed(
                 iced_baseview::mouse::Button::Left | iced_baseview::mouse::Button::Right,
-            )) if self.cursor_within_bounds => {
-                self.click_started = true;
+            )) if state.cursor_within_bounds => {
+                state.click_started = true;
 
                 (event::Status::Captured, None)
             }
             event::Event::Mouse(iced_baseview::mouse::Event::ButtonReleased(
                 iced_baseview::mouse::Button::Left | iced_baseview::mouse::Button::Right,
-            )) if self.click_started => {
-                if self.cursor_within_bounds {
+            )) if state.click_started => {
+                if state.cursor_within_bounds {
                     let message = {
                         let patch_value = (self.is_on_to_patch_value)(!self.on);
 
@@ -325,7 +313,7 @@ impl Program<Message> for BooleanButton {
 
                     (event::Status::Captured, Some(message))
                 } else {
-                    self.click_started = false;
+                    state.click_started = false;
 
                     (event::Status::Ignored, None)
                 }

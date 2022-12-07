@@ -2,17 +2,17 @@ use std::marker::PhantomData;
 
 use iced_baseview::alignment::Horizontal;
 use iced_baseview::widget::Text;
-use iced_baseview::{button, Button, Element, Length};
+use iced_baseview::{widget::Button, Element, Length};
 
 use crate::parameters::list::Parameter;
 use crate::parameters::ParameterValue;
 
+use super::style::button::ButtonStyle;
 use super::LINE_HEIGHT;
 use super::{style::Theme, GuiSyncHandle, Message};
 
 #[derive(Debug, Clone)]
 pub struct ValueText<P: ParameterValue> {
-    state: button::State,
     parameter: Parameter,
     text: String,
     pub style: Theme,
@@ -25,7 +25,6 @@ impl<P: ParameterValue> ValueText<P> {
         let text = P::new_from_patch(value).get_formatted();
 
         Self {
-            state: Default::default(),
             parameter,
             text,
             style,
@@ -37,9 +36,8 @@ impl<P: ParameterValue> ValueText<P> {
         self.text = P::new_from_patch(value).get_formatted();
     }
 
-    pub fn view(&mut self) -> Element<Message> {
+    pub fn view(&self) -> Element<Message, Theme> {
         Button::new(
-            &mut self.state,
             Text::new(self.text.clone())
                 .horizontal_alignment(Horizontal::Center)
                 .width(Length::Fill)
@@ -48,7 +46,7 @@ impl<P: ParameterValue> ValueText<P> {
         )
         .padding(0)
         .width(Length::Fill)
-        .style(self.style.value_button())
+        .style(ButtonStyle::Value)
         .on_press(Message::ChangeParameterByTextInput(
             self.parameter,
             self.text.clone(),

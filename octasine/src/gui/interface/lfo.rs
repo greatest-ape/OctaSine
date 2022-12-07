@@ -1,8 +1,9 @@
-use iced_baseview::tooltip::Position;
+use iced_baseview::widget::tooltip::Position;
+use iced_baseview::widget::{Container, Tooltip};
 use iced_baseview::{
-    alignment::Horizontal, alignment::Vertical, Column, Element, Length, Row, Space, Text,
+    alignment::Horizontal, alignment::Vertical, widget::Column, widget::Row, widget::Space,
+    widget::Text, Element, Length,
 };
-use iced_baseview::{Container, Tooltip};
 
 use crate::parameters::{
     LfoAmountValue, LfoFrequencyFreeValue, LfoFrequencyRatioValue, LfoParameter, LfoShapeValue,
@@ -42,12 +43,12 @@ impl LfoWidgets {
             style,
             target: LfoTargetPicker::new(sync_handle, lfo_index, style),
             shape: WavePicker::new(sync_handle, lfo_wave_type_parameter, style, "SHAPE"),
-            mode: lfo_mode_button(sync_handle, lfo_index, style),
-            bpm_sync: lfo_bpm_sync_button(sync_handle, lfo_index, style),
+            mode: lfo_mode_button(sync_handle, lfo_index),
+            bpm_sync: lfo_bpm_sync_button(sync_handle, lfo_index),
             frequency_ratio: knob::lfo_frequency_ratio(sync_handle, lfo_index, style),
             frequency_free: knob::lfo_frequency_free(sync_handle, lfo_index, style),
             amount: knob::lfo_amount(sync_handle, lfo_index, style),
-            active: lfo_active_button(sync_handle, lfo_index, style),
+            active: lfo_active_button(sync_handle, lfo_index),
         }
     }
 
@@ -55,22 +56,20 @@ impl LfoWidgets {
         self.style = style;
         self.target.style = style;
         self.shape.set_style(style);
-        self.mode.set_style(style);
-        self.bpm_sync.set_style(style);
+        self.mode.theme_changed();
+        self.bpm_sync.theme_changed();
         self.frequency_ratio.set_style(style);
         self.frequency_free.set_style(style);
         self.amount.set_style(style);
-        self.active.set_style(style);
+        self.active.theme_changed();
     }
 
-    pub fn view(&mut self) -> Element<Message> {
+    pub fn view(&self) -> Element<Message, Theme> {
         let title = Text::new(format!("LFO {}", self.index + 1))
             .size(FONT_SIZE + FONT_SIZE / 2)
             .height(Length::Units(FONT_SIZE + FONT_SIZE / 2))
             .font(self.style.font_heading())
             .width(Length::Units(LINE_HEIGHT * 9))
-            // .height(Length::Units(LINE_HEIGHT * 2))
-            .color(self.style.heading_color())
             .horizontal_alignment(Horizontal::Center)
             .vertical_alignment(Vertical::Center);
 
@@ -93,7 +92,6 @@ impl LfoWidgets {
             .padding(self.style.tooltip_padding());
 
         container_l1(
-            self.style,
             Row::new()
                 .push(Space::with_width(Length::Units(LINE_HEIGHT)))
                 .push(
@@ -116,15 +114,14 @@ impl LfoWidgets {
                 )
                 .push(Space::with_width(Length::Units(LINE_HEIGHT)))
                 .push(container_l2(
-                    self.style,
                     Row::new()
-                        .push(container_l3(self.style, self.shape.view()))
+                        .push(container_l3(self.shape.view()))
                         .push(space_l3())
-                        .push(container_l3(self.style, self.amount.view()))
+                        .push(container_l3(self.amount.view()))
                         .push(space_l3())
-                        .push(container_l3(self.style, self.frequency_ratio.view()))
+                        .push(container_l3(self.frequency_ratio.view()))
                         .push(space_l3())
-                        .push(container_l3(self.style, self.frequency_free.view())),
+                        .push(container_l3(self.frequency_free.view())),
                 )),
         )
         .into()

@@ -1,11 +1,17 @@
 use crate::gui::interface::style::Theme;
 use crate::gui::interface::{Message, SnapPoint, FONT_SIZE};
 use crate::parameters::{OperatorParameter, Parameter};
-use iced_baseview::canvas::{event, Frame, Path, Stroke, Text};
+use iced_baseview::widget::canvas::{event, Frame, Path, Stroke, Text};
 use iced_baseview::{mouse, Point, Rectangle, Size};
 
-use super::common::*;
 use super::OPERATOR_BOX_SCALE;
+use super::{common::*, StyleSheet};
+
+#[derive(Default)]
+pub struct OperatorBoxCanvasState {
+    status: BoxStatus,
+    last_cursor_position: Point,
+}
 
 pub enum OperatorBoxChange {
     Update(Message),
@@ -13,25 +19,11 @@ pub enum OperatorBoxChange {
     None,
 }
 
-pub enum BoxStatus {
-    Normal,
-    Hover,
-    Dragging { from: Point, original_value: f32 },
-}
-
-impl BoxStatus {
-    fn is_dragging(&self) -> bool {
-        matches!(self, BoxStatus::Dragging { .. })
-    }
-}
-
 pub struct OperatorBox {
     index: usize,
     text_position: Point,
     path: Path,
-    pub center: Point,
-    status: BoxStatus,
-    last_cursor_position: Point,
+    center: Point,
     hitbox: Rectangle,
 }
 
@@ -83,8 +75,6 @@ impl OperatorBox {
             text_position,
             path,
             center,
-            status: BoxStatus::Normal,
-            last_cursor_position: Point::new(-1.0, -1.0),
             hitbox: rect,
         }
     }
@@ -93,8 +83,13 @@ impl OperatorBox {
         Parameter::Operator(self.index as u8, OperatorParameter::MixOut)
     }
 
+    pub fn get_center(&self) -> Point {
+        self.center
+    }
+
     pub fn update(
-        &mut self,
+        &self,
+        state: &mut OperatorBoxCanvasState,
         bounds: Rectangle,
         event: event::Event,
         value: f32,
@@ -105,18 +100,18 @@ impl OperatorBox {
             }) => {
                 let cursor = Point::new(x - bounds.x, y - bounds.y);
 
-                self.last_cursor_position = cursor;
+                state.last_cursor_position = cursor;
 
                 let hit = self.hitbox.contains(cursor);
 
-                match self.status {
+                match state.status {
                     BoxStatus::Normal if hit => {
-                        self.status = BoxStatus::Hover;
+                        state.status = BoxStatus::Hover;
 
                         return OperatorBoxChange::ClearCache(None);
                     }
                     BoxStatus::Hover if !hit => {
-                        self.status = BoxStatus::Normal;
+                        state.status = BoxStatus::Normal;
 
                         return OperatorBoxChange::ClearCache(None);
                     }
@@ -135,9 +130,9 @@ impl OperatorBox {
                 }
             }
             event::Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)) => {
-                if !self.status.is_dragging() && self.hitbox.contains(self.last_cursor_position) {
-                    self.status = BoxStatus::Dragging {
-                        from: self.last_cursor_position,
+                if !state.status.is_dragging() && self.hitbox.contains(state.last_cursor_position) {
+                    state.status = BoxStatus::Dragging {
+                        from: state.last_cursor_position,
                         original_value: value,
                     };
 
@@ -147,11 +142,11 @@ impl OperatorBox {
                 }
             }
             event::Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left)) => {
-                if self.status.is_dragging() {
-                    if self.hitbox.contains(self.last_cursor_position) {
-                        self.status = BoxStatus::Hover;
+                if state.status.is_dragging() {
+                    if self.hitbox.contains(state.last_cursor_position) {
+                        state.status = BoxStatus::Hover;
                     } else {
-                        self.status = BoxStatus::Normal;
+                        state.status = BoxStatus::Normal;
                     }
 
                     return OperatorBoxChange::ClearCache(Some(Message::ChangeSingleParameterEnd(
@@ -165,26 +160,26 @@ impl OperatorBox {
         OperatorBoxChange::None
     }
 
-    pub fn draw(&self, frame: &mut Frame, style: Theme) {
-        let font_bold = style.font_bold();
-        let style = style.mod_matrix().active();
+    pub fn draw(&self, state: &OperatorBoxCanvasState, frame: &mut Frame, theme: &Theme) {
+        let font_bold = theme.font_bold();
+        let apparence = theme.appearance();
 
         let text = Text {
             content: format!("{}", self.index + 1),
             position: self.text_position,
             font: font_bold,
             size: FONT_SIZE as f32,
-            color: style.text_color,
+            color: apparence.text_color,
             ..Default::default()
         };
 
-        let background_color = match self.status {
-            BoxStatus::Normal => style.operator_box_color_active,
-            BoxStatus::Hover => style.operator_box_color_hover,
-            BoxStatus::Dragging { .. } => style.operator_box_color_dragging,
+        let background_color = match state.status {
+            BoxStatus::Normal => apparence.operator_box_color_active,
+            BoxStatus::Hover => apparence.operator_box_color_hover,
+            BoxStatus::Dragging { .. } => apparence.operator_box_color_dragging,
         };
 
-        let border_color = if let Some(color) = style.operator_box_border_color {
+        let border_color = if let Some(color) = apparence.operator_box_border_color {
             color
         } else {
             background_color
