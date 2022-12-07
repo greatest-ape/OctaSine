@@ -19,7 +19,7 @@ impl StyleSheet for Theme {
         match style {
             Self::Style::Regular => match self {
                 Self::Light => {
-                    use super::light::colors::*;
+                    use super::colors::light::*;
 
                     Appearance {
                         background: SURFACE.into(),
@@ -31,7 +31,7 @@ impl StyleSheet for Theme {
                     }
                 }
                 Self::Dark => {
-                    use super::dark::colors::*;
+                    use super::colors::dark::*;
 
                     Appearance {
                         background: SURFACE.into(),
@@ -45,7 +45,7 @@ impl StyleSheet for Theme {
             },
             Self::Style::Value => match self {
                 Self::Light => {
-                    use super::light::colors::*;
+                    use super::colors::light::*;
 
                     Appearance {
                         background: Color::TRANSPARENT.into(),
@@ -57,7 +57,7 @@ impl StyleSheet for Theme {
                     }
                 }
                 Self::Dark => {
-                    use super::dark::colors::*;
+                    use super::colors::dark::*;
 
                     Appearance {
                         background: Color::TRANSPARENT.into(),
@@ -76,7 +76,7 @@ impl StyleSheet for Theme {
         match style {
             Self::Style::Regular => match self {
                 Self::Light => {
-                    use super::light::colors::*;
+                    use super::colors::light::*;
 
                     Appearance {
                         background: SURFACE_HOVER.into(),
@@ -84,7 +84,7 @@ impl StyleSheet for Theme {
                     }
                 }
                 Self::Dark => {
-                    use super::dark::colors::*;
+                    use super::colors::dark::*;
 
                     Appearance {
                         background: SURFACE_HOVER.into(),
@@ -95,7 +95,7 @@ impl StyleSheet for Theme {
             },
             Self::Style::Value => match self {
                 Self::Light => {
-                    use super::light::colors::*;
+                    use super::colors::light::*;
 
                     Appearance {
                         background: SURFACE_HOVER.into(),
@@ -103,7 +103,7 @@ impl StyleSheet for Theme {
                     }
                 }
                 Self::Dark => {
-                    use super::dark::colors::*;
+                    use super::colors::dark::*;
 
                     Appearance {
                         background: SURFACE_HOVER.into(),

@@ -1,11 +1,10 @@
-mod dark;
-mod light;
 mod macros;
 
 pub mod application;
 pub mod boolean_button;
 pub mod button;
 pub mod checkbox;
+pub mod colors;
 pub mod container;
 pub mod envelope;
 pub mod knob;
@@ -56,7 +55,7 @@ impl Theme {
 
     pub fn background_color(&self) -> Color {
         match self {
-            Theme::Dark => dark::colors::BACKGROUND,
+            Theme::Dark => colors::dark::BACKGROUND,
             Theme::Light => Color::WHITE,
         }
     }

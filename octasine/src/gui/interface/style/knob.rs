@@ -1,5 +1,5 @@
 mod light {
-    use super::super::light::colors::*;
+    use super::super::colors::light::*;
 
     use iced_audio::{knob::*, style::tick_marks};
     use iced_baseview::Color;
@@ -57,7 +57,7 @@ mod dark {
     use iced_audio::{knob::*, style::tick_marks};
     use iced_baseview::Color;
 
-    use super::super::dark::colors::*;
+    use super::super::colors::dark::*;
 
     const COLOR_TICK_MARKS_1: Color = GRAY_600;
     const COLOR_TICK_MARKS_2: Color = GRAY_800;

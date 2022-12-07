@@ -8,7 +8,7 @@ impl StyleSheet for Theme {
     fn active(&self, _style: &Self::Style, _is_selected: bool) -> Appearance {
         match self {
             Self::Light => {
-                use super::light::colors::*;
+                use super::colors::light::*;
 
                 Appearance {
                     background: SURFACE.into(),
@@ -19,7 +19,7 @@ impl StyleSheet for Theme {
                 }
             }
             Self::Dark => {
-                use super::dark::colors::*;
+                use super::colors::dark::*;
 
                 Appearance {
                     background: SURFACE.into(),
@@ -35,7 +35,7 @@ impl StyleSheet for Theme {
     fn hovered(&self, style: &Self::Style, is_selected: bool) -> Appearance {
         match self {
             Self::Light => {
-                use super::light::colors::*;
+                use super::colors::light::*;
 
                 Appearance {
                     background: SURFACE_HOVER.into(),
@@ -43,7 +43,7 @@ impl StyleSheet for Theme {
                 }
             }
             Self::Dark => {
-                use super::dark::colors::*;
+                use super::colors::dark::*;
 
                 Appearance {
                     border_color: HOVERED,

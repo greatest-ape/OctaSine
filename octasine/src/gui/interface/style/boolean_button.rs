@@ -17,7 +17,7 @@ impl StyleSheet for Theme {
     fn active(&self, style: &Self::Style, hover: bool) -> Appearance {
         match self {
             Self::Dark => {
-                use super::dark::colors::*;
+                use super::colors::dark::*;
 
                 let color = match style {
                     Self::Style::Regular => BLUE,
@@ -31,7 +31,7 @@ impl StyleSheet for Theme {
                 }
             }
             Self::Light => {
-                use super::light::colors::*;
+                use super::colors::light::*;
 
                 let color = match style {
                     Self::Style::Regular => BLUE,
@@ -50,7 +50,7 @@ impl StyleSheet for Theme {
     fn inactive(&self, _style: &Self::Style, hover: bool) -> Appearance {
         match self {
             Self::Dark => {
-                use super::dark::colors::*;
+                use super::colors::dark::*;
 
                 if hover {
                     Appearance {
@@ -67,7 +67,7 @@ impl StyleSheet for Theme {
                 }
             }
             Self::Light => {
-                use super::light::colors::*;
+                use super::colors::light::*;
 
                 Appearance {
                     background_color: if hover { SURFACE_HOVER } else { SURFACE },

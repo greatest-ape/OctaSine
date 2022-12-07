@@ -3,7 +3,7 @@ use iced_baseview::{
     Color,
 };
 
-use super::{dark, light, Theme};
+use super::{colors, Theme};
 
 #[derive(Default)]
 pub enum ContainerStyle {
@@ -22,7 +22,7 @@ impl StyleSheet for Theme {
     fn appearance(&self, style: &Self::Style) -> Appearance {
         match self {
             Self::Dark => {
-                use dark::colors::*;
+                use colors::dark::*;
 
                 match style {
                     Self::Style::Transparent => Appearance {
@@ -62,7 +62,7 @@ impl StyleSheet for Theme {
                 }
             }
             Self::Light => {
-                use light::colors::*;
+                use colors::light::*;
 
                 match style {
                     Self::Style::Transparent => Appearance {

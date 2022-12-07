@@ -8,7 +8,7 @@ impl StyleSheet for Theme {
     fn appearance(&self) -> Appearance {
         match self {
             Self::Light => {
-                use super::light::colors::*;
+                use super::colors::light::*;
                 Appearance {
                     background_color: SURFACE,
                     border_color: BORDER,
@@ -17,7 +17,7 @@ impl StyleSheet for Theme {
                 }
             }
             Self::Dark => {
-                use super::dark::colors::*;
+                use super::colors::dark::*;
                 Appearance {
                     background_color: Color::TRANSPARENT.into(),
                     border_color: BORDER_DARK,
