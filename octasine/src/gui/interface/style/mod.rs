@@ -6,6 +6,7 @@ pub mod application;
 pub mod button;
 pub mod checkbox;
 pub mod container;
+pub mod envelope;
 pub mod knob;
 pub mod menu;
 pub mod pick_list;
@@ -119,12 +120,6 @@ impl Theme {
         knob::KnobStyle::Bipolar
     }
 
-    pub fn envelope(&self) -> Box<dyn super::envelope::canvas::StyleSheet> {
-        match self {
-            Self::Light => Box::new(light::Envelope),
-            Self::Dark => Box::new(dark::Envelope),
-        }
-    }
     pub fn mod_matrix(&self) -> Box<dyn super::mod_matrix::StyleSheet> {
         match self {
             Self::Light => Box::new(light::ModulationMatrix),

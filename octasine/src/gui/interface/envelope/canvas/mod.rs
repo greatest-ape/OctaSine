@@ -330,22 +330,22 @@ impl Program<Message, Theme> for EnvelopeCanvas {
     fn draw(
         &self,
         state: &Self::State,
-        _theme: &Theme,
+        theme: &Theme,
         bounds: Rectangle,
         _cursor: Cursor,
     ) -> Vec<Geometry> {
         let geometry = self.cache.draw(bounds.size(), |frame| {
-            self.draw_time_markers(frame, self.style);
-            self.draw_stage_paths(frame, self.style.envelope());
+            self.draw_time_markers(frame, theme);
+            self.draw_stage_paths(frame, theme);
 
             self.attack_dragger
-                .draw(frame, self.style.envelope(), &state.attack_dragger_status);
+                .draw(frame, theme, &state.attack_dragger_status);
             self.decay_dragger
-                .draw(frame, self.style.envelope(), &state.decay_dragger_status);
+                .draw(frame, theme, &state.decay_dragger_status);
             self.release_dragger
-                .draw(frame, self.style.envelope(), &state.release_dragger_status);
+                .draw(frame, theme, &state.release_dragger_status);
 
-            self.draw_viewport_indicator(frame, self.style.envelope());
+            self.draw_viewport_indicator(frame, theme);
         });
 
         vec![geometry]

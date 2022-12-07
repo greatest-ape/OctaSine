@@ -9,9 +9,9 @@ use super::EnvelopeCanvas;
 
 /// Canvas display logic
 impl EnvelopeCanvas {
-    pub fn draw_time_markers(&self, frame: &mut Frame, style: Theme) {
-        let font_regular = style.font_regular();
-        let style = style.envelope().appearance();
+    pub fn draw_time_markers(&self, frame: &mut Frame, theme: &Theme) {
+        let font_regular = theme.font_regular();
+        let appearance = theme.appearance();
 
         let total_duration = self.viewport_factor * TOTAL_DURATION;
         let x_offset = self.x_offset / self.viewport_factor;
@@ -54,7 +54,7 @@ impl EnvelopeCanvas {
                     position: scale_point_x(self.size, text_point),
                     font: font_regular,
                     size: FONT_SIZE as f32,
-                    color: style.text_color,
+                    color: appearance.text_color,
                     ..Default::default()
                 };
 
@@ -62,21 +62,21 @@ impl EnvelopeCanvas {
 
                 let stroke = Stroke::default()
                     .with_width(1.0)
-                    .with_color(style.time_marker_color_major);
+                    .with_color(appearance.time_marker_color_major);
 
                 frame.stroke(&path, stroke);
             } else {
                 let stroke = Stroke::default()
                     .with_width(1.0)
-                    .with_color(style.time_marker_minor_color);
+                    .with_color(appearance.time_marker_minor_color);
 
                 frame.stroke(&path, stroke);
             }
         }
     }
 
-    pub fn draw_stage_paths(&self, frame: &mut Frame, style_sheet: Box<dyn StyleSheet>) {
-        let style = style_sheet.appearance();
+    pub fn draw_stage_paths(&self, frame: &mut Frame, theme: &Theme) {
+        let appearance = theme.appearance();
         let size = frame.size();
 
         let top_drag_border = Path::line(
@@ -90,14 +90,14 @@ impl EnvelopeCanvas {
 
         let drag_border_stroke = Stroke::default()
             .with_width(1.0)
-            .with_color(style.drag_border_color);
+            .with_color(appearance.drag_border_color);
 
         frame.stroke(&top_drag_border, drag_border_stroke.clone());
         frame.stroke(&bottom_drag_border, drag_border_stroke);
 
         let stage_path_stroke = Stroke::default()
             .with_width(1.0)
-            .with_color(style.path_color);
+            .with_color(appearance.path_color);
 
         frame.stroke(&self.attack_stage_path.path, stage_path_stroke.clone());
         frame.stroke(&self.decay_stage_path.path, stage_path_stroke.clone());
@@ -107,10 +107,10 @@ impl EnvelopeCanvas {
 
         let left_bg_x = scale_point_x(size, Point::ORIGIN).snap().x - 1.0;
         let left_bg = Path::rectangle(Point::ORIGIN, Size::new(left_bg_x, size.height));
-        frame.fill(&left_bg, style.background_color);
+        frame.fill(&left_bg, appearance.background_color);
         frame.stroke(
             &left_bg,
-            Stroke::default().with_color(style.background_color),
+            Stroke::default().with_color(appearance.background_color),
         );
 
         let right_bg_x = scale_point_x(size, Point::new(size.width, 0.0)).snap().x + 1.0;
@@ -118,10 +118,10 @@ impl EnvelopeCanvas {
             Point::new(right_bg_x, 0.0),
             Size::new(size.width, size.height),
         );
-        frame.fill(&right_bg, style.background_color);
+        frame.fill(&right_bg, appearance.background_color);
         frame.stroke(
             &right_bg,
-            Stroke::default().with_color(style.background_color),
+            Stroke::default().with_color(appearance.background_color),
         );
 
         let top_border = Path::line(
@@ -149,7 +149,7 @@ impl EnvelopeCanvas {
         );
         let border_stroke = Stroke::default()
             .with_width(1.0)
-            .with_color(style.border_color);
+            .with_color(appearance.border_color);
 
         frame.stroke(&top_border, border_stroke.clone());
         frame.stroke(&bottom_border, border_stroke.clone());
@@ -157,11 +157,11 @@ impl EnvelopeCanvas {
         frame.stroke(&right_border, border_stroke);
     }
 
-    pub fn draw_viewport_indicator(&self, frame: &mut Frame, style_sheet: Box<dyn StyleSheet>) {
+    pub fn draw_viewport_indicator(&self, frame: &mut Frame, theme: &Theme) {
         const WIDTH: f32 = 60.0;
         const HEIGHT: f32 = 6.0;
 
-        let style = style_sheet.appearance();
+        let appearance = theme.appearance();
         let size = frame.size();
 
         let top_right = scale_point_x(size, Point::new(size.width, 0.0)).snap();
@@ -171,9 +171,9 @@ impl EnvelopeCanvas {
 
         let border_stroke = Stroke::default()
             .with_width(1.0)
-            .with_color(style.viewport_indicator_border);
+            .with_color(appearance.viewport_indicator_border);
 
-        frame.fill(&full_rect, style.background_color);
+        frame.fill(&full_rect, appearance.background_color);
         frame.stroke(&full_rect, border_stroke);
 
         let viewport_top_left = Point::new(
@@ -190,9 +190,9 @@ impl EnvelopeCanvas {
 
         let border_stroke = Stroke::default()
             .with_width(1.0)
-            .with_color(style.viewport_indicator_border_active);
+            .with_color(appearance.viewport_indicator_border_active);
 
-        frame.fill(&viewport_rect, style.background_color);
+        frame.fill(&viewport_rect, appearance.background_color);
         frame.stroke(&viewport_rect, border_stroke);
     }
 }

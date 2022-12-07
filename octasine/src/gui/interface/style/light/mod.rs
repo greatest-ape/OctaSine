@@ -1,10 +1,6 @@
 pub mod colors;
-pub mod knob;
 
-use iced_baseview::{
-    overlay::menu, widget::button, widget::checkbox, widget::container, widget::pick_list,
-    widget::radio, Color,
-};
+use iced_baseview::Color;
 
 use crate::gui::interface::wave_display;
 
@@ -14,28 +10,6 @@ use super::{
 };
 
 use colors::*;
-
-pub struct Envelope;
-
-impl envelope::canvas::StyleSheet for Envelope {
-    fn appearance(&self) -> envelope::canvas::Appearance {
-        envelope::canvas::Appearance {
-            background_color: Color::WHITE,
-            border_color: BORDER,
-            drag_border_color: GRAY_700,
-            text_color: TEXT,
-            time_marker_minor_color: GRAY_900,
-            time_marker_color_major: GRAY_700,
-            path_color: BLUE,
-            dragger_fill_color_active: SURFACE,
-            dragger_fill_color_hover: SURFACE_HOVER,
-            dragger_fill_color_dragging: SURFACE_PRESS,
-            dragger_border_color: BORDER,
-            viewport_indicator_border: GRAY_300,
-            viewport_indicator_border_active: BLUE,
-        }
-    }
-}
 
 pub struct ModulationMatrix;
 

@@ -3,6 +3,7 @@ use iced_baseview::{Color, Point, Rectangle, Size, Vector};
 
 use crate::audio::voices::envelopes::VoiceOperatorVolumeEnvelope;
 use crate::audio::voices::log10_table::Log10Table;
+use crate::gui::interface::style::Theme;
 use crate::gui::interface::{SnapPoint, LINE_HEIGHT};
 
 pub const WIDTH: u16 = LINE_HEIGHT * 19;
@@ -204,14 +205,9 @@ impl EnvelopeDragger {
         self.hitbox.y = (center.y - self.radius / 2.0).max(0.0);
     }
 
-    pub fn draw(
-        &self,
-        frame: &mut Frame,
-        style_sheet: Box<dyn StyleSheet>,
-        status: &EnvelopeDraggerStatus,
-    ) {
+    pub fn draw(&self, frame: &mut Frame, theme: &Theme, status: &EnvelopeDraggerStatus) {
         let size = frame.size();
-        let style = style_sheet.appearance();
+        let appearance = theme.appearance();
 
         let left_end_x = scale_point(size, Point::ORIGIN).snap().x;
         let right_end_x = scale_point(size, Point::new(size.width, 0.0)).snap().x;
@@ -230,18 +226,16 @@ impl EnvelopeDragger {
         };
 
         let fill_color = match status {
-            EnvelopeDraggerStatus::Normal => style_sheet.appearance().dragger_fill_color_active,
-            EnvelopeDraggerStatus::Hover => style_sheet.appearance().dragger_fill_color_hover,
-            EnvelopeDraggerStatus::Dragging { .. } => {
-                style_sheet.appearance().dragger_fill_color_dragging
-            }
+            EnvelopeDraggerStatus::Normal => appearance.dragger_fill_color_active,
+            EnvelopeDraggerStatus::Hover => appearance.dragger_fill_color_hover,
+            EnvelopeDraggerStatus::Dragging { .. } => appearance.dragger_fill_color_dragging,
         };
 
         frame.fill(&circle_path, fill_color);
 
         let stroke = Stroke::default()
             .with_width(1.0)
-            .with_color(style.dragger_border_color);
+            .with_color(appearance.dragger_border_color);
 
         frame.stroke(&circle_path, stroke);
     }
