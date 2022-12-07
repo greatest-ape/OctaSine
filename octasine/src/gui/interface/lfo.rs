@@ -43,12 +43,12 @@ impl LfoWidgets {
             style,
             target: LfoTargetPicker::new(sync_handle, lfo_index, style),
             shape: WavePicker::new(sync_handle, lfo_wave_type_parameter, style, "SHAPE"),
-            mode: lfo_mode_button(sync_handle, lfo_index, style),
-            bpm_sync: lfo_bpm_sync_button(sync_handle, lfo_index, style),
+            mode: lfo_mode_button(sync_handle, lfo_index),
+            bpm_sync: lfo_bpm_sync_button(sync_handle, lfo_index),
             frequency_ratio: knob::lfo_frequency_ratio(sync_handle, lfo_index, style),
             frequency_free: knob::lfo_frequency_free(sync_handle, lfo_index, style),
             amount: knob::lfo_amount(sync_handle, lfo_index, style),
-            active: lfo_active_button(sync_handle, lfo_index, style),
+            active: lfo_active_button(sync_handle, lfo_index),
         }
     }
 
@@ -56,12 +56,12 @@ impl LfoWidgets {
         self.style = style;
         self.target.style = style;
         self.shape.set_style(style);
-        self.mode.set_style(style);
-        self.bpm_sync.set_style(style);
+        self.mode.theme_changed();
+        self.bpm_sync.theme_changed();
         self.frequency_ratio.set_style(style);
         self.frequency_free.set_style(style);
         self.amount.set_style(style);
-        self.active.set_style(style);
+        self.active.theme_changed();
     }
 
     pub fn view(&self) -> Element<Message, Theme> {

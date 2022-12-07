@@ -46,16 +46,16 @@ impl Envelope {
             group,
             group_synced,
             widget: canvas::EnvelopeCanvas::new(sync_handle, operator_index),
-            group_a: envelope_group_a_button(sync_handle, operator_index, style),
-            group_b: envelope_group_b_button(sync_handle, operator_index, style),
+            group_a: envelope_group_a_button(sync_handle, operator_index),
+            group_b: envelope_group_b_button(sync_handle, operator_index),
         }
     }
 
     pub fn set_style(&mut self, style: Theme) {
         self.style = style;
         self.widget.theme_changed();
-        self.group_a.set_style(style);
-        self.group_b.set_style(style);
+        self.group_a.theme_changed();
+        self.group_b.theme_changed();
     }
 
     pub fn set_group(&mut self, value: f32, internal: bool) {

@@ -75,7 +75,7 @@ impl OperatorWidgets {
             index: operator_index,
             style,
             volume: knob::operator_volume(sync_handle, operator_index, style),
-            mute_button: operator_mute_button(sync_handle, operator_index, style),
+            mute_button: operator_mute_button(sync_handle, operator_index),
             mix: knob::operator_mix(sync_handle, operator_index, style),
             panning: knob::operator_panning(sync_handle, operator_index, style),
             wave_type: WavePicker::new(sync_handle, wave_type_parameter, style, "WAVE"),
@@ -92,7 +92,7 @@ impl OperatorWidgets {
 
     pub fn set_style(&mut self, style: Theme) {
         self.style = style;
-        self.mute_button.set_style(style);
+        self.mute_button.theme_changed();
         self.volume.set_style(style);
         self.mix.set_style(style);
         self.panning.set_style(style);

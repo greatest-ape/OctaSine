@@ -3,6 +3,7 @@ mod light;
 mod macros;
 
 pub mod application;
+pub mod boolean_button;
 pub mod button;
 pub mod checkbox;
 pub mod container;
@@ -123,22 +124,13 @@ impl Theme {
         knob::KnobStyle::Bipolar
     }
 
-    pub fn mute_button(&self) -> Box<dyn super::boolean_button::StyleSheet> {
-        match self {
-            Self::Light => Box::new(light::MuteButton),
-            Self::Dark => Box::new(dark::MuteButton),
-        }
+    pub fn mute_button(&self) -> boolean_button::BooleanButtonStyle {
+        boolean_button::BooleanButtonStyle::Mute
     }
-    pub fn bpm_sync_button(&self) -> Box<dyn super::boolean_button::StyleSheet> {
-        match self {
-            Self::Light => Box::new(light::BooleanButton),
-            Self::Dark => Box::new(dark::BooleanButton),
-        }
+    pub fn bpm_sync_button(&self) -> boolean_button::BooleanButtonStyle {
+        boolean_button::BooleanButtonStyle::Regular
     }
-    pub fn envelope_group_button(&self) -> Box<dyn super::boolean_button::StyleSheet> {
-        match self {
-            Self::Light => Box::new(light::BooleanButton),
-            Self::Dark => Box::new(dark::BooleanButton),
-        }
+    pub fn envelope_group_button(&self) -> boolean_button::BooleanButtonStyle {
+        boolean_button::BooleanButtonStyle::Regular
     }
 }
