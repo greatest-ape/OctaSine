@@ -146,7 +146,7 @@ struct ModulationMatrixComponents {
 }
 
 impl ModulationMatrixComponents {
-    fn new(parameters: &ModulationMatrixParameters, bounds: Size, theme: &Theme) -> Self {
+    fn new(parameters: &ModulationMatrixParameters, bounds: Size) -> Self {
         let operator_1_box = OperatorBox::new(bounds, 0);
         let operator_2_box = OperatorBox::new(bounds, 1);
         let operator_3_box = OperatorBox::new(bounds, 2);
@@ -207,30 +207,26 @@ impl ModulationMatrixComponents {
             operator_4_box.get_center(),
             output_box.y,
             parameters.operator_4_mix,
-            theme,
         );
         let operator_3_mix_out_line = MixOutLine::new(
             operator_3_box.get_center(),
             output_box.y,
             parameters.operator_3_mix,
-            theme,
         );
         let operator_2_mix_out_line = MixOutLine::new(
             operator_2_box.get_center(),
             output_box.y,
             parameters.operator_2_mix,
-            theme,
         );
         let operator_1_mix_out_line = MixOutLine::new(
             operator_1_box.get_center(),
             output_box.y,
             parameters.operator_1_mix,
-            theme,
         );
 
-        let operator_4_mod_out_line = ModOutLines::new(operator_4_box.get_center(), theme);
-        let operator_3_mod_out_line = ModOutLines::new(operator_3_box.get_center(), theme);
-        let operator_2_mod_out_line = ModOutLines::new(operator_2_box.get_center(), theme);
+        let operator_4_mod_out_lines = ModOutLines::new(operator_4_box.get_center());
+        let operator_3_mod_out_lines = ModOutLines::new(operator_3_box.get_center());
+        let operator_2_mod_out_lines = ModOutLines::new(operator_2_box.get_center());
 
         let mut components = Self {
             operator_1_box,
@@ -248,17 +244,17 @@ impl ModulationMatrixComponents {
             operator_3_mix_out_line,
             operator_2_mix_out_line,
             operator_1_mix_out_line,
-            operator_4_mod_out_lines: operator_4_mod_out_line,
-            operator_3_mod_out_lines: operator_3_mod_out_line,
-            operator_2_mod_out_lines: operator_2_mod_out_line,
+            operator_4_mod_out_lines,
+            operator_3_mod_out_lines,
+            operator_2_mod_out_lines,
         };
 
-        components.update(parameters, theme);
+        components.update(parameters);
 
         components
     }
 
-    fn update(&mut self, parameters: &ModulationMatrixParameters, theme: &Theme) {
+    fn update(&mut self, parameters: &ModulationMatrixParameters) {
         self.operator_4_mod_3_box.v = parameters.operator_4_targets;
         self.operator_4_mod_2_box.v = parameters.operator_4_targets;
         self.operator_4_mod_1_box.v = parameters.operator_4_targets;
@@ -266,14 +262,14 @@ impl ModulationMatrixComponents {
         self.operator_3_mod_1_box.v = parameters.operator_3_targets;
 
         self.operator_4_mix_out_line
-            .update(parameters.operator_4_mix, theme);
+            .update(parameters.operator_4_mix);
 
         self.operator_3_mix_out_line
-            .update(parameters.operator_3_mix, theme);
+            .update(parameters.operator_3_mix);
         self.operator_2_mix_out_line
-            .update(parameters.operator_2_mix, theme);
+            .update(parameters.operator_2_mix);
         self.operator_1_mix_out_line
-            .update(parameters.operator_1_mix, theme);
+            .update(parameters.operator_1_mix);
 
         {
             let lines = parameters
@@ -295,7 +291,7 @@ impl ModulationMatrixComponents {
                     _ => unreachable!(),
                 });
 
-            self.operator_4_mod_out_lines.update(lines, theme);
+            self.operator_4_mod_out_lines.update(lines);
         }
 
         {
@@ -314,7 +310,7 @@ impl ModulationMatrixComponents {
                     _ => unreachable!(),
                 });
 
-            self.operator_3_mod_out_lines.update(lines, theme);
+            self.operator_3_mod_out_lines.update(lines);
         };
 
         {
@@ -329,19 +325,19 @@ impl ModulationMatrixComponents {
                     _ => unreachable!(),
                 });
 
-            self.operator_2_mod_out_lines.update(lines, theme);
+            self.operator_2_mod_out_lines.update(lines);
         }
     }
 
-    fn draw_lines(&self, frame: &mut Frame) {
-        self.operator_4_mix_out_line.draw(frame);
-        self.operator_3_mix_out_line.draw(frame);
-        self.operator_2_mix_out_line.draw(frame);
-        self.operator_1_mix_out_line.draw(frame);
+    fn draw_lines(&self, frame: &mut Frame, theme: &Theme) {
+        self.operator_4_mix_out_line.draw(frame, theme);
+        self.operator_3_mix_out_line.draw(frame, theme);
+        self.operator_2_mix_out_line.draw(frame, theme);
+        self.operator_1_mix_out_line.draw(frame, theme);
 
-        self.operator_4_mod_out_lines.draw(frame);
-        self.operator_3_mod_out_lines.draw(frame);
-        self.operator_2_mod_out_lines.draw(frame);
+        self.operator_4_mod_out_lines.draw(frame, theme);
+        self.operator_3_mod_out_lines.draw(frame, theme);
+        self.operator_2_mod_out_lines.draw(frame, theme);
     }
 
     fn draw_boxes(&self, state: &CanvasState, frame: &mut Frame, theme: &Theme) {
@@ -373,29 +369,23 @@ impl ModulationMatrixComponents {
 
 pub struct ModulationMatrix {
     cache: Cache,
-    theme: Theme,
     parameters: ModulationMatrixParameters,
     components: ModulationMatrixComponents,
 }
 
 impl ModulationMatrix {
-    pub fn new<H: GuiSyncHandle>(sync_handle: &H, theme: Theme) -> Self {
+    pub fn new<H: GuiSyncHandle>(sync_handle: &H) -> Self {
         let parameters = ModulationMatrixParameters::new(sync_handle);
-        let components = ModulationMatrixComponents::new(&parameters, SIZE, &theme);
+        let components = ModulationMatrixComponents::new(&parameters, SIZE);
 
         Self {
             cache: Cache::default(),
-            theme,
             parameters,
             components,
         }
     }
 
-    pub fn set_style(&mut self, style: Theme) {
-        self.theme = style;
-
-        self.update_components();
-
+    pub fn theme_changed(&mut self) {
         self.cache.clear();
     }
 
@@ -463,7 +453,7 @@ impl ModulationMatrix {
     }
 
     fn update_components(&mut self) {
-        self.components.update(&self.parameters, &self.theme);
+        self.components.update(&self.parameters);
 
         self.cache.clear();
     }
@@ -520,7 +510,7 @@ impl Program<Message, Theme> for ModulationMatrix {
         let geometry = self.cache.draw(bounds.size(), |frame| {
             self.draw_background(frame, theme);
 
-            self.components.draw_lines(frame);
+            self.components.draw_lines(frame, theme);
             self.components.draw_boxes(state, frame, theme);
         });
 

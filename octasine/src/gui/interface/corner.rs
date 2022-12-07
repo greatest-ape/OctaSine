@@ -33,7 +33,7 @@ impl CornerWidgets {
 
         let master_volume = knob::master_volume(sync_handle, style);
         let master_frequency = knob::master_frequency(sync_handle, style);
-        let modulation_matrix = ModulationMatrix::new(sync_handle, style);
+        let modulation_matrix = ModulationMatrix::new(sync_handle);
         let patch_picker = PatchPicker::new(sync_handle, style);
 
         Self {
@@ -49,7 +49,7 @@ impl CornerWidgets {
         self.style = style;
         self.master_volume.set_style(style);
         self.master_frequency.set_style(style);
-        self.modulation_matrix.set_style(style);
+        self.modulation_matrix.theme_changed();
         self.patch_picker.style = style;
     }
 
