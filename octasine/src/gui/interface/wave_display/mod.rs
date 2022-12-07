@@ -41,7 +41,7 @@ const NUM_POINTS: usize = WIDTH as usize;
 type PointArray = [Point; NUM_POINTS];
 
 #[derive(Debug, Clone)]
-pub struct Style {
+pub struct Appearance {
     pub background_color: Color,
     pub middle_line_color: Color,
     pub border_color: Color,
@@ -49,7 +49,7 @@ pub struct Style {
 }
 
 pub trait StyleSheet {
-    fn active(&self) -> Style;
+    fn appearance(&self) -> Appearance;
 }
 
 enum OperatorModTargets {
@@ -186,8 +186,8 @@ impl WaveDisplay {
         let mut display = Self {
             operator_index,
             style,
-            canvas_left: WaveDisplayCanvas::new(style, canvas_points),
-            canvas_right: WaveDisplayCanvas::new(style, canvas_points),
+            canvas_left: WaveDisplayCanvas::new(canvas_points),
+            canvas_right: WaveDisplayCanvas::new(canvas_points),
             operators,
         };
 
@@ -258,8 +258,8 @@ impl WaveDisplay {
     pub fn set_style(&mut self, style: Theme) {
         self.style = style;
 
-        self.canvas_left.set_style(style);
-        self.canvas_right.set_style(style);
+        self.canvas_left.theme_changed();
+        self.canvas_right.theme_changed();
     }
 
     fn recalculate_canvas_points(&mut self) {
@@ -297,12 +297,11 @@ impl WaveDisplay {
 struct WaveDisplayCanvas {
     bounds_path: Path,
     cache: Cache,
-    style: Theme,
     points: PointArray,
 }
 
 impl WaveDisplayCanvas {
-    fn new(style: Theme, points: PointArray) -> Self {
+    fn new(points: PointArray) -> Self {
         let bounds_path = Path::rectangle(
             Point::new(0.5, 0.5),
             Size::new((WIDTH - 1) as f32, (HEIGHT - 1) as f32),
@@ -312,13 +311,11 @@ impl WaveDisplayCanvas {
         Self {
             bounds_path,
             cache,
-            style,
             points,
         }
     }
 
-    pub fn set_style(&mut self, style: Theme) {
-        self.style = style;
+    pub fn theme_changed(&mut self) {
         self.cache.clear();
     }
 
@@ -329,34 +326,34 @@ impl WaveDisplayCanvas {
             .into()
     }
 
-    fn draw_background(&self, frame: &mut Frame, style_sheet: Box<dyn StyleSheet>) {
-        let style = style_sheet.active();
+    fn draw_background(&self, frame: &mut Frame, theme: &Theme) {
+        let appearance = theme.appearance();
 
-        frame.fill(&self.bounds_path, style.background_color);
+        frame.fill(&self.bounds_path, appearance.background_color);
     }
 
-    fn draw_border(&self, frame: &mut Frame, style_sheet: Box<dyn StyleSheet>) {
-        let style = style_sheet.active();
+    fn draw_border(&self, frame: &mut Frame, theme: &Theme) {
+        let appearance = theme.appearance();
 
-        let stroke = Stroke::default().with_color(style.border_color);
+        let stroke = Stroke::default().with_color(appearance.border_color);
 
         frame.stroke(&self.bounds_path, stroke);
     }
 
-    fn draw_middle_line(&self, frame: &mut Frame, style_sheet: Box<dyn StyleSheet>) {
-        let style = style_sheet.active();
+    fn draw_middle_line(&self, frame: &mut Frame, theme: &Theme) {
+        let appearance = theme.appearance();
 
         let path = Path::line(
             Point::new(0.5, HEIGHT_MIDDLE),
             Point::new(WIDTH as f32 - 0.5, HEIGHT_MIDDLE),
         );
-        let stroke = Stroke::default().with_color(style.middle_line_color);
+        let stroke = Stroke::default().with_color(appearance.middle_line_color);
 
         frame.stroke(&path, stroke)
     }
 
-    fn draw_wave_line(&self, frame: &mut Frame, style_sheet: Box<dyn StyleSheet>) {
-        let style = style_sheet.active();
+    fn draw_wave_line(&self, frame: &mut Frame, theme: &Theme) {
+        let appearance = theme.appearance();
 
         let mut path = path::Builder::new();
 
@@ -368,7 +365,7 @@ impl WaveDisplayCanvas {
 
         frame.stroke(
             &path.build(),
-            Stroke::default().with_color(style.wave_line_color),
+            Stroke::default().with_color(appearance.wave_line_color),
         )
     }
 }
@@ -379,15 +376,15 @@ impl Program<Message, Theme> for WaveDisplayCanvas {
     fn draw(
         &self,
         _state: &Self::State,
-        _theme: &Theme,
+        theme: &Theme,
         bounds: Rectangle,
         _cursor: Cursor,
     ) -> Vec<Geometry> {
         let geometry = self.cache.draw(bounds.size(), |frame| {
-            self.draw_background(frame, self.style.wave_display());
-            self.draw_middle_line(frame, self.style.wave_display());
-            self.draw_wave_line(frame, self.style.wave_display());
-            self.draw_border(frame, self.style.wave_display());
+            self.draw_background(frame, theme);
+            self.draw_middle_line(frame, theme);
+            self.draw_wave_line(frame, theme);
+            self.draw_border(frame, theme);
         });
 
         vec![geometry]

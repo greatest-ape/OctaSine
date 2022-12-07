@@ -7,20 +7,6 @@ use crate::gui::interface::wave_display;
 use super::super::boolean_button;
 
 use colors::*;
-
-pub struct WaveDisplay;
-
-impl wave_display::StyleSheet for WaveDisplay {
-    fn active(&self) -> wave_display::Style {
-        wave_display::Style {
-            background_color: Color::TRANSPARENT.into(),
-            border_color: BORDER_DARK,
-            middle_line_color: GRAY_400,
-            wave_line_color: BLUE,
-        }
-    }
-}
-
 pub struct MuteButton;
 
 impl boolean_button::StyleSheet for MuteButton {

@@ -14,6 +14,7 @@ pub mod pick_list;
 pub mod radio;
 pub mod scrollable;
 pub mod text;
+pub mod wave_display;
 pub mod wave_picker;
 
 use iced_baseview::{Color, Font};
@@ -122,12 +123,6 @@ impl Theme {
         knob::KnobStyle::Bipolar
     }
 
-    pub fn wave_display(&self) -> Box<dyn super::wave_display::StyleSheet> {
-        match self {
-            Self::Light => Box::new(light::WaveDisplay),
-            Self::Dark => Box::new(dark::WaveDisplay),
-        }
-    }
     pub fn mute_button(&self) -> Box<dyn super::boolean_button::StyleSheet> {
         match self {
             Self::Light => Box::new(light::MuteButton),
