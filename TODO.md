@@ -5,7 +5,8 @@
 * iced 0.5 adjustments
   * Ideally rewrite style handling to be idiomatic
     * Clear cache on theme change in canvases in nicer way?
-    * Reorganize code with widgets and nested light/dark modules?
+    * Find out if I can avoid storing Theme everywhere
+    * Implement styles for Scrollable
   * How handle external updates when knobs are dragged?
 * Audio gen optimizations
   * Use bhaskara_constant_power_panning?

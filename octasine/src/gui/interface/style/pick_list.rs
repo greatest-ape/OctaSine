@@ -5,7 +5,7 @@ use super::Theme;
 impl StyleSheet for Theme {
     type Style = ();
 
-    fn active(&self, style: &Self::Style) -> Appearance {
+    fn active(&self, _style: &Self::Style) -> Appearance {
         match self {
             Self::Light => {
                 use super::light::colors::*;

@@ -9,7 +9,7 @@ use super::Theme;
 impl StyleSheet for Theme {
     type Style = ();
 
-    fn active(&self, style: &Self::Style) -> Scrollbar {
+    fn active(&self, _style: &Self::Style) -> Scrollbar {
         Scrollbar {
             background: Color::WHITE.into(),
             border_radius: 0.0,

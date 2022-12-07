@@ -56,7 +56,7 @@ where
         let value = P::new_from_patch(sync_handle.get_parameter(parameter));
         let shape = value.get();
 
-        let canvas = WavePickerCanvas::new(parameter, shape, style);
+        let canvas = WavePickerCanvas::new(parameter, shape);
         let value_text = ValueText::new(sync_handle, style, parameter);
 
         Self {
@@ -120,7 +120,7 @@ where
     P: ParameterValue + Copy + 'static,
     P::Value: CalculateCurve,
 {
-    pub fn new(parameter: Parameter, shape: P::Value, style: Theme) -> Self {
+    pub fn new(parameter: Parameter, shape: P::Value) -> Self {
         let bounds_path = Path::rectangle(
             Point::new(0.5, 0.5),
             Size::new((WIDTH - 1) as f32, (HEIGHT - 1) as f32),

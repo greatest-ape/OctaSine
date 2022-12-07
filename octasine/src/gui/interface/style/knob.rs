@@ -135,7 +135,7 @@ impl StyleSheet for Theme {
     fn dragging(&self, style: &Self::Style) -> Appearance {
         self.active(style)
     }
-    fn tick_marks_style(&self, style: &Self::Style) -> Option<TickMarksStyle> {
+    fn tick_marks_style(&self, _style: &Self::Style) -> Option<TickMarksStyle> {
         let style = match self {
             Self::Dark => dark::TICK_MARK_STYLE,
             Self::Light => light::TICK_MARK_STYLE,

@@ -47,7 +47,7 @@ impl StyleSheet for Theme {
         }
     }
 
-    fn inactive(&self, style: &Self::Style, hover: bool) -> Appearance {
+    fn inactive(&self, _style: &Self::Style, hover: bool) -> Appearance {
         match self {
             Self::Dark => {
                 use super::dark::colors::*;
