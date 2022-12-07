@@ -4,23 +4,9 @@ use iced_baseview::Color;
 
 use crate::gui::interface::wave_display;
 
-use super::super::{boolean_button, envelope, mod_matrix, wave_picker};
+use super::super::boolean_button;
 
 use colors::*;
-pub struct WavePicker;
-
-impl wave_picker::StyleSheet for WavePicker {
-    fn active(&self) -> wave_picker::Style {
-        wave_picker::Style {
-            background_color: Color::TRANSPARENT.into(),
-            border_color_active: BORDER,
-            border_color_hovered: BORDER_HOVERED,
-            middle_line_color: GRAY_400,
-            shape_line_color_active: BLUE,
-            shape_line_color_hovered: BLUE,
-        }
-    }
-}
 
 pub struct WaveDisplay;
 

@@ -32,7 +32,6 @@ pub struct EnvelopeValues {
 pub struct EnvelopeCanvas {
     log10table: Log10Table,
     cache: Cache,
-    style: Theme,
     operator_index: u8,
     attack_duration: f32,
     decay_duration: f32,
@@ -52,7 +51,7 @@ pub struct EnvelopeCanvas {
 }
 
 impl EnvelopeCanvas {
-    pub fn new<H: GuiSyncHandle>(sync_handle: &H, operator_index: usize, style: Theme) -> Self {
+    pub fn new<H: GuiSyncHandle>(sync_handle: &H, operator_index: usize) -> Self {
         let operator_index = operator_index as u8;
 
         let attack_duration =
@@ -80,7 +79,6 @@ impl EnvelopeCanvas {
         let mut envelope = Self {
             log10table: Default::default(),
             cache: Cache::default(),
-            style,
             operator_index,
             attack_duration,
             decay_duration,
@@ -119,8 +117,7 @@ impl EnvelopeCanvas {
 
 /// Public style / viewport / parameter value setters
 impl EnvelopeCanvas {
-    pub fn set_style(&mut self, style: Theme) {
-        self.style = style;
+    pub fn theme_changed(&mut self) {
         self.cache.clear();
     }
 

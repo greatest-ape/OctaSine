@@ -14,6 +14,7 @@ pub mod pick_list;
 pub mod radio;
 pub mod scrollable;
 pub mod text;
+pub mod wave_picker;
 
 use iced_baseview::{Color, Font};
 use serde::{Deserialize, Serialize};
@@ -121,12 +122,6 @@ impl Theme {
         knob::KnobStyle::Bipolar
     }
 
-    pub fn wave_picker(&self) -> Box<dyn super::wave_picker::StyleSheet> {
-        match self {
-            Self::Light => Box::new(light::WavePicker),
-            Self::Dark => Box::new(dark::WavePicker),
-        }
-    }
     pub fn wave_display(&self) -> Box<dyn super::wave_display::StyleSheet> {
         match self {
             Self::Light => Box::new(light::WaveDisplay),

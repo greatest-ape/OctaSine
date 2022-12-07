@@ -21,7 +21,7 @@ const HEIGHT_MIDDLE: f32 = HEIGHT as f32 / 2.0 - 0.5;
 const SHAPE_HEIGHT_RANGE: f32 = HEIGHT as f32 / 4.0;
 
 #[derive(Debug, Clone)]
-pub struct Style {
+pub struct Appearance {
     pub background_color: Color,
     pub middle_line_color: Color,
     pub border_color_active: Color,
@@ -31,7 +31,7 @@ pub struct Style {
 }
 
 pub trait StyleSheet {
-    fn active(&self) -> Style;
+    fn appearance(&self) -> Appearance;
 }
 
 pub struct WavePicker<P: ParameterValue> {
@@ -69,9 +69,7 @@ where
     }
 
     pub fn set_style(&mut self, style: Theme) {
-        self.style = style;
-
-        self.canvas.set_style(style);
+        self.canvas.theme_changed();
         self.value_text.style = style;
     }
 
@@ -115,7 +113,6 @@ struct WavePickerCanvas<P: ParameterValue> {
     cache: Cache,
     bounds_path: Path,
     shape: P::Value,
-    style: Theme,
 }
 
 impl<P> WavePickerCanvas<P>
@@ -133,7 +130,6 @@ where
             parameter,
             cache: Cache::new(),
             bounds_path,
-            style,
             shape,
         }
     }
@@ -145,8 +141,7 @@ where
             .into()
     }
 
-    pub fn set_style(&mut self, style: Theme) {
-        self.style = style;
+    pub fn theme_changed(&mut self) {
         self.cache.clear();
     }
 
@@ -155,24 +150,19 @@ where
         self.cache.clear();
     }
 
-    fn draw_background(&self, frame: &mut Frame, style_sheet: Box<dyn StyleSheet>) {
-        let style = style_sheet.active();
+    fn draw_background(&self, frame: &mut Frame, theme: &Theme) {
+        let apparence = theme.appearance();
 
-        frame.fill(&self.bounds_path, style.background_color);
+        frame.fill(&self.bounds_path, apparence.background_color);
     }
 
-    fn draw_border(
-        &self,
-        state: &CanvasState,
-        frame: &mut Frame,
-        style_sheet: Box<dyn StyleSheet>,
-    ) {
-        let style = style_sheet.active();
+    fn draw_border(&self, state: &CanvasState, frame: &mut Frame, theme: &Theme) {
+        let appearance = theme.appearance();
 
         let color = if state.cursor_within_bounds {
-            style.border_color_hovered
+            appearance.border_color_hovered
         } else {
-            style.border_color_active
+            appearance.border_color_active
         };
 
         let stroke = Stroke::default().with_color(color);
@@ -180,25 +170,20 @@ where
         frame.stroke(&self.bounds_path, stroke);
     }
 
-    fn draw_middle_line(&self, frame: &mut Frame, style_sheet: Box<dyn StyleSheet>) {
-        let style = style_sheet.active();
+    fn draw_middle_line(&self, frame: &mut Frame, theme: &Theme) {
+        let appearance = theme.appearance();
 
         let path = Path::line(
             Point::new(0.5, HEIGHT_MIDDLE),
             Point::new(WIDTH as f32 - 0.5, HEIGHT_MIDDLE),
         );
-        let stroke = Stroke::default().with_color(style.middle_line_color);
+        let stroke = Stroke::default().with_color(appearance.middle_line_color);
 
         frame.stroke(&path, stroke)
     }
 
-    fn draw_shape_line(
-        &self,
-        state: &CanvasState,
-        frame: &mut Frame,
-        style_sheet: Box<dyn StyleSheet>,
-    ) {
-        let style = style_sheet.active();
+    fn draw_shape_line(&self, state: &CanvasState, frame: &mut Frame, theme: &Theme) {
+        let appearance = theme.appearance();
 
         let mut path = path::Builder::new();
 
@@ -219,9 +204,9 @@ where
         let path = path.build();
 
         let color = if state.cursor_within_bounds {
-            style.shape_line_color_hovered
+            appearance.shape_line_color_hovered
         } else {
-            style.shape_line_color_active
+            appearance.shape_line_color_active
         };
 
         let stroke = Stroke::default().with_color(color);
@@ -240,15 +225,15 @@ where
     fn draw(
         &self,
         state: &Self::State,
-        _theme: &Theme,
+        theme: &Theme,
         bounds: Rectangle,
         _cursor: Cursor,
     ) -> Vec<Geometry> {
         let geometry = self.cache.draw(bounds.size(), |frame| {
-            self.draw_background(frame, self.style.wave_picker());
-            self.draw_middle_line(frame, self.style.wave_picker());
-            self.draw_shape_line(state, frame, self.style.wave_picker());
-            self.draw_border(state, frame, self.style.wave_picker());
+            self.draw_background(frame, theme);
+            self.draw_middle_line(frame, theme);
+            self.draw_shape_line(state, frame, theme);
+            self.draw_border(state, frame, theme);
         });
 
         vec![geometry]
