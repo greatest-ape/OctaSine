@@ -1,5 +1,4 @@
 use iced_baseview::widget::tooltip::Position;
-use iced_baseview::widget::Tooltip;
 use iced_baseview::{
     alignment::Horizontal, widget::Column, widget::Container, widget::Row, widget::Space,
     widget::Text, Alignment, Element, Length,
@@ -14,7 +13,7 @@ use crate::parameters::{
 use crate::sync::GuiSyncHandle;
 
 use super::boolean_button::{operator_mute_button, BooleanButton};
-use super::common::{container_l1, container_l2, container_l3, space_l2, space_l3};
+use super::common::{container_l1, container_l2, container_l3, space_l2, space_l3, tooltip};
 use super::envelope::Envelope;
 use super::knob::{self, OctaSineKnob};
 use super::mod_target_picker;
@@ -97,10 +96,7 @@ impl OperatorWidgets {
 
     pub fn view(&self, theme: &Theme) -> Element<Message, Theme> {
         let heading = {
-            let mute_button = Tooltip::new(self.mute_button.view(), "Toggle mute", Position::Top)
-                .style(theme.tooltip())
-                .font(theme.font_regular())
-                .padding(theme.tooltip_padding());
+            let mute_button = tooltip(theme, "Toggle mute", Position::Top, self.mute_button.view());
 
             Container::new(
                 Column::new()

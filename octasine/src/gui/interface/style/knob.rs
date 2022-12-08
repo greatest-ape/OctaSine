@@ -1,112 +1,3 @@
-mod light {
-    use super::super::colors::light::*;
-
-    use iced_audio::{knob::*, style::tick_marks};
-    use iced_baseview::Color;
-
-    const COLOR_TICK_MARKS_1: Color = GRAY_600;
-    const COLOR_TICK_MARKS_2: Color = GRAY_300;
-    const COLOR_EMPTY: Color = GRAY_600;
-    const COLOR_NOTCH: Color = TEXT;
-
-    pub const NOTCH_STYLE: LineNotch = LineNotch {
-        color: COLOR_NOTCH,
-        width: StyleLength::Units(2.0),
-        length: StyleLength::Units(6.0),
-        cap: LineCap::Round,
-        offset: StyleLength::Units(3.0),
-    };
-
-    pub const ARC_STYLE: ArcStyle = ArcStyle {
-        width: StyleLength::Units(2.0),
-        empty_color: COLOR_EMPTY,
-        filled_color: BLUE,
-        cap: LineCap::Square,
-        notch: NotchShape::Line(NOTCH_STYLE),
-    };
-
-    pub const TICK_MARK_STYLE: tick_marks::Style = tick_marks::Style {
-        tier_1: tick_marks::Shape::Circle {
-            diameter: 3.0,
-            color: COLOR_TICK_MARKS_1,
-        },
-        tier_2: tick_marks::Shape::Circle {
-            diameter: 3.0,
-            color: COLOR_TICK_MARKS_2,
-        },
-        tier_3: tick_marks::Shape::Line {
-            length: 3.0,
-            width: 2.0,
-            color: COLOR_TICK_MARKS_2,
-        },
-    };
-
-    pub const ARC_BIPOLAR_STYLE: ArcBipolarStyle = ArcBipolarStyle {
-        width: StyleLength::Units(2.0),
-        empty_color: COLOR_EMPTY,
-        left_filled_color: BLUE,
-        right_filled_color: BLUE,
-        cap: LineCap::Square,
-        notch_center: NotchShape::Line(NOTCH_STYLE),
-        notch_left_right: None,
-    };
-}
-
-mod dark {
-
-    use iced_audio::{knob::*, style::tick_marks};
-    use iced_baseview::Color;
-
-    use super::super::colors::dark::*;
-
-    const COLOR_TICK_MARKS_1: Color = GRAY_600;
-    const COLOR_TICK_MARKS_2: Color = GRAY_800;
-    const COLOR_EMPTY: Color = GRAY_500;
-    const COLOR_NOTCH: Color = GRAY_900;
-
-    pub const NOTCH_STYLE: LineNotch = LineNotch {
-        color: COLOR_NOTCH,
-        width: StyleLength::Units(2.0),
-        length: StyleLength::Units(6.0),
-        cap: LineCap::Round,
-        offset: StyleLength::Units(3.0),
-    };
-
-    pub const ARC_STYLE: ArcStyle = ArcStyle {
-        width: StyleLength::Units(2.0),
-        empty_color: COLOR_EMPTY,
-        filled_color: BLUE,
-        cap: LineCap::Square,
-        notch: NotchShape::Line(NOTCH_STYLE),
-    };
-
-    pub const TICK_MARK_STYLE: tick_marks::Style = tick_marks::Style {
-        tier_1: tick_marks::Shape::Circle {
-            diameter: 3.0,
-            color: COLOR_TICK_MARKS_1,
-        },
-        tier_2: tick_marks::Shape::Circle {
-            diameter: 3.0,
-            color: COLOR_TICK_MARKS_2,
-        },
-        tier_3: tick_marks::Shape::Line {
-            length: 3.0,
-            width: 2.0,
-            color: COLOR_TICK_MARKS_2,
-        },
-    };
-
-    pub const ARC_BIPOLAR_STYLE: ArcBipolarStyle = ArcBipolarStyle {
-        width: StyleLength::Units(2.0),
-        empty_color: COLOR_EMPTY,
-        left_filled_color: BLUE,
-        right_filled_color: BLUE,
-        cap: LineCap::Square,
-        notch_center: NotchShape::Line(NOTCH_STYLE),
-        notch_left_right: None,
-    };
-}
-
 use iced_audio::style::knob::{Appearance, StyleSheet, TickMarksStyle};
 
 use super::Theme;
@@ -122,25 +13,95 @@ impl StyleSheet for Theme {
     type Style = KnobStyle;
 
     fn active(&self, style: &Self::Style) -> Appearance {
-        match (self, style) {
-            (Self::Dark, Self::Style::Regular) => Appearance::Arc(dark::ARC_STYLE),
-            (Self::Dark, Self::Style::Bipolar) => Appearance::ArcBipolar(dark::ARC_BIPOLAR_STYLE),
-            (Self::Light, Self::Style::Regular) => Appearance::Arc(light::ARC_STYLE),
-            (Self::Light, Self::Style::Bipolar) => Appearance::ArcBipolar(light::ARC_BIPOLAR_STYLE),
+        use iced_audio::knob::{
+            ArcBipolarStyle, ArcStyle, LineCap, LineNotch, NotchShape, StyleLength,
+        };
+
+        let (filled_color, empty_color, notch_color) = match self {
+            Self::Dark => {
+                use super::colors::dark::*;
+
+                (BLUE, GRAY_500, GRAY_900)
+            }
+            Self::Light => {
+                use super::colors::light::*;
+
+                (BLUE, GRAY_600, TEXT)
+            }
+        };
+
+        let notch = NotchShape::Line(LineNotch {
+            color: notch_color,
+            width: StyleLength::Units(2.0),
+            length: StyleLength::Units(6.0),
+            cap: LineCap::Round,
+            offset: StyleLength::Units(3.0),
+        });
+
+        let arc_width = StyleLength::Units(2.0);
+        let arc_cap = LineCap::Square;
+
+        match style {
+            Self::Style::Regular => Appearance::Arc(ArcStyle {
+                width: arc_width,
+                empty_color,
+                filled_color,
+                cap: arc_cap,
+                notch,
+            }),
+            Self::Style::Bipolar => Appearance::ArcBipolar(ArcBipolarStyle {
+                width: arc_width,
+                empty_color,
+                left_filled_color: filled_color,
+                right_filled_color: filled_color,
+                cap: arc_cap,
+                notch_center: notch,
+                notch_left_right: None,
+            }),
         }
     }
+
     fn hovered(&self, style: &Self::Style) -> Appearance {
         self.active(style)
     }
+
     fn dragging(&self, style: &Self::Style) -> Appearance {
         self.active(style)
     }
+
     fn tick_marks_style(&self, _style: &Self::Style) -> Option<TickMarksStyle> {
-        let style = match self {
-            Self::Dark => dark::TICK_MARK_STYLE,
-            Self::Light => light::TICK_MARK_STYLE,
+        use iced_audio::style::tick_marks::{Shape, Style};
+
+        let (tier_1, tier_2) = match self {
+            Self::Dark => {
+                use super::colors::dark::*;
+
+                (GRAY_600, GRAY_800)
+            }
+            Self::Light => {
+                use super::colors::light::*;
+
+                (GRAY_600, GRAY_300)
+            }
         };
 
-        Some(TickMarksStyle { style, offset: 3.0 })
+        Some(TickMarksStyle {
+            style: Style {
+                tier_1: Shape::Circle {
+                    diameter: 3.0,
+                    color: tier_1,
+                },
+                tier_2: Shape::Circle {
+                    diameter: 3.0,
+                    color: tier_2,
+                },
+                tier_3: Shape::Line {
+                    length: 3.0,
+                    width: 2.0,
+                    color: tier_2,
+                },
+            },
+            offset: 3.0,
+        })
     }
 }

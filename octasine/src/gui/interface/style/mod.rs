@@ -17,7 +17,7 @@ pub mod text;
 pub mod wave_display;
 pub mod wave_picker;
 
-use iced_baseview::{Color, Font};
+use iced_baseview::Font;
 use serde::{Deserialize, Serialize};
 
 const OPEN_SANS_REGULAR: Font = Font::External {
@@ -37,29 +37,15 @@ const OPEN_SANS_EXTRA_BOLD: Font = Font::External {
     bytes: super::OPEN_SANS_BYTES_EXTRA_BOLD,
 };
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum Theme {
+    #[default]
     Light,
     Dark,
 }
 
-impl Default for Theme {
-    fn default() -> Theme {
-        Theme::Light
-    }
-}
-
 impl Theme {
-    pub const ALL: [Theme; 2] = [Theme::Light, Theme::Dark];
-
-    pub fn background_color(&self) -> Color {
-        match self {
-            Theme::Dark => colors::dark::BACKGROUND,
-            Theme::Light => Color::WHITE,
-        }
-    }
-
     pub fn font_regular(&self) -> Font {
         match self {
             Theme::Dark => OPEN_SANS_REGULAR,
@@ -95,9 +81,5 @@ impl Theme {
 
     pub fn picklist_padding(&self) -> u16 {
         3
-    }
-
-    pub fn tooltip(&self) -> container::ContainerStyle {
-        container::ContainerStyle::Tooltip
     }
 }

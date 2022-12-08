@@ -1,5 +1,11 @@
+use std::borrow::Cow;
+
 use iced_baseview::{
-    widget::Column, widget::Container, widget::Row, widget::Space, Element, Length,
+    widget::Column,
+    widget::Row,
+    widget::Space,
+    widget::{tooltip::Position, Container, Tooltip},
+    Element, Length,
 };
 
 use crate::gui::interface::LINE_HEIGHT;
@@ -75,4 +81,16 @@ pub fn space_l2<'a>() -> Container<'a, Message, Theme> {
 
 pub fn space_l3<'a>() -> Container<'a, Message, Theme> {
     Container::new(Space::with_width(Length::Units(0)))
+}
+
+pub fn tooltip<'a>(
+    theme: &Theme,
+    text: impl Into<Cow<'a, str>>,
+    position: Position,
+    contents: impl Into<Element<'a, Message, Theme>>,
+) -> Tooltip<'a, Message, Theme> {
+    Tooltip::new(contents, text, position)
+        .font(theme.font_regular())
+        .style(ContainerStyle::Tooltip)
+        .padding(theme.tooltip_padding())
 }

@@ -1,7 +1,6 @@
 use iced_baseview::{
     alignment::Horizontal, widget::tooltip::Position, widget::Button, widget::Column,
-    widget::Container, widget::Row, widget::Space, widget::Text, widget::Tooltip, Alignment,
-    Element, Length,
+    widget::Container, widget::Row, widget::Space, widget::Text, Alignment, Element, Length,
 };
 
 use crate::{
@@ -11,7 +10,7 @@ use crate::{
 };
 
 use super::{
-    common::{container_l1, container_l2, container_l3, space_l3, triple_container},
+    common::{container_l1, container_l2, container_l3, space_l3, tooltip, triple_container},
     knob::{self, OctaSineKnob},
     mod_matrix::ModulationMatrix,
     patch_picker::PatchPicker,
@@ -71,7 +70,10 @@ impl CornerWidgets {
         ));
 
         let logo = {
-            let theme_button = Tooltip::new(
+            let theme_button = tooltip(
+                theme,
+                "Switch color theme",
+                Position::Top,
                 Button::new(
                     Text::new("THEME")
                         .font(theme.font_regular())
@@ -79,12 +81,12 @@ impl CornerWidgets {
                 )
                 .on_press(Message::SwitchTheme)
                 .padding(theme.button_padding()),
-                "Switch color theme",
-                Position::Top,
-            )
-            .style(theme.tooltip());
+            );
 
-            let info_button = Tooltip::new(
+            let info_button = tooltip(
+                theme,
+                get_info_text(),
+                Position::FollowCursor,
                 Button::new(
                     Text::new("INFO")
                         .font(theme.font_regular())
@@ -92,10 +94,7 @@ impl CornerWidgets {
                 )
                 .on_press(Message::NoOp)
                 .padding(theme.button_padding()),
-                get_info_text(),
-                Position::FollowCursor,
-            )
-            .style(theme.tooltip());
+            );
 
             // Helps with issues arising from use of different font weights
             let logo_button_space = match theme {
