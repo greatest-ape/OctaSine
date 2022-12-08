@@ -31,7 +31,6 @@ pub enum ModTargetPicker {
 
 pub struct OperatorWidgets {
     index: usize,
-    style: Theme,
     pub volume: OctaSineKnob<OperatorVolumeValue>,
     pub mute_button: BooleanButton,
     pub mix: OctaSineKnob<OperatorMixOutValue>,
@@ -48,22 +47,22 @@ pub struct OperatorWidgets {
 }
 
 impl OperatorWidgets {
-    pub fn new<H: GuiSyncHandle>(sync_handle: &H, operator_index: usize, style: Theme) -> Self {
+    pub fn new<H: GuiSyncHandle>(sync_handle: &H, operator_index: usize) -> Self {
         let mod_index = if operator_index != 0 {
-            Some(knob::operator_mod_index(sync_handle, operator_index, style))
+            Some(knob::operator_mod_index(sync_handle, operator_index))
         } else {
             None
         };
 
         let mod_target = match operator_index {
             3 => Some(ModTargetPicker::Operator4(
-                mod_target_picker::operator_4_target(sync_handle, operator_index, style),
+                mod_target_picker::operator_4_target(sync_handle, operator_index),
             )),
             2 => Some(ModTargetPicker::Operator3(
-                mod_target_picker::operator_3_target(sync_handle, operator_index, style),
+                mod_target_picker::operator_3_target(sync_handle, operator_index),
             )),
             1 => Some(ModTargetPicker::Operator2(
-                mod_target_picker::operator_2_target(sync_handle, operator_index, style),
+                mod_target_picker::operator_2_target(sync_handle, operator_index),
             )),
             _ => None,
         };
@@ -73,59 +72,35 @@ impl OperatorWidgets {
 
         Self {
             index: operator_index,
-            style,
-            volume: knob::operator_volume(sync_handle, operator_index, style),
+            volume: knob::operator_volume(sync_handle, operator_index),
             mute_button: operator_mute_button(sync_handle, operator_index),
-            mix: knob::operator_mix(sync_handle, operator_index, style),
-            panning: knob::operator_panning(sync_handle, operator_index, style),
-            wave_type: WavePicker::new(sync_handle, wave_type_parameter, style, "WAVE"),
+            mix: knob::operator_mix(sync_handle, operator_index),
+            panning: knob::operator_panning(sync_handle, operator_index),
+            wave_type: WavePicker::new(sync_handle, wave_type_parameter, "WAVE"),
             mod_index,
             mod_target,
-            feedback: knob::operator_feedback(sync_handle, operator_index, style),
-            frequency_ratio: knob::operator_frequency_ratio(sync_handle, operator_index, style),
-            frequency_free: knob::operator_frequency_free(sync_handle, operator_index, style),
-            frequency_fine: knob::operator_frequency_fine(sync_handle, operator_index, style),
-            envelope: Envelope::new(sync_handle, operator_index, style),
-            wave_display: WaveDisplay::new(sync_handle, operator_index, style),
+            feedback: knob::operator_feedback(sync_handle, operator_index),
+            frequency_ratio: knob::operator_frequency_ratio(sync_handle, operator_index),
+            frequency_free: knob::operator_frequency_free(sync_handle, operator_index),
+            frequency_fine: knob::operator_frequency_fine(sync_handle, operator_index),
+            envelope: Envelope::new(sync_handle, operator_index),
+            wave_display: WaveDisplay::new(sync_handle, operator_index),
         }
     }
 
-    pub fn set_style(&mut self, style: Theme) {
-        self.style = style;
+    pub fn theme_changed(&mut self) {
         self.mute_button.theme_changed();
-        self.volume.set_style(style);
-        self.mix.set_style(style);
-        self.panning.set_style(style);
-        self.wave_type.set_style(style);
-        if let Some(mod_index) = self.mod_index.as_mut() {
-            mod_index.set_style(style);
-        }
-        match self.mod_target.as_mut() {
-            Some(ModTargetPicker::Operator2(p)) => {
-                p.style = style;
-            }
-            Some(ModTargetPicker::Operator3(p)) => {
-                p.style = style;
-            }
-            Some(ModTargetPicker::Operator4(p)) => {
-                p.style = style;
-            }
-            None => {}
-        }
-        self.feedback.set_style(style);
-        self.frequency_ratio.set_style(style);
-        self.frequency_free.set_style(style);
-        self.frequency_fine.set_style(style);
-        self.envelope.set_style(style);
-        self.wave_display.set_style(style);
+        self.wave_type.theme_changed();
+        self.envelope.theme_changed();
+        self.wave_display.theme_changed();
     }
 
-    pub fn view(&self) -> Element<Message, Theme> {
+    pub fn view(&self, theme: &Theme) -> Element<Message, Theme> {
         let heading = {
             let mute_button = Tooltip::new(self.mute_button.view(), "Toggle mute", Position::Top)
-                .style(self.style.tooltip())
-                .font(self.style.font_regular())
-                .padding(self.style.tooltip_padding());
+                .style(theme.tooltip())
+                .font(theme.font_regular())
+                .padding(theme.tooltip_padding());
 
             Container::new(
                 Column::new()
@@ -143,11 +118,11 @@ impl OperatorWidgets {
                         Text::new(format!("OP {}", self.index + 1))
                             .size(FONT_SIZE + FONT_SIZE / 2)
                             .height(Length::Units(FONT_SIZE + FONT_SIZE / 2))
-                            .font(self.style.font_heading())
+                            .font(theme.font_heading())
                             .horizontal_alignment(Horizontal::Center),
                     )
                     .push(Space::with_height(Length::Units(LINE_HEIGHT / 2)))
-                    .push(self.wave_display.view()),
+                    .push(self.wave_display.view(theme)),
             )
             .width(Length::Units(LINE_HEIGHT * 8))
             .height(Length::Units(LINE_HEIGHT * 7))
@@ -155,20 +130,20 @@ impl OperatorWidgets {
 
         let group_1 = container_l2(
             Row::new()
-                .push(container_l3(self.wave_type.view()))
+                .push(container_l3(self.wave_type.view(theme)))
                 .push(space_l3())
-                .push(container_l3(self.volume.view()))
+                .push(container_l3(self.volume.view(theme)))
                 .push(space_l3())
-                .push(container_l3(self.panning.view())),
+                .push(container_l3(self.panning.view(theme))),
         );
 
         let routing_group = {
             let mut group = Row::new()
-                .push(container_l3(self.mix.view()))
+                .push(container_l3(self.mix.view(theme)))
                 .push(space_l3());
 
             if let Some(mod_index) = self.mod_index.as_ref() {
-                group = group.push(container_l3(mod_index.view()));
+                group = group.push(container_l3(mod_index.view(theme)));
             } else {
                 group = group.push(Space::with_width(Length::Units(LINE_HEIGHT * 5)));
             }
@@ -177,33 +152,34 @@ impl OperatorWidgets {
 
             match self.mod_target.as_ref() {
                 Some(ModTargetPicker::Operator2(picker)) => {
-                    group = group.push(container_l3(picker.view()))
+                    group = group.push(container_l3(picker.view(theme)))
                 }
                 Some(ModTargetPicker::Operator3(picker)) => {
-                    group = group.push(container_l3(picker.view()))
+                    group = group.push(container_l3(picker.view(theme)))
                 }
                 Some(ModTargetPicker::Operator4(picker)) => {
-                    group = group.push(container_l3(picker.view()))
+                    group = group.push(container_l3(picker.view(theme)))
                 }
                 None => group = group.push(Space::with_width(Length::Units(LINE_HEIGHT * 3))),
             }
 
             group = group.push(space_l3());
-            group = group.push(container_l3(self.feedback.view()));
+            group = group.push(container_l3(self.feedback.view(theme)));
 
             container_l2(group)
         };
 
         let frequency_group = container_l2(
             Row::new()
-                .push(container_l3(self.frequency_ratio.view()))
+                .push(container_l3(self.frequency_ratio.view(theme)))
                 .push(space_l3())
-                .push(container_l3(self.frequency_free.view()))
+                .push(container_l3(self.frequency_free.view(theme)))
                 .push(space_l3())
-                .push(container_l3(self.frequency_fine.view())),
+                .push(container_l3(self.frequency_fine.view(theme))),
         );
 
-        let envelope = container_l2(self.envelope.view()).height(Length::Units(LINE_HEIGHT * 8));
+        let envelope =
+            container_l2(self.envelope.view(theme)).height(Length::Units(LINE_HEIGHT * 8));
 
         container_l1(
             Row::new()

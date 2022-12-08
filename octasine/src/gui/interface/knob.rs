@@ -25,7 +25,7 @@ enum TickMarkType {
     MinMaxAndDefault,
 }
 
-pub fn master_volume<H>(sync_handle: &H, style: Theme) -> OctaSineKnob<MasterVolumeValue>
+pub fn master_volume<H>(sync_handle: &H) -> OctaSineKnob<MasterVolumeValue>
 where
     H: GuiSyncHandle,
 {
@@ -34,13 +34,12 @@ where
         Parameter::Master(MasterParameter::Volume),
         "VOLUME",
         TickMarkType::MinMaxAndDefault,
-        style,
         // |theme| theme.knob_regular(),
         KnobStyle::Regular,
     )
 }
 
-pub fn master_frequency<H>(sync_handle: &H, style: Theme) -> OctaSineKnob<MasterFrequencyValue>
+pub fn master_frequency<H>(sync_handle: &H) -> OctaSineKnob<MasterFrequencyValue>
 where
     H: GuiSyncHandle,
 {
@@ -49,7 +48,6 @@ where
         Parameter::Master(MasterParameter::Frequency),
         "FREQ",
         TickMarkType::MinMaxAndDefault,
-        style,
         KnobStyle::Bipolar,
     )
 }
@@ -57,7 +55,6 @@ where
 pub fn operator_volume<H>(
     sync_handle: &H,
     operator_index: usize,
-    style: Theme,
 ) -> OctaSineKnob<OperatorVolumeValue>
 where
     H: GuiSyncHandle,
@@ -68,16 +65,11 @@ where
         "VOL",
         TickMarkType::MinMaxAndDefault,
         OperatorVolumeValue::default().to_patch(),
-        style,
         KnobStyle::Regular,
     )
 }
 
-pub fn operator_mix<H>(
-    sync_handle: &H,
-    operator_index: usize,
-    style: Theme,
-) -> OctaSineKnob<OperatorMixOutValue>
+pub fn operator_mix<H>(sync_handle: &H, operator_index: usize) -> OctaSineKnob<OperatorMixOutValue>
 where
     H: GuiSyncHandle,
 {
@@ -87,7 +79,6 @@ where
         "MIX OUT",
         TickMarkType::MinMaxAndDefault,
         OperatorMixOutValue::new(operator_index).to_patch(),
-        style,
         KnobStyle::Regular,
     )
 }
@@ -95,7 +86,6 @@ where
 pub fn operator_panning<H>(
     sync_handle: &H,
     operator_index: usize,
-    style: Theme,
 ) -> OctaSineKnob<OperatorPanningValue>
 where
     H: GuiSyncHandle,
@@ -105,7 +95,6 @@ where
         Parameter::Operator(operator_index as u8, OperatorParameter::Panning),
         "PAN",
         TickMarkType::MinMaxAndDefault,
-        style,
         KnobStyle::Bipolar,
     )
 }
@@ -113,7 +102,6 @@ where
 pub fn operator_mod_index<H>(
     sync_handle: &H,
     operator_index: usize,
-    style: Theme,
 ) -> OctaSineKnob<OperatorModOutValue>
 where
     H: GuiSyncHandle,
@@ -123,7 +111,6 @@ where
         Parameter::Operator(operator_index as u8, OperatorParameter::ModOut),
         "MOD OUT",
         TickMarkType::MinMaxAndDefault,
-        style,
         KnobStyle::Regular,
     )
 }
@@ -131,7 +118,6 @@ where
 pub fn operator_feedback<H>(
     sync_handle: &H,
     operator_index: usize,
-    style: Theme,
 ) -> OctaSineKnob<OperatorFeedbackValue>
 where
     H: GuiSyncHandle,
@@ -141,7 +127,6 @@ where
         Parameter::Operator(operator_index as u8, OperatorParameter::Feedback),
         "FEEDBACK",
         TickMarkType::MinMaxAndDefault,
-        style,
         KnobStyle::Regular,
     )
 }
@@ -149,7 +134,6 @@ where
 pub fn operator_frequency_ratio<H>(
     sync_handle: &H,
     operator_index: usize,
-    style: Theme,
 ) -> OctaSineKnob<OperatorFrequencyRatioValue>
 where
     H: GuiSyncHandle,
@@ -159,7 +143,6 @@ where
         Parameter::Operator(operator_index as u8, OperatorParameter::FrequencyRatio),
         "RATIO",
         TickMarkType::MinMaxAndDefault,
-        style,
         KnobStyle::Bipolar,
     )
 }
@@ -167,7 +150,6 @@ where
 pub fn operator_frequency_free<H>(
     sync_handle: &H,
     operator_index: usize,
-    style: Theme,
 ) -> OctaSineKnob<OperatorFrequencyFreeValue>
 where
     H: GuiSyncHandle,
@@ -177,7 +159,6 @@ where
         Parameter::Operator(operator_index as u8, OperatorParameter::FrequencyFree),
         "FREE",
         TickMarkType::MinMaxAndDefault,
-        style,
         KnobStyle::Bipolar,
     )
 }
@@ -185,7 +166,6 @@ where
 pub fn operator_frequency_fine<H>(
     sync_handle: &H,
     operator_index: usize,
-    style: Theme,
 ) -> OctaSineKnob<OperatorFrequencyFineValue>
 where
     H: GuiSyncHandle,
@@ -195,7 +175,6 @@ where
         Parameter::Operator(operator_index as u8, OperatorParameter::FrequencyFine),
         "FINE",
         TickMarkType::MinMaxAndDefault,
-        style,
         KnobStyle::Bipolar,
     )
 }
@@ -203,7 +182,6 @@ where
 pub fn lfo_frequency_ratio<H>(
     sync_handle: &H,
     lfo_index: usize,
-    style: Theme,
 ) -> OctaSineKnob<LfoFrequencyRatioValue>
 where
     H: GuiSyncHandle,
@@ -213,7 +191,6 @@ where
         Parameter::Lfo(lfo_index as u8, LfoParameter::FrequencyRatio),
         "RATIO",
         TickMarkType::MinMaxAndDefault,
-        style,
         KnobStyle::Bipolar,
     )
 }
@@ -221,7 +198,6 @@ where
 pub fn lfo_frequency_free<H>(
     sync_handle: &H,
     lfo_index: usize,
-    style: Theme,
 ) -> OctaSineKnob<LfoFrequencyFreeValue>
 where
     H: GuiSyncHandle,
@@ -231,16 +207,11 @@ where
         Parameter::Lfo(lfo_index as u8, LfoParameter::FrequencyFree),
         "FREE",
         TickMarkType::MinMaxAndDefault,
-        style,
         KnobStyle::Bipolar,
     )
 }
 
-pub fn lfo_amount<H>(
-    sync_handle: &H,
-    lfo_index: usize,
-    style: Theme,
-) -> OctaSineKnob<LfoAmountValue>
+pub fn lfo_amount<H>(sync_handle: &H, lfo_index: usize) -> OctaSineKnob<LfoAmountValue>
 where
     H: GuiSyncHandle,
 {
@@ -249,13 +220,11 @@ where
         Parameter::Lfo(lfo_index as u8, LfoParameter::Amount),
         "AMOUNT",
         TickMarkType::MinMaxAndDefault,
-        style,
         KnobStyle::Regular,
     )
 }
 
 pub struct OctaSineKnob<P: ParameterValue> {
-    style: Theme,
     text_marks: Option<text_marks::Group>,
     tick_marks: Option<tick_marks::Group>,
     title: String,
@@ -276,7 +245,6 @@ where
         parameter: Parameter,
         title: &str,
         tick_mark_type: TickMarkType,
-        style: Theme,
         knob_style: KnobStyle,
     ) -> Self {
         Self::new_with_default_sync_value(
@@ -285,7 +253,6 @@ where
             title,
             tick_mark_type,
             P::default().to_patch(),
-            style,
             knob_style,
         )
     }
@@ -296,7 +263,6 @@ where
         title: &str,
         tick_mark_type: TickMarkType,
         default_patch_value: f32,
-        style: Theme,
         knob_style: KnobStyle,
     ) -> Self {
         let default_value = Normal::from_clipped(default_patch_value);
@@ -304,7 +270,7 @@ where
             value: Normal::from_clipped(sync_handle.get_parameter(parameter) as f32),
             default: default_value,
         };
-        let value_text = ValueText::new(sync_handle, style, parameter);
+        let value_text = ValueText::new(sync_handle, parameter);
 
         let tick_marks = match tick_mark_type {
             TickMarkType::MinMaxAndDefault => {
@@ -313,7 +279,6 @@ where
         };
 
         Self {
-            style,
             text_marks: None,
             tick_marks: Some(tick_marks),
             title: title.to_string(),
@@ -336,15 +301,10 @@ where
         self.value_text.set_value(value);
     }
 
-    pub fn set_style(&mut self, style: Theme) {
-        self.style = style;
-        self.value_text.style = style;
-    }
-
-    pub fn view<'a>(&'a self) -> Element<Message, Theme> {
+    pub fn view<'a>(&'a self, theme: &Theme) -> Element<Message, Theme> {
         let title = Text::new(self.title.clone())
             .horizontal_alignment(Horizontal::Center)
-            .font(self.style.font_bold())
+            .font(theme.font_bold())
             .height(Length::Units(LINE_HEIGHT));
 
         let parameter = self.parameter;
@@ -376,7 +336,7 @@ where
                 .push(Space::with_height(Length::Units(LINE_HEIGHT)))
                 .push(knob)
                 .push(Space::with_height(Length::Units(LINE_HEIGHT)))
-                .push(self.value_text.view()),
+                .push(self.value_text.view(theme)),
         )
         .height(Length::Units(LINE_HEIGHT * 6))
         .into()

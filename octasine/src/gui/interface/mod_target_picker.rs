@@ -16,32 +16,28 @@ use super::{Message, FONT_SIZE, LINE_HEIGHT};
 pub fn operator_2_target<H: GuiSyncHandle>(
     sync_handle: &H,
     operator_index: usize,
-    style: Theme,
 ) -> ModTargetPicker<Operator2ModulationTargetValue> {
-    ModTargetPicker::new(sync_handle, operator_index, "TARGET", vec![0], style)
+    ModTargetPicker::new(sync_handle, operator_index, "TARGET", vec![0])
 }
 
 pub fn operator_3_target<H: GuiSyncHandle>(
     sync_handle: &H,
     operator_index: usize,
-    style: Theme,
 ) -> ModTargetPicker<Operator3ModulationTargetValue> {
-    ModTargetPicker::new(sync_handle, operator_index, "TARGET", vec![1, 0], style)
+    ModTargetPicker::new(sync_handle, operator_index, "TARGET", vec![1, 0])
 }
 
 pub fn operator_4_target<H: GuiSyncHandle>(
     sync_handle: &H,
     operator_index: usize,
-    style: Theme,
 ) -> ModTargetPicker<Operator4ModulationTargetValue> {
-    ModTargetPicker::new(sync_handle, operator_index, "TARGET", vec![2, 1, 0], style)
+    ModTargetPicker::new(sync_handle, operator_index, "TARGET", vec![2, 1, 0])
 }
 
 #[derive(Debug, Clone)]
 pub struct ModTargetPicker<P> {
     title: String,
     parameter: Parameter,
-    pub style: Theme,
     choices: Vec<usize>,
     parameter_value: P,
 }
@@ -55,7 +51,6 @@ where
         operator_index: usize,
         title: &str,
         choices: Vec<usize>,
-        style: Theme,
     ) -> Self {
         let parameter = Parameter::Operator(operator_index as u8, OperatorParameter::ModTargets);
         let sync_value = sync_handle.get_parameter(parameter);
@@ -63,7 +58,6 @@ where
         Self {
             title: title.into(),
             parameter,
-            style,
             choices,
             parameter_value: P::new_from_patch(sync_value),
         }
@@ -73,10 +67,10 @@ where
         self.parameter_value = P::new_from_patch(value);
     }
 
-    pub fn view(&self) -> Element<Message, Theme> {
+    pub fn view(&self, theme: &Theme) -> Element<Message, Theme> {
         let title = Text::new(self.title.clone())
             .horizontal_alignment(Horizontal::Center)
-            .font(self.style.font_bold())
+            .font(theme.font_bold())
             .height(Length::Units(LINE_HEIGHT));
 
         let mut checkboxes = Column::new().spacing(4);
@@ -96,7 +90,7 @@ where
 
                 Message::ChangeSingleParameterImmediate(parameter, sync)
             })
-            .font(self.style.font_regular())
+            .font(theme.font_regular())
             .size(FONT_SIZE)
             .text_size(FONT_SIZE)
             .spacing(4);

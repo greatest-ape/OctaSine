@@ -26,11 +26,10 @@ pub struct LfoTargetPicker {
     selected: usize,
     lfo_index: usize,
     parameter: Parameter,
-    pub style: Theme,
 }
 
 impl LfoTargetPicker {
-    pub fn new<H: GuiSyncHandle>(sync_handle: &H, lfo_index: usize, style: Theme) -> Self {
+    pub fn new<H: GuiSyncHandle>(sync_handle: &H, lfo_index: usize) -> Self {
         let parameter = Parameter::Lfo(lfo_index as u8, LfoParameter::Target);
         let sync_value = sync_handle.get_parameter(parameter);
         let selected = Self::get_index_from_sync(lfo_index, sync_value);
@@ -49,7 +48,6 @@ impl LfoTargetPicker {
             selected,
             lfo_index,
             parameter,
-            style,
         }
     }
 
@@ -77,7 +75,7 @@ impl LfoTargetPicker {
         self.selected = Self::get_index_from_sync(self.lfo_index, sync_value);
     }
 
-    pub fn view(&self) -> Element<Message, Theme> {
+    pub fn view(&self, theme: &Theme) -> Element<Message, Theme> {
         let lfo_index = self.lfo_index;
         let parameter = self.parameter;
 
@@ -96,9 +94,9 @@ impl LfoTargetPicker {
                 Message::ChangeSingleParameterImmediate(parameter, sync)
             },
         )
-        .font(self.style.font_regular())
+        .font(theme.font_regular())
         .text_size(FONT_SIZE)
-        .padding(self.style.picklist_padding())
+        .padding(theme.picklist_padding())
         .width(Length::Fill)
         .into()
     }

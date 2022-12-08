@@ -4,8 +4,7 @@
 
 * iced 0.5 adjustments
   * Ideally rewrite style handling to be idiomatic
-    * Clear cache on theme change in canvases in nicer way?
-    * Find out if I can avoid storing Theme everywhere
+    * Implement Widget for canvas widgets and clear cache on theme changes?
     * Implement styles for Scrollable
   * How handle external updates when knobs are dragged?
 * Audio gen optimizations

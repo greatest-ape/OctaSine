@@ -69,11 +69,10 @@ impl Display for Patch {
 pub struct PatchPicker {
     patch_options: Vec<Patch>,
     patch_index: usize,
-    pub style: Theme,
 }
 
 impl PatchPicker {
-    pub fn new<H: GuiSyncHandle>(sync_handle: &H, style: Theme) -> Self {
+    pub fn new<H: GuiSyncHandle>(sync_handle: &H) -> Self {
         let (patch_index, patch_names) = sync_handle.get_patches();
 
         let patch_options = patch_names
@@ -85,25 +84,24 @@ impl PatchPicker {
         Self {
             patch_options,
             patch_index,
-            style,
         }
     }
 
-    pub fn view(&self) -> Element<Message, Theme> {
+    pub fn view(&self, theme: &Theme) -> Element<Message, Theme> {
         let patch_picker = PickList::new(
             &self.patch_options[..],
             Some(self.patch_options[self.patch_index].clone()),
             |option| Message::ChangePatch(option.index),
         )
-        .font(self.style.font_regular())
+        .font(theme.font_regular())
         .text_size(FONT_SIZE)
-        .padding(self.style.picklist_padding())
+        .padding(theme.picklist_padding())
         .width(Length::Fill);
 
         let action_picker = PickList::new(ACTIONS, None, Action::to_message)
-            .font(self.style.font_regular())
+            .font(theme.font_regular())
             .text_size(FONT_SIZE)
-            .padding(self.style.picklist_padding())
+            .padding(theme.picklist_padding())
             .placeholder("ACTIONS..")
             .width(Length::Fill);
 
@@ -119,8 +117,8 @@ impl PatchPicker {
                         .size(FONT_SIZE * 3 / 2)
                         .height(Length::Units(FONT_SIZE * 3 / 2))
                         .width(Length::Units(LINE_HEIGHT * 10))
-                        .font(self.style.font_heading())
-                        // .color(self.style.heading_color()) // FIXME
+                        .font(theme.font_heading())
+                        // .color(theme.heading_color()) // FIXME
                         .horizontal_alignment(Horizontal::Center),
                 )
                 .push(Space::with_height(Length::Units(

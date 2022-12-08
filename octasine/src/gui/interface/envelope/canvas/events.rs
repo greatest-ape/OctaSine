@@ -21,7 +21,7 @@ impl EnvelopeCanvas {
                 state.last_cursor_position.y - bounds.y,
             );
 
-            if self.release_dragger.hitbox.contains(relative_position)
+            if self.release_dragger.cursor_overlaps(relative_position)
                 && !state.release_dragger_status.is_dragging()
             {
                 state.release_dragger_status = EnvelopeDraggerStatus::Dragging {
@@ -29,7 +29,7 @@ impl EnvelopeCanvas {
                     original_duration: self.release_duration,
                     original_end_value: 0.0,
                 };
-            } else if self.decay_dragger.hitbox.contains(relative_position)
+            } else if self.decay_dragger.cursor_overlaps(relative_position)
                 && !state.decay_dragger_status.is_dragging()
             {
                 state.decay_dragger_status = EnvelopeDraggerStatus::Dragging {
@@ -37,7 +37,7 @@ impl EnvelopeCanvas {
                     original_duration: self.decay_duration,
                     original_end_value: self.sustain_volume,
                 };
-            } else if self.attack_dragger.hitbox.contains(relative_position)
+            } else if self.attack_dragger.cursor_overlaps(relative_position)
                 && !state.attack_dragger_status.is_dragging()
             {
                 state.attack_dragger_status = EnvelopeDraggerStatus::Dragging {
@@ -92,7 +92,7 @@ impl EnvelopeCanvas {
 
         let relative_position = Point::new(x - bounds.x, y - bounds.y);
 
-        let attack_hitbox_hit = self.attack_dragger.hitbox.contains(relative_position);
+        let attack_hitbox_hit = self.attack_dragger.cursor_overlaps(relative_position);
 
         match state.attack_dragger_status {
             EnvelopeDraggerStatus::Normal => {
@@ -128,7 +128,7 @@ impl EnvelopeCanvas {
             }
         }
 
-        let decay_hitbox_hit = self.decay_dragger.hitbox.contains(relative_position);
+        let decay_hitbox_hit = self.decay_dragger.cursor_overlaps(relative_position);
 
         if decay_hitbox_hit {
             state
@@ -173,7 +173,7 @@ impl EnvelopeCanvas {
             }
         }
 
-        let release_hitbox_hit = self.release_dragger.hitbox.contains(relative_position);
+        let release_hitbox_hit = self.release_dragger.cursor_overlaps(relative_position);
 
         if release_hitbox_hit {
             state

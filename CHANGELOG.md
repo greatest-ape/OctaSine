@@ -13,6 +13,10 @@ All notable changes to this project will be documented in this file.
 - Upgrade to [iced](https://github.com/iced-rs/iced) v0.6, including making
   large changes to [iced_baseview](https://github.com/BillyDM/iced_baseview).
 
+### Fixed
+
+- Improve detection of when mouse cursor hovers over envelope draggers
+
 ## 0.8.1 - 2022-10-29
 
 This release features native Apple Silicon support, performance improvements

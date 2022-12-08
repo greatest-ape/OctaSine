@@ -50,13 +50,13 @@ tinyfiledialogs = { version = "3", optional = true }
 
 [dependencies.iced_audio]
 git = "https://github.com/iced-rs/iced_audio"
-rev = "4863b18"
+rev = "03ff8e9"
 default-features = false
 optional = true
 
 [dependencies.iced_baseview]
 git = "https://github.com/BillyDM/iced_baseview.git"
-rev = "ad13282"
+rev = "e29fd62"
 default-features = false
 features = ["canvas"]
 optional = true

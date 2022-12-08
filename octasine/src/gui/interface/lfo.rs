@@ -23,7 +23,6 @@ use super::{Message, FONT_SIZE, LINE_HEIGHT};
 
 pub struct LfoWidgets {
     index: usize,
-    style: Theme,
     pub target: LfoTargetPicker,
     pub shape: WavePicker<LfoShapeValue>,
     pub mode: BooleanButton,
@@ -35,40 +34,34 @@ pub struct LfoWidgets {
 }
 
 impl LfoWidgets {
-    pub fn new<H: GuiSyncHandle>(sync_handle: &H, lfo_index: usize, style: Theme) -> Self {
+    pub fn new<H: GuiSyncHandle>(sync_handle: &H, lfo_index: usize) -> Self {
         let lfo_wave_type_parameter = Parameter::Lfo(lfo_index as u8, LfoParameter::Shape);
 
         Self {
             index: lfo_index,
-            style,
-            target: LfoTargetPicker::new(sync_handle, lfo_index, style),
-            shape: WavePicker::new(sync_handle, lfo_wave_type_parameter, style, "SHAPE"),
+            target: LfoTargetPicker::new(sync_handle, lfo_index),
+            shape: WavePicker::new(sync_handle, lfo_wave_type_parameter, "SHAPE"),
             mode: lfo_mode_button(sync_handle, lfo_index),
             bpm_sync: lfo_bpm_sync_button(sync_handle, lfo_index),
-            frequency_ratio: knob::lfo_frequency_ratio(sync_handle, lfo_index, style),
-            frequency_free: knob::lfo_frequency_free(sync_handle, lfo_index, style),
-            amount: knob::lfo_amount(sync_handle, lfo_index, style),
+            frequency_ratio: knob::lfo_frequency_ratio(sync_handle, lfo_index),
+            frequency_free: knob::lfo_frequency_free(sync_handle, lfo_index),
+            amount: knob::lfo_amount(sync_handle, lfo_index),
             active: lfo_active_button(sync_handle, lfo_index),
         }
     }
 
-    pub fn set_style(&mut self, style: Theme) {
-        self.style = style;
-        self.target.style = style;
-        self.shape.set_style(style);
+    pub fn theme_changed(&mut self) {
         self.mode.theme_changed();
         self.bpm_sync.theme_changed();
-        self.frequency_ratio.set_style(style);
-        self.frequency_free.set_style(style);
-        self.amount.set_style(style);
         self.active.theme_changed();
+        self.shape.theme_changed();
     }
 
-    pub fn view(&self) -> Element<Message, Theme> {
+    pub fn view(&self, theme: &Theme) -> Element<Message, Theme> {
         let title = Text::new(format!("LFO {}", self.index + 1))
             .size(FONT_SIZE + FONT_SIZE / 2)
             .height(Length::Units(FONT_SIZE + FONT_SIZE / 2))
-            .font(self.style.font_heading())
+            .font(theme.font_heading())
             .width(Length::Units(LINE_HEIGHT * 9))
             .horizontal_alignment(Horizontal::Center)
             .vertical_alignment(Vertical::Center);
@@ -78,18 +71,18 @@ impl LfoWidgets {
             "Toggle BPM sync. When turned off, base frequency is 1 Hz",
             Position::Top,
         )
-        .style(self.style.tooltip())
-        .font(self.style.font_regular())
-        .padding(self.style.tooltip_padding());
+        .style(theme.tooltip())
+        .font(theme.font_regular())
+        .padding(theme.tooltip_padding());
 
         let mode = Tooltip::new(self.mode.view(), "Toggle oneshot mode", Position::Top)
-            .style(self.style.tooltip())
-            .font(self.style.font_regular())
-            .padding(self.style.tooltip_padding());
+            .style(theme.tooltip())
+            .font(theme.font_regular())
+            .padding(theme.tooltip_padding());
         let active = Tooltip::new(self.active.view(), "Toggle mute", Position::Top)
-            .style(self.style.tooltip())
-            .font(self.style.font_regular())
-            .padding(self.style.tooltip_padding());
+            .style(theme.tooltip())
+            .font(theme.font_regular())
+            .padding(theme.tooltip_padding());
 
         container_l1(
             Row::new()
@@ -108,20 +101,20 @@ impl LfoWidgets {
                             )
                             .push(title)
                             .push(Space::with_height(Length::Units(LINE_HEIGHT)))
-                            .push(Row::new().push(self.target.view())),
+                            .push(Row::new().push(self.target.view(theme))),
                     )
                     .width(Length::Units(LINE_HEIGHT * 9)),
                 )
                 .push(Space::with_width(Length::Units(LINE_HEIGHT)))
                 .push(container_l2(
                     Row::new()
-                        .push(container_l3(self.shape.view()))
+                        .push(container_l3(self.shape.view(theme)))
                         .push(space_l3())
-                        .push(container_l3(self.amount.view()))
+                        .push(container_l3(self.amount.view(theme)))
                         .push(space_l3())
-                        .push(container_l3(self.frequency_ratio.view()))
+                        .push(container_l3(self.frequency_ratio.view(theme)))
                         .push(space_l3())
-                        .push(container_l3(self.frequency_free.view())),
+                        .push(container_l3(self.frequency_free.view(theme))),
                 )),
         )
         .into()
