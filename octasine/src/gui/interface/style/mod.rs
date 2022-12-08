@@ -17,7 +17,7 @@ pub mod text;
 pub mod wave_display;
 pub mod wave_picker;
 
-use iced_baseview::{Font};
+use iced_baseview::Font;
 use serde::{Deserialize, Serialize};
 
 const OPEN_SANS_REGULAR: Font = Font::External {
@@ -81,9 +81,5 @@ impl Theme {
 
     pub fn picklist_padding(&self) -> u16 {
         3
-    }
-
-    pub fn tooltip(&self) -> container::ContainerStyle {
-        container::ContainerStyle::Tooltip
     }
 }

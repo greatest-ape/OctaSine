@@ -1,5 +1,5 @@
 use iced_baseview::widget::tooltip::Position;
-use iced_baseview::widget::{Container, Tooltip};
+use iced_baseview::widget::Container;
 use iced_baseview::{
     alignment::Horizontal, alignment::Vertical, widget::Column, widget::Row, widget::Space,
     widget::Text, Element, Length,
@@ -14,7 +14,7 @@ use crate::sync::GuiSyncHandle;
 use super::boolean_button::{
     lfo_active_button, lfo_bpm_sync_button, lfo_mode_button, BooleanButton,
 };
-use super::common::{container_l1, container_l2, container_l3, space_l3};
+use super::common::{container_l1, container_l2, container_l3, space_l3, tooltip};
 use super::knob::{self, OctaSineKnob};
 use super::lfo_target_picker::LfoTargetPicker;
 use super::style::Theme;
@@ -66,23 +66,20 @@ impl LfoWidgets {
             .horizontal_alignment(Horizontal::Center)
             .vertical_alignment(Vertical::Center);
 
-        let bpm_sync = Tooltip::new(
-            self.bpm_sync.view(),
+        let bpm_sync = tooltip(
+            theme,
             "Toggle BPM sync. When turned off, base frequency is 1 Hz",
             Position::Top,
-        )
-        .style(theme.tooltip())
-        .font(theme.font_regular())
-        .padding(theme.tooltip_padding());
+            self.bpm_sync.view(),
+        );
 
-        let mode = Tooltip::new(self.mode.view(), "Toggle oneshot mode", Position::Top)
-            .style(theme.tooltip())
-            .font(theme.font_regular())
-            .padding(theme.tooltip_padding());
-        let active = Tooltip::new(self.active.view(), "Toggle mute", Position::Top)
-            .style(theme.tooltip())
-            .font(theme.font_regular())
-            .padding(theme.tooltip_padding());
+        let mode = tooltip(
+            theme,
+            "Toggle oneshot mode",
+            Position::Top,
+            self.mode.view(),
+        );
+        let active = tooltip(theme, "Toggle mute", Position::Top, self.active.view());
 
         container_l1(
             Row::new()

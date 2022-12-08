@@ -2,11 +2,11 @@ pub mod canvas;
 
 use iced_baseview::alignment::Horizontal;
 use iced_baseview::widget::tooltip::Position;
+use iced_baseview::Font;
 use iced_baseview::{
     widget::Button, widget::Column, widget::Row, widget::Space, widget::Text, Alignment, Element,
     Length,
 };
-use iced_baseview::{widget::Tooltip, Font};
 
 use crate::parameters::list::{OperatorParameter, Parameter};
 use crate::parameters::operator_envelope::OperatorEnvelopeGroupValue;
@@ -14,7 +14,7 @@ use crate::parameters::ParameterValue;
 use crate::sync::GuiSyncHandle;
 
 use super::boolean_button::{envelope_group_a_button, envelope_group_b_button, BooleanButton};
-use super::common::container_l3;
+use super::common::{container_l3, tooltip};
 use super::style::Theme;
 use super::{Message, FONT_SIZE, LINE_HEIGHT};
 
@@ -81,21 +81,17 @@ impl Envelope {
         let group_synced: Element<Message, Theme> = if self.group_synced {
             Space::with_width(Length::Units(1)).into()
         } else {
-            let text = Text::new("≠")
-                .font(theme.font_bold())
-                .size(FONT_SIZE)
-                .height(Length::Units(LINE_HEIGHT))
-                .width(Length::Units(6))
-                .horizontal_alignment(Horizontal::Center);
-
-            Tooltip::new(
-                text,
+            tooltip(
+                theme,
                 "DAW automation may have affected group members",
                 Position::Top,
+                Text::new("≠")
+                    .font(theme.font_bold())
+                    .size(FONT_SIZE)
+                    .height(Length::Units(LINE_HEIGHT))
+                    .width(Length::Units(6))
+                    .horizontal_alignment(Horizontal::Center),
             )
-            .style(theme.tooltip())
-            .font(theme.font_regular())
-            .padding(theme.tooltip_padding())
             .into()
         };
 
@@ -150,23 +146,18 @@ impl Envelope {
             "Distribute view to other envelopes",
         );
 
-        let group_a = Tooltip::new(
-            self.group_a.view(),
+        let group_a = tooltip(
+            theme,
             "Toggle group A membership",
             Position::Top,
-        )
-        .style(theme.tooltip())
-        .font(theme.font_regular())
-        .padding(theme.tooltip_padding());
-
-        let group_b = Tooltip::new(
-            self.group_b.view(),
+            self.group_a.view(),
+        );
+        let group_b = tooltip(
+            theme,
             "Toggle group B membership",
             Position::Top,
-        )
-        .style(theme.tooltip())
-        .font(theme.font_regular())
-        .padding(theme.tooltip_padding());
+            self.group_b.view(),
+        );
 
         Row::new()
             .push(container_l3(self.widget.view()))
@@ -208,7 +199,10 @@ fn button_with_tooltip<'a>(
     button_message: Message,
     tooltip_text: &'static str,
 ) -> Element<'a, Message, Theme> {
-    Tooltip::new(
+    tooltip(
+        theme,
+        tooltip_text,
+        Position::Top,
         Button::new(
             Text::new(button_text)
                 .font(button_font)
@@ -218,11 +212,6 @@ fn button_with_tooltip<'a>(
         )
         .on_press(button_message)
         .padding(theme.button_padding()),
-        tooltip_text,
-        Position::Top,
     )
-    .style(theme.tooltip())
-    .font(theme.font_regular())
-    .padding(theme.tooltip_padding())
     .into()
 }

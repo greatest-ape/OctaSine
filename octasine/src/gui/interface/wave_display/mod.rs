@@ -6,9 +6,7 @@ use iced_baseview::widget::canvas::{
     path, Cache, Canvas, Cursor, Frame, Geometry, Path, Program, Stroke,
 };
 use iced_baseview::widget::tooltip::Position;
-use iced_baseview::{
-    widget::Row, widget::Space, widget::Tooltip, Color, Element, Length, Point, Rectangle, Size,
-};
+use iced_baseview::{widget::Row, widget::Space, Color, Element, Length, Point, Rectangle, Size};
 
 use crate::parameters::list::OperatorParameter;
 use crate::parameters::operator_active::OperatorActiveValue;
@@ -27,6 +25,7 @@ use crate::parameters::operator_wave_type::OperatorWaveTypeValue;
 use crate::parameters::{Parameter, ParameterValue};
 use crate::sync::GuiSyncHandle;
 
+use super::common::tooltip;
 use super::style::Theme;
 use super::{Message, LINE_HEIGHT};
 
@@ -271,16 +270,19 @@ impl WaveDisplay {
     }
 
     pub fn view(&self, theme: &Theme) -> Element<Message, Theme> {
-        let canvas_left = Tooltip::new(self.canvas_left.view(), "Left channel", Position::Bottom)
-            .style(theme.tooltip())
-            .font(theme.font_regular())
-            .padding(theme.tooltip_padding());
+        let canvas_left = tooltip(
+            theme,
+            "Left channel",
+            Position::Bottom,
+            self.canvas_left.view(),
+        );
 
-        let canvas_right =
-            Tooltip::new(self.canvas_right.view(), "Right channel", Position::Bottom)
-                .style(theme.tooltip())
-                .font(theme.font_regular())
-                .padding(theme.tooltip_padding());
+        let canvas_right = tooltip(
+            theme,
+            "Right channel",
+            Position::Bottom,
+            self.canvas_right.view(),
+        );
 
         Row::new()
             .push(canvas_left)
