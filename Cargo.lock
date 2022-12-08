@@ -1237,7 +1237,7 @@ checksum = "dfa686283ad6dd069f105e5ab091b04c62850d3e4cf5d67debad1933f55023df"
 [[package]]
 name = "iced_audio"
 version = "0.8.0"
-source = "git+https://github.com/iced-rs/iced_audio?rev=4863b18#4863b1881acf09a5a10fd6f193511dae08f3bd59"
+source = "git+https://github.com/iced-rs/iced_audio?rev=03ff8e9#03ff8e94d63eafcc8a7d34569763a4c741688730"
 dependencies = [
  "iced_core",
  "iced_glow",
@@ -1249,7 +1249,7 @@ dependencies = [
 [[package]]
 name = "iced_baseview"
 version = "0.0.3"
-source = "git+https://github.com/BillyDM/iced_baseview.git?rev=ad13282#ad13282bbd851d69e9e62733fe192679968c2b0a"
+source = "git+https://github.com/BillyDM/iced_baseview.git?rev=e29fd62#e29fd629176eff0dc68559a38a6cd8d21f2d270e"
 dependencies = [
  "baseview",
  "cfg-if",
@@ -1264,7 +1264,6 @@ dependencies = [
  "raw-window-handle 0.4.3",
  "raw-window-handle 0.5.0",
  "thiserror",
- "winapi",
  "window_clipboard",
 ]
 
@@ -1293,9 +1292,9 @@ dependencies = [
 
 [[package]]
 name = "iced_glow"
-version = "0.4.1"
+version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "27e2c14ab495501e9aba09fe28fd9b2873b91ffaaf8173a5bcda4ca1b8597ff2"
+checksum = "f2e4818f4036cdcc7568d4071c0f333181c58aef974dcfe89ef226067eccd3d1"
 dependencies = [
  "bytemuck",
  "euclid",
@@ -1309,9 +1308,9 @@ dependencies = [
 
 [[package]]
 name = "iced_graphics"
-version = "0.4.0"
+version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c0bed954a9e61e665c6c965b56a0152d87288088736d1ca99c96b166875c5707"
+checksum = "bef7125f24a46fc5aa4c3c4d900c6edee79cbbe1b7ef4747bd923fd1469190bc"
 dependencies = [
  "bitflags",
  "bytemuck",
@@ -1326,9 +1325,9 @@ dependencies = [
 
 [[package]]
 name = "iced_native"
-version = "0.6.1"
+version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "61964acdd967f58ee6194b0b746c5656826f1e4aafc8f12de28ad4f7ced8ec0b"
+checksum = "5748f6d4fa3a8e31ba642cf2e159100f68c2fbc3b2973db8d8035526164d6685"
 dependencies = [
  "iced_core",
  "iced_futures",
@@ -1351,9 +1350,9 @@ dependencies = [
 
 [[package]]
 name = "iced_wgpu"
-version = "0.6.1"
+version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "132e359d07022fb1066cb48f6ab6aba9b1a48c2f51060e7a9929b09851ab45b7"
+checksum = "bb12ce0339a85a62fdb1ea3ce5b4fda1b5b2ab447b39c3982c30f697cc9d6c16"
 dependencies = [
  "bitflags",
  "bytemuck",
