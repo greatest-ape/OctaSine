@@ -119,14 +119,13 @@ impl OperatorData {
 
 pub struct WaveDisplay {
     operator_index: usize,
-    style: Theme,
     canvas_left: WaveDisplayCanvas,
     canvas_right: WaveDisplayCanvas,
     operators: [OperatorData; 4],
 }
 
 impl WaveDisplay {
-    pub fn new<H: GuiSyncHandle>(sync_handle: &H, operator_index: usize, style: Theme) -> Self {
+    pub fn new<H: GuiSyncHandle>(sync_handle: &H, operator_index: usize) -> Self {
         let mut operators = ::std::array::from_fn(OperatorData::new);
 
         for (i, operator) in operators.iter_mut().enumerate() {
@@ -185,7 +184,6 @@ impl WaveDisplay {
 
         let mut display = Self {
             operator_index,
-            style,
             canvas_left: WaveDisplayCanvas::new(canvas_points),
             canvas_right: WaveDisplayCanvas::new(canvas_points),
             operators,
@@ -255,9 +253,7 @@ impl WaveDisplay {
         self.recalculate_canvas_points();
     }
 
-    pub fn set_style(&mut self, style: Theme) {
-        self.style = style;
-
+    pub fn theme_changed(&mut self) {
         self.canvas_left.theme_changed();
         self.canvas_right.theme_changed();
     }
@@ -274,17 +270,17 @@ impl WaveDisplay {
         self.canvas_right.cache.clear();
     }
 
-    pub fn view(&self) -> Element<Message, Theme> {
+    pub fn view(&self, theme: &Theme) -> Element<Message, Theme> {
         let canvas_left = Tooltip::new(self.canvas_left.view(), "Left channel", Position::Bottom)
-            .style(self.style.tooltip())
-            .font(self.style.font_regular())
-            .padding(self.style.tooltip_padding());
+            .style(theme.tooltip())
+            .font(theme.font_regular())
+            .padding(theme.tooltip_padding());
 
         let canvas_right =
             Tooltip::new(self.canvas_right.view(), "Right channel", Position::Bottom)
-                .style(self.style.tooltip())
-                .font(self.style.font_regular())
-                .padding(self.style.tooltip_padding());
+                .style(theme.tooltip())
+                .font(theme.font_regular())
+                .padding(theme.tooltip_padding());
 
         Row::new()
             .push(canvas_left)

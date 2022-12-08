@@ -20,7 +20,6 @@ use super::{
 };
 
 pub struct CornerWidgets {
-    pub style: Theme,
     pub master_volume: OctaSineKnob<MasterVolumeValue>,
     pub master_frequency: OctaSineKnob<MasterFrequencyValue>,
     pub modulation_matrix: ModulationMatrix,
@@ -29,15 +28,12 @@ pub struct CornerWidgets {
 
 impl CornerWidgets {
     pub fn new<H: GuiSyncHandle>(sync_handle: &H) -> Self {
-        let style = sync_handle.get_gui_settings().theme;
-
-        let master_volume = knob::master_volume(sync_handle, style);
-        let master_frequency = knob::master_frequency(sync_handle, style);
+        let master_volume = knob::master_volume(sync_handle);
+        let master_frequency = knob::master_frequency(sync_handle);
         let modulation_matrix = ModulationMatrix::new(sync_handle);
-        let patch_picker = PatchPicker::new(sync_handle, style);
+        let patch_picker = PatchPicker::new(sync_handle);
 
         Self {
-            style,
             master_volume,
             master_frequency,
             modulation_matrix,
@@ -45,15 +41,11 @@ impl CornerWidgets {
         }
     }
 
-    pub fn set_style(&mut self, style: Theme) {
-        self.style = style;
-        self.master_volume.set_style(style);
-        self.master_frequency.set_style(style);
+    pub fn theme_changed(&mut self) {
         self.modulation_matrix.theme_changed();
-        self.patch_picker.style = style;
     }
 
-    pub fn view(&self) -> Element<'_, Message, Theme> {
+    pub fn view(&self, theme: &Theme) -> Element<'_, Message, Theme> {
         let mod_matrix = Container::new(
             Column::new()
                 .push(Space::with_height(Length::Units(LINE_HEIGHT)))
@@ -72,9 +64,9 @@ impl CornerWidgets {
 
         let master = container_l1(container_l2(
             Row::new()
-                .push(container_l3(self.master_volume.view()))
+                .push(container_l3(self.master_volume.view(theme)))
                 .push(space_l3())
-                .push(container_l3(self.master_frequency.view()))
+                .push(container_l3(self.master_frequency.view(theme)))
                 .push(Space::with_width(Length::Units(LINE_HEIGHT * 3))), // Extend to end
         ));
 
@@ -82,31 +74,31 @@ impl CornerWidgets {
             let theme_button = Tooltip::new(
                 Button::new(
                     Text::new("THEME")
-                        .font(self.style.font_regular())
+                        .font(theme.font_regular())
                         .height(Length::Units(LINE_HEIGHT)),
                 )
                 .on_press(Message::SwitchTheme)
-                .padding(self.style.button_padding()),
+                .padding(theme.button_padding()),
                 "Switch color theme",
                 Position::Top,
             )
-            .style(self.style.tooltip());
+            .style(theme.tooltip());
 
             let info_button = Tooltip::new(
                 Button::new(
                     Text::new("INFO")
-                        .font(self.style.font_regular())
+                        .font(theme.font_regular())
                         .height(Length::Units(LINE_HEIGHT)),
                 )
                 .on_press(Message::NoOp)
-                .padding(self.style.button_padding()),
+                .padding(theme.button_padding()),
                 get_info_text(),
                 Position::FollowCursor,
             )
-            .style(self.style.tooltip());
+            .style(theme.tooltip());
 
             // Helps with issues arising from use of different font weights
-            let logo_button_space = match self.style {
+            let logo_button_space = match theme {
                 Theme::Dark => 3,
                 Theme::Light => 2,
             };
@@ -121,7 +113,7 @@ impl CornerWidgets {
                             .size(FONT_SIZE * 3 / 2)
                             .height(Length::Units(FONT_SIZE * 3 / 2))
                             .width(Length::Units(LINE_HEIGHT * 8))
-                            .font(self.style.font_heading())
+                            .font(theme.font_heading())
                             .horizontal_alignment(Horizontal::Center),
                     )
                     .push(Space::with_height(Length::Units(LINE_HEIGHT)))
@@ -147,7 +139,7 @@ impl CornerWidgets {
             .push(Space::with_height(Length::Units(LINE_HEIGHT)))
             .push(
                 Row::new()
-                    .push(triple_container(self.patch_picker.view()))
+                    .push(triple_container(self.patch_picker.view(theme)))
                     .push(Space::with_width(Length::Units(LINE_HEIGHT)))
                     .push(triple_container(logo)),
             )

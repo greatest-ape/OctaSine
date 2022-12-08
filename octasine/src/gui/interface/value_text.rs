@@ -15,19 +15,17 @@ use super::{style::Theme, GuiSyncHandle, Message};
 pub struct ValueText<P: ParameterValue> {
     parameter: Parameter,
     text: String,
-    pub style: Theme,
     phantom_data: PhantomData<P>,
 }
 
 impl<P: ParameterValue> ValueText<P> {
-    pub fn new<H: GuiSyncHandle>(sync_handle: &H, style: Theme, parameter: Parameter) -> Self {
+    pub fn new<H: GuiSyncHandle>(sync_handle: &H, parameter: Parameter) -> Self {
         let value = sync_handle.get_parameter(parameter);
         let text = P::new_from_patch(value).get_formatted();
 
         Self {
             parameter,
             text,
-            style,
             phantom_data: Default::default(),
         }
     }
@@ -36,12 +34,12 @@ impl<P: ParameterValue> ValueText<P> {
         self.text = P::new_from_patch(value).get_formatted();
     }
 
-    pub fn view(&self) -> Element<Message, Theme> {
+    pub fn view(&self, theme: &Theme) -> Element<Message, Theme> {
         Button::new(
             Text::new(self.text.clone())
                 .horizontal_alignment(Horizontal::Center)
                 .width(Length::Fill)
-                .font(self.style.font_regular())
+                .font(theme.font_regular())
                 .height(Length::Units(LINE_HEIGHT)),
         )
         .padding(0)

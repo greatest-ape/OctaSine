@@ -119,7 +119,7 @@ pub enum Message {
 
 pub struct OctaSineIcedApplication<H: GuiSyncHandle> {
     sync_handle: H,
-    style: style::Theme,
+    theme: style::Theme,
     operator_1: OperatorWidgets,
     operator_2: OperatorWidgets,
     operator_3: OperatorWidgets,
@@ -275,7 +275,7 @@ impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {
     fn save_settings(&self) {
         let settings = Settings {
             schema_version: 1,
-            gui: GuiSettings { theme: self.style },
+            gui: GuiSettings { theme: self.theme },
         };
 
         if let Err(err) = settings.save() {
@@ -408,21 +408,21 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
     fn new(sync_handle: Self::Flags) -> (Self, Command<Self::Message>) {
         let style = sync_handle.get_gui_settings().theme;
 
-        let operator_1 = OperatorWidgets::new(&sync_handle, 0, style);
-        let operator_2 = OperatorWidgets::new(&sync_handle, 1, style);
-        let operator_3 = OperatorWidgets::new(&sync_handle, 2, style);
-        let operator_4 = OperatorWidgets::new(&sync_handle, 3, style);
+        let operator_1 = OperatorWidgets::new(&sync_handle, 0);
+        let operator_2 = OperatorWidgets::new(&sync_handle, 1);
+        let operator_3 = OperatorWidgets::new(&sync_handle, 2);
+        let operator_4 = OperatorWidgets::new(&sync_handle, 3);
 
-        let lfo_1 = LfoWidgets::new(&sync_handle, 0, style);
-        let lfo_2 = LfoWidgets::new(&sync_handle, 1, style);
-        let lfo_3 = LfoWidgets::new(&sync_handle, 2, style);
-        let lfo_4 = LfoWidgets::new(&sync_handle, 3, style);
+        let lfo_1 = LfoWidgets::new(&sync_handle, 0);
+        let lfo_2 = LfoWidgets::new(&sync_handle, 1);
+        let lfo_3 = LfoWidgets::new(&sync_handle, 2);
+        let lfo_4 = LfoWidgets::new(&sync_handle, 3);
 
         let corner = CornerWidgets::new(&sync_handle);
 
         let app = Self {
             sync_handle,
-            style,
+            theme: style,
             operator_1,
             operator_2,
             operator_3,
@@ -476,7 +476,7 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
         match message {
             Message::Frame => {
                 if self.sync_handle.have_patches_changed() {
-                    self.corner.patch_picker = PatchPicker::new(&self.sync_handle, self.style);
+                    self.corner.patch_picker = PatchPicker::new(&self.sync_handle);
                 }
                 self.update_widgets_from_parameters();
             }
@@ -563,22 +563,22 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                 self.sync_handle.set_patch_index(index);
             }
             Message::SwitchTheme => {
-                let style = if let Theme::Light = self.style {
+                let style = if let Theme::Light = self.theme {
                     Theme::Dark
                 } else {
                     Theme::Light
                 };
 
-                self.style = style;
-                self.corner.set_style(style);
-                self.operator_1.set_style(style);
-                self.operator_2.set_style(style);
-                self.operator_3.set_style(style);
-                self.operator_4.set_style(style);
-                self.lfo_1.set_style(style);
-                self.lfo_2.set_style(style);
-                self.lfo_3.set_style(style);
-                self.lfo_4.set_style(style);
+                self.theme = style;
+                self.corner.theme_changed();
+                self.lfo_1.theme_changed();
+                self.lfo_2.theme_changed();
+                self.lfo_3.theme_changed();
+                self.lfo_4.theme_changed();
+                self.operator_1.theme_changed();
+                self.operator_2.theme_changed();
+                self.operator_3.theme_changed();
+                self.operator_4.theme_changed();
 
                 self.save_settings();
             }
@@ -794,31 +794,31 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
         Container::new(
             Column::new()
                 .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
-                .push(self.operator_4.view())
+                .push(self.operator_4.view(&self.theme))
                 .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
-                .push(self.operator_3.view())
+                .push(self.operator_3.view(&self.theme))
                 .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
-                .push(self.operator_2.view())
+                .push(self.operator_2.view(&self.theme))
                 .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
-                .push(self.operator_1.view())
+                .push(self.operator_1.view(&self.theme))
                 .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
                 .push(
                     Row::new()
                         .push(
                             Column::new()
-                                .push(self.lfo_4.view())
+                                .push(self.lfo_4.view(&self.theme))
                                 .push(Space::with_height(Length::Units(LINE_HEIGHT)))
-                                .push(self.lfo_3.view()),
+                                .push(self.lfo_3.view(&self.theme)),
                         )
                         .push(Space::with_width(Length::Units(LINE_HEIGHT)))
                         .push(
                             Column::new()
-                                .push(self.lfo_2.view())
+                                .push(self.lfo_2.view(&self.theme))
                                 .push(Space::with_height(Length::Units(LINE_HEIGHT)))
-                                .push(self.lfo_1.view()),
+                                .push(self.lfo_1.view(&self.theme)),
                         )
                         .push(Space::with_width(Length::Units(LINE_HEIGHT)))
-                        .push(self.corner.view()),
+                        .push(self.corner.view(&self.theme)),
                 ),
         )
         .height(Length::Fill)
@@ -831,7 +831,7 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
     }
 
     fn theme(&self) -> Self::Theme {
-        self.style
+        self.theme
     }
 }
 

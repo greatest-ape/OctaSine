@@ -36,7 +36,6 @@ pub trait StyleSheet {
 
 pub struct WavePicker<P: ParameterValue> {
     title: String,
-    style: Theme,
     shape: P::Value,
     canvas: WavePickerCanvas<P>,
     value_text: ValueText<P>,
@@ -47,30 +46,23 @@ where
     P: ParameterValue + Copy + 'static,
     P::Value: CalculateCurve,
 {
-    pub fn new<H: GuiSyncHandle>(
-        sync_handle: &H,
-        parameter: Parameter,
-        style: Theme,
-        title: &str,
-    ) -> Self {
+    pub fn new<H: GuiSyncHandle>(sync_handle: &H, parameter: Parameter, title: &str) -> Self {
         let value = P::new_from_patch(sync_handle.get_parameter(parameter));
         let shape = value.get();
 
         let canvas = WavePickerCanvas::new(parameter, shape);
-        let value_text = ValueText::new(sync_handle, style, parameter);
+        let value_text = ValueText::new(sync_handle, parameter);
 
         Self {
             title: title.into(),
-            style,
             shape,
             canvas,
             value_text,
         }
     }
 
-    pub fn set_style(&mut self, style: Theme) {
+    pub fn theme_changed(&mut self) {
         self.canvas.theme_changed();
-        self.value_text.style = style;
     }
 
     pub fn set_value(&mut self, value: f32) {
@@ -84,10 +76,10 @@ where
         }
     }
 
-    pub fn view(&self) -> Element<Message, Theme> {
+    pub fn view(&self, theme: &Theme) -> Element<Message, Theme> {
         let title = Text::new(&self.title)
             .horizontal_alignment(Horizontal::Center)
-            .font(self.style.font_bold())
+            .font(theme.font_bold())
             .height(Length::Units(LINE_HEIGHT));
 
         Column::new()
@@ -97,7 +89,7 @@ where
             .push(Space::with_height(Length::Units(LINE_HEIGHT)))
             .push(self.canvas.view())
             .push(Space::with_height(Length::Units(LINE_HEIGHT)))
-            .push(self.value_text.view())
+            .push(self.value_text.view(theme))
             .into()
     }
 }

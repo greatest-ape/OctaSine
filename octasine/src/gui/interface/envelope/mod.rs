@@ -20,7 +20,6 @@ use super::{Message, FONT_SIZE, LINE_HEIGHT};
 
 pub struct Envelope {
     operator_index: usize,
-    style: Theme,
     group: OperatorEnvelopeGroupValue,
     group_synced: bool,
     pub widget: canvas::EnvelopeCanvas,
@@ -29,7 +28,7 @@ pub struct Envelope {
 }
 
 impl Envelope {
-    pub fn new<H: GuiSyncHandle>(sync_handle: &H, operator_index: usize, style: Theme) -> Self {
+    pub fn new<H: GuiSyncHandle>(sync_handle: &H, operator_index: usize) -> Self {
         let group = OperatorEnvelopeGroupValue::new_from_patch(sync_handle.get_parameter(
             Parameter::Operator(operator_index as u8, OperatorParameter::EnvelopeLockGroup),
         ));
@@ -42,7 +41,6 @@ impl Envelope {
 
         Self {
             operator_index,
-            style,
             group,
             group_synced,
             widget: canvas::EnvelopeCanvas::new(sync_handle, operator_index),
@@ -51,8 +49,7 @@ impl Envelope {
         }
     }
 
-    pub fn set_style(&mut self, style: Theme) {
-        self.style = style;
+    pub fn theme_changed(&mut self) {
         self.widget.theme_changed();
         self.group_a.theme_changed();
         self.group_b.theme_changed();
@@ -80,12 +77,12 @@ impl Envelope {
         group == self.group && group != OperatorEnvelopeGroupValue::Off
     }
 
-    pub fn view(&self) -> Element<Message, Theme> {
+    pub fn view(&self, theme: &Theme) -> Element<Message, Theme> {
         let group_synced: Element<Message, Theme> = if self.group_synced {
             Space::with_width(Length::Units(1)).into()
         } else {
             let text = Text::new("≠")
-                .font(self.style.font_bold())
+                .font(theme.font_bold())
                 .size(FONT_SIZE)
                 .height(Length::Units(LINE_HEIGHT))
                 .width(Length::Units(6))
@@ -96,9 +93,9 @@ impl Envelope {
                 "DAW automation may have affected group members",
                 Position::Top,
             )
-            .style(self.style.tooltip())
-            .font(self.style.font_regular())
-            .padding(self.style.tooltip_padding())
+            .style(theme.tooltip())
+            .font(theme.font_regular())
+            .padding(theme.tooltip_padding())
             .into()
         };
 
@@ -107,8 +104,8 @@ impl Envelope {
         let zoom_to_fit_data = self.widget.get_zoom_to_fit_data();
 
         let zoom_out = button_with_tooltip(
-            self.style,
-            self.style.font_extra_bold(),
+            theme,
+            theme.font_extra_bold(),
             "−",
             Message::EnvelopeChangeViewport {
                 operator_index: self.operator_index as u8,
@@ -119,8 +116,8 @@ impl Envelope {
         );
 
         let zoom_in = button_with_tooltip(
-            self.style,
-            self.style.font_extra_bold(),
+            theme,
+            theme.font_extra_bold(),
             "+",
             Message::EnvelopeChangeViewport {
                 operator_index: self.operator_index as u8,
@@ -131,8 +128,8 @@ impl Envelope {
         );
 
         let fit = button_with_tooltip(
-            self.style,
-            self.style.font_regular(),
+            theme,
+            theme.font_regular(),
             "F",
             Message::EnvelopeChangeViewport {
                 operator_index: self.operator_index as u8,
@@ -143,8 +140,8 @@ impl Envelope {
         );
 
         let distribute = button_with_tooltip(
-            self.style,
-            self.style.font_regular(),
+            theme,
+            theme.font_regular(),
             "D",
             Message::EnvelopeDistributeViewports {
                 viewport_factor: self.widget.get_viewport_factor(),
@@ -158,18 +155,18 @@ impl Envelope {
             "Toggle group A membership",
             Position::Top,
         )
-        .style(self.style.tooltip())
-        .font(self.style.font_regular())
-        .padding(self.style.tooltip_padding());
+        .style(theme.tooltip())
+        .font(theme.font_regular())
+        .padding(theme.tooltip_padding());
 
         let group_b = Tooltip::new(
             self.group_b.view(),
             "Toggle group B membership",
             Position::Top,
         )
-        .style(self.style.tooltip())
-        .font(self.style.font_regular())
-        .padding(self.style.tooltip_padding());
+        .style(theme.tooltip())
+        .font(theme.font_regular())
+        .padding(theme.tooltip_padding());
 
         Row::new()
             .push(container_l3(self.widget.view()))
@@ -205,7 +202,7 @@ impl Envelope {
 }
 
 fn button_with_tooltip<'a>(
-    style: Theme,
+    theme: &Theme,
     button_font: Font,
     button_text: &'static str,
     button_message: Message,
@@ -220,12 +217,12 @@ fn button_with_tooltip<'a>(
                 .horizontal_alignment(Horizontal::Center),
         )
         .on_press(button_message)
-        .padding(style.button_padding()),
+        .padding(theme.button_padding()),
         tooltip_text,
         Position::Top,
     )
-    .style(style.tooltip())
-    .font(style.font_regular())
-    .padding(style.tooltip_padding())
+    .style(theme.tooltip())
+    .font(theme.font_regular())
+    .padding(theme.tooltip_padding())
     .into()
 }
