@@ -1,5 +1,5 @@
 use iced_baseview::widget::canvas::{path, Frame, Path, Stroke};
-use iced_baseview::{Color, Point, Rectangle, Size, Vector};
+use iced_baseview::{Color, Point, Size, Vector};
 
 use crate::audio::voices::envelopes::VoiceOperatorVolumeEnvelope;
 use crate::audio::voices::log10_table::Log10Table;
@@ -192,17 +192,11 @@ impl EnvelopeDraggerStatus {
 pub struct EnvelopeDragger {
     center: Point,
     radius: f32,
-    pub hitbox: Rectangle,
 }
 
 impl EnvelopeDragger {
     pub fn set_center(&mut self, center: Point) {
         self.center = center;
-
-        self.hitbox.width = self.radius * 2.0;
-        self.hitbox.height = self.radius * 2.0;
-        self.hitbox.x = (center.x - self.radius / 2.0).max(0.0);
-        self.hitbox.y = (center.y - self.radius / 2.0).max(0.0);
     }
 
     pub fn draw(&self, frame: &mut Frame, theme: &Theme, status: &EnvelopeDraggerStatus) {
@@ -239,6 +233,12 @@ impl EnvelopeDragger {
 
         frame.stroke(&circle_path, stroke);
     }
+
+    pub fn cursor_overlaps(&self, cursor_position: Point) -> bool {
+        let diff = cursor_position - self.center;
+
+        (diff.x.abs() <= self.radius) & (diff.y.abs() <= self.radius)
+    }
 }
 
 impl Default for EnvelopeDragger {
@@ -246,7 +246,6 @@ impl Default for EnvelopeDragger {
         Self {
             center: Point::default(),
             radius: DRAGGER_RADIUS,
-            hitbox: Rectangle::default(),
         }
     }
 }
