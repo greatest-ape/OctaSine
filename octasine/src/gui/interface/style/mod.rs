@@ -37,17 +37,12 @@ const OPEN_SANS_EXTRA_BOLD: Font = Font::External {
     bytes: super::OPEN_SANS_BYTES_EXTRA_BOLD,
 };
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum Theme {
+    #[default]
     Light,
     Dark,
-}
-
-impl Default for Theme {
-    fn default() -> Theme {
-        Theme::Light
-    }
 }
 
 impl Theme {
