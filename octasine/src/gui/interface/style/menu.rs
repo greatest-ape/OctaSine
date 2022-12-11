@@ -16,7 +16,7 @@ impl StyleSheet for Theme {
                     selected_background: SURFACE_HOVER.into(),
                     selected_text_color: TEXT,
                     border_width: 1.0,
-                    border_color: BORDER,
+                    border_color: SURFACE,
                     border_radius: 3.0,
                 }
             }

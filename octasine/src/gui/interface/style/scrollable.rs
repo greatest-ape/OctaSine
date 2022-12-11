@@ -15,10 +15,10 @@ impl StyleSheet for Theme {
                 use super::colors::light::*;
 
                 Scrollbar {
-                    background: GRAY_800.into(),
+                    background: GRAY_700.into(),
                     border_radius: 3.0,
                     border_width: 1.0,
-                    border_color: BORDER,
+                    border_color: Color::TRANSPARENT,
                     scroller: Scroller {
                         color: GRAY_450,
                         border_radius: 3.0,
