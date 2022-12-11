@@ -27,34 +27,27 @@ impl StyleSheet for Theme {
                     },
                 }
             }
-            Self::Dark => Scrollbar {
-                background: Color::WHITE.into(),
-                border_radius: 0.0,
-                border_width: 0.0,
-                border_color: Color::WHITE,
-                scroller: Scroller {
-                    color: Color::WHITE,
-                    border_radius: 0.0,
-                    border_width: 0.0,
-                    border_color: Color::WHITE,
-                },
-            },
+            Self::Dark => {
+                use super::colors::dark::*;
+
+                Scrollbar {
+                    background: SURFACE.into(),
+                    border_radius: 3.0,
+                    border_width: 1.0,
+                    border_color: SURFACE,
+                    scroller: Scroller {
+                        color: GRAY_700,
+                        border_radius: 3.0,
+                        border_width: 1.0,
+                        border_color: Color::TRANSPARENT,
+                    },
+                }
+            }
         }
     }
 
     fn dragging(&self, style: &Self::Style) -> Scrollbar {
-        let mut appearance = self.hovered(style);
-
-        match self {
-            Self::Light => (),
-            Self::Dark => {
-                use super::colors::dark::*;
-
-                appearance.scroller.color = SURFACE_HOVER;
-            }
-        }
-
-        appearance
+        self.hovered(style)
     }
 
     fn hovered(&self, style: &Self::Style) -> Scrollbar {
@@ -69,7 +62,7 @@ impl StyleSheet for Theme {
             Self::Dark => {
                 use super::colors::dark::*;
 
-                appearance.scroller.color = SURFACE_HOVER;
+                appearance.scroller.color = GRAY_800;
             }
         }
 

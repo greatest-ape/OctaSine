@@ -28,9 +28,9 @@ impl StyleSheet for Theme {
                     selected_background: SURFACE_HOVER.into(),
                     text_color: TEXT,
                     selected_text_color: HOVERED,
-                    border_width: 0.0,
-                    border_color: TEXT,
-                    border_radius: 0.0, // FIXME
+                    border_width: 1.0,
+                    border_color: GRAY_300,
+                    border_radius: 3.0, // FIXME
                 }
             }
         }
