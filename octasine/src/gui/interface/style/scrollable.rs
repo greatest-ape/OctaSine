@@ -15,12 +15,12 @@ impl StyleSheet for Theme {
                 use super::colors::light::*;
 
                 Scrollbar {
-                    background: SURFACE.into(),
+                    background: GRAY_800.into(),
                     border_radius: 3.0,
                     border_width: 1.0,
                     border_color: BORDER,
                     scroller: Scroller {
-                        color: GRAY_600,
+                        color: GRAY_450,
                         border_radius: 3.0,
                         border_width: 1.0,
                         border_color: Color::TRANSPARENT,

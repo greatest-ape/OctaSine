@@ -7,7 +7,8 @@ pub const BLUE: Color = hex!(0x00, 0x78, 0xEF);
 pub const GREEN: Color = hex!(0x00, 0xEF, 0x78);
 
 pub const GRAY_300: Color = hex_gray!(0x60);
-pub const GRAY_400: Color = hex_gray!(0x80);
+pub const GRAY_400: Color = hex_gray!(0x77);
+pub const GRAY_450: Color = hex_gray!(0x87);
 pub const GRAY_500: Color = hex_gray!(0xA0);
 pub const GRAY_600: Color = hex_gray!(0xB0);
 pub const GRAY_700: Color = hex_gray!(0xD0);
