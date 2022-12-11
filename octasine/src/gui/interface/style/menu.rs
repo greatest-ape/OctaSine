@@ -17,7 +17,7 @@ impl StyleSheet for Theme {
                     selected_text_color: TEXT,
                     border_width: 1.0,
                     border_color: BORDER,
-                    border_radius: 0.0, // FIXME
+                    border_radius: 3.0,
                 }
             }
             Self::Dark => {
@@ -30,7 +30,7 @@ impl StyleSheet for Theme {
                     selected_text_color: HOVERED,
                     border_width: 1.0,
                     border_color: GRAY_300,
-                    border_radius: 3.0, // FIXME
+                    border_radius: 3.0,
                 }
             }
         }
