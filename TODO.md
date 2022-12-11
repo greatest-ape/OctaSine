@@ -3,9 +3,7 @@
 ## High priority
 
 * iced 0.5 adjustments
-  * Ideally rewrite style handling to be idiomatic
-    * Implement Widget for canvas widgets and clear cache on theme changes?
-    * Implement styles for Scrollable
+  * Implement Widget for canvas widgets and clear cache on theme changes?
   * How handle external updates when knobs are dragged?
 * Audio gen optimizations
   * Use bhaskara_constant_power_panning?
