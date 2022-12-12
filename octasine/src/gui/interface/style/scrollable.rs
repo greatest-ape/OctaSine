@@ -10,25 +10,62 @@ impl StyleSheet for Theme {
     type Style = ();
 
     fn active(&self, _style: &Self::Style) -> Scrollbar {
-        Scrollbar {
-            background: Color::WHITE.into(),
-            border_radius: 0.0,
-            border_width: 0.0,
-            border_color: Color::WHITE,
-            scroller: Scroller {
-                color: Color::WHITE,
-                border_radius: 0.0,
-                border_width: 0.0,
-                border_color: Color::WHITE,
-            },
+        match self {
+            Self::Light => {
+                use super::colors::light::*;
+
+                Scrollbar {
+                    background: GRAY_700.into(),
+                    border_radius: 3.0,
+                    border_width: 1.0,
+                    border_color: Color::TRANSPARENT,
+                    scroller: Scroller {
+                        color: GRAY_450,
+                        border_radius: 3.0,
+                        border_width: 1.0,
+                        border_color: Color::TRANSPARENT,
+                    },
+                }
+            }
+            Self::Dark => {
+                use super::colors::dark::*;
+
+                Scrollbar {
+                    background: SURFACE.into(),
+                    border_radius: 3.0,
+                    border_width: 1.0,
+                    border_color: SURFACE,
+                    scroller: Scroller {
+                        color: GRAY_700,
+                        border_radius: 3.0,
+                        border_width: 1.0,
+                        border_color: Color::TRANSPARENT,
+                    },
+                }
+            }
         }
     }
 
     fn dragging(&self, style: &Self::Style) -> Scrollbar {
-        self.active(style)
+        self.hovered(style)
     }
 
     fn hovered(&self, style: &Self::Style) -> Scrollbar {
-        self.active(style)
+        let mut appearance = self.active(style);
+
+        match self {
+            Self::Light => {
+                use super::colors::light::*;
+
+                appearance.scroller.color = GRAY_400;
+            }
+            Self::Dark => {
+                use super::colors::dark::*;
+
+                appearance.scroller.color = GRAY_800;
+            }
+        }
+
+        appearance
     }
 }
