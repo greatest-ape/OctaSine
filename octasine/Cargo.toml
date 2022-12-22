@@ -50,7 +50,7 @@ tinyfiledialogs = { version = "3", optional = true }
 
 [dependencies.iced_audio]
 git = "https://github.com/iced-rs/iced_audio"
-rev = "03ff8e9"
+rev = "aa259dc"
 default-features = false
 optional = true
 

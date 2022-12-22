@@ -1237,7 +1237,7 @@ checksum = "dfa686283ad6dd069f105e5ab091b04c62850d3e4cf5d67debad1933f55023df"
 [[package]]
 name = "iced_audio"
 version = "0.8.0"
-source = "git+https://github.com/iced-rs/iced_audio?rev=03ff8e9#03ff8e94d63eafcc8a7d34569763a4c741688730"
+source = "git+https://github.com/iced-rs/iced_audio?rev=aa259dc#aa259dc89fbdfaf7e21fd7483aedc8e0edbe1efd"
 dependencies = [
  "iced_core",
  "iced_glow",
