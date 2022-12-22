@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## Unreleased
+## 0.8.2 - 2022-12-22
 
 ### Added
 
@@ -10,8 +10,8 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- Upgrade to [iced](https://github.com/iced-rs/iced) v0.6, including making
-  large changes to [iced_baseview](https://github.com/BillyDM/iced_baseview).
+- Upgrade to [iced](https://github.com/iced-rs/iced) v0.6, including partly
+  rewriting [iced_baseview](https://github.com/BillyDM/iced_baseview).
 
 ### Fixed
 

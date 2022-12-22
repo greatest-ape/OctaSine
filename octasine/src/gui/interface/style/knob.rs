@@ -1,4 +1,4 @@
-use iced_audio::style::knob::{Appearance, StyleSheet, TickMarksStyle};
+use iced_audio::style::knob::{Appearance, StyleSheet, TickMarksAppearance};
 
 use super::Theme;
 
@@ -14,7 +14,7 @@ impl StyleSheet for Theme {
 
     fn active(&self, style: &Self::Style) -> Appearance {
         use iced_audio::knob::{
-            ArcBipolarStyle, ArcStyle, LineCap, LineNotch, NotchShape, StyleLength,
+            ArcBipolarAppearance, ArcAppearance, LineCap, LineNotch, NotchShape, StyleLength,
         };
 
         let (filled_color, empty_color, notch_color) = match self {
@@ -42,14 +42,14 @@ impl StyleSheet for Theme {
         let arc_cap = LineCap::Square;
 
         match style {
-            Self::Style::Regular => Appearance::Arc(ArcStyle {
+            Self::Style::Regular => Appearance::Arc(ArcAppearance {
                 width: arc_width,
                 empty_color,
                 filled_color,
                 cap: arc_cap,
                 notch,
             }),
-            Self::Style::Bipolar => Appearance::ArcBipolar(ArcBipolarStyle {
+            Self::Style::Bipolar => Appearance::ArcBipolar(ArcBipolarAppearance {
                 width: arc_width,
                 empty_color,
                 left_filled_color: filled_color,
@@ -69,8 +69,8 @@ impl StyleSheet for Theme {
         self.active(style)
     }
 
-    fn tick_marks_style(&self, _style: &Self::Style) -> Option<TickMarksStyle> {
-        use iced_audio::style::tick_marks::{Shape, Style};
+    fn tick_marks_appearance(&self, _style: &Self::Style) -> Option<TickMarksAppearance> {
+        use iced_audio::style::tick_marks::{Shape, Appearance};
 
         let (tier_1, tier_2) = match self {
             Self::Dark => {
@@ -85,8 +85,8 @@ impl StyleSheet for Theme {
             }
         };
 
-        Some(TickMarksStyle {
-            style: Style {
+        Some(TickMarksAppearance {
+            style: Appearance {
                 tier_1: Shape::Circle {
                     diameter: 3.0,
                     color: tier_1,
