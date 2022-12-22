@@ -16,12 +16,12 @@ impl StyleSheet for Theme {
 
                 Scrollbar {
                     background: GRAY_700.into(),
-                    border_radius: 3.0,
+                    border_radius: 5.0,
                     border_width: 1.0,
                     border_color: Color::TRANSPARENT,
                     scroller: Scroller {
                         color: GRAY_450,
-                        border_radius: 3.0,
+                        border_radius: 5.0,
                         border_width: 1.0,
                         border_color: Color::TRANSPARENT,
                     },
@@ -31,13 +31,13 @@ impl StyleSheet for Theme {
                 use super::colors::dark::*;
 
                 Scrollbar {
-                    background: SURFACE.into(),
-                    border_radius: 3.0,
+                    background: GRAY_400.into(),
+                    border_radius: 5.0,
                     border_width: 1.0,
-                    border_color: SURFACE,
+                    border_color: GRAY_300,
                     scroller: Scroller {
-                        color: GRAY_700,
-                        border_radius: 3.0,
+                        color: GRAY_600,
+                        border_radius: 5.0,
                         border_width: 1.0,
                         border_color: Color::TRANSPARENT,
                     },
