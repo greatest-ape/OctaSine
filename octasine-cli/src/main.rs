@@ -85,8 +85,9 @@ fn main() -> anyhow::Result<()> {
         Commands::RunGui => {
             use std::sync::Arc;
 
-            use octasine::{gui::Gui, sync::SyncState};
+            use octasine::{plugin::vst2::editor::Editor, sync::SyncState};
             use simplelog::{ConfigBuilder, LevelFilter, SimpleLogger};
+            use vst::plugin::HostCallback;
 
             SimpleLogger::init(
                 LevelFilter::Info,
@@ -97,9 +98,9 @@ fn main() -> anyhow::Result<()> {
             )
             .unwrap();
 
-            let sync_state = Arc::new(SyncState::new(None));
+            let sync_state = Arc::new(SyncState::<HostCallback>::new(None));
 
-            Gui::open_blocking(sync_state);
+            Editor::open_blocking(sync_state);
 
             Ok(())
         }

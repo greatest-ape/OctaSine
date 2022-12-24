@@ -2,6 +2,8 @@ use std::sync::atomic::{AtomicU64, Ordering};
 
 use array_init::array_init;
 
+use crate::{common::IndexMap, parameters::ParameterKey};
+
 use super::parameters::PatchParameter;
 
 const NUM_ATOMIC_U64S: usize = 2;
@@ -46,7 +48,7 @@ impl ParameterChangeInfo {
     /// Get all changed parameters
     pub fn get_changed_parameters(
         &self,
-        parameters: &[PatchParameter],
+        parameters: &IndexMap<ParameterKey, PatchParameter>,
     ) -> Option<[Option<f32>; MAX_NUM_PARAMETERS]> {
         let mut no_changes = true;
         let mut changed = [0u64; NUM_ATOMIC_U64S];
@@ -72,7 +74,7 @@ impl ParameterChangeInfo {
             let changed = changed[u64_index];
 
             if (changed >> u64_bit) & 1 == 1 {
-                if let Some(p) = parameters.get(parameter_index) {
+                if let Some((_, p)) = parameters.get_index(parameter_index) {
                     *c = Some(p.get_value());
                 }
             }
@@ -108,8 +110,8 @@ mod tests {
 
         assert!(c.get_changed_parameters(&patch_parameters).is_none());
 
-        patch_parameters.get(0).unwrap().set_value(1.0);
-        patch_parameters.get(10).unwrap().set_value(1.0);
+        patch_parameters.get_index(0).unwrap().1.set_value(1.0);
+        patch_parameters.get_index(10).unwrap().1.set_value(1.0);
         c.mark_as_changed(0);
         c.mark_as_changed(10);
 
@@ -134,9 +136,9 @@ mod tests {
         assert!(indeces[0] == 0);
         assert!(indeces[1] == 10);
 
-        patch_parameters.get(1).unwrap().set_value(1.0);
-        patch_parameters.get(4).unwrap().set_value(1.0);
-        patch_parameters.get(5).unwrap().set_value(1.0);
+        patch_parameters.get_index(1).unwrap().1.set_value(1.0);
+        patch_parameters.get_index(4).unwrap().1.set_value(1.0);
+        patch_parameters.get_index(5).unwrap().1.set_value(1.0);
         c.mark_as_changed(1);
         c.mark_as_changed(4);
         c.mark_as_changed(5);
@@ -177,13 +179,13 @@ mod tests {
 
             fn f(
                 c: &ParameterChangeInfo,
-                preset_parameters: &Vec<PatchParameter>,
+                preset_parameters: &IndexMap<ParameterKey, PatchParameter>,
                 data: &[(usize, f32)],
             ) -> bool {
                 let mut set_parameters = HashMap::new();
 
                 for (index, value) in data.iter() {
-                    if let Some(p) = preset_parameters.get(*index) {
+                    if let Some((_, p)) = preset_parameters.get_index(*index) {
                         p.set_value(*value + 1.43432);
                         p.set_value(*value + 5.55);
                         p.set_value(*value);

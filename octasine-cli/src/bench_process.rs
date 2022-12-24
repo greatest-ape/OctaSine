@@ -2,14 +2,15 @@ use std::collections::HashSet;
 use std::time::Instant;
 
 use colored::*;
+use octasine::common::{NoteEvent, NoteEventInner};
+use octasine::utils::update_audio_parameters;
 use sha2::{Digest, Sha256};
-use vst::event::MidiEvent;
 use vst::plugin::PluginParameters;
 
 use octasine::audio::gen::AudioGen;
 use octasine::parameters::{OperatorParameter, Parameter, PARAMETERS};
+use octasine::plugin::vst2::OctaSine;
 use octasine::simd::{Simd, SimdPackedDouble};
-use octasine::OctaSine;
 
 /// Benchmark OctaSine process functions and check output sample accuracy
 pub fn run() -> anyhow::Result<()> {
@@ -88,27 +89,21 @@ fn benchmark<A: AudioGen + Simd>(name: &str, expected_hash: &str) -> (bool, f32)
         .map(|p| p.to_index() as usize)
         .collect();
 
-    let key_on_events: Vec<MidiEvent> = (0..NUM_VOICES)
-        .map(|i| MidiEvent {
-            data: [144, i as u8, 100 + i as u8],
-            delta_frames: (i % BUFFER_LEN) as i32,
-            live: false,
-            note_length: None,
-            note_offset: None,
-            detune: 0,
-            note_off_velocity: 0,
+    let key_on_events: Vec<NoteEvent> = (0..NUM_VOICES)
+        .map(|i| NoteEvent {
+            delta_frames: (i % BUFFER_LEN) as u32,
+            event: NoteEventInner::Midi {
+                data: [144, i as u8, 100 + i as u8],
+            },
         })
         .collect();
 
-    let key_off_events: Vec<MidiEvent> = (0..NUM_VOICES)
-        .map(|i| MidiEvent {
-            data: [128, i as u8, 0],
-            delta_frames: (i % BUFFER_LEN) as i32,
-            live: false,
-            note_length: None,
-            note_offset: None,
-            detune: 0,
-            note_off_velocity: 0,
+    let key_off_events: Vec<NoteEvent> = (0..NUM_VOICES)
+        .map(|i| NoteEvent {
+            delta_frames: (i % BUFFER_LEN) as u32,
+            event: NoteEventInner::Midi {
+                data: [128, i as u8, 0],
+            },
         })
         .collect();
 
@@ -149,12 +144,12 @@ fn benchmark<A: AudioGen + Simd>(name: &str, expected_hash: &str) -> (bool, f32)
             0 => {
                 octasine
                     .audio
-                    .enqueue_midi_events(key_on_events.iter().copied());
+                    .enqueue_note_events(key_on_events.iter().copied());
             }
             256 => {
                 octasine
                     .audio
-                    .enqueue_midi_events(key_off_events.iter().copied());
+                    .enqueue_note_events(key_off_events.iter().copied());
             }
             _ => {}
         }
@@ -169,7 +164,7 @@ fn benchmark<A: AudioGen + Simd>(name: &str, expected_hash: &str) -> (bool, f32)
             }
         }
 
-        octasine.update_audio_parameters();
+        update_audio_parameters(&mut octasine.audio, &octasine.sync);
 
         for (j, (lefts, rights)) in lefts
             .chunks_exact_mut(A::Pd::SAMPLES)

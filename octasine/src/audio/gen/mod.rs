@@ -3,7 +3,6 @@ pub mod lfo;
 use std::f64::consts::TAU;
 
 use duplicate::duplicate_item;
-use vst::buffer::AudioBuffer;
 
 use crate::audio::parameters::{common::AudioParameter, OperatorAudioParameters};
 use crate::audio::voices::log10_table::Log10Table;
@@ -113,13 +112,11 @@ impl<const W: usize> Default for VoiceOperatorData<W> {
 #[inline]
 pub fn process_f32_runtime_select(
     audio_state: &mut AudioState,
-    audio_buffer: &mut AudioBuffer<f32>,
+    lefts: &mut [f32],
+    rights: &mut [f32],
+    frame_offset: usize,
 ) {
-    let num_samples = audio_buffer.samples();
-
-    let mut outputs = audio_buffer.split().1;
-    let lefts = outputs.get_mut(0);
-    let rights = outputs.get_mut(1);
+    let num_samples = lefts.len();
 
     let mut position = 0;
 
@@ -136,7 +133,7 @@ pub fn process_f32_runtime_select(
                         audio_state,
                         &mut lefts[position..new_position],
                         &mut rights[position..new_position],
-                        position,
+                        frame_offset + position,
                     );
 
                     position = new_position;
@@ -149,7 +146,7 @@ pub fn process_f32_runtime_select(
                         audio_state,
                         &mut lefts[position..new_position],
                         &mut rights[position..new_position],
-                        position,
+                        frame_offset + position,
                     );
 
                     position = new_position;
@@ -162,7 +159,7 @@ pub fn process_f32_runtime_select(
                         audio_state,
                         &mut lefts[position..new_position],
                         &mut rights[position..new_position],
-                        position,
+                        frame_offset + position,
                     );
 
                     position = new_position;
@@ -217,7 +214,7 @@ mod gen {
             assert_eq!(lefts.len(), Pd::SAMPLES);
             assert_eq!(rights.len(), Pd::SAMPLES);
 
-            if audio_state.pending_midi_events.is_empty()
+            if audio_state.pending_note_events.is_empty()
                 && !audio_state.voices.iter().any(|v| v.active)
             {
                 for (l, r) in lefts.iter_mut().zip(rights.iter_mut()) {
@@ -368,7 +365,7 @@ mod gen {
                     )
                 }
 
-                voice.deactivate_if_envelopes_ended();
+                voice.deactivate_if_envelopes_ended(position + sample_index);
             }
         }
 

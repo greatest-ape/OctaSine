@@ -2,7 +2,7 @@ use arrayvec::ArrayVec;
 use iced_baseview::widget::canvas::{path, Frame, Path, Stroke};
 use iced_baseview::Point;
 
-use crate::gui::interface::style::Theme;
+use crate::gui::style::Theme;
 
 use super::StyleSheet;
 

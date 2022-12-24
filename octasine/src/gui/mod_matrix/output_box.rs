@@ -1,8 +1,8 @@
 use iced_baseview::widget::canvas::{Frame, Path, Stroke};
 use iced_baseview::{Point, Size};
 
-use crate::gui::interface::style::Theme;
-use crate::gui::interface::SnapPoint;
+use crate::gui::style::Theme;
+use crate::gui::SnapPoint;
 
 use super::{common::*, StyleSheet, OPERATOR_BOX_SCALE};
 

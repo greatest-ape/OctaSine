@@ -1,6 +1,6 @@
 use iced_baseview::Color;
 
-use crate::gui::interface::boolean_button::{Appearance, StyleSheet};
+use crate::gui::boolean_button::{Appearance, StyleSheet};
 
 use super::Theme;
 

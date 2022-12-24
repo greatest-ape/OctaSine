@@ -1,8 +1,8 @@
 use iced_baseview::widget::canvas::{Frame, Path, Stroke, Text};
 use iced_baseview::{Point, Size, Vector};
 
-use crate::gui::interface::style::Theme;
-use crate::gui::interface::{SnapPoint, FONT_SIZE};
+use crate::gui::style::Theme;
+use crate::gui::{SnapPoint, FONT_SIZE};
 
 use super::common::*;
 use super::EnvelopeCanvas;

@@ -1,6 +1,6 @@
 use iced_baseview::Color;
 
-use crate::gui::interface::envelope::canvas::{Appearance, StyleSheet};
+use crate::gui::envelope::canvas::{Appearance, StyleSheet};
 
 use super::Theme;
 

@@ -1,6 +1,6 @@
 use iced_baseview::Color;
 
-use crate::gui::interface::wave_display::{Appearance, StyleSheet};
+use crate::gui::wave_picker::{Appearance, StyleSheet};
 
 use super::Theme;
 
@@ -11,18 +11,22 @@ impl StyleSheet for Theme {
                 use super::colors::light::*;
                 Appearance {
                     background_color: SURFACE,
-                    border_color: BORDER,
+                    border_color_active: BORDER,
+                    border_color_hovered: BORDER,
                     middle_line_color: GRAY_600,
-                    wave_line_color: BLUE,
+                    shape_line_color_active: BLUE,
+                    shape_line_color_hovered: BLUE,
                 }
             }
             Self::Dark => {
                 use super::colors::dark::*;
                 Appearance {
                     background_color: Color::TRANSPARENT.into(),
-                    border_color: BORDER_DARK,
+                    border_color_active: BORDER,
+                    border_color_hovered: BORDER_HOVERED,
                     middle_line_color: GRAY_400,
-                    wave_line_color: BLUE,
+                    shape_line_color_active: BLUE,
+                    shape_line_color_hovered: BLUE,
                 }
             }
         }

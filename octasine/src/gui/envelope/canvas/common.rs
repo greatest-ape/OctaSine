@@ -3,8 +3,8 @@ use iced_baseview::{Color, Point, Size, Vector};
 
 use crate::audio::voices::envelopes::VoiceOperatorVolumeEnvelope;
 use crate::audio::voices::log10_table::Log10Table;
-use crate::gui::interface::style::Theme;
-use crate::gui::interface::{SnapPoint, LINE_HEIGHT};
+use crate::gui::style::Theme;
+use crate::gui::{SnapPoint, LINE_HEIGHT};
 
 pub const WIDTH: u16 = LINE_HEIGHT * 19;
 pub const HEIGHT: u16 = LINE_HEIGHT * 5;

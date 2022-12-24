@@ -6,13 +6,15 @@ use std::sync::{
 use arc_swap::ArcSwap;
 use array_init::array_init;
 
+use crate::{common::IndexMap, parameters::ParameterKey};
+
 use super::change_info::{ParameterChangeInfo, MAX_NUM_PARAMETERS};
 use super::parameters::PatchParameter;
 use super::serde::*;
 
 pub struct Patch {
     name: ArcSwap<String>,
-    pub parameters: Vec<PatchParameter>,
+    pub parameters: IndexMap<ParameterKey, PatchParameter>,
 }
 
 impl Default for Patch {
@@ -22,7 +24,7 @@ impl Default for Patch {
 }
 
 impl Patch {
-    pub fn new(name: &str, parameters: Vec<PatchParameter>) -> Self {
+    pub fn new(name: &str, parameters: IndexMap<ParameterKey, PatchParameter>) -> Self {
         Self {
             name: ArcSwap::new(Arc::new(Self::process_name(name))),
             parameters,
@@ -56,7 +58,7 @@ impl Patch {
     pub fn import_serde_preset(&self, serde_preset: &SerdePatch) {
         self.set_name(serde_preset.name.clone());
 
-        for (index, parameter) in self.parameters.iter().enumerate() {
+        for (index, parameter) in self.parameters.values().enumerate() {
             if let Some(import_parameter) = serde_preset.parameters.get(index) {
                 parameter.set_value(import_parameter.value_float.as_f32())
             }
@@ -79,13 +81,13 @@ impl Patch {
         SerdePatch::new(self)
     }
 
-    fn set_from_patch_parameters(&self, parameters: &[PatchParameter]) {
+    fn set_from_patch_parameters(&self, parameters: &IndexMap<ParameterKey, PatchParameter>) {
         self.set_name("-".into());
 
         for (parameter, default_value) in self
             .parameters
-            .iter()
-            .zip(parameters.iter().map(PatchParameter::get_value))
+            .values()
+            .zip(parameters.values().map(PatchParameter::get_value))
         {
             parameter.set_value(default_value);
         }
@@ -96,7 +98,7 @@ pub struct PatchBank {
     pub patches: [Patch; 128],
     patch_index: AtomicUsize,
     parameter_change_info_audio: ParameterChangeInfo,
-    parameter_change_info_gui: ParameterChangeInfo,
+    pub parameter_change_info_gui: ParameterChangeInfo,
     patches_changed: AtomicBool,
 }
 
@@ -107,7 +109,7 @@ impl Default for PatchBank {
 }
 
 impl PatchBank {
-    pub fn new(parameters: fn() -> Vec<PatchParameter>) -> Self {
+    pub fn new(parameters: fn() -> IndexMap<ParameterKey, PatchParameter>) -> Self {
         Self {
             patches: array_init(|_| Patch::new("-", parameters())),
             patch_index: AtomicUsize::new(0),
@@ -119,8 +121,25 @@ impl PatchBank {
 
     // Utils
 
-    fn get_parameter(&self, index: usize) -> Option<&PatchParameter> {
-        self.get_current_patch().parameters.get(index)
+    pub fn get_parameter_by_index(&self, index: usize) -> Option<&PatchParameter> {
+        self.get_current_patch()
+            .parameters
+            .get_index(index)
+            .map(|(_, v)| v)
+    }
+
+    pub fn get_parameter_by_key(&self, key: &ParameterKey) -> Option<&PatchParameter> {
+        self.get_current_patch().parameters.get(key)
+    }
+
+    pub fn get_index_and_parameter_by_key(
+        &self,
+        key: &ParameterKey,
+    ) -> Option<(usize, &PatchParameter)> {
+        self.get_current_patch()
+            .parameters
+            .get_full(key)
+            .map(|(i, _, p)| (i, p))
     }
 
     fn get_current_patch(&self) -> &Patch {
@@ -206,36 +225,36 @@ impl PatchBank {
     pub fn get_parameter_value(&self, index: usize) -> Option<f32> {
         self.get_current_patch()
             .parameters
-            .get(index)
-            .map(|p| p.get_value())
+            .get_index(index)
+            .map(|(_, p)| p.get_value())
     }
 
     pub fn get_parameter_value_text(&self, index: usize) -> Option<String> {
         self.get_current_patch()
             .parameters
-            .get(index)
-            .map(|p| (p.get_value_text()))
+            .get_index(index)
+            .map(|(_, p)| (p.get_value_text()))
     }
 
     pub fn get_parameter_name(&self, index: usize) -> Option<String> {
         self.get_current_patch()
             .parameters
-            .get(index)
-            .map(|p| p.name.clone())
+            .get_index(index)
+            .map(|(_, p)| p.name.clone())
     }
 
     pub fn format_parameter_value(&self, index: usize, value: f32) -> Option<String> {
         self.get_current_patch()
             .parameters
-            .get(index)
-            .map(|p| (p.format)(value))
+            .get_index(index)
+            .map(|(_, p)| (p.format)(value))
     }
 }
 
 // Set parameters
 impl PatchBank {
     pub fn set_parameter_from_gui(&self, index: usize, value: f32) {
-        let opt_parameter = self.get_parameter(index);
+        let opt_parameter = self.get_parameter_by_index(index);
 
         if let Some(parameter) = opt_parameter {
             parameter.set_value(value.min(1.0).max(0.0));
@@ -245,7 +264,7 @@ impl PatchBank {
     }
 
     pub fn set_parameter_from_host(&self, index: usize, value: f32) {
-        let opt_parameter = self.get_parameter(index);
+        let opt_parameter = self.get_parameter_by_index(index);
 
         if let Some(parameter) = opt_parameter {
             parameter.set_value(value as f32);
@@ -256,7 +275,7 @@ impl PatchBank {
     }
 
     pub fn set_parameter_text_from_host(&self, index: usize, value: String) -> bool {
-        let opt_parameter = self.get_parameter(index);
+        let opt_parameter = self.get_parameter_by_index(index);
 
         if let Some(parameter) = opt_parameter {
             if parameter.set_from_text(value) {
@@ -271,7 +290,7 @@ impl PatchBank {
     }
 
     pub fn set_parameter_text_from_gui(&self, index: usize, value: String) -> bool {
-        let opt_parameter = self.get_parameter(index);
+        let opt_parameter = self.get_parameter_by_index(index);
 
         if let Some(parameter) = opt_parameter {
             if parameter.set_from_text(value) {
@@ -420,7 +439,11 @@ pub mod tests {
                 let current_preset = bank_1.get_current_patch();
 
                 for parameter_index in 0..current_preset.parameters.len() {
-                    let parameter = current_preset.parameters.get(parameter_index).unwrap();
+                    let parameter = current_preset
+                        .parameters
+                        .get_index(parameter_index)
+                        .unwrap()
+                        .1;
 
                     let value = fastrand::f32();
 
@@ -444,9 +467,17 @@ pub mod tests {
                 let current_preset_2 = bank_2.get_current_patch();
 
                 for parameter_index in 0..current_preset_1.parameters.len() {
-                    let parameter_1 = current_preset_1.parameters.get(parameter_index).unwrap();
+                    let parameter_1 = current_preset_1
+                        .parameters
+                        .get_index(parameter_index)
+                        .unwrap()
+                        .1;
 
-                    let parameter_2 = current_preset_2.parameters.get(parameter_index).unwrap();
+                    let parameter_2 = current_preset_2
+                        .parameters
+                        .get_index(parameter_index)
+                        .unwrap()
+                        .1;
 
                     assert_eq!(parameter_1.get_value(), parameter_2.get_value());
                 }

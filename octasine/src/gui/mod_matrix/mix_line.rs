@@ -3,8 +3,8 @@ use iced_baseview::{Color, Point};
 use palette::gradient::Gradient;
 use palette::Srgba;
 
-use crate::gui::interface::style::Theme;
-use crate::gui::interface::SnapPoint;
+use crate::gui::style::Theme;
+use crate::gui::SnapPoint;
 
 use super::StyleSheet;
 

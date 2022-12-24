@@ -8,7 +8,7 @@ use iced_baseview::{
     Element, Length,
 };
 
-use crate::gui::interface::LINE_HEIGHT;
+use super::LINE_HEIGHT;
 
 use super::{
     style::{container::ContainerStyle, Theme},

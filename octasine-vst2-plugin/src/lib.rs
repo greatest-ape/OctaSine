@@ -1,5 +1,1 @@
-use vst::plugin_main;
-
-use octasine::OctaSine;
-
-plugin_main!(OctaSine);
+vst::plugin_main!(octasine::plugin::vst2::OctaSine);

@@ -1,4 +1,4 @@
-use crate::parameters::*;
+use crate::{common::IndexMap, parameters::*};
 
 use super::atomic_double::AtomicFloat;
 
@@ -7,16 +7,21 @@ use super::atomic_double::AtomicFloat;
 pub struct PatchParameter {
     value: AtomicFloat,
     pub name: String,
-    value_from_text: fn(String) -> Option<f32>,
+    pub value_from_text: fn(String) -> Option<f32>, // FIXME: should just require &str
     pub format: fn(f32) -> String,
+    pub default_value: f32,
+    pub clap_name: &'static str,
+    pub clap_path: String,
+    pub key: ParameterKey,
+    pub parameter: Parameter,
 }
 
 impl PatchParameter {
-    pub fn all() -> Vec<Self> {
+    pub fn all() -> IndexMap<ParameterKey, Self> {
         PARAMETERS
             .iter()
             .copied()
-            .map(PatchParameter::new_from_parameter)
+            .map(|p| (p.key(), PatchParameter::new_from_parameter(p)))
             .collect()
     }
 
@@ -88,15 +93,19 @@ impl PatchParameter {
             value: AtomicFloat::new(V::default().to_patch()),
             value_from_text: |v| V::new_from_text(v).map(|v| v.to_patch()),
             format: |v| V::new_from_patch(v).get_formatted(),
+            default_value: V::default().to_patch(),
+            clap_name: parameter.clap_name(),
+            clap_path: parameter.clap_path(),
+            key: parameter.key(),
+            parameter,
         }
     }
     fn new_with_value<V: ParameterValue>(parameter: Parameter, v: V) -> Self {
-        Self {
-            name: parameter.name(),
-            value: AtomicFloat::new(v.to_patch()),
-            value_from_text: |v| V::new_from_text(v).map(|v| v.to_patch()),
-            format: |v| V::new_from_patch(v).get_formatted(),
-        }
+        let p = Self::new::<V>(parameter);
+
+        p.value.set(v.to_patch());
+
+        p
     }
 
     pub fn set_value(&self, value: f32) {

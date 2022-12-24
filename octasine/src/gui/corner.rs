@@ -4,9 +4,9 @@ use iced_baseview::{
 };
 
 use crate::{
-    get_version_info,
     parameters::{MasterFrequencyValue, MasterVolumeValue},
     sync::GuiSyncHandle,
+    utils::get_version_info,
 };
 
 use super::{

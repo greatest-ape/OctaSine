@@ -14,7 +14,7 @@ impl StyleSheet for Theme {
 
     fn active(&self, style: &Self::Style) -> Appearance {
         use iced_audio::knob::{
-            ArcBipolarAppearance, ArcAppearance, LineCap, LineNotch, NotchShape, StyleLength,
+            ArcAppearance, ArcBipolarAppearance, LineCap, LineNotch, NotchShape, StyleLength,
         };
 
         let (filled_color, empty_color, notch_color) = match self {
@@ -70,7 +70,7 @@ impl StyleSheet for Theme {
     }
 
     fn tick_marks_appearance(&self, _style: &Self::Style) -> Option<TickMarksAppearance> {
-        use iced_audio::style::tick_marks::{Shape, Appearance};
+        use iced_audio::style::tick_marks::{Appearance, Shape};
 
         let (tier_1, tier_2) = match self {
             Self::Dark => {

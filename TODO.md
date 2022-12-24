@@ -1,5 +1,11 @@
 # TODO
 
+* clap
+  * test
+  * gui
+  * const Parameter.key() or different API solution
+  * consider using logging extension
+
 ## High priority
 
 * iced 0.5 adjustments

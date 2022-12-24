@@ -78,6 +78,7 @@ pub struct Voice {
     key_velocity_interpolator: Interpolator,
     pub operators: [VoiceOperator; NUM_OPERATORS],
     pub lfos: [VoiceLfo; NUM_LFOS],
+    pub clap_note_data: Option<(i32, u32)>,
 }
 
 impl Voice {
@@ -94,6 +95,7 @@ impl Voice {
             ),
             operators,
             lfos: array_init(|_| VoiceLfo::default()),
+            clap_note_data: None,
         }
     }
 
@@ -107,9 +109,7 @@ impl Voice {
     }
 
     #[inline]
-    pub fn press_key(&mut self, velocity: u8) {
-        let velocity = KeyVelocity::from_midi_velocity(velocity);
-
+    pub fn press_key(&mut self, velocity: KeyVelocity, opt_clap_note_id: Option<i32>) {
         if self.active {
             self.key_velocity_interpolator.set_value(velocity.0)
         } else {
@@ -126,6 +126,10 @@ impl Voice {
             lfo.restart();
         }
 
+        if let Some(clap_note_id) = opt_clap_note_id {
+            self.clap_note_data = Some((clap_note_id, 0));
+        }
+
         self.active = true;
     }
 
@@ -135,7 +139,7 @@ impl Voice {
     }
 
     #[inline]
-    pub fn deactivate_if_envelopes_ended(&mut self) {
+    pub fn deactivate_if_envelopes_ended(&mut self, sample_index: usize) {
         let all_envelopes_ended = self
             .operators
             .iter()
@@ -144,6 +148,10 @@ impl Voice {
         if all_envelopes_ended {
             for lfo in self.lfos.iter_mut() {
                 lfo.envelope_ended();
+            }
+
+            if let Some((_, ended)) = self.clap_note_data.as_mut() {
+                *ended = sample_index as u32;
             }
 
             self.active = false;

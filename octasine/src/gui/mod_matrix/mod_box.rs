@@ -1,11 +1,11 @@
 use iced_baseview::widget::canvas::{event, Frame, Path, Stroke};
 use iced_baseview::{mouse, Point, Rectangle, Size};
 
-use crate::gui::interface::style::Theme;
+use crate::gui::style::Theme;
 use crate::parameters::operator_mod_target::ModTargetStorage;
 use crate::parameters::{Parameter, ParameterValue};
 
-use crate::gui::interface::{Message, SnapPoint};
+use crate::gui::{Message, SnapPoint};
 
 use super::common::*;
 use super::StyleSheet;

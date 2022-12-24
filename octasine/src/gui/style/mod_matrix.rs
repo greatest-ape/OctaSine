@@ -1,6 +1,6 @@
 use iced_baseview::Color;
 
-use crate::gui::interface::mod_matrix::{Appearance, StyleSheet};
+use crate::gui::mod_matrix::{Appearance, StyleSheet};
 
 use super::Theme;
 
