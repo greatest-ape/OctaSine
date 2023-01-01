@@ -22,6 +22,15 @@ members = [
 # [patch.'https://github.com/greatest-ape/sleef-trig']
 # sleef-trig = { path = "../sleef-trig" }
 
+[patch.crates-io]
+iced_core = { git = "https://github.com/bungoboingo/iced.git", branch = "feat/background-gradients" }
+iced_futures = { git = "https://github.com/bungoboingo/iced.git", branch = "feat/background-gradients" }
+iced_glow = { git = "https://github.com/bungoboingo/iced.git", branch = "feat/background-gradients" }
+iced_graphics = { git = "https://github.com/bungoboingo/iced.git", branch = "feat/background-gradients" }
+iced_native = { git = "https://github.com/bungoboingo/iced.git", branch = "feat/background-gradients" }
+iced_style = { git = "https://github.com/bungoboingo/iced.git", branch = "feat/background-gradients" }
+iced_wgpu = { git = "https://github.com/bungoboingo/iced.git", branch = "feat/background-gradients" }
+
 [profile.release]
 debug = false
 lto = "thin"

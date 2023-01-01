@@ -1271,19 +1271,18 @@ dependencies = [
 [[package]]
 name = "iced_core"
 version = "0.6.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "232c723eecb8aef2fd69f7c618c17306ff10bdede19e44d6d9dc77f372966e80"
+source = "git+https://github.com/bungoboingo/iced.git?branch=feat/background-gradients#7c16569f42651240a25120c6a4f094eb80c264a1"
 dependencies = [
  "bitflags",
  "palette",
+ "thiserror",
  "wasm-timer",
 ]
 
 [[package]]
 name = "iced_futures"
 version = "0.5.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3cc3a9fd79b857228dde2a3e923a04ade4095abeda33248c6230e8c909749366"
+source = "git+https://github.com/bungoboingo/iced.git?branch=feat/background-gradients#7c16569f42651240a25120c6a4f094eb80c264a1"
 dependencies = [
  "futures",
  "log",
@@ -1294,8 +1293,7 @@ dependencies = [
 [[package]]
 name = "iced_glow"
 version = "0.5.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6ef5090a796940dcc454f9b37f98aea9619f8e8537bb2d057d7f7dedd92d3a69"
+source = "git+https://github.com/bungoboingo/iced.git?branch=feat/background-gradients#7c16569f42651240a25120c6a4f094eb80c264a1"
 dependencies = [
  "bytemuck",
  "euclid",
@@ -1305,13 +1303,13 @@ dependencies = [
  "iced_graphics",
  "iced_native",
  "log",
+ "walkdir",
 ]
 
 [[package]]
 name = "iced_graphics"
 version = "0.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bef7125f24a46fc5aa4c3c4d900c6edee79cbbe1b7ef4747bd923fd1469190bc"
+source = "git+https://github.com/bungoboingo/iced.git?branch=feat/background-gradients#7c16569f42651240a25120c6a4f094eb80c264a1"
 dependencies = [
  "bitflags",
  "bytemuck",
@@ -1327,8 +1325,7 @@ dependencies = [
 [[package]]
 name = "iced_native"
 version = "0.7.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5748f6d4fa3a8e31ba642cf2e159100f68c2fbc3b2973db8d8035526164d6685"
+source = "git+https://github.com/bungoboingo/iced.git?branch=feat/background-gradients#7c16569f42651240a25120c6a4f094eb80c264a1"
 dependencies = [
  "iced_core",
  "iced_futures",
@@ -1341,8 +1338,7 @@ dependencies = [
 [[package]]
 name = "iced_style"
 version = "0.5.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a2ffb763e34a898a1f597640718cf9308efa057a054282b7bfa627a574554f5b"
+source = "git+https://github.com/bungoboingo/iced.git?branch=feat/background-gradients#7c16569f42651240a25120c6a4f094eb80c264a1"
 dependencies = [
  "iced_core",
  "once_cell",
@@ -1352,8 +1348,7 @@ dependencies = [
 [[package]]
 name = "iced_wgpu"
 version = "0.7.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bb12ce0339a85a62fdb1ea3ce5b4fda1b5b2ab447b39c3982c30f697cc9d6c16"
+source = "git+https://github.com/bungoboingo/iced.git?branch=feat/background-gradients#7c16569f42651240a25120c6a4f094eb80c264a1"
 dependencies = [
  "bitflags",
  "bytemuck",
@@ -2362,6 +2357,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7b4b9743ed687d4b4bcedf9ff5eaa7398495ae14e61cba0a295704edbc7decde"
 
 [[package]]
+name = "same-file"
+version = "1.0.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "93fc1dc3aaa9bfed95e02e6eadabb4baf7e3078b0bd1b4d7b6b0b68378900502"
+dependencies = [
+ "winapi-util",
+]
+
+[[package]]
 name = "scoped-tls"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2808,6 +2812,17 @@ name = "waker-fn"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9d5b2c62b4012a3e1eca5a7e077d13b3bf498c4073e33ccd58626607748ceeca"
+
+[[package]]
+name = "walkdir"
+version = "2.3.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "808cf2735cd4b6866113f648b791c6adc5714537bc222d9347bb203386ffda56"
+dependencies = [
+ "same-file",
+ "winapi",
+ "winapi-util",
+]
 
 [[package]]
 name = "wasi"
