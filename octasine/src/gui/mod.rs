@@ -852,3 +852,31 @@ fn save_data_to_file(path_buf: PathBuf, mut bytes: Vec<u8>) -> anyhow::Result<()
 
     Ok(())
 }
+
+pub fn get_iced_baseview_settings<H: GuiSyncHandle>(
+    sync_handle: H,
+    plugin_name: String,
+) -> iced_baseview::Settings<H> {
+    iced_baseview::Settings {
+        window: iced_baseview::baseview::WindowOpenOptions {
+            size: iced_baseview::baseview::Size::new(GUI_WIDTH as f64, GUI_HEIGHT as f64),
+            #[cfg(not(target_os = "windows"))]
+            scale: iced_baseview::baseview::WindowScalePolicy::SystemScaleFactor,
+            // Windows currently needs scale factor 1.0, or GUI contents
+            // will be too large for window
+            #[cfg(target_os = "windows")]
+            scale: WindowScalePolicy::ScaleFactor(1.0),
+            title: plugin_name,
+            #[cfg(feature = "gui_glow")]
+            gl_config: Some(iced_baseview::baseview::gl::GlConfig {
+                samples: Some(8),
+                ..Default::default()
+            }),
+        },
+        iced_baseview: iced_baseview::settings::IcedBaseviewSettings {
+            ignore_non_modifier_keys: true,
+            always_redraw: true,
+        },
+        flags: sync_handle,
+    }
+}

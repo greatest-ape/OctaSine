@@ -25,6 +25,7 @@ use clap_sys::{
     plugin::clap_plugin,
     process::{clap_process, clap_process_status, CLAP_PROCESS_CONTINUE, CLAP_PROCESS_ERROR},
 };
+use iced_baseview::window::WindowHandle;
 use once_cell::sync::Lazy;
 use parking_lot::Mutex;
 
@@ -36,13 +37,15 @@ use crate::{
     utils::{init_logging, update_audio_parameters},
 };
 
-use super::descriptor::DESCRIPTOR;
+use super::{descriptor::DESCRIPTOR, ext::gui::ParentWindow, sync::ClapGuiSyncHandle};
 
 pub struct OctaSine {
     pub host: *const clap_host,
     pub audio: Mutex<AudioState>,
-    pub sync: SyncState<rtrb::Producer<EventToHost>>,
+    pub sync: Arc<SyncState<ClapGuiSyncHandle>>,
     pub gui_event_consumer: Mutex<rtrb::Consumer<EventToHost>>,
+    pub gui_parent: Mutex<Option<ParentWindow>>,
+    pub gui_window_handle: Mutex<Option<WindowHandle<crate::gui::Message>>>,
     pub clap_plugin: AtomicRefCell<clap_plugin>,
 }
 
@@ -50,11 +53,18 @@ impl OctaSine {
     pub fn new(host: *const clap_host) -> Arc<Self> {
         let (gui_event_producer, gui_event_consumer) = rtrb::RingBuffer::new(512);
 
+        let gui_sync_handle = ClapGuiSyncHandle {
+            producer: Mutex::new(gui_event_producer),
+            host,
+        };
+
         let plugin = Self {
             host,
             audio: Default::default(),
-            sync: SyncState::new(Some(gui_event_producer)),
+            sync: Arc::new(SyncState::new(Some(gui_sync_handle))),
             gui_event_consumer: Mutex::new(gui_event_consumer),
+            gui_parent: Default::default(),
+            gui_window_handle: Default::default(),
             clap_plugin: AtomicRefCell::new(clap_plugin {
                 desc: Lazy::force(&DESCRIPTOR) as *const _,
                 plugin_data: null_mut(),

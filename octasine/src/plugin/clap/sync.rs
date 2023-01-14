@@ -15,9 +15,9 @@ use crate::{
 };
 
 pub struct ClapGuiSyncHandle {
-    producer: Mutex<rtrb::Producer<EventToHost>>,
+    pub producer: Mutex<rtrb::Producer<EventToHost>>,
     // SAFETY: calling request_process is thread-safe according to clap spec
-    host: *const clap_host,
+    pub host: *const clap_host,
 }
 
 unsafe impl Send for ClapGuiSyncHandle {}

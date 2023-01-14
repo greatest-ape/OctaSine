@@ -1,13 +1,8 @@
-use iced_baseview::{
-    baseview::{Size, WindowOpenOptions, WindowScalePolicy},
-    open_blocking, open_parented,
-    settings::IcedBaseviewSettings,
-    Settings,
-};
+use iced_baseview::{open_blocking, open_parented};
 use raw_window_handle::{HasRawWindowHandle, RawWindowHandle};
 
 use crate::{
-    gui::{GUI_HEIGHT, GUI_WIDTH},
+    gui::{get_iced_baseview_settings, GUI_HEIGHT, GUI_WIDTH},
     plugin::vst2::PLUGIN_NAME,
     sync::GuiSyncHandle,
 };
@@ -27,42 +22,18 @@ impl<H: GuiSyncHandle> Editor<H> {
         }
     }
 
-    fn get_iced_baseview_settings(sync_handle: H) -> Settings<H> {
-        Settings {
-            window: WindowOpenOptions {
-                size: Size::new(GUI_WIDTH as f64, GUI_HEIGHT as f64),
-                #[cfg(not(target_os = "windows"))]
-                scale: WindowScalePolicy::SystemScaleFactor,
-                // Windows currently needs scale factor 1.0, or GUI contents
-                // will be too large for window
-                #[cfg(target_os = "windows")]
-                scale: WindowScalePolicy::ScaleFactor(1.0),
-                title: PLUGIN_NAME.to_string(),
-                #[cfg(feature = "gui_glow")]
-                gl_config: Some(iced_baseview::baseview::gl::GlConfig {
-                    samples: Some(8),
-                    ..Default::default()
-                }),
-            },
-            iced_baseview: IcedBaseviewSettings {
-                ignore_non_modifier_keys: true,
-                always_redraw: true,
-            },
-            flags: sync_handle,
-        }
-    }
-
     pub fn open_parented(parent: ParentWindow, sync_handle: H) {
         open_parented::<OctaSineIcedApplication<H>, ParentWindow>(
             &parent,
-            Self::get_iced_baseview_settings(sync_handle),
+            get_iced_baseview_settings(sync_handle, PLUGIN_NAME.to_string()),
         );
     }
 
     pub fn open_blocking(sync_handle: H) {
-        let settings = Self::get_iced_baseview_settings(sync_handle);
-
-        open_blocking::<OctaSineIcedApplication<H>>(settings);
+        open_blocking::<OctaSineIcedApplication<H>>(get_iced_baseview_settings(
+            sync_handle,
+            PLUGIN_NAME.to_string(),
+        ));
     }
 }
 

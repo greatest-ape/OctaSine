@@ -1,12 +1,17 @@
-use std::ffi::CStr;
+use std::{ffi::CStr, sync::Arc};
 
 use cfg_if::cfg_if;
 use clap_sys::{
     ext::gui::{clap_gui_resize_hints, clap_plugin_gui, clap_window},
     plugin::clap_plugin,
 };
+use raw_window_handle::{HasRawWindowHandle, RawWindowHandle};
 
-use crate::gui::{GUI_HEIGHT, GUI_WIDTH};
+use crate::{
+    gui::{get_iced_baseview_settings, OctaSineIcedApplication, GUI_HEIGHT, GUI_WIDTH},
+    plugin::clap::{plugin::OctaSine, sync::ClapGuiSyncHandle},
+    sync::SyncState,
+};
 
 cfg_if! {
     if #[cfg(target_os = "macos")] {
@@ -37,16 +42,24 @@ unsafe extern "C" fn get_preferred_api(
     true
 }
 
-unsafe extern "C" fn create(plugin: *const clap_plugin, api: *const i8, is_floating: bool) -> bool {
+unsafe extern "C" fn create(
+    _plugin: *const clap_plugin,
+    api: *const i8,
+    is_floating: bool,
+) -> bool {
     if is_floating || CStr::from_ptr(api) != SUPPORTED_API {
         return false;
     }
 
-    todo!()
+    true
 }
 
-extern "C" fn destroy(_plugin: *const clap_plugin) {
-    todo!()
+unsafe extern "C" fn destroy(plugin: *const clap_plugin) {
+    let plugin = &*((*plugin).plugin_data as *const OctaSine);
+
+    if let Some(mut handle) = plugin.gui_window_handle.lock().take() {
+        handle.close_window();
+    }
 }
 
 extern "C" fn set_scale(_plugin: *const clap_plugin, _scale: f64) -> bool {
@@ -76,15 +89,45 @@ extern "C" fn get_resize_hints(
 }
 
 unsafe extern "C" fn set_parent(plugin: *const clap_plugin, parent: *const clap_window) -> bool {
-    todo!()
+    let plugin = &*((*plugin).plugin_data as *const OctaSine);
+
+    let mut gui_parent = plugin.gui_parent.lock();
+
+    if let Some(_) = gui_parent.as_ref() {
+        false
+    } else {
+        *gui_parent = Some(ParentWindow(*parent));
+
+        true
+    }
 }
 
-extern "C" fn show(_plugin: *const clap_plugin) -> bool {
-    todo!()
+unsafe extern "C" fn show(plugin: *const clap_plugin) -> bool {
+    let plugin = &*((*plugin).plugin_data as *const OctaSine);
+
+    if plugin.gui_window_handle.lock().is_some() {
+        return false;
+    }
+
+    if let Some(parent) = plugin.gui_parent.lock().as_ref() {
+        let handle = iced_baseview::open_parented::<
+            OctaSineIcedApplication<Arc<SyncState<ClapGuiSyncHandle>>>,
+            ParentWindow,
+        >(
+            &parent,
+            get_iced_baseview_settings(plugin.sync.clone(), "OctaSine".to_string()),
+        );
+
+        *plugin.gui_window_handle.lock() = Some(handle);
+
+        true
+    } else {
+        false
+    }
 }
 
 extern "C" fn hide(_plugin: *const clap_plugin) -> bool {
-    todo!()
+    true // FIXME
 }
 
 pub const CONFIG: clap_plugin_gui = clap_plugin_gui {
@@ -104,3 +147,40 @@ pub const CONFIG: clap_plugin_gui = clap_plugin_gui {
     show: Some(show),
     hide: Some(hide),
 };
+
+pub struct ParentWindow(clap_window);
+
+unsafe impl HasRawWindowHandle for ParentWindow {
+    #[cfg(target_os = "macos")]
+    fn raw_window_handle(&self) -> RawWindowHandle {
+        let mut handle = raw_window_handle::AppKitHandle::empty();
+
+        unsafe {
+            handle.ns_view = self.0.specific.cocoa;
+        }
+
+        RawWindowHandle::AppKit(handle)
+    }
+
+    #[cfg(target_os = "windows")]
+    fn raw_window_handle(&self) -> RawWindowHandle {
+        let mut handle = raw_window_handle::Win32Handle::empty();
+
+        unsafe {
+            handle.hwnd = self.0.specific.win32;
+        }
+
+        RawWindowHandle::Win32(handle)
+    }
+
+    #[cfg(target_os = "linux")]
+    fn raw_window_handle(&self) -> RawWindowHandle {
+        let mut handle = raw_window_handle::XcbHandle::empty();
+
+        unsafe {
+            handle.window = self.0.specific.x11;
+        }
+
+        RawWindowHandle::Xcb(handle)
+    }
+}
