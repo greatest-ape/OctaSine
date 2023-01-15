@@ -31,10 +31,10 @@ use parking_lot::Mutex;
 
 use crate::{
     audio::{gen::process_f32_runtime_select, AudioState},
-    common::{BeatsPerMinute, EventToHost, NoteEvent, NoteEventInner},
+    common::{BeatsPerMinute, EventToHost, NoteEvent, NoteEventInner, SampleRate},
     parameters::ParameterKey,
     sync::SyncState,
-    utils::{update_audio_parameters},
+    utils::{init_logging, update_audio_parameters},
 };
 
 use super::{descriptor::DESCRIPTOR, ext::gui::ParentWindow, sync::ClapGuiSyncHandle};
@@ -51,7 +51,8 @@ pub struct OctaSine {
 
 impl OctaSine {
     pub fn new(host: *const clap_host) -> Arc<Self> {
-        ::log::info!("new");
+        let _ = init_logging();
+
         let (gui_event_producer, gui_event_consumer) = rtrb::RingBuffer::new(512);
 
         let gui_sync_handle = ClapGuiSyncHandle {
@@ -71,14 +72,14 @@ impl OctaSine {
                 plugin_data: null_mut(),
                 init: Some(Self::init),
                 destroy: Some(Self::destroy),
-                activate: None,
-                deactivate: None,
-                start_processing: None,
-                stop_processing: None,
-                reset: None,
+                activate: Some(Self::activate),
+                deactivate: Some(Self::deactivate),
+                start_processing: Some(Self::start_processing),
+                stop_processing: Some(Self::stop_processing),
+                reset: Some(Self::reset),
                 process: Some(Self::process),
                 get_extension: Some(Self::get_extension),
-                on_main_thread: None,
+                on_main_thread: Some(Self::on_main_thread),
             }),
         };
 
@@ -90,7 +91,6 @@ impl OctaSine {
     }
 
     unsafe extern "C" fn init(_plugin: *const clap_plugin) -> bool {
-        ::log::info!("init");
         true
     }
 
@@ -100,11 +100,33 @@ impl OctaSine {
         drop(Arc::from_raw((*plugin).plugin_data as *mut Self));
     }
 
+    unsafe extern "C" fn activate(
+        plugin: *const clap_plugin,
+        sample_rate: f64,
+        _min_frames_count: u32,
+        _max_frames_count: u32,
+    ) -> bool {
+        let plugin = &*((*plugin).plugin_data as *const Self);
+
+        plugin.audio.lock().set_sample_rate(SampleRate(sample_rate));
+
+        true
+    }
+
+    unsafe extern "C" fn deactivate(_plugin: *const clap_plugin) {}
+
+    unsafe extern "C" fn start_processing(_plugin: *const clap_plugin) -> bool {
+        true
+    }
+
+    unsafe extern "C" fn stop_processing(_plugin: *const clap_plugin) {}
+
+    unsafe extern "C" fn reset(_plugin: *const clap_plugin) {}
+
     unsafe extern "C" fn process(
         plugin: *const clap_plugin,
         process: *const clap_process,
     ) -> clap_process_status {
-        ::log::info!("process");
         if plugin.is_null() || (*plugin).plugin_data.is_null() || process.is_null() {
             return CLAP_PROCESS_ERROR;
         }
@@ -235,6 +257,8 @@ impl OctaSine {
             null()
         }
     }
+
+    unsafe extern "C" fn on_main_thread(_plugin: *const clap_plugin) {}
 
     pub unsafe fn handle_event_from_host(&self, event_header: *const clap_event_header) {
         match (*event_header).type_ {
