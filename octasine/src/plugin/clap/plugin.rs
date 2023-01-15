@@ -51,6 +51,7 @@ pub struct OctaSine {
 
 impl OctaSine {
     pub fn new(host: *const clap_host) -> Arc<Self> {
+        ::log::info!("new");
         let (gui_event_producer, gui_event_consumer) = rtrb::RingBuffer::new(512);
 
         let gui_sync_handle = ClapGuiSyncHandle {
@@ -89,6 +90,7 @@ impl OctaSine {
     }
 
     unsafe extern "C" fn init(_plugin: *const clap_plugin) -> bool {
+        ::log::info!("init");
         true
     }
 
@@ -102,6 +104,7 @@ impl OctaSine {
         plugin: *const clap_plugin,
         process: *const clap_process,
     ) -> clap_process_status {
+        ::log::info!("process");
         if plugin.is_null() || (*plugin).plugin_data.is_null() || process.is_null() {
             return CLAP_PROCESS_ERROR;
         }

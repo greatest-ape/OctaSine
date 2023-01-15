@@ -4,9 +4,12 @@
 
 set -e
 
-cargo build --profile "release-debug" -p octasine
+cargo xtask bundle octasine --profile "release-debug"
 
-./scripts/macos/bundle.sh "./target/release-debug/liboctasine.dylib" "OctaSine"
+
+
+# cargo build --profile "release-debug" -p octasine
+# ./scripts/macos/bundle.sh "./target/release-debug/liboctasine.dylib" "OctaSine"
 
 TARGET="/Library/Audio/Plug-Ins/CLAP/OctaSine.clap"
 
@@ -14,5 +17,6 @@ if [ -d "$TARGET" ]; then
 	rm -r "$TARGET"
 fi
 
-cp -r "./tmp/OctaSine.vst" "$TARGET"
+# cp -r "./tmp/OctaSine.vst" "$TARGET"
+cp -r "./target/bundled/octasine.clap" "$TARGET"
 echo "Copied CLAP bundle to $TARGET"

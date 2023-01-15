@@ -35,6 +35,7 @@ pub unsafe extern "C" fn create_plugin(
     host: *const clap_host,
     plugin_id: *const i8,
 ) -> *const clap_plugin {
+    ::log::info!("create_plugin");
     if !plugin_id.is_null() && CStr::from_ptr(plugin_id) == CStr::from_ptr(super::descriptor::ID) {
         (*Arc::into_raw(OctaSine::new(host))).clap_plugin.as_ptr()
     } else {
