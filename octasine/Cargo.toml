@@ -15,6 +15,7 @@ vst2 = ["vst"]
 
 [lib]
 name = "octasine"
+crate-type = ["cdylib", "lib"]
 
 [dev-dependencies]
 assert_approx_eq = "1"

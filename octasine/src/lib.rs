@@ -11,6 +11,13 @@ pub mod utils;
 #[cfg(feature = "gui")]
 pub mod gui;
 
+#[cfg(feature = "clap")]
+#[no_mangle]
+pub static clap_entry: ::clap_sys::entry::clap_plugin_entry = plugin::clap::CLAP_ENTRY;
+
+#[cfg(feature = "vst2")]
+::vst::plugin_main!(plugin::vst2::OctaSine);
+
 #[cfg(test)]
 mod tests {
     use crate::{

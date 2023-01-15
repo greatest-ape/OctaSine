@@ -34,7 +34,7 @@ use crate::{
     common::{BeatsPerMinute, EventToHost, NoteEvent, NoteEventInner},
     parameters::ParameterKey,
     sync::SyncState,
-    utils::{init_logging, update_audio_parameters},
+    utils::{update_audio_parameters},
 };
 
 use super::{descriptor::DESCRIPTOR, ext::gui::ParentWindow, sync::ClapGuiSyncHandle};
@@ -89,8 +89,6 @@ impl OctaSine {
     }
 
     unsafe extern "C" fn init(_plugin: *const clap_plugin) -> bool {
-        let _ = init_logging();
-
         true
     }
 
