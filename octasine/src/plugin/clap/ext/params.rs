@@ -88,19 +88,23 @@ pub unsafe extern "C" fn value_to_text(
 ) -> bool {
     let plugin = &*((*plugin).plugin_data as *const OctaSine);
 
+    if c_str_ptr.is_null() {
+        return false;
+    }
+
     if let Some(parameter) = plugin
         .sync
         .patches
         .get_parameter_by_key(&ParameterKey(param_id))
     {
         if let Ok(text) = CString::new((parameter.format)(value as f32)) {
-            let bytes = text.as_bytes_with_nul();
+            let bytes = bytemuck::cast_slice(text.as_bytes_with_nul());
 
             if bytes.len() > c_str_len as usize {
                 return false;
             }
 
-            ::std::ptr::write(c_str_ptr as *mut &[u8], bytes);
+            c_str_ptr.copy_from_nonoverlapping(bytes.as_ptr(), bytes.len());
 
             return true;
         }
