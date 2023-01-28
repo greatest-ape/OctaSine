@@ -865,7 +865,7 @@ pub fn get_iced_baseview_settings<H: GuiSyncHandle>(
             // Windows currently needs scale factor 1.0, or GUI contents
             // will be too large for window
             #[cfg(target_os = "windows")]
-            scale: WindowScalePolicy::ScaleFactor(1.0),
+            scale: iced_baseview::baseview::WindowScalePolicy::ScaleFactor(1.0),
             title: plugin_name,
             #[cfg(feature = "gui_glow")]
             gl_config: Some(iced_baseview::baseview::gl::GlConfig {
