@@ -49,20 +49,32 @@ jobs:
     - name: Setup Rust dependency caching
       uses: Swatinem/rust-cache@v2
 
-    - name: Build plugin
-      run: cargo build --release -p octasine-vst2-plugin --verbose
+    - name: Build and bundle plugin
+      run: cargo xtask bundle octasine --release --verbose
+      if: contains(matrix.os, 'ubuntu') || contains(matrix.os, 'windows')
 
-    - name: Build plugin for aarch64 (macOS)
+    # - name: Build plugin for aarch64 (macOS)
+    #   run: |
+    #     export SDKROOT=$(xcrun -sdk macosx11.1 --show-sdk-path)
+    #     echo "SDKROOT=$SDKROOT"
+    #     export MACOSX_DEPLOYMENT_TARGET=$(xcrun -sdk macosx11.1 --show-sdk-platform-version)
+    #     echo "MACOSX_DEPLOYMENT_TARGET=$MACOSX_DEPLOYMENT_TARGET"
+    #     cargo build --release -p octasine-vst2-plugin --target=aarch64-apple-darwin
+    #   env:
+    #     DEVELOPER_DIR: /Applications/Xcode_12.4.app/Contents/Developer
+    #   shell: bash
+    #   if: contains(matrix.os, 'macos')
+
+    - name: Build and bundle plugin
       run: |
         export SDKROOT=$(xcrun -sdk macosx11.1 --show-sdk-path)
         echo "SDKROOT=$SDKROOT"
         export MACOSX_DEPLOYMENT_TARGET=$(xcrun -sdk macosx11.1 --show-sdk-platform-version)
         echo "MACOSX_DEPLOYMENT_TARGET=$MACOSX_DEPLOYMENT_TARGET"
-        cargo build --release -p octasine-vst2-plugin --target=aarch64-apple-darwin
+        cargo xtask bundle-universal octasine --release --verbose
       env:
         DEVELOPER_DIR: /Applications/Xcode_12.4.app/Contents/Developer
       shell: bash
-      if: contains(matrix.os, 'macos')
 
     - name: Display size of build artifacts
       run: ls -lh target/release

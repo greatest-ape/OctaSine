@@ -1956,14 +1956,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "octasine-vst2-plugin"
-version = "0.8.2"
-dependencies = [
- "octasine",
- "vst",
-]
-
-[[package]]
 name = "once_cell"
 version = "1.16.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"

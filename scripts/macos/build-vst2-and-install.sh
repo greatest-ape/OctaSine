@@ -6,11 +6,11 @@ set -e
 
 cargo xtask bundle octasine --profile "release-debug"
 
-TARGET="/Library/Audio/Plug-Ins/CLAP/OctaSine.clap"
+TARGET="/Library/Audio/Plug-Ins/VST/OctaSine.vst"
 
 if [ -d "$TARGET" ]; then
 	rm -r "$TARGET"
 fi
 
-cp -r "./target/bundled/octasine.clap" "$TARGET"
-echo "Copied CLAP bundle to $TARGET"
+cp -r "./target/bundled/octasine.vst" "$TARGET"
+echo "Copied VST bundle to $TARGET"
