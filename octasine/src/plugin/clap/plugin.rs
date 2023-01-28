@@ -144,11 +144,21 @@ impl OctaSine {
             return CLAP_PROCESS_ERROR;
         }
 
+        if audio_outputs.data32.is_null() {
+            return CLAP_PROCESS_ERROR;
+        }
         let audio_outputs =
             ::std::slice::from_raw_parts_mut(audio_outputs.data32 as *mut *mut f32, 2);
 
+        if audio_outputs[0].is_null() {
+            return CLAP_PROCESS_ERROR;
+        }
         let lefts =
             ::std::slice::from_raw_parts_mut(audio_outputs[0], process.frames_count as usize);
+
+        if audio_outputs[1].is_null() {
+            return CLAP_PROCESS_ERROR;
+        }
         let rights =
             ::std::slice::from_raw_parts_mut(audio_outputs[1], process.frames_count as usize);
 
