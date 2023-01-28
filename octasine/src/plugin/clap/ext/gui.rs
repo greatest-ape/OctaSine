@@ -172,7 +172,7 @@ unsafe impl HasRawWindowHandle for ParentWindow {
         let mut handle = raw_window_handle::XcbHandle::empty();
 
         unsafe {
-            handle.window = self.0.specific.x11;
+            handle.window = self.0.specific.x11 as u32;
         }
 
         RawWindowHandle::Xcb(handle)
