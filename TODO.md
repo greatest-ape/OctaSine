@@ -1,9 +1,12 @@
 # TODO
 
 * clap
+  * test, including patches
   * add output note port for sending note_end events
   * const Parameter.key() or different API solution
   * consider using logging extension
+
+* upgrade iced version in iced_baseview
 
 ## High priority
 
