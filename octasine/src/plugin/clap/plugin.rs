@@ -227,7 +227,13 @@ impl OctaSine {
         }
 
         if let Some((num_events, _)) = opt_in_event_data {
-            assert_eq!(num_events, event_index);
+            if num_events != event_index {
+                ::log::error!(
+                    "OctaSine::process: didn't process all events. num_events={}, event_index={}",
+                    num_events,
+                    event_index
+                );
+            }
         }
 
         if !process.out_events.is_null() {
