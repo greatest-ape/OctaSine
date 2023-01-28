@@ -1,8 +1,7 @@
 # TODO
 
 * clap
-  * test
-  * gui
+  * add output note port for sending note_end events
   * const Parameter.key() or different API solution
   * consider using logging extension
 
