@@ -27,7 +27,7 @@ pub unsafe extern "C" fn get(
 
         true
     } else {
-        return false;
+        false
     }
 }
 

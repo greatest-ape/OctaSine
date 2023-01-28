@@ -48,10 +48,10 @@ unsafe extern "C" fn create(
     is_floating: bool,
 ) -> bool {
     if is_floating || CStr::from_ptr(api) != SUPPORTED_API {
-        return false;
+        false
+    } else {
+        true
     }
-
-    true
 }
 
 unsafe extern "C" fn destroy(plugin: *const clap_plugin) {
