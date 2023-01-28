@@ -82,8 +82,8 @@ jobs:
         mkdir -p "release-tmp/OctaSine/VST2"
         mkdir -p "release-tmp/OctaSine/CLAP"
         cd release-tmp
-        cp -r ./target/bundled/octasine.vst "OctaSine/VST2/OctaSine $SEMVER_VERSION.vst"
-        cp -r ./target/bundled/octasine.clap "OctaSine/CLAP/OctaSine $SEMVER_VERSION.clap"
+        cp -r ../target/bundled/octasine.vst "OctaSine/VST2/OctaSine $SEMVER_VERSION.vst"
+        cp -r ../target/bundled/octasine.clap "OctaSine/CLAP/OctaSine $SEMVER_VERSION.clap"
         cargo-about generate -o "OctaSine/LICENSES.html" "../about.hbs" -m "../octasine/Cargo.toml" 
         zip -9 -r "../releases/OctaSine-${{ steps.get_version.outputs.VERSION }}-macOS.zip" "OctaSine"
       shell: bash
@@ -189,8 +189,8 @@ jobs:
         mkdir -p "release-tmp/OctaSine/VST2"
         mkdir -p "release-tmp/OctaSine/CLAP"
         cd release-tmp
-        cp -r ./target/bundled/octasine.vst "OctaSine/VST2/OctaSine $SEMVER_VERSION.vst"
-        cp -r ./target/bundled/octasine.clap "OctaSine/CLAP/OctaSine $SEMVER_VERSION.clap"
+        cp -r ../target/bundled/octasine.so "OctaSine/VST2/OctaSine $SEMVER_VERSION.so"
+        cp -r ../target/bundled/octasine.clap "OctaSine/CLAP/OctaSine $SEMVER_VERSION.clap"
         cargo-about generate -o "OctaSine/LICENSES.html" "../about.hbs" -m "../octasine/Cargo.toml" 
         zip -9 -r "../releases/OctaSine-${{ steps.get_version.outputs.VERSION }}-Ubuntu-20_04.zip" "OctaSine"
       shell: bash
