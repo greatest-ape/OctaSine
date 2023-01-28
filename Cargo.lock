@@ -1734,7 +1734,7 @@ dependencies = [
 [[package]]
 name = "nih_plug_xtask"
 version = "0.1.0"
-source = "git+https://github.com/robbert-vdh/nih-plug.git#4b2ba9de1238982268e8c7d6acd0e09fd72cf7a8"
+source = "git+https://github.com/robbert-vdh/nih-plug.git?rev=32957c2#32957c222f413c00cffd180128d0dd325043afa8"
 dependencies = [
  "anyhow",
  "goblin",
