@@ -18,7 +18,7 @@ pub unsafe extern "C" fn get(
     is_input: bool,
     info: *mut clap_note_port_info,
 ) -> bool {
-    if index == 0 && !is_input {
+    if index == 0 && is_input {
         let info = &mut *info;
 
         info.id = 0;
