@@ -68,10 +68,10 @@ pub fn get_version_info() -> String {
         info.push_str(" (M)");
     }
 
-    #[cfg(feature = "gui_wgpu")]
+    #[cfg(feature = "wgpu")]
     info.push_str(" (wgpu)");
 
-    #[cfg(feature = "gui_glow")]
+    #[cfg(feature = "glow")]
     info.push_str(" (gl)");
 
     info

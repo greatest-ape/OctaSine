@@ -454,7 +454,7 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
         Subscription::none()
     }
 
-    #[cfg(feature = "gui_wgpu")]
+    #[cfg(feature = "wgpu")]
     fn renderer_settings() -> iced_baseview::renderer::Settings {
         iced_baseview::renderer::Settings {
             present_mode: iced_baseview::renderer::wgpu::PresentMode::Immediate,
@@ -466,7 +466,7 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
     }
 
     /// Renderer settings with glow
-    #[cfg(feature = "gui_glow")]
+    #[cfg(feature = "glow")]
     fn renderer_settings() -> iced_baseview::renderer::Settings {
         iced_baseview::renderer::Settings {
             default_font: Some(OPEN_SANS_BYTES_SEMI_BOLD),
@@ -867,7 +867,7 @@ pub fn get_iced_baseview_settings<H: GuiSyncHandle>(
             #[cfg(target_os = "windows")]
             scale: iced_baseview::baseview::WindowScalePolicy::ScaleFactor(1.0),
             title: plugin_name,
-            #[cfg(feature = "gui_glow")]
+            #[cfg(feature = "glow")]
             gl_config: Some(iced_baseview::baseview::gl::GlConfig {
                 samples: Some(8),
                 ..Default::default()

@@ -6,12 +6,12 @@ license = "AGPL-3.0"
 edition = "2021"
 
 [features]
-default = ["gui_glow", "clap", "vst2"]
-gui_glow = ["gui", "iced_baseview/glow", "iced_audio/glow"]
-gui_wgpu = ["gui", "iced_baseview/wgpu", "iced_audio/wgpu"]
-gui = ["iced_baseview/canvas", "iced_audio", "palette", "raw-window-handle", "rfd", "tinyfiledialogs"]
+default = ["clap", "vst2", "glow"]
 clap = ["bytemuck", "clap-sys", "atomic_refcell", "rtrb", "parking_lot"]
 vst2 = ["vst"]
+glow = ["gui", "iced_baseview/glow", "iced_audio/glow"]
+wgpu = ["gui", "iced_baseview/wgpu", "iced_audio/wgpu"]
+gui = ["iced_baseview/canvas", "iced_audio", "palette", "raw-window-handle", "rfd", "tinyfiledialogs"]
 
 [lib]
 name = "octasine"
