@@ -91,22 +91,16 @@ extern "C" fn get_resize_hints(
 unsafe extern "C" fn set_parent(plugin: *const clap_plugin, parent: *const clap_window) -> bool {
     let plugin = &*((*plugin).plugin_data as *const OctaSine);
 
-    let mut gui_parent = plugin.gui_parent.lock();
+    *plugin.gui_parent.lock() = Some(ParentWindow(*parent));
 
-    if let Some(_) = gui_parent.as_ref() {
-        false
-    } else {
-        *gui_parent = Some(ParentWindow(*parent));
-
-        true
-    }
+    true
 }
 
 unsafe extern "C" fn show(plugin: *const clap_plugin) -> bool {
     let plugin = &*((*plugin).plugin_data as *const OctaSine);
 
     if plugin.gui_window_handle.lock().is_some() {
-        return false;
+        return true;
     }
 
     if let Some(parent) = plugin.gui_parent.lock().as_ref() {
@@ -126,8 +120,8 @@ unsafe extern "C" fn show(plugin: *const clap_plugin) -> bool {
     }
 }
 
-extern "C" fn hide(_plugin: *const clap_plugin) -> bool {
-    true // FIXME
+unsafe extern "C" fn hide(_plugin: *const clap_plugin) -> bool {
+    true
 }
 
 pub const CONFIG: clap_plugin_gui = clap_plugin_gui {
