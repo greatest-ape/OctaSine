@@ -1,9 +1,20 @@
 # TODO
 
+* heavy CPU consumption in REAPER without anything playing
+  * with clap and vst
+  * also with other plugins
+  * maybe buffers don't really need to be zeroed for clap?
+  * maybe we could skip even more processing when there are no events and no
+    active voices?
+  * maybe this is all fine?
+
 * clap
+  * maybe use larger gui event rung buffer
   * check for null everywhere
   * test, including patches
   * consider using logging extension
+
+* note event queue should be fixed-size and not able to allocate
 
 * upgrade iced version in iced_baseview
 
