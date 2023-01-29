@@ -127,7 +127,7 @@ impl OctaSine {
         plugin: *const clap_plugin,
         process: *const clap_process,
     ) -> clap_process_status {
-        if plugin.is_null() || (*plugin).plugin_data.is_null() || process.is_null() {
+        if plugin.is_null() | (*plugin).plugin_data.is_null() | process.is_null() {
             return CLAP_PROCESS_ERROR;
         }
 
@@ -140,25 +140,19 @@ impl OctaSine {
 
         let audio_outputs = &*process.audio_outputs;
 
-        if audio_outputs.channel_count != 2 {
+        if (audio_outputs.channel_count != 2) | audio_outputs.data32.is_null() {
             return CLAP_PROCESS_ERROR;
         }
 
-        if audio_outputs.data32.is_null() {
-            return CLAP_PROCESS_ERROR;
-        }
         let audio_outputs =
             ::std::slice::from_raw_parts_mut(audio_outputs.data32 as *mut *mut f32, 2);
 
-        if audio_outputs[0].is_null() {
+        if audio_outputs[0].is_null() | audio_outputs[1].is_null() {
             return CLAP_PROCESS_ERROR;
         }
+
         let lefts =
             ::std::slice::from_raw_parts_mut(audio_outputs[0], process.frames_count as usize);
-
-        if audio_outputs[1].is_null() {
-            return CLAP_PROCESS_ERROR;
-        }
         let rights =
             ::std::slice::from_raw_parts_mut(audio_outputs[1], process.frames_count as usize);
 
