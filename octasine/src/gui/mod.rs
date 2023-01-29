@@ -80,17 +80,17 @@ pub struct GuiSettings {
 pub enum Message {
     NoOp,
     Frame,
-    ChangeSingleParameterBegin(Parameter),
-    ChangeSingleParameterEnd(Parameter),
-    ChangeSingleParameterSetValue(Parameter, f32),
-    ChangeSingleParameterImmediate(Parameter, f32),
+    ChangeSingleParameterBegin(WrappedParameter),
+    ChangeSingleParameterEnd(WrappedParameter),
+    ChangeSingleParameterSetValue(WrappedParameter, f32),
+    ChangeSingleParameterImmediate(WrappedParameter, f32),
     /// End envelope edit.
     ///
     /// Call host.begin_edit, host.automate and host.end_edit.
     ChangeEnvelopeParametersEnd {
         operator_index: u8,
-        parameter_1: (Parameter, f32),
-        parameter_2: Option<(Parameter, f32)>,
+        parameter_1: (WrappedParameter, f32),
+        parameter_2: Option<(WrappedParameter, f32)>,
     },
     /// Set envelope parameters (but don't automate host for performance
     /// reasons). Broadcast all envelope values to group members.
@@ -98,8 +98,8 @@ pub enum Message {
     /// Remember to wrap calls with appropriate begin/end messages
     ChangeEnvelopeParametersSetValue {
         operator_index: u8,
-        parameter_1: (Parameter, f32),
-        parameter_2: Option<(Parameter, f32)>,
+        parameter_1: (WrappedParameter, f32),
+        parameter_2: Option<(WrappedParameter, f32)>,
     },
     ChangePatch(usize),
     /// Set viewport, broadcast it to group members
@@ -122,7 +122,7 @@ pub enum Message {
     ClearBank,
     SaveBankOrPatchToFile(PathBuf, Vec<u8>),
     LoadBankOrPatchesFromPaths(Vec<PathBuf>),
-    ChangeParameterByTextInput(Parameter, String),
+    ChangeParameterByTextInput(WrappedParameter, String),
 }
 
 pub struct OctaSineIcedApplication<H: GuiSyncHandle> {
@@ -319,27 +319,27 @@ impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {
                 .widget
                 .set_viewport(values.viewport_factor, values.x_offset);
 
-            let parameters = [
+            let parameters: [(WrappedParameter, f32); 4] = [
                 (
-                    Parameter::Operator(index as u8, OperatorParameter::AttackDuration),
+                    Parameter::Operator(index as u8, OperatorParameter::AttackDuration).into(),
                     values.attack,
                 ),
                 (
-                    Parameter::Operator(index as u8, OperatorParameter::DecayDuration),
+                    Parameter::Operator(index as u8, OperatorParameter::DecayDuration).into(),
                     values.decay,
                 ),
                 (
-                    Parameter::Operator(index as u8, OperatorParameter::SustainVolume),
+                    Parameter::Operator(index as u8, OperatorParameter::SustainVolume).into(),
                     values.sustain,
                 ),
                 (
-                    Parameter::Operator(index as u8, OperatorParameter::ReleaseDuration),
+                    Parameter::Operator(index as u8, OperatorParameter::ReleaseDuration).into(),
                     values.release,
                 ),
             ];
 
             for (p, v) in parameters {
-                self.set_value(p, v, true);
+                self.set_value(p.parameter(), v, true);
 
                 if automate_host {
                     self.sync_handle.begin_edit(p);
@@ -517,12 +517,12 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                 self.sync_handle.end_edit(parameter);
             }
             Message::ChangeSingleParameterSetValue(parameter, value) => {
-                self.set_value(parameter, value, true);
+                self.set_value(parameter.parameter(), value, true);
 
                 self.sync_handle.set_parameter(parameter, value);
             }
             Message::ChangeSingleParameterImmediate(parameter, value) => {
-                self.set_value(parameter, value, true);
+                self.set_value(parameter.parameter(), value, true);
 
                 self.sync_handle.begin_edit(parameter);
                 self.sync_handle.set_parameter(parameter, value);
@@ -533,14 +533,14 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                 parameter_1,
                 parameter_2,
             } => {
-                self.set_value(parameter_1.0, parameter_1.1, true);
+                self.set_value(parameter_1.0.parameter(), parameter_1.1, true);
 
                 self.sync_handle.begin_edit(parameter_1.0);
                 self.sync_handle.set_parameter(parameter_1.0, parameter_1.1);
                 self.sync_handle.end_edit(parameter_1.0);
 
                 if let Some((p, v)) = parameter_2 {
-                    self.set_value(p, v, true);
+                    self.set_value(p.parameter(), v, true);
 
                     self.sync_handle.begin_edit(p);
                     self.sync_handle.set_parameter(p, v);
@@ -554,13 +554,13 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                 parameter_1,
                 parameter_2,
             } => {
-                self.set_value(parameter_1.0, parameter_1.1, true);
+                self.set_value(parameter_1.0.parameter(), parameter_1.1, true);
 
                 self.sync_handle
                     .set_parameter_audio_only(parameter_1.0, parameter_1.1);
 
                 if let Some((p, v)) = parameter_2 {
-                    self.set_value(p, v, true);
+                    self.set_value(p.parameter(), v, true);
 
                     self.sync_handle.set_parameter_audio_only(p, v);
                 }
@@ -782,14 +782,17 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
             Message::ChangeParameterByTextInput(parameter, current_text_value) => {
                 if let Some(new_text_value) = tinyfiledialogs::input_box(
                     "Change OctaSine parameter value",
-                    &format!("Please provide a new value for {}", parameter.name()),
+                    &format!(
+                        "Please provide a new value for {}",
+                        parameter.parameter().name()
+                    ),
                     &current_text_value,
                 ) {
                     if let Some(new_value) = self
                         .sync_handle
                         .set_parameter_from_text(parameter, new_text_value)
                     {
-                        self.set_value(parameter, new_value, true);
+                        self.set_value(parameter.parameter(), new_value, true);
                     }
                 }
             }

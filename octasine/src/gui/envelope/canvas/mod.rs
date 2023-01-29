@@ -10,7 +10,7 @@ use crate::parameters::operator_envelope::{
     OperatorAttackDurationValue, OperatorDecayDurationValue, OperatorEnvelopeGroupValue,
     OperatorReleaseDurationValue, OperatorSustainVolumeValue,
 };
-use crate::parameters::{OperatorParameter, Parameter, ParameterValue};
+use crate::parameters::{OperatorParameter, Parameter, ParameterValue, WrappedParameter};
 use crate::sync::GuiSyncHandle;
 
 use super::super::style::Theme;
@@ -48,32 +48,43 @@ pub struct EnvelopeCanvas {
     attack_dragger: EnvelopeDragger,
     decay_dragger: EnvelopeDragger,
     release_dragger: EnvelopeDragger,
+    attack_duration_parameter: WrappedParameter,
+    decay_duration_parameter: WrappedParameter,
+    sustain_volume_parameter: WrappedParameter,
+    release_duration_parameter: WrappedParameter,
 }
 
 impl EnvelopeCanvas {
     pub fn new<H: GuiSyncHandle>(sync_handle: &H, operator_index: usize) -> Self {
         let operator_index = operator_index as u8;
 
-        let attack_duration =
-            OperatorAttackDurationValue::new_from_patch(sync_handle.get_parameter(
-                Parameter::Operator(operator_index, OperatorParameter::AttackDuration),
-            ))
-            .to_patch();
-        let decay_duration = OperatorDecayDurationValue::new_from_patch(sync_handle.get_parameter(
-            Parameter::Operator(operator_index, OperatorParameter::DecayDuration),
-        ))
+        let attack_duration_parameter =
+            Parameter::Operator(operator_index, OperatorParameter::AttackDuration).into();
+        let decay_duration_parameter =
+            Parameter::Operator(operator_index, OperatorParameter::DecayDuration).into();
+        let sustain_volume_parameter =
+            Parameter::Operator(operator_index, OperatorParameter::SustainVolume).into();
+        let release_duration_parameter =
+            Parameter::Operator(operator_index, OperatorParameter::ReleaseDuration).into();
+
+        let attack_duration = OperatorAttackDurationValue::new_from_patch(
+            sync_handle.get_parameter(attack_duration_parameter),
+        )
         .to_patch();
-        let release_duration =
-            OperatorReleaseDurationValue::new_from_patch(sync_handle.get_parameter(
-                Parameter::Operator(operator_index, OperatorParameter::ReleaseDuration),
-            ))
-            .to_patch();
-        let sustain_volume = OperatorSustainVolumeValue::new_from_patch(sync_handle.get_parameter(
-            Parameter::Operator(operator_index, OperatorParameter::SustainVolume),
-        ))
+        let decay_duration = OperatorDecayDurationValue::new_from_patch(
+            sync_handle.get_parameter(decay_duration_parameter),
+        )
+        .to_patch();
+        let sustain_volume = OperatorSustainVolumeValue::new_from_patch(
+            sync_handle.get_parameter(sustain_volume_parameter),
+        )
+        .to_patch();
+        let release_duration = OperatorReleaseDurationValue::new_from_patch(
+            sync_handle.get_parameter(release_duration_parameter),
+        )
         .to_patch();
         let group = OperatorEnvelopeGroupValue::new_from_patch(sync_handle.get_parameter(
-            Parameter::Operator(operator_index, OperatorParameter::EnvelopeLockGroup),
+            Parameter::Operator(operator_index, OperatorParameter::EnvelopeLockGroup).into(),
         ));
 
         let mut envelope = Self {
@@ -95,6 +106,10 @@ impl EnvelopeCanvas {
             attack_dragger: Default::default(),
             decay_dragger: Default::default(),
             release_dragger: Default::default(),
+            attack_duration_parameter,
+            decay_duration_parameter,
+            sustain_volume_parameter,
+            release_duration_parameter,
         };
 
         let (viewport_factor, x_offset) = envelope.get_zoom_to_fit_data();

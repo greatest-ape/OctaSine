@@ -10,7 +10,7 @@ use crate::parameters::{
     MasterFrequencyValue, MasterParameter, MasterVolumeValue, OperatorFeedbackValue,
     OperatorFrequencyFineValue, OperatorFrequencyFreeValue, OperatorFrequencyRatioValue,
     OperatorMixOutValue, OperatorModOutValue, OperatorPanningValue, OperatorParameter,
-    OperatorVolumeValue, Parameter, ParameterValue,
+    OperatorVolumeValue, Parameter, ParameterValue, WrappedParameter,
 };
 use crate::sync::GuiSyncHandle;
 
@@ -231,7 +231,7 @@ pub struct OctaSineKnob<P: ParameterValue> {
     value: NormalParam,
     value_text: ValueText<P>,
     default_value: Normal,
-    parameter: Parameter,
+    parameter: WrappedParameter,
     phantom_data: ::std::marker::PhantomData<P>,
     knob_style: KnobStyle,
 }
@@ -265,6 +265,8 @@ where
         default_patch_value: f32,
         knob_style: KnobStyle,
     ) -> Self {
+        let parameter = parameter.into();
+
         let default_value = Normal::from_clipped(default_patch_value);
         let value = NormalParam {
             value: Normal::from_clipped(sync_handle.get_parameter(parameter) as f32),

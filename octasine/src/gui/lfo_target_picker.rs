@@ -5,6 +5,7 @@ use crate::parameters::lfo_target::LfoTargetParameter;
 use crate::parameters::{
     get_lfo_target_parameters, Lfo1TargetParameterValue, Lfo2TargetParameterValue,
     Lfo3TargetParameterValue, Lfo4TargetParameterValue, LfoParameter, Parameter, ParameterValue,
+    WrappedParameter,
 };
 
 use super::{style::Theme, GuiSyncHandle, Message, FONT_SIZE};
@@ -25,12 +26,12 @@ pub struct LfoTargetPicker {
     options: Vec<LfoTarget>,
     selected: usize,
     lfo_index: usize,
-    parameter: Parameter,
+    parameter: WrappedParameter,
 }
 
 impl LfoTargetPicker {
     pub fn new<H: GuiSyncHandle>(sync_handle: &H, lfo_index: usize) -> Self {
-        let parameter = Parameter::Lfo(lfo_index as u8, LfoParameter::Target);
+        let parameter = Parameter::Lfo(lfo_index as u8, LfoParameter::Target).into();
         let sync_value = sync_handle.get_parameter(parameter);
         let selected = Self::get_index_from_sync(lfo_index, sync_value);
         let target_parameters = get_lfo_target_parameters(lfo_index);

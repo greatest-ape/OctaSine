@@ -5,7 +5,7 @@ use parking_lot::Mutex;
 
 use crate::{
     common::EventToHost,
-    parameters::Parameter,
+    parameters::WrappedParameter,
     settings::Settings,
     sync::{
         change_info::MAX_NUM_PARAMETERS,
@@ -60,28 +60,26 @@ impl ClapGuiSyncHandle {
 }
 
 impl GuiSyncHandle for Arc<SyncState<ClapGuiSyncHandle>> {
-    fn begin_edit(&self, parameter: Parameter) {
+    fn begin_edit(&self, parameter: WrappedParameter) {
         if let Some(handle) = &self.host {
-            // FIXME: parameter.key() needs to be constant or API has to be changed
             handle.send_event(EventToHost::StartAutomating(parameter.key()))
         }
     }
-    fn end_edit(&self, parameter: Parameter) {
+    fn end_edit(&self, parameter: WrappedParameter) {
         if let Some(handle) = &self.host {
             handle.send_event(EventToHost::EndAutomating(parameter.key()))
         }
     }
-    fn set_parameter(&self, parameter: Parameter, value: f32) {
-        let index = parameter.to_index() as usize;
-
+    fn set_parameter(&self, parameter: WrappedParameter, value: f32) {
         if let Some(host) = &self.host {
             host.send_event(EventToHost::Automate(parameter.key(), value));
         }
 
-        self.patches.set_parameter_from_gui(index, value);
+        self.patches
+            .set_parameter_from_gui(parameter.index() as usize, value);
     }
-    fn set_parameter_from_text(&self, parameter: Parameter, text: String) -> Option<f32> {
-        let index = parameter.to_index() as usize;
+    fn set_parameter_from_text(&self, parameter: WrappedParameter, text: String) -> Option<f32> {
+        let index = parameter.index() as usize;
 
         if self.patches.set_parameter_text_from_gui(index, text) {
             let value = self.patches.get_parameter_value(index).unwrap();
@@ -101,18 +99,18 @@ impl GuiSyncHandle for Arc<SyncState<ClapGuiSyncHandle>> {
             None
         }
     }
-    fn set_parameter_audio_only(&self, parameter: Parameter, value: f32) {
+    fn set_parameter_audio_only(&self, parameter: WrappedParameter, value: f32) {
         self.patches
-            .set_parameter_from_gui(parameter.to_index() as usize, value);
+            .set_parameter_from_gui(parameter.index() as usize, value);
     }
-    fn get_parameter(&self, parameter: Parameter) -> f32 {
+    fn get_parameter(&self, parameter: WrappedParameter) -> f32 {
         self.patches
-            .get_parameter_value(parameter.to_index() as usize)
+            .get_parameter_value(parameter.index() as usize)
             .unwrap() // FIXME: unwrap
     }
-    fn format_parameter_value(&self, parameter: Parameter, value: f32) -> String {
+    fn format_parameter_value(&self, parameter: WrappedParameter, value: f32) -> String {
         self.patches
-            .format_parameter_value(parameter.to_index() as usize, value)
+            .format_parameter_value(parameter.index() as usize, value)
             .unwrap() // FIXME: unwrap
     }
     fn get_patches(&self) -> (usize, Vec<String>) {

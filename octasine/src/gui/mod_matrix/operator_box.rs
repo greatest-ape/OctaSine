@@ -1,6 +1,6 @@
 use crate::gui::style::Theme;
 use crate::gui::{Message, SnapPoint, FONT_SIZE};
-use crate::parameters::{OperatorParameter, Parameter};
+use crate::parameters::{OperatorParameter, Parameter, WrappedParameter};
 use iced_baseview::widget::canvas::{event, Frame, Path, Stroke, Text};
 use iced_baseview::{mouse, Point, Rectangle, Size};
 
@@ -25,6 +25,7 @@ pub struct OperatorBox {
     path: Path,
     center: Point,
     hitbox: Rectangle,
+    parameter: WrappedParameter,
 }
 
 impl OperatorBox {
@@ -76,11 +77,12 @@ impl OperatorBox {
             path,
             center,
             hitbox: rect,
+            parameter: Parameter::Operator(index as u8, OperatorParameter::MixOut).into(),
         }
     }
 
-    fn get_parameter(&self) -> Parameter {
-        Parameter::Operator(self.index as u8, OperatorParameter::MixOut)
+    fn get_parameter(&self) -> WrappedParameter {
+        self.parameter
     }
 
     pub fn get_center(&self) -> Point {

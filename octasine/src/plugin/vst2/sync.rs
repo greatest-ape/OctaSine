@@ -4,10 +4,9 @@ use std::sync::Arc;
 #[cfg(feature = "gui")]
 use vst::host::Host;
 
-use crate::sync::SyncState;
+use crate::{parameters::WrappedParameter, sync::SyncState};
 #[cfg(feature = "gui")]
 use crate::{
-    parameters::Parameter,
     settings::Settings,
     sync::{
         change_info::MAX_NUM_PARAMETERS,
@@ -113,18 +112,18 @@ impl vst::plugin::PluginParameters for SyncState<vst::plugin::HostCallback> {
 
 #[cfg(feature = "gui")]
 impl crate::sync::GuiSyncHandle for Arc<SyncState<vst::plugin::HostCallback>> {
-    fn begin_edit(&self, parameter: Parameter) {
+    fn begin_edit(&self, parameter: WrappedParameter) {
         if let Some(host) = self.host {
-            host.begin_edit(parameter.to_index() as i32);
+            host.begin_edit(parameter.index() as i32);
         }
     }
-    fn end_edit(&self, parameter: Parameter) {
+    fn end_edit(&self, parameter: WrappedParameter) {
         if let Some(host) = self.host {
-            host.end_edit(parameter.to_index() as i32);
+            host.end_edit(parameter.index() as i32);
         }
     }
-    fn set_parameter(&self, parameter: Parameter, value: f32) {
-        let index = parameter.to_index() as usize;
+    fn set_parameter(&self, parameter: WrappedParameter, value: f32) {
+        let index = parameter.index() as usize;
 
         if let Some(host) = self.host {
             // Host will occasionally set the value again, but that's
@@ -134,8 +133,8 @@ impl crate::sync::GuiSyncHandle for Arc<SyncState<vst::plugin::HostCallback>> {
 
         self.patches.set_parameter_from_gui(index, value);
     }
-    fn set_parameter_from_text(&self, parameter: Parameter, text: String) -> Option<f32> {
-        let index = parameter.to_index() as usize;
+    fn set_parameter_from_text(&self, parameter: WrappedParameter, text: String) -> Option<f32> {
+        let index = parameter.index() as usize;
 
         if self.patches.set_parameter_text_from_gui(index, text) {
             let value = self.patches.get_parameter_value(index).unwrap();
@@ -151,18 +150,18 @@ impl crate::sync::GuiSyncHandle for Arc<SyncState<vst::plugin::HostCallback>> {
             None
         }
     }
-    fn set_parameter_audio_only(&self, parameter: Parameter, value: f32) {
+    fn set_parameter_audio_only(&self, parameter: WrappedParameter, value: f32) {
         self.patches
-            .set_parameter_from_gui(parameter.to_index() as usize, value);
+            .set_parameter_from_gui(parameter.index() as usize, value);
     }
-    fn get_parameter(&self, parameter: Parameter) -> f32 {
+    fn get_parameter(&self, parameter: WrappedParameter) -> f32 {
         self.patches
-            .get_parameter_value(parameter.to_index() as usize)
+            .get_parameter_value(parameter.index() as usize)
             .unwrap() // FIXME: unwrap
     }
-    fn format_parameter_value(&self, parameter: Parameter, value: f32) -> String {
+    fn format_parameter_value(&self, parameter: WrappedParameter, value: f32) -> String {
         self.patches
-            .format_parameter_value(parameter.to_index() as usize, value)
+            .format_parameter_value(parameter.index() as usize, value)
             .unwrap() // FIXME: unwrap
     }
     fn get_patches(&self) -> (usize, Vec<String>) {

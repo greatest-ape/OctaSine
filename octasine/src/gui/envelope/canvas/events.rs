@@ -3,7 +3,6 @@ use iced_baseview::{Point, Rectangle};
 
 use crate::gui::Message;
 use crate::parameters::operator_envelope::{ENVELOPE_MAX_DURATION, ENVELOPE_MIN_DURATION};
-use crate::parameters::{OperatorParameter, Parameter};
 
 use super::common::*;
 use super::EnvelopeCanvas;
@@ -117,7 +116,7 @@ impl EnvelopeCanvas {
                 let message = Message::ChangeEnvelopeParametersSetValue {
                     operator_index: self.operator_index,
                     parameter_1: (
-                        Parameter::Operator(self.operator_index, OperatorParameter::AttackDuration),
+                        self.attack_duration_parameter,
                         dragging_to_duration(self.viewport_factor, x, from, original_duration)
                             as f32,
                     ),
@@ -159,12 +158,12 @@ impl EnvelopeCanvas {
                 let message = Message::ChangeEnvelopeParametersSetValue {
                     operator_index: self.operator_index,
                     parameter_1: (
-                        Parameter::Operator(self.operator_index, OperatorParameter::DecayDuration),
+                        self.decay_duration_parameter,
                         dragging_to_duration(self.viewport_factor, x, from, original_duration)
                             as f32,
                     ),
                     parameter_2: Some((
-                        Parameter::Operator(self.operator_index, OperatorParameter::SustainVolume),
+                        self.sustain_volume_parameter,
                         dragging_to_end_value(y, from, original_end_value) as f32,
                     )),
                 };
@@ -210,10 +209,7 @@ impl EnvelopeCanvas {
                 let message = Message::ChangeEnvelopeParametersSetValue {
                     operator_index: self.operator_index,
                     parameter_1: (
-                        Parameter::Operator(
-                            self.operator_index,
-                            OperatorParameter::ReleaseDuration,
-                        ),
+                        self.release_duration_parameter,
                         dragging_to_duration(self.viewport_factor, x, from, original_duration)
                             as f32,
                     ),
@@ -267,10 +263,7 @@ impl EnvelopeCanvas {
 
             let message = Message::ChangeEnvelopeParametersEnd {
                 operator_index: self.operator_index as u8,
-                parameter_1: (
-                    Parameter::Operator(self.operator_index, OperatorParameter::ReleaseDuration),
-                    self.release_duration,
-                ),
+                parameter_1: (self.release_duration_parameter, self.release_duration),
                 parameter_2: None,
             };
 
@@ -282,14 +275,8 @@ impl EnvelopeCanvas {
 
             let message = Message::ChangeEnvelopeParametersEnd {
                 operator_index: self.operator_index as u8,
-                parameter_1: (
-                    Parameter::Operator(self.operator_index, OperatorParameter::DecayDuration),
-                    self.decay_duration,
-                ),
-                parameter_2: Some((
-                    Parameter::Operator(self.operator_index, OperatorParameter::SustainVolume),
-                    self.sustain_volume,
-                )),
+                parameter_1: (self.decay_duration_parameter, self.decay_duration),
+                parameter_2: Some((self.sustain_volume_parameter, self.sustain_volume)),
             };
 
             self.cache.clear();
@@ -300,10 +287,7 @@ impl EnvelopeCanvas {
 
             let message = Message::ChangeEnvelopeParametersEnd {
                 operator_index: self.operator_index as u8,
-                parameter_1: (
-                    Parameter::Operator(self.operator_index, OperatorParameter::AttackDuration),
-                    self.attack_duration,
-                ),
+                parameter_1: (self.attack_duration_parameter, self.attack_duration),
                 parameter_2: None,
             };
 

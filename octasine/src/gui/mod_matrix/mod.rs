@@ -81,33 +81,33 @@ struct ModulationMatrixParameters {
 impl ModulationMatrixParameters {
     fn new<H: GuiSyncHandle>(sync_handle: &H) -> Self {
         let operator_2_targets = Operator2ModulationTargetValue::new_from_patch(
-            sync_handle.get_parameter(Parameter::Operator(1, OperatorParameter::ModTargets)),
+            sync_handle.get_parameter(Parameter::Operator(1, OperatorParameter::ModTargets).into()),
         )
         .get();
         let operator_3_targets = Operator3ModulationTargetValue::new_from_patch(
-            sync_handle.get_parameter(Parameter::Operator(2, OperatorParameter::ModTargets)),
+            sync_handle.get_parameter(Parameter::Operator(2, OperatorParameter::ModTargets).into()),
         )
         .get();
         let operator_4_targets = Operator4ModulationTargetValue::new_from_patch(
-            sync_handle.get_parameter(Parameter::Operator(3, OperatorParameter::ModTargets)),
+            sync_handle.get_parameter(Parameter::Operator(3, OperatorParameter::ModTargets).into()),
         )
         .get();
 
         let operator_1_mix =
-            sync_handle.get_parameter(Parameter::Operator(0, OperatorParameter::MixOut));
+            sync_handle.get_parameter(Parameter::Operator(0, OperatorParameter::MixOut).into());
         let operator_2_mix =
-            sync_handle.get_parameter(Parameter::Operator(1, OperatorParameter::MixOut));
+            sync_handle.get_parameter(Parameter::Operator(1, OperatorParameter::MixOut).into());
         let operator_3_mix =
-            sync_handle.get_parameter(Parameter::Operator(2, OperatorParameter::MixOut));
+            sync_handle.get_parameter(Parameter::Operator(2, OperatorParameter::MixOut).into());
         let operator_4_mix =
-            sync_handle.get_parameter(Parameter::Operator(3, OperatorParameter::MixOut));
+            sync_handle.get_parameter(Parameter::Operator(3, OperatorParameter::MixOut).into());
 
         let operator_2_mod =
-            sync_handle.get_parameter(Parameter::Operator(1, OperatorParameter::ModOut));
+            sync_handle.get_parameter(Parameter::Operator(1, OperatorParameter::ModOut).into());
         let operator_3_mod =
-            sync_handle.get_parameter(Parameter::Operator(2, OperatorParameter::ModOut));
+            sync_handle.get_parameter(Parameter::Operator(2, OperatorParameter::ModOut).into());
         let operator_4_mod =
-            sync_handle.get_parameter(Parameter::Operator(3, OperatorParameter::ModOut));
+            sync_handle.get_parameter(Parameter::Operator(3, OperatorParameter::ModOut).into());
 
         Self {
             operator_2_targets,
@@ -156,7 +156,7 @@ impl ModulationMatrixComponents {
             bounds,
             3,
             2,
-            Parameter::Operator(3, OperatorParameter::ModTargets),
+            Parameter::Operator(3, OperatorParameter::ModTargets).into(),
             2,
             parameters.operator_4_targets,
         );
@@ -164,7 +164,7 @@ impl ModulationMatrixComponents {
             bounds,
             3,
             1,
-            Parameter::Operator(3, OperatorParameter::ModTargets),
+            Parameter::Operator(3, OperatorParameter::ModTargets).into(),
             1,
             parameters.operator_4_targets,
         );
@@ -172,7 +172,7 @@ impl ModulationMatrixComponents {
             bounds,
             3,
             0,
-            Parameter::Operator(3, OperatorParameter::ModTargets),
+            Parameter::Operator(3, OperatorParameter::ModTargets).into(),
             0,
             parameters.operator_4_targets,
         );
@@ -180,7 +180,7 @@ impl ModulationMatrixComponents {
             bounds,
             2,
             1,
-            Parameter::Operator(2, OperatorParameter::ModTargets),
+            Parameter::Operator(2, OperatorParameter::ModTargets).into(),
             1,
             parameters.operator_3_targets,
         );
@@ -188,7 +188,7 @@ impl ModulationMatrixComponents {
             bounds,
             2,
             0,
-            Parameter::Operator(2, OperatorParameter::ModTargets),
+            Parameter::Operator(2, OperatorParameter::ModTargets).into(),
             0,
             parameters.operator_3_targets,
         );
@@ -196,7 +196,7 @@ impl ModulationMatrixComponents {
             bounds,
             1,
             0,
-            Parameter::Operator(1, OperatorParameter::ModTargets),
+            Parameter::Operator(1, OperatorParameter::ModTargets).into(),
             0,
             parameters.operator_2_targets,
         );

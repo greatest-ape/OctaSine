@@ -247,6 +247,36 @@ impl LfoParameter {
     }
 }
 
+/// All metadata for a parameter
+#[derive(Debug, Clone, Copy)]
+pub struct WrappedParameter {
+    parameter: Parameter,
+    index: u8,
+    key: ParameterKey,
+}
+
+impl WrappedParameter {
+    pub fn parameter(&self) -> Parameter {
+        self.parameter
+    }
+    pub fn index(&self) -> u8 {
+        self.index
+    }
+    pub fn key(&self) -> ParameterKey {
+        self.key
+    }
+}
+
+impl From<Parameter> for WrappedParameter {
+    fn from(parameter: Parameter) -> Self {
+        Self {
+            parameter,
+            index: parameter.to_index(),
+            key: parameter.key(),
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use std::collections::HashSet;

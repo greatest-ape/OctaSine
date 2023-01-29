@@ -8,7 +8,7 @@ use crate::parameters::lfo_mode::LfoMode;
 use crate::parameters::operator_envelope::OperatorEnvelopeGroupValue;
 use crate::parameters::{
     LfoActiveValue, LfoBpmSyncValue, LfoModeValue, LfoParameter, OperatorActiveValue,
-    OperatorParameter, Parameter, ParameterValue,
+    OperatorParameter, Parameter, ParameterValue, WrappedParameter,
 };
 use crate::sync::GuiSyncHandle;
 
@@ -147,7 +147,7 @@ pub fn envelope_group_b_button<H: GuiSyncHandle>(
 }
 
 pub struct BooleanButton {
-    parameter: Parameter,
+    parameter: WrappedParameter,
     on: bool,
     cache: Cache,
     bounds_path: Path,
@@ -170,6 +170,8 @@ impl BooleanButton {
         g: fn(bool) -> f32,
         button_style: BooleanButtonStyle,
     ) -> Self {
+        let parameter = parameter.into();
+
         let bounds_path = Path::rectangle(
             Point::new(0.5, 0.5),
             Size::new((width - 1) as f32, (height - 1) as f32),

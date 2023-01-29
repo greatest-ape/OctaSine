@@ -7,7 +7,7 @@ use iced_baseview::{
 };
 
 use crate::common::{CalculateCurve, Phase};
-use crate::parameters::{Parameter, ParameterValue};
+use crate::parameters::{Parameter, ParameterValue, WrappedParameter};
 use crate::sync::GuiSyncHandle;
 
 use super::style::Theme;
@@ -47,6 +47,8 @@ where
     P::Value: CalculateCurve,
 {
     pub fn new<H: GuiSyncHandle>(sync_handle: &H, parameter: Parameter, title: &str) -> Self {
+        let parameter = parameter.into();
+
         let value = P::new_from_patch(sync_handle.get_parameter(parameter));
         let shape = value.get();
 
@@ -101,7 +103,7 @@ struct CanvasState {
 }
 
 struct WavePickerCanvas<P: ParameterValue> {
-    parameter: Parameter,
+    parameter: WrappedParameter,
     cache: Cache,
     bounds_path: Path,
     shape: P::Value,
@@ -112,7 +114,7 @@ where
     P: ParameterValue + Copy + 'static,
     P::Value: CalculateCurve,
 {
-    pub fn new(parameter: Parameter, shape: P::Value) -> Self {
+    pub fn new(parameter: WrappedParameter, shape: P::Value) -> Self {
         let bounds_path = Path::rectangle(
             Point::new(0.5, 0.5),
             Size::new((WIDTH - 1) as f32, (HEIGHT - 1) as f32),

@@ -6,7 +6,7 @@ use iced_baseview::{
 use crate::parameters::operator_mod_target::ModTargetStorage;
 use crate::parameters::{
     Operator2ModulationTargetValue, Operator3ModulationTargetValue, Operator4ModulationTargetValue,
-    OperatorParameter, Parameter, ParameterValue,
+    OperatorParameter, Parameter, ParameterValue, WrappedParameter,
 };
 use crate::sync::GuiSyncHandle;
 
@@ -37,7 +37,7 @@ pub fn operator_4_target<H: GuiSyncHandle>(
 #[derive(Debug, Clone)]
 pub struct ModTargetPicker<P> {
     title: String,
-    parameter: Parameter,
+    parameter: WrappedParameter,
     choices: Vec<usize>,
     parameter_value: P,
 }
@@ -52,7 +52,8 @@ where
         title: &str,
         choices: Vec<usize>,
     ) -> Self {
-        let parameter = Parameter::Operator(operator_index as u8, OperatorParameter::ModTargets);
+        let parameter =
+            Parameter::Operator(operator_index as u8, OperatorParameter::ModTargets).into();
         let sync_value = sync_handle.get_parameter(parameter);
 
         Self {

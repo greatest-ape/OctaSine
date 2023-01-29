@@ -3,7 +3,7 @@ use iced_baseview::{mouse, Point, Rectangle, Size};
 
 use crate::gui::style::Theme;
 use crate::parameters::operator_mod_target::ModTargetStorage;
-use crate::parameters::{Parameter, ParameterValue};
+use crate::parameters::{ParameterValue, WrappedParameter};
 
 use crate::gui::{Message, SnapPoint};
 
@@ -35,7 +35,7 @@ pub struct ModulationBox<P: ParameterValue> {
     path: Path,
     center: Point,
     rect: Rectangle,
-    parameter: Parameter,
+    parameter: WrappedParameter,
     target_index: usize,
     pub v: P::Value,
 }
@@ -48,7 +48,7 @@ where
         bounds: Size,
         from: usize,
         to: usize,
-        parameter: Parameter,
+        parameter: WrappedParameter,
         target_index: usize,
         v: ModTargetStorage,
     ) -> Self {

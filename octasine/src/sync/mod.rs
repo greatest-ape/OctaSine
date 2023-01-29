@@ -25,20 +25,20 @@ impl<H> SyncState<H> {
 
 cfg_if::cfg_if! {
     if #[cfg(feature = "gui")] {
-        use crate::parameters::Parameter;
+        use crate::parameters::WrappedParameter;
         use self::change_info::MAX_NUM_PARAMETERS;
         use self::serde::{SerdePatch, SerdePatchBank};
 
         /// Trait passed to GUI code for encapsulation
         pub trait GuiSyncHandle: Clone + Send + Sync + 'static {
-            fn begin_edit(&self, parameter: Parameter);
-            fn end_edit(&self, parameter: Parameter);
-            fn set_parameter(&self, parameter: Parameter, value: f32);
-            fn set_parameter_from_text(&self, parameter: Parameter, text: String) -> Option<f32>;
+            fn begin_edit(&self, parameter: WrappedParameter);
+            fn end_edit(&self, parameter: WrappedParameter);
+            fn set_parameter(&self, parameter: WrappedParameter, value: f32);
+            fn set_parameter_from_text(&self, parameter: WrappedParameter, text: String) -> Option<f32>;
             /// Set parameter without telling host
-            fn set_parameter_audio_only(&self, parameter: Parameter, value: f32);
-            fn get_parameter(&self, parameter: Parameter) -> f32;
-            fn format_parameter_value(&self, parameter: Parameter, value: f32) -> String;
+            fn set_parameter_audio_only(&self, parameter: WrappedParameter, value: f32);
+            fn get_parameter(&self, parameter: WrappedParameter) -> f32;
+            fn format_parameter_value(&self, parameter: WrappedParameter, value: f32) -> String;
             fn get_patches(&self) -> (usize, Vec<String>);
             fn set_patch_index(&self, index: usize);
             fn get_current_patch_name(&self) -> String;

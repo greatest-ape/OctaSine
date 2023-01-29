@@ -131,51 +131,63 @@ impl WaveDisplay {
             let i = i as u8;
 
             operator.wave_type.replace_from_patch(
-                sync_handle.get_parameter(Parameter::Operator(i, OperatorParameter::WaveType)),
+                sync_handle
+                    .get_parameter(Parameter::Operator(i, OperatorParameter::WaveType).into()),
             );
             operator.active.replace_from_patch(
-                sync_handle.get_parameter(Parameter::Operator(i, OperatorParameter::Active)),
+                sync_handle.get_parameter(Parameter::Operator(i, OperatorParameter::Active).into()),
             );
             operator.volume.replace_from_patch(
-                sync_handle.get_parameter(Parameter::Operator(i, OperatorParameter::Volume)),
+                sync_handle.get_parameter(Parameter::Operator(i, OperatorParameter::Volume).into()),
             );
             operator.frequency_ratio.replace_from_patch(
-                sync_handle
-                    .get_parameter(Parameter::Operator(i, OperatorParameter::FrequencyRatio)),
+                sync_handle.get_parameter(
+                    Parameter::Operator(i, OperatorParameter::FrequencyRatio).into(),
+                ),
             );
-            operator.frequency_free.replace_from_patch(
-                sync_handle.get_parameter(Parameter::Operator(i, OperatorParameter::FrequencyFree)),
-            );
-            operator.frequency_fine.replace_from_patch(
-                sync_handle.get_parameter(Parameter::Operator(i, OperatorParameter::FrequencyFine)),
-            );
+            operator
+                .frequency_free
+                .replace_from_patch(sync_handle.get_parameter(
+                    Parameter::Operator(i, OperatorParameter::FrequencyFree).into(),
+                ));
+            operator
+                .frequency_fine
+                .replace_from_patch(sync_handle.get_parameter(
+                    Parameter::Operator(i, OperatorParameter::FrequencyFine).into(),
+                ));
             operator.feedback.replace_from_patch(
-                sync_handle.get_parameter(Parameter::Operator(i, OperatorParameter::Feedback)),
+                sync_handle
+                    .get_parameter(Parameter::Operator(i, OperatorParameter::Feedback).into()),
             );
             operator.pan.replace_from_patch(
-                sync_handle.get_parameter(Parameter::Operator(i, OperatorParameter::Panning)),
+                sync_handle
+                    .get_parameter(Parameter::Operator(i, OperatorParameter::Panning).into()),
             );
             operator.constant_power_panning = operator.pan.calculate_left_and_right();
             if let Some(v) = operator.mod_out.as_mut() {
                 v.replace_from_patch(
-                    sync_handle.get_parameter(Parameter::Operator(i, OperatorParameter::ModOut)),
+                    sync_handle
+                        .get_parameter(Parameter::Operator(i, OperatorParameter::ModOut).into()),
                 )
             }
 
             match operator.mod_targets.as_mut() {
                 None => (),
-                Some(OperatorModTargets::Two(v)) => v.replace_from_patch(
-                    sync_handle
-                        .get_parameter(Parameter::Operator(i, OperatorParameter::ModTargets)),
-                ),
-                Some(OperatorModTargets::Three(v)) => v.replace_from_patch(
-                    sync_handle
-                        .get_parameter(Parameter::Operator(i, OperatorParameter::ModTargets)),
-                ),
-                Some(OperatorModTargets::Four(v)) => v.replace_from_patch(
-                    sync_handle
-                        .get_parameter(Parameter::Operator(i, OperatorParameter::ModTargets)),
-                ),
+                Some(OperatorModTargets::Two(v)) => {
+                    v.replace_from_patch(sync_handle.get_parameter(
+                        Parameter::Operator(i, OperatorParameter::ModTargets).into(),
+                    ))
+                }
+                Some(OperatorModTargets::Three(v)) => {
+                    v.replace_from_patch(sync_handle.get_parameter(
+                        Parameter::Operator(i, OperatorParameter::ModTargets).into(),
+                    ))
+                }
+                Some(OperatorModTargets::Four(v)) => {
+                    v.replace_from_patch(sync_handle.get_parameter(
+                        Parameter::Operator(i, OperatorParameter::ModTargets).into(),
+                    ))
+                }
             }
         }
 

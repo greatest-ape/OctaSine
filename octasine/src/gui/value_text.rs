@@ -4,8 +4,7 @@ use iced_baseview::alignment::Horizontal;
 use iced_baseview::widget::Text;
 use iced_baseview::{widget::Button, Element, Length};
 
-use crate::parameters::list::Parameter;
-use crate::parameters::ParameterValue;
+use crate::parameters::{ParameterValue, WrappedParameter};
 
 use super::style::button::ButtonStyle;
 use super::LINE_HEIGHT;
@@ -13,13 +12,13 @@ use super::{style::Theme, GuiSyncHandle, Message};
 
 #[derive(Debug, Clone)]
 pub struct ValueText<P: ParameterValue> {
-    parameter: Parameter,
+    parameter: WrappedParameter,
     text: String,
     phantom_data: PhantomData<P>,
 }
 
 impl<P: ParameterValue> ValueText<P> {
-    pub fn new<H: GuiSyncHandle>(sync_handle: &H, parameter: Parameter) -> Self {
+    pub fn new<H: GuiSyncHandle>(sync_handle: &H, parameter: WrappedParameter) -> Self {
         let value = sync_handle.get_parameter(parameter);
         let text = P::new_from_patch(value).get_formatted();
 

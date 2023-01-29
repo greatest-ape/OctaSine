@@ -30,7 +30,7 @@ pub struct Envelope {
 impl Envelope {
     pub fn new<H: GuiSyncHandle>(sync_handle: &H, operator_index: usize) -> Self {
         let group = OperatorEnvelopeGroupValue::new_from_patch(sync_handle.get_parameter(
-            Parameter::Operator(operator_index as u8, OperatorParameter::EnvelopeLockGroup),
+            Parameter::Operator(operator_index as u8, OperatorParameter::EnvelopeLockGroup).into(),
         ));
 
         let group_synced = if let OperatorEnvelopeGroupValue::Off = group {
