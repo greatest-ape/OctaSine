@@ -199,14 +199,10 @@ impl Parameter {
             },
         };
 
-        let mut buf = [0u8; 4];
+        let hash = seahash::hash(name.as_bytes());
+        let first_four_bytes = hash.to_ne_bytes()[..4].try_into().unwrap();
 
-        blake3::Hasher::new()
-            .update(name.as_bytes())
-            .finalize_xof()
-            .fill(&mut buf);
-
-        ParameterKey(u32::from_le_bytes(buf))
+        ParameterKey(u32::from_ne_bytes(first_four_bytes))
     }
 }
 
