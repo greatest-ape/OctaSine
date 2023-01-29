@@ -35,7 +35,7 @@ impl OctaSine {
     fn create(host: Option<HostCallback>) -> Self {
         // If initialization of logging fails, we can't do much about it, but
         // we shouldn't panic
-        let _ = init_logging();
+        let _ = init_logging("vst2");
 
         let sync = Arc::new(SyncState::new(host));
 

@@ -21,7 +21,7 @@ pub fn update_audio_parameters<T>(audio: &mut AudioState, sync: &SyncState<T>) {
     }
 }
 
-pub fn init_logging() -> anyhow::Result<()> {
+pub fn init_logging(plugin_type: &str) -> anyhow::Result<()> {
     let log_folder: PathBuf = get_file_storage_dir()?;
 
     // Ignore any creation error
@@ -41,7 +41,7 @@ pub fn init_logging() -> anyhow::Result<()> {
     ::log::info!("init");
 
     ::log::info!("OS: {}", ::os_info::get());
-    ::log::info!("OctaSine build: {}", get_version_info());
+    ::log::info!("OctaSine build: {} ({})", get_version_info(), plugin_type);
 
     ::log::set_max_level(simplelog::LevelFilter::Error);
 

@@ -51,7 +51,7 @@ pub struct OctaSine {
 
 impl OctaSine {
     pub fn new(host: *const clap_host) -> Arc<Self> {
-        let _ = init_logging();
+        let _ = init_logging("clap");
 
         let (gui_event_producer, gui_event_consumer) = rtrb::RingBuffer::new(512);
 
