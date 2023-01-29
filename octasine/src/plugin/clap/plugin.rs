@@ -339,7 +339,7 @@ impl OctaSine {
 
                     self.audio
                         .lock()
-                        .set_parameter_from_patch(p.parameter, value)
+                        .set_parameter_from_patch(p.parameter.parameter(), value)
                 }
             }
             CLAP_EVENT_TRANSPORT => {
