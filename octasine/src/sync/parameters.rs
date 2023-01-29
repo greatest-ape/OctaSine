@@ -10,7 +10,6 @@ pub struct PatchParameter {
     pub value_from_text: fn(String) -> Option<f32>, // FIXME: should just require &str
     pub format: fn(f32) -> String,
     pub default_value: f32,
-    pub clap_name: &'static str,
     pub clap_path: String,
     pub key: ParameterKey,
     pub parameter: Parameter,
@@ -94,7 +93,6 @@ impl PatchParameter {
             value_from_text: |v| V::new_from_text(v).map(|v| v.to_patch()),
             format: |v| V::new_from_patch(v).get_formatted(),
             default_value: V::default().to_patch(),
-            clap_name: parameter.clap_name(),
             clap_path: parameter.clap_path(),
             key: parameter.key(),
             parameter,

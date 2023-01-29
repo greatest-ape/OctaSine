@@ -43,7 +43,7 @@ pub unsafe extern "C" fn get_info(
             id: parameter.parameter.key().0,
             flags: CLAP_PARAM_IS_AUTOMATABLE,
             cookie: param_index as usize as *mut c_void,
-            name: make_c_char_arr(&parameter.clap_name),
+            name: make_c_char_arr(&parameter.name),
             module: make_c_char_arr(&parameter.clap_path),
             min_value: 0.0,
             max_value: 1.0,

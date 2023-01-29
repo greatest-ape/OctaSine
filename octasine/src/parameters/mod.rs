@@ -128,42 +128,6 @@ impl Parameter {
         }
     }
 
-    pub fn clap_name(&self) -> &'static str {
-        match self {
-            Self::None => "None",
-            Self::Master(MasterParameter::Frequency) => "Frequency",
-            Self::Master(MasterParameter::Volume) => "Volume",
-            Self::Operator(_index, p) => match p {
-                OperatorParameter::Volume => "Volume",
-                OperatorParameter::Active => "Active",
-                OperatorParameter::MixOut => "Mix out",
-                OperatorParameter::Panning => "Panning",
-                OperatorParameter::WaveType => "Wave",
-                OperatorParameter::ModTargets => "Mod targets",
-                OperatorParameter::ModOut => "Mod out",
-                OperatorParameter::Feedback => "Feedback",
-                OperatorParameter::FrequencyRatio => "Frequency (ratio)",
-                OperatorParameter::FrequencyFree => "Frequency (free)",
-                OperatorParameter::FrequencyFine => "Frequency (fine)",
-                OperatorParameter::AttackDuration => "Attack",
-                OperatorParameter::DecayDuration => "Decay",
-                OperatorParameter::SustainVolume => "Sustain",
-                OperatorParameter::ReleaseDuration => "Release",
-                OperatorParameter::EnvelopeLockGroup => "Envelope lock group",
-            },
-            Self::Lfo(_index, p) => match p {
-                LfoParameter::Target => "Target",
-                LfoParameter::BpmSync => "BPM sync",
-                LfoParameter::FrequencyRatio => "Frequency (ratio)",
-                LfoParameter::FrequencyFree => "Frequency (free)",
-                LfoParameter::Mode => "Oneshot",
-                LfoParameter::Shape => "Shape",
-                LfoParameter::Amount => "Amount",
-                LfoParameter::Active => "Active,",
-            },
-        }
-    }
-
     pub fn key(&self) -> ParameterKey {
         let name = match self {
             Self::None => "None".into(),
