@@ -1,14 +1,10 @@
 # TODO
 
 * clap
-  * process: how is last sample and any events coming in on it handled? I think it's ok,
-    but I should log any remaining events and notably their time field
   * see if I can change the gui and GuiSyncHandle API to also include parameter key, like
     by using WrappedParameter or similar, which would contain parameter, index and key
   * consider using the functionality for sending parameter cookies, send index of parameter¨
     in that case
-  * events from GUI should probably be handled as often as possible in process, not only at end?
-    do they even update audio state?
   * check for null everywhere
   * test, including patches
   * add output note port for sending note_end events

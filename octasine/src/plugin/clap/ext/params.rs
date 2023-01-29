@@ -161,7 +161,7 @@ pub unsafe extern "C" fn flush(
     }
 
     if !out_events.is_null() {
-        plugin.handle_events_from_gui(&*out_events, 0);
+        plugin.send_gui_events_to_host(&*out_events, 0);
         plugin.send_note_end_events_to_host(&*out_events);
     }
 }

@@ -183,6 +183,7 @@ impl OctaSine {
         let mut process_end_index = process.frames_count;
         let mut event_index = 0u32;
 
+        // Split buffer into segments by events, generate audio
         loop {
             if let Some((num_events, get_fn)) = opt_in_event_data {
                 while event_index < num_events {
@@ -198,6 +199,12 @@ impl OctaSine {
 
                     event_index += 1;
                 }
+            }
+
+            if !process.out_events.is_null() {
+                let out_events = &*(process.out_events);
+
+                plugin.send_gui_events_to_host(out_events, process_start_index);
             }
 
             {
@@ -220,28 +227,24 @@ impl OctaSine {
             process_end_index = process.frames_count;
         }
 
-        if let Some((num_events, _)) = opt_in_event_data {
-            if num_events != event_index {
-                ::log::error!(
-                    "OctaSine::process: didn't process all events. num_events={}, event_index={}",
-                    num_events,
-                    event_index
-                );
+        // Log any unhandled events. Should never happen.
+        if let Some((num_events, get_fn)) = opt_in_event_data {
+            while event_index < num_events {
+                let event_header = get_fn(process.in_events, event_index);
+
+                if !event_header.is_null() {
+                    ::log::error!("OctaSine::process: unhandled event: {:?}", *event_header);
+                }
+
+                event_index += 1;
             }
         }
 
         if !process.out_events.is_null() {
             let out_events = &*(process.out_events);
 
+            // For efficiency, do this only once per process call
             plugin.send_note_end_events_to_host(out_events);
-
-            let time = if process.frames_count == 0 {
-                0
-            } else {
-                process.frames_count - 1
-            };
-
-            plugin.handle_events_from_gui(out_events, time);
         }
 
         CLAP_PROCESS_CONTINUE
@@ -349,7 +352,7 @@ impl OctaSine {
         }
     }
 
-    pub unsafe fn handle_events_from_gui(&self, out_events: &clap_output_events, time: u32) {
+    pub unsafe fn send_gui_events_to_host(&self, out_events: &clap_output_events, time: u32) {
         if let Some(try_push_fn) = out_events.try_push {
             let mut event_consumer = self.gui_event_consumer.lock();
 
