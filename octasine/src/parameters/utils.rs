@@ -75,7 +75,7 @@ pub fn round_to_step(steps: &[f32], value: f32) -> f32 {
     *steps.last().expect("steps are empty")
 }
 
-pub fn parse_valid_f32(text: String, min: f32, max: f32) -> Option<f32> {
+pub fn parse_valid_f32(text: &str, min: f32, max: f32) -> Option<f32> {
     let value: f32 = text.parse().ok()?;
 
     if value.is_infinite() | value.is_nan() {
@@ -85,7 +85,7 @@ pub fn parse_valid_f32(text: String, min: f32, max: f32) -> Option<f32> {
     }
 }
 
-pub fn parse_valid_f64(text: String, min: f64, max: f64) -> Option<f64> {
+pub fn parse_valid_f64(text: &str, min: f64, max: f64) -> Option<f64> {
     let value: f64 = text.parse().ok()?;
 
     if value.is_infinite() | value.is_nan() {
@@ -268,7 +268,7 @@ mod tests {
                 return TestResult::discard();
             }
 
-            let result = parse_valid_f32(v.to_string(), min, max);
+            let result = parse_valid_f32(&v.to_string(), min, max);
 
             if v.is_infinite() | v.is_nan() {
                 return TestResult::from_bool(result.is_none());

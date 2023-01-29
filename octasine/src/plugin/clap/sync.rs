@@ -78,7 +78,7 @@ impl GuiSyncHandle for Arc<SyncState<ClapGuiSyncHandle>> {
         self.patches
             .set_parameter_from_gui(parameter.index() as usize, value);
     }
-    fn set_parameter_from_text(&self, parameter: WrappedParameter, text: String) -> Option<f32> {
+    fn set_parameter_from_text(&self, parameter: WrappedParameter, text: &str) -> Option<f32> {
         let index = parameter.index() as usize;
 
         if self.patches.set_parameter_text_from_gui(index, text) {

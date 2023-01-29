@@ -790,7 +790,7 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                 ) {
                     if let Some(new_value) = self
                         .sync_handle
-                        .set_parameter_from_text(parameter, new_text_value)
+                        .set_parameter_from_text(parameter, &new_text_value)
                     {
                         self.set_value(parameter.parameter(), new_value, true);
                     }

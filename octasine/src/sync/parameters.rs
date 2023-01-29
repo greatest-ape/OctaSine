@@ -7,7 +7,7 @@ use super::atomic_double::AtomicFloat;
 pub struct PatchParameter {
     value: AtomicFloat,
     pub name: String,
-    pub value_from_text: fn(String) -> Option<f32>, // FIXME: should just require &str
+    pub value_from_text: fn(&str) -> Option<f32>,
     pub format: fn(f32) -> String,
     pub default_value: f32,
     pub clap_path: String,
@@ -120,7 +120,7 @@ impl PatchParameter {
         (self.format)(self.value.get())
     }
 
-    pub fn set_from_text(&self, text: String) -> bool {
+    pub fn set_from_text(&self, text: &str) -> bool {
         if let Some(value) = (self.value_from_text)(text) {
             self.value.set(value);
 

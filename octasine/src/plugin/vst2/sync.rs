@@ -51,7 +51,7 @@ impl vst::plugin::PluginParameters for SyncState<vst::plugin::HostCallback> {
     /// the input string was used.
     fn string_to_parameter(&self, index: i32, text: String) -> bool {
         self.patches
-            .set_parameter_text_from_host(index as usize, text)
+            .set_parameter_text_from_host(index as usize, &text)
     }
 
     /// Return whether parameter at `index` can be automated.
@@ -133,7 +133,7 @@ impl crate::sync::GuiSyncHandle for Arc<SyncState<vst::plugin::HostCallback>> {
 
         self.patches.set_parameter_from_gui(index, value);
     }
-    fn set_parameter_from_text(&self, parameter: WrappedParameter, text: String) -> Option<f32> {
+    fn set_parameter_from_text(&self, parameter: WrappedParameter, text: &str) -> Option<f32> {
         let index = parameter.index() as usize;
 
         if self.patches.set_parameter_text_from_gui(index, text) {

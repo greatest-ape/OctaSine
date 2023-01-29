@@ -16,7 +16,7 @@ impl ParameterValue for OperatorActiveValue {
         Self(value.round())
     }
 
-    fn new_from_text(text: String) -> Option<Self> {
+    fn new_from_text(text: &str) -> Option<Self> {
         match text.trim().to_lowercase().as_str() {
             "on" | "active" => Some(Self(1.0)),
             "off" | "inactive" => Some(Self(0.0)),

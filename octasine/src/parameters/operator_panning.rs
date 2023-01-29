@@ -28,7 +28,7 @@ impl ParameterValue for OperatorPanningValue {
     fn new_from_audio(value: Self::Value) -> Self {
         Self(value)
     }
-    fn new_from_text(text: String) -> Option<Self> {
+    fn new_from_text(text: &str) -> Option<Self> {
         let text = text.trim().to_lowercase();
 
         if text.as_str() == "c" || text.as_str() == "0" {
@@ -38,7 +38,7 @@ impl ParameterValue for OperatorPanningValue {
 
             text.remove(index);
 
-            let value = parse_valid_f32(text, 0.0, 50.0)?;
+            let value = parse_valid_f32(&text, 0.0, 50.0)?;
 
             Some(Self((0.5 + value / 100.0).min(1.0).max(0.0)))
         } else if let Some(index) = text.rfind("l") {
@@ -46,7 +46,7 @@ impl ParameterValue for OperatorPanningValue {
 
             text.remove(index);
 
-            let value = parse_valid_f32(text, 0.0, 50.0)?;
+            let value = parse_valid_f32(&text, 0.0, 50.0)?;
 
             Some(Self((0.5 - value / 100.0).min(1.0).max(0.0)))
         } else {

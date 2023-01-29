@@ -274,7 +274,7 @@ impl PatchBank {
         }
     }
 
-    pub fn set_parameter_text_from_host(&self, index: usize, value: String) -> bool {
+    pub fn set_parameter_text_from_host(&self, index: usize, value: &str) -> bool {
         let opt_parameter = self.get_parameter_by_index(index);
 
         if let Some(parameter) = opt_parameter {
@@ -289,7 +289,7 @@ impl PatchBank {
         false
     }
 
-    pub fn set_parameter_text_from_gui(&self, index: usize, value: String) -> bool {
+    pub fn set_parameter_text_from_gui(&self, index: usize, value: &str) -> bool {
         let opt_parameter = self.get_parameter_by_index(index);
 
         if let Some(parameter) = opt_parameter {

@@ -124,7 +124,7 @@ pub unsafe extern "C" fn text_to_value(
         .get_parameter_by_key(&ParameterKey(param_id))
     {
         if let Ok(text) = CStr::from_ptr(text).to_str() {
-            if let Some(v) = (parameter.value_from_text)(text.into()) {
+            if let Some(v) = (parameter.value_from_text)(text) {
                 *value = v as f64;
             }
 
