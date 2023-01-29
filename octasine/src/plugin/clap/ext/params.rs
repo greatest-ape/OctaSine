@@ -95,11 +95,13 @@ pub unsafe extern "C" fn value_to_text(
         .get_parameter_by_key(&ParameterKey(param_id))
     {
         if let Ok(text) = CString::new((parameter.format)(value as f32)) {
-            let bytes = bytemuck::cast_slice(text.as_bytes_with_nul());
+            let bytes = text.as_bytes_with_nul();
 
             if bytes.len() > c_str_len as usize {
                 return false;
             }
+
+            let c_str_ptr = c_str_ptr as *mut u8;
 
             c_str_ptr.copy_from_nonoverlapping(bytes.as_ptr(), bytes.len());
 
