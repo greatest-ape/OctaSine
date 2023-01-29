@@ -3,8 +3,6 @@
 * clap
   * see if I can change the gui and GuiSyncHandle API to also include parameter key, like
     by using WrappedParameter or similar, which would contain parameter, index and key
-  * consider using the functionality for sending parameter cookies, send index of parameter¨
-    in that case
   * check for null everywhere
   * test, including patches
   * add output note port for sending note_end events

@@ -1,7 +1,4 @@
-use std::{
-    ffi::{CStr, CString},
-    ptr::null_mut,
-};
+use std::ffi::{c_void, CStr, CString};
 
 use clap_sys::{
     events::{clap_input_events, clap_output_events},
@@ -45,7 +42,7 @@ pub unsafe extern "C" fn get_info(
         *param_info = clap_param_info {
             id: parameter.parameter.key().0,
             flags: CLAP_PARAM_IS_AUTOMATABLE,
-            cookie: null_mut(),
+            cookie: param_index as usize as *mut c_void,
             name: make_c_char_arr(&parameter.clap_name),
             module: make_c_char_arr(&parameter.clap_path),
             min_value: 0.0,

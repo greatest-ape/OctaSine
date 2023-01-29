@@ -314,10 +314,22 @@ impl OctaSine {
             CLAP_EVENT_PARAM_VALUE => {
                 let event = &*(event_header as *const clap_event_param_value);
 
-                let key = ParameterKey(event.param_id);
-                let value = event.value as f32;
+                let opt_index_and_parameter = if event.cookie.is_null() {
+                    let key = ParameterKey(event.param_id);
 
-                if let Some((index, p)) = self.sync.patches.get_index_and_parameter_by_key(&key) {
+                    self.sync.patches.get_index_and_parameter_by_key(&key)
+                } else {
+                    let index = event.cookie as u64 as usize;
+
+                    self.sync
+                        .patches
+                        .get_parameter_by_index(index)
+                        .map(|p| (index, p))
+                };
+
+                if let Some((index, p)) = opt_index_and_parameter {
+                    let value = event.value as f32;
+
                     p.set_value(value);
 
                     self.sync
