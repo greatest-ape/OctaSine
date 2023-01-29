@@ -404,7 +404,7 @@ impl OctaSine {
                                 size: size_of::<clap_event_param_value>() as u32,
                                 time,
                                 space_id: CLAP_CORE_EVENT_SPACE_ID,
-                                type_: CLAP_EVENT_PARAM_GESTURE_BEGIN,
+                                type_: CLAP_EVENT_PARAM_VALUE,
                                 flags: CLAP_EVENT_IS_LIVE,
                             },
                             param_id: parameter_key.0,

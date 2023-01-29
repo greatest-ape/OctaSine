@@ -5,12 +5,9 @@ use clap_sys::{
     plugin::clap_plugin,
 };
 
-pub extern "C" fn count(_plugin: *const clap_plugin, is_input: bool) -> u32 {
-    if is_input {
-        1
-    } else {
-        0
-    }
+pub extern "C" fn count(_plugin: *const clap_plugin, _is_input: bool) -> u32 {
+    // One input port, one output port
+    1
 }
 pub unsafe extern "C" fn get(
     _plugin: *const clap_plugin,
@@ -18,11 +15,15 @@ pub unsafe extern "C" fn get(
     is_input: bool,
     info: *mut clap_note_port_info,
 ) -> bool {
-    if index == 0 && is_input {
+    if index < 2 {
         let info = &mut *info;
 
         info.id = 0;
-        info.supported_dialects = CLAP_NOTE_DIALECT_MIDI | CLAP_NOTE_DIALECT_CLAP;
+        info.supported_dialects = if is_input {
+            CLAP_NOTE_DIALECT_MIDI | CLAP_NOTE_DIALECT_CLAP
+        } else {
+            CLAP_NOTE_DIALECT_CLAP
+        };
         info.preferred_dialect = CLAP_NOTE_DIALECT_CLAP;
 
         true
