@@ -365,7 +365,10 @@ mod gen {
                     )
                 }
 
-                voice.deactivate_if_envelopes_ended(position + sample_index);
+                voice.deactivate_if_envelopes_ended(
+                    &mut audio_state.clap_unprocessed_ended_voices,
+                    position + sample_index,
+                );
             }
         }
 

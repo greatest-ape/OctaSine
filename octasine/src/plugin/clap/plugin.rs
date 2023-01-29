@@ -431,34 +431,36 @@ impl OctaSine {
         }
     }
 
-    pub unsafe fn send_note_end_events_to_host(&self, out_events: &clap_output_events) {
+    pub fn send_note_end_events_to_host(&self, out_events: &clap_output_events) {
         if let Some(try_push_fn) = out_events.try_push {
-            for (key, voice) in self
-                .audio
-                .lock()
-                .voices
-                .iter_mut()
-                .enumerate()
-                .filter(|(_, voice)| !voice.active)
-            {
-                if let Some((clap_note_id, time)) = voice.clap_note_data.take() {
-                    let event = clap_event_note {
-                        header: clap_event_header {
-                            size: size_of::<clap_event_note>() as u32,
-                            time,
-                            space_id: CLAP_CORE_EVENT_SPACE_ID,
-                            type_: CLAP_EVENT_NOTE_END,
-                            flags: 0,
-                        },
-                        note_id: clap_note_id,
-                        port_index: 0,
-                        channel: -1,
-                        key: TryInto::<u8>::try_into(key).unwrap().into(),
-                        velocity: 0.0,
-                    };
+            let mut audio = self.audio.lock();
 
-                    try_push_fn(out_events, &event as *const _ as *const _);
+            if audio.clap_unprocessed_ended_voices {
+                for (key, voice) in audio.voices.iter_mut().enumerate() {
+                    match (voice.clap_note_id, voice.clap_note_ended_at_sample_index) {
+                        (Some(clap_note_id), Some(ended_at_sample_index)) => unsafe {
+                            let event = clap_event_note {
+                                header: clap_event_header {
+                                    size: size_of::<clap_event_note>() as u32,
+                                    time: ended_at_sample_index,
+                                    space_id: CLAP_CORE_EVENT_SPACE_ID,
+                                    type_: CLAP_EVENT_NOTE_END,
+                                    flags: 0,
+                                },
+                                note_id: clap_note_id,
+                                port_index: 0,
+                                channel: -1,
+                                key: TryInto::<u8>::try_into(key).unwrap().into(),
+                                velocity: 0.0,
+                            };
+
+                            try_push_fn(out_events, &event as *const _ as *const _);
+                        },
+                        _ => (),
+                    }
                 }
+
+                audio.clap_unprocessed_ended_voices = false;
             }
         }
     }

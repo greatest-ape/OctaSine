@@ -78,7 +78,10 @@ pub struct Voice {
     key_velocity_interpolator: Interpolator,
     pub operators: [VoiceOperator; NUM_OPERATORS],
     pub lfos: [VoiceLfo; NUM_LFOS],
-    pub clap_note_data: Option<(i32, u32)>,
+    #[cfg(feature = "clap")]
+    pub clap_note_id: Option<i32>,
+    #[cfg(feature = "clap")]
+    pub clap_note_ended_at_sample_index: Option<u32>,
 }
 
 impl Voice {
@@ -95,7 +98,10 @@ impl Voice {
             ),
             operators,
             lfos: array_init(|_| VoiceLfo::default()),
-            clap_note_data: None,
+            #[cfg(feature = "clap")]
+            clap_note_id: None,
+            #[cfg(feature = "clap")]
+            clap_note_ended_at_sample_index: None,
         }
     }
 
@@ -126,8 +132,10 @@ impl Voice {
             lfo.restart();
         }
 
-        if let Some(clap_note_id) = opt_clap_note_id {
-            self.clap_note_data = Some((clap_note_id, 0));
+        #[cfg(feature = "clap")]
+        {
+            self.clap_note_id = opt_clap_note_id;
+            self.clap_note_ended_at_sample_index = None;
         }
 
         self.active = true;
@@ -139,7 +147,11 @@ impl Voice {
     }
 
     #[inline]
-    pub fn deactivate_if_envelopes_ended(&mut self, sample_index: usize) {
+    pub fn deactivate_if_envelopes_ended(
+        &mut self,
+        clap_unprocessed_ended_voices: &mut bool,
+        sample_index: usize,
+    ) {
         let all_envelopes_ended = self
             .operators
             .iter()
@@ -150,8 +162,10 @@ impl Voice {
                 lfo.envelope_ended();
             }
 
-            if let Some((_, ended)) = self.clap_note_data.as_mut() {
-                *ended = sample_index as u32;
+            #[cfg(feature = "clap")]
+            {
+                self.clap_note_ended_at_sample_index = Some(sample_index as u32);
+                *clap_unprocessed_ended_voices = true;
             }
 
             self.active = false;

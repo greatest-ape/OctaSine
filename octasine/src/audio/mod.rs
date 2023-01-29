@@ -28,6 +28,7 @@ pub struct AudioState {
     pending_note_events: VecDeque<NoteEvent>,
     audio_gen_data_w2: Box<AudioGenData<2>>,
     audio_gen_data_w4: Box<AudioGenData<4>>,
+    pub clap_unprocessed_ended_voices: bool,
 }
 
 impl Default for AudioState {
@@ -46,6 +47,7 @@ impl Default for AudioState {
             pending_note_events: VecDeque::with_capacity(512),
             audio_gen_data_w2: Default::default(),
             audio_gen_data_w4: Default::default(),
+            clap_unprocessed_ended_voices: false,
         }
     }
 }
