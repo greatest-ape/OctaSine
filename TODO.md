@@ -13,8 +13,6 @@
   * test, including patches
   * consider using logging extension
 
-* note event queue should be fixed-size and not able to allocate
-
 * upgrade iced version in iced_baseview
 
 ## High priority

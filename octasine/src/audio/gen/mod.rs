@@ -3,6 +3,7 @@ pub mod lfo;
 use std::f64::consts::TAU;
 
 use duplicate::duplicate_item;
+use ringbuf::ring_buffer::RbBase;
 
 use crate::audio::parameters::{common::AudioParameter, OperatorAudioParameters};
 use crate::audio::voices::log10_table::Log10Table;

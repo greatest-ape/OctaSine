@@ -3,10 +3,11 @@ pub mod gen;
 pub mod parameters;
 pub mod voices;
 
-use std::collections::VecDeque;
+use std::mem::MaybeUninit;
 
 use array_init::array_init;
 use fastrand::Rng;
+use ringbuf::{LocalRb, Rb};
 
 use crate::{common::*, parameters::Parameter};
 
@@ -14,6 +15,8 @@ use parameters::*;
 use voices::*;
 
 use self::{gen::AudioGenData, voices::log10_table::Log10Table};
+
+const NOTE_EVENT_BUFFER_LEN: usize = 1024;
 
 pub struct AudioState {
     sample_rate: SampleRate,
@@ -25,7 +28,7 @@ pub struct AudioState {
     rng: Rng,
     log10table: Log10Table,
     pub voices: [Voice; 128],
-    pending_note_events: VecDeque<NoteEvent>,
+    pending_note_events: LocalRb<NoteEvent, [MaybeUninit<NoteEvent>; NOTE_EVENT_BUFFER_LEN]>,
     audio_gen_data_w2: Box<AudioGenData<2>>,
     audio_gen_data_w4: Box<AudioGenData<4>>,
     pub clap_unprocessed_ended_voices: bool,
@@ -43,8 +46,7 @@ impl Default for AudioState {
             rng: Rng::new(),
             log10table: Default::default(),
             voices: array_init(|i| Voice::new(MidiPitch::new(i as u8))),
-            // Start with some capacity to cut down on later allocations
-            pending_note_events: VecDeque::with_capacity(512),
+            pending_note_events: Default::default(),
             audio_gen_data_w2: Default::default(),
             audio_gen_data_w4: Default::default(),
             clap_unprocessed_ended_voices: false,
@@ -67,31 +69,38 @@ impl AudioState {
         self.bpm_lfo_multiplier = bpm.into();
     }
 
-    pub fn enqueue_note_events<I: Iterator<Item = NoteEvent>>(&mut self, events: I) {
-        for event in events {
-            self.pending_note_events.push_back(event);
+    pub fn enqueue_note_events<I: Iterator<Item = NoteEvent>>(&mut self, mut events: I) {
+        self.pending_note_events.push_iter(&mut events);
+
+        if events.next().is_some() {
+            ::log::error!("Audio note event buffer full");
         }
     }
 
     pub fn enqueue_note_event(&mut self, event: NoteEvent) {
-        self.pending_note_events.push_back(event);
+        if let Err(_) = self.pending_note_events.push(event) {
+            ::log::error!("Audio note event buffer full");
+        }
     }
 
+    #[cfg(feature = "vst2")]
     pub fn sort_note_events(&mut self) {
-        self.pending_note_events
-            .make_contiguous()
-            .sort_unstable_by_key(|e| e.delta_frames);
+        let (a, b) = self.pending_note_events.as_mut_slices();
+
+        a.sort_unstable_by_key(|e| e.delta_frames);
+        b.sort_unstable_by_key(|e| e.delta_frames);
     }
 
     fn process_events_for_sample(&mut self, buffer_offset: usize) {
         loop {
             match self
                 .pending_note_events
-                .get(0)
+                .iter()
+                .next()
                 .map(|e| e.delta_frames as usize)
             {
                 Some(event_delta_frames) if event_delta_frames == buffer_offset => {
-                    let event = self.pending_note_events.pop_front().unwrap();
+                    let event = self.pending_note_events.pop().unwrap();
 
                     self.process_note_event(event.event);
                 }

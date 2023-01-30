@@ -73,6 +73,8 @@ impl Plugin for OctaSine {
         let rights = r.get_mut(0);
 
         update_audio_parameters(&mut self.audio, &self.sync);
+
+        // VST2 spec does not guarantee that events are sent in order
         self.audio.sort_note_events();
 
         if let Some(bpm) = self.get_bpm_from_host() {

@@ -214,8 +214,6 @@ impl OctaSine {
                 let rights = &mut rights[process_start_index as usize..process_end_index as usize];
 
                 update_audio_parameters(&mut audio, &plugin.sync);
-                audio.sort_note_events();
-
                 process_f32_runtime_select(&mut audio, lefts, rights, process_start_index as usize);
             }
 
