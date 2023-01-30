@@ -133,7 +133,7 @@ jobs:
         New-Item "tmp\OctaSine\VST2" -ItemType Directory -ea 0
         New-Item "tmp\OctaSine\CLAP" -ItemType Directory -ea 0
         Copy-Item "LICENSE" -Destination "tmp\OctaSine\LICENSE.txt"
-        cargo-about generate -o "tmp\OctaSine\LICENSES.html" "about.hbs" -m "octasine-vst2-plugin\Cargo.toml" 
+        cargo-about generate -o "tmp\OctaSine\LICENSES.html" "about.hbs" -m "octasine\Cargo.toml" 
         $version = $env:OCTASINE_SEMVER_VERSION
         Copy-Item "target\bundled\octasine.dll" -Destination "tmp\OctaSine\VST2\OctaSine $version.dll"
         Copy-Item "target\bundled\octasine.clap" -Destination "tmp\OctaSine\CLAP\OctaSine $version.clap"
