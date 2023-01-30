@@ -1,6 +1,6 @@
 use std::{
     ffi::{c_void, CStr},
-    mem::size_of,
+    mem::{size_of, MaybeUninit},
     ptr::{null, null_mut},
     sync::Arc,
 };
@@ -28,6 +28,7 @@ use clap_sys::{
 use iced_baseview::window::WindowHandle;
 use once_cell::sync::Lazy;
 use parking_lot::Mutex;
+use ringbuf::{Consumer, Producer, SharedRb};
 
 use crate::{
     audio::{gen::process_f32_runtime_select, AudioState},
@@ -39,11 +40,16 @@ use crate::{
 
 use super::{descriptor::DESCRIPTOR, ext::gui::ParentWindow, sync::ClapGuiSyncHandle};
 
+pub type EventToHostConsumer =
+    Consumer<EventToHost, Arc<SharedRb<EventToHost, Vec<MaybeUninit<EventToHost>>>>>;
+pub type EventToHostProducer =
+    Producer<EventToHost, Arc<SharedRb<EventToHost, Vec<MaybeUninit<EventToHost>>>>>;
+
 pub struct OctaSine {
     pub host: *const clap_host,
     pub audio: Mutex<Box<AudioState>>,
     pub sync: Arc<SyncState<ClapGuiSyncHandle>>,
-    pub gui_event_consumer: Mutex<rtrb::Consumer<EventToHost>>,
+    pub gui_event_consumer: Mutex<EventToHostConsumer>,
     pub gui_parent: Mutex<Option<ParentWindow>>,
     pub gui_window_handle: Mutex<Option<WindowHandle<crate::gui::Message>>>,
     pub clap_plugin: AtomicRefCell<clap_plugin>,
@@ -53,7 +59,7 @@ impl OctaSine {
     pub fn new(host: *const clap_host) -> Arc<Self> {
         let _ = init_logging("clap");
 
-        let (gui_event_producer, gui_event_consumer) = rtrb::RingBuffer::new(1024);
+        let (gui_event_producer, gui_event_consumer) = SharedRb::new(1024).split();
 
         let gui_sync_handle = ClapGuiSyncHandle {
             producer: Mutex::new(gui_event_producer),
@@ -366,69 +372,65 @@ impl OctaSine {
         if let Some(try_push_fn) = out_events.try_push {
             let mut event_consumer = self.gui_event_consumer.lock();
 
-            for _ in 0..event_consumer.slots() {
-                if let Ok(event) = event_consumer.pop() {
-                    match event {
-                        EventToHost::StartAutomating(parameter_key) => {
-                            let event = clap_event_param_gesture {
-                                header: clap_event_header {
-                                    size: size_of::<clap_event_param_gesture>() as u32,
-                                    time,
-                                    space_id: CLAP_CORE_EVENT_SPACE_ID,
-                                    type_: CLAP_EVENT_PARAM_GESTURE_BEGIN,
-                                    flags: CLAP_EVENT_IS_LIVE,
-                                },
-                                param_id: parameter_key.0,
-                            };
+            for event in event_consumer.pop_iter() {
+                match event {
+                    EventToHost::StartAutomating(parameter_key) => {
+                        let event = clap_event_param_gesture {
+                            header: clap_event_header {
+                                size: size_of::<clap_event_param_gesture>() as u32,
+                                time,
+                                space_id: CLAP_CORE_EVENT_SPACE_ID,
+                                type_: CLAP_EVENT_PARAM_GESTURE_BEGIN,
+                                flags: CLAP_EVENT_IS_LIVE,
+                            },
+                            param_id: parameter_key.0,
+                        };
 
-                            try_push_fn(out_events, &event as *const _ as *const _);
-                        }
-                        EventToHost::EndAutomating(parameter_key) => {
-                            let event = clap_event_param_gesture {
-                                header: clap_event_header {
-                                    size: size_of::<clap_event_param_gesture>() as u32,
-                                    time,
-                                    space_id: CLAP_CORE_EVENT_SPACE_ID,
-                                    type_: CLAP_EVENT_PARAM_GESTURE_END,
-                                    flags: CLAP_EVENT_IS_LIVE,
-                                },
-                                param_id: parameter_key.0,
-                            };
+                        try_push_fn(out_events, &event as *const _ as *const _);
+                    }
+                    EventToHost::EndAutomating(parameter_key) => {
+                        let event = clap_event_param_gesture {
+                            header: clap_event_header {
+                                size: size_of::<clap_event_param_gesture>() as u32,
+                                time,
+                                space_id: CLAP_CORE_EVENT_SPACE_ID,
+                                type_: CLAP_EVENT_PARAM_GESTURE_END,
+                                flags: CLAP_EVENT_IS_LIVE,
+                            },
+                            param_id: parameter_key.0,
+                        };
 
-                            try_push_fn(out_events, &event as *const _ as *const _);
-                        }
-                        EventToHost::Automate(parameter_key, value) => {
-                            let event = clap_event_param_value {
-                                header: clap_event_header {
-                                    size: size_of::<clap_event_param_value>() as u32,
-                                    time,
-                                    space_id: CLAP_CORE_EVENT_SPACE_ID,
-                                    type_: CLAP_EVENT_PARAM_VALUE,
-                                    flags: CLAP_EVENT_IS_LIVE,
-                                },
-                                param_id: parameter_key.0,
-                                cookie: null_mut(),
-                                note_id: -1,
-                                port_index: 0,
-                                channel: -1,
-                                key: -1,
-                                value: value as f64,
-                            };
+                        try_push_fn(out_events, &event as *const _ as *const _);
+                    }
+                    EventToHost::Automate(parameter_key, value) => {
+                        let event = clap_event_param_value {
+                            header: clap_event_header {
+                                size: size_of::<clap_event_param_value>() as u32,
+                                time,
+                                space_id: CLAP_CORE_EVENT_SPACE_ID,
+                                type_: CLAP_EVENT_PARAM_VALUE,
+                                flags: CLAP_EVENT_IS_LIVE,
+                            },
+                            param_id: parameter_key.0,
+                            cookie: null_mut(),
+                            note_id: -1,
+                            port_index: 0,
+                            channel: -1,
+                            key: -1,
+                            value: value as f64,
+                        };
 
-                            try_push_fn(out_events, &event as *const _ as *const _);
-                        }
-                        EventToHost::RescanValues => {
-                            let host_params = self.get_params_extension();
+                        try_push_fn(out_events, &event as *const _ as *const _);
+                    }
+                    EventToHost::RescanValues => {
+                        let host_params = self.get_params_extension();
 
-                            let rescan = host_params.rescan.unwrap();
+                        let rescan = host_params.rescan.unwrap();
 
-                            // FIXME: should maybe clear automations etc too
-                            rescan(self.host, CLAP_PARAM_RESCAN_VALUES);
-                        }
-                    };
-                } else {
-                    break;
-                }
+                        // FIXME: should maybe clear automations etc too
+                        rescan(self.host, CLAP_PARAM_RESCAN_VALUES);
+                    }
+                };
             }
         }
     }

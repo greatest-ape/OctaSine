@@ -14,8 +14,10 @@ use crate::{
     },
 };
 
+use super::plugin::EventToHostProducer;
+
 pub struct ClapGuiSyncHandle {
-    pub producer: Mutex<rtrb::Producer<EventToHost>>,
+    pub producer: Mutex<EventToHostProducer>,
     // SAFETY: calling request_process is thread-safe according to clap spec
     pub host: *const clap_host,
 }
@@ -25,8 +27,8 @@ unsafe impl Sync for ClapGuiSyncHandle {}
 
 impl ClapGuiSyncHandle {
     fn send_event(&self, event: EventToHost) {
-        if let Err(err) = self.producer.lock().push(event) {
-            ::log::error!("ClapGuiHandle can't send event: {:#}", err);
+        if let Err(_) = self.producer.lock().push(event) {
+            ::log::error!("ClapGuiSyncHandle can't send event due to full buffer");
         }
 
         unsafe {
@@ -39,14 +41,12 @@ impl ClapGuiSyncHandle {
     }
 
     fn send_events<I: IntoIterator<Item = EventToHost>>(&self, events: I) {
-        {
-            let mut producer = self.producer.lock();
+        let mut events = events.into_iter();
 
-            for event in events {
-                if let Err(err) = producer.push(event) {
-                    ::log::error!("ClapGuiHandle can't send event: {:#}", err);
-                }
-            }
+        self.producer.lock().push_iter(&mut events);
+
+        if events.next().is_some() {
+            ::log::error!("ClapGuiSyncHandle can't send event or events due to full buffer");
         }
 
         unsafe {

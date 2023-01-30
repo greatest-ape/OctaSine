@@ -7,7 +7,7 @@ edition = "2021"
 
 [features]
 default = ["clap", "vst2", "glow"]
-clap = ["bytemuck", "clap-sys", "atomic_refcell", "rtrb", "parking_lot"]
+clap = ["atomic_refcell", "bytemuck", "clap-sys", "parking_lot"]
 vst2 = ["vst"]
 glow = ["gui", "iced_baseview/glow", "iced_audio/glow"]
 wgpu = ["gui", "iced_baseview/wgpu", "iced_audio/wgpu"]
@@ -57,7 +57,6 @@ atomic_refcell = { version = "0.1", optional = true }
 bytemuck = { version = "1", optional = true }
 clap-sys = { version = "0.3", optional = true }
 parking_lot = { version = "0.12", optional = true }
-rtrb = { version = "0.2", optional = true }
 
 # GUI
 
