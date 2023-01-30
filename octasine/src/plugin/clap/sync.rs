@@ -131,11 +131,6 @@ impl GuiSyncHandle for Arc<SyncState<ClapGuiSyncHandle>> {
     }
     fn set_current_patch_name(&self, name: String) {
         self.patches.set_patch_name(name);
-
-        // FIXME
-        // if let Some(host) = self.host {
-        //     host.update_display();
-        // }
     }
     fn get_changed_parameters(&self) -> Option<[Option<f32>; MAX_NUM_PARAMETERS]> {
         self.patches.get_changed_parameters_from_gui()
