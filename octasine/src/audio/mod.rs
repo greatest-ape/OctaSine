@@ -28,6 +28,7 @@ pub struct AudioState {
     pub voices: [Voice; 128],
     pending_note_events: LocalRb<NoteEvent, Vec<MaybeUninit<NoteEvent>>>,
     audio_gen_data_w2: Box<AudioGenData<2>>,
+    #[cfg(target_arch = "x86_64")]
     audio_gen_data_w4: Box<AudioGenData<4>>,
     pub clap_unprocessed_ended_voices: bool,
 }
@@ -46,6 +47,7 @@ impl Default for AudioState {
             voices: array_init(|i| Voice::new(MidiPitch::new(i as u8))),
             pending_note_events: LocalRb::new(1024),
             audio_gen_data_w2: Default::default(),
+            #[cfg(target_arch = "x86_64")]
             audio_gen_data_w4: Default::default(),
             clap_unprocessed_ended_voices: false,
         }
