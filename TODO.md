@@ -10,10 +10,12 @@
 
 * clap
   * check for null everywhere
-  * test, including patches
   * consider using logging extension
+  * Nice to have: maybe clap is better at supporting automating multiple
+    parameters at the same time? Then it might be good to actually tell
+    the host about changes to envelopes while dragging, not only on release
 
-* test vst plugin, including audio gen through cli
+* test vst plugin
 * upgrade iced version in iced_baseview
 
 ## High priority
