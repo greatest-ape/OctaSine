@@ -524,9 +524,7 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
             Message::ChangeSingleParameterImmediate(parameter, value) => {
                 self.set_value(parameter.parameter(), value, true);
 
-                self.sync_handle.begin_edit(parameter);
-                self.sync_handle.set_parameter(parameter, value);
-                self.sync_handle.end_edit(parameter);
+                self.sync_handle.set_parameter_immediate(parameter, value);
             }
             Message::ChangeEnvelopeParametersEnd {
                 operator_index,
@@ -535,16 +533,13 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
             } => {
                 self.set_value(parameter_1.0.parameter(), parameter_1.1, true);
 
-                self.sync_handle.begin_edit(parameter_1.0);
-                self.sync_handle.set_parameter(parameter_1.0, parameter_1.1);
-                self.sync_handle.end_edit(parameter_1.0);
+                self.sync_handle
+                    .set_parameter_immediate(parameter_1.0, parameter_1.1);
 
                 if let Some((p, v)) = parameter_2 {
                     self.set_value(p.parameter(), v, true);
 
-                    self.sync_handle.begin_edit(p);
-                    self.sync_handle.set_parameter(p, v);
-                    self.sync_handle.end_edit(p);
+                    self.sync_handle.set_parameter_immediate(p, v);
                 }
 
                 self.sync_envelopes(operator_index, true);

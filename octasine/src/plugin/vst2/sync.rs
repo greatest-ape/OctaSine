@@ -133,6 +133,19 @@ impl crate::sync::GuiSyncHandle for Arc<SyncState<vst::plugin::HostCallback>> {
 
         self.patches.set_parameter_from_gui(index, value);
     }
+    fn set_parameter_immediate(&self, parameter: WrappedParameter, value: f32) {
+        if let Some(host) = self.host {
+            let index = parameter.index() as i32;
+
+            // Always wrapped in begin_edit and end_edit
+            host.begin_edit(index);
+            host.automate(index, value);
+            host.end_edit(index);
+        }
+
+        self.patches
+            .set_parameter_from_gui(parameter.index() as usize, value);
+    }
     fn set_parameter_from_text(&self, parameter: WrappedParameter, text: &str) -> Option<f32> {
         let index = parameter.index() as usize;
 
