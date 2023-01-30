@@ -32,9 +32,9 @@ impl ClapGuiSyncHandle {
         unsafe {
             let host = &*(self.host);
 
-            let request_process = host.request_process.unwrap();
-
-            request_process(self.host);
+            if let Some(request_process) = host.request_process.as_ref() {
+                request_process(self.host);
+            }
         }
     }
 
@@ -52,9 +52,9 @@ impl ClapGuiSyncHandle {
         unsafe {
             let host = &*(self.host);
 
-            let request_process = host.request_process.unwrap();
-
-            request_process(self.host);
+            if let Some(request_process) = host.request_process.as_ref() {
+                request_process(self.host);
+            }
         }
     }
 }
