@@ -19,7 +19,7 @@ pub const PLUGIN_NAME: &str = "OctaSine v0.8";
 pub const PLUGIN_UNIQUE_ID: i32 = 1_438_048_625;
 
 pub struct OctaSine {
-    pub audio: AudioState,
+    pub audio: Box<AudioState>,
     pub sync: Arc<SyncState<vst::plugin::HostCallback>>,
     #[cfg(feature = "gui")]
     editor: Option<editor::Editor<Arc<SyncState<vst::plugin::HostCallback>>>>,

@@ -29,8 +29,8 @@ pub struct AudioState {
     log10table: Log10Table,
     pub voices: [Voice; 128],
     pending_note_events: LocalRb<NoteEvent, [MaybeUninit<NoteEvent>; NOTE_EVENT_BUFFER_LEN]>,
-    audio_gen_data_w2: Box<AudioGenData<2>>,
-    audio_gen_data_w4: Box<AudioGenData<4>>,
+    audio_gen_data_w2: AudioGenData<2>,
+    audio_gen_data_w4: AudioGenData<4>,
     pub clap_unprocessed_ended_voices: bool,
 }
 

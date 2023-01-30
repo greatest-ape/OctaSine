@@ -41,7 +41,7 @@ use super::{descriptor::DESCRIPTOR, ext::gui::ParentWindow, sync::ClapGuiSyncHan
 
 pub struct OctaSine {
     pub host: *const clap_host,
-    pub audio: Mutex<AudioState>,
+    pub audio: Mutex<Box<AudioState>>,
     pub sync: Arc<SyncState<ClapGuiSyncHandle>>,
     pub gui_event_consumer: Mutex<rtrb::Consumer<EventToHost>>,
     pub gui_parent: Mutex<Option<ParentWindow>>,
