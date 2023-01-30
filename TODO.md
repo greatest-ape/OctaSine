@@ -9,7 +9,6 @@
   * maybe this is all fine?
 
 * clap
-  * maybe use larger gui event rung buffer
   * check for null everywhere
   * test, including patches
   * consider using logging extension
