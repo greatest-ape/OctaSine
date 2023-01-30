@@ -16,8 +16,6 @@ use voices::*;
 
 use self::{gen::AudioGenData, voices::log10_table::Log10Table};
 
-const NOTE_EVENT_BUFFER_LEN: usize = 1024;
-
 pub struct AudioState {
     sample_rate: SampleRate,
     time_per_sample: TimePerSample,
@@ -28,7 +26,7 @@ pub struct AudioState {
     rng: Rng,
     log10table: Log10Table,
     pub voices: [Voice; 128],
-    pending_note_events: LocalRb<NoteEvent, [MaybeUninit<NoteEvent>; NOTE_EVENT_BUFFER_LEN]>,
+    pending_note_events: LocalRb<NoteEvent, Vec<MaybeUninit<NoteEvent>>>,
     audio_gen_data_w2: AudioGenData<2>,
     audio_gen_data_w4: AudioGenData<4>,
     pub clap_unprocessed_ended_voices: bool,
@@ -46,7 +44,7 @@ impl Default for AudioState {
             rng: Rng::new(),
             log10table: Default::default(),
             voices: array_init(|i| Voice::new(MidiPitch::new(i as u8))),
-            pending_note_events: Default::default(),
+            pending_note_events: LocalRb::new(1024),
             audio_gen_data_w2: Default::default(),
             audio_gen_data_w4: Default::default(),
             clap_unprocessed_ended_voices: false,
