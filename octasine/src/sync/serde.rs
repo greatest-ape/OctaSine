@@ -4,7 +4,11 @@ use byteorder::{BigEndian, WriteBytesExt};
 use flate2::{read::GzDecoder, write::GzEncoder, Compression};
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 
-use crate::{crate_version, crate_version_to_vst_format, PLUGIN_UNIQUE_ID};
+use crate::{
+    crate_version,
+    plugin::vst2::{crate_version_to_vst_format, PLUGIN_UNIQUE_ID},
+    utils::get_version_info,
+};
 
 use super::patch_bank::{Patch, PatchBank};
 
@@ -80,7 +84,7 @@ impl SerdePatch {
         let mut parameters = Vec::new();
 
         for i in 0..preset.parameters.len() {
-            if let Some(parameter) = preset.parameters.get(i) {
+            if let Some((_, parameter)) = preset.parameters.get_index(i) {
                 let value = parameter.get_value();
 
                 let value_float = SerdePatchParameterValue::from_f32(value);
@@ -94,7 +98,7 @@ impl SerdePatch {
         }
 
         Self {
-            octasine_version: crate::get_version_info(),
+            octasine_version: get_version_info(),
             name: preset.get_name(),
             parameters,
         }
@@ -156,7 +160,7 @@ pub struct SerdePatchBank {
 impl SerdePatchBank {
     pub fn new(patch_bank: &PatchBank) -> Self {
         Self {
-            octasine_version: crate::get_version_info(),
+            octasine_version: get_version_info(),
             patches: patch_bank
                 .patches
                 .iter()

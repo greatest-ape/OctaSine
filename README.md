@@ -85,7 +85,8 @@ git checkout tags/v0.8.2
 * Build and install:
 
 ```sh
-./scripts/macos/build-simd-and-install.sh
+./scripts/macos/build-vst2-and-install.sh
+./scripts/macos/build-clap-and-install.sh
 ```
 
 ### Windows
@@ -103,10 +104,11 @@ git checkout tags/v0.8.2
 * Build OctaSine:
 
 ```cmd
-cargo build --release -p octasine-vst2-plugin
+cargo xtask bundle octasine --release
 ```
 
-* Copy `target\release\octasine.dll` to your VST plugin folder.
+* Copy `target\bundled\octasine.dll` to your VST plugin folder.
+* Copy `target\bundled\octasine.clap` to your CLAP plugin folder.
 
 ### Linux
 
@@ -141,10 +143,11 @@ git checkout tags/v0.8.2
 * Build the OctaSine plugin:
 
 ```sh
-cargo build --release -p octasine-vst2-plugin
+cargo xtask bundle octasine --release
 ```
 
-* Copy `target/release/liboctasine.so` to your VST plugin folder 
+* Copy `target/bundled/octasine.so` to your VST plugin folder 
+* Copy `target/bundled/octasine.clap` to your CLAP plugin folder 
 
 ## Architecture
 
@@ -152,7 +155,7 @@ See [ARCHITECTURE.md](ARCHITECTURE.md).
 
 ## Copyright and license
 
-Copyright (C) 2019-2022 Joakim Frostegård
+Copyright (C) 2019-2023 Joakim Frostegård
 
 OctaSine is distributed under the GNU Affero General Public License, Version 3,
 as published by the Free Software Foundation. See [LICENSE](LICENSE) for

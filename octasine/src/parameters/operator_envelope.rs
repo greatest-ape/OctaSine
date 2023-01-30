@@ -42,7 +42,7 @@ macro_rules! impl_duration_parameter_value {
                 format!("{:.02}", self.0)
             }
 
-            fn new_from_text(text: String) -> Option<Self> {
+            fn new_from_text(text: &str) -> Option<Self> {
                 parse_valid_f64(text, ENVELOPE_MIN_DURATION, ENVELOPE_MAX_DURATION)
                     .map(|v| Self(v.into()))
             }
@@ -98,7 +98,7 @@ impl ParameterValue for OperatorSustainVolumeValue {
     fn new_from_audio(value: Self::Value) -> Self {
         Self(value)
     }
-    fn new_from_text(text: String) -> Option<Self> {
+    fn new_from_text(text: &str) -> Option<Self> {
         parse_valid_f32(text, 0.0, 1.0).map(Self)
     }
 
@@ -154,7 +154,7 @@ impl ParameterValue for OperatorEnvelopeGroupValue {
     fn new_from_audio(value: Self::Value) -> Self {
         value
     }
-    fn new_from_text(text: String) -> Option<Self> {
+    fn new_from_text(text: &str) -> Option<Self> {
         text.parse().ok()
     }
 

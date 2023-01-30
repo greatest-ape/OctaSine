@@ -20,7 +20,7 @@ impl ParameterValue for MasterFrequencyValue {
     fn new_from_audio(value: Self::Value) -> Self {
         Self(value)
     }
-    fn new_from_text(text: String) -> Option<Self> {
+    fn new_from_text(text: &str) -> Option<Self> {
         const MIN: f32 = MASTER_FREQUENCY_STEPS[0];
         const MAX: f32 = MASTER_FREQUENCY_STEPS[MASTER_FREQUENCY_STEPS.len() - 1];
 

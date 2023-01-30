@@ -131,7 +131,7 @@ impl ParameterValue for OperatorFrequencyRatioValue {
     fn new_from_audio(value: Self::Value) -> Self {
         Self(value)
     }
-    fn new_from_text(text: String) -> Option<Self> {
+    fn new_from_text(text: &str) -> Option<Self> {
         let text = text
             .trim()
             .to_lowercase()

@@ -78,6 +78,10 @@ pub struct Voice {
     key_velocity_interpolator: Interpolator,
     pub operators: [VoiceOperator; NUM_OPERATORS],
     pub lfos: [VoiceLfo; NUM_LFOS],
+    #[cfg(feature = "clap")]
+    pub clap_note_id: Option<i32>,
+    #[cfg(feature = "clap")]
+    pub clap_note_ended_at_sample_index: Option<u32>,
 }
 
 impl Voice {
@@ -94,6 +98,10 @@ impl Voice {
             ),
             operators,
             lfos: array_init(|_| VoiceLfo::default()),
+            #[cfg(feature = "clap")]
+            clap_note_id: None,
+            #[cfg(feature = "clap")]
+            clap_note_ended_at_sample_index: None,
         }
     }
 
@@ -107,9 +115,7 @@ impl Voice {
     }
 
     #[inline]
-    pub fn press_key(&mut self, velocity: u8) {
-        let velocity = KeyVelocity::from_midi_velocity(velocity);
-
+    pub fn press_key(&mut self, velocity: KeyVelocity, opt_clap_note_id: Option<i32>) {
         if self.active {
             self.key_velocity_interpolator.set_value(velocity.0)
         } else {
@@ -126,6 +132,12 @@ impl Voice {
             lfo.restart();
         }
 
+        #[cfg(feature = "clap")]
+        {
+            self.clap_note_id = opt_clap_note_id;
+            self.clap_note_ended_at_sample_index = None;
+        }
+
         self.active = true;
     }
 
@@ -135,7 +147,11 @@ impl Voice {
     }
 
     #[inline]
-    pub fn deactivate_if_envelopes_ended(&mut self) {
+    pub fn deactivate_if_envelopes_ended(
+        &mut self,
+        clap_unprocessed_ended_voices: &mut bool,
+        sample_index: usize,
+    ) {
         let all_envelopes_ended = self
             .operators
             .iter()
@@ -144,6 +160,12 @@ impl Voice {
         if all_envelopes_ended {
             for lfo in self.lfos.iter_mut() {
                 lfo.envelope_ended();
+            }
+
+            #[cfg(feature = "clap")]
+            {
+                self.clap_note_ended_at_sample_index = Some(sample_index as u32);
+                *clap_unprocessed_ended_voices = true;
             }
 
             self.active = false;

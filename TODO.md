@@ -1,5 +1,23 @@
 # TODO
 
+* heavy CPU consumption in REAPER without anything playing
+  * with clap and vst
+  * also with other plugins
+  * maybe buffers don't really need to be zeroed for clap?
+  * maybe we could skip even more processing when there are no events and no
+    active voices?
+  * maybe this is all fine?
+
+* clap
+  * check for null everywhere
+  * consider using logging extension
+  * Nice to have: maybe clap is better at supporting automating multiple
+    parameters at the same time? Then it might be good to actually tell
+    the host about changes to envelopes while dragging, not only on release
+
+* test vst plugin
+* upgrade iced version in iced_baseview
+
 ## High priority
 
 * iced 0.5 adjustments

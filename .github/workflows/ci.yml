@@ -50,7 +50,7 @@ jobs:
       uses: Swatinem/rust-cache@v2
 
     - name: Build plugin
-      run: cargo build --release -p octasine-vst2-plugin --verbose
+      run: cargo build -p octasine --verbose
 
     - name: Build plugin for aarch64 (macOS)
       run: |
@@ -58,15 +58,11 @@ jobs:
         echo "SDKROOT=$SDKROOT"
         export MACOSX_DEPLOYMENT_TARGET=$(xcrun -sdk macosx11.1 --show-sdk-platform-version)
         echo "MACOSX_DEPLOYMENT_TARGET=$MACOSX_DEPLOYMENT_TARGET"
-        cargo build --release -p octasine-vst2-plugin --target=aarch64-apple-darwin
+        cargo build -p octasine --target=aarch64-apple-darwin
       env:
         DEVELOPER_DIR: /Applications/Xcode_12.4.app/Contents/Developer
       shell: bash
       if: contains(matrix.os, 'macos')
-
-    - name: Display size of build artifacts
-      run: ls -lh target/release
-      if: contains(matrix.os, 'ubuntu') || contains(matrix.os, 'macos')
 
   test:
     runs-on: ubuntu-latest
@@ -87,5 +83,3 @@ jobs:
 
     - name: Run tests
       run: cargo test --workspace --verbose
-      env:
-        RUSTFLAGS: "-C target-cpu=native"

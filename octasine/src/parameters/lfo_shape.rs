@@ -60,7 +60,7 @@ impl ParameterValue for LfoShapeValue {
     fn new_from_audio(value: Self::Value) -> Self {
         Self(value)
     }
-    fn new_from_text(text: String) -> Option<Self> {
+    fn new_from_text(text: &str) -> Option<Self> {
         match text.trim().to_lowercase().as_ref() {
             "triangle" | "trng" => Some(Self(LfoShape::Triangle)),
             "reverse triangle" | "rev triangle" | "rev trng" => {

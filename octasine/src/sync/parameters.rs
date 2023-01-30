@@ -1,4 +1,4 @@
-use crate::parameters::*;
+use crate::{common::IndexMap, parameters::*};
 
 use super::atomic_double::AtomicFloat;
 
@@ -7,21 +7,28 @@ use super::atomic_double::AtomicFloat;
 pub struct PatchParameter {
     value: AtomicFloat,
     pub name: String,
-    value_from_text: fn(String) -> Option<f32>,
+    pub value_from_text: fn(&str) -> Option<f32>,
     pub format: fn(f32) -> String,
+    pub default_value: f32,
+    pub clap_path: String,
+    pub parameter: WrappedParameter,
 }
 
 impl PatchParameter {
-    pub fn all() -> Vec<Self> {
+    pub fn all() -> IndexMap<ParameterKey, Self> {
         PARAMETERS
             .iter()
             .copied()
-            .map(PatchParameter::new_from_parameter)
+            .map(|p| {
+                let p: WrappedParameter = p.into();
+
+                (p.key(), PatchParameter::new_from_parameter(p))
+            })
             .collect()
     }
 
-    fn new_from_parameter(parameter: Parameter) -> Self {
-        match parameter {
+    fn new_from_parameter(parameter: WrappedParameter) -> Self {
+        match parameter.parameter() {
             Parameter::None => panic!("Attempted to create PatchParameter from Parameter::None"),
             Parameter::Master(master_parameter) => match master_parameter {
                 MasterParameter::Frequency => Self::new::<MasterFrequencyValue>(parameter),
@@ -82,21 +89,23 @@ impl PatchParameter {
         }
     }
 
-    fn new<V: ParameterValue>(parameter: Parameter) -> Self {
+    fn new<V: ParameterValue>(parameter: WrappedParameter) -> Self {
         Self {
-            name: parameter.name(),
+            name: parameter.parameter().name(),
             value: AtomicFloat::new(V::default().to_patch()),
             value_from_text: |v| V::new_from_text(v).map(|v| v.to_patch()),
             format: |v| V::new_from_patch(v).get_formatted(),
+            default_value: V::default().to_patch(),
+            clap_path: parameter.parameter().clap_path(),
+            parameter,
         }
     }
-    fn new_with_value<V: ParameterValue>(parameter: Parameter, v: V) -> Self {
-        Self {
-            name: parameter.name(),
-            value: AtomicFloat::new(v.to_patch()),
-            value_from_text: |v| V::new_from_text(v).map(|v| v.to_patch()),
-            format: |v| V::new_from_patch(v).get_formatted(),
-        }
+    fn new_with_value<V: ParameterValue>(parameter: WrappedParameter, v: V) -> Self {
+        let p = Self::new::<V>(parameter);
+
+        p.value.set(v.to_patch());
+
+        p
     }
 
     pub fn set_value(&self, value: f32) {
@@ -111,7 +120,7 @@ impl PatchParameter {
         (self.format)(self.value.get())
     }
 
-    pub fn set_from_text(&self, text: String) -> bool {
+    pub fn set_from_text(&self, text: &str) -> bool {
         if let Some(value) = (self.value_from_text)(text) {
             self.value.set(value);
 

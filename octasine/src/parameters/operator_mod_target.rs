@@ -122,7 +122,7 @@ impl ParameterValue for Operator2ModulationTargetValue {
     fn new_from_audio(value: Self::Value) -> Self {
         Self(value)
     }
-    fn new_from_text(_text: String) -> Option<Self> {
+    fn new_from_text(_text: &str) -> Option<Self> {
         None
     }
     fn get(self) -> Self::Value {
@@ -160,7 +160,7 @@ impl ParameterValue for Operator3ModulationTargetValue {
     fn new_from_audio(value: Self::Value) -> Self {
         Self(value)
     }
-    fn new_from_text(_text: String) -> Option<Self> {
+    fn new_from_text(_text: &str) -> Option<Self> {
         None
     }
     fn get(self) -> Self::Value {
@@ -198,7 +198,7 @@ impl ParameterValue for Operator4ModulationTargetValue {
     fn new_from_audio(value: Self::Value) -> Self {
         Self(value)
     }
-    fn new_from_text(_text: String) -> Option<Self> {
+    fn new_from_text(_text: &str) -> Option<Self> {
         None
     }
     fn get(self) -> Self::Value {

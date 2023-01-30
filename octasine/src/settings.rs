@@ -2,7 +2,7 @@ use std::path::PathBuf;
 
 use serde::{Deserialize, Serialize};
 
-use crate::get_file_storage_dir;
+use crate::utils::get_file_storage_dir;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Settings {

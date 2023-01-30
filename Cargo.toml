@@ -4,7 +4,7 @@ resolver = "2"
 members = [ 
     "octasine",
     "octasine-cli",
-    "octasine-vst2-plugin",
+    "xtask"
 ]
 
 # [patch.'https://github.com/RustAudio/baseview']

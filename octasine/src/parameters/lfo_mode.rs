@@ -24,7 +24,7 @@ impl ParameterValue for LfoModeValue {
     fn new_from_audio(value: Self::Value) -> Self {
         Self(value)
     }
-    fn new_from_text(text: String) -> Option<Self> {
+    fn new_from_text(text: &str) -> Option<Self> {
         match text.to_lowercase().as_ref() {
             "once" => Some(Self(LfoMode::Once)),
             "forever" => Some(Self(LfoMode::Forever)),

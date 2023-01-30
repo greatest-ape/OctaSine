@@ -34,16 +34,28 @@ jobs:
     - name: Setup Rust dependency caching
       uses: Swatinem/rust-cache@v2
 
-    - name: Build plugin for x86_64
-      run: cargo build --release -p octasine-vst2-plugin --verbose
+    # - name: Build plugin for x86_64
+    #   run: cargo build --release -p octasine-vst2-plugin --verbose
 
-    - name: Build plugin for aarch64
+    # - name: Build plugin for aarch64
+    #   run: |
+    #     export SDKROOT=$(xcrun -sdk macosx11.1 --show-sdk-path)
+    #     echo "SDKROOT=$SDKROOT"
+    #     export MACOSX_DEPLOYMENT_TARGET=$(xcrun -sdk macosx11.1 --show-sdk-platform-version)
+    #     echo "MACOSX_DEPLOYMENT_TARGET=$MACOSX_DEPLOYMENT_TARGET"
+    #     cargo build --release -p octasine-vst2-plugin --target=aarch64-apple-darwin
+    #   env:
+    #     DEVELOPER_DIR: /Applications/Xcode_12.4.app/Contents/Developer
+    #   shell: bash
+    
+    # It's unclear if xtask will be affected by env vars
+    - name: Build and bundle plugin
       run: |
         export SDKROOT=$(xcrun -sdk macosx11.1 --show-sdk-path)
         echo "SDKROOT=$SDKROOT"
         export MACOSX_DEPLOYMENT_TARGET=$(xcrun -sdk macosx11.1 --show-sdk-platform-version)
         echo "MACOSX_DEPLOYMENT_TARGET=$MACOSX_DEPLOYMENT_TARGET"
-        cargo build --release -p octasine-vst2-plugin --target=aarch64-apple-darwin
+        cargo xtask bundle-universal octasine --release --verbose
       env:
         DEVELOPER_DIR: /Applications/Xcode_12.4.app/Contents/Developer
       shell: bash
@@ -56,13 +68,25 @@ jobs:
       run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
       shell: bash
 
-    - name: Create release files
+    # - name: Create release files
+    #   run: |
+    #     mkdir releases
+    #     mkdir -p tmp
+    #     lipo "./target/release/liboctasine.dylib" "./target/aarch64-apple-darwin/release/liboctasine.dylib" -output "./tmp/liboctasine.dylib" -create
+    #     bash ./scripts/macos/bundle.sh "./tmp/liboctasine.dylib" "OctaSine $OCTASINE_SEMVER_VERSION"
+    #     bash ./scripts/unix/package.sh "OctaSine $OCTASINE_SEMVER_VERSION.vst" "../releases/OctaSine-${{ steps.get_version.outputs.VERSION }}-macOS"
+
+    - name: Create release zip
       run: |
         mkdir releases
-        mkdir -p tmp
-        lipo "./target/release/liboctasine.dylib" "./target/aarch64-apple-darwin/release/liboctasine.dylib" -output "./tmp/liboctasine.dylib" -create
-        bash ./scripts/macos/bundle.sh "./tmp/liboctasine.dylib" "OctaSine $OCTASINE_SEMVER_VERSION"
-        bash ./scripts/unix/package.sh "OctaSine $OCTASINE_SEMVER_VERSION.vst" "../releases/OctaSine-${{ steps.get_version.outputs.VERSION }}-macOS"
+        mkdir -p "release-tmp/OctaSine/VST2"
+        mkdir -p "release-tmp/OctaSine/CLAP"
+        cd release-tmp
+        cp -r ../target/bundled/octasine.vst "OctaSine/VST2/OctaSine $OCTASINE_SEMVER_VERSION.vst"
+        cp -r ../target/bundled/octasine.clap "OctaSine/CLAP/OctaSine $OCTASINE_SEMVER_VERSION.clap"
+        cargo-about generate -o "OctaSine/LICENSES.html" "../about.hbs" -m "../octasine/Cargo.toml" 
+        zip -9 -r "../releases/OctaSine-${{ steps.get_version.outputs.VERSION }}-macOS.zip" "OctaSine"
+      shell: bash
 
     - uses: ncipollo/release-action@v1
       with:
@@ -88,8 +112,11 @@ jobs:
     - name: Setup MSVC shell
       uses: ilammy/msvc-dev-cmd@v1
 
-    - name: Build plugin in release mode
-      run: cargo build --release -p octasine-vst2-plugin --verbose
+    # - name: Build plugin in release mode
+    #   run: cargo build --release -p octasine-vst2-plugin --verbose
+
+    - name: Build and bundle plugin
+      run: cargo xtask bundle octasine --release --verbose
 
     - name: Install cargo-about
       run: cargo install --debug --locked cargo-about
@@ -103,10 +130,13 @@ jobs:
       run: |
         mkdir releases
         New-Item "tmp\OctaSine" -ItemType Directory -ea 0
+        New-Item "tmp\OctaSine\VST2" -ItemType Directory -ea 0
+        New-Item "tmp\OctaSine\CLAP" -ItemType Directory -ea 0
         Copy-Item "LICENSE" -Destination "tmp\OctaSine\LICENSE.txt"
-        cargo-about generate -o "tmp\OctaSine\LICENSES.html" "about.hbs" -m "octasine-vst2-plugin\Cargo.toml" 
+        cargo-about generate -o "tmp\OctaSine\LICENSES.html" "about.hbs" -m "octasine\Cargo.toml" 
         $version = $env:OCTASINE_SEMVER_VERSION
-        Copy-Item "target\release\octasine.dll" -Destination "tmp\OctaSine\OctaSine $version.dll"
+        Copy-Item "target\bundled\octasine.dll" -Destination "tmp\OctaSine\VST2\OctaSine $version.dll"
+        Copy-Item "target\bundled\octasine.clap" -Destination "tmp\OctaSine\CLAP\OctaSine $version.clap"
         Compress-Archive -Path "tmp\OctaSine" -DestinationPath releases\OctaSine-${{ steps.get_version.outputs.VERSION }}-Windows.zip -CompressionLevel Optimal
 
     - uses: ncipollo/release-action@v1
@@ -134,8 +164,11 @@ jobs:
     - name: Setup Rust dependency caching
       uses: Swatinem/rust-cache@v2
 
-    - name: Build plugin in release mode
-      run: cargo build --release -p octasine-vst2-plugin --verbose
+    # - name: Build plugin in release mode
+    #   run: cargo build --release -p octasine-vst2-plugin --verbose
+
+    - name: Build and bundle plugin
+      run: cargo xtask bundle octasine --release --verbose
 
     - name: Install cargo-about
       run: cargo install --debug --locked cargo-about
@@ -145,12 +178,24 @@ jobs:
       run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
       shell: bash
 
-    - name: Create release file
+    # - name: Create release file
+    #   run: |
+    #     mkdir releases
+    #     mkdir -p tmp
+    #     cp "./target/release/liboctasine.so" "tmp/OctaSine $OCTASINE_SEMVER_VERSION.so"
+    #     bash ./scripts/unix/package.sh "OctaSine $OCTASINE_SEMVER_VERSION.so" "../releases/OctaSine-${{ steps.get_version.outputs.VERSION }}-Ubuntu-20_04"
+
+    - name: Create release zip
       run: |
         mkdir releases
-        mkdir -p tmp
-        cp "./target/release/liboctasine.so" "tmp/OctaSine $OCTASINE_SEMVER_VERSION.so"
-        bash ./scripts/unix/package.sh "OctaSine $OCTASINE_SEMVER_VERSION.so" "../releases/OctaSine-${{ steps.get_version.outputs.VERSION }}-Ubuntu-20_04"
+        mkdir -p "release-tmp/OctaSine/VST2"
+        mkdir -p "release-tmp/OctaSine/CLAP"
+        cd release-tmp
+        cp -r ../target/bundled/octasine.so "OctaSine/VST2/OctaSine $OCTASINE_SEMVER_VERSION.so"
+        cp -r ../target/bundled/octasine.clap "OctaSine/CLAP/OctaSine $OCTASINE_SEMVER_VERSION.clap"
+        cargo-about generate -o "OctaSine/LICENSES.html" "../about.hbs" -m "../octasine/Cargo.toml" 
+        zip -9 -r "../releases/OctaSine-${{ steps.get_version.outputs.VERSION }}-Ubuntu-20_04.zip" "OctaSine"
+      shell: bash
 
     - uses: ncipollo/release-action@v1
       with:

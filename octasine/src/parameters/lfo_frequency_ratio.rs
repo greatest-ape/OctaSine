@@ -28,7 +28,7 @@ impl ParameterValue for LfoFrequencyRatioValue {
     fn new_from_audio(value: Self::Value) -> Self {
         Self(value)
     }
-    fn new_from_text(text: String) -> Option<Self> {
+    fn new_from_text(text: &str) -> Option<Self> {
         const MIN: f32 = LFO_FREQUENCY_RATIO_STEPS[0];
         const MAX: f32 = LFO_FREQUENCY_RATIO_STEPS[LFO_FREQUENCY_RATIO_STEPS.len() - 1];
 

@@ -8,12 +8,12 @@ edition = "2021"
 
 [features]
 default = ["glow"]
-glow = ["octasine/gui_glow", "simplelog"]
+glow = ["octasine/glow", "simplelog"]
 plot = ["plotlib"]
-wgpu = ["octasine/gui_wgpu", "simplelog"]
+wgpu = ["octasine/wgpu", "simplelog"]
 
 [dependencies]
-octasine = { path = "../octasine", version = "0.8.2", default-features = false }
+octasine = { path = "../octasine", version = "0.8.2", default-features = false, features = ["vst2"] }
 
 anyhow = "1"
 clap = { version = "4", features = ["derive"] }

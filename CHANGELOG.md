@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## Unreleased
+
+### Added
+
+- Add [clap](https://cleveraudio.org/) plugin support
+
 ## 0.8.2 - 2022-12-22
 
 ### Added

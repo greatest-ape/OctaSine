@@ -56,7 +56,7 @@ pub trait ParameterValue: Sized + Default + Copy {
     type Value: Copy;
 
     fn new_from_audio(value: Self::Value) -> Self;
-    fn new_from_text(_text: String) -> Option<Self>;
+    fn new_from_text(_text: &str) -> Option<Self>;
     fn new_from_patch(value: f32) -> Self;
 
     /// Get inner (audio gen) value
@@ -68,6 +68,9 @@ pub trait ParameterValue: Sized + Default + Copy {
         *self = Self::new_from_patch(value);
     }
 }
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct ParameterKey(pub u32);
 
 include!(concat!(env!("OUT_DIR"), "/codegen.rs"));
 
@@ -115,6 +118,56 @@ impl Parameter {
     pub const fn to_index(self) -> u8 {
         parameter_to_index(self)
     }
+
+    pub fn clap_path(&self) -> String {
+        match self {
+            Self::None => "None".into(),
+            Self::Master(_) => "Master".into(),
+            Self::Operator(index, _) => format!("Operator {}", *index),
+            Self::Lfo(index, _) => format!("LFO {}", *index),
+        }
+    }
+
+    pub fn key(&self) -> ParameterKey {
+        let name = match self {
+            Self::None => "None".into(),
+            Self::Master(MasterParameter::Frequency) => "Master frequency".into(),
+            Self::Master(MasterParameter::Volume) => "Master volume".into(),
+            Self::Operator(index, p) => match p {
+                OperatorParameter::Volume => format!("OP {} vol", index + 1),
+                OperatorParameter::Active => format!("OP {} active", index + 1),
+                OperatorParameter::MixOut => format!("OP {} mix out", index + 1),
+                OperatorParameter::Panning => format!("OP {} pan", index + 1),
+                OperatorParameter::WaveType => format!("OP {} wave", index + 1),
+                OperatorParameter::ModTargets => format!("OP {} target", index + 1),
+                OperatorParameter::ModOut => format!("OP {} mod out", index + 1),
+                OperatorParameter::Feedback => format!("OP {} feedback", index + 1),
+                OperatorParameter::FrequencyRatio => format!("OP {} freq ratio", index + 1),
+                OperatorParameter::FrequencyFree => format!("OP {} freq free", index + 1),
+                OperatorParameter::FrequencyFine => format!("OP {} freq fine", index + 1),
+                OperatorParameter::AttackDuration => format!("OP {} attack time", index + 1),
+                OperatorParameter::DecayDuration => format!("OP {} decay time", index + 1),
+                OperatorParameter::SustainVolume => format!("OP {} sustain vol", index + 1),
+                OperatorParameter::ReleaseDuration => format!("OP {} release time", index + 1),
+                OperatorParameter::EnvelopeLockGroup => format!("OP {} lock group", index + 1),
+            },
+            Self::Lfo(index, p) => match p {
+                LfoParameter::Target => format!("LFO {} target", index + 1),
+                LfoParameter::BpmSync => format!("LFO {} bpm sync", index + 1),
+                LfoParameter::FrequencyRatio => format!("LFO {} freq ratio", index + 1),
+                LfoParameter::FrequencyFree => format!("LFO {} freq free", index + 1),
+                LfoParameter::Mode => format!("LFO {} oneshot", index + 1),
+                LfoParameter::Shape => format!("LFO {} shape", index + 1),
+                LfoParameter::Amount => format!("LFO {} amount", index + 1),
+                LfoParameter::Active => format!("LFO {} active", index + 1),
+            },
+        };
+
+        let hash = seahash::hash(name.as_bytes());
+        let first_four_bytes = hash.to_ne_bytes()[..4].try_into().unwrap();
+
+        ParameterKey(u32::from_ne_bytes(first_four_bytes))
+    }
 }
 
 impl OperatorParameter {
@@ -151,5 +204,49 @@ impl LfoParameter {
         }
 
         arr
+    }
+}
+
+/// All metadata for a parameter
+#[derive(Debug, Clone, Copy)]
+pub struct WrappedParameter {
+    parameter: Parameter,
+    index: u8,
+    key: ParameterKey,
+}
+
+impl WrappedParameter {
+    pub fn parameter(&self) -> Parameter {
+        self.parameter
+    }
+    pub fn index(&self) -> u8 {
+        self.index
+    }
+    pub fn key(&self) -> ParameterKey {
+        self.key
+    }
+}
+
+impl From<Parameter> for WrappedParameter {
+    fn from(parameter: Parameter) -> Self {
+        Self {
+            parameter,
+            index: parameter.to_index(),
+            key: parameter.key(),
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::collections::HashSet;
+
+    use super::{ParameterKey, PARAMETERS};
+
+    #[test]
+    fn test_parameter_key_uniqueness() {
+        let set: HashSet<ParameterKey> = PARAMETERS.iter().map(|p| p.key()).collect();
+
+        assert_eq!(set.len(), PARAMETERS.len());
     }
 }

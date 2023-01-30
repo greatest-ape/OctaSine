@@ -1,0 +1,16 @@
+#!/bin/bash
+
+# Validate with: https://github.com/free-audio/clap-validator
+
+set -e
+
+cargo xtask bundle octasine --profile "release-debug"
+
+TARGET="/Library/Audio/Plug-Ins/CLAP/OctaSine.clap"
+
+if [ -d "$TARGET" ]; then
+	rm -r "$TARGET"
+fi
+
+cp -r "./target/bundled/octasine.clap" "$TARGET"
+echo "Copied CLAP bundle to $TARGET"
