@@ -13,6 +13,7 @@
   * test, including patches
   * consider using logging extension
 
+* test vst plugin, including audio gen through cli
 * upgrade iced version in iced_baseview
 
 ## High priority
