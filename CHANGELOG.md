@@ -8,6 +8,10 @@ All notable changes to this project will be documented in this file.
 
 - Add [clap](https://cleveraudio.org/) plugin support
 
+### Changed
+
+- Upgrade to [iced](https://github.com/iced-rs/iced) v0.7
+
 ## 0.8.2 - 2022-12-22
 
 ### Added

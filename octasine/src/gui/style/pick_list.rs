@@ -17,7 +17,7 @@ impl StyleSheet for Theme {
                     border_width: 1.0,
                     border_radius: 3.0,
                     placeholder_color: TEXT,
-                    icon_size: 0.6,
+                    handle_color: TEXT,
                 }
             }
             Self::Dark => {
@@ -29,8 +29,8 @@ impl StyleSheet for Theme {
                     border_color: TEXT,
                     border_width: 0.0,
                     border_radius: 3.0,
-                    icon_size: 0.6,
                     placeholder_color: TEXT,
+                    handle_color: TEXT,
                 }
             }
         }

@@ -82,7 +82,7 @@ where
             let v = self.parameter_value.get();
             let parameter = self.parameter;
 
-            let checkbox = Checkbox::new(active, label, move |active| {
+            let checkbox = Checkbox::new(label, active, move |active| {
                 let mut v = v;
 
                 v.set_index(index, active);
