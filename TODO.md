@@ -9,7 +9,10 @@
   * maybe this is all fine?
 
 * clap
+  * versioning: use OctaSine 0.8 name? Implement state management extension
+    and use a parameter migration scheme?
   * check for null everywhere
+  * check for unwrap
   * consider using logging extension
   * Nice to have: maybe clap is better at supporting automating multiple
     parameters at the same time? Then it might be good to actually tell
