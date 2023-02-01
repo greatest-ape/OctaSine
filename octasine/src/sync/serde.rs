@@ -6,7 +6,7 @@ use serde::{de::DeserializeOwned, Deserialize, Serialize};
 
 use crate::{
     crate_version,
-    plugin::vst2::{crate_version_to_vst_format, PLUGIN_UNIQUE_ID},
+    plugin::common::{crate_version_to_vst2_format, PLUGIN_UNIQUE_VST2_ID},
     utils::get_version_info,
 };
 
@@ -118,8 +118,8 @@ impl SerdePatch {
 
         bytes.extend_from_slice(b"FPCh"); // fxp opaque chunk
         bytes.write_i32::<BigEndian>(1)?; // fxp version
-        bytes.write_i32::<BigEndian>(PLUGIN_UNIQUE_ID)?;
-        bytes.write_i32::<BigEndian>(crate_version_to_vst_format(crate_version!()))?;
+        bytes.write_i32::<BigEndian>(PLUGIN_UNIQUE_VST2_ID)?;
+        bytes.write_i32::<BigEndian>(crate_version_to_vst2_format(crate_version!()))?;
 
         bytes.write_i32::<BigEndian>(self.parameters.len().try_into()?)?;
 
@@ -183,8 +183,8 @@ impl SerdePatchBank {
 
         bytes.extend_from_slice(b"FBCh"); // fxb opaque chunk
         bytes.write_i32::<BigEndian>(1)?; // fxb version (1 or 2)
-        bytes.write_i32::<BigEndian>(PLUGIN_UNIQUE_ID)?;
-        bytes.write_i32::<BigEndian>(crate_version_to_vst_format(crate_version!()))?;
+        bytes.write_i32::<BigEndian>(PLUGIN_UNIQUE_VST2_ID)?;
+        bytes.write_i32::<BigEndian>(crate_version_to_vst2_format(crate_version!()))?;
 
         bytes.write_i32::<BigEndian>(self.patches.len().try_into()?)?;
         bytes.extend(repeat(0).take(128)); // reserved padding for fxb version 1
