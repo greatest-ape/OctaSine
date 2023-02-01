@@ -4,15 +4,12 @@ pub mod log10_table;
 
 use array_init::array_init;
 
-use crate::{audio::ClapNoteEnded, common::*};
+use crate::common::*;
 
 use envelopes::*;
 use lfos::*;
 
-use super::{
-    common::{InterpolationDuration, Interpolator},
-    ClapEndedNotesRb,
-};
+use super::common::{InterpolationDuration, Interpolator};
 
 const VELOCITY_INTERPOLATION_DURATION: InterpolationDuration =
     InterpolationDuration::exactly_10ms();
@@ -38,6 +35,7 @@ impl KeyVelocity {
 #[derive(Debug, Copy, Clone)]
 pub struct MidiPitch {
     frequency_factor: f64,
+    #[cfg(feature = "clap")]
     key: u8,
 }
 
@@ -45,6 +43,7 @@ impl MidiPitch {
     pub fn new(midi_pitch: u8) -> Self {
         Self {
             frequency_factor: Self::calculate_frequency_factor(midi_pitch),
+            #[cfg(feature = "clap")]
             key: midi_pitch,
         }
     }
@@ -116,7 +115,11 @@ impl Voice {
     }
 
     #[inline]
-    pub fn press_key(&mut self, velocity: KeyVelocity, opt_clap_note_id: Option<i32>) {
+    pub fn press_key(
+        &mut self,
+        velocity: KeyVelocity,
+        #[cfg_attr(not(feature = "clap"), allow(unused_variables))] opt_clap_note_id: Option<i32>,
+    ) {
         if self.active {
             self.key_velocity_interpolator.set_value(velocity.0)
         } else {
@@ -149,8 +152,8 @@ impl Voice {
     #[inline]
     pub fn deactivate_if_envelopes_ended(
         &mut self,
-        #[cfg(feature = "clap")] clap_ended_notes: &mut ClapEndedNotesRb,
-        sample_index: usize,
+        #[cfg(feature = "clap")] clap_ended_notes: &mut super::ClapEndedNotesRb,
+        #[cfg(feature = "clap")] sample_index: usize,
     ) {
         let all_envelopes_ended = self
             .operators
@@ -166,7 +169,7 @@ impl Voice {
             if let Some(clap_note_id) = self.clap_note_id {
                 use ringbuf::Rb;
 
-                let note_ended = ClapNoteEnded {
+                let note_ended = super::ClapNoteEnded {
                     key: self.midi_pitch.key,
                     clap_note_id,
                     sample_index: sample_index as u32,
