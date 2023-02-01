@@ -185,6 +185,12 @@ impl OctaSine {
             plugin.handle_transport_event_from_host(&*(process.transport));
         }
 
+        let opt_process_out_events = if !process.out_events.is_null() {
+            Some(&*(process.out_events))
+        } else {
+            None
+        };
+
         let mut process_start_index = 0u32;
         let mut process_end_index = process.frames_count;
         let mut event_index = 0u32;
@@ -207,10 +213,8 @@ impl OctaSine {
                 }
             }
 
-            if !process.out_events.is_null() {
-                let out_events = &*(process.out_events);
-
-                plugin.send_gui_events_to_host(out_events, process_start_index);
+            if let Some(process_out_events) = opt_process_out_events {
+                plugin.send_gui_events_to_host(process_out_events, process_start_index);
             }
 
             {
@@ -221,6 +225,10 @@ impl OctaSine {
 
                 update_audio_parameters(&mut audio, &plugin.sync);
                 process_f32_runtime_select(&mut audio, lefts, rights, process_start_index as usize);
+            }
+
+            if let Some(process_out_events) = opt_process_out_events {
+                plugin.send_note_end_events_to_host(process_out_events);
             }
 
             if process_end_index == process.frames_count {
@@ -242,13 +250,6 @@ impl OctaSine {
 
                 event_index += 1;
             }
-        }
-
-        if !process.out_events.is_null() {
-            let out_events = &*(process.out_events);
-
-            // For efficiency, do this only once per process call
-            plugin.send_note_end_events_to_host(out_events);
         }
 
         CLAP_PROCESS_CONTINUE
@@ -441,7 +442,7 @@ impl OctaSine {
 
             if audio.clap_unprocessed_ended_voices {
                 for (key, voice) in audio.voices.iter_mut().enumerate() {
-                    match (voice.clap_note_id, voice.clap_note_ended_at_sample_index) {
+                    match (voice.clap_note_id, voice.clap_note_ended_at_sample_index.take()) {
                         (Some(clap_note_id), Some(ended_at_sample_index)) => unsafe {
                             let event = clap_event_note {
                                 header: clap_event_header {

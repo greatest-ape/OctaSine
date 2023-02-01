@@ -9,6 +9,7 @@
   * maybe this is all fine?
 
 * clap
+  * is note end event logic really 100% correct?
   * versioning: use OctaSine 0.8 name? Implement state management extension
     and use a parameter migration scheme?
   * check for null everywhere

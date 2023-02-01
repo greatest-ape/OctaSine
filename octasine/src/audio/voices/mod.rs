@@ -135,7 +135,6 @@ impl Voice {
         #[cfg(feature = "clap")]
         {
             self.clap_note_id = opt_clap_note_id;
-            self.clap_note_ended_at_sample_index = None;
         }
 
         self.active = true;
