@@ -367,7 +367,8 @@ mod gen {
                 }
 
                 voice.deactivate_if_envelopes_ended(
-                    &mut audio_state.clap_unprocessed_ended_voices,
+                    #[cfg(feature = "clap")]
+                    &mut audio_state.clap_ended_notes,
                     position + sample_index,
                 );
             }

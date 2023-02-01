@@ -28,7 +28,7 @@ use clap_sys::{
 use iced_baseview::window::WindowHandle;
 use once_cell::sync::Lazy;
 use parking_lot::Mutex;
-use ringbuf::{Consumer, Producer, SharedRb};
+use ringbuf::{Consumer, Producer, Rb, SharedRb};
 
 use crate::{
     audio::{gen::process_f32_runtime_select, AudioState},
@@ -438,34 +438,25 @@ impl OctaSine {
 
     pub fn send_note_end_events_to_host(&self, out_events: &clap_output_events) {
         if let Some(try_push_fn) = out_events.try_push {
-            let mut audio = self.audio.lock();
-
-            if audio.clap_unprocessed_ended_voices {
-                for (key, voice) in audio.voices.iter_mut().enumerate() {
-                    match (voice.clap_note_id, voice.clap_note_ended_at_sample_index.take()) {
-                        (Some(clap_note_id), Some(ended_at_sample_index)) => unsafe {
-                            let event = clap_event_note {
-                                header: clap_event_header {
-                                    size: size_of::<clap_event_note>() as u32,
-                                    time: ended_at_sample_index,
-                                    space_id: CLAP_CORE_EVENT_SPACE_ID,
-                                    type_: CLAP_EVENT_NOTE_END,
-                                    flags: 0,
-                                },
-                                note_id: clap_note_id,
-                                port_index: 0,
-                                channel: -1,
-                                key: TryInto::<u8>::try_into(key).unwrap().into(),
-                                velocity: 0.0,
-                            };
-
-                            try_push_fn(out_events, &event as *const _ as *const _);
+            for note_ended in self.audio.lock().clap_ended_notes.pop_iter() {
+                unsafe {
+                    let event = clap_event_note {
+                        header: clap_event_header {
+                            size: size_of::<clap_event_note>() as u32,
+                            time: note_ended.sample_index,
+                            space_id: CLAP_CORE_EVENT_SPACE_ID,
+                            type_: CLAP_EVENT_NOTE_END,
+                            flags: 0,
                         },
-                        _ => (),
-                    }
-                }
+                        note_id: note_ended.clap_note_id,
+                        port_index: 0,
+                        channel: -1,
+                        key: note_ended.key.into(),
+                        velocity: 0.0,
+                    };
 
-                audio.clap_unprocessed_ended_voices = false;
+                    try_push_fn(out_events, &event as *const _ as *const _);
+                }
             }
         }
     }

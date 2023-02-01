@@ -4,12 +4,15 @@ pub mod log10_table;
 
 use array_init::array_init;
 
-use crate::common::*;
+use crate::{audio::ClapNoteEnded, common::*};
 
 use envelopes::*;
 use lfos::*;
 
-use super::common::{InterpolationDuration, Interpolator};
+use super::{
+    common::{InterpolationDuration, Interpolator},
+    ClapEndedNotesRb,
+};
 
 const VELOCITY_INTERPOLATION_DURATION: InterpolationDuration =
     InterpolationDuration::exactly_10ms();
@@ -35,12 +38,14 @@ impl KeyVelocity {
 #[derive(Debug, Copy, Clone)]
 pub struct MidiPitch {
     frequency_factor: f64,
+    key: u8,
 }
 
 impl MidiPitch {
     pub fn new(midi_pitch: u8) -> Self {
         Self {
             frequency_factor: Self::calculate_frequency_factor(midi_pitch),
+            key: midi_pitch,
         }
     }
 
@@ -80,8 +85,6 @@ pub struct Voice {
     pub lfos: [VoiceLfo; NUM_LFOS],
     #[cfg(feature = "clap")]
     pub clap_note_id: Option<i32>,
-    #[cfg(feature = "clap")]
-    pub clap_note_ended_at_sample_index: Option<u32>,
 }
 
 impl Voice {
@@ -100,8 +103,6 @@ impl Voice {
             lfos: array_init(|_| VoiceLfo::default()),
             #[cfg(feature = "clap")]
             clap_note_id: None,
-            #[cfg(feature = "clap")]
-            clap_note_ended_at_sample_index: None,
         }
     }
 
@@ -148,7 +149,7 @@ impl Voice {
     #[inline]
     pub fn deactivate_if_envelopes_ended(
         &mut self,
-        clap_unprocessed_ended_voices: &mut bool,
+        #[cfg(feature = "clap")] clap_ended_notes: &mut ClapEndedNotesRb,
         sample_index: usize,
     ) {
         let all_envelopes_ended = self
@@ -162,9 +163,19 @@ impl Voice {
             }
 
             #[cfg(feature = "clap")]
-            {
-                self.clap_note_ended_at_sample_index = Some(sample_index as u32);
-                *clap_unprocessed_ended_voices = true;
+            if let Some(clap_note_id) = self.clap_note_id {
+                use ringbuf::Rb;
+
+                let note_ended = ClapNoteEnded {
+                    key: self.midi_pitch.key,
+                    clap_note_id,
+                    sample_index: sample_index as u32,
+                };
+
+                if let Err(_) = clap_ended_notes.push(note_ended) {
+                    // Should never happen
+                    ::log::error!("Clap ended notes buffer full");
+                }
             }
 
             self.active = false;

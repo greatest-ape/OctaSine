@@ -16,6 +16,17 @@ use voices::*;
 
 use self::{gen::AudioGenData, voices::log10_table::Log10Table};
 
+#[cfg(feature = "clap")]
+pub struct ClapNoteEnded {
+    pub key: u8,
+    pub clap_note_id: i32,
+    pub sample_index: u32,
+}
+
+#[cfg(feature = "clap")]
+pub type ClapEndedNotesRb =
+    ringbuf::LocalRb<ClapNoteEnded, Vec<::std::mem::MaybeUninit<ClapNoteEnded>>>;
+
 pub struct AudioState {
     sample_rate: SampleRate,
     time_per_sample: TimePerSample,
@@ -30,7 +41,8 @@ pub struct AudioState {
     audio_gen_data_w2: Box<AudioGenData<2>>,
     #[cfg(target_arch = "x86_64")]
     audio_gen_data_w4: Box<AudioGenData<4>>,
-    pub clap_unprocessed_ended_voices: bool,
+    #[cfg(feature = "clap")]
+    pub clap_ended_notes: ClapEndedNotesRb,
 }
 
 impl Default for AudioState {
@@ -49,7 +61,8 @@ impl Default for AudioState {
             audio_gen_data_w2: Default::default(),
             #[cfg(target_arch = "x86_64")]
             audio_gen_data_w4: Default::default(),
-            clap_unprocessed_ended_voices: false,
+            #[cfg(feature = "clap")]
+            clap_ended_notes: ringbuf::LocalRb::new(256),
         }
     }
 }
