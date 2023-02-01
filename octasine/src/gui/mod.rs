@@ -833,7 +833,7 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
     }
 
     fn title(&self) -> String {
-        crate::plugin::vst2::PLUGIN_NAME.into()
+        crate::plugin::common::PLUGIN_SEMVER_NAME.into()
     }
 
     fn theme(&self) -> Self::Theme {

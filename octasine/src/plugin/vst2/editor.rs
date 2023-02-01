@@ -3,7 +3,7 @@ use raw_window_handle::{HasRawWindowHandle, RawWindowHandle};
 
 use crate::{
     gui::{get_iced_baseview_settings, GUI_HEIGHT, GUI_WIDTH},
-    plugin::vst2::PLUGIN_NAME,
+    plugin::vst2::PLUGIN_SEMVER_NAME,
     sync::GuiSyncHandle,
 };
 
@@ -25,14 +25,14 @@ impl<H: GuiSyncHandle> Editor<H> {
     pub fn open_parented(parent: ParentWindow, sync_handle: H) {
         open_parented::<OctaSineIcedApplication<H>, ParentWindow>(
             &parent,
-            get_iced_baseview_settings(sync_handle, PLUGIN_NAME.to_string()),
+            get_iced_baseview_settings(sync_handle, PLUGIN_SEMVER_NAME.to_string()),
         );
     }
 
     pub fn open_blocking(sync_handle: H) {
         open_blocking::<OctaSineIcedApplication<H>>(get_iced_baseview_settings(
             sync_handle,
-            PLUGIN_NAME.to_string(),
+            PLUGIN_SEMVER_NAME.to_string(),
         ));
     }
 }

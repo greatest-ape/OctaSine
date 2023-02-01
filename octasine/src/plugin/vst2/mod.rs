@@ -15,8 +15,7 @@ use crate::sync::SyncState;
 use crate::utils::{init_logging, update_audio_parameters};
 use crate::{common::*, crate_version};
 
-pub const PLUGIN_NAME: &str = "OctaSine v0.8";
-pub const PLUGIN_UNIQUE_ID: i32 = 1_438_048_625;
+use super::common::{crate_version_to_vst2_format, PLUGIN_SEMVER_NAME, PLUGIN_UNIQUE_VST2_ID};
 
 pub struct OctaSine {
     pub audio: Box<AudioState>,
@@ -90,10 +89,10 @@ impl Plugin for OctaSine {
 
     fn get_info(&self) -> Info {
         Info {
-            name: PLUGIN_NAME.to_string(),
+            name: PLUGIN_SEMVER_NAME.to_string(),
             vendor: "Joakim Frostegard".to_string(),
-            version: crate_version_to_vst_format(crate_version!()),
-            unique_id: PLUGIN_UNIQUE_ID,
+            version: crate_version_to_vst2_format(crate_version!()),
+            unique_id: PLUGIN_UNIQUE_VST2_ID,
             category: Category::Synth,
             inputs: 0,
             outputs: 2,
@@ -147,26 +146,5 @@ impl Plugin for OctaSine {
         } else {
             None
         }
-    }
-}
-
-pub fn crate_version_to_vst_format(crate_version: &str) -> i32 {
-    format!("{:0<4}", crate_version.replace('.', ""))
-        .parse()
-        .expect("convert crate version to i32")
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[allow(clippy::zero_prefixed_literal)]
-    #[test]
-    fn test_crate_version_to_vst_format() {
-        assert_eq!(crate_version_to_vst_format("1"), 1000);
-        assert_eq!(crate_version_to_vst_format("0.1"), 0100);
-        assert_eq!(crate_version_to_vst_format("0.0.2"), 0020);
-        assert_eq!(crate_version_to_vst_format("0.5.2"), 0520);
-        assert_eq!(crate_version_to_vst_format("1.0.1"), 1010);
     }
 }

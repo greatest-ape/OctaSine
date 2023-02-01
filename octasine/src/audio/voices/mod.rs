@@ -35,12 +35,16 @@ impl KeyVelocity {
 #[derive(Debug, Copy, Clone)]
 pub struct MidiPitch {
     frequency_factor: f64,
+    #[cfg(feature = "clap")]
+    key: u8,
 }
 
 impl MidiPitch {
     pub fn new(midi_pitch: u8) -> Self {
         Self {
             frequency_factor: Self::calculate_frequency_factor(midi_pitch),
+            #[cfg(feature = "clap")]
+            key: midi_pitch,
         }
     }
 
@@ -80,8 +84,6 @@ pub struct Voice {
     pub lfos: [VoiceLfo; NUM_LFOS],
     #[cfg(feature = "clap")]
     pub clap_note_id: Option<i32>,
-    #[cfg(feature = "clap")]
-    pub clap_note_ended_at_sample_index: Option<u32>,
 }
 
 impl Voice {
@@ -100,8 +102,6 @@ impl Voice {
             lfos: array_init(|_| VoiceLfo::default()),
             #[cfg(feature = "clap")]
             clap_note_id: None,
-            #[cfg(feature = "clap")]
-            clap_note_ended_at_sample_index: None,
         }
     }
 
@@ -115,7 +115,11 @@ impl Voice {
     }
 
     #[inline]
-    pub fn press_key(&mut self, velocity: KeyVelocity, opt_clap_note_id: Option<i32>) {
+    pub fn press_key(
+        &mut self,
+        velocity: KeyVelocity,
+        #[cfg_attr(not(feature = "clap"), allow(unused_variables))] opt_clap_note_id: Option<i32>,
+    ) {
         if self.active {
             self.key_velocity_interpolator.set_value(velocity.0)
         } else {
@@ -135,7 +139,6 @@ impl Voice {
         #[cfg(feature = "clap")]
         {
             self.clap_note_id = opt_clap_note_id;
-            self.clap_note_ended_at_sample_index = None;
         }
 
         self.active = true;
@@ -149,8 +152,8 @@ impl Voice {
     #[inline]
     pub fn deactivate_if_envelopes_ended(
         &mut self,
-        clap_unprocessed_ended_voices: &mut bool,
-        sample_index: usize,
+        #[cfg(feature = "clap")] clap_ended_notes: &mut super::ClapEndedNotesRb,
+        #[cfg(feature = "clap")] sample_index: usize,
     ) {
         let all_envelopes_ended = self
             .operators
@@ -163,9 +166,19 @@ impl Voice {
             }
 
             #[cfg(feature = "clap")]
-            {
-                self.clap_note_ended_at_sample_index = Some(sample_index as u32);
-                *clap_unprocessed_ended_voices = true;
+            if let Some(clap_note_id) = self.clap_note_id {
+                use ringbuf::Rb;
+
+                let note_ended = super::ClapNoteEnded {
+                    key: self.midi_pitch.key,
+                    clap_note_id,
+                    sample_index: sample_index as u32,
+                };
+
+                if let Err(_) = clap_ended_notes.push(note_ended) {
+                    // Should never happen
+                    ::log::error!("Clap ended notes buffer full");
+                }
             }
 
             self.active = false;
