@@ -1,5 +1,8 @@
 # TODO
 
+* update audio from sync every sample, at least for clap, in order to
+  get changes from GUI faster, since buffers can be very long
+
 * heavy CPU consumption in REAPER without anything playing
   * with clap and vst
   * also with other plugins
