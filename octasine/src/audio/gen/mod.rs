@@ -12,8 +12,6 @@ use crate::common::*;
 use crate::parameters::operator_wave_type::WaveType;
 use crate::parameters::{MasterParameter, ModTargetStorage, OperatorParameter, Parameter};
 use crate::simd::*;
-use crate::sync::SyncState;
-use crate::utils::update_audio_parameters;
 
 use lfo::*;
 
@@ -113,19 +111,21 @@ impl<const W: usize> Default for VoiceOperatorData<W> {
 }
 
 #[inline]
-pub fn process_f32_runtime_select<T>(
+pub fn process_f32_runtime_select<F>(
     audio_state: &mut AudioState,
-    sync_state: &SyncState<T>,
     lefts: &mut [f32],
     rights: &mut [f32],
     frame_offset: usize,
-) {
+    updater: F,
+) where
+    F: Fn(&mut AudioState),
+{
     let num_samples = lefts.len();
 
     let mut position = 0;
 
     loop {
-        update_audio_parameters(audio_state, sync_state);
+        updater(audio_state);
 
         let num_remaining_samples = (num_samples - position) as u64;
 
