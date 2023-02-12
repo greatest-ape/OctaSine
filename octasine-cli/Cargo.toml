@@ -7,7 +7,7 @@ edition = "2021"
 
 
 [features]
-default = ["glow"]
+default = ["wgpu"]
 glow = ["octasine/glow", "simplelog"]
 plot = ["plotlib"]
 wgpu = ["octasine/wgpu", "simplelog"]
