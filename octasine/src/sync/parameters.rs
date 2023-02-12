@@ -1,6 +1,6 @@
 use crate::{common::IndexMap, parameters::*};
 
-use super::atomic_double::AtomicFloat;
+use super::atomic_float::AtomicFloat;
 
 /// Thread-safe storage of parameter values in patch format (f64 in range 0.0
 /// to 1.0)
