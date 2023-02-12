@@ -35,7 +35,7 @@ use crate::{
     common::{BeatsPerMinute, EventToHost, NoteEvent, NoteEventInner, SampleRate},
     parameters::ParameterKey,
     sync::SyncState,
-    utils::{init_logging, update_audio_parameters},
+    utils::init_logging,
 };
 
 use super::{descriptor::DESCRIPTOR, ext::gui::ParentWindow, sync::ClapGuiSyncHandle};
@@ -223,8 +223,13 @@ impl OctaSine {
                 let lefts = &mut lefts[process_start_index as usize..process_end_index as usize];
                 let rights = &mut rights[process_start_index as usize..process_end_index as usize];
 
-                update_audio_parameters(&mut audio, &plugin.sync);
-                process_f32_runtime_select(&mut audio, lefts, rights, process_start_index as usize);
+                process_f32_runtime_select(
+                    &mut audio,
+                    &plugin.sync,
+                    lefts,
+                    rights,
+                    process_start_index as usize,
+                );
             }
 
             if let Some(process_out_events) = opt_process_out_events {

@@ -12,7 +12,7 @@ use vst::plugin::{CanDo, Category, HostCallback, Info, Plugin, PluginParameters}
 use crate::audio::gen::process_f32_runtime_select;
 use crate::audio::AudioState;
 use crate::sync::SyncState;
-use crate::utils::{init_logging, update_audio_parameters};
+use crate::utils::init_logging;
 use crate::{common::*, crate_version};
 
 use super::common::{crate_version_to_vst2_format, PLUGIN_SEMVER_NAME, PLUGIN_UNIQUE_VST2_ID};
@@ -71,8 +71,6 @@ impl Plugin for OctaSine {
         let lefts = l.get_mut(0);
         let rights = r.get_mut(0);
 
-        update_audio_parameters(&mut self.audio, &self.sync);
-
         // VST2 spec does not guarantee that events are sent in order
         self.audio.sort_note_events();
 
@@ -80,7 +78,7 @@ impl Plugin for OctaSine {
             self.audio.set_bpm(bpm);
         }
 
-        process_f32_runtime_select(&mut self.audio, lefts, rights, 0);
+        process_f32_runtime_select(&mut self.audio, &self.sync, lefts, rights, 0);
     }
 
     fn new(host: HostCallback) -> Self {
