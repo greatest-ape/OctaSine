@@ -20,6 +20,13 @@ members = [
 # [patch.'https://github.com/greatest-ape/sleef-trig']
 # sleef-trig = { path = "../sleef-trig" }
 
+[patch.crates-io]
+iced_core = { git = "https://github.com/greatest-ape/iced.git", rev = "f318e3f" }
+iced_futures = { git = "https://github.com/greatest-ape/iced.git", rev = "f318e3f" }
+iced_glow = { git = "https://github.com/greatest-ape/iced.git", rev = "f318e3f" }
+iced_graphics = { git = "https://github.com/greatest-ape/iced.git", rev = "f318e3f" }
+iced_native = { git = "https://github.com/greatest-ape/iced.git", rev = "f318e3f" }
+
 [profile.release]
 debug = false
 lto = "thin"
