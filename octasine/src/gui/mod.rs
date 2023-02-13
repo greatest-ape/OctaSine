@@ -457,7 +457,6 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
     #[cfg(feature = "wgpu")]
     fn renderer_settings() -> iced_baseview::renderer::Settings {
         iced_baseview::renderer::Settings {
-            present_mode: iced_baseview::renderer::wgpu::PresentMode::Immediate,
             default_font: Some(OPEN_SANS_BYTES_SEMI_BOLD),
             default_text_size: FONT_SIZE,
             antialiasing: Some(iced_baseview::renderer::settings::Antialiasing::MSAAx4),
