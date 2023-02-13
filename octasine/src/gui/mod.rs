@@ -470,6 +470,9 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
         iced_baseview::renderer::Settings {
             default_font: Some(OPEN_SANS_BYTES_SEMI_BOLD),
             default_text_size: FONT_SIZE,
+            #[cfg(target_os = "linux")]
+            antialiasing: Some(iced_baseview::renderer::settings::Antialiasing::MSAAx4),
+            #[cfg(not(target_os = "linux"))]
             antialiasing: Some(iced_baseview::renderer::settings::Antialiasing::MSAAx8),
             text_multithreading: false,
         }
@@ -866,6 +869,9 @@ pub fn get_iced_baseview_settings<H: GuiSyncHandle>(
             title: plugin_name,
             #[cfg(feature = "glow")]
             gl_config: Some(iced_baseview::baseview::gl::GlConfig {
+                #[cfg(target_os = "linux")]
+                samples: Some(4),
+                #[cfg(not(target_os = "linux"))]
                 samples: Some(8),
                 ..Default::default()
             }),
