@@ -6,7 +6,7 @@ license = "AGPL-3.0"
 edition = "2021"
 
 [features]
-default = ["clap", "vst2", "wgpu"]
+default = ["clap", "vst2", "glow"]
 clap = ["atomic_refcell", "bytemuck", "clap-sys", "parking_lot"]
 vst2 = ["vst"]
 glow = ["gui", "iced_baseview/glow", "iced_audio/glow"]
