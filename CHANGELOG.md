@@ -6,14 +6,15 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
-- Add [clap](https://cleveraudio.org/) plugin support
+- Add initial [clap](https://cleveraudio.org/) plugin support
 
 ### Changed
 
 - Upgrade to [iced](https://github.com/iced-rs/iced) v0.7
-- Change iced backend from glow (OpenGL) to wgpu. The reason for this is that
-  the glow backend receives less maintainer attention, occasionally breaks and
-  [will eventually be deprecated](https://github.com/iced-rs/iced/pull/1697).
+
+### Fixed
+
+- Fix crashes when opening GUI
 
 ## 0.8.2 - 2022-12-22
 
