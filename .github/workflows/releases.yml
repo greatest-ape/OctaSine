@@ -33,20 +33,6 @@ jobs:
 
     - name: Setup Rust dependency caching
       uses: Swatinem/rust-cache@v2
-
-    # - name: Build plugin for x86_64
-    #   run: cargo build --release -p octasine-vst2-plugin --verbose
-
-    # - name: Build plugin for aarch64
-    #   run: |
-    #     export SDKROOT=$(xcrun -sdk macosx11.1 --show-sdk-path)
-    #     echo "SDKROOT=$SDKROOT"
-    #     export MACOSX_DEPLOYMENT_TARGET=$(xcrun -sdk macosx11.1 --show-sdk-platform-version)
-    #     echo "MACOSX_DEPLOYMENT_TARGET=$MACOSX_DEPLOYMENT_TARGET"
-    #     cargo build --release -p octasine-vst2-plugin --target=aarch64-apple-darwin
-    #   env:
-    #     DEVELOPER_DIR: /Applications/Xcode_12.4.app/Contents/Developer
-    #   shell: bash
     
     # It's unclear if xtask will be affected by env vars
     - name: Build and bundle plugin
@@ -55,7 +41,8 @@ jobs:
         echo "SDKROOT=$SDKROOT"
         export MACOSX_DEPLOYMENT_TARGET=$(xcrun -sdk macosx11.1 --show-sdk-platform-version)
         echo "MACOSX_DEPLOYMENT_TARGET=$MACOSX_DEPLOYMENT_TARGET"
-        cargo xtask bundle-universal octasine --release --verbose
+        cargo xtask bundle-universal octasine --release --verbose --no-default-features --features "glow vst2"
+        cargo xtask bundle-universal octasine --release --verbose --no-default-features --features "glow clap"
       env:
         DEVELOPER_DIR: /Applications/Xcode_12.4.app/Contents/Developer
       shell: bash
@@ -67,14 +54,6 @@ jobs:
       id: get_version
       run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
       shell: bash
-
-    # - name: Create release files
-    #   run: |
-    #     mkdir releases
-    #     mkdir -p tmp
-    #     lipo "./target/release/liboctasine.dylib" "./target/aarch64-apple-darwin/release/liboctasine.dylib" -output "./tmp/liboctasine.dylib" -create
-    #     bash ./scripts/macos/bundle.sh "./tmp/liboctasine.dylib" "OctaSine $OCTASINE_SEMVER_VERSION"
-    #     bash ./scripts/unix/package.sh "OctaSine $OCTASINE_SEMVER_VERSION.vst" "../releases/OctaSine-${{ steps.get_version.outputs.VERSION }}-macOS"
 
     - name: Create release zip
       run: |
@@ -112,11 +91,11 @@ jobs:
     - name: Setup MSVC shell
       uses: ilammy/msvc-dev-cmd@v1
 
-    # - name: Build plugin in release mode
-    #   run: cargo build --release -p octasine-vst2-plugin --verbose
+    - name: Build and bundle plugin (vst2)
+      run: cargo xtask bundle octasine --release --verbose --no-default-features --features "glow vst2"
 
-    - name: Build and bundle plugin
-      run: cargo xtask bundle octasine --release --verbose
+    - name: Build and bundle plugin (clap)
+      run: cargo xtask bundle octasine --release --verbose --no-default-features --features "glow clap"
 
     - name: Install cargo-about
       run: cargo install --debug --locked cargo-about
@@ -164,11 +143,11 @@ jobs:
     - name: Setup Rust dependency caching
       uses: Swatinem/rust-cache@v2
 
-    # - name: Build plugin in release mode
-    #   run: cargo build --release -p octasine-vst2-plugin --verbose
+    - name: Build and bundle plugin (vst2)
+      run: cargo xtask bundle octasine --release --verbose --no-default-features --features "glow vst2"
 
-    - name: Build and bundle plugin
-      run: cargo xtask bundle octasine --release --verbose
+    - name: Build and bundle plugin (clap)
+      run: cargo xtask bundle octasine --release --verbose --no-default-features --features "glow clap"
 
     - name: Install cargo-about
       run: cargo install --debug --locked cargo-about
@@ -177,13 +156,6 @@ jobs:
       id: get_version
       run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
       shell: bash
-
-    # - name: Create release file
-    #   run: |
-    #     mkdir releases
-    #     mkdir -p tmp
-    #     cp "./target/release/liboctasine.so" "tmp/OctaSine $OCTASINE_SEMVER_VERSION.so"
-    #     bash ./scripts/unix/package.sh "OctaSine $OCTASINE_SEMVER_VERSION.so" "../releases/OctaSine-${{ steps.get_version.outputs.VERSION }}-Ubuntu-20_04"
 
     - name: Create release zip
       run: |

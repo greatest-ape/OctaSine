@@ -71,8 +71,6 @@ impl Plugin for OctaSine {
         let lefts = l.get_mut(0);
         let rights = r.get_mut(0);
 
-        update_audio_parameters(&mut self.audio, &self.sync);
-
         // VST2 spec does not guarantee that events are sent in order
         self.audio.sort_note_events();
 
@@ -80,7 +78,9 @@ impl Plugin for OctaSine {
             self.audio.set_bpm(bpm);
         }
 
-        process_f32_runtime_select(&mut self.audio, lefts, rights, 0);
+        process_f32_runtime_select(&mut self.audio, lefts, rights, 0, |audio_state| {
+            update_audio_parameters(audio_state, &self.sync);
+        });
     }
 
     fn new(host: HostCallback) -> Self {

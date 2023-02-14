@@ -213,18 +213,25 @@ impl OctaSine {
                 }
             }
 
-            if let Some(process_out_events) = opt_process_out_events {
-                plugin.send_gui_events_to_host(process_out_events, process_start_index);
-            }
-
             {
                 let mut audio = plugin.audio.lock();
 
                 let lefts = &mut lefts[process_start_index as usize..process_end_index as usize];
                 let rights = &mut rights[process_start_index as usize..process_end_index as usize];
 
-                update_audio_parameters(&mut audio, &plugin.sync);
-                process_f32_runtime_select(&mut audio, lefts, rights, process_start_index as usize);
+                process_f32_runtime_select(
+                    &mut audio,
+                    lefts,
+                    rights,
+                    process_start_index as usize,
+                    |audio| {
+                        if let Some(process_out_events) = opt_process_out_events {
+                            plugin.send_gui_events_to_host(process_out_events, process_start_index);
+                        }
+
+                        update_audio_parameters(audio, &plugin.sync);
+                    },
+                );
             }
 
             if let Some(process_out_events) = opt_process_out_events {

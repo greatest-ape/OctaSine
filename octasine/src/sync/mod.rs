@@ -1,4 +1,4 @@
-mod atomic_double;
+mod atomic_float;
 pub mod change_info;
 mod parameters;
 mod patch_bank;

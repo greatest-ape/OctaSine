@@ -111,17 +111,22 @@ impl<const W: usize> Default for VoiceOperatorData<W> {
 }
 
 #[inline]
-pub fn process_f32_runtime_select(
+pub fn process_f32_runtime_select<F>(
     audio_state: &mut AudioState,
     lefts: &mut [f32],
     rights: &mut [f32],
     frame_offset: usize,
-) {
+    updater: F,
+) where
+    F: Fn(&mut AudioState),
+{
     let num_samples = lefts.len();
 
     let mut position = 0;
 
     loop {
+        updater(audio_state);
+
         let num_remaining_samples = (num_samples - position) as u64;
 
         unsafe {

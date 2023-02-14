@@ -28,16 +28,16 @@ mod tests {
     fn test_atomic_double() {
         let a = 13.5;
 
-        let atomic_double = AtomicFloat::new(a);
+        let atomic_float = AtomicFloat::new(a);
 
-        assert_eq!(atomic_double.get(), a);
+        assert_eq!(atomic_float.get(), a);
 
         for i in 0..100 {
             let b = 23896.3487 - i as f32;
 
-            atomic_double.set(b);
+            atomic_float.set(b);
 
-            assert_eq!(atomic_double.get(), b);
+            assert_eq!(atomic_float.get(), b);
         }
     }
 }

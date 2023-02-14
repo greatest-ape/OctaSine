@@ -4,7 +4,7 @@
 
 set -e
 
-cargo xtask bundle octasine --profile "release-debug" --no-default-features --features "glow clap"
+cargo xtask bundle octasine --profile "release-debug"
 
 TARGET="/Library/Audio/Plug-Ins/CLAP/OctaSine.clap"
 

@@ -1,8 +1,5 @@
 # TODO
 
-* update audio from sync every sample, at least for clap, in order to
-  get changes from GUI faster, since buffers can be very long
-
 * heavy CPU consumption in REAPER without anything playing
   * with clap and vst
   * also with other plugins
@@ -13,7 +10,6 @@
 
 * clap
   * is note end event logic really 100% correct?
-  * clap note on with value of zero should not be treated as note off
   * should parameter cookie be set again when automating?
   * versioning: use OctaSine 0.8 name? Implement state management extension
     and use a parameter migration scheme?
