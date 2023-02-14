@@ -869,6 +869,7 @@ pub fn get_iced_baseview_settings<H: GuiSyncHandle>(
             title: plugin_name,
             #[cfg(feature = "glow")]
             gl_config: Some(iced_baseview::baseview::gl::GlConfig {
+                // 4x MSAA on Linux solves crashes for some people
                 #[cfg(target_os = "linux")]
                 samples: Some(4),
                 #[cfg(not(target_os = "linux"))]
