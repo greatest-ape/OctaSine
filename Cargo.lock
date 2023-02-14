@@ -1350,8 +1350,7 @@ dependencies = [
 [[package]]
 name = "iced_wgpu"
 version = "0.8.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c4bb296363d1b18d4f57e1c69bb19591405e61d47764e43078bba31c6689fca5"
+source = "git+https://github.com/greatest-ape/iced.git?rev=f318e3f#f318e3fdbf88eee08a48b2d398518f8e456edbfb"
 dependencies = [
  "bitflags",
  "bytemuck",
