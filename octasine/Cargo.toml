@@ -7,10 +7,15 @@ edition = "2021"
 
 [features]
 default = ["clap", "vst2", "glow"]
+# Enable clap plugin support
 clap = ["atomic_refcell", "bytemuck", "clap-sys", "parking_lot"]
+# Enable VST2 plugin support
 vst2 = ["vst"]
+# Use glow (OpenGL) for graphics
 glow = ["gui", "iced_baseview/glow", "iced_audio/glow"]
+# Use wgpu for graphics
 wgpu = ["gui", "iced_baseview/wgpu", "iced_audio/wgpu"]
+# Internal use only
 gui = ["iced_baseview/canvas", "iced_audio", "palette", "raw-window-handle", "rfd", "tinyfiledialogs"]
 
 [lib]
