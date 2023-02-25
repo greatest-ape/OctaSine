@@ -4,7 +4,6 @@
 * Clap validation in CI
   * Converting parameter values between string and float multiple times
     doesn't yield same values
-* Update instructions to disable GateKeeper for binaries
 * Implement clap.preset-discovery-factory
 * Implement clap.state
 
