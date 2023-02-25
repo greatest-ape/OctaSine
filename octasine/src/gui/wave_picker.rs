@@ -82,15 +82,15 @@ where
         let title = Text::new(&self.title)
             .horizontal_alignment(Horizontal::Center)
             .font(theme.font_bold())
-            .height(Length::Units(LINE_HEIGHT));
+            .height(Length::Fixed(LINE_HEIGHT.into()));
 
         Column::new()
-            .width(Length::Units(LINE_HEIGHT * 4))
+            .width(Length::Fixed(f32::from(LINE_HEIGHT * 4)))
             .align_items(Alignment::Center)
             .push(title)
-            .push(Space::with_height(Length::Units(LINE_HEIGHT)))
+            .push(Space::with_height(Length::Fixed(LINE_HEIGHT.into())))
             .push(self.canvas.view())
-            .push(Space::with_height(Length::Units(LINE_HEIGHT)))
+            .push(Space::with_height(Length::Fixed(LINE_HEIGHT.into())))
             .push(self.value_text.view(theme))
             .into()
     }
@@ -130,8 +130,8 @@ where
 
     pub fn view(&self) -> Element<Message, Theme> {
         Canvas::new(self)
-            .width(Length::Units(WIDTH))
-            .height(Length::Units(HEIGHT))
+            .width(Length::Fixed(WIDTH.into()))
+            .height(Length::Fixed(HEIGHT.into()))
             .into()
     }
 

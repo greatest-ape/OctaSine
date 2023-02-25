@@ -26,18 +26,18 @@ pub fn container_l2<'a, T>(contents: T) -> Container<'a, Message, Theme>
 where
     T: Into<Element<'a, Message, Theme>>,
 {
-    let padding_x = LINE_HEIGHT;
-    let padding_y = 0;
+    let padding_x = LINE_HEIGHT.into();
+    let padding_y = 0.0;
 
     let contents = Row::new()
-        .push(Space::with_width(Length::Units(padding_x)))
+        .push(Space::with_width(Length::Fixed(padding_x)))
         .push(
             Column::new()
-                .push(Space::with_height(Length::Units(padding_y)))
+                .push(Space::with_height(Length::Fixed(padding_y)))
                 .push(contents)
-                .push(Space::with_height(Length::Units(padding_y))),
+                .push(Space::with_height(Length::Fixed(padding_y))),
         )
-        .push(Space::with_width(Length::Units(padding_x)));
+        .push(Space::with_width(Length::Fixed(padding_x)));
 
     Container::new(contents)
         .padding(0)
@@ -49,18 +49,18 @@ pub fn container_l3<'a, T>(contents: T) -> Container<'a, Message, Theme>
 where
     T: Into<Element<'a, Message, Theme>>,
 {
-    let padding_x = 0;
-    let padding_y = LINE_HEIGHT;
+    let padding_x = 0.0;
+    let padding_y = LINE_HEIGHT.into();
 
     let contents = Row::new()
-        .push(Space::with_width(Length::Units(padding_x)))
+        .push(Space::with_width(Length::Fixed(padding_x)))
         .push(
             Column::new()
-                .push(Space::with_height(Length::Units(padding_y)))
+                .push(Space::with_height(Length::Fixed(padding_y)))
                 .push(contents)
-                .push(Space::with_height(Length::Units(padding_y))),
+                .push(Space::with_height(Length::Fixed(padding_y))),
         )
-        .push(Space::with_width(Length::Units(padding_x)));
+        .push(Space::with_width(Length::Fixed(padding_x)));
 
     Container::new(contents)
         .padding(0)
@@ -76,11 +76,11 @@ where
 }
 
 pub fn space_l2<'a>() -> Container<'a, Message, Theme> {
-    Container::new(Space::with_width(Length::Units(LINE_HEIGHT)))
+    Container::new(Space::with_width(Length::Fixed(LINE_HEIGHT.into())))
 }
 
 pub fn space_l3<'a>() -> Container<'a, Message, Theme> {
-    Container::new(Space::with_width(Length::Units(0)))
+    Container::new(Space::with_width(Length::Fixed(0.0)))
 }
 
 pub fn tooltip<'a>(

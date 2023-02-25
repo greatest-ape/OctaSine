@@ -1,4 +1,8 @@
-use std::{ffi::CStr, ptr::null, sync::Arc};
+use std::{
+    ffi::{c_char, CStr},
+    ptr::null,
+    sync::Arc,
+};
 
 use clap_sys::{
     host::clap_host,
@@ -33,7 +37,7 @@ pub extern "C" fn get_plugin_descriptor(
 pub unsafe extern "C" fn create_plugin(
     _factory: *const clap_plugin_factory,
     host: *const clap_host,
-    plugin_id: *const i8,
+    plugin_id: *const c_char,
 ) -> *const clap_plugin {
     if !plugin_id.is_null() && CStr::from_ptr(plugin_id) == CStr::from_ptr(super::descriptor::ID) {
         (*Arc::into_raw(OctaSine::new(host))).clap_plugin.as_ptr()

@@ -206,8 +206,8 @@ impl BooleanButton {
         let height = self.height;
 
         Canvas::new(self)
-            .width(Length::Units(width))
-            .height(Length::Units(height))
+            .width(Length::Fixed(width.into()))
+            .height(Length::Fixed(height.into()))
             .into()
     }
 

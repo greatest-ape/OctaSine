@@ -60,9 +60,9 @@ impl LfoWidgets {
     pub fn view(&self, theme: &Theme) -> Element<Message, Theme> {
         let title = Text::new(format!("LFO {}", self.index + 1))
             .size(FONT_SIZE + FONT_SIZE / 2)
-            .height(Length::Units(FONT_SIZE + FONT_SIZE / 2))
+            .height(Length::Fixed(f32::from(FONT_SIZE + FONT_SIZE / 2)))
             .font(theme.font_heading())
-            .width(Length::Units(LINE_HEIGHT * 9))
+            .width(Length::Fixed(f32::from(LINE_HEIGHT * 9)))
             .horizontal_alignment(Horizontal::Center)
             .vertical_alignment(Vertical::Center);
 
@@ -83,26 +83,30 @@ impl LfoWidgets {
 
         container_l1(
             Row::new()
-                .push(Space::with_width(Length::Units(LINE_HEIGHT)))
+                .push(Space::with_width(Length::Fixed(f32::from(LINE_HEIGHT))))
                 .push(
                     Container::new(
                         Column::new()
-                            .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
+                            .push(Space::with_height(Length::Fixed(f32::from(
+                                LINE_HEIGHT * 1,
+                            ))))
                             .push(
                                 Row::new()
                                     .push(active)
-                                    .push(Space::with_width(Length::Units(LINE_HEIGHT * 6 - 3 - 1)))
+                                    .push(Space::with_width(Length::Fixed(f32::from(
+                                        LINE_HEIGHT * 6 - 3 - 1,
+                                    ))))
                                     .push(bpm_sync)
-                                    .push(Space::with_width(Length::Units(3)))
+                                    .push(Space::with_width(Length::Fixed(3.0)))
                                     .push(mode),
                             )
                             .push(title)
-                            .push(Space::with_height(Length::Units(LINE_HEIGHT)))
+                            .push(Space::with_height(Length::Fixed(f32::from(LINE_HEIGHT))))
                             .push(Row::new().push(self.target.view(theme))),
                     )
-                    .width(Length::Units(LINE_HEIGHT * 9)),
+                    .width(Length::Fixed(f32::from(LINE_HEIGHT * 9))),
                 )
-                .push(Space::with_width(Length::Units(LINE_HEIGHT)))
+                .push(Space::with_width(Length::Fixed(f32::from(LINE_HEIGHT))))
                 .push(container_l2(
                     Row::new()
                         .push(container_l3(self.shape.view(theme)))

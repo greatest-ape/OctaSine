@@ -83,3 +83,30 @@ jobs:
 
     - name: Run tests
       run: cargo test --workspace --verbose
+
+  clap-validator:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install baseview dependencies
+      run: |
+        sudo apt update
+        sudo apt install libgl-dev libx11-xcb-dev libxcb1-dev libxcb-dri2-0-dev libxcb-icccm4-dev libxcursor-dev libxkbcommon-dev libxcb-shape0-dev libxcb-xfixes0-dev
+
+    - name: Install latest Rust
+      uses: dtolnay/rust-toolchain@stable
+
+    - name: Setup Rust dependency caching
+      uses: Swatinem/rust-cache@v2
+
+    - name: Install clap-validator
+      run: cargo install --git https://github.com/free-audio/clap-validator.git
+
+    - name: Build and bundle clap plugin
+      run: cargo xtask bundle octasine --release --verbose --no-default-features --features "glow clap"
+    
+    # Note: skip param-conversions test for now
+    - name: Validate clap plugin
+      run: clap-validator validate  --invert-filter --test-filter 'param-conversions' ./target/bundled/octasine.clap

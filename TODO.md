@@ -1,12 +1,13 @@
 # TODO
 
-* heavy CPU consumption in REAPER without anything playing
-  * with clap and vst
-  * also with other plugins
-  * maybe buffers don't really need to be zeroed for clap?
-  * maybe we could skip even more processing when there are no events and no
-    active voices?
-  * maybe this is all fine?
+* CLAP GUI doesn't register in Bitwig
+* Clap validation in CI
+  * Converting parameter values between string and float multiple times
+    doesn't yield same values
+* Implement clap.preset-discovery-factory
+* Implement clap.state
+
+## High priority
 
 * clap
   * is note end event logic really 100% correct?
@@ -19,12 +20,6 @@
   * Nice to have: maybe clap is better at supporting automating multiple
     parameters at the same time? Then it might be good to actually tell
     the host about changes to envelopes while dragging, not only on release
-
-* test vst plugin
-* upgrade iced version in iced_baseview
-
-## High priority
-
 * iced 0.5 adjustments
   * Implement Widget for canvas widgets and clear cache on theme changes?
   * How handle external updates when knobs are dragged?
@@ -43,9 +38,15 @@
 * Interpolator const FACTOR division is not converted to reciprocal
   multiplication (but doing it manually doesn't seem to help
   performance)
+* heavy CPU consumption in REAPER without anything playing
+  * with clap and vst
+  * also with other plugins
+  * maybe buffers don't really need to be zeroed for clap?
+  * maybe we could skip even more processing when there are no events and no
+    active voices?
+  * maybe this is all fine?
 
 ## Medium priority
-
 * Unit tests for parsing parameter value text?
 * GUI
   * Tooltips for parameter titles?

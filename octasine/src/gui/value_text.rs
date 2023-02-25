@@ -39,7 +39,7 @@ impl<P: ParameterValue> ValueText<P> {
                 .horizontal_alignment(Horizontal::Center)
                 .width(Length::Fill)
                 .font(theme.font_regular())
-                .height(Length::Units(LINE_HEIGHT)),
+                .height(Length::Fixed(LINE_HEIGHT.into())),
         )
         .padding(0)
         .width(Length::Fill)

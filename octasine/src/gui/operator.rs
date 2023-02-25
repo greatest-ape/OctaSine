@@ -103,25 +103,27 @@ impl OperatorWidgets {
                     .width(Length::Fill)
                     .align_items(Alignment::Center)
                     .spacing(0)
-                    .push(Space::with_height(Length::Units(LINE_HEIGHT)))
+                    .push(Space::with_height(Length::Fixed(f32::from(LINE_HEIGHT))))
                     .push(
                         Row::new()
                             .width(Length::Fill)
-                            .push(Space::with_width(Length::Units(LINE_HEIGHT)))
+                            .push(Space::with_width(Length::Fixed(f32::from(LINE_HEIGHT))))
                             .push(mute_button),
                     )
                     .push(
                         Text::new(format!("OP {}", self.index + 1))
                             .size(FONT_SIZE + FONT_SIZE / 2)
-                            .height(Length::Units(FONT_SIZE + FONT_SIZE / 2))
+                            .height(Length::Fixed(f32::from(FONT_SIZE + FONT_SIZE / 2)))
                             .font(theme.font_heading())
                             .horizontal_alignment(Horizontal::Center),
                     )
-                    .push(Space::with_height(Length::Units(LINE_HEIGHT / 2)))
+                    .push(Space::with_height(Length::Fixed(f32::from(
+                        LINE_HEIGHT / 2,
+                    ))))
                     .push(self.wave_display.view(theme)),
             )
-            .width(Length::Units(LINE_HEIGHT * 8))
-            .height(Length::Units(LINE_HEIGHT * 7))
+            .width(Length::Fixed(f32::from(LINE_HEIGHT * 8)))
+            .height(Length::Fixed(f32::from(LINE_HEIGHT * 7)))
         };
 
         let group_1 = container_l2(
@@ -141,7 +143,7 @@ impl OperatorWidgets {
             if let Some(mod_index) = self.mod_index.as_ref() {
                 group = group.push(container_l3(mod_index.view(theme)));
             } else {
-                group = group.push(Space::with_width(Length::Units(LINE_HEIGHT * 5)));
+                group = group.push(Space::with_width(Length::Fixed(f32::from(LINE_HEIGHT * 5))));
             }
 
             group = group.push(space_l3());
@@ -156,7 +158,9 @@ impl OperatorWidgets {
                 Some(ModTargetPicker::Operator4(picker)) => {
                     group = group.push(container_l3(picker.view(theme)))
                 }
-                None => group = group.push(Space::with_width(Length::Units(LINE_HEIGHT * 3))),
+                None => {
+                    group = group.push(Space::with_width(Length::Fixed(f32::from(LINE_HEIGHT * 3))))
+                }
             }
 
             group = group.push(space_l3());
@@ -174,8 +178,8 @@ impl OperatorWidgets {
                 .push(container_l3(self.frequency_fine.view(theme))),
         );
 
-        let envelope =
-            container_l2(self.envelope.view(theme)).height(Length::Units(LINE_HEIGHT * 8));
+        let envelope = container_l2(self.envelope.view(theme))
+            .height(Length::Fixed(f32::from(LINE_HEIGHT * 8)));
 
         container_l1(
             Row::new()

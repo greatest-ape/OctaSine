@@ -122,10 +122,10 @@ impl EnvelopeCanvas {
     pub fn view(&self) -> Element<Message, Theme> {
         Container::new(
             Canvas::new(self)
-                .width(Length::Units(WIDTH))
-                .height(Length::Units(HEIGHT)),
+                .width(Length::Fixed(WIDTH.into()))
+                .height(Length::Fixed(HEIGHT.into())),
         )
-        .height(Length::Units(LINE_HEIGHT * 6))
+        .height(Length::Fixed(f32::from(LINE_HEIGHT * 6)))
         .into()
     }
 }

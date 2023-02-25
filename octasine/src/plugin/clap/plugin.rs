@@ -1,5 +1,5 @@
 use std::{
-    ffi::{c_void, CStr},
+    ffi::{c_char, c_void, CStr},
     mem::{size_of, MaybeUninit},
     ptr::{null, null_mut},
     sync::Arc,
@@ -264,7 +264,7 @@ impl OctaSine {
 
     unsafe extern "C" fn get_extension(
         _plugin: *const clap_plugin,
-        id: *const i8,
+        id: *const c_char,
     ) -> *const c_void {
         let id = CStr::from_ptr(id);
 
@@ -286,6 +286,10 @@ impl OctaSine {
     unsafe extern "C" fn on_main_thread(_plugin: *const clap_plugin) {}
 
     pub unsafe fn handle_event_from_host(&self, event_header: *const clap_event_header) {
+        if (*event_header).space_id != CLAP_CORE_EVENT_SPACE_ID {
+            return;
+        }
+
         match (*event_header).type_ {
             CLAP_EVENT_NOTE_ON => {
                 let event = &*(event_header as *const clap_event_note);
@@ -364,6 +368,10 @@ impl OctaSine {
     }
 
     pub fn handle_transport_event_from_host(&self, event: &clap_event_transport) {
+        if event.header.space_id != CLAP_CORE_EVENT_SPACE_ID {
+            return;
+        }
+
         if event.flags & CLAP_TRANSPORT_HAS_TEMPO != 0 {
             let event = NoteEvent {
                 delta_frames: event.header.time,

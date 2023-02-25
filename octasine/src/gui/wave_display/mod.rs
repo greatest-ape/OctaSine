@@ -298,7 +298,7 @@ impl WaveDisplay {
 
         Row::new()
             .push(canvas_left)
-            .push(Space::with_width(Length::Units(4)))
+            .push(Space::with_width(Length::Fixed(4.0)))
             .push(canvas_right)
             .into()
     }
@@ -331,8 +331,8 @@ impl WaveDisplayCanvas {
 
     pub fn view(&self) -> Element<Message, Theme> {
         Canvas::new(self)
-            .width(Length::Units(WIDTH))
-            .height(Length::Units(HEIGHT))
+            .width(Length::Fixed(WIDTH.into()))
+            .height(Length::Fixed(HEIGHT.into()))
             .into()
     }
 

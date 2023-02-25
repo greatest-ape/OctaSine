@@ -79,7 +79,7 @@ impl Envelope {
 
     pub fn view(&self, theme: &Theme) -> Element<Message, Theme> {
         let group_synced: Element<Message, Theme> = if self.group_synced {
-            Space::with_width(Length::Units(1)).into()
+            Space::with_width(Length::Fixed(1.0)).into()
         } else {
             tooltip(
                 theme,
@@ -88,8 +88,8 @@ impl Envelope {
                 Text::new("≠")
                     .font(theme.font_bold())
                     .size(FONT_SIZE)
-                    .height(Length::Units(LINE_HEIGHT))
-                    .width(Length::Units(6))
+                    .height(Length::Fixed(LINE_HEIGHT.into()))
+                    .width(Length::Fixed(6.0))
                     .horizontal_alignment(Horizontal::Center),
             )
             .into()
@@ -163,28 +163,28 @@ impl Envelope {
             .push(container_l3(self.widget.view()))
             .push(container_l3(
                 Column::new()
-                    .width(Length::Units(LINE_HEIGHT * 3))
+                    .width(Length::Fixed(f32::from(LINE_HEIGHT * 3)))
                     .align_items(Alignment::End)
                     .push(
                         Row::new()
                             .push(group_synced)
-                            .push(Space::with_width(Length::Units(3)))
+                            .push(Space::with_width(Length::Fixed(3.0)))
                             .push(group_a)
-                            .push(Space::with_width(Length::Units(3)))
-                            .push(group_b), // .push(Space::with_width(Length::Units(3)))
+                            .push(Space::with_width(Length::Fixed(3.0)))
+                            .push(group_b),
                     )
-                    .push(Space::with_height(Length::Units(9)))
+                    .push(Space::with_height(Length::Fixed(9.0)))
                     .push(
                         Row::new()
                             .push(zoom_out)
-                            .push(Space::with_width(Length::Units(4)))
+                            .push(Space::with_width(Length::Fixed(4.0)))
                             .push(zoom_in),
                     )
-                    .push(Space::with_height(Length::Units(6)))
+                    .push(Space::with_height(Length::Fixed(6.0)))
                     .push(
                         Row::new()
                             .push(fit)
-                            .push(Space::with_width(Length::Units(4)))
+                            .push(Space::with_width(Length::Fixed(4.0)))
                             .push(distribute),
                     ),
             ))
@@ -206,8 +206,8 @@ fn button_with_tooltip<'a>(
         Button::new(
             Text::new(button_text)
                 .font(button_font)
-                .height(Length::Units(LINE_HEIGHT))
-                .width(Length::Units(10))
+                .height(Length::Fixed(LINE_HEIGHT.into()))
+                .width(Length::Fixed(10.0))
                 .horizontal_alignment(Horizontal::Center),
         )
         .on_press(button_message)

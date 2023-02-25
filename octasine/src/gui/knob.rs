@@ -19,7 +19,7 @@ use super::style::Theme;
 use super::value_text::ValueText;
 use super::{Message, LINE_HEIGHT};
 
-const KNOB_SIZE: Length = Length::Units(LINE_HEIGHT * 2);
+const KNOB_SIZE: Length = Length::Fixed((LINE_HEIGHT * 2) as f32);
 
 enum TickMarkType {
     MinMaxAndDefault,
@@ -307,7 +307,7 @@ where
         let title = Text::new(self.title.clone())
             .horizontal_alignment(Horizontal::Center)
             .font(theme.font_bold())
-            .height(Length::Units(LINE_HEIGHT));
+            .height(Length::Fixed(LINE_HEIGHT.into()));
 
         let parameter = self.parameter;
 
@@ -318,7 +318,7 @@ where
         })
         .on_grab(move || Some(Message::ChangeSingleParameterBegin(parameter)))
         .on_release(move || Some(Message::ChangeSingleParameterEnd(parameter)))
-        .size(Length::from(KNOB_SIZE))
+        .size(KNOB_SIZE)
         .modifier_keys(modifier_keys)
         .style(self.knob_style)
         .bipolar_center(self.default_value);
@@ -332,15 +332,15 @@ where
 
         Container::new(
             Column::new()
-                .width(Length::Units(LINE_HEIGHT * 4))
+                .width(Length::Fixed(f32::from(LINE_HEIGHT * 4)))
                 .align_items(Alignment::Center)
                 .push(title)
-                .push(Space::with_height(Length::Units(LINE_HEIGHT)))
+                .push(Space::with_height(Length::Fixed(LINE_HEIGHT.into())))
                 .push(knob)
-                .push(Space::with_height(Length::Units(LINE_HEIGHT)))
+                .push(Space::with_height(Length::Fixed(LINE_HEIGHT.into())))
                 .push(self.value_text.view(theme)),
         )
-        .height(Length::Units(LINE_HEIGHT * 6))
+        .height(Length::Fixed(f32::from(LINE_HEIGHT * 6)))
         .into()
     }
 }

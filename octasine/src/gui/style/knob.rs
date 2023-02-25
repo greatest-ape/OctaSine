@@ -32,13 +32,13 @@ impl StyleSheet for Theme {
 
         let notch = NotchShape::Line(LineNotch {
             color: notch_color,
-            width: StyleLength::Units(2.0),
-            length: StyleLength::Units(6.0),
+            width: StyleLength::Fixed(2.0),
+            length: StyleLength::Fixed(6.0),
             cap: LineCap::Round,
-            offset: StyleLength::Units(3.0),
+            offset: StyleLength::Fixed(3.0),
         });
 
-        let arc_width = StyleLength::Units(2.0);
+        let arc_width = StyleLength::Fixed(2.0);
         let arc_cap = LineCap::Square;
 
         match style {

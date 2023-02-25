@@ -1,5 +1,5 @@
 use std::{
-    ffi::{CStr, CString},
+    ffi::{c_char, CStr, CString},
     ptr::null,
 };
 
@@ -12,14 +12,15 @@ use clap_sys::{
 };
 use once_cell::sync::Lazy;
 
-pub const ID: *const i8 = unsafe { CStr::from_bytes_with_nul_unchecked(b"OctaSine\0").as_ptr() };
-const NAME: *const i8 = unsafe { CStr::from_bytes_with_nul_unchecked(b"OctaSine\0").as_ptr() };
-const VENDOR: *const i8 =
+pub const ID: *const c_char =
+    unsafe { CStr::from_bytes_with_nul_unchecked(b"OctaSine\0").as_ptr() };
+const NAME: *const c_char = unsafe { CStr::from_bytes_with_nul_unchecked(b"OctaSine\0").as_ptr() };
+const VENDOR: *const c_char =
     unsafe { CStr::from_bytes_with_nul_unchecked(b"Joakim Frostegard\0").as_ptr() };
-const URL: *const i8 =
+const URL: *const c_char =
     unsafe { CStr::from_bytes_with_nul_unchecked(b"https://octasine.com\0").as_ptr() };
 
-const FEATURES: &[*const i8] = &[
+const FEATURES: &[*const c_char] = &[
     CLAP_PLUGIN_FEATURE_INSTRUMENT.as_ptr(),
     CLAP_PLUGIN_FEATURE_SYNTHESIZER.as_ptr(),
     CLAP_PLUGIN_FEATURE_STEREO.as_ptr(),

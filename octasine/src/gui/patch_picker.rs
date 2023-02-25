@@ -109,25 +109,25 @@ impl PatchPicker {
             Column::new()
                 .align_items(Alignment::Center)
                 .push(action_picker)
-                .push(Space::with_height(Length::Units(
+                .push(Space::with_height(Length::Fixed(f32::from(
                     LINE_HEIGHT / 2 + LINE_HEIGHT / 4,
-                )))
+                ))))
                 .push(
                     Text::new("Patch")
-                        .size(FONT_SIZE * 3 / 2)
-                        .height(Length::Units(FONT_SIZE * 3 / 2))
-                        .width(Length::Units(LINE_HEIGHT * 10))
+                        .size(f32::from(FONT_SIZE * 3 / 2))
+                        .height(Length::Fixed(f32::from(FONT_SIZE * 3 / 2)))
+                        .width(Length::Fixed(f32::from(LINE_HEIGHT * 10)))
                         .font(theme.font_heading())
                         // .color(theme.heading_color()) // FIXME
                         .horizontal_alignment(Horizontal::Center),
                 )
-                .push(Space::with_height(Length::Units(
+                .push(Space::with_height(Length::Fixed(f32::from(
                     LINE_HEIGHT / 2 + LINE_HEIGHT / 4,
-                )))
+                ))))
                 .push(patch_picker),
         )
-        .width(Length::Units(LINE_HEIGHT * 9))
-        .height(Length::Units(LINE_HEIGHT * 6))
+        .width(Length::Fixed(f32::from(LINE_HEIGHT * 9)))
+        .height(Length::Fixed(f32::from(LINE_HEIGHT * 6)))
         .into()
     }
 }
