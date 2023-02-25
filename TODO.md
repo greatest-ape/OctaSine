@@ -1,5 +1,9 @@
 # TODO
 
+* CLAP GUI doesn't register in Bitwig
+
+## High priority
+
 * heavy CPU consumption in REAPER without anything playing
   * with clap and vst
   * also with other plugins
@@ -7,7 +11,6 @@
   * maybe we could skip even more processing when there are no events and no
     active voices?
   * maybe this is all fine?
-
 * clap
   * is note end event logic really 100% correct?
   * should parameter cookie be set again when automating?
@@ -19,12 +22,6 @@
   * Nice to have: maybe clap is better at supporting automating multiple
     parameters at the same time? Then it might be good to actually tell
     the host about changes to envelopes while dragging, not only on release
-
-* test vst plugin
-* upgrade iced version in iced_baseview
-
-## High priority
-
 * iced 0.5 adjustments
   * Implement Widget for canvas widgets and clear cache on theme changes?
   * How handle external updates when knobs are dragged?
