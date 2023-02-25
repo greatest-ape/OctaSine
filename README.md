@@ -1,7 +1,7 @@
 <h1 align="center">OctaSine</h1>
 
 <p align="center">
-Frequency modulation synthesizer plugin. Runs on macOS, Windows and Linux (X11) in VST2-compatible hosts.
+Frequency modulation synthesizer plugin (VST2, CLAP). Runs on macOS, Windows and Linux.
 </p>
 
 <p align="center">
@@ -49,7 +49,7 @@ A unique feature of OctaSine is that modulation can be panned, enabling position
 
 ### Cross-platform
 
-Runs on macOS (10.15 or later), Windows 10/11 and Linux (X11 only) in VST2-compatible DAWs on 64-bit computers. Synthesis is SIMD-accelerated in many cases (SSE2, AVX).
+Runs on macOS (10.15 or later), Windows 10/11 and Linux (X11 only) in VST2- or CLAP-compatible DAWs on 64-bit computers. Synthesis is SIMD-accelerated on x86_64 (SSE2, AVX).
 
 ## Installation from source code
 
