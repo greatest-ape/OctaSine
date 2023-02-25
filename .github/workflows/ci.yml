@@ -12,39 +12,16 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  cargo-deny:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v3
-    - uses: EmbarkStudios/cargo-deny-action@v1
-      with:
-        log-level: warn
-        command: check licenses
-        arguments: --all-features --workspace
-
-  build:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [macos-11, ubuntu-20.04, windows-latest]
+  build-macos:
+    runs-on: macos-11
 
     steps:
     - uses: actions/checkout@v3
-
-    - name: Install baseview dependencies (Linux)
-      run: |
-        sudo apt update
-        sudo apt install libgl-dev libx11-xcb-dev libxcb1-dev libxcb-dri2-0-dev libxcb-icccm4-dev libxcursor-dev libxkbcommon-dev libxcb-shape0-dev libxcb-xfixes0-dev
-      if: contains(matrix.os, 'ubuntu')
-
-    - name: Install latest Rust (Windows/Linux)
-      uses: dtolnay/rust-toolchain@stable
 
     - name: Install latest Rust (macOS)
       uses: dtolnay/rust-toolchain@stable
       with:
           targets: aarch64-apple-darwin
-      if: contains(matrix.os, 'macos')
 
     - name: Setup Rust dependency caching
       uses: Swatinem/rust-cache@v2
@@ -52,7 +29,7 @@ jobs:
     - name: Build plugin
       run: cargo build -p octasine --verbose
 
-    - name: Build plugin for aarch64 (macOS)
+    - name: Build plugin for aarch64
       run: |
         export SDKROOT=$(xcrun -sdk macosx11.1 --show-sdk-path)
         echo "SDKROOT=$SDKROOT"
@@ -64,16 +41,51 @@ jobs:
       shell: bash
       if: contains(matrix.os, 'macos')
 
-  test:
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install latest rust (windows/linux)
+      uses: dtolnay/rust-toolchain@stable
+
+    - name: Setup Rust dependency caching
+      uses: Swatinem/rust-cache@v2
+
+    - name: Build plugin
+      run: cargo build -p octasine --verbose
+
+  build-linux:
+    runs-on: ubuntu-20.04
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install baseview dependencies (Linux)
+      run: sudo apt update && sudo apt install libgl-dev libx11-xcb-dev libxcb1-dev libxcb-dri2-0-dev libxcb-icccm4-dev libxcursor-dev libxkbcommon-dev libxcb-shape0-dev libxcb-xfixes0-dev
+
+    - name: Install latest Rust
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        targets: aarch64-unknown-linux-gnu
+
+    - name: Setup Rust dependency caching
+      uses: Swatinem/rust-cache@v2
+
+    - name: Build plugin
+      run: |
+        cargo build -p octasine --verbose
+        cargo build -p octasine --verbose --target=aarch64-unknown-linux-gnu
+
+  test-linux:
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v3
 
     - name: Install baseview dependencies
-      run: |
-        sudo apt update
-        sudo apt install libgl-dev libx11-xcb-dev libxcb1-dev libxcb-dri2-0-dev libxcb-icccm4-dev libxcursor-dev libxkbcommon-dev libxcb-shape0-dev libxcb-xfixes0-dev
+      run: sudo apt update && sudo apt install libgl-dev libx11-xcb-dev libxcb1-dev libxcb-dri2-0-dev libxcb-icccm4-dev libxcursor-dev libxkbcommon-dev libxcb-shape0-dev libxcb-xfixes0-dev
 
     - name: Install latest Rust
       uses: dtolnay/rust-toolchain@stable
@@ -84,6 +96,16 @@ jobs:
     - name: Run tests
       run: cargo test --workspace --verbose
 
+  cargo-deny:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: EmbarkStudios/cargo-deny-action@v1
+      with:
+        log-level: warn
+        command: check licenses
+        arguments: --all-features --workspace
+
   clap-validator:
     runs-on: ubuntu-latest
 
@@ -91,9 +113,7 @@ jobs:
     - uses: actions/checkout@v3
 
     - name: Install baseview dependencies
-      run: |
-        sudo apt update
-        sudo apt install libgl-dev libx11-xcb-dev libxcb1-dev libxcb-dri2-0-dev libxcb-icccm4-dev libxcursor-dev libxkbcommon-dev libxcb-shape0-dev libxcb-xfixes0-dev
+      run: sudo apt update && sudo apt install libgl-dev libx11-xcb-dev libxcb1-dev libxcb-dri2-0-dev libxcb-icccm4-dev libxcursor-dev libxkbcommon-dev libxcb-shape0-dev libxcb-xfixes0-dev
 
     - name: Install latest Rust
       uses: dtolnay/rust-toolchain@stable
@@ -107,6 +127,6 @@ jobs:
     - name: Build and bundle clap plugin
       run: cargo xtask bundle octasine --release --verbose --no-default-features --features "glow clap"
     
-    # Note: skip param-conversions test for now
     - name: Validate clap plugin
+      # Note: skip param-conversions test for now
       run: clap-validator validate  --invert-filter --test-filter 'param-conversions' ./target/bundled/octasine.clap
