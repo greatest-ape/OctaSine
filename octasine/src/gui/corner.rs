@@ -47,18 +47,18 @@ impl CornerWidgets {
     pub fn view(&self, theme: &Theme) -> Element<'_, Message, Theme> {
         let mod_matrix = Container::new(
             Column::new()
-                .push(Space::with_height(Length::Units(LINE_HEIGHT)))
+                .push(Space::with_height(Length::Fixed(LINE_HEIGHT.into())))
                 .push(
                     Row::new()
-                        .push(Space::with_width(Length::Units(LINE_HEIGHT)))
+                        .push(Space::with_width(Length::Fixed(LINE_HEIGHT.into())))
                         .push(self.modulation_matrix.view())
                         // Allow room for modulation matrix extra pixel
-                        .push(Space::with_width(Length::Units(LINE_HEIGHT - 1))),
+                        .push(Space::with_width(Length::Fixed(f32::from(LINE_HEIGHT - 1)))),
                 )
-                .push(Space::with_height(Length::Units(LINE_HEIGHT))),
+                .push(Space::with_height(Length::Fixed(LINE_HEIGHT.into()))),
         )
-        .height(Length::Units(LINE_HEIGHT * 8))
-        .width(Length::Units(LINE_HEIGHT * 7))
+        .height(Length::Fixed(f32::from(LINE_HEIGHT * 8)))
+        .width(Length::Fixed(f32::from(LINE_HEIGHT * 7)))
         .style(ContainerStyle::L3);
 
         let master = container_l1(container_l2(
@@ -66,7 +66,7 @@ impl CornerWidgets {
                 .push(container_l3(self.master_volume.view(theme)))
                 .push(space_l3())
                 .push(container_l3(self.master_frequency.view(theme)))
-                .push(Space::with_width(Length::Units(LINE_HEIGHT * 3))), // Extend to end
+                .push(Space::with_width(Length::Fixed(f32::from(LINE_HEIGHT * 3)))), // Extend to end
         ));
 
         let logo = {
@@ -77,7 +77,7 @@ impl CornerWidgets {
                 Button::new(
                     Text::new("THEME")
                         .font(theme.font_regular())
-                        .height(Length::Units(LINE_HEIGHT)),
+                        .height(Length::Fixed(LINE_HEIGHT.into())),
                 )
                 .on_press(Message::SwitchTheme)
                 .padding(theme.button_padding()),
@@ -90,7 +90,7 @@ impl CornerWidgets {
                 Button::new(
                     Text::new("INFO")
                         .font(theme.font_regular())
-                        .height(Length::Units(LINE_HEIGHT)),
+                        .height(Length::Fixed(LINE_HEIGHT.into())),
                 )
                 .on_press(Message::NoOp)
                 .padding(theme.button_padding()),
@@ -98,48 +98,46 @@ impl CornerWidgets {
 
             // Helps with issues arising from use of different font weights
             let logo_button_space = match theme {
-                Theme::Dark => 3,
-                Theme::Light => 2,
+                Theme::Dark => 3.0,
+                Theme::Light => 2.0,
             };
 
             Container::new(
                 Column::new()
                     .align_items(Alignment::Center)
-                    .push(Space::with_height(Length::Units(LINE_HEIGHT)))
-                    // .push(Space::with_height(Length::Units(LINE_HEIGHT * 2 + LINE_HEIGHT / 4)))
+                    .push(Space::with_height(Length::Fixed(LINE_HEIGHT.into())))
                     .push(
                         Text::new("OctaSine")
                             .size(FONT_SIZE * 3 / 2)
-                            .height(Length::Units(FONT_SIZE * 3 / 2))
-                            .width(Length::Units(LINE_HEIGHT * 8))
+                            .height(Length::Fixed(f32::from(FONT_SIZE * 3 / 2)))
+                            .width(Length::Fixed(f32::from(LINE_HEIGHT * 8)))
                             .font(theme.font_heading())
                             .horizontal_alignment(Horizontal::Center),
                     )
-                    .push(Space::with_height(Length::Units(LINE_HEIGHT)))
-                    // .push(Space::with_height(Length::Units(LINE_HEIGHT / 2 + LINE_HEIGHT / 4)))
+                    .push(Space::with_height(Length::Fixed(LINE_HEIGHT.into())))
                     .push(
                         Row::new()
                             .push(theme_button)
-                            .push(Space::with_width(Length::Units(logo_button_space)))
+                            .push(Space::with_width(Length::Fixed(logo_button_space)))
                             .push(info_button),
                     ),
             )
-            .width(Length::Units(LINE_HEIGHT * 7))
-            .height(Length::Units(LINE_HEIGHT * 6))
+            .width(Length::Fixed(f32::from(LINE_HEIGHT * 7)))
+            .height(Length::Fixed(f32::from(LINE_HEIGHT * 6)))
         };
 
         Column::new()
             .push(
                 Row::new()
                     .push(mod_matrix)
-                    .push(Space::with_width(Length::Units(LINE_HEIGHT)))
+                    .push(Space::with_width(Length::Fixed(LINE_HEIGHT.into())))
                     .push(master),
             )
-            .push(Space::with_height(Length::Units(LINE_HEIGHT)))
+            .push(Space::with_height(Length::Fixed(LINE_HEIGHT.into())))
             .push(
                 Row::new()
                     .push(triple_container(self.patch_picker.view(theme)))
-                    .push(Space::with_width(Length::Units(LINE_HEIGHT)))
+                    .push(Space::with_width(Length::Fixed(LINE_HEIGHT.into())))
                     .push(triple_container(logo)),
             )
             .into()

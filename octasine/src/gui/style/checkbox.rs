@@ -15,7 +15,7 @@ impl StyleSheet for Theme {
 
                 Appearance {
                     background: SURFACE.into(),
-                    checkmark_color: BLUE,
+                    icon_color: BLUE,
                     text_color: Some(TEXT),
                     border_width: 1.0,
                     border_color: BORDER,
@@ -27,7 +27,7 @@ impl StyleSheet for Theme {
 
                 Appearance {
                     background: Color::TRANSPARENT.into(),
-                    checkmark_color: BLUE,
+                    icon_color: BLUE,
                     text_color: Some(TEXT),
                     border_width: 1.0,
                     border_color: BORDER,

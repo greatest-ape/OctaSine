@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+### Unreleased
+
+### Changed
+
+- Upgrade to [iced](https://github.com/iced-rs/iced) v0.8
+
+### Fixed
+
+- Fix clap miscompilation on Linux on aarch64
+
 ## 0.8.3 - 2023-02-14
 
 ### Added

@@ -458,7 +458,7 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
     fn renderer_settings() -> iced_baseview::renderer::Settings {
         iced_baseview::renderer::Settings {
             default_font: Some(OPEN_SANS_BYTES_SEMI_BOLD),
-            default_text_size: FONT_SIZE,
+            default_text_size: FONT_SIZE.into(),
             antialiasing: Some(iced_baseview::renderer::settings::Antialiasing::MSAAx4),
             ..Default::default()
         }
@@ -469,7 +469,7 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
     fn renderer_settings() -> iced_baseview::renderer::Settings {
         iced_baseview::renderer::Settings {
             default_font: Some(OPEN_SANS_BYTES_SEMI_BOLD),
-            default_text_size: FONT_SIZE,
+            default_text_size: FONT_SIZE.into(),
             #[cfg(target_os = "linux")]
             antialiasing: Some(iced_baseview::renderer::settings::Antialiasing::MSAAx4),
             #[cfg(not(target_os = "linux"))]
@@ -801,31 +801,31 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
     fn view(&self) -> Element<'_, Self::Message, Self::Theme> {
         Container::new(
             Column::new()
-                .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
+                .push(Space::with_height(Length::Fixed(LINE_HEIGHT.into())))
                 .push(self.operator_4.view(&self.theme))
-                .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
+                .push(Space::with_height(Length::Fixed(LINE_HEIGHT.into())))
                 .push(self.operator_3.view(&self.theme))
-                .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
+                .push(Space::with_height(Length::Fixed(LINE_HEIGHT.into())))
                 .push(self.operator_2.view(&self.theme))
-                .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
+                .push(Space::with_height(Length::Fixed(LINE_HEIGHT.into())))
                 .push(self.operator_1.view(&self.theme))
-                .push(Space::with_height(Length::Units(LINE_HEIGHT * 1)))
+                .push(Space::with_height(Length::Fixed(LINE_HEIGHT.into())))
                 .push(
                     Row::new()
                         .push(
                             Column::new()
                                 .push(self.lfo_4.view(&self.theme))
-                                .push(Space::with_height(Length::Units(LINE_HEIGHT)))
+                                .push(Space::with_height(Length::Fixed(LINE_HEIGHT.into())))
                                 .push(self.lfo_3.view(&self.theme)),
                         )
-                        .push(Space::with_width(Length::Units(LINE_HEIGHT)))
+                        .push(Space::with_width(Length::Fixed(LINE_HEIGHT.into())))
                         .push(
                             Column::new()
                                 .push(self.lfo_2.view(&self.theme))
-                                .push(Space::with_height(Length::Units(LINE_HEIGHT)))
+                                .push(Space::with_height(Length::Fixed(LINE_HEIGHT.into())))
                                 .push(self.lfo_1.view(&self.theme)),
                         )
-                        .push(Space::with_width(Length::Units(LINE_HEIGHT)))
+                        .push(Space::with_width(Length::Fixed(LINE_HEIGHT.into())))
                         .push(self.corner.view(&self.theme)),
                 ),
         )

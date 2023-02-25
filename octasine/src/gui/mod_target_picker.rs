@@ -72,7 +72,7 @@ where
         let title = Text::new(self.title.clone())
             .horizontal_alignment(Horizontal::Center)
             .font(theme.font_bold())
-            .height(Length::Units(LINE_HEIGHT));
+            .height(Length::Fixed(LINE_HEIGHT.into()));
 
         let mut checkboxes = Column::new().spacing(4);
 
@@ -100,11 +100,11 @@ where
         }
 
         Column::new()
-            .width(Length::Units(LINE_HEIGHT * 4))
-            .height(Length::Units(LINE_HEIGHT * 6))
+            .width(Length::Fixed(f32::from(LINE_HEIGHT * 4)))
+            .height(Length::Fixed(f32::from(LINE_HEIGHT * 6)))
             .align_items(Alignment::Center)
             .push(title)
-            .push(Space::with_height(Length::Units(LINE_HEIGHT)))
+            .push(Space::with_height(Length::Fixed(LINE_HEIGHT.into())))
             .push(checkboxes)
             .into()
     }
