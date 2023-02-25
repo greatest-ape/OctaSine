@@ -74,9 +74,11 @@ jobs:
       uses: Swatinem/rust-cache@v2
 
     - name: Build plugin
-      run: |
-        cargo build -p octasine --verbose
-        cargo build -p octasine --verbose --target=aarch64-unknown-linux-gnu
+      run: cargo build -p octasine --verbose
+      # Disabled: needs more complex setup
+      # run: |
+      #   cargo build -p octasine --verbose
+      #   cargo build -p octasine --verbose --target=aarch64-unknown-linux-gnu
 
   test-linux:
     runs-on: ubuntu-latest
