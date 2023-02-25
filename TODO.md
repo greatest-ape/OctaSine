@@ -1,6 +1,8 @@
 # TODO
 
 * CLAP GUI doesn't register in Bitwig
+* Clap validation in CI
+* Update instructions to disable GateKeeper for binaries
 
 ## High priority
 
