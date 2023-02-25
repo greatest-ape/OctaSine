@@ -2,7 +2,6 @@
 
 * CLAP GUI doesn't register in Bitwig
 * Clap validation in CI
-  * Check event namespace before updating values etc
   * Converting parameter values between string and float multiple times
     doesn't yield same values
 * Update instructions to disable GateKeeper for binaries
