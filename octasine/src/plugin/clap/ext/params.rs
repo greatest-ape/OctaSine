@@ -1,4 +1,4 @@
-use std::ffi::{c_void, CStr, CString};
+use std::ffi::{c_char, c_void, CStr, CString};
 
 use clap_sys::{
     events::{clap_input_events, clap_output_events},
@@ -8,13 +8,13 @@ use clap_sys::{
 
 use crate::{parameters::ParameterKey, plugin::clap::plugin::OctaSine};
 
-fn make_c_char_arr<const N: usize>(text: &str) -> [i8; N] {
+fn make_c_char_arr<const N: usize>(text: &str) -> [c_char; N] {
     let text = CString::new(text).unwrap();
-    let text = bytemuck::cast_slice(text.as_bytes_with_nul());
+    let text: &[c_char] = bytemuck::cast_slice(text.as_bytes_with_nul());
 
     assert!(text.len() <= N);
 
-    let mut out = [0i8; N];
+    let mut out = [0; N];
 
     (&mut out[..text.len()]).copy_from_slice(text);
 
@@ -80,7 +80,7 @@ pub unsafe extern "C" fn value_to_text(
     plugin: *const clap_plugin,
     param_id: u32,
     value: f64,
-    c_str_ptr: *mut i8,
+    c_str_ptr: *mut c_char,
     c_str_len: u32,
 ) -> bool {
     let plugin = &*((*plugin).plugin_data as *const OctaSine);
@@ -115,7 +115,7 @@ pub unsafe extern "C" fn value_to_text(
 pub unsafe extern "C" fn text_to_value(
     plugin: *const clap_plugin,
     param_id: u32,
-    text: *const i8,
+    text: *const c_char,
     value: *mut f64,
 ) -> bool {
     let plugin = &*((*plugin).plugin_data as *const OctaSine);

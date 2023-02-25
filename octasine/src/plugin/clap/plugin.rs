@@ -1,5 +1,5 @@
 use std::{
-    ffi::{c_void, CStr},
+    ffi::{c_char, c_void, CStr},
     mem::{size_of, MaybeUninit},
     ptr::{null, null_mut},
     sync::Arc,
@@ -264,7 +264,7 @@ impl OctaSine {
 
     unsafe extern "C" fn get_extension(
         _plugin: *const clap_plugin,
-        id: *const i8,
+        id: *const c_char,
     ) -> *const c_void {
         let id = CStr::from_ptr(id);
 

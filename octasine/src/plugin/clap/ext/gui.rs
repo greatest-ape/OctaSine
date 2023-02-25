@@ -1,4 +1,7 @@
-use std::{ffi::CStr, sync::Arc};
+use std::{
+    ffi::{c_char, CStr},
+    sync::Arc,
+};
 
 use cfg_if::cfg_if;
 use clap_sys::{
@@ -25,7 +28,7 @@ cfg_if! {
 
 unsafe extern "C" fn is_api_supported(
     _plugin: *const clap_plugin,
-    api: *const i8,
+    api: *const c_char,
     is_floating: bool,
 ) -> bool {
     !is_floating && CStr::from_ptr(api) == SUPPORTED_API
@@ -33,7 +36,7 @@ unsafe extern "C" fn is_api_supported(
 
 unsafe extern "C" fn get_preferred_api(
     _plugin: *const clap_plugin,
-    api: *mut *const i8,
+    api: *mut *const c_char,
     is_floating: *mut bool,
 ) -> bool {
     *api = SUPPORTED_API.as_ptr();
@@ -44,7 +47,7 @@ unsafe extern "C" fn get_preferred_api(
 
 unsafe extern "C" fn create(
     _plugin: *const clap_plugin,
-    api: *const i8,
+    api: *const c_char,
     is_floating: bool,
 ) -> bool {
     if is_floating || CStr::from_ptr(api) != SUPPORTED_API {

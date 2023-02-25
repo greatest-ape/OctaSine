@@ -5,7 +5,7 @@ pub mod plugin;
 pub mod sync;
 
 use std::{
-    ffi::{c_void, CStr},
+    ffi::{c_char, c_void, CStr},
     ptr::null,
 };
 
@@ -20,13 +20,13 @@ pub const CLAP_ENTRY: clap_plugin_entry = clap_plugin_entry {
     get_factory: Some(entry_get_factory),
 };
 
-pub extern "C" fn init(_path: *const i8) -> bool {
+pub extern "C" fn init(_path: *const c_char) -> bool {
     true
 }
 
 pub extern "C" fn deinit() {}
 
-pub unsafe extern "C" fn entry_get_factory(factory_id: *const i8) -> *const c_void {
+pub unsafe extern "C" fn entry_get_factory(factory_id: *const c_char) -> *const c_void {
     let factory_id = unsafe { CStr::from_ptr(factory_id) };
 
     if factory_id == CLAP_PLUGIN_FACTORY_ID {
