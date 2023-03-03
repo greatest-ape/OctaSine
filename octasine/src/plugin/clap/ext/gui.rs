@@ -31,7 +31,7 @@ unsafe extern "C" fn is_api_supported(
     api: *const c_char,
     is_floating: bool,
 ) -> bool {
-    !is_floating && CStr::from_ptr(api) == SUPPORTED_API
+    CStr::from_ptr(api) == SUPPORTED_API && !is_floating
 }
 
 unsafe extern "C" fn get_preferred_api(
@@ -50,11 +50,7 @@ unsafe extern "C" fn create(
     api: *const c_char,
     is_floating: bool,
 ) -> bool {
-    if is_floating || CStr::from_ptr(api) != SUPPORTED_API {
-        false
-    } else {
-        true
-    }
+    CStr::from_ptr(api) == SUPPORTED_API && !is_floating
 }
 
 unsafe extern "C" fn destroy(plugin: *const clap_plugin) {
@@ -63,6 +59,8 @@ unsafe extern "C" fn destroy(plugin: *const clap_plugin) {
     if let Some(mut handle) = plugin.gui_window_handle.lock().take() {
         handle.close_window();
     }
+
+    ::log::error!("destroy GUI");
 }
 
 extern "C" fn set_scale(_plugin: *const clap_plugin, _scale: f64) -> bool {
@@ -91,6 +89,19 @@ extern "C" fn get_resize_hints(
     false
 }
 
+unsafe extern "C" fn adjust_size(
+    _plugin: *const clap_plugin,
+    _width: *mut u32,
+    _height: *mut u32,
+) -> bool {
+    false
+}
+
+#[cfg(not(target_os = "macos"))]
+unsafe extern "C" fn set_size(_plugin: *const clap_plugin, _width: u32, _height: u32) -> bool {
+    false
+}
+
 unsafe extern "C" fn set_parent(plugin: *const clap_plugin, parent: *const clap_window) -> bool {
     let plugin = &*((*plugin).plugin_data as *const OctaSine);
 
@@ -98,6 +109,15 @@ unsafe extern "C" fn set_parent(plugin: *const clap_plugin, parent: *const clap_
 
     true
 }
+
+unsafe extern "C" fn set_transient(
+    _plugin: *const clap_plugin,
+    _parent: *const clap_window,
+) -> bool {
+    false
+}
+
+unsafe extern "C" fn suggest_title(_plugin: *const clap_plugin, _title: *const c_char) {}
 
 unsafe extern "C" fn show(plugin: *const clap_plugin) -> bool {
     let plugin = &*((*plugin).plugin_data as *const OctaSine);
@@ -136,11 +156,18 @@ pub const CONFIG: clap_plugin_gui = clap_plugin_gui {
     get_size: Some(get_size),
     can_resize: Some(can_resize),
     get_resize_hints: Some(get_resize_hints),
-    adjust_size: None,
+    adjust_size: Some(adjust_size),
+    // Hack to disable Bitwig GUI support on macOS until issues with
+    // cleaning up resources when destroying window are resolved.
+    // REAPER currently doesn't care if this field is a null pointer,
+    // while Bitwig disables GUI support if it is.
+    #[cfg(target_os = "macos")]
     set_size: None,
+    #[cfg(not(target_os = "macos"))]
+    set_size: Some(set_size),
     set_parent: Some(set_parent),
-    set_transient: None,
-    suggest_title: None,
+    set_transient: Some(set_transient),
+    suggest_title: Some(suggest_title),
     show: Some(show),
     hide: Some(hide),
 };
