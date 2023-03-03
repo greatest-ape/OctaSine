@@ -1,6 +1,6 @@
 # TODO
 
-* CLAP GUI doesn't register in Bitwig
+* GUI resources are not freed in Bitwig on macOS for both vst2 and clap plugins
 * Clap validation in CI
   * Converting parameter values between string and float multiple times
     doesn't yield same values
