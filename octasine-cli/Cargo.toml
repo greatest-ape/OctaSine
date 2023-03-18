@@ -13,7 +13,7 @@ plot = ["plotlib"]
 wgpu = ["octasine/wgpu", "simplelog"]
 
 [dependencies]
-octasine = { path = "../octasine", version = "0.8.2", default-features = false, features = ["vst2", "clap"] }
+octasine = { path = "../octasine", version = "0.8.2", default-features = false, features = ["vst2"] }
 
 anyhow = "1"
 clap = { version = "4", features = ["derive"] }
