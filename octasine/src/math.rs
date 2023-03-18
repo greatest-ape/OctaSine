@@ -54,6 +54,30 @@ pub fn bhaskara_constant_power_panning(pan: f32) -> [f32; 2] {
     }
 }
 
+/// Approximate a square wave
+pub fn square(x: f64) -> f64 {
+    // If x is negative, final result should be negated
+    let negate_if_x_negative: f64 = if x.is_sign_negative() { -1.0 } else { 1.0 };
+
+    // x is now between 0.0 and 1.0
+    let mut x = x.abs().fract();
+
+    // If x > 0.5, final result should be negated
+    let negate_if_x_gt_half: f64 = if x > 0.5 { -1.0 } else { 1.0 };
+
+    let sign_mask = negate_if_x_negative.to_bits() ^ negate_if_x_gt_half.to_bits();
+
+    // Adjust for x > 0.5
+    if x > 0.5 {
+        x = 1.0 - x;
+    }
+
+    let quality = 128.0;
+    let approximation = 2.0 * ((1.0 / (1.0 + (x * 4.0 - 1.0).powf(quality))) - 0.5);
+
+    f64::from_bits(approximation.to_bits() ^ sign_mask)
+}
+
 #[cfg(test)]
 mod tests {
     use std::f32::consts::FRAC_PI_2;
