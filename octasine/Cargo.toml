@@ -6,7 +6,7 @@ license = "AGPL-3.0"
 edition = "2021"
 
 [features]
-default = ["clap", "vst2", "glow"]
+default = ["glow"]
 # Enable clap plugin support
 clap = ["atomic_refcell", "bytemuck", "clap-sys", "parking_lot"]
 # Enable VST2 plugin support

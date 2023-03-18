@@ -41,8 +41,8 @@ jobs:
         echo "SDKROOT=$SDKROOT"
         export MACOSX_DEPLOYMENT_TARGET=$(xcrun -sdk macosx11.1 --show-sdk-platform-version)
         echo "MACOSX_DEPLOYMENT_TARGET=$MACOSX_DEPLOYMENT_TARGET"
-        cargo xtask bundle-universal octasine --release --verbose --no-default-features --features "glow vst2"
-        cargo xtask bundle-universal octasine --release --verbose --no-default-features --features "glow clap"
+        cargo xtask bundle-universal octasine --release --verbose --features "vst2"
+        cargo xtask bundle-universal octasine --release --verbose --features "clap"
       env:
         DEVELOPER_DIR: /Applications/Xcode_12.4.app/Contents/Developer
       shell: bash
@@ -91,11 +91,11 @@ jobs:
     - name: Setup MSVC shell
       uses: ilammy/msvc-dev-cmd@v1
 
-    - name: Build and bundle plugin (vst2)
-      run: cargo xtask bundle octasine --release --verbose --no-default-features --features "glow vst2"
+    - name: Build and bundle plugin (VST2)
+      run: cargo xtask bundle octasine --release --verbose --features "vst2"
 
     - name: Build and bundle plugin (clap)
-      run: cargo xtask bundle octasine --release --verbose --no-default-features --features "glow clap"
+      run: cargo xtask bundle octasine --release --verbose --features "clap"
 
     - name: Install cargo-about
       run: cargo install --debug --locked cargo-about
@@ -143,11 +143,11 @@ jobs:
     - name: Setup Rust dependency caching
       uses: Swatinem/rust-cache@v2
 
-    - name: Build and bundle plugin (vst2)
-      run: cargo xtask bundle octasine --release --verbose --no-default-features --features "glow vst2"
+    - name: Build and bundle plugin (VST2)
+      run: cargo xtask bundle octasine --release --verbose --features "vst2"
 
     - name: Build and bundle plugin (clap)
-      run: cargo xtask bundle octasine --release --verbose --no-default-features --features "glow clap"
+      run: cargo xtask bundle octasine --release --verbose --features "clap"
 
     - name: Install cargo-about
       run: cargo install --debug --locked cargo-about

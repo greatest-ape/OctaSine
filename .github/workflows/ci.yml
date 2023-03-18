@@ -27,7 +27,7 @@ jobs:
       uses: Swatinem/rust-cache@v2
 
     - name: Build plugin
-      run: cargo build -p octasine --verbose
+      run: cargo build -p octasine --verbose --features "vst2 clap"
 
     - name: Build plugin for aarch64
       run: |
@@ -54,7 +54,7 @@ jobs:
       uses: Swatinem/rust-cache@v2
 
     - name: Build plugin
-      run: cargo build -p octasine --verbose
+      run: cargo build -p octasine --verbose --features "vst2 clap"
 
   build-linux:
     runs-on: ubuntu-20.04
@@ -74,7 +74,7 @@ jobs:
       uses: Swatinem/rust-cache@v2
 
     - name: Build plugin
-      run: cargo build -p octasine --verbose
+      run: cargo build -p octasine --verbose --features "vst2 clap"
       # Disabled: needs more complex setup
       # run: |
       #   cargo build -p octasine --verbose
@@ -96,7 +96,7 @@ jobs:
       uses: Swatinem/rust-cache@v2
 
     - name: Run tests
-      run: cargo test --workspace --verbose
+      run: cargo test --workspace --verbose --features "vst2 clap"
 
   cargo-deny:
     runs-on: ubuntu-latest
@@ -127,8 +127,8 @@ jobs:
       run: cargo install --git https://github.com/free-audio/clap-validator.git
 
     - name: Build and bundle clap plugin
-      run: cargo xtask bundle octasine --release --verbose --no-default-features --features "glow clap"
+      run: cargo xtask bundle octasine --release --verbose --features "clap"
     
     - name: Validate clap plugin
       # Note: skip param-conversions test for now
-      run: clap-validator validate  --invert-filter --test-filter 'param-conversions' ./target/bundled/octasine.clap
+      run: clap-validator validate --invert-filter --test-filter 'param-conversions' ./target/bundled/octasine.clap

@@ -82,7 +82,7 @@ cd OctaSine
 git checkout tags/v0.8.3
 ```
 
-* Build and install:
+* Build and install the plugin:
 
 ```sh
 ./scripts/macos/build-vst2-and-install.sh
@@ -101,10 +101,11 @@ git checkout tags/v0.8.3
 git checkout tags/v0.8.3
 ```
 
-* Build OctaSine:
+* Build and install the plugin:
 
 ```cmd
-cargo xtask bundle octasine --release
+cargo xtask bundle octasine --release --features "vst2"
+cargo xtask bundle octasine --release --features "clap"
 ```
 
 * Copy `target\bundled\octasine.dll` to your VST plugin folder.
@@ -140,10 +141,11 @@ cd OctaSine
 git checkout tags/v0.8.3
 ```
 
-* Build the OctaSine plugin:
+* Build and install the plugin
 
 ```sh
-cargo xtask bundle octasine --release
+cargo xtask bundle octasine --release --features "vst2"
+cargo xtask bundle octasine --release --features "clap"
 ```
 
 * Copy `target/bundled/octasine.so` to your VST plugin folder 
