@@ -55,6 +55,9 @@ pub fn bhaskara_constant_power_panning(pan: f32) -> [f32; 2] {
 }
 
 /// Approximate a square wave
+/// 
+/// Check absence of branches with:
+/// cargo asm --lib --no-default-features --full-name --rust -p octasine "octasine::math::square"
 pub fn square(x: f64) -> f64 {
     // If x is negative, final result should be negated
     let negate_if_x_negative: f64 = if x.is_sign_negative() { -1.0 } else { 1.0 };
