@@ -1,15 +1,17 @@
 # TODO
 
 * GUI resources are not freed in Bitwig on macOS for both vst2 and clap plugins
-* Clap validation in CI
-  * Converting parameter values between string and float multiple times
-    doesn't yield same values
-* Implement clap.preset-discovery-factory
-* Implement clap.state
+* When making breaking audio changes
+  * consider portable mathematics everywhere, e.g., with libm crate (it is f32
+    only though)
+  * bhaskara constant power panning
 
 ## High priority
 
 * clap
+  * Clap validation in CI
+    * Converting parameter values between string and float multiple times
+      doesn't yield same values
   * is note end event logic really 100% correct?
   * should parameter cookie be set again when automating?
   * versioning: use OctaSine 0.8 name? Implement state management extension
@@ -20,6 +22,7 @@
   * Nice to have: maybe clap is better at supporting automating multiple
     parameters at the same time? Then it might be good to actually tell
     the host about changes to envelopes while dragging, not only on release
+  * Implement clap.state?
 * iced 0.5 adjustments
   * Implement Widget for canvas widgets and clear cache on theme changes?
   * How handle external updates when knobs are dragged?
