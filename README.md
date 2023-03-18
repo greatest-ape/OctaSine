@@ -82,10 +82,19 @@ cd OctaSine
 git checkout tags/v0.8.3
 ```
 
+#### VST2
+
 * Build and install:
 
 ```sh
 ./scripts/macos/build-vst2-and-install.sh
+```
+
+#### CLAP
+
+* Build and install:
+
+```sh
 ./scripts/macos/build-clap-and-install.sh
 ```
 
@@ -101,13 +110,24 @@ git checkout tags/v0.8.3
 git checkout tags/v0.8.3
 ```
 
+#### VST2
+
 * Build OctaSine:
 
 ```cmd
-cargo xtask bundle octasine --release
+cargo xtask bundle octasine --release --features "vst2"
 ```
 
 * Copy `target\bundled\octasine.dll` to your VST plugin folder.
+
+#### CLAP
+
+* Build OctaSine:
+
+```cmd
+cargo xtask bundle octasine --release --features "clap"
+```
+
 * Copy `target\bundled\octasine.clap` to your CLAP plugin folder.
 
 ### Linux
@@ -140,13 +160,24 @@ cd OctaSine
 git checkout tags/v0.8.3
 ```
 
-* Build the OctaSine plugin:
+#### VST2
+
+* Build the OctaSine plugin
 
 ```sh
-cargo xtask bundle octasine --release
+cargo xtask bundle octasine --release --features "vst2"
 ```
 
 * Copy `target/bundled/octasine.so` to your VST plugin folder 
+
+#### CLAP
+
+* Build the OctaSine plugin
+
+```sh
+cargo xtask bundle octasine --release --features "clap"
+```
+
 * Copy `target/bundled/octasine.clap` to your CLAP plugin folder 
 
 ## Architecture
