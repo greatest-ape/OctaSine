@@ -55,7 +55,7 @@ pub fn bhaskara_constant_power_panning(pan: f32) -> [f32; 2] {
 }
 
 /// Approximate a square wave
-/// 
+///
 /// Check absence of branches with:
 /// cargo asm --lib --no-default-features --full-name --rust -p octasine "octasine::math::square"
 pub fn square(x: f64) -> f64 {
@@ -75,8 +75,10 @@ pub fn square(x: f64) -> f64 {
         x = 1.0 - x;
     }
 
-    let quality = 128.0;
-    let approximation = 2.0 * ((1.0 / (1.0 + (x * 4.0 - 1.0).powf(quality))) - 0.5);
+    // Higher values cause "tighter interpolation"
+    const FIT: f64 = 128.0;
+
+    let approximation = 2.0 * ((1.0 / (1.0 + (x * 4.0 - 1.0).powf(FIT))) - 0.5);
 
     f64::from_bits(approximation.to_bits() ^ sign_mask)
 }
