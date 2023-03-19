@@ -1,6 +1,6 @@
 pub mod audio;
 pub mod common;
-mod math;
+pub mod math;
 pub mod parameters;
 pub mod plugin;
 pub mod settings;
