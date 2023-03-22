@@ -9,7 +9,7 @@ use octasine::audio::voices::envelopes::VoiceOperatorVolumeEnvelope;
 use octasine::audio::voices::lfos::*;
 use octasine::audio::voices::log10_table::Log10Table;
 use octasine::common::*;
-use octasine::math::{square, triangle};
+use octasine::math::square;
 use octasine::parameters::lfo_mode::LfoMode;
 use octasine::parameters::lfo_shape::LfoShape;
 
@@ -47,22 +47,36 @@ fn plot_square(filename: &str) {
 }
 
 fn plot_triangle(filename: &str) {
-    let start = -2.0;
-    let end = 2.0;
+    use octasine::simd::SimdPackedDouble;
 
-    let step_size = (end - start) / 2000.;
+    fn make_plot<Simd: SimdPackedDouble>(color: &str) -> Plot {
+        let start = -2.0;
+        let end = 2.0;
 
-    let data = (0..)
-        .map(|x| start + (f64::from(x) * step_size))
-        .take_while(|&x| x <= end)
-        .map(|s| (s, triangle(s)))
-        .collect();
+        let step_size = (end - start) / 2000.;
 
-    let plot = Plot::new(data).line_style(LineStyle::new().colour("green").width(0.2));
+        let data = (0..)
+            .map(|x| start + (f64::from(x) * step_size))
+            .take_while(|&x| x <= end)
+            .map(|s| {
+                let triangle = unsafe { Simd::new(s).triangle().to_arr()[0] };
+
+                (s, triangle)
+            })
+            .collect();
+
+        Plot::new(data).line_style(LineStyle::new().colour(color).width(0.2))
+    };
+
+    let fallback = make_plot::<octasine::simd::FallbackPackedDouble>("green");
+    let sse2 = make_plot::<octasine::simd::Sse2PackedDouble>("red");
+    let avx = make_plot::<octasine::simd::AvxPackedDouble>("blue");
 
     let mut v = ContinuousView::new()
-        .add(plot)
-        .x_range(start, end)
+        .add(fallback)
+        .add(sse2)
+        .add(avx)
+        .x_range(-2.0, 2.0)
         .y_range(-2.0, 2.0);
 
     v.add_grid(Grid::new(4, 4));

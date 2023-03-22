@@ -76,6 +76,24 @@ impl SimdPackedDouble for FallbackPackedDouble {
     unsafe fn any_over_zero(self) -> bool {
         (self.0[0] > 0.0) | (self.0[1] > 0.0)
     }
+    #[inline(always)]
+    unsafe fn triangle(self) -> Self {
+        fn triangle(x: f64) -> f64 {
+            let x = x + 0.25;
+
+            (2.0 * (2.0 * (x - (x + 0.5).floor())).abs()) - 1.0
+        }
+
+        Self(apply_to_arrays!(triangle, self.0))
+    }
+    #[inline(always)]
+    unsafe fn floor(self) -> Self {
+        Self(apply_to_arrays!(f64::floor, self.0))
+    }
+    #[inline]
+    unsafe fn abs(self) -> Self {
+        Self(apply_to_arrays!(f64::abs, self.0))
+    }
 }
 
 impl Add for FallbackPackedDouble {
