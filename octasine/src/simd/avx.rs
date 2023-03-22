@@ -79,6 +79,25 @@ impl SimdPackedDouble for AvxPackedDouble {
     unsafe fn any_over_zero(self) -> bool {
         _mm256_movemask_pd(_mm256_cmp_pd::<{ _CMP_GT_OQ }>(self.0, _mm256_setzero_pd())) != 0
     }
+    #[target_feature(enable = "avx")]
+    #[inline]
+    unsafe fn triangle(mut self) -> Self {
+        self += Self::new(0.25);
+
+        let two = Self::new(2.0);
+
+        (two * (two * (self - (self + Self::new(0.5)).floor())).abs()) - Self::new(1.0)
+    }
+    #[target_feature(enable = "avx")]
+    #[inline]
+    unsafe fn floor(self) -> Self {
+        Self(_mm256_floor_pd(self.0))
+    }
+    #[target_feature(enable = "avx")]
+    #[inline]
+    unsafe fn abs(self) -> Self {
+        Self(_mm256_andnot_pd(_mm256_set1_pd(-0.0), self.0))
+    }
 }
 
 impl Add for AvxPackedDouble {

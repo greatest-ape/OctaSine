@@ -65,6 +65,29 @@ impl SimdPackedDouble for Sse2PackedDouble {
     unsafe fn any_over_zero(self) -> bool {
         _mm_movemask_pd(_mm_cmpgt_pd(self.0, _mm_setzero_pd())) != 0
     }
+    #[inline(always)]
+    unsafe fn triangle(mut self) -> Self {
+        self += Self::new(0.25);
+
+        let two = Self::new(2.0);
+
+        (two * (two * (self - (self + Self::new(0.5)).floor())).abs()) - Self::new(1.0)
+    }
+    // Crappy scalar fake floor
+    #[inline(always)]
+    unsafe fn floor(self) -> Self {
+        let mut a = self.to_arr();
+
+        for a in a.iter_mut() {
+            *a = a.floor();
+        }
+
+        Self::from_arr(a)
+    }
+    #[inline(always)]
+    unsafe fn abs(self) -> Self {
+        Self(_mm_andnot_pd(_mm_set1_pd(-0.0), self.0))
+    }
 }
 
 impl Add for Sse2PackedDouble {

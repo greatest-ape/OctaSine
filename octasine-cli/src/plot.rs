@@ -16,6 +16,7 @@ use octasine::parameters::lfo_shape::LfoShape;
 pub fn run() -> anyhow::Result<()> {
     // plot_lfo_values("tmp/lfo.svg");
     plot_square("tmp/square-wave.svg");
+    plot_triangle("tmp/triangle-wave.svg");
     // plot_envelope_stage(0.1, 0.0, 1.0, "tmp/attack.svg");
 
     Ok(())
@@ -38,6 +39,44 @@ fn plot_square(filename: &str) {
     let mut v = ContinuousView::new()
         .add(plot)
         .x_range(start, end)
+        .y_range(-2.0, 2.0);
+
+    v.add_grid(Grid::new(4, 4));
+
+    Page::single(&v).save(&filename).unwrap();
+}
+
+fn plot_triangle(filename: &str) {
+    use octasine::simd::SimdPackedDouble;
+
+    fn make_plot<Simd: SimdPackedDouble>(color: &str) -> Plot {
+        let start = -2.0;
+        let end = 2.0;
+
+        let step_size = (end - start) / 2000.;
+
+        let data = (0..)
+            .map(|x| start + (f64::from(x) * step_size))
+            .take_while(|&x| x <= end)
+            .map(|s| {
+                let triangle = unsafe { Simd::new(s).triangle().to_arr()[0] };
+
+                (s, triangle)
+            })
+            .collect();
+
+        Plot::new(data).line_style(LineStyle::new().colour(color).width(0.2))
+    };
+
+    let fallback = make_plot::<octasine::simd::FallbackPackedDouble>("green");
+    let sse2 = make_plot::<octasine::simd::Sse2PackedDouble>("red");
+    let avx = make_plot::<octasine::simd::AvxPackedDouble>("blue");
+
+    let mut v = ContinuousView::new()
+        .add(fallback)
+        .add(sse2)
+        .add(avx)
+        .x_range(-2.0, 2.0)
         .y_range(-2.0, 2.0);
 
     v.add_grid(Grid::new(4, 4));
