@@ -9,13 +9,14 @@ use octasine::audio::voices::envelopes::VoiceOperatorVolumeEnvelope;
 use octasine::audio::voices::lfos::*;
 use octasine::audio::voices::log10_table::Log10Table;
 use octasine::common::*;
-use octasine::math::square;
+use octasine::math::{square, triangle};
 use octasine::parameters::lfo_mode::LfoMode;
 use octasine::parameters::lfo_shape::LfoShape;
 
 pub fn run() -> anyhow::Result<()> {
     // plot_lfo_values("tmp/lfo.svg");
     plot_square("tmp/square-wave.svg");
+    plot_triangle("tmp/triangle-wave.svg");
     // plot_envelope_stage(0.1, 0.0, 1.0, "tmp/attack.svg");
 
     Ok(())
@@ -31,6 +32,30 @@ fn plot_square(filename: &str) {
         .map(|x| start + (f64::from(x) * step_size))
         .take_while(|&x| x <= end)
         .map(|s| (s, square(s)))
+        .collect();
+
+    let plot = Plot::new(data).line_style(LineStyle::new().colour("green").width(0.2));
+
+    let mut v = ContinuousView::new()
+        .add(plot)
+        .x_range(start, end)
+        .y_range(-2.0, 2.0);
+
+    v.add_grid(Grid::new(4, 4));
+
+    Page::single(&v).save(&filename).unwrap();
+}
+
+fn plot_triangle(filename: &str) {
+    let start = -2.0;
+    let end = 2.0;
+
+    let step_size = (end - start) / 2000.;
+
+    let data = (0..)
+        .map(|x| start + (f64::from(x) * step_size))
+        .take_while(|&x| x <= end)
+        .map(|s| (s, triangle(s)))
         .collect();
 
     let plot = Plot::new(data).line_style(LineStyle::new().colour("green").width(0.2));

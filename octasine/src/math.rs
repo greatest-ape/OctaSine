@@ -83,6 +83,12 @@ pub fn square(x: f64) -> f64 {
     f64::from_bits(approximation.to_bits() ^ sign_mask)
 }
 
+pub fn triangle(x: f64) -> f64 {
+    let x = x + 0.25;
+
+    (2.0 * (2.0 * (x - (x + 0.5).floor())).abs()) - 1.0
+}
+
 #[cfg(test)]
 mod tests {
     use std::f32::consts::FRAC_PI_2;
