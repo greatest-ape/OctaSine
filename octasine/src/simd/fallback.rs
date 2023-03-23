@@ -59,10 +59,6 @@ impl SimdPackedDouble for FallbackPackedDouble {
         Self(apply_to_arrays!(f64::max, self.0, other.0))
     }
     #[inline(always)]
-    unsafe fn fast_sin(self) -> Self {
-        Self(apply_to_arrays!(sleef_trig::Sleef_sind1_u35purec, self.0))
-    }
-    #[inline(always)]
     unsafe fn pairwise_horizontal_sum(self) -> Self {
         let [l, r] = self.0;
 
@@ -77,6 +73,18 @@ impl SimdPackedDouble for FallbackPackedDouble {
         (self.0[0] > 0.0) | (self.0[1] > 0.0)
     }
     #[inline(always)]
+    unsafe fn floor(self) -> Self {
+        Self(apply_to_arrays!(f64::floor, self.0))
+    }
+    #[inline(always)]
+    unsafe fn abs(self) -> Self {
+        Self(apply_to_arrays!(f64::abs, self.0))
+    }
+    #[inline(always)]
+    unsafe fn fast_sin(self) -> Self {
+        Self(apply_to_arrays!(sleef_trig::Sleef_sind1_u35purec, self.0))
+    }
+    #[inline(always)]
     unsafe fn triangle(self) -> Self {
         fn triangle(x: f64) -> f64 {
             let x = x + 0.25;
@@ -85,14 +93,6 @@ impl SimdPackedDouble for FallbackPackedDouble {
         }
 
         Self(apply_to_arrays!(triangle, self.0))
-    }
-    #[inline(always)]
-    unsafe fn floor(self) -> Self {
-        Self(apply_to_arrays!(f64::floor, self.0))
-    }
-    #[inline(always)]
-    unsafe fn abs(self) -> Self {
-        Self(apply_to_arrays!(f64::abs, self.0))
     }
     #[inline(always)]
     unsafe fn square(self) -> Self {

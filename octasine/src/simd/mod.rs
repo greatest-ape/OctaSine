@@ -34,13 +34,13 @@ pub trait SimdPackedDouble: Copy + Add + AddAssign + Sub + Mul {
     unsafe fn to_arr(self) -> Self::Arr;
     unsafe fn min(self, other: Self) -> Self;
     unsafe fn max(self, other: Self) -> Self;
-    unsafe fn fast_sin(self) -> Self;
     unsafe fn pairwise_horizontal_sum(self) -> Self;
     unsafe fn interleave(self, other: Self) -> Self;
     unsafe fn any_over_zero(self) -> bool;
-    unsafe fn triangle(self) -> Self;
     unsafe fn floor(self) -> Self;
     unsafe fn abs(self) -> Self;
+    unsafe fn fast_sin(self) -> Self;
+    unsafe fn triangle(self) -> Self;
     unsafe fn square(self) -> Self;
 }
 

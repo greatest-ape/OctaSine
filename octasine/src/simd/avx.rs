@@ -61,11 +61,6 @@ impl SimdPackedDouble for AvxPackedDouble {
     }
     #[target_feature(enable = "avx")]
     #[inline]
-    unsafe fn fast_sin(self) -> Self {
-        Self(sleef_trig::Sleef_sind4_u35avx(self.0))
-    }
-    #[target_feature(enable = "avx")]
-    #[inline]
     unsafe fn pairwise_horizontal_sum(self) -> Self {
         Self(_mm256_add_pd(self.0, _mm256_permute_pd(self.0, 0b0101)))
     }
@@ -81,15 +76,6 @@ impl SimdPackedDouble for AvxPackedDouble {
     }
     #[target_feature(enable = "avx")]
     #[inline]
-    unsafe fn triangle(mut self) -> Self {
-        self += Self::new(0.25);
-
-        let two = Self::new(2.0);
-
-        (two * (two * (self - (self + Self::new(0.5)).floor())).abs()) - Self::new(1.0)
-    }
-    #[target_feature(enable = "avx")]
-    #[inline]
     unsafe fn floor(self) -> Self {
         Self(_mm256_floor_pd(self.0))
     }
@@ -97,6 +83,20 @@ impl SimdPackedDouble for AvxPackedDouble {
     #[inline]
     unsafe fn abs(self) -> Self {
         Self(_mm256_andnot_pd(_mm256_set1_pd(-0.0), self.0))
+    }
+    #[target_feature(enable = "avx")]
+    #[inline]
+    unsafe fn fast_sin(self) -> Self {
+        Self(sleef_trig::Sleef_sind4_u35avx(self.0))
+    }
+    #[target_feature(enable = "avx")]
+    #[inline]
+    unsafe fn triangle(mut self) -> Self {
+        self += Self::new(0.25);
+
+        let two = Self::new(2.0);
+
+        (two * (two * (self - (self + Self::new(0.5)).floor())).abs()) - Self::new(1.0)
     }
     #[target_feature(enable = "avx")]
     #[inline]
