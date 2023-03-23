@@ -56,9 +56,8 @@ pub fn bhaskara_constant_power_panning(pan: f32) -> [f32; 2] {
 
 pub fn saw(x: f64) -> f64 {
     const DOWN_FACTOR: f64 = 50.0;
-    const DOWN_FACTOR_RECIP: f64 = 1.0 / DOWN_FACTOR;
-    const INTERCEPT: f64 = 1.0 - DOWN_FACTOR_RECIP;
-    const UP_FACTOR: f64 = 1.0 / (1.0 - DOWN_FACTOR_RECIP);
+    const INTERCEPT: f64 = 1.0 - (1.0 / DOWN_FACTOR);
+    const UP_FACTOR: f64 = 1.0 / INTERCEPT;
 
     let x_is_negative = x.is_sign_negative();
 
