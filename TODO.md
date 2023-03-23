@@ -1,8 +1,8 @@
 # TODO
 
-* Consider adding saw, square and triangle waves. Maybe look at
-  TX81Z waveforms. https://www.reddit.com/r/synthesizers/comments/rkyk6j/comment/hpgcu6r/?utm_source=share&utm_medium=web2x&context=3
-  * Port sleef powf, including scalar, for square wave calculation
+* Add saw, square and triangle waves, and possibly others
+  * Implement saw function
+  * Look at TX81Z waveforms: https://www.reddit.com/r/synthesizers/comments/rkyk6j/comment/hpgcu6r/?utm_source=share&utm_medium=web2x&context=3
 * GUI resources are not freed in Bitwig on macOS for both vst2 and clap plugins
 
 ## High priority
