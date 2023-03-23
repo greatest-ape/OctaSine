@@ -16,9 +16,40 @@ pub fn run() -> anyhow::Result<()> {
     // plot_lfo_values("tmp/lfo.svg");
     plot_square("tmp/square-wave.svg");
     plot_triangle("tmp/triangle-wave.svg");
+    plot_saw("tmp/saw-wave.svg");
     // plot_envelope_stage(0.1, 0.0, 1.0, "tmp/attack.svg");
 
     Ok(())
+}
+
+fn plot_saw(filename: &str) {
+    use octasine::simd::SimdPackedDouble;
+
+    fn make_plot(color: &str) -> Plot {
+        let start = -2.0;
+        let end = 2.0;
+
+        let step_size = (end - start) / 2000.;
+
+        let data = (0..)
+            .map(|x| start + (f64::from(x) * step_size))
+            .take_while(|&x| x <= end)
+            .map(|s| (s, octasine::math::saw(s)))
+            .collect();
+
+        Plot::new(data).line_style(LineStyle::new().colour(color).width(0.2))
+    }
+
+    let fallback = make_plot("green");
+
+    let mut v = ContinuousView::new()
+        .add(fallback)
+        .x_range(-2.0, 2.0)
+        .y_range(-2.0, 2.0);
+
+    v.add_grid(Grid::new(4, 4));
+
+    Page::single(&v).save(&filename).unwrap();
 }
 
 fn plot_square(filename: &str) {
@@ -34,9 +65,9 @@ fn plot_square(filename: &str) {
             .map(|x| start + (f64::from(x) * step_size))
             .take_while(|&x| x <= end)
             .map(|s| {
-                let triangle = unsafe { Simd::new(s).square().to_arr()[0] };
+                let square = unsafe { Simd::new(s).square().to_arr()[0] };
 
-                (s, triangle)
+                (s, square)
             })
             .collect();
 
