@@ -86,12 +86,6 @@ impl SimdPackedDouble for FallbackPackedDouble {
     }
     #[inline(always)]
     unsafe fn triangle(self) -> Self {
-        fn triangle(x: f64) -> f64 {
-            let x = x + 0.25;
-
-            (2.0 * (2.0 * (x - (x + 0.5).floor())).abs()) - 1.0
-        }
-
         Self(apply_to_arrays!(triangle, self.0))
     }
     #[inline(always)]
@@ -137,7 +131,15 @@ impl Mul for FallbackPackedDouble {
     }
 }
 
-/// Approximate a square wave
+/// Triangle wave
+#[inline]
+pub fn triangle(x: f64) -> f64 {
+    let x = x + 0.25;
+
+    (2.0 * (2.0 * (x - (x + 0.5).floor())).abs()) - 1.0
+}
+
+/// Square wave with smooth transitions
 ///
 /// Check absence of branches with:
 /// cargo asm --lib --no-default-features --full-name --rust -p octasine "octasine::simd::fallback::square"
