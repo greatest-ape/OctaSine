@@ -73,7 +73,7 @@ impl SimdPackedDouble for Sse2PackedDouble {
 
         (two * (two * (self - (self + Self::new(0.5)).floor())).abs()) - Self::new(1.0)
     }
-    // Crappy scalar fake floor
+    // Workaround due to lack of instructions
     #[inline(always)]
     unsafe fn floor(self) -> Self {
         let mut a = self.to_arr();
@@ -87,6 +87,62 @@ impl SimdPackedDouble for Sse2PackedDouble {
     #[inline(always)]
     unsafe fn abs(self) -> Self {
         Self(_mm_andnot_pd(_mm_set1_pd(-0.0), self.0))
+    }
+    #[inline(always)]
+    unsafe fn square(self) -> Self {
+        let x = self.0;
+
+        // If x is negative, final result should be negated
+        let negate_if_negative = _mm_and_pd(_mm_set1_pd(-0.0), self.0);
+
+        // Get absolute value (clear sign bit)
+        let x = _mm_andnot_pd(_mm_set1_pd(-0.0), x);
+
+        // Workaround due to lack of fract and dynamic shuffle instructions
+        let (x, negate_if_gt_half) = {
+            let tmp = Self(x).to_arr();
+
+            let mut a = tmp[0].fract();
+            let mut b = tmp[1].fract();
+
+            // If x > 0.5, final result should be negated
+            let negate_a = if a > 0.5 { -0.0 } else { 0.0 };
+            let negate_b = if b > 0.5 { -0.0 } else { 0.0 };
+            let negate_if_gt_half = Self::from_arr([negate_a, negate_b]).0;
+
+            // If value > 0.5, replace with 1.0 - value
+            if a > 0.5 {
+                a = 1.0 - a;
+            }
+            if b > 0.5 {
+                b = 1.0 - b;
+            }
+            let x = Self::from_arr([a, b]).0;
+
+            (x, negate_if_gt_half)
+        };
+
+        let negation_mask = _mm_xor_pd(negate_if_negative, negate_if_gt_half);
+
+        let one = _mm_set1_pd(1.0);
+
+        // More iterations cause "tighter interpolation"
+        let a = _mm_sub_pd(_mm_mul_pd(_mm_set1_pd(4.0), x), one);
+        let a2 = _mm_mul_pd(a, a);
+        let a4 = _mm_mul_pd(a2, a2);
+        let a8 = _mm_mul_pd(a4, a4);
+        let a16 = _mm_mul_pd(a8, a8);
+        let a32 = _mm_mul_pd(a16, a16);
+        let a64 = _mm_mul_pd(a32, a32);
+        let a128 = _mm_mul_pd(a64, a64);
+
+        let x = _mm_mul_pd(
+            _mm_set1_pd(2.0),
+            _mm_sub_pd(_mm_div_pd(one, _mm_add_pd(one, a128)), _mm_set1_pd(0.5)),
+        );
+        let x = _mm_xor_pd(x, negation_mask);
+
+        Self(x)
     }
 }
 

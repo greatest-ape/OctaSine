@@ -54,33 +54,25 @@ pub fn bhaskara_constant_power_panning(pan: f32) -> [f32; 2] {
     }
 }
 
-/// Approximate a square wave
-///
-/// Check absence of branches with:
-/// cargo asm --lib --no-default-features --full-name --rust -p octasine "octasine::math::square"
-pub fn square(x: f64) -> f64 {
-    // If x is negative, final result should be negated
-    let negate_if_x_negative: f64 = if x.is_sign_negative() { -1.0 } else { 1.0 };
+pub fn saw(x: f64) -> f64 {
+    const DOWN_FACTOR: f64 = 50.0;
+    const INTERCEPT: f64 = 1.0 - (1.0 / DOWN_FACTOR);
+    const UP_FACTOR: f64 = 1.0 / INTERCEPT;
 
-    // x is now between 0.0 and 1.0
+    let x_is_negative = x.is_sign_negative();
+
     let mut x = x.abs().fract();
 
-    // If x > 0.5, final result should be negated
-    let negate_if_x_gt_half: f64 = if x > 0.5 { -1.0 } else { 1.0 };
-
-    let sign_mask = negate_if_x_negative.to_bits() ^ negate_if_x_gt_half.to_bits();
-
-    // Adjust for x > 0.5
-    if x > 0.5 {
+    if x_is_negative {
         x = 1.0 - x;
     }
 
-    // Higher values cause "tighter interpolation"
-    const FIT: f64 = 128.0;
+    let up = x * UP_FACTOR;
+    let down = DOWN_FACTOR - DOWN_FACTOR * x;
 
-    let approximation = 2.0 * ((1.0 / (1.0 + (x * 4.0 - 1.0).powf(FIT))) - 0.5);
+    let y = if x < INTERCEPT { up } else { down };
 
-    f64::from_bits(approximation.to_bits() ^ sign_mask)
+    (y - 0.5) * 2.0
 }
 
 #[cfg(test)]
