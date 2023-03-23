@@ -98,6 +98,58 @@ impl SimdPackedDouble for AvxPackedDouble {
     unsafe fn abs(self) -> Self {
         Self(_mm256_andnot_pd(_mm256_set1_pd(-0.0), self.0))
     }
+    #[target_feature(enable = "avx")]
+    #[inline]
+    unsafe fn square(self) -> Self {
+        let x = self.0;
+
+        // If x is negative, final result should be negated
+        let negate_if_negative = _mm256_and_pd(_mm256_set1_pd(-0.0), x);
+
+        // Get absolute values (clear sign bits)
+        let x = _mm256_andnot_pd(_mm256_set1_pd(-0.0), x);
+
+        // Get fractional parts
+        let x = {
+            const TRUNCATE: i32 = _MM_FROUND_TO_ZERO | _MM_FROUND_NO_EXC;
+
+            _mm256_sub_pd(x, _mm256_round_pd::<{ TRUNCATE }>(x))
+        };
+
+        let gt_half_pd_mask = _mm256_cmp_pd::<{ _CMP_GT_OQ }>(x, _mm256_set1_pd(0.5));
+
+        // If value > 0.5, replace with 1.0 - value
+        let x = _mm256_blendv_pd(x, _mm256_sub_pd(_mm256_set1_pd(1.0), x), gt_half_pd_mask);
+
+        // If x > 0.5, final result should be negated
+        let negate_if_gt_half = _mm256_and_pd(_mm256_set1_pd(-0.0), gt_half_pd_mask);
+
+        // Combine negation masks
+        let negation_mask = _mm256_xor_pd(negate_if_negative, negate_if_gt_half);
+
+        let one = _mm256_set1_pd(1.0);
+
+        // More iterations cause "tighter interpolation"
+        let a = _mm256_sub_pd(_mm256_mul_pd(_mm256_set1_pd(4.0), x), one);
+        let a2 = _mm256_mul_pd(a, a);
+        let a4 = _mm256_mul_pd(a2, a2);
+        let a8 = _mm256_mul_pd(a4, a4);
+        let a16 = _mm256_mul_pd(a8, a8);
+        let a32 = _mm256_mul_pd(a16, a16);
+        let a64 = _mm256_mul_pd(a32, a32);
+        let a128 = _mm256_mul_pd(a64, a64);
+
+        let x = _mm256_mul_pd(
+            _mm256_set1_pd(2.0),
+            _mm256_sub_pd(
+                _mm256_div_pd(one, _mm256_add_pd(one, a128)),
+                _mm256_set1_pd(0.5),
+            ),
+        );
+        let x = _mm256_xor_pd(x, negation_mask);
+
+        Self(x)
+    }
 }
 
 impl Add for AvxPackedDouble {
