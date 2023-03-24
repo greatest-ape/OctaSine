@@ -1,8 +1,3 @@
-#[inline(always)]
-pub fn exp2_fast(value: f32) -> f32 {
-    fast_math::exp2_raw(value)
-}
-
 /// Approximate cos(a * PI / 2) for range 0.0 to 1.0
 #[allow(dead_code)]
 pub fn bhaskara_cos_frac_pi_2(a: f32) -> f32 {

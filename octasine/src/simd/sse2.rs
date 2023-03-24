@@ -146,10 +146,12 @@ impl SimdPackedDouble for Sse2PackedDouble {
     }
     #[inline(always)]
     unsafe fn saw(self) -> Self {
-        // Scalar workaround due to lack of shuffle instructions
-        let arr = self.to_arr();
-
-        Self::from_arr([super::fallback::saw(arr[0]), super::fallback::saw(arr[1])])
+        // Scalar workaround due to lack of blend/shuffle instructions
+        Self::from_arr(
+            super::FallbackPackedDouble::from_arr(self.to_arr())
+                .saw()
+                .to_arr(),
+        )
     }
 }
 
