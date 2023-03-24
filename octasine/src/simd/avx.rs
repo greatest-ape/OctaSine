@@ -15,6 +15,19 @@ impl Simd for Avx {
 #[derive(Clone, Copy)]
 pub struct AvxPackedDouble(__m256d);
 
+impl AvxPackedDouble {
+    #[target_feature(enable = "avx")]
+    #[inline]
+    unsafe fn fract(self) -> Self {
+        const TRUNCATE: i32 = _MM_FROUND_TO_ZERO | _MM_FROUND_NO_EXC;
+
+        Self(_mm256_sub_pd(
+            self.0,
+            _mm256_round_pd::<{ TRUNCATE }>(self.0),
+        ))
+    }
+}
+
 impl SimdPackedDouble for AvxPackedDouble {
     const WIDTH: usize = 4;
 
@@ -110,11 +123,7 @@ impl SimdPackedDouble for AvxPackedDouble {
         let x = _mm256_andnot_pd(_mm256_set1_pd(-0.0), x);
 
         // Get fractional parts
-        let x = {
-            const TRUNCATE: i32 = _MM_FROUND_TO_ZERO | _MM_FROUND_NO_EXC;
-
-            _mm256_sub_pd(x, _mm256_round_pd::<{ TRUNCATE }>(x))
-        };
+        let x = Self(x).fract().0;
 
         let gt_half_pd_mask = _mm256_cmp_pd::<{ _CMP_GT_OQ }>(x, _mm256_set1_pd(0.5));
 
@@ -149,6 +158,40 @@ impl SimdPackedDouble for AvxPackedDouble {
         let x = _mm256_xor_pd(x, negation_mask);
 
         Self(x)
+    }
+    #[target_feature(enable = "avx")]
+    #[inline]
+    unsafe fn saw(self) -> Self {
+        const DOWN_FACTOR: f64 = 50.0;
+        const X_INTERSECTION: f64 = 1.0 - (1.0 / DOWN_FACTOR);
+        const UP_FACTOR: f64 = 1.0 / X_INTERSECTION;
+
+        let x = self.abs().fract().0;
+
+        // If x was originally negative, replace with 1.0 - x
+        // FIXME: should presence of negative sign be checked instead?
+        let x = _mm256_blendv_pd(
+            x,
+            _mm256_sub_pd(_mm256_set1_pd(1.0), x),
+            _mm256_cmp_pd::<{ _CMP_LT_OQ }>(self.0, _mm256_setzero_pd()),
+        );
+
+        let up = _mm256_mul_pd(x, _mm256_set1_pd(UP_FACTOR));
+        let down = _mm256_sub_pd(
+            _mm256_set1_pd(DOWN_FACTOR),
+            _mm256_mul_pd(_mm256_set1_pd(DOWN_FACTOR), x),
+        );
+
+        let y = _mm256_blendv_pd(
+            down,
+            up,
+            _mm256_cmp_pd::<{ _CMP_LT_OQ }>(x, _mm256_set1_pd(X_INTERSECTION)),
+        );
+
+        Self(_mm256_mul_pd(
+            _mm256_set1_pd(2.0),
+            _mm256_sub_pd(y, _mm256_set1_pd(0.5)),
+        ))
     }
 }
 

@@ -42,6 +42,7 @@ pub trait SimdPackedDouble: Copy + Add + AddAssign + Sub + Mul {
     unsafe fn fast_sin(self) -> Self;
     unsafe fn triangle(self) -> Self;
     unsafe fn square(self) -> Self;
+    unsafe fn saw(self) -> Self;
 }
 
 #[cfg(test)]
@@ -107,6 +108,51 @@ mod tests {
             let sse2 = unsafe { super::Sse2PackedDouble::new(x).square().to_arr() };
             #[cfg(target_feature = "avx")]
             let avx = unsafe { super::AvxPackedDouble::new(x).square().to_arr() };
+
+            let all = {
+                let mut all = fallback.to_vec();
+
+                all.extend_from_slice(&sse2[..]);
+                #[cfg(target_feature = "avx")]
+                all.extend_from_slice(&avx[..]);
+
+                all
+            };
+
+            let first = *all.get(0).unwrap();
+
+            for y in all.into_iter() {
+                if y != first {
+                    dbg!(x, fallback, sse2);
+                    #[cfg(target_feature = "avx")]
+                    dbg!(avx);
+
+                    return TestResult::failed();
+                }
+            }
+
+            TestResult::passed()
+        }
+
+        quickcheck(prop as fn(f64) -> TestResult);
+    }
+
+    #[cfg(target_arch = "x86_64")]
+    #[test]
+    fn test_saw() {
+        use quickcheck::{quickcheck, TestResult};
+
+        use crate::simd::SimdPackedDouble;
+
+        fn prop(x: f64) -> TestResult {
+            if x.is_infinite() || x.is_nan() {
+                return TestResult::discard();
+            }
+
+            let fallback = unsafe { super::FallbackPackedDouble::new(x).saw().to_arr() };
+            let sse2 = unsafe { super::Sse2PackedDouble::new(x).saw().to_arr() };
+            #[cfg(target_feature = "avx")]
+            let avx = unsafe { super::AvxPackedDouble::new(x).saw().to_arr() };
 
             let all = {
                 let mut all = fallback.to_vec();

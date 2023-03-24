@@ -54,27 +54,6 @@ pub fn bhaskara_constant_power_panning(pan: f32) -> [f32; 2] {
     }
 }
 
-pub fn saw(x: f64) -> f64 {
-    const DOWN_FACTOR: f64 = 50.0;
-    const INTERCEPT: f64 = 1.0 - (1.0 / DOWN_FACTOR);
-    const UP_FACTOR: f64 = 1.0 / INTERCEPT;
-
-    let x_is_negative = x.is_sign_negative();
-
-    let mut x = x.abs().fract();
-
-    if x_is_negative {
-        x = 1.0 - x;
-    }
-
-    let up = x * UP_FACTOR;
-    let down = DOWN_FACTOR - DOWN_FACTOR * x;
-
-    let y = if x < INTERCEPT { up } else { down };
-
-    (y - 0.5) * 2.0
-}
-
 #[cfg(test)]
 mod tests {
     use std::f32::consts::FRAC_PI_2;

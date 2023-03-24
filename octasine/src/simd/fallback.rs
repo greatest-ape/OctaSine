@@ -92,6 +92,10 @@ impl SimdPackedDouble for FallbackPackedDouble {
     unsafe fn square(self) -> Self {
         Self(apply_to_arrays!(square, self.0))
     }
+    #[inline(always)]
+    unsafe fn saw(self) -> Self {
+        Self(apply_to_arrays!(saw, self.0))
+    }
 }
 
 impl Add for FallbackPackedDouble {
@@ -177,4 +181,26 @@ pub fn square(x: f64) -> f64 {
     let approximation = 2.0 * ((1.0 / (1.0 + a128)) - 0.5);
 
     f64::from_bits(approximation.to_bits() ^ sign_mask)
+}
+
+#[inline]
+pub fn saw(x: f64) -> f64 {
+    const DOWN_FACTOR: f64 = 50.0;
+    const X_INTERSECTION: f64 = 1.0 - (1.0 / DOWN_FACTOR);
+    const UP_FACTOR: f64 = 1.0 / X_INTERSECTION;
+
+    let x_is_negative = x.is_sign_negative();
+
+    let mut x = x.abs().fract();
+
+    if x_is_negative {
+        x = 1.0 - x;
+    }
+
+    let up = x * UP_FACTOR;
+    let down = DOWN_FACTOR - DOWN_FACTOR * x;
+
+    let y = if x < X_INTERSECTION { up } else { down };
+
+    (y - 0.5) * 2.0
 }

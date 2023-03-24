@@ -25,7 +25,7 @@ pub fn run() -> anyhow::Result<()> {
 fn plot_saw(filename: &str) {
     use octasine::simd::SimdPackedDouble;
 
-    fn make_plot(color: &str) -> Plot {
+    fn make_plot<Simd: SimdPackedDouble>(color: &str) -> Plot {
         let start = -2.0;
         let end = 2.0;
 
@@ -34,16 +34,24 @@ fn plot_saw(filename: &str) {
         let data = (0..)
             .map(|x| start + (f64::from(x) * step_size))
             .take_while(|&x| x <= end)
-            .map(|s| (s, octasine::math::saw(s)))
+            .map(|s| {
+                let saw = unsafe { Simd::new(s).saw().to_arr()[0] };
+
+                (s, saw)
+            })
             .collect();
 
         Plot::new(data).line_style(LineStyle::new().colour(color).width(0.2))
     }
 
-    let fallback = make_plot("green");
+    let fallback = make_plot::<octasine::simd::FallbackPackedDouble>("green");
+    let sse2 = make_plot::<octasine::simd::Sse2PackedDouble>("red");
+    let avx = make_plot::<octasine::simd::AvxPackedDouble>("blue");
 
     let mut v = ContinuousView::new()
         .add(fallback)
+        .add(sse2)
+        .add(avx)
         .x_range(-2.0, 2.0)
         .y_range(-2.0, 2.0);
 
