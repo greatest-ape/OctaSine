@@ -169,7 +169,6 @@ impl SimdPackedDouble for AvxPackedDouble {
         let x = self.abs().fract().0;
 
         // If x was originally negative, replace with 1.0 - x
-        // FIXME: should presence of negative sign be checked instead?
         let x = _mm256_blendv_pd(
             x,
             _mm256_sub_pd(_mm256_set1_pd(1.0), x),

@@ -189,7 +189,7 @@ pub fn saw(x: f64) -> f64 {
     const X_INTERSECTION: f64 = 1.0 - (1.0 / DOWN_FACTOR);
     const UP_FACTOR: f64 = 1.0 / X_INTERSECTION;
 
-    let x_is_negative = x.is_sign_negative();
+    let x_is_negative = x < 0.0;
 
     let mut x = x.abs().fract();
 
