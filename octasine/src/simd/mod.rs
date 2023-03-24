@@ -47,138 +47,51 @@ pub trait SimdPackedDouble: Copy + Add + AddAssign + Sub + Mul {
 
 #[cfg(test)]
 mod tests {
-    #[cfg(target_arch = "x86_64")]
-    #[test]
-    fn test_triangle() {
-        use quickcheck::{quickcheck, TestResult};
+    macro_rules! wave_test {
+        ($name:ident, $wave_fn:ident) => {
+            #[cfg(target_arch = "x86_64")]
+            #[test]
+            fn $name() {
+                use quickcheck::{quickcheck, TestResult};
 
-        use crate::simd::SimdPackedDouble;
+                use crate::simd::SimdPackedDouble;
 
-        fn prop(x: f64) -> TestResult {
-            if x.is_infinite() || x.is_nan() {
-                return TestResult::discard();
-            }
+                assert!(is_x86_feature_detected!("avx"));
 
-            let fallback = unsafe { super::FallbackPackedDouble::new(x).triangle().to_arr() };
-            let sse2 = unsafe { super::Sse2PackedDouble::new(x).triangle().to_arr() };
-            #[cfg(target_feature = "avx")]
-            let avx = unsafe { super::AvxPackedDouble::new(x).triangle().to_arr() };
+                fn prop(x: f64) -> TestResult {
+                    if x.is_infinite() || x.is_nan() {
+                        return TestResult::discard();
+                    }
 
-            let all = {
-                let mut all = fallback.to_vec();
+                    let fallback =
+                        unsafe { super::FallbackPackedDouble::new(x).$wave_fn().to_arr() };
+                    let sse2 = unsafe { super::Sse2PackedDouble::new(x).$wave_fn().to_arr() };
+                    let avx = unsafe { super::AvxPackedDouble::new(x).$wave_fn().to_arr() };
 
-                all.extend_from_slice(&sse2[..]);
-                #[cfg(target_feature = "avx")]
-                all.extend_from_slice(&avx[..]);
+                    let mut all = fallback.to_vec();
 
-                all
-            };
+                    all.extend_from_slice(&sse2[..]);
+                    all.extend_from_slice(&avx[..]);
 
-            let first = *all.get(0).unwrap();
+                    let first = *all.get(0).unwrap();
 
-            for y in all.into_iter() {
-                if y != first {
-                    dbg!(x, fallback, sse2);
-                    #[cfg(target_feature = "avx")]
-                    dbg!(avx);
+                    for y in all.into_iter() {
+                        if y != first {
+                            dbg!(x, fallback, sse2, avx);
 
-                    return TestResult::failed();
+                            return TestResult::failed();
+                        }
+                    }
+
+                    TestResult::passed()
                 }
+
+                quickcheck(prop as fn(f64) -> TestResult);
             }
-
-            TestResult::passed()
-        }
-
-        quickcheck(prop as fn(f64) -> TestResult);
+        };
     }
 
-    #[cfg(target_arch = "x86_64")]
-    #[test]
-    fn test_square() {
-        use quickcheck::{quickcheck, TestResult};
-
-        use crate::simd::SimdPackedDouble;
-
-        fn prop(x: f64) -> TestResult {
-            if x.is_infinite() || x.is_nan() {
-                return TestResult::discard();
-            }
-
-            let fallback = unsafe { super::FallbackPackedDouble::new(x).square().to_arr() };
-            let sse2 = unsafe { super::Sse2PackedDouble::new(x).square().to_arr() };
-            #[cfg(target_feature = "avx")]
-            let avx = unsafe { super::AvxPackedDouble::new(x).square().to_arr() };
-
-            let all = {
-                let mut all = fallback.to_vec();
-
-                all.extend_from_slice(&sse2[..]);
-                #[cfg(target_feature = "avx")]
-                all.extend_from_slice(&avx[..]);
-
-                all
-            };
-
-            let first = *all.get(0).unwrap();
-
-            for y in all.into_iter() {
-                if y != first {
-                    dbg!(x, fallback, sse2);
-                    #[cfg(target_feature = "avx")]
-                    dbg!(avx);
-
-                    return TestResult::failed();
-                }
-            }
-
-            TestResult::passed()
-        }
-
-        quickcheck(prop as fn(f64) -> TestResult);
-    }
-
-    #[cfg(target_arch = "x86_64")]
-    #[test]
-    fn test_saw() {
-        use quickcheck::{quickcheck, TestResult};
-
-        use crate::simd::SimdPackedDouble;
-
-        fn prop(x: f64) -> TestResult {
-            if x.is_infinite() || x.is_nan() {
-                return TestResult::discard();
-            }
-
-            let fallback = unsafe { super::FallbackPackedDouble::new(x).saw().to_arr() };
-            let sse2 = unsafe { super::Sse2PackedDouble::new(x).saw().to_arr() };
-            #[cfg(target_feature = "avx")]
-            let avx = unsafe { super::AvxPackedDouble::new(x).saw().to_arr() };
-
-            let all = {
-                let mut all = fallback.to_vec();
-
-                all.extend_from_slice(&sse2[..]);
-                #[cfg(target_feature = "avx")]
-                all.extend_from_slice(&avx[..]);
-
-                all
-            };
-
-            let first = *all.get(0).unwrap();
-
-            for y in all.into_iter() {
-                if y != first {
-                    dbg!(x, fallback, sse2);
-                    #[cfg(target_feature = "avx")]
-                    dbg!(avx);
-
-                    return TestResult::failed();
-                }
-            }
-
-            TestResult::passed()
-        }
-
-        quickcheck(prop as fn(f64) -> TestResult);
-    }
+    wave_test!(test_triangle, triangle);
+    wave_test!(test_square, square);
+    wave_test!(test_saw, saw);
 }
