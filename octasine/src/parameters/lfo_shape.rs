@@ -98,6 +98,7 @@ impl ParameterValue for LfoShapeValue {
     }
 }
 
+/// LFO triangle wave
 fn triangle(phase: Phase) -> f32 {
     if phase.0 <= 0.25 {
         4.0 * phase.0 as f32
@@ -108,10 +109,12 @@ fn triangle(phase: Phase) -> f32 {
     }
 }
 
+/// LFO saw wave
 fn saw(phase: Phase) -> f32 {
     (phase.0 as f32 - 0.5) * 2.0
 }
 
+/// LFO square wave
 fn square(phase: Phase) -> f32 {
     // To check absense of branches, make function public and run:
     // `cargo asm --lib -p octasine "octasine::parameters::lfo_shape::square" --rust --color`
@@ -133,6 +136,7 @@ fn square(phase: Phase) -> f32 {
     v
 }
 
+/// LFO sine wave
 pub fn sine(phase: Phase) -> f32 {
     ::sleef_trig::Sleef_sinf1_u35purec_range125(phase.0 as f32 * TAU)
 }
