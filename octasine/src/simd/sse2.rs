@@ -144,6 +144,15 @@ impl SimdPackedDouble for Sse2PackedDouble {
 
         Self(x)
     }
+    #[inline(always)]
+    unsafe fn saw(self) -> Self {
+        // Scalar workaround due to lack of blend/shuffle instructions
+        Self::from_arr(
+            super::FallbackPackedDouble::from_arr(self.to_arr())
+                .saw()
+                .to_arr(),
+        )
+    }
 }
 
 impl Add for Sse2PackedDouble {
