@@ -81,7 +81,7 @@ pub struct SerdePatchParameter {
 pub struct SerdePatch {
     octasine_version: String,
     /// Optional because added in v0.8.4 (FIXME)
-    octasine_version_only_semver: Option<String>,
+    octasine_full_semver_version: Option<String>,
     pub name: String,
     pub parameters: Vec<SerdePatchParameter>,
 }
@@ -106,14 +106,14 @@ impl SerdePatch {
 
         Self {
             octasine_version: get_version_info(),
-            octasine_version_only_semver: Some(env!("CARGO_PKG_VERSION").into()),
+            octasine_full_semver_version: Some(env!("CARGO_PKG_VERSION").into()),
             name: preset.get_name(),
             parameters,
         }
     }
 
     pub fn get_semver_version(&self) -> Result<Version, semver::Error> {
-        if let Some(v) = self.octasine_version_only_semver.as_ref() {
+        if let Some(v) = self.octasine_full_semver_version.as_ref() {
             Version::parse(v)
         } else {
             let mut v = self.octasine_version.chars();
@@ -195,7 +195,7 @@ impl SerdePatch {
 pub struct SerdePatchBank {
     octasine_version: String,
     /// Optional because added in v0.8.4 (FIXME)
-    octasine_version_only_semver: Option<String>,
+    octasine_full_semver_version: Option<String>,
     pub patches: Vec<SerdePatch>,
 }
 
@@ -203,7 +203,7 @@ impl SerdePatchBank {
     pub fn new(patch_bank: &PatchBank) -> Self {
         Self {
             octasine_version: get_version_info(),
-            octasine_version_only_semver: Some(env!("CARGO_PKG_VERSION").into()),
+            octasine_full_semver_version: Some(env!("CARGO_PKG_VERSION").into()),
             patches: patch_bank
                 .patches
                 .iter()
