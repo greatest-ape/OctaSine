@@ -7,7 +7,7 @@
   http://www.synthfool.com/docs/Yamaha/DX_Series/Yamaha%20DX-100%20Owners%20Manual.pdf
 * Create patch compatibility layer for loading previously created patches
   * Should have tests
-  * Will require clape.state, I think
+  * Will require clap.state, I think
 * Release new version before adding too much breaking code?
   * Should look at data to include in patch export before then and maybe
     implement clap.state
