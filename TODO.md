@@ -1,5 +1,10 @@
 # TODO
 
+* Portamento
+* Mode where release never activates but mod out is deactivated. Will need
+  extra checks for ending when all other operators not in this mode have ended
+* LFO free sync: restart at key press but at random phase value, see page 33:
+  http://www.synthfool.com/docs/Yamaha/DX_Series/Yamaha%20DX-100%20Owners%20Manual.pdf
 * Create patch compatibility layer for loading previously created patches
   * Should have tests
   * Will require clape.state, I think
