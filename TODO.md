@@ -1,5 +1,8 @@
 # TODO
 
+* Release new version before adding too much breaking code?
+  * Should look at data to include in patch export before then and maybe
+    implement clap.state
 * Add saw, square and triangle waves, and possibly others
   * Implement saw function
   * Look at TX81Z waveforms: https://www.reddit.com/r/synthesizers/comments/rkyk6j/comment/hpgcu6r/?utm_source=share&utm_medium=web2x&context=3
