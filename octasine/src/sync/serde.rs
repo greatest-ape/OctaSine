@@ -1,7 +1,9 @@
 use std::{io::Read, iter::repeat, path::Path};
 
+use anyhow::Context;
 use byteorder::{BigEndian, WriteBytesExt};
 use flate2::{read::GzDecoder, write::GzEncoder, Compression};
+use semver::Version;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 
 use crate::{
@@ -10,7 +12,10 @@ use crate::{
     utils::get_version_info,
 };
 
-use super::patch_bank::{Patch, PatchBank};
+use super::{
+    compat::run_patch_compatibility_changes,
+    patch_bank::{Patch, PatchBank},
+};
 
 const PREFIX: &[u8] = b"\n\nOCTASINE-GZ-DATA-V1-BEGIN\n\n";
 const SUFFIX: &[u8] = b"\n\nOCTASINE-GZ-DATA-V1-END\n\n";
@@ -75,6 +80,8 @@ pub struct SerdePatchParameter {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct SerdePatch {
     octasine_version: String,
+    /// Optional because added in v0.8.4 (FIXME)
+    octasine_version_only_semver: Option<String>,
     pub name: String,
     pub parameters: Vec<SerdePatchParameter>,
 }
@@ -99,8 +106,24 @@ impl SerdePatch {
 
         Self {
             octasine_version: get_version_info(),
+            octasine_version_only_semver: Some(env!("CARGO_PKG_VERSION").into()),
             name: preset.get_name(),
             parameters,
+        }
+    }
+
+    pub fn get_semver_version(&self) -> Result<Version, semver::Error> {
+        if let Some(v) = self.octasine_version_only_semver.as_ref() {
+            Version::parse(v)
+        } else {
+            let mut v = self.octasine_version.chars();
+
+            // Drop leading "v"
+            let _ = v.next();
+
+            let v: String = v.take_while(|c| !c.is_whitespace()).collect();
+
+            Version::parse(&v)
         }
     }
 
@@ -149,11 +172,30 @@ impl SerdePatch {
 
         Ok(bytes)
     }
+
+    pub fn from_bytes<'a>(bytes: &'a [u8]) -> anyhow::Result<Self> {
+        let mut patch = generic_from_bytes(bytes)?;
+
+        run_patch_compatibility_changes(&mut patch)?;
+
+        Ok(patch)
+    }
+
+    pub fn from_path(path: &Path) -> anyhow::Result<Self> {
+        let mut file = ::std::fs::File::open(path)?;
+        let mut bytes = Vec::new();
+
+        file.read_to_end(&mut bytes)?;
+
+        Self::from_bytes(&bytes).with_context(|| "deserialize patch")
+    }
 }
 
 #[derive(Serialize, Deserialize)]
 pub struct SerdePatchBank {
     octasine_version: String,
+    /// Optional because added in v0.8.4 (FIXME)
+    octasine_version_only_semver: Option<String>,
     pub patches: Vec<SerdePatch>,
 }
 
@@ -161,6 +203,7 @@ impl SerdePatchBank {
     pub fn new(patch_bank: &PatchBank) -> Self {
         Self {
             octasine_version: get_version_info(),
+            octasine_version_only_semver: Some(env!("CARGO_PKG_VERSION").into()),
             patches: patch_bank
                 .patches
                 .iter()
@@ -194,6 +237,25 @@ impl SerdePatchBank {
 
         Ok(bytes)
     }
+
+    pub fn from_bytes<'a>(bytes: &'a [u8]) -> anyhow::Result<Self> {
+        let mut bank: Self = generic_from_bytes(bytes)?;
+
+        for patch in bank.patches.iter_mut() {
+            run_patch_compatibility_changes(patch)?;
+        }
+
+        Ok(bank)
+    }
+
+    pub fn from_path(path: &Path) -> anyhow::Result<Self> {
+        let mut file = ::std::fs::File::open(path)?;
+        let mut bytes = Vec::new();
+
+        file.read_to_end(&mut bytes)?;
+
+        Self::from_bytes(&bytes).with_context(|| "deserialize patch")
+    }
 }
 
 fn to_bytes<T: Serialize>(t: &T) -> anyhow::Result<Vec<u8>> {
@@ -210,7 +272,8 @@ fn to_bytes<T: Serialize>(t: &T) -> anyhow::Result<Vec<u8>> {
     Ok(bytes)
 }
 
-pub fn from_bytes<'a, T: DeserializeOwned>(
+/// Does NOT perform compatibility changes
+pub fn generic_from_bytes<'a, T: DeserializeOwned>(
     mut bytes: &'a [u8],
 ) -> Result<T, impl ::std::error::Error> {
     bytes = split_off_slice_prefix(bytes, PREFIX);
@@ -219,18 +282,6 @@ pub fn from_bytes<'a, T: DeserializeOwned>(
     let mut decoder = GzDecoder::new(bytes);
 
     serde_json::from_reader(&mut decoder)
-}
-
-pub fn from_path<T: DeserializeOwned>(path: &Path) -> anyhow::Result<T> {
-    let mut file = ::std::fs::File::open(path)?;
-    let mut bytes = Vec::new();
-
-    file.read_to_end(&mut bytes)?;
-
-    match from_bytes(&bytes) {
-        Ok(t) => Ok(t),
-        Err(err) => Err(anyhow::anyhow!("deserialize patch/preset: {}", err)),
-    }
 }
 
 fn split_off_slice_prefix<'a>(mut bytes: &'a [u8], prefix: &[u8]) -> &'a [u8] {

@@ -44,9 +44,7 @@ impl Patch {
     }
 
     pub fn import_bytes(&self, bytes: &[u8]) -> bool {
-        let res_serde_preset: Result<SerdePatch, _> = from_bytes(bytes);
-
-        if let Ok(serde_preset) = res_serde_preset {
+        if let Ok(serde_preset) = SerdePatch::from_bytes(bytes) {
             self.import_serde_preset(&serde_preset);
 
             true
@@ -338,8 +336,8 @@ impl PatchBank {
     }
 
     /// Import bytes into current bank, set sync parameters
-    pub fn import_bank_from_bytes(&self, bytes: &[u8]) -> Result<(), impl ::std::error::Error> {
-        match from_bytes::<SerdePatchBank>(bytes) {
+    pub fn import_bank_from_bytes(&self, bytes: &[u8]) -> anyhow::Result<()> {
+        match SerdePatchBank::from_bytes(bytes) {
             Ok(serde_bank) => {
                 self.import_bank_from_serde(serde_bank);
 

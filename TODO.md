@@ -1,13 +1,14 @@
 # TODO
 
+* Create patch compatibility layer for loading previously created patches
+  * Should have tests
+  * Will require clape.state, I think
 * Release new version before adding too much breaking code?
   * Should look at data to include in patch export before then and maybe
     implement clap.state
 * Add saw, square and triangle waves, and possibly others
   * Implement saw function
   * Look at TX81Z waveforms: https://www.reddit.com/r/synthesizers/comments/rkyk6j/comment/hpgcu6r/?utm_source=share&utm_medium=web2x&context=3
-  * Create patch compatibility layer for loading previously created patches
-    * Will require clape.state, I think
 * GUI resources are not freed in Bitwig on macOS for both vst2 and clap plugins
 
 ## High priority

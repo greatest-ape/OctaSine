@@ -29,7 +29,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::common::NUM_OPERATORS;
 use crate::parameters::*;
-use crate::sync::serde::{from_path, SerdePatch, SerdePatchBank};
+use crate::sync::serde::{SerdePatch, SerdePatchBank};
 use crate::sync::GuiSyncHandle;
 
 use lfo::LfoWidgets;
@@ -735,7 +735,7 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
 
                 for path in paths {
                     match path.extension().and_then(|s| s.to_str()) {
-                        Some("fxb") => match from_path::<SerdePatchBank>(&path) {
+                        Some("fxb") => match SerdePatchBank::from_path(&path) {
                             Ok(bank) => banks.push(bank),
                             Err(err) => ::log::warn!(
                                 "Failed loading patch bank from file {}: {:#}",
@@ -743,7 +743,7 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                                 err
                             ),
                         },
-                        Some("fxp") => match from_path::<SerdePatch>(&path) {
+                        Some("fxp") => match SerdePatch::from_path(&path) {
                             Ok(bank) => patches.push(bank),
                             Err(err) => ::log::warn!(
                                 "Failed loading patch from file {}: {:#}",

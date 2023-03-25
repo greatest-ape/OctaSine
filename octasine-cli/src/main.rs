@@ -9,7 +9,7 @@ use std::{
 };
 
 use clap::{Parser, Subcommand};
-use octasine::sync::serde::{SerdePatch, SerdePatchBank};
+use octasine::sync::serde::{generic_from_bytes, SerdePatch, SerdePatchBank};
 use serde::Deserialize;
 
 #[derive(Parser)]
@@ -39,26 +39,22 @@ fn main() -> anyhow::Result<()> {
     let cli = Cli::parse();
 
     match cli.command {
-        Commands::UnpackPatch { path } => {
-            use octasine::sync::serde::from_bytes;
+        Commands::UnpackPatch { path } => match path.extension().and_then(|s| s.to_str()) {
+            Some("fxp") | Some("fxb") => {
+                let mut file = File::open(path)?;
+                let mut file_buffer = Vec::new();
+                file.read_to_end(&mut file_buffer)?;
 
-            match path.extension().and_then(|s| s.to_str()) {
-                Some("fxp") | Some("fxb") => {
-                    let mut file = File::open(path)?;
-                    let mut file_buffer = Vec::new();
-                    file.read_to_end(&mut file_buffer)?;
+                let patch_bank: serde_json::Value = generic_from_bytes(&file_buffer)?;
 
-                    let patch_bank: serde_json::Value = from_bytes(&file_buffer)?;
+                serde_json::to_writer_pretty(stdout().lock(), &patch_bank)?;
 
-                    serde_json::to_writer_pretty(stdout().lock(), &patch_bank)?;
-
-                    Ok(())
-                }
-                _ => Err(anyhow::anyhow!(
-                    "Unrecognized file extension (expected .fxp or .fxb)"
-                )),
+                Ok(())
             }
-        }
+            _ => Err(anyhow::anyhow!(
+                "Unrecognized file extension (expected .fxp or .fxb)"
+            )),
+        },
         Commands::PackPatch { path } => {
             let mut file = File::open(path)?;
             let mut bytes = Vec::new();
