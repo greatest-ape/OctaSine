@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-use crate::audio::common::{InterpolationDuration, Interpolator};
+use crate::audio::interpolation::{InterpolationDuration, Interpolator};
 use crate::common::SampleRate;
 use crate::parameters::*;
 

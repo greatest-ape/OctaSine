@@ -1,5 +1,5 @@
 use crate::{
-    audio::common::InterpolationDuration,
+    audio::interpolation::InterpolationDuration,
     common::*,
     parameters::{lfo_mode::LfoMode, lfo_shape::LfoShape},
 };

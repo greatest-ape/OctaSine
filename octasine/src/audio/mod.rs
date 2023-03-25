@@ -1,5 +1,5 @@
-mod common;
 pub mod gen;
+mod interpolation;
 pub mod parameters;
 pub mod voices;
 
