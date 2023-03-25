@@ -3,16 +3,11 @@ use super::ParameterValue;
 
 const LFO_MODE_STEPS: [LfoMode; 2] = [LfoMode::Forever, LfoMode::Once];
 
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Default)]
 pub enum LfoMode {
     Once,
+    #[default]
     Forever,
-}
-
-impl Default for LfoMode {
-    fn default() -> Self {
-        Self::Forever
-    }
 }
 
 #[derive(Debug, Clone, Copy, Default)]
