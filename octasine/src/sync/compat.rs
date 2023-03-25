@@ -1,10 +1,5 @@
 use semver::Version;
 
-use crate::parameters::{
-    operator_wave_type::WaveType, OperatorParameter, OperatorWaveTypeValue, Parameter,
-    ParameterValue,
-};
-
 use super::serde::{SerdePatch, SerdePatchParameterValue};
 
 const CHANGES: &[(Version, fn(&mut SerdePatch))] = &[
@@ -12,10 +7,10 @@ const CHANGES: &[(Version, fn(&mut SerdePatch))] = &[
 ];
 
 pub fn run_patch_compatibility_changes(patch: &mut SerdePatch) -> anyhow::Result<()> {
-    let version = patch.get_semver_version()?;
+    let patch_version = patch.get_semver_version()?;
 
-    for (v, f) in CHANGES {
-        if version < *v {
+    for (version, f) in CHANGES {
+        if patch_version < *version {
             f(patch);
         } else {
             break;
@@ -25,25 +20,25 @@ pub fn run_patch_compatibility_changes(patch: &mut SerdePatch) -> anyhow::Result
     Ok(())
 }
 
-/// Version 0.8.5 introduces new operator wave forms
-/// 
+/// WIP: Version 0.8.5 introduces new operator wave forms
+///
 /// Prior versions only had sine and white noise variants
 #[allow(dead_code)]
 fn compat_0_8_5(patch: &mut SerdePatch) {
-    for i in 0..4 {
-        let parameter_index =
-            Parameter::Operator(i, OperatorParameter::WaveType).to_index() as usize;
-
+    // Operator wave type parameter indices
+    for parameter_index in [6, 20, 36, 52] {
         let p = patch.parameters.get_mut(parameter_index).unwrap();
 
-        // FIXME: needs to be fixed values for compatibility with later changes
-        let patch_value = if p.value_text.contains("sin") {
-            OperatorWaveTypeValue(WaveType::Sine).to_patch()
-        } else {
-            OperatorWaveTypeValue(WaveType::WhiteNoise).to_patch()
-        };
+        let value_text = p.value_text.to_lowercase();
 
-        p.value_float = SerdePatchParameterValue::from_f32(patch_value);
-        // FIXME: needs to set value_text
+        if value_text.contains("sin") {
+            // Set values valid for v0.8.5 sine waveform
+            p.value_float = SerdePatchParameterValue::from_f32(0.0);
+            p.value_text = "SINE".to_string();
+        } else {
+            // Set values valid for v0.8.5 noise waveform
+            p.value_float = SerdePatchParameterValue::from_f32(1.0);
+            p.value_text = "NOISE".to_string();
+        };
     }
 }
