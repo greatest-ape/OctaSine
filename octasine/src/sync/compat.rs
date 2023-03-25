@@ -26,7 +26,7 @@ pub fn run_patch_compatibility_changes(patch: &mut SerdePatch) -> anyhow::Result
 }
 
 /// Version 0.8.5 introduces new operator wave forms
-/// 
+///
 /// Prior versions only had sine and white noise variants
 #[allow(dead_code)]
 fn compat_0_8_5(patch: &mut SerdePatch) {

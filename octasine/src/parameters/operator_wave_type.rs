@@ -2,12 +2,26 @@ use std::f32::consts::TAU;
 
 use crate::common::*;
 
-use super::ParameterValue;
+use super::{
+    utils::{map_patch_value_to_step, map_step_to_patch_value},
+    ParameterValue,
+};
+
+const OPERATOR_WAVEFORMS: &[WaveType] = &[
+    WaveType::Sine,
+    WaveType::Square,
+    WaveType::Triangle,
+    WaveType::Saw,
+    WaveType::WhiteNoise,
+];
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Default)]
 pub enum WaveType {
     #[default]
     Sine,
+    Square,
+    Triangle,
+    Saw,
     WhiteNoise,
 }
 
@@ -15,6 +29,9 @@ impl WaveformChoices for WaveType {
     fn calculate_for_current(self, phase: Phase) -> f32 {
         match self {
             Self::Sine => ::sleef_trig::Sleef_sinf1_u35purec_range125(phase.0 as f32 * TAU),
+            Self::Saw => crate::math::wave::saw(phase.0) as f32,
+            Self::Triangle => crate::math::wave::triangle(phase.0) as f32,
+            Self::Square => crate::math::wave::square(phase.0) as f32,
             Self::WhiteNoise => {
                 // Ensure same numbers are generated each time for GUI
                 // consistency. This will however break if fastrand changes
@@ -27,7 +44,7 @@ impl WaveformChoices for WaveType {
         }
     }
     fn choices() -> &'static [Self] {
-        &[Self::Sine, Self::WhiteNoise]
+        OPERATOR_WAVEFORMS
     }
 }
 
@@ -55,21 +72,17 @@ impl ParameterValue for OperatorWaveTypeValue {
         self.0
     }
     fn new_from_patch(value: f32) -> Self {
-        if value <= 0.5 {
-            Self(WaveType::Sine)
-        } else {
-            Self(WaveType::WhiteNoise)
-        }
+        Self(map_patch_value_to_step(OPERATOR_WAVEFORMS, value))
     }
     fn to_patch(self) -> f32 {
-        match self.0 {
-            WaveType::Sine => 0.0,
-            WaveType::WhiteNoise => 1.0,
-        }
+        map_step_to_patch_value(OPERATOR_WAVEFORMS, self.0)
     }
     fn get_formatted(self) -> String {
         match self.0 {
             WaveType::Sine => "SINE".to_string(),
+            WaveType::Square => "SQUARE".to_string(),
+            WaveType::Triangle => "TRIANGLE".to_string(),
+            WaveType::Saw => "SAW".to_string(),
             WaveType::WhiteNoise => "NOISE".to_string(),
         }
     }
