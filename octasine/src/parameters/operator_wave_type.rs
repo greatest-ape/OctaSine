@@ -1,22 +1,20 @@
+use std::f32::consts::TAU;
+
 use crate::common::*;
 
 use super::ParameterValue;
 
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Default)]
 pub enum WaveType {
+    #[default]
     Sine,
     WhiteNoise,
 }
 
-impl Default for WaveType {
-    fn default() -> Self {
-        Self::Sine
-    }
-}
-impl CalculateCurve for WaveType {
-    fn calculate(self, phase: Phase) -> f32 {
+impl WaveformChoices for WaveType {
+    fn calculate_for_current(self, phase: Phase) -> f32 {
         match self {
-            Self::Sine => crate::parameters::lfo_shape::sine(phase),
+            Self::Sine => ::sleef_trig::Sleef_sinf1_u35purec_range125(phase.0 as f32 * TAU),
             Self::WhiteNoise => {
                 // Ensure same numbers are generated each time for GUI
                 // consistency. This will however break if fastrand changes
@@ -28,7 +26,7 @@ impl CalculateCurve for WaveType {
             }
         }
     }
-    fn steps() -> &'static [Self] {
+    fn choices() -> &'static [Self] {
         &[Self::Sine, Self::WhiteNoise]
     }
 }

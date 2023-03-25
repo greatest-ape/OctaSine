@@ -9,9 +9,9 @@ pub const OPERATOR_MOD_INDEX_STEPS: [f32; 16] = [
 
 pub type IndexMap<K, V> = indexmap::IndexMap<K, V, ahash::RandomState>;
 
-pub trait CalculateCurve: PartialEq + Copy {
-    fn calculate(self, phase: Phase) -> f32;
-    fn steps() -> &'static [Self];
+pub trait WaveformChoices: PartialEq + Copy {
+    fn calculate_for_current(self, phase: Phase) -> f32;
+    fn choices() -> &'static [Self];
 }
 
 /// Phase. value >= 0.0 && value < 1.0
