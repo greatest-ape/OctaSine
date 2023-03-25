@@ -61,16 +61,14 @@ impl SimdPackedDouble for Sse2PackedDouble {
     unsafe fn any_over_zero(self) -> bool {
         _mm_movemask_pd(_mm_cmpgt_pd(self.0, _mm_setzero_pd())) != 0
     }
-    // Workaround due to lack of instructions
     #[inline(always)]
     unsafe fn floor(self) -> Self {
-        let mut a = self.to_arr();
-
-        for a in a.iter_mut() {
-            *a = a.floor();
-        }
-
-        Self::from_arr(a)
+        // Scalar workaround due to lack of floor instruction
+        Self::from_arr(
+            super::FallbackPackedDouble::from_arr(self.to_arr())
+                .floor()
+                .to_arr(),
+        )
     }
     #[inline(always)]
     unsafe fn abs(self) -> Self {
