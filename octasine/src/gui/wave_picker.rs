@@ -6,7 +6,7 @@ use iced_baseview::{
     Length, Point, Rectangle, Size,
 };
 
-use crate::common::{CalculateCurve, Phase};
+use crate::common::{Phase, WaveformChoices};
 use crate::parameters::{Parameter, ParameterValue, WrappedParameter};
 use crate::sync::GuiSyncHandle;
 
@@ -44,7 +44,7 @@ pub struct WavePicker<P: ParameterValue> {
 impl<P> WavePicker<P>
 where
     P: ParameterValue + Copy + 'static,
-    P::Value: CalculateCurve,
+    P::Value: WaveformChoices,
 {
     pub fn new<H: GuiSyncHandle>(sync_handle: &H, parameter: Parameter, title: &str) -> Self {
         let parameter = parameter.into();
@@ -112,7 +112,7 @@ struct WavePickerCanvas<P: ParameterValue> {
 impl<P> WavePickerCanvas<P>
 where
     P: ParameterValue + Copy + 'static,
-    P::Value: CalculateCurve,
+    P::Value: WaveformChoices,
 {
     pub fn new(parameter: WrappedParameter, shape: P::Value) -> Self {
         let bounds_path = Path::rectangle(
@@ -183,7 +183,7 @@ where
 
         for i in 0..WIDTH - 1 {
             let phase = Phase((i as f64) / (WIDTH - 1) as f64);
-            let y = CalculateCurve::calculate(self.shape, phase) as f32;
+            let y = WaveformChoices::calculate_for_current(self.shape, phase) as f32;
 
             let visual_y = HEIGHT_MIDDLE - y * SHAPE_HEIGHT_RANGE;
             let visual_x = 0.5 + i as f32;
@@ -212,7 +212,7 @@ where
 impl<P> Program<Message, Theme> for WavePickerCanvas<P>
 where
     P: ParameterValue + Copy + 'static,
-    P::Value: CalculateCurve,
+    P::Value: WaveformChoices,
 {
     type State = CanvasState;
 
@@ -263,23 +263,23 @@ where
                 button @ (iced_baseview::mouse::Button::Left | iced_baseview::mouse::Button::Right),
             )) if state.click_started => {
                 if state.cursor_within_bounds {
-                    let shape_index = P::Value::steps()
+                    let shape_index = P::Value::choices()
                         .iter()
                         .position(|s| *s == self.shape)
                         .unwrap();
 
                     let new_shape_index = match button {
                         iced_baseview::mouse::Button::Left => {
-                            (shape_index + 1) % P::Value::steps().len()
+                            (shape_index + 1) % P::Value::choices().len()
                         }
                         iced_baseview::mouse::Button::Right if shape_index == 0 => {
-                            P::Value::steps().len() - 1
+                            P::Value::choices().len() - 1
                         }
                         iced_baseview::mouse::Button::Right => shape_index - 1,
                         _ => unreachable!(),
                     };
 
-                    let new_shape = P::Value::steps()[new_shape_index];
+                    let new_shape = P::Value::choices()[new_shape_index];
                     let new_value = P::new_from_audio(new_shape).to_patch();
 
                     state.click_started = false;

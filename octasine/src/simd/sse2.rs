@@ -46,10 +46,6 @@ impl SimdPackedDouble for Sse2PackedDouble {
         Self(_mm_max_pd(self.0, other.0))
     }
     #[inline(always)]
-    unsafe fn fast_sin(self) -> Self {
-        Self(sleef_trig::Sleef_sind2_u35sse2(self.0))
-    }
-    #[inline(always)]
     unsafe fn interleave(self, other: Self) -> Self {
         Self(_mm_move_sd(other.0, self.0))
     }
@@ -66,27 +62,29 @@ impl SimdPackedDouble for Sse2PackedDouble {
         _mm_movemask_pd(_mm_cmpgt_pd(self.0, _mm_setzero_pd())) != 0
     }
     #[inline(always)]
+    unsafe fn floor(self) -> Self {
+        // Scalar workaround due to lack of floor instruction
+        Self::from_arr(
+            super::FallbackPackedDouble::from_arr(self.to_arr())
+                .floor()
+                .to_arr(),
+        )
+    }
+    #[inline(always)]
+    unsafe fn abs(self) -> Self {
+        Self(_mm_andnot_pd(_mm_set1_pd(-0.0), self.0))
+    }
+    #[inline(always)]
+    unsafe fn fast_sin(self) -> Self {
+        Self(sleef_trig::Sleef_sind2_u35sse2(self.0))
+    }
+    #[inline(always)]
     unsafe fn triangle(mut self) -> Self {
         self += Self::new(0.25);
 
         let two = Self::new(2.0);
 
         (two * (two * (self - (self + Self::new(0.5)).floor())).abs()) - Self::new(1.0)
-    }
-    // Workaround due to lack of instructions
-    #[inline(always)]
-    unsafe fn floor(self) -> Self {
-        let mut a = self.to_arr();
-
-        for a in a.iter_mut() {
-            *a = a.floor();
-        }
-
-        Self::from_arr(a)
-    }
-    #[inline(always)]
-    unsafe fn abs(self) -> Self {
-        Self(_mm_andnot_pd(_mm_set1_pd(-0.0), self.0))
     }
     #[inline(always)]
     unsafe fn square(self) -> Self {

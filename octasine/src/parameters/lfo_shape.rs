@@ -15,10 +15,11 @@ pub const LFO_SHAPE_STEPS: [LfoShape; 8] = [
     LfoShape::ReverseSine,
 ];
 
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Default)]
 pub enum LfoShape {
     Saw,
     ReverseSaw,
+    #[default]
     Triangle,
     ReverseTriangle,
     Square,
@@ -27,26 +28,26 @@ pub enum LfoShape {
     ReverseSine,
 }
 
-impl Default for LfoShape {
-    fn default() -> Self {
-        Self::Triangle
+impl LfoShape {
+    pub fn calculate(self, phase: Phase) -> f32 {
+        match self {
+            Self::Saw => lfo_saw(phase),
+            Self::ReverseSaw => -lfo_saw(phase),
+            Self::Triangle => lfo_triangle(phase),
+            Self::ReverseTriangle => -lfo_triangle(phase),
+            Self::Square => lfo_square(phase),
+            Self::ReverseSquare => -lfo_square(phase),
+            Self::Sine => lfo_sine(phase),
+            Self::ReverseSine => -lfo_sine(phase),
+        }
     }
 }
 
-impl CalculateCurve for LfoShape {
-    fn calculate(self, phase: Phase) -> f32 {
-        match self {
-            Self::Saw => saw(phase),
-            Self::ReverseSaw => -saw(phase),
-            Self::Triangle => triangle(phase),
-            Self::ReverseTriangle => -triangle(phase),
-            Self::Square => square(phase),
-            Self::ReverseSquare => -square(phase),
-            Self::Sine => sine(phase),
-            Self::ReverseSine => -sine(phase),
-        }
+impl WaveformChoices for LfoShape {
+    fn calculate_for_current(self, phase: Phase) -> f32 {
+        LfoShape::calculate(self, phase)
     }
-    fn steps() -> &'static [Self] {
+    fn choices() -> &'static [Self] {
         &LFO_SHAPE_STEPS
     }
 }
@@ -99,7 +100,7 @@ impl ParameterValue for LfoShapeValue {
 }
 
 /// LFO triangle wave
-fn triangle(phase: Phase) -> f32 {
+fn lfo_triangle(phase: Phase) -> f32 {
     if phase.0 <= 0.25 {
         4.0 * phase.0 as f32
     } else if phase.0 <= 0.75 {
@@ -110,12 +111,12 @@ fn triangle(phase: Phase) -> f32 {
 }
 
 /// LFO saw wave
-fn saw(phase: Phase) -> f32 {
+fn lfo_saw(phase: Phase) -> f32 {
     (phase.0 as f32 - 0.5) * 2.0
 }
 
 /// LFO square wave
-fn square(phase: Phase) -> f32 {
+fn lfo_square(phase: Phase) -> f32 {
     // To check absense of branches, make function public and run:
     // `cargo asm --lib -p octasine "octasine::parameters::lfo_shape::square" --rust --color`
 
@@ -137,6 +138,6 @@ fn square(phase: Phase) -> f32 {
 }
 
 /// LFO sine wave
-pub fn sine(phase: Phase) -> f32 {
+fn lfo_sine(phase: Phase) -> f32 {
     ::sleef_trig::Sleef_sinf1_u35purec_range125(phase.0 as f32 * TAU)
 }

@@ -9,7 +9,7 @@ use crate::common::*;
 use envelopes::*;
 use lfos::*;
 
-use super::common::{InterpolationDuration, Interpolator};
+use super::interpolation::{InterpolationDuration, Interpolator};
 
 const VELOCITY_INTERPOLATION_DURATION: InterpolationDuration =
     InterpolationDuration::exactly_10ms();

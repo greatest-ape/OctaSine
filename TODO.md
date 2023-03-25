@@ -1,13 +1,20 @@
 # TODO
 
+* Release new version before adding too much breaking code?
+  * Should look at data to include in patch export before then and maybe
+    implement clap.state
 * Add saw, square and triangle waves, and possibly others
   * Implement saw function
   * Look at TX81Z waveforms: https://www.reddit.com/r/synthesizers/comments/rkyk6j/comment/hpgcu6r/?utm_source=share&utm_medium=web2x&context=3
+  * Create patch compatibility layer for loading previously created patches
+    * Will require clape.state, I think
 * GUI resources are not freed in Bitwig on macOS for both vst2 and clap plugins
 
 ## High priority
 
 * When making breaking audio changes
+  * exp2 scaling or similar for frequency and volume parameters for better
+    external LFO potential
   * consider portable mathematics everywhere, e.g., with libm crate (it is f32
     only though)
   * bhaskara constant power panning
@@ -15,6 +22,7 @@
   * Clap validation in CI
     * Converting parameter values between string and float multiple times
       doesn't yield same values
+      * Implement clap.state?
   * is note end event logic really 100% correct?
   * should parameter cookie be set again when automating?
   * versioning: use OctaSine 0.8 name? Implement state management extension
@@ -25,7 +33,6 @@
   * Nice to have: maybe clap is better at supporting automating multiple
     parameters at the same time? Then it might be good to actually tell
     the host about changes to envelopes while dragging, not only on release
-  * Implement clap.state?
 * iced 0.5 adjustments
   * Implement Widget for canvas widgets and clear cache on theme changes?
   * How handle external updates when knobs are dragged?

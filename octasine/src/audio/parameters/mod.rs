@@ -286,7 +286,7 @@ impl LfoAudioParameters {
 mod tests {
     use assert_approx_eq::assert_approx_eq;
 
-    use crate::audio::common::InterpolationDuration;
+    use crate::audio::interpolation::InterpolationDuration;
 
     use super::*;
 
