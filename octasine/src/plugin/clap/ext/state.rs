@@ -10,10 +10,10 @@ use serde::{Deserialize, Serialize};
 
 use crate::{plugin::clap::plugin::OctaSine, sync::serde::SerdePatchBank};
 
+const VERSION: u8 = 1;
+
 #[derive(Serialize, Deserialize)]
 struct OctaSineClapState {
-    /// Store a version in case of future changes
-    clap_state_version: u32,
     patch_bank: SerdePatchBank,
 }
 
@@ -32,11 +32,10 @@ unsafe extern "C" fn save(plugin: *const clap_plugin, stream: *const clap_ostrea
     };
 
     let state = OctaSineClapState {
-        clap_state_version: 1,
         patch_bank: plugin.sync.patches.export_bank(),
     };
 
-    let bytes = match serde_json::to_vec(&state) {
+    let mut bytes = match serde_json::to_vec(&state) {
         Ok(bytes) => bytes,
         Err(err) => {
             ::log::error!("serialize OctaSineClapState: {:#}", err);
@@ -44,6 +43,9 @@ unsafe extern "C" fn save(plugin: *const clap_plugin, stream: *const clap_ostrea
             return false;
         }
     };
+
+    // Add format version as first byte for future proofing
+    bytes.insert(0, VERSION);
 
     let mut offset = 0;
 
@@ -94,7 +96,8 @@ unsafe extern "C" fn load(plugin: *const clap_plugin, stream: *const clap_istrea
         }
     }
 
-    match handle_buffer(plugin, &full_buffer) {
+    // Remove first byte, it is the version signifier
+    match handle_buffer(plugin, &full_buffer[1..]) {
         Ok(()) => true,
         Err(err) => {
             ::log::error!("load OctaSineClapState: {:#}", err);
