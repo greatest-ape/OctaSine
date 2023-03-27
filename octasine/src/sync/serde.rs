@@ -241,11 +241,17 @@ impl SerdePatchBank {
     pub fn from_bytes<'a>(bytes: &'a [u8]) -> anyhow::Result<Self> {
         let mut bank: Self = generic_from_bytes(bytes)?;
 
-        for patch in bank.patches.iter_mut() {
+        bank.run_compatibility_changes()?;
+
+        Ok(bank)
+    }
+
+    pub fn run_compatibility_changes(&mut self) -> anyhow::Result<()> {
+        for patch in self.patches.iter_mut() {
             run_patch_compatibility_changes(patch)?;
         }
 
-        Ok(bank)
+        Ok(())
     }
 
     pub fn from_path(path: &Path) -> anyhow::Result<Self> {

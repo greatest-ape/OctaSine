@@ -20,6 +20,7 @@ use clap_sys::{
         gui::CLAP_EXT_GUI,
         note_ports::CLAP_EXT_NOTE_PORTS,
         params::{clap_host_params, CLAP_EXT_PARAMS, CLAP_PARAM_RESCAN_VALUES},
+        state::CLAP_EXT_STATE,
     },
     host::clap_host,
     plugin::clap_plugin,
@@ -278,6 +279,8 @@ impl OctaSine {
             &super::ext::gui::CONFIG as *const _ as *const c_void
         } else if id == CLAP_EXT_VOICE_INFO {
             &super::ext::voice_info::CONFIG as *const _ as *const c_void
+        } else if id == CLAP_EXT_STATE {
+            &super::ext::state::CONFIG as *const _ as *const c_void
         } else {
             null()
         }

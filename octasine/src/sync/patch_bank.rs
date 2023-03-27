@@ -366,6 +366,10 @@ impl PatchBank {
             .expect("serialize preset bank")
     }
 
+    pub fn export_bank(&self) -> SerdePatchBank {
+        SerdePatchBank::new(self)
+    }
+
     pub fn export_current_patch_bytes(&self) -> Vec<u8> {
         self.get_current_patch().export_bytes()
     }
