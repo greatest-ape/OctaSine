@@ -1,5 +1,8 @@
 # TODO
 
+* Maybe new patch version in bincode storing only f32 for parameters
+  * Should include zoom state in patch?
+
 * Portamento
 * Mode where release never activates but mod out is deactivated. Will need
   extra checks for ending when all other operators not in this mode have ended
