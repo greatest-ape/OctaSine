@@ -3,7 +3,6 @@ use std::{io::Read, iter::repeat, path::Path};
 use anyhow::Context;
 use byteorder::{BigEndian, WriteBytesExt};
 use flate2::{read::GzDecoder, write::GzEncoder, Compression};
-use semver::Version;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 
 use crate::{
@@ -13,8 +12,8 @@ use crate::{
 };
 
 use super::{
-    compat::run_patch_compatibility_changes,
-    patch_bank::{Patch, PatchBank},
+    super::patch_bank::{Patch, PatchBank},
+    common::{find_in_slice, split_off_slice_prefix},
 };
 
 const PREFIX: &[u8] = b"\n\nOCTASINE-GZ-DATA-V1-BEGIN\n\n";
@@ -80,8 +79,6 @@ pub struct SerdePatchParameter {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct SerdePatch {
     octasine_version: String,
-    /// Optional because added in v0.8.4 (FIXME)
-    octasine_full_semver_version: Option<String>,
     pub name: String,
     pub parameters: Vec<SerdePatchParameter>,
 }
@@ -106,24 +103,8 @@ impl SerdePatch {
 
         Self {
             octasine_version: get_version_info(),
-            octasine_full_semver_version: Some(env!("CARGO_PKG_VERSION").into()),
             name: preset.get_name(),
             parameters,
-        }
-    }
-
-    pub fn get_semver_version(&self) -> Result<Version, semver::Error> {
-        if let Some(v) = self.octasine_full_semver_version.as_ref() {
-            Version::parse(v)
-        } else {
-            let mut v = self.octasine_version.chars();
-
-            // Drop leading "v"
-            let _ = v.next();
-
-            let v: String = v.take_while(|c| !c.is_whitespace()).collect();
-
-            Version::parse(&v)
         }
     }
 
@@ -174,11 +155,7 @@ impl SerdePatch {
     }
 
     pub fn from_bytes<'a>(bytes: &'a [u8]) -> anyhow::Result<Self> {
-        let mut patch = generic_from_bytes(bytes)?;
-
-        run_patch_compatibility_changes(&mut patch)?;
-
-        Ok(patch)
+        Ok(generic_from_bytes(bytes)?)
     }
 
     pub fn from_path(path: &Path) -> anyhow::Result<Self> {
@@ -194,8 +171,6 @@ impl SerdePatch {
 #[derive(Serialize, Deserialize)]
 pub struct SerdePatchBank {
     octasine_version: String,
-    /// Optional because added in v0.8.4 (FIXME)
-    octasine_full_semver_version: Option<String>,
     pub patches: Vec<SerdePatch>,
 }
 
@@ -203,7 +178,6 @@ impl SerdePatchBank {
     pub fn new(patch_bank: &PatchBank) -> Self {
         Self {
             octasine_version: get_version_info(),
-            octasine_full_semver_version: Some(env!("CARGO_PKG_VERSION").into()),
             patches: patch_bank
                 .patches
                 .iter()
@@ -239,19 +213,7 @@ impl SerdePatchBank {
     }
 
     pub fn from_bytes<'a>(bytes: &'a [u8]) -> anyhow::Result<Self> {
-        let mut bank: Self = generic_from_bytes(bytes)?;
-
-        bank.run_compatibility_changes()?;
-
-        Ok(bank)
-    }
-
-    pub fn run_compatibility_changes(&mut self) -> anyhow::Result<()> {
-        for patch in self.patches.iter_mut() {
-            run_patch_compatibility_changes(patch)?;
-        }
-
-        Ok(())
+        Ok(generic_from_bytes(bytes)?)
     }
 
     pub fn from_path(path: &Path) -> anyhow::Result<Self> {
@@ -290,51 +252,10 @@ pub fn generic_from_bytes<'a, T: DeserializeOwned>(
     serde_json::from_reader(&mut decoder)
 }
 
-fn split_off_slice_prefix<'a>(mut bytes: &'a [u8], prefix: &[u8]) -> &'a [u8] {
-    if let Some(index) = find_in_slice(bytes, prefix) {
-        bytes = &bytes[index + prefix.len()..];
-    }
-
-    bytes
-}
-
 fn split_off_slice_suffix<'a>(mut bytes: &'a [u8], suffix: &[u8]) -> &'a [u8] {
     if let Some(index) = find_in_slice(bytes, suffix) {
         bytes = &bytes[..index];
     }
 
     bytes
-}
-
-fn find_in_slice(haystack: &[u8], needle: &[u8]) -> Option<usize> {
-    if needle.is_empty() {
-        return None;
-    }
-
-    for (i, window) in haystack.windows(needle.len()).enumerate() {
-        if window == needle {
-            return Some(i);
-        }
-    }
-
-    None
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_split_off_slice_prefix() {
-        assert_eq!(split_off_slice_prefix(b"abcdef", b"abc"), b"def");
-        assert_eq!(split_off_slice_prefix(b"abcdef", b"bcd"), b"ef");
-        assert_eq!(split_off_slice_prefix(b"abcdef", b"def"), b"");
-        assert_eq!(split_off_slice_prefix(b"abcdef", b"abcdef"), b"");
-        assert_eq!(split_off_slice_prefix(b"abcdef", b"abcdefg"), b"abcdef");
-        assert_eq!(split_off_slice_prefix(b"abcdef", b"z"), b"abcdef");
-        assert_eq!(split_off_slice_prefix(b"abcdef", b"zzzzzz"), b"abcdef");
-        assert_eq!(split_off_slice_prefix(b"abcdef", b"zzzzzzz"), b"abcdef");
-        assert_eq!(split_off_slice_prefix(b"abcdef", b""), b"abcdef");
-        assert_eq!(split_off_slice_prefix(b"", b""), b"");
-    }
 }

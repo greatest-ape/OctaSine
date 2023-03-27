@@ -1,6 +1,5 @@
 mod atomic_float;
 pub mod change_info;
-mod compat;
 mod parameters;
 mod patch_bank;
 pub mod serde;
