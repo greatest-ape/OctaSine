@@ -3,18 +3,15 @@
 * Patch format v2
   * Should include zoom state in patch?
   * Test
+  * Test patch compatibility layer
+  * Then release new version
+    * Should look at data to include in patch export before then
 
 * Portamento
 * Mode where release never activates but mod out is deactivated. Will need
   extra checks for ending when all other operators not in this mode have ended
 * LFO free sync: restart at key press but at random phase value, see page 33:
   http://www.synthfool.com/docs/Yamaha/DX_Series/Yamaha%20DX-100%20Owners%20Manual.pdf
-* Create patch compatibility layer for loading previously created patches
-  * Should have tests
-  * Will require clap.state, I think
-* Release new version before adding too much breaking code?
-  * Should look at data to include in patch export before then and maybe
-    implement clap.state
 * Add saw, square and triangle waves, and possibly others
   * Implement saw function
   * Look at TX81Z waveforms: https://www.reddit.com/r/synthesizers/comments/rkyk6j/comment/hpgcu6r/?utm_source=share&utm_medium=web2x&context=3
