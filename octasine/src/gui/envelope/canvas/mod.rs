@@ -137,8 +137,8 @@ impl EnvelopeCanvas {
     }
 
     pub fn set_viewport(&mut self, viewport_factor: f32, x_offset: f32) {
-        self.viewport_factor = viewport_factor;
-        self.x_offset = Self::process_x_offset(x_offset, viewport_factor);
+        self.viewport_factor = viewport_factor.min(1.0);
+        self.x_offset = Self::process_x_offset(x_offset, self.viewport_factor);
 
         self.update_data();
     }

@@ -14,13 +14,31 @@ use compact_str::{format_compact, CompactString};
 
 use crate::{common::IndexMap, parameters::ParameterKey};
 
-use super::change_info::{ParameterChangeInfo, MAX_NUM_PARAMETERS};
 use super::parameters::PatchParameter;
 use super::serde::*;
+use super::{
+    atomic_float::AtomicFloat,
+    change_info::{ParameterChangeInfo, MAX_NUM_PARAMETERS},
+};
+
+pub struct SyncEnvelopeViewport {
+    pub viewport_factor: AtomicFloat,
+    pub x_offset: AtomicFloat,
+}
+
+impl Default for SyncEnvelopeViewport {
+    fn default() -> Self {
+        Self {
+            viewport_factor: AtomicFloat::new(1.0),
+            x_offset: AtomicFloat::new(0.0),
+        }
+    }
+}
 
 pub struct Patch {
     name: ArcSwap<String>,
     pub parameters: IndexMap<ParameterKey, PatchParameter>,
+    pub envelope_viewports: [SyncEnvelopeViewport; 4],
 }
 
 impl Default for Patch {
@@ -34,6 +52,7 @@ impl Patch {
         Self {
             name: ArcSwap::new(Arc::new(Self::process_name(name))),
             parameters,
+            envelope_viewports: array_init(|_| Default::default()),
         }
     }
 
@@ -76,6 +95,7 @@ pub struct PatchBank {
     parameter_change_info_audio: ParameterChangeInfo,
     pub parameter_change_info_gui: ParameterChangeInfo,
     patches_changed: AtomicBool,
+    envelope_viewports_changed: AtomicBool,
 }
 
 impl Default for PatchBank {
@@ -92,6 +112,7 @@ impl PatchBank {
             parameter_change_info_audio: ParameterChangeInfo::default(),
             parameter_change_info_gui: ParameterChangeInfo::default(),
             patches_changed: AtomicBool::new(false),
+            envelope_viewports_changed: AtomicBool::new(false),
         }
     }
 
@@ -152,6 +173,8 @@ impl PatchBank {
         self.patch_index.store(index, Ordering::SeqCst);
         self.patches_changed.store(true, Ordering::SeqCst);
         self.mark_parameters_as_changed();
+        self.envelope_viewports_changed
+            .store(true, Ordering::SeqCst);
     }
 
     pub fn get_patch_name(&self, index: usize) -> Option<CompactString> {
@@ -193,6 +216,22 @@ impl PatchBank {
     pub fn get_changed_parameters_from_gui(&self) -> Option<[Option<f32>; MAX_NUM_PARAMETERS]> {
         self.parameter_change_info_gui
             .get_changed_parameters(&self.get_current_patch().parameters)
+    }
+    /// Only used from GUI
+    #[cfg(feature = "gui")]
+    pub fn get_viewports_if_changed(&self) -> Option<[super::EnvelopeViewport; 4]> {
+        if self.patches_changed.fetch_and(false, Ordering::SeqCst) {
+            let viewports = &self.get_current_patch().envelope_viewports;
+
+            let viewports = array_init::map_array_init(viewports, |v| super::EnvelopeViewport {
+                x_offset: v.x_offset.get(),
+                viewport_factor: v.viewport_factor.get(),
+            });
+
+            Some(viewports)
+        } else {
+            None
+        }
     }
 }
 
@@ -278,6 +317,14 @@ impl PatchBank {
 
         false
     }
+
+    #[cfg(feature = "gui")]
+    pub fn set_envelope_viewport_from_gui(&self, index: usize, v: super::EnvelopeViewport) {
+        let viewports = &self.get_current_patch().envelope_viewports[index];
+
+        viewports.viewport_factor.set(v.viewport_factor);
+        viewports.x_offset.set(v.x_offset);
+    }
 }
 
 // Import / export
@@ -335,6 +382,8 @@ impl PatchBank {
 
                 self.mark_parameters_as_changed();
                 self.patches_changed.store(true, Ordering::SeqCst);
+                self.envelope_viewports_changed
+                    .store(true, Ordering::SeqCst);
             }
         }
     }
@@ -346,6 +395,8 @@ impl PatchBank {
                 self.set_patch_index(0);
                 self.mark_parameters_as_changed();
                 self.patches_changed.store(true, Ordering::SeqCst);
+                self.envelope_viewports_changed
+                    .store(true, Ordering::SeqCst);
 
                 Ok(())
             }
@@ -358,6 +409,8 @@ impl PatchBank {
             Ok(()) => {
                 self.mark_parameters_as_changed();
                 self.patches_changed.store(true, Ordering::SeqCst);
+                self.envelope_viewports_changed
+                    .store(true, Ordering::SeqCst);
             }
             Err(err) => {
                 ::log::warn!("failed importing bytes into current patch: {:#}", err);
@@ -403,6 +456,8 @@ impl PatchBank {
 
         self.mark_parameters_as_changed();
         self.patches_changed.store(true, Ordering::SeqCst);
+        self.envelope_viewports_changed
+            .store(true, Ordering::SeqCst);
     }
 
     pub fn clear_bank(&self) {
@@ -416,6 +471,8 @@ impl PatchBank {
 
         self.mark_parameters_as_changed();
         self.patches_changed.store(true, Ordering::SeqCst);
+        self.envelope_viewports_changed
+            .store(true, Ordering::SeqCst);
     }
 }
 

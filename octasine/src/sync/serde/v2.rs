@@ -64,6 +64,7 @@ pub struct SerdePatch {
     octasine_version: [u64; 3],
     pub name: CompactString,
     pub parameters: IndexMap<ParameterKey, SerdePatchParameter>,
+    pub envelope_viewports: [SerdeEnvelopeViewport; 4],
 }
 
 impl SerdePatch {
@@ -83,10 +84,19 @@ impl SerdePatch {
             })
             .collect();
 
+        let envelope_viewports =
+            array_init::map_array_init(&patch.envelope_viewports, |viewport| {
+                SerdeEnvelopeViewport {
+                    x_offset: viewport.x_offset.get(),
+                    viewport_factor: viewport.viewport_factor.get(),
+                }
+            });
+
         Self {
             octasine_version: get_octasine_version(),
             name: patch.get_name().into(),
             parameters,
+            envelope_viewports,
         }
     }
 
@@ -128,6 +138,12 @@ pub struct SerdePatchParameter {
     index: usize,
     pub value_f32: f32,
     value_string: CompactString,
+}
+
+#[derive(Serialize, Deserialize, Default)]
+pub struct SerdeEnvelopeViewport {
+    pub viewport_factor: f32,
+    pub x_offset: f32,
 }
 
 pub fn bytes_are_v2(bytes: &[u8]) -> bool {

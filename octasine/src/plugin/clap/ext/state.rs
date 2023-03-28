@@ -93,11 +93,7 @@ unsafe extern "C" fn load(plugin: *const clap_plugin, stream: *const clap_istrea
     // Remove first byte, it is the version signifier
     let full_buffer = &full_buffer[1..];
 
-    match plugin
-        .sync
-        .patches
-        .import_bank_from_bytes(full_buffer)
-    {
+    match plugin.sync.patches.import_bank_from_bytes(full_buffer) {
         Ok(()) => true,
         Err(err) => {
             ::log::error!("load OctaSineClapState: {:#}", err);
