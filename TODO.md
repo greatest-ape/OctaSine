@@ -1,6 +1,8 @@
 # TODO
 
 * Patch format v2
+  * clap.state
+    * tell host about changes (except parameters)
   * Should include zoom state in patch?
   * Test
   * Test patch compatibility layer
