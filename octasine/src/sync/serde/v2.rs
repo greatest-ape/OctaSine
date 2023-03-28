@@ -161,10 +161,14 @@ where
 }
 
 fn serialize_bytes_plain<W: Write, T: Serialize>(writer: &mut W, value: &T) -> anyhow::Result<()> {
+    writer.write_all(PREFIX_PLAIN)?;
+
     Ok(bincode::serialize_into(writer, value)?)
 }
 
 fn serialize_bytes_gz<W: Write, T: Serialize>(writer: &mut W, value: &T) -> anyhow::Result<()> {
+    writer.write_all(PREFIX_GZ)?;
+
     let encoder = GzEncoder::new(writer, Compression::best());
 
     bincode::serialize_into(encoder, value)?;
