@@ -1,7 +1,8 @@
 # TODO
 
-* Maybe new patch version in bincode storing only f32 for parameters
+* Patch format v2
   * Should include zoom state in patch?
+  * Test
 
 * Portamento
 * Mode where release never activates but mod out is deactivated. Will need
