@@ -1,5 +1,6 @@
 use std::fmt::Display;
 
+use compact_str::CompactString;
 use iced_baseview::alignment::Horizontal;
 use iced_baseview::widget::PickList;
 use iced_baseview::{
@@ -57,7 +58,7 @@ impl Display for Action {
 #[derive(Clone, PartialEq, Eq)]
 struct Patch {
     index: usize,
-    title: String,
+    title: CompactString,
 }
 
 impl Display for Patch {

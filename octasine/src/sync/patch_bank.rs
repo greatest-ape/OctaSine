@@ -10,6 +10,7 @@ use std::{
 
 use arc_swap::ArcSwap;
 use array_init::array_init;
+use compact_str::{format_compact, CompactString};
 
 use crate::{common::IndexMap, parameters::ParameterKey};
 
@@ -44,8 +45,8 @@ impl Patch {
         (*self.name.load_full()).clone()
     }
 
-    pub fn set_name(&self, name: String) {
-        self.name.store(Arc::new(Self::process_name(&name)));
+    pub fn set_name(&self, name: &str) {
+        self.name.store(Arc::new(Self::process_name(name)));
     }
 
     fn import_bytes(&self, bytes: &[u8]) -> anyhow::Result<()> {
@@ -153,25 +154,25 @@ impl PatchBank {
         self.mark_parameters_as_changed();
     }
 
-    pub fn get_patch_name(&self, index: usize) -> Option<String> {
+    pub fn get_patch_name(&self, index: usize) -> Option<CompactString> {
         self.patches
             .get(index as usize)
-            .map(|p| format!("{:03}: {}", index + 1, p.name.load_full()))
+            .map(|p| format_compact!("{:03}: {}", index + 1, p.name.load_full()))
     }
 
-    pub fn get_current_patch_name(&self) -> String {
-        self.get_current_patch().name.load_full().to_string()
+    pub fn get_current_patch_name(&self) -> CompactString {
+        self.get_current_patch().name.load_full().as_str().into()
     }
 
-    pub fn get_patch_names(&self) -> Vec<String> {
+    pub fn get_patch_names(&self) -> Vec<CompactString> {
         self.patches
             .iter()
             .enumerate()
-            .map(|(index, p)| format!("{:03}: {}", index + 1, p.name.load_full()))
+            .map(|(index, p)| format_compact!("{:03}: {}", index + 1, p.name.load_full()))
             .collect()
     }
 
-    pub fn set_patch_name(&self, name: String) {
+    pub fn set_patch_name(&self, name: &str) {
         self.get_current_patch().set_name(name);
         self.patches_changed.store(true, Ordering::SeqCst);
     }
@@ -204,21 +205,21 @@ impl PatchBank {
             .map(|(_, p)| p.get_value())
     }
 
-    pub fn get_parameter_value_text(&self, index: usize) -> Option<String> {
+    pub fn get_parameter_value_text(&self, index: usize) -> Option<CompactString> {
         self.get_current_patch()
             .parameters
             .get_index(index)
             .map(|(_, p)| (p.get_value_text()))
     }
 
-    pub fn get_parameter_name(&self, index: usize) -> Option<String> {
+    pub fn get_parameter_name(&self, index: usize) -> Option<CompactString> {
         self.get_current_patch()
             .parameters
             .get_index(index)
-            .map(|(_, p)| p.name.to_string())
+            .map(|(_, p)| p.name.clone())
     }
 
-    pub fn format_parameter_value(&self, index: usize, value: f32) -> Option<String> {
+    pub fn format_parameter_value(&self, index: usize, value: f32) -> Option<CompactString> {
         self.get_current_patch()
             .parameters
             .get_index(index)
@@ -386,10 +387,10 @@ impl PatchBank {
         preset_bank
     }
 
-    pub fn get_current_patch_filename_for_export(&self) -> String {
+    pub fn get_current_patch_filename_for_export(&self) -> CompactString {
         match self.get_current_patch().name.load_full().as_str() {
             "" => "-.fxp".into(),
-            name => format!("{}.fxp", name),
+            name => format_compact!("{}.fxp", name),
         }
     }
 }

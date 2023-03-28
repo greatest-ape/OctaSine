@@ -10,7 +10,7 @@ pub struct PatchParameter {
     value: AtomicFloat,
     pub name: CompactString,
     pub value_from_text: fn(&str) -> Option<f32>,
-    pub format: fn(f32) -> String,
+    pub format: fn(f32) -> CompactString,
     pub default_value: f32,
     pub clap_path: CompactString,
     pub parameter: WrappedParameter,
@@ -118,7 +118,7 @@ impl PatchParameter {
         self.value.get()
     }
 
-    pub fn get_value_text(&self) -> String {
+    pub fn get_value_text(&self) -> CompactString {
         (self.format)(self.value.get())
     }
 

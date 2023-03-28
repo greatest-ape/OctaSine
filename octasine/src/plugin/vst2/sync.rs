@@ -2,6 +2,7 @@ use std::path::PathBuf;
 #[cfg(feature = "gui")]
 use std::sync::Arc;
 
+use compact_str::CompactString;
 #[cfg(feature = "gui")]
 use vst::host::Host;
 
@@ -19,6 +20,7 @@ impl vst::plugin::PluginParameters for SyncState<vst::plugin::HostCallback> {
     fn get_parameter_text(&self, index: i32) -> String {
         self.patches
             .get_parameter_value_text(index as usize)
+            .map(String::from)
             .unwrap_or_else(|| "".to_string())
     }
 
@@ -26,6 +28,7 @@ impl vst::plugin::PluginParameters for SyncState<vst::plugin::HostCallback> {
     fn get_parameter_name(&self, index: i32) -> String {
         self.patches
             .get_parameter_name(index as usize)
+            .map(String::from)
             .unwrap_or_else(|| "".to_string())
     }
 
@@ -68,13 +71,14 @@ impl vst::plugin::PluginParameters for SyncState<vst::plugin::HostCallback> {
 
     /// Set the current preset name.
     fn set_preset_name(&self, name: String) {
-        self.patches.set_patch_name(name);
+        self.patches.set_patch_name(&name);
     }
 
     /// Get the name of the preset at the index specified by `preset`.
     fn get_preset_name(&self, index: i32) -> String {
         self.patches
             .get_patch_name(index as usize)
+            .map(String::from)
             .unwrap_or_else(|| "".to_string())
     }
 
@@ -167,12 +171,12 @@ impl crate::sync::GuiSyncHandle for Arc<SyncState<vst::plugin::HostCallback>> {
             .get_parameter_value(parameter.index() as usize)
             .unwrap() // FIXME: unwrap
     }
-    fn format_parameter_value(&self, parameter: WrappedParameter, value: f32) -> String {
+    fn format_parameter_value(&self, parameter: WrappedParameter, value: f32) -> CompactString {
         self.patches
             .format_parameter_value(parameter.index() as usize, value)
             .unwrap() // FIXME: unwrap
     }
-    fn get_patches(&self) -> (usize, Vec<String>) {
+    fn get_patches(&self) -> (usize, Vec<CompactString>) {
         let index = self.patches.get_patch_index();
         let names = self.patches.get_patch_names();
 
@@ -185,10 +189,10 @@ impl crate::sync::GuiSyncHandle for Arc<SyncState<vst::plugin::HostCallback>> {
             host.update_display();
         }
     }
-    fn get_current_patch_name(&self) -> String {
+    fn get_current_patch_name(&self) -> CompactString {
         self.patches.get_current_patch_name()
     }
-    fn set_current_patch_name(&self, name: String) {
+    fn set_current_patch_name(&self, name: &str) {
         self.patches.set_patch_name(name);
 
         if let Some(host) = self.host {
@@ -204,7 +208,7 @@ impl crate::sync::GuiSyncHandle for Arc<SyncState<vst::plugin::HostCallback>> {
     fn get_gui_settings(&self) -> crate::gui::GuiSettings {
         Settings::load_or_default().gui
     }
-    fn export_patch(&self) -> (String, Vec<u8>) {
+    fn export_patch(&self) -> (CompactString, Vec<u8>) {
         let name = self.patches.get_current_patch_filename_for_export();
         let data = self.patches.get_current_patch().export_fxp_bytes();
 

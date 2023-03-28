@@ -19,6 +19,7 @@ use std::path::PathBuf;
 
 use anyhow::Context;
 use cfg_if::cfg_if;
+use compact_str::CompactString;
 use iced_baseview::command::Action;
 use iced_baseview::{executor, window::WindowSubs, Application, Command, Subscription};
 use iced_baseview::{
@@ -121,7 +122,7 @@ pub enum Message {
     ClearBank,
     SaveBankOrPatchToFile(PathBuf, Vec<u8>),
     LoadBankOrPatchesFromPaths(Vec<PathBuf>),
-    ChangeParameterByTextInput(WrappedParameter, String),
+    ChangeParameterByTextInput(WrappedParameter, CompactString),
 }
 
 pub struct OctaSineIcedApplication<H: GuiSyncHandle> {
@@ -696,7 +697,7 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                     "Please provide a new name for this patch",
                     &previous_name,
                 ) {
-                    self.sync_handle.set_current_patch_name(name);
+                    self.sync_handle.set_current_patch_name(&name);
                 }
             }
             Message::ClearPatch => {

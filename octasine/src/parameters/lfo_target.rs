@@ -1,3 +1,5 @@
+use compact_str::CompactString;
+
 use super::{
     utils::*, LfoParameter, MasterParameter, OperatorParameter, Parameter, ParameterValue,
 };
@@ -124,7 +126,7 @@ impl ParameterValue for Lfo1TargetParameterValue {
     fn to_patch(self) -> f32 {
         map_step_to_patch_value(get_lfo_target_parameters(0), self.0)
     }
-    fn get_formatted(self) -> String {
+    fn get_formatted(self) -> CompactString {
         self.0.parameter().name()
     }
 }
@@ -156,7 +158,7 @@ impl ParameterValue for Lfo2TargetParameterValue {
     fn to_patch(self) -> f32 {
         map_step_to_patch_value(get_lfo_target_parameters(1), self.0)
     }
-    fn get_formatted(self) -> String {
+    fn get_formatted(self) -> CompactString {
         self.0.parameter().name()
     }
 }
@@ -188,7 +190,7 @@ impl ParameterValue for Lfo3TargetParameterValue {
     fn to_patch(self) -> f32 {
         map_step_to_patch_value(get_lfo_target_parameters(2), self.0)
     }
-    fn get_formatted(self) -> String {
+    fn get_formatted(self) -> CompactString {
         self.0.parameter().name()
     }
 }
@@ -220,7 +222,7 @@ impl ParameterValue for Lfo4TargetParameterValue {
     fn to_patch(self) -> f32 {
         map_step_to_patch_value(get_lfo_target_parameters(3), self.0)
     }
-    fn get_formatted(self) -> String {
+    fn get_formatted(self) -> CompactString {
         self.0.parameter().name()
     }
 }

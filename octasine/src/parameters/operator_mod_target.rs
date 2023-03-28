@@ -1,5 +1,8 @@
 use std::borrow::Borrow;
 
+use compact_str::format_compact;
+use compact_str::CompactString;
+
 use super::utils::*;
 use super::ParameterValue;
 
@@ -134,8 +137,8 @@ impl ParameterValue for Operator2ModulationTargetValue {
     fn to_patch(self) -> f32 {
         map_step_to_patch_value(OPERATOR_2_PERMUTATIONS, self.0)
     }
-    fn get_formatted(self) -> String {
-        self.0.to_string()
+    fn get_formatted(self) -> CompactString {
+        format_compact!("{}", self.0)
     }
 }
 
@@ -172,8 +175,8 @@ impl ParameterValue for Operator3ModulationTargetValue {
     fn to_patch(self) -> f32 {
         map_step_to_patch_value(OPERATOR_3_PERMUTATIONS, self.0)
     }
-    fn get_formatted(self) -> String {
-        self.0.to_string()
+    fn get_formatted(self) -> CompactString {
+        format_compact!("{}", self.0)
     }
 }
 
@@ -210,7 +213,7 @@ impl ParameterValue for Operator4ModulationTargetValue {
     fn to_patch(self) -> f32 {
         map_step_to_patch_value(OPERATOR_4_PERMUTATIONS, self.0)
     }
-    fn get_formatted(self) -> String {
-        self.0.to_string()
+    fn get_formatted(self) -> CompactString {
+        format_compact!("{}", self.0)
     }
 }

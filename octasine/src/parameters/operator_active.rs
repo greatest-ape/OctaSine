@@ -1,3 +1,5 @@
+use compact_str::CompactString;
+
 use super::ParameterValue;
 
 #[derive(Debug, Clone, Copy)]
@@ -32,7 +34,7 @@ impl ParameterValue for OperatorActiveValue {
     fn to_patch(self) -> f32 {
         self.0
     }
-    fn get_formatted(self) -> String {
+    fn get_formatted(self) -> CompactString {
         if self.0 < 0.5 {
             "Off".into()
         } else {

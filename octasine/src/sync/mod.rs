@@ -6,6 +6,7 @@ mod serde;
 
 use std::path::PathBuf;
 
+use compact_str::CompactString;
 use patch_bank::PatchBank;
 
 /// Thread-safe state used for parameter and preset calls
@@ -41,15 +42,15 @@ cfg_if::cfg_if! {
             /// Set parameter without telling host
             fn set_parameter_audio_only(&self, parameter: WrappedParameter, value: f32);
             fn get_parameter(&self, parameter: WrappedParameter) -> f32;
-            fn format_parameter_value(&self, parameter: WrappedParameter, value: f32) -> String;
-            fn get_patches(&self) -> (usize, Vec<String>);
+            fn format_parameter_value(&self, parameter: WrappedParameter, value: f32) -> CompactString;
+            fn get_patches(&self) -> (usize, Vec<CompactString>);
             fn set_patch_index(&self, index: usize);
-            fn get_current_patch_name(&self) -> String;
-            fn set_current_patch_name(&self, name: String);
+            fn get_current_patch_name(&self) -> CompactString;
+            fn set_current_patch_name(&self, name: &str);
             fn get_changed_parameters(&self) -> Option<[Option<f32>; MAX_NUM_PARAMETERS]>;
             fn have_patches_changed(&self) -> bool;
             fn get_gui_settings(&self) -> crate::gui::GuiSettings;
-            fn export_patch(&self) -> (String, Vec<u8>);
+            fn export_patch(&self) -> (CompactString, Vec<u8>);
             fn export_bank(&self) -> Vec<u8>;
             fn import_bank_or_patches_from_paths(&self, paths: &[PathBuf]);
             fn clear_patch(&self);

@@ -1,5 +1,7 @@
 use std::f32::consts::TAU;
 
+use compact_str::CompactString;
+
 use crate::common::*;
 
 use super::ParameterValue;
@@ -67,10 +69,10 @@ impl ParameterValue for OperatorWaveTypeValue {
             WaveType::WhiteNoise => 1.0,
         }
     }
-    fn get_formatted(self) -> String {
+    fn get_formatted(self) -> CompactString {
         match self.0 {
-            WaveType::Sine => "SINE".to_string(),
-            WaveType::WhiteNoise => "NOISE".to_string(),
+            WaveType::Sine => "SINE".into(),
+            WaveType::WhiteNoise => "NOISE".into(),
         }
     }
 }

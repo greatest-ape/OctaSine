@@ -1,3 +1,5 @@
+use compact_str::{format_compact, CompactString};
+
 use super::{utils::parse_valid_f32, ParameterValue};
 
 #[derive(Debug, Clone, Copy)]
@@ -27,7 +29,7 @@ impl ParameterValue for LfoAmountValue {
     fn to_patch(self) -> f32 {
         self.0 * 0.5
     }
-    fn get_formatted(self) -> String {
-        format!("{:.04}", self.0)
+    fn get_formatted(self) -> CompactString {
+        format_compact!("{:.04}", self.0)
     }
 }

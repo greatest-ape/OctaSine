@@ -85,7 +85,7 @@ impl SerdePatch {
                 parameters.push(SerdePatchParameter {
                     name: parameter.name.to_string(),
                     value_float,
-                    value_text: (parameter.format)(value),
+                    value_text: (parameter.format)(value).into(),
                 });
             }
         }

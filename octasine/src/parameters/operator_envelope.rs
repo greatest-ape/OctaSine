@@ -1,5 +1,7 @@
 use std::str::FromStr;
 
+use compact_str::{format_compact, CompactString};
+
 use super::{
     utils::{map_patch_value_to_step, map_step_to_patch_value, parse_valid_f32, parse_valid_f64},
     ParameterValue,
@@ -38,8 +40,8 @@ macro_rules! impl_duration_parameter_value {
                 (self.0 / ENVELOPE_MAX_DURATION) as f32
             }
 
-            fn get_formatted(self) -> String {
-                format!("{:.02}", self.0)
+            fn get_formatted(self) -> CompactString {
+                format_compact!("{:.02}", self.0)
             }
 
             fn new_from_text(text: &str) -> Option<Self> {
@@ -111,8 +113,8 @@ impl ParameterValue for OperatorSustainVolumeValue {
     fn to_patch(self) -> f32 {
         self.0 as f32
     }
-    fn get_formatted(self) -> String {
-        format!("{:.04}", self.0)
+    fn get_formatted(self) -> CompactString {
+        format_compact!("{:.04}", self.0)
     }
 }
 
@@ -167,8 +169,8 @@ impl ParameterValue for OperatorEnvelopeGroupValue {
     fn to_patch(self) -> f32 {
         map_step_to_patch_value(&LOCK_STEPS[..], self)
     }
-    fn get_formatted(self) -> String {
-        format!("{:?}", self)
+    fn get_formatted(self) -> CompactString {
+        format_compact!("{:?}", self)
     }
 }
 

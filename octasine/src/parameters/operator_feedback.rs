@@ -1,3 +1,5 @@
+use compact_str::{format_compact, CompactString};
+
 use super::{utils::*, ParameterValue};
 use crate::common::OPERATOR_MOD_INDEX_STEPS;
 
@@ -34,7 +36,7 @@ impl ParameterValue for OperatorFeedbackValue {
     fn to_patch(self) -> f32 {
         map_audio_to_patch_value_with_steps(&OPERATOR_MOD_INDEX_STEPS[..], self.0)
     }
-    fn get_formatted(self) -> String {
-        format!("{:.04}", self.0)
+    fn get_formatted(self) -> CompactString {
+        format_compact!("{:.04}", self.0)
     }
 }

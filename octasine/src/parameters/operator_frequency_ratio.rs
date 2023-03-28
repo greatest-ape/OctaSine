@@ -2,6 +2,7 @@ use std::f64::consts::PI;
 use std::str::FromStr;
 
 use arrayvec::ArrayString;
+use compact_str::CompactString;
 use once_cell::sync::Lazy;
 
 use super::utils::*;
@@ -171,8 +172,8 @@ impl ParameterValue for OperatorFrequencyRatioValue {
     fn to_patch(self) -> f32 {
         map_step_to_patch_value(&OPERATOR_RATIO_STEPS[..], self.0)
     }
-    fn get_formatted(self) -> String {
-        self.0.name.as_str().to_owned()
+    fn get_formatted(self) -> CompactString {
+        self.0.name.as_str().into()
     }
 }
 

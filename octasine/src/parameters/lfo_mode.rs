@@ -1,3 +1,5 @@
+use compact_str::CompactString;
+
 use super::utils::*;
 use super::ParameterValue;
 
@@ -35,10 +37,10 @@ impl ParameterValue for LfoModeValue {
     fn to_patch(self) -> f32 {
         map_step_to_patch_value(&LFO_MODE_STEPS[..], self.0)
     }
-    fn get_formatted(self) -> String {
+    fn get_formatted(self) -> CompactString {
         match self.0 {
-            LfoMode::Once => "ONCE".to_string(),
-            LfoMode::Forever => "LOOP".to_string(),
+            LfoMode::Once => "ONCE".into(),
+            LfoMode::Forever => "LOOP".into(),
         }
     }
 }

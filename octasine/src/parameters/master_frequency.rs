@@ -1,3 +1,6 @@
+use compact_str::format_compact;
+use compact_str::CompactString;
+
 use super::utils::*;
 use super::ParameterValue;
 
@@ -35,11 +38,11 @@ impl ParameterValue for MasterFrequencyValue {
     fn to_patch(self) -> f32 {
         map_audio_to_patch_value_with_steps(&MASTER_FREQUENCY_STEPS, self.0 as f32)
     }
-    fn get_formatted(self) -> String {
+    fn get_formatted(self) -> CompactString {
         if self.0 < 10000.0 {
-            format!("{:.02} Hz", self.0)
+            format_compact!("{:.02} Hz", self.0)
         } else {
-            format!("{:.02}", self.0)
+            format_compact!("{:.02}", self.0)
         }
     }
 }

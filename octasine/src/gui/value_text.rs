@@ -1,5 +1,6 @@
 use std::marker::PhantomData;
 
+use compact_str::CompactString;
 use iced_baseview::alignment::Horizontal;
 use iced_baseview::widget::Text;
 use iced_baseview::{widget::Button, Element, Length};
@@ -13,7 +14,7 @@ use super::{style::Theme, GuiSyncHandle, Message};
 #[derive(Debug, Clone)]
 pub struct ValueText<P: ParameterValue> {
     parameter: WrappedParameter,
-    text: String,
+    text: CompactString,
     phantom_data: PhantomData<P>,
 }
 

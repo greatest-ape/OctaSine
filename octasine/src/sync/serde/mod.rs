@@ -60,7 +60,7 @@ pub fn update_patch_from_bytes(patch: &Patch, bytes: &[u8]) -> anyhow::Result<()
     if v2::bytes_are_v2(bytes) {
         let serde_patch = v2::SerdePatch::from_bytes(bytes)?;
 
-        patch.set_name(serde_patch.name.into());
+        patch.set_name(serde_patch.name.as_str());
 
         for (key, parameter) in patch.parameters.iter() {
             if let Some(serde_parameter) = serde_patch.parameters.get(key) {
@@ -70,7 +70,7 @@ pub fn update_patch_from_bytes(patch: &Patch, bytes: &[u8]) -> anyhow::Result<()
     } else {
         let serde_patch = v1::SerdePatch::from_bytes(bytes)?;
 
-        patch.set_name(serde_patch.name.clone());
+        patch.set_name(serde_patch.name.as_str());
 
         for (index, parameter) in patch.parameters.values().enumerate() {
             if let Some(import_parameter) = serde_patch.parameters.get(index) {

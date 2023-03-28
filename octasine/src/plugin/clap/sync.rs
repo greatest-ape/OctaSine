@@ -1,6 +1,7 @@
 use std::{path::PathBuf, sync::Arc};
 
 use clap_sys::host::clap_host;
+use compact_str::CompactString;
 use parking_lot::Mutex;
 
 use crate::{
@@ -114,12 +115,12 @@ impl GuiSyncHandle for Arc<SyncState<ClapGuiSyncHandle>> {
             .get_parameter_value(parameter.index() as usize)
             .unwrap() // FIXME: unwrap
     }
-    fn format_parameter_value(&self, parameter: WrappedParameter, value: f32) -> String {
+    fn format_parameter_value(&self, parameter: WrappedParameter, value: f32) -> CompactString {
         self.patches
             .format_parameter_value(parameter.index() as usize, value)
             .unwrap() // FIXME: unwrap
     }
-    fn get_patches(&self) -> (usize, Vec<String>) {
+    fn get_patches(&self) -> (usize, Vec<CompactString>) {
         let index = self.patches.get_patch_index();
         let names = self.patches.get_patch_names();
 
@@ -132,10 +133,10 @@ impl GuiSyncHandle for Arc<SyncState<ClapGuiSyncHandle>> {
             host.send_event(EventToHost::RescanValues);
         }
     }
-    fn get_current_patch_name(&self) -> String {
+    fn get_current_patch_name(&self) -> CompactString {
         self.patches.get_current_patch_name()
     }
-    fn set_current_patch_name(&self, name: String) {
+    fn set_current_patch_name(&self, name: &str) {
         self.patches.set_patch_name(name);
     }
     fn get_changed_parameters(&self) -> Option<[Option<f32>; MAX_NUM_PARAMETERS]> {
@@ -147,7 +148,7 @@ impl GuiSyncHandle for Arc<SyncState<ClapGuiSyncHandle>> {
     fn get_gui_settings(&self) -> crate::gui::GuiSettings {
         Settings::load_or_default().gui
     }
-    fn export_patch(&self) -> (String, Vec<u8>) {
+    fn export_patch(&self) -> (CompactString, Vec<u8>) {
         let name = self.patches.get_current_patch_filename_for_export();
         let data = self.patches.get_current_patch().export_fxp_bytes();
 

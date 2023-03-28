@@ -1,5 +1,7 @@
 use std::f32::consts::FRAC_PI_2;
 
+use compact_str::{format_compact, CompactString};
+
 use super::{utils::parse_valid_f32, ParameterValue};
 
 #[derive(Debug, Clone, Copy)]
@@ -62,13 +64,13 @@ impl ParameterValue for OperatorPanningValue {
     fn to_patch(self) -> f32 {
         self.0
     }
-    fn get_formatted(self) -> String {
+    fn get_formatted(self) -> CompactString {
         let pan = ((self.0 - 0.5) * 100.0).round() as isize;
 
         match pan.cmp(&0) {
-            std::cmp::Ordering::Greater => format!("{}R", pan),
-            std::cmp::Ordering::Less => format!("{}L", pan.abs()),
-            std::cmp::Ordering::Equal => "C".to_string(),
+            std::cmp::Ordering::Greater => format_compact!("{}R", pan),
+            std::cmp::Ordering::Less => format_compact!("{}L", pan.abs()),
+            std::cmp::Ordering::Equal => "C".into(),
         }
     }
 }
