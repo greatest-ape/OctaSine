@@ -86,12 +86,14 @@ unsafe extern "C" fn load(plugin: *const clap_plugin, stream: *const clap_istrea
         }
     }
 
+    if full_buffer.len() < 2 {
+        return false;
+    }
+
     // Remove first byte, it is the version signifier
-    match plugin
-        .sync
-        .patches
-        .import_bank_from_bytes(&full_buffer[1..])
-    {
+    let full_buffer = &full_buffer[1..];
+
+    match plugin.sync.patches.import_bank_from_bytes(full_buffer) {
         Ok(()) => true,
         Err(err) => {
             ::log::error!("load OctaSineClapState: {:#}", err);
