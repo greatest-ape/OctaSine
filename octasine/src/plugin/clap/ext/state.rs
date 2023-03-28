@@ -18,6 +18,10 @@ pub const CONFIG: clap_plugin_state = clap_plugin_state {
 unsafe extern "C" fn save(plugin: *const clap_plugin, stream: *const clap_ostream) -> bool {
     let plugin = &*((*plugin).plugin_data as *const OctaSine);
 
+    if stream.is_null() {
+        return false;
+    }
+
     let write = if let Some(write) = (&*stream).write {
         write
     } else {
@@ -53,6 +57,10 @@ unsafe extern "C" fn save(plugin: *const clap_plugin, stream: *const clap_ostrea
 
 unsafe extern "C" fn load(plugin: *const clap_plugin, stream: *const clap_istream) -> bool {
     let plugin = &*((*plugin).plugin_data as *const OctaSine);
+
+    if stream.is_null() {
+        return false;
+    }
 
     let read = if let Some(read) = (&*stream).read {
         read
