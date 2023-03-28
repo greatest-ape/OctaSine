@@ -74,7 +74,6 @@ impl SerdePatch {
             .enumerate()
             .map(|(i, (k, p))| {
                 let parameter = SerdePatchParameter {
-                    name: p.name.clone(),
                     index: i,
                     value_f32: p.get_value(),
                     value_string: p.get_value_text().into(),
@@ -126,7 +125,6 @@ impl SerdePatch {
 
 #[derive(Serialize, Deserialize)]
 pub struct SerdePatchParameter {
-    name: CompactString,
     index: usize,
     pub value_f32: f32,
     value_string: CompactString,
