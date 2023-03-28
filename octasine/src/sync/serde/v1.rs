@@ -83,7 +83,7 @@ impl SerdePatch {
                 let value_float = SerdePatchParameterValue::from_f32(value);
 
                 parameters.push(SerdePatchParameter {
-                    name: parameter.name.clone(),
+                    name: parameter.name.to_string(),
                     value_float,
                     value_text: (parameter.format)(value),
                 });

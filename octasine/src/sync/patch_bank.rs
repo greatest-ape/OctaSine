@@ -215,7 +215,7 @@ impl PatchBank {
         self.get_current_patch()
             .parameters
             .get_index(index)
-            .map(|(_, p)| p.name.clone())
+            .map(|(_, p)| p.name.to_string())
     }
 
     pub fn format_parameter_value(&self, index: usize, value: f32) -> Option<String> {
