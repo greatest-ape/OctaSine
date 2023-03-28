@@ -29,7 +29,6 @@ use serde::{Deserialize, Serialize};
 
 use crate::common::NUM_OPERATORS;
 use crate::parameters::*;
-use crate::sync::serde::{SerdePatch, SerdePatchBank};
 use crate::sync::GuiSyncHandle;
 
 use lfo::LfoWidgets;
@@ -730,51 +729,7 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                 }
             }
             Message::LoadBankOrPatchesFromPaths(paths) => {
-                let mut banks = Vec::new();
-                let mut patches = Vec::new();
-
-                for path in paths {
-                    match path.extension().and_then(|s| s.to_str()) {
-                        Some("fxb") => match SerdePatchBank::from_path(&path) {
-                            Ok(bank) => banks.push(bank),
-                            Err(err) => ::log::warn!(
-                                "Failed loading patch bank from file {}: {:#}",
-                                path.display(),
-                                err
-                            ),
-                        },
-                        Some("fxp") => match SerdePatch::from_path(&path) {
-                            Ok(bank) => patches.push(bank),
-                            Err(err) => ::log::warn!(
-                                "Failed loading patch from file {}: {:#}",
-                                path.display(),
-                                err
-                            ),
-                        },
-                        _ => {
-                            ::log::warn!("Ignored file without fxp or fxb file extension");
-                        }
-                    }
-                }
-
-                match banks.pop() {
-                    Some(bank) => {
-                        if banks.is_empty() && patches.is_empty() {
-                            self.sync_handle.import_bank_from_serde(bank);
-
-                            return Command::none();
-                        }
-                    }
-                    None => {
-                        if !patches.is_empty() {
-                            self.sync_handle.import_patches_from_serde(patches);
-
-                            return Command::none();
-                        }
-                    }
-                }
-
-                ::log::warn!("Loading multiple banks or patches and banks at the same time doesn't make sense");
+                self.sync_handle.import_bank_or_patches_from_paths(&paths);
             }
             Message::ChangeParameterByTextInput(parameter, current_text_value) => {
                 if let Some(new_text_value) = tinyfiledialogs::input_box(

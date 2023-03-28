@@ -1,21 +1,14 @@
 use std::ffi::c_void;
 
-use anyhow::Context;
 use clap_sys::{
     ext::state::clap_plugin_state,
     plugin::clap_plugin,
     stream::{clap_istream, clap_ostream},
 };
-use serde::{Deserialize, Serialize};
 
-use crate::{plugin::clap::plugin::OctaSine, sync::serde::SerdePatchBank};
+use crate::plugin::clap::plugin::OctaSine;
 
 const VERSION: u8 = 1;
-
-#[derive(Serialize, Deserialize)]
-struct OctaSineClapState {
-    patch_bank: SerdePatchBank,
-}
 
 pub const CONFIG: clap_plugin_state = clap_plugin_state {
     save: Some(save),
@@ -31,18 +24,7 @@ unsafe extern "C" fn save(plugin: *const clap_plugin, stream: *const clap_ostrea
         return false;
     };
 
-    let state = OctaSineClapState {
-        patch_bank: plugin.sync.patches.export_bank(),
-    };
-
-    let mut bytes = match serde_json::to_vec(&state) {
-        Ok(bytes) => bytes,
-        Err(err) => {
-            ::log::error!("serialize OctaSineClapState: {:#}", err);
-
-            return false;
-        }
-    };
+    let mut bytes = plugin.sync.patches.export_plain_bytes();
 
     // Add format version as first byte for future proofing
     bytes.insert(0, VERSION);
@@ -97,7 +79,11 @@ unsafe extern "C" fn load(plugin: *const clap_plugin, stream: *const clap_istrea
     }
 
     // Remove first byte, it is the version signifier
-    match handle_buffer(plugin, &full_buffer[1..]) {
+    match plugin
+        .sync
+        .patches
+        .import_bank_from_bytes(&full_buffer[1..])
+    {
         Ok(()) => true,
         Err(err) => {
             ::log::error!("load OctaSineClapState: {:#}", err);
@@ -105,18 +91,4 @@ unsafe extern "C" fn load(plugin: *const clap_plugin, stream: *const clap_istrea
             false
         }
     }
-}
-
-fn handle_buffer(plugin: &OctaSine, buffer: &[u8]) -> anyhow::Result<()> {
-    let mut state = serde_json::from_slice::<OctaSineClapState>(buffer)
-        .with_context(|| "deserialize OctaSineState")?;
-
-    state
-        .patch_bank
-        .run_compatibility_changes()
-        .with_context(|| "run patch compatibility changes")?;
-
-    plugin.sync.patches.import_bank_from_serde(state.patch_bank);
-
-    Ok(())
 }

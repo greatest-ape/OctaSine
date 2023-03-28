@@ -8,7 +8,7 @@ edition = "2021"
 [features]
 default = ["glow"]
 # Enable clap plugin support
-clap = ["atomic_refcell", "bytemuck", "clap-sys", "parking_lot", "serde_bytes"]
+clap = ["atomic_refcell", "bytemuck", "clap-sys", "parking_lot"]
 # Enable VST2 plugin support
 vst2 = ["vst"]
 # Use glow (OpenGL) for graphics
@@ -35,15 +35,17 @@ arrayvec = "0.7"
 bincode = "1"
 byteorder = "1"
 cfg-if = "1"
+compact_str = { version = "0.7", features = ["serde"] }
 directories = "4"
 duplicate = "0.4"
 fast-math = "0.1"
 fastrand = "1"
 flate2 = "1"
 git-testament = "0.2"
-indexmap = "1"
+indexmap = { version = "1", features = ["serde"] }
 log = { version = "0.4", default-features = false }
 log-panics = "2"
+memchr = "2"
 once_cell = "1"
 os_info = "3"
 ringbuf = "0.3"
@@ -64,7 +66,6 @@ atomic_refcell = { version = "0.1", optional = true }
 bytemuck = { version = "1", optional = true }
 clap-sys = { version = "0.3", optional = true }
 parking_lot = { version = "0.12", optional = true }
-serde_bytes = { version = "0.11", optional = true }
 
 # GUI
 

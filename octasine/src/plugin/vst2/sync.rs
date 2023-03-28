@@ -1,3 +1,4 @@
+use std::path::PathBuf;
 #[cfg(feature = "gui")]
 use std::sync::Arc;
 
@@ -6,13 +7,7 @@ use vst::host::Host;
 
 use crate::{parameters::WrappedParameter, sync::SyncState};
 #[cfg(feature = "gui")]
-use crate::{
-    settings::Settings,
-    sync::{
-        change_info::MAX_NUM_PARAMETERS,
-        serde::{SerdePatch, SerdePatchBank},
-    },
-};
+use crate::{settings::Settings, sync::change_info::MAX_NUM_PARAMETERS};
 
 impl vst::plugin::PluginParameters for SyncState<vst::plugin::HostCallback> {
     /// Get parameter label for parameter at `index` (e.g. "db", "sec", "ms", "%").
@@ -86,13 +81,13 @@ impl vst::plugin::PluginParameters for SyncState<vst::plugin::HostCallback> {
     /// If `preset_chunks` is set to true in plugin info, this should return the raw chunk data for
     /// the current preset.
     fn get_preset_data(&self) -> Vec<u8> {
-        self.patches.export_current_patch_bytes()
+        self.patches.get_current_patch().export_fxp_bytes()
     }
 
     /// If `preset_chunks` is set to true in plugin info, this should return the raw chunk data for
     /// the current plugin bank.
     fn get_bank_data(&self) -> Vec<u8> {
-        self.patches.export_bank_as_bytes()
+        self.patches.export_fxb_bytes()
     }
 
     /// If `preset_chunks` is set to true in plugin info, this should load a preset from the given
@@ -211,22 +206,15 @@ impl crate::sync::GuiSyncHandle for Arc<SyncState<vst::plugin::HostCallback>> {
     }
     fn export_patch(&self) -> (String, Vec<u8>) {
         let name = self.patches.get_current_patch_filename_for_export();
-        let data = self.patches.export_current_patch_fxp_bytes();
+        let data = self.patches.get_current_patch().export_fxp_bytes();
 
         (name, data)
     }
     fn export_bank(&self) -> Vec<u8> {
-        self.patches.export_bank_as_fxb_bytes()
+        self.patches.export_fxb_bytes()
     }
-    fn import_bank_from_serde(&self, serde_bank: SerdePatchBank) {
-        self.patches.import_bank_from_serde(serde_bank);
-
-        if let Some(host) = self.host {
-            host.update_display();
-        }
-    }
-    fn import_patches_from_serde(&self, serde_patches: Vec<SerdePatch>) {
-        self.patches.import_patches_from_serde(serde_patches);
+    fn import_bank_or_patches_from_paths(&self, paths: &[PathBuf]) {
+        self.patches.import_bank_or_patches_from_paths(paths);
 
         if let Some(host) = self.host {
             host.update_display();

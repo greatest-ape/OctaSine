@@ -2,7 +2,9 @@ mod atomic_float;
 pub mod change_info;
 mod parameters;
 mod patch_bank;
-pub mod serde;
+mod serde;
+
+use std::path::PathBuf;
 
 use patch_bank::PatchBank;
 
@@ -27,7 +29,6 @@ cfg_if::cfg_if! {
     if #[cfg(feature = "gui")] {
         use crate::parameters::WrappedParameter;
         use self::change_info::MAX_NUM_PARAMETERS;
-        use self::serde::{SerdePatch, SerdePatchBank};
 
         /// Trait passed to GUI code for encapsulation
         pub trait GuiSyncHandle: Clone + Send + Sync + 'static {
@@ -50,8 +51,7 @@ cfg_if::cfg_if! {
             fn get_gui_settings(&self) -> crate::gui::GuiSettings;
             fn export_patch(&self) -> (String, Vec<u8>);
             fn export_bank(&self) -> Vec<u8>;
-            fn import_bank_from_serde(&self, serde_bank: SerdePatchBank);
-            fn import_patches_from_serde(&self, serde_patches: Vec<SerdePatch>);
+            fn import_bank_or_patches_from_paths(&self, paths: &[PathBuf]);
             fn clear_patch(&self);
             fn clear_bank(&self);
         }

@@ -46,6 +46,7 @@ pub use operator_mod_target::*;
 pub use operator_panning::OperatorPanningValue;
 pub use operator_volume::OperatorVolumeValue;
 pub use operator_wave_type::OperatorWaveTypeValue;
+use serde::{Deserialize, Serialize};
 
 use crate::common::{NUM_LFOS, NUM_OPERATORS};
 
@@ -69,7 +70,7 @@ pub trait ParameterValue: Sized + Default + Copy {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct ParameterKey(pub u32);
 
 include!(concat!(env!("OUT_DIR"), "/codegen.rs"));

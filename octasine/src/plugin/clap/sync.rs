@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::{path::PathBuf, sync::Arc};
 
 use clap_sys::host::clap_host;
 use parking_lot::Mutex;
@@ -7,11 +7,7 @@ use crate::{
     common::EventToHost,
     parameters::WrappedParameter,
     settings::Settings,
-    sync::{
-        change_info::MAX_NUM_PARAMETERS,
-        serde::{SerdePatch, SerdePatchBank},
-        GuiSyncHandle, SyncState,
-    },
+    sync::{change_info::MAX_NUM_PARAMETERS, GuiSyncHandle, SyncState},
 };
 
 use super::plugin::EventToHostProducer;
@@ -153,22 +149,15 @@ impl GuiSyncHandle for Arc<SyncState<ClapGuiSyncHandle>> {
     }
     fn export_patch(&self) -> (String, Vec<u8>) {
         let name = self.patches.get_current_patch_filename_for_export();
-        let data = self.patches.export_current_patch_fxp_bytes();
+        let data = self.patches.get_current_patch().export_fxp_bytes();
 
         (name, data)
     }
     fn export_bank(&self) -> Vec<u8> {
-        self.patches.export_bank_as_fxb_bytes()
+        self.patches.export_fxb_bytes()
     }
-    fn import_bank_from_serde(&self, serde_bank: SerdePatchBank) {
-        self.patches.import_bank_from_serde(serde_bank);
-
-        if let Some(host) = &self.host {
-            host.send_event(EventToHost::RescanValues);
-        }
-    }
-    fn import_patches_from_serde(&self, serde_patches: Vec<SerdePatch>) {
-        self.patches.import_patches_from_serde(serde_patches);
+    fn import_bank_or_patches_from_paths(&self, paths: &[PathBuf]) {
+        self.patches.import_bank_or_patches_from_paths(paths);
 
         if let Some(host) = &self.host {
             host.send_event(EventToHost::RescanValues);

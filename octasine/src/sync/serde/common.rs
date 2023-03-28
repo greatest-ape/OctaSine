@@ -5,28 +5,6 @@ use crate::{
     plugin::common::{crate_version_to_vst2_format, PLUGIN_UNIQUE_VST2_ID},
 };
 
-pub fn split_off_slice_prefix<'a>(mut bytes: &'a [u8], prefix: &[u8]) -> &'a [u8] {
-    if let Some(index) = find_in_slice(bytes, prefix) {
-        bytes = &bytes[index + prefix.len()..];
-    }
-
-    bytes
-}
-
-pub fn find_in_slice(haystack: &[u8], needle: &[u8]) -> Option<usize> {
-    if needle.is_empty() {
-        return None;
-    }
-
-    for (i, window) in haystack.windows(needle.len()).enumerate() {
-        if window == needle {
-            return Some(i);
-        }
-    }
-
-    None
-}
-
 pub fn make_fxp(
     patch_bytes: &[u8],
     patch_name: &str,
@@ -89,23 +67,4 @@ pub fn make_fxb(bank_bytes: &[u8], num_patches: usize) -> anyhow::Result<Vec<u8>
     bytes.extend_from_slice(&bank_bytes);
 
     Ok(bytes)
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_split_off_slice_prefix() {
-        assert_eq!(split_off_slice_prefix(b"abcdef", b"abc"), b"def");
-        assert_eq!(split_off_slice_prefix(b"abcdef", b"bcd"), b"ef");
-        assert_eq!(split_off_slice_prefix(b"abcdef", b"def"), b"");
-        assert_eq!(split_off_slice_prefix(b"abcdef", b"abcdef"), b"");
-        assert_eq!(split_off_slice_prefix(b"abcdef", b"abcdefg"), b"abcdef");
-        assert_eq!(split_off_slice_prefix(b"abcdef", b"z"), b"abcdef");
-        assert_eq!(split_off_slice_prefix(b"abcdef", b"zzzzzz"), b"abcdef");
-        assert_eq!(split_off_slice_prefix(b"abcdef", b"zzzzzzz"), b"abcdef");
-        assert_eq!(split_off_slice_prefix(b"abcdef", b""), b"abcdef");
-        assert_eq!(split_off_slice_prefix(b"", b""), b"");
-    }
 }

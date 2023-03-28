@@ -1,6 +1,11 @@
-use std::sync::{
-    atomic::{AtomicBool, AtomicUsize, Ordering},
-    Arc,
+use std::{
+    collections::VecDeque,
+    io::Read,
+    path::PathBuf,
+    sync::{
+        atomic::{AtomicBool, AtomicUsize, Ordering},
+        Arc,
+    },
 };
 
 use arc_swap::ArcSwap;
@@ -43,40 +48,12 @@ impl Patch {
         self.name.store(Arc::new(Self::process_name(&name)));
     }
 
-    pub fn import_bytes(&self, bytes: &[u8]) -> bool {
-        if let Ok(serde_preset) = SerdePatch::from_bytes(bytes) {
-            self.import_serde_preset(&serde_preset);
-
-            true
-        } else {
-            false
-        }
-    }
-
-    pub fn import_serde_preset(&self, serde_preset: &SerdePatch) {
-        self.set_name(serde_preset.name.clone());
-
-        for (index, parameter) in self.parameters.values().enumerate() {
-            if let Some(import_parameter) = serde_preset.parameters.get(index) {
-                parameter.set_value(import_parameter.value_float.as_f32())
-            }
-        }
-    }
-
-    pub fn export_bytes(&self) -> Vec<u8> {
-        self.export_serde_preset()
-            .to_bytes()
-            .expect("serialize preset")
+    fn import_bytes(&self, bytes: &[u8]) -> anyhow::Result<()> {
+        update_patch_from_bytes(self, bytes)
     }
 
     pub fn export_fxp_bytes(&self) -> Vec<u8> {
-        self.export_serde_preset()
-            .to_fxp_bytes()
-            .expect("serialize preset")
-    }
-
-    pub fn export_serde_preset(&self) -> SerdePatch {
-        SerdePatch::new(self)
+        serialize_patch_fxp_bytes(self).expect("serialize patch")
     }
 
     fn set_from_patch_parameters(&self, parameters: &IndexMap<ParameterKey, PatchParameter>) {
@@ -140,7 +117,7 @@ impl PatchBank {
             .map(|(i, _, p)| (i, p))
     }
 
-    fn get_current_patch(&self) -> &Patch {
+    pub fn get_current_patch(&self) -> &Patch {
         &self.patches[self.get_patch_index()]
     }
 
@@ -304,42 +281,70 @@ impl PatchBank {
 
 // Import / export
 impl PatchBank {
-    /// Import serde bank into current bank, set sync parameters
-    pub fn import_bank_from_serde(&self, serde_bank: SerdePatchBank) {
-        let default_serde_preset = Patch::default().export_serde_preset();
+    pub fn import_bank_or_patches_from_paths(&self, paths: &[PathBuf]) {
+        let mut bank_file_bytes = Vec::new();
+        let mut patch_file_bytes = VecDeque::new();
 
-        for (index, preset) in self.patches.iter().enumerate() {
-            if let Some(serde_preset) = serde_bank.patches.get(index) {
-                preset.import_serde_preset(serde_preset);
-            } else {
-                preset.import_serde_preset(&default_serde_preset);
-                preset.set_name(format!("{:03}", index + 1));
+        for path in paths {
+            match read_file(&path) {
+                Ok(bytes) => match path.extension().and_then(|s| s.to_str()) {
+                    Some("fxb") => {
+                        bank_file_bytes.push(bytes);
+                    }
+                    Some("fxp") => {
+                        patch_file_bytes.push_back(bytes);
+                    }
+                    _ => {
+                        ::log::warn!("Ignored file without fxp or fxb file extension");
+                    }
+                },
+                Err(err) => ::log::warn!(
+                    "Failed loading bank / patch bank from file {}: {:#}",
+                    path.display(),
+                    err
+                ),
+            };
+        }
+
+        match bank_file_bytes.pop() {
+            Some(bank_bytes) => {
+                if let Err(err) = self.import_bank_from_bytes(&bank_bytes) {
+                    ::log::error!("failed importing patch bank: {:#}", err);
+                }
+            }
+            None => {
+                // Import serde patches into current and following patches
+                let mut patch_iterator = self.patches[self.get_patch_index()..].iter().peekable();
+
+                for patch_bytes in patch_file_bytes {
+                    if patch_iterator.peek().is_none() {
+                        break;
+                    }
+
+                    patch_iterator.next_if(|patch| {
+                        if let Err(err) = patch.import_bytes(&patch_bytes) {
+                            ::log::error!("failed importing patch: {:#}", err);
+
+                            false
+                        } else {
+                            true
+                        }
+                    });
+                }
+
+                self.mark_parameters_as_changed();
+                self.patches_changed.store(true, Ordering::SeqCst);
             }
         }
-
-        self.set_patch_index(0);
-        self.mark_parameters_as_changed();
-        self.patches_changed.store(true, Ordering::SeqCst);
-    }
-
-    /// Import serde patches into current and following patches
-    pub fn import_patches_from_serde(&self, serde_patches: Vec<SerdePatch>) {
-        for (patch, serde_patch) in self.patches[self.get_patch_index()..]
-            .iter()
-            .zip(serde_patches.iter())
-        {
-            patch.import_serde_preset(serde_patch);
-        }
-
-        self.mark_parameters_as_changed();
-        self.patches_changed.store(true, Ordering::SeqCst);
     }
 
     /// Import bytes into current bank, set sync parameters
     pub fn import_bank_from_bytes(&self, bytes: &[u8]) -> anyhow::Result<()> {
-        match SerdePatchBank::from_bytes(bytes) {
-            Ok(serde_bank) => {
-                self.import_bank_from_serde(serde_bank);
+        match update_bank_from_bytes(self, bytes) {
+            Ok(()) => {
+                self.set_patch_index(0);
+                self.mark_parameters_as_changed();
+                self.patches_changed.store(true, Ordering::SeqCst);
 
                 Ok(())
             }
@@ -348,34 +353,27 @@ impl PatchBank {
     }
 
     pub fn import_bytes_into_current_patch(&self, bytes: &[u8]) {
-        if self.get_current_patch().import_bytes(bytes) {
-            self.mark_parameters_as_changed();
-            self.patches_changed.store(true, Ordering::SeqCst);
+        match self.get_current_patch().import_bytes(bytes) {
+            Ok(()) => {
+                self.mark_parameters_as_changed();
+                self.patches_changed.store(true, Ordering::SeqCst);
+            }
+            Err(err) => {
+                ::log::warn!("failed importing bytes into current patch: {:#}", err);
+            }
         }
     }
 
-    pub fn export_bank_as_bytes(&self) -> Vec<u8> {
-        SerdePatchBank::new(self)
-            .to_bytes()
-            .expect("serialize preset bank")
+    pub fn export_plain_bytes(&self) -> Vec<u8> {
+        let mut buffer = Vec::new();
+
+        serialize_bank_plain_bytes(&mut buffer, self).expect("serialize preset bank");
+
+        buffer
     }
 
-    pub fn export_bank_as_fxb_bytes(&self) -> Vec<u8> {
-        SerdePatchBank::new(self)
-            .to_fxb_bytes()
-            .expect("serialize preset bank")
-    }
-
-    pub fn export_bank(&self) -> SerdePatchBank {
-        SerdePatchBank::new(self)
-    }
-
-    pub fn export_current_patch_bytes(&self) -> Vec<u8> {
-        self.get_current_patch().export_bytes()
-    }
-
-    pub fn export_current_patch_fxp_bytes(&self) -> Vec<u8> {
-        self.get_current_patch().export_fxp_bytes()
+    pub fn export_fxb_bytes(&self) -> Vec<u8> {
+        serialize_bank_fxb_bytes(self).expect("serialize preset bank")
     }
 
     pub fn new_from_bytes(bytes: &[u8]) -> Self {
@@ -458,7 +456,7 @@ pub mod tests {
             let bank_2 = PatchBank::default();
 
             bank_2
-                .import_bank_from_bytes(&bank_1.export_bank_as_bytes())
+                .import_bank_from_bytes(&bank_1.export_fxb_bytes())
                 .unwrap();
 
             for preset_index in 0..bank_1.num_patches() {
@@ -495,4 +493,13 @@ pub mod tests {
         // actually ever did.)
         println!("Dummy info: {:?}", preset_bank.get_parameter_value(0));
     }
+}
+
+fn read_file(path: &::std::path::Path) -> anyhow::Result<Vec<u8>> {
+    let mut file = ::std::fs::File::open(path)?;
+    let mut bytes = Vec::new();
+
+    file.read_to_end(&mut bytes)?;
+
+    Ok(bytes)
 }

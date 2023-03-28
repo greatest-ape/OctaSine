@@ -1,20 +1,9 @@
-use std::{io::Read, iter::repeat, path::Path};
-
-use anyhow::Context;
-use byteorder::{BigEndian, WriteBytesExt};
-use flate2::{read::GzDecoder, write::GzEncoder, Compression};
+use flate2::read::GzDecoder;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 
-use crate::{
-    crate_version,
-    plugin::common::{crate_version_to_vst2_format, PLUGIN_UNIQUE_VST2_ID},
-    utils::get_version_info,
-};
+use crate::utils::get_version_info;
 
-use super::{
-    super::patch_bank::{Patch, PatchBank},
-    common::{find_in_slice, split_off_slice_prefix},
-};
+use super::super::patch_bank::Patch;
 
 const PREFIX: &[u8] = b"\n\nOCTASINE-GZ-DATA-V1-BEGIN\n\n";
 const SUFFIX: &[u8] = b"\n\nOCTASINE-GZ-DATA-V1-END\n\n";
@@ -108,63 +97,8 @@ impl SerdePatch {
         }
     }
 
-    pub fn to_bytes(&self) -> anyhow::Result<Vec<u8>> {
-        to_bytes(self)
-    }
-
-    pub fn to_fxp_bytes(&self) -> anyhow::Result<Vec<u8>> {
-        let patch_bytes = to_bytes(self)?;
-
-        let mut bytes = Vec::new();
-
-        bytes.extend_from_slice(b"CcnK"); // fxp/fxp identifier
-        bytes.write_i32::<BigEndian>((5 * 4 + 28 + 4 + patch_bytes.len()).try_into()?)?;
-
-        bytes.extend_from_slice(b"FPCh"); // fxp opaque chunk
-        bytes.write_i32::<BigEndian>(1)?; // fxp version
-        bytes.write_i32::<BigEndian>(PLUGIN_UNIQUE_VST2_ID)?;
-        bytes.write_i32::<BigEndian>(crate_version_to_vst2_format(crate_version!()))?;
-
-        bytes.write_i32::<BigEndian>(self.parameters.len().try_into()?)?;
-
-        let name_buf = {
-            let mut buf = [0u8; 28];
-
-            // Iterate through all buffer items except last, where a null
-            // terminator must be left in place. If there are less than 27
-            // chars, the last one will automatically be followed by a null
-            // byte.
-            for (b, c) in buf[..27].iter_mut().zip(
-                self.name
-                    .chars()
-                    .into_iter()
-                    .filter_map(|c| c.is_ascii().then_some(c as u8)),
-            ) {
-                *b = c;
-            }
-
-            buf
-        };
-
-        bytes.extend_from_slice(&name_buf);
-
-        bytes.write_i32::<BigEndian>(patch_bytes.len().try_into()?)?;
-        bytes.extend_from_slice(&patch_bytes);
-
-        Ok(bytes)
-    }
-
     pub fn from_bytes<'a>(bytes: &'a [u8]) -> anyhow::Result<Self> {
         Ok(generic_from_bytes(bytes)?)
-    }
-
-    pub fn from_path(path: &Path) -> anyhow::Result<Self> {
-        let mut file = ::std::fs::File::open(path)?;
-        let mut bytes = Vec::new();
-
-        file.read_to_end(&mut bytes)?;
-
-        Self::from_bytes(&bytes).with_context(|| "deserialize patch")
     }
 }
 
@@ -175,72 +109,11 @@ pub struct SerdePatchBank {
 }
 
 impl SerdePatchBank {
-    pub fn new(patch_bank: &PatchBank) -> Self {
-        Self {
-            octasine_version: get_version_info(),
-            patches: patch_bank
-                .patches
-                .iter()
-                .map(Patch::export_serde_preset)
-                .collect(),
-        }
-    }
-
-    pub fn to_bytes(&self) -> anyhow::Result<Vec<u8>> {
-        to_bytes(self)
-    }
-
-    pub fn to_fxb_bytes(&self) -> anyhow::Result<Vec<u8>> {
-        let bank_bytes = to_bytes(self)?;
-
-        let mut bytes = Vec::new();
-
-        bytes.extend_from_slice(b"CcnK"); // fxp/fxp identifier
-        bytes.write_i32::<BigEndian>((5 * 4 + 128 + 4 + bank_bytes.len()).try_into()?)?;
-
-        bytes.extend_from_slice(b"FBCh"); // fxb opaque chunk
-        bytes.write_i32::<BigEndian>(1)?; // fxb version (1 or 2)
-        bytes.write_i32::<BigEndian>(PLUGIN_UNIQUE_VST2_ID)?;
-        bytes.write_i32::<BigEndian>(crate_version_to_vst2_format(crate_version!()))?;
-
-        bytes.write_i32::<BigEndian>(self.patches.len().try_into()?)?;
-        bytes.extend(repeat(0).take(128)); // reserved padding for fxb version 1
-
-        bytes.write_i32::<BigEndian>(bank_bytes.len().try_into()?)?;
-        bytes.extend_from_slice(&bank_bytes);
-
-        Ok(bytes)
-    }
-
     pub fn from_bytes<'a>(bytes: &'a [u8]) -> anyhow::Result<Self> {
         Ok(generic_from_bytes(bytes)?)
     }
-
-    pub fn from_path(path: &Path) -> anyhow::Result<Self> {
-        let mut file = ::std::fs::File::open(path)?;
-        let mut bytes = Vec::new();
-
-        file.read_to_end(&mut bytes)?;
-
-        Self::from_bytes(&bytes).with_context(|| "deserialize patch")
-    }
 }
 
-fn to_bytes<T: Serialize>(t: &T) -> anyhow::Result<Vec<u8>> {
-    let mut bytes = Vec::from(PREFIX);
-
-    let mut encoder = GzEncoder::new(&mut bytes, Compression::best());
-
-    serde_json::to_writer(&mut encoder, t)?;
-
-    encoder.finish()?;
-
-    bytes.extend_from_slice(&SUFFIX);
-
-    Ok(bytes)
-}
-
-/// Does NOT perform compatibility changes
 pub fn generic_from_bytes<'a, T: DeserializeOwned>(
     mut bytes: &'a [u8],
 ) -> Result<T, impl ::std::error::Error> {
@@ -258,4 +131,45 @@ fn split_off_slice_suffix<'a>(mut bytes: &'a [u8], suffix: &[u8]) -> &'a [u8] {
     }
 
     bytes
+}
+
+fn split_off_slice_prefix<'a>(mut bytes: &'a [u8], prefix: &[u8]) -> &'a [u8] {
+    if let Some(index) = find_in_slice(bytes, prefix) {
+        bytes = &bytes[index + prefix.len()..];
+    }
+
+    bytes
+}
+
+fn find_in_slice(haystack: &[u8], needle: &[u8]) -> Option<usize> {
+    if needle.is_empty() {
+        return None;
+    }
+
+    for (i, window) in haystack.windows(needle.len()).enumerate() {
+        if window == needle {
+            return Some(i);
+        }
+    }
+
+    None
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_split_off_slice_prefix() {
+        assert_eq!(split_off_slice_prefix(b"abcdef", b"abc"), b"def");
+        assert_eq!(split_off_slice_prefix(b"abcdef", b"bcd"), b"ef");
+        assert_eq!(split_off_slice_prefix(b"abcdef", b"def"), b"");
+        assert_eq!(split_off_slice_prefix(b"abcdef", b"abcdef"), b"");
+        assert_eq!(split_off_slice_prefix(b"abcdef", b"abcdefg"), b"abcdef");
+        assert_eq!(split_off_slice_prefix(b"abcdef", b"z"), b"abcdef");
+        assert_eq!(split_off_slice_prefix(b"abcdef", b"zzzzzz"), b"abcdef");
+        assert_eq!(split_off_slice_prefix(b"abcdef", b"zzzzzzz"), b"abcdef");
+        assert_eq!(split_off_slice_prefix(b"abcdef", b""), b"abcdef");
+        assert_eq!(split_off_slice_prefix(b"", b""), b"");
+    }
 }
