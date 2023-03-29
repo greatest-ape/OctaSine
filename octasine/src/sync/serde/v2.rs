@@ -36,6 +36,20 @@ impl SerdePatchBank {
         }
     }
 
+    pub fn from_v1(v1: super::v1::SerdePatchBank) -> anyhow::Result<Self> {
+        let octasine_version = parse_v1_version(&v1.octasine_version)?;
+        let mut v2_patches = Vec::with_capacity(v1.patches.len());
+
+        for v1_patch in v1.patches.into_iter() {
+            v2_patches.push(SerdePatch::from_v1(v1_patch)?);
+        }
+
+        Ok(Self {
+            octasine_version,
+            patches: v2_patches,
+        })
+    }
+
     pub fn from_bytes(bytes: &[u8]) -> anyhow::Result<Self> {
         let mut bank: Self = deserialize_bytes(bytes)?;
 
@@ -50,7 +64,7 @@ impl SerdePatchBank {
         serialize_bytes_plain(writer, self)
     }
 
-    pub fn to_fxb_bytes(&self) -> anyhow::Result<Vec<u8>> {
+    pub fn serialize_fxb_bytes(&self) -> anyhow::Result<Vec<u8>> {
         let mut buffer = Vec::new();
 
         serialize_bytes_gz(&mut buffer, self)?;
@@ -64,7 +78,8 @@ pub struct SerdePatch {
     octasine_version: [u64; 3],
     pub name: CompactString,
     pub parameters: IndexMap<ParameterKey, SerdePatchParameter>,
-    pub envelope_viewports: [SerdeEnvelopeViewport; 4],
+    /// Optional for compatibility with V1 format
+    pub envelope_viewports: Option<[SerdeEnvelopeViewport; 4]>,
 }
 
 impl SerdePatch {
@@ -96,8 +111,39 @@ impl SerdePatch {
             octasine_version: get_octasine_version(),
             name: patch.get_name().into(),
             parameters,
-            envelope_viewports,
+            envelope_viewports: Some(envelope_viewports),
         }
+    }
+
+    pub fn from_v1(v1: super::v1::SerdePatch) -> anyhow::Result<Self> {
+        let octasine_version = parse_v1_version(&v1.octasine_version)?;
+
+        let mut v2_parameters = Self::new(&Patch::default()).parameters;
+
+        for (index, v1_parameter) in v1.parameters.into_iter().enumerate() {
+            let parameter = Parameter::from_index(index).ok_or_else(|| anyhow::anyhow!(""))?;
+
+            let v2_parameter = v2_parameters
+                .get_mut(&parameter.key())
+                .ok_or_else(|| anyhow::anyhow!("no v2 parameter {:?}", parameter))?;
+
+            *v2_parameter = SerdePatchParameter {
+                index,
+                value_f32: v1_parameter.value_float.as_f32(),
+                value_string: v1_parameter.value_text.into(),
+            };
+        }
+
+        let mut patch = Self {
+            octasine_version,
+            name: v1.name.into(),
+            parameters: v2_parameters,
+            envelope_viewports: None,
+        };
+
+        patch.run_compatibility_changes();
+
+        Ok(patch)
     }
 
     pub fn from_bytes(bytes: &[u8]) -> anyhow::Result<Self> {
@@ -108,7 +154,7 @@ impl SerdePatch {
         Ok(patch)
     }
 
-    pub fn to_fxp_bytes(&self) -> anyhow::Result<Vec<u8>> {
+    pub fn serialize_fxp_bytes(&self) -> anyhow::Result<Vec<u8>> {
         let mut buffer = Vec::new();
 
         serialize_bytes_gz(&mut buffer, self)?;
@@ -140,10 +186,19 @@ pub struct SerdePatchParameter {
     value_string: CompactString,
 }
 
-#[derive(Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize)]
 pub struct SerdeEnvelopeViewport {
     pub viewport_factor: f32,
     pub x_offset: f32,
+}
+
+impl Default for SerdeEnvelopeViewport {
+    fn default() -> Self {
+        Self {
+            viewport_factor: 1.0,
+            x_offset: 0.0,
+        }
+    }
 }
 
 pub fn bytes_are_v2(bytes: &[u8]) -> bool {
@@ -155,6 +210,12 @@ fn get_octasine_version() -> [u64; 3] {
     let version = Version::parse(env!("CARGO_PKG_VERSION")).unwrap();
 
     [version.major, version.minor, version.patch]
+}
+
+fn parse_v1_version(v1_version: &str) -> anyhow::Result<[u64; 3]> {
+    let version = super::v1::parse_version(v1_version)?;
+
+    Ok([version.major, version.minor, version.patch])
 }
 
 fn deserialize_bytes<'a, T>(bytes: &'a [u8]) -> anyhow::Result<T>

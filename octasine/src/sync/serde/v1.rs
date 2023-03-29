@@ -1,9 +1,6 @@
 use flate2::read::GzDecoder;
+use semver::Version;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
-
-use crate::utils::get_version_info;
-
-use super::super::patch_bank::Patch;
 
 const PREFIX: &[u8] = b"\n\nOCTASINE-GZ-DATA-V1-BEGIN\n\n";
 const SUFFIX: &[u8] = b"\n\nOCTASINE-GZ-DATA-V1-END\n\n";
@@ -12,10 +9,6 @@ const SUFFIX: &[u8] = b"\n\nOCTASINE-GZ-DATA-V1-END\n\n";
 pub struct SerdePatchParameterValue(String);
 
 impl SerdePatchParameterValue {
-    pub fn from_f32(value: f32) -> Self {
-        Self(format!("{:.}", value))
-    }
-
     pub fn as_f32(&self) -> f32 {
         self.0
             .parse()
@@ -67,36 +60,12 @@ pub struct SerdePatchParameter {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct SerdePatch {
-    octasine_version: String,
+    pub octasine_version: String,
     pub name: String,
     pub parameters: Vec<SerdePatchParameter>,
 }
 
 impl SerdePatch {
-    pub fn new(preset: &Patch) -> Self {
-        let mut parameters = Vec::new();
-
-        for i in 0..preset.parameters.len() {
-            if let Some((_, parameter)) = preset.parameters.get_index(i) {
-                let value = parameter.get_value();
-
-                let value_float = SerdePatchParameterValue::from_f32(value);
-
-                parameters.push(SerdePatchParameter {
-                    name: parameter.name.to_string(),
-                    value_float,
-                    value_text: (parameter.format)(value).into(),
-                });
-            }
-        }
-
-        Self {
-            octasine_version: get_version_info(),
-            name: preset.get_name(),
-            parameters,
-        }
-    }
-
     pub fn from_bytes<'a>(bytes: &'a [u8]) -> anyhow::Result<Self> {
         Ok(generic_from_bytes(bytes)?)
     }
@@ -104,7 +73,7 @@ impl SerdePatch {
 
 #[derive(Serialize, Deserialize)]
 pub struct SerdePatchBank {
-    octasine_version: String,
+    pub octasine_version: String,
     pub patches: Vec<SerdePatch>,
 }
 
@@ -114,7 +83,16 @@ impl SerdePatchBank {
     }
 }
 
-pub fn generic_from_bytes<'a, T: DeserializeOwned>(
+pub fn parse_version(v1_version: &str) -> anyhow::Result<Version> {
+    let mut chars = v1_version.chars();
+
+    // Drop initial "v"
+    chars.next();
+
+    Ok(Version::parse(&chars.take(5).collect::<String>())?)
+}
+
+fn generic_from_bytes<'a, T: DeserializeOwned>(
     mut bytes: &'a [u8],
 ) -> Result<T, impl ::std::error::Error> {
     bytes = split_off_slice_prefix(bytes, PREFIX);
