@@ -1,6 +1,7 @@
 # TODO
 
 * Patch format v2
+  * envelope viewports: change status needs to be stored per-patch, reset when set from GUI?
   * clap.state
     * tell host about changes (except parameters)
   * Should include zoom state in patch?
