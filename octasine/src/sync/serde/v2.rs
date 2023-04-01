@@ -174,21 +174,6 @@ pub struct SerdePatchParameter {
     value_string: CompactString,
 }
 
-#[derive(Serialize, Deserialize)]
-pub struct SerdeEnvelopeViewport {
-    pub viewport_factor: f32,
-    pub x_offset: f32,
-}
-
-impl Default for SerdeEnvelopeViewport {
-    fn default() -> Self {
-        Self {
-            viewport_factor: 1.0,
-            x_offset: 0.0,
-        }
-    }
-}
-
 pub fn bytes_are_v2(bytes: &[u8]) -> bool {
     memchr::memmem::find(bytes, PREFIX_PLAIN).is_some()
         || memchr::memmem::find(bytes, PREFIX_GZ).is_some()
