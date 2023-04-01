@@ -27,17 +27,6 @@ pub fn update_bank_from_bytes(bank: &PatchBank, bytes: &[u8]) -> anyhow::Result<
             &default_serde_patch
         };
 
-        if let Some(envelope_viewports) = serde_patch.envelope_viewports.as_ref() {
-            for (sync, serde) in patch
-                .envelope_viewports
-                .iter()
-                .zip(envelope_viewports.iter())
-            {
-                sync.viewport_factor.set(serde.viewport_factor);
-                sync.x_offset.set(serde.x_offset);
-            }
-        }
-
         for (key, parameter) in patch.parameters.iter() {
             if let Some(serde_parameter) = serde_patch.parameters.get(key) {
                 parameter.set_value(serde_parameter.value_f32);
@@ -57,17 +46,6 @@ pub fn update_patch_from_bytes(patch: &Patch, bytes: &[u8]) -> anyhow::Result<()
     };
 
     patch.set_name(serde_patch.name.as_str());
-
-    if let Some(envelope_viewports) = serde_patch.envelope_viewports {
-        for (sync, serde) in patch
-            .envelope_viewports
-            .iter()
-            .zip(envelope_viewports.iter())
-        {
-            sync.viewport_factor.set(serde.viewport_factor);
-            sync.x_offset.set(serde.x_offset);
-        }
-    }
 
     for (key, parameter) in patch.parameters.iter() {
         if let Some(serde_parameter) = serde_patch.parameters.get(key) {

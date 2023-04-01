@@ -8,7 +8,7 @@ use crate::{
     common::EventToHost,
     parameters::WrappedParameter,
     settings::Settings,
-    sync::{change_info::MAX_NUM_PARAMETERS, EnvelopeViewport, GuiSyncHandle, SyncState},
+    sync::{change_info::MAX_NUM_PARAMETERS, GuiSyncHandle, SyncState},
 };
 
 use super::plugin::EventToHostProducer;
@@ -110,10 +110,6 @@ impl GuiSyncHandle for Arc<SyncState<ClapGuiSyncHandle>> {
         self.patches
             .set_parameter_from_gui(parameter.index() as usize, value);
     }
-    fn set_envelope_viewport(&self, operator_index: usize, viewport: EnvelopeViewport) {
-        self.patches
-            .set_envelope_viewport_from_gui(operator_index, viewport);
-    }
     fn get_parameter(&self, parameter: WrappedParameter) -> f32 {
         self.patches
             .get_parameter_value(parameter.index() as usize)
@@ -145,9 +141,6 @@ impl GuiSyncHandle for Arc<SyncState<ClapGuiSyncHandle>> {
     }
     fn get_changed_parameters(&self) -> Option<[Option<f32>; MAX_NUM_PARAMETERS]> {
         self.patches.get_changed_parameters_from_gui()
-    }
-    fn get_viewports_if_changed(&self) -> Option<[EnvelopeViewport; 4]> {
-        self.patches.get_viewports_if_changed()
     }
     fn have_patches_changed(&self) -> bool {
         self.patches.have_patches_changed()

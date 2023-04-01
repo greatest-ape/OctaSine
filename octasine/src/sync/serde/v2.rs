@@ -78,8 +78,6 @@ pub struct SerdePatch {
     octasine_version: [u64; 3],
     pub name: CompactString,
     pub parameters: IndexMap<ParameterKey, SerdePatchParameter>,
-    /// Optional for compatibility with V1 format
-    pub envelope_viewports: Option<[SerdeEnvelopeViewport; 4]>,
 }
 
 impl SerdePatch {
@@ -99,19 +97,10 @@ impl SerdePatch {
             })
             .collect();
 
-        let envelope_viewports =
-            array_init::map_array_init(&patch.envelope_viewports, |viewport| {
-                SerdeEnvelopeViewport {
-                    x_offset: viewport.x_offset.get(),
-                    viewport_factor: viewport.viewport_factor.get(),
-                }
-            });
-
         Self {
             octasine_version: get_octasine_version(),
             name: patch.get_name().into(),
             parameters,
-            envelope_viewports: Some(envelope_viewports),
         }
     }
 
@@ -138,7 +127,6 @@ impl SerdePatch {
             octasine_version,
             name: v1.name.into(),
             parameters: v2_parameters,
-            envelope_viewports: None,
         };
 
         patch.run_compatibility_changes();

@@ -319,13 +319,6 @@ impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {
                 .widget
                 .set_viewport(values.viewport_factor, values.x_offset);
 
-            let viewport = crate::sync::EnvelopeViewport {
-                x_offset: values.x_offset,
-                viewport_factor: values.viewport_factor,
-            };
-
-            self.sync_handle.set_envelope_viewport(index, viewport);
-
             let parameters: [(WrappedParameter, f32); 4] = [
                 (
                     Parameter::Operator(index as u8, OperatorParameter::AttackDuration).into(),
@@ -495,15 +488,6 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                 if self.sync_handle.have_patches_changed() {
                     self.corner.patch_picker = PatchPicker::new(&self.sync_handle);
                 }
-                if let Some(viewports) = self.sync_handle.get_viewports_if_changed() {
-                    for (operator_index, v) in viewports.into_iter().enumerate() {
-                        self.get_envelope_by_index(operator_index as u8)
-                            .widget
-                            .set_viewport(v.viewport_factor, v.x_offset);
-
-                        self.sync_envelopes(operator_index as u8, false);
-                    }
-                }
                 self.update_widgets_from_parameters();
             }
             Message::NoOp => {}
@@ -517,14 +501,6 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                     .set_viewport(viewport_factor, x_offset);
 
                 self.sync_envelopes(operator_index, false);
-
-                let viewport = crate::sync::EnvelopeViewport {
-                    x_offset,
-                    viewport_factor,
-                };
-
-                self.sync_handle
-                    .set_envelope_viewport(operator_index as usize, viewport);
             }
             Message::EnvelopeDistributeViewports {
                 viewport_factor,

@@ -31,12 +31,6 @@ cfg_if::cfg_if! {
         use crate::parameters::WrappedParameter;
         use self::change_info::MAX_NUM_PARAMETERS;
 
-        #[derive(Clone, Copy)]
-        pub struct EnvelopeViewport {
-            pub x_offset: f32,
-            pub viewport_factor: f32,
-        }
-
         /// Trait passed to GUI code for encapsulation
         pub trait GuiSyncHandle: Clone + Send + Sync + 'static {
             fn begin_edit(&self, parameter: WrappedParameter);
@@ -47,7 +41,6 @@ cfg_if::cfg_if! {
             fn set_parameter_from_text(&self, parameter: WrappedParameter, text: &str) -> Option<f32>;
             /// Set parameter without telling host
             fn set_parameter_audio_only(&self, parameter: WrappedParameter, value: f32);
-            fn set_envelope_viewport(&self, operator_index: usize, viewport: EnvelopeViewport);
             fn get_parameter(&self, parameter: WrappedParameter) -> f32;
             fn format_parameter_value(&self, parameter: WrappedParameter, value: f32) -> CompactString;
             fn get_patches(&self) -> (usize, Vec<CompactString>);
@@ -55,7 +48,6 @@ cfg_if::cfg_if! {
             fn get_current_patch_name(&self) -> CompactString;
             fn set_current_patch_name(&self, name: &str);
             fn get_changed_parameters(&self) -> Option<[Option<f32>; MAX_NUM_PARAMETERS]>;
-            fn get_viewports_if_changed(&self) -> Option<[EnvelopeViewport; 4]>;
             fn have_patches_changed(&self) -> bool;
             fn get_gui_settings(&self) -> crate::gui::GuiSettings;
             fn export_patch(&self) -> (CompactString, Vec<u8>);
