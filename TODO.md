@@ -1,6 +1,10 @@
 # TODO
 
 * Patch format v2
+  * criterion export and import benchmarks?
+    * Is CompactString really worth it, even with frequent clap state exports?
+    * Is it really beneficial to use IndexMap for parameters? Would Vec be better?
+    * Use array for patches since there are always 128?
   * clap.state
     * tell host about changes (except parameters)
   * Include zoom state in patch?
