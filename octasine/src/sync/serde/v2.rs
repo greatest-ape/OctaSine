@@ -1,4 +1,4 @@
-use std::io::Write;
+use std::io::{BufReader, Write};
 
 use compact_str::CompactString;
 use flate2::{read::GzDecoder, write::GzEncoder, Compression};
@@ -225,13 +225,13 @@ where
     if let Some(offset) = memchr::memmem::find(bytes, PREFIX_PLAIN) {
         let bytes = &bytes[offset + PREFIX_PLAIN.len()..];
 
-        Ok(bincode::deserialize(bytes)?)
+        Ok(cbor4ii::serde::from_slice(bytes)?)
     } else if let Some(offset) = memchr::memmem::find(bytes, PREFIX_GZ) {
         let bytes = &bytes[offset + PREFIX_GZ.len()..];
 
-        let mut decoder = GzDecoder::new(bytes);
+        let mut decoder = BufReader::new(GzDecoder::new(bytes));
 
-        Ok(bincode::deserialize_from(&mut decoder)?)
+        Ok(cbor4ii::serde::from_reader(&mut decoder)?)
     } else {
         Err(anyhow::anyhow!("bank/patch data does not have v2 header"))
     }
@@ -240,15 +240,15 @@ where
 fn serialize_bytes_plain<W: Write, T: Serialize>(writer: &mut W, value: &T) -> anyhow::Result<()> {
     writer.write_all(PREFIX_PLAIN)?;
 
-    Ok(bincode::serialize_into(writer, value)?)
+    Ok(cbor4ii::serde::to_writer(writer, value)?)
 }
 
 fn serialize_bytes_gz<W: Write, T: Serialize>(writer: &mut W, value: &T) -> anyhow::Result<()> {
     writer.write_all(PREFIX_GZ)?;
 
-    let encoder = GzEncoder::new(writer, Compression::best());
+    let mut encoder = GzEncoder::new(writer, Compression::best());
 
-    bincode::serialize_into(encoder, value)?;
+    cbor4ii::serde::to_writer(&mut encoder, value)?;
 
     Ok(())
 }
