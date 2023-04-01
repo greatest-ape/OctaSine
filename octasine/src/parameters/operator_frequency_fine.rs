@@ -3,6 +3,7 @@ use compact_str::CompactString;
 
 use super::utils::*;
 use super::ParameterValue;
+use super::SerializableRepresentation;
 
 const OPERATOR_FINE_STEPS: [f32; 17] = [
     0.8, 0.85, 0.9, 0.95, 0.97, 0.98, 0.99, 0.995, 1.0, 1.005, 1.01, 1.02, 1.03, 1.05, 1.1, 1.15,
@@ -41,5 +42,9 @@ impl ParameterValue for OperatorFrequencyFineValue {
     }
     fn get_formatted(self) -> CompactString {
         format_compact!("{:.04}", self.0)
+    }
+
+    fn get_serializable(&self) -> SerializableRepresentation {
+        SerializableRepresentation::Float(self.0.into())
     }
 }

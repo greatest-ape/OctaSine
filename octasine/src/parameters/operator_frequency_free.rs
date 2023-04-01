@@ -3,6 +3,7 @@ use compact_str::CompactString;
 
 use super::utils::*;
 use super::ParameterValue;
+use super::SerializableRepresentation;
 
 const OPERATOR_FREE_STEPS: &[f32] = &[
     1.0 / 1024.0,
@@ -52,5 +53,9 @@ impl ParameterValue for OperatorFrequencyFreeValue {
     }
     fn get_formatted(self) -> CompactString {
         format_compact!("{:.04}", self.0)
+    }
+
+    fn get_serializable(&self) -> SerializableRepresentation {
+        SerializableRepresentation::Float(self.0.into())
     }
 }

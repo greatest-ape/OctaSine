@@ -4,7 +4,7 @@ use compact_str::CompactString;
 
 use crate::common::*;
 
-use super::ParameterValue;
+use super::{ParameterValue, SerializableRepresentation};
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Default)]
 pub enum WaveType {
@@ -74,5 +74,9 @@ impl ParameterValue for OperatorWaveTypeValue {
             WaveType::Sine => "SINE".into(),
             WaveType::WhiteNoise => "NOISE".into(),
         }
+    }
+
+    fn get_serializable(&self) -> SerializableRepresentation {
+        SerializableRepresentation::Other(self.get_formatted())
     }
 }

@@ -3,6 +3,7 @@ use compact_str::CompactString;
 
 use super::utils::*;
 use super::ParameterValue;
+use super::SerializableRepresentation;
 
 const MASTER_FREQUENCY_STEPS: &[f32] = &[
     20.0, 220.0, 400.0, 435.0, 438.0, 440.0, 442.0, 445.0, 480.0, 880.0, 20_000.0,
@@ -44,5 +45,9 @@ impl ParameterValue for MasterFrequencyValue {
         } else {
             format_compact!("{:.02}", self.0)
         }
+    }
+
+    fn get_serializable(&self) -> SerializableRepresentation {
+        SerializableRepresentation::Float(self.0.into())
     }
 }

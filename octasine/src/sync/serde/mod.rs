@@ -29,7 +29,7 @@ pub fn update_bank_from_bytes(bank: &PatchBank, bytes: &[u8]) -> anyhow::Result<
 
         for (key, parameter) in patch.parameters.iter() {
             if let Some(serde_parameter) = serde_patch.parameters.get(key) {
-                parameter.set_value(serde_parameter.value_f32);
+                parameter.set_value(serde_parameter.value_patch);
             }
         }
     }
@@ -49,7 +49,7 @@ pub fn update_patch_from_bytes(patch: &Patch, bytes: &[u8]) -> anyhow::Result<()
 
     for (key, parameter) in patch.parameters.iter() {
         if let Some(serde_parameter) = serde_patch.parameters.get(key) {
-            parameter.set_value(serde_parameter.value_f32);
+            parameter.set_value(serde_parameter.value_patch);
         }
     }
 

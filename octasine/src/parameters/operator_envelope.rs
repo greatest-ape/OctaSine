@@ -4,7 +4,7 @@ use compact_str::{format_compact, CompactString};
 
 use super::{
     utils::{map_patch_value_to_step, map_step_to_patch_value, parse_valid_f32, parse_valid_f64},
-    ParameterValue,
+    ParameterValue, SerializableRepresentation,
 };
 
 pub const ENVELOPE_MAX_DURATION: f64 = 4.0;
@@ -47,6 +47,10 @@ macro_rules! impl_duration_parameter_value {
             fn new_from_text(text: &str) -> Option<Self> {
                 parse_valid_f64(text, ENVELOPE_MIN_DURATION, ENVELOPE_MAX_DURATION)
                     .map(|v| Self(v.into()))
+            }
+
+            fn get_serializable(&self) -> SerializableRepresentation {
+                SerializableRepresentation::Float(self.0.into())
             }
         }
     };
@@ -116,6 +120,10 @@ impl ParameterValue for OperatorSustainVolumeValue {
     fn get_formatted(self) -> CompactString {
         format_compact!("{:.04}", self.0)
     }
+
+    fn get_serializable(&self) -> SerializableRepresentation {
+        SerializableRepresentation::Float(self.0.into())
+    }
 }
 
 const LOCK_STEPS: &[OperatorEnvelopeGroupValue] = &[
@@ -171,6 +179,10 @@ impl ParameterValue for OperatorEnvelopeGroupValue {
     }
     fn get_formatted(self) -> CompactString {
         format_compact!("{:?}", self)
+    }
+
+    fn get_serializable(&self) -> SerializableRepresentation {
+        SerializableRepresentation::Other(self.get_formatted())
     }
 }
 

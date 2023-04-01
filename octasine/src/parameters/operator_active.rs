@@ -1,6 +1,6 @@
 use compact_str::CompactString;
 
-use super::ParameterValue;
+use super::{ParameterValue, SerializableRepresentation};
 
 #[derive(Debug, Clone, Copy)]
 pub struct OperatorActiveValue(f32);
@@ -40,5 +40,9 @@ impl ParameterValue for OperatorActiveValue {
         } else {
             "On".into()
         }
+    }
+
+    fn get_serializable(&self) -> SerializableRepresentation {
+        SerializableRepresentation::Other(self.get_formatted())
     }
 }

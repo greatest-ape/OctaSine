@@ -1,6 +1,6 @@
 use compact_str::{format_compact, CompactString};
 
-use super::{utils::*, ParameterValue};
+use super::{utils::*, ParameterValue, SerializableRepresentation};
 use crate::common::OPERATOR_MOD_INDEX_STEPS;
 
 #[derive(Debug, Clone, Copy)]
@@ -38,5 +38,9 @@ impl ParameterValue for OperatorModOutValue {
     }
     fn get_formatted(self) -> CompactString {
         format_compact!("{:.04}", self.0)
+    }
+
+    fn get_serializable(&self) -> SerializableRepresentation {
+        SerializableRepresentation::Float(self.0.into())
     }
 }

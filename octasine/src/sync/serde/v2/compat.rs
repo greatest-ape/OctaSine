@@ -1,6 +1,6 @@
 use semver::Version;
 
-use crate::parameters::{OperatorParameter, Parameter};
+use crate::parameters::{OperatorParameter, Parameter, SerializableRepresentation};
 
 use super::SerdePatch;
 
@@ -23,17 +23,27 @@ pub fn compat_0_8_5(patch: &mut SerdePatch) {
     for key in parameter_keys {
         let p = patch.parameters.get_mut(&key).unwrap();
 
-        // FIXME: set values valid for v0.8.5
-        match p.value_string.as_str() {
-            "SINE" => {
-                p.value_f32 = 0.0;
+        match &p.value_serializable {
+            SerializableRepresentation::Other(s) => {
+                // FIXME: set values valid for v0.8.5
+                match s.as_str() {
+                    "SINE" => {
+                        p.value_patch = 0.0;
+                    }
+                    "NOISE" => {
+                        p.value_patch = 1.0;
+                    }
+                    v => {
+                        ::log::error!(
+                            "converting patch for 0.8.5 compatibility: unrecognized operator wave type: {}",
+                            v
+                        );
+                    }
+                }
             }
-            "NOISE" => {
-                p.value_f32 = 1.0;
-            }
-            v => {
+            SerializableRepresentation::Float(v) => {
                 ::log::error!(
-                    "converting patch for 0.8.5 compatibility: found invalid operator wave type {}",
+                    "converting patch for 0.8.5 compatibility: incorrect serializable representation for operator wave type: {}",
                     v
                 );
             }

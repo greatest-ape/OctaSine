@@ -9,7 +9,7 @@ use serde::{de::DeserializeOwned, Deserialize, Serialize};
 
 use crate::{
     common::IndexMap,
-    parameters::{Parameter, ParameterKey},
+    parameters::{Parameter, ParameterKey, SerializableRepresentation},
     sync::patch_bank::{Patch, PatchBank},
 };
 
@@ -89,8 +89,8 @@ impl SerdePatch {
             .map(|(i, (k, p))| {
                 let parameter = SerdePatchParameter {
                     index: i,
-                    value_f32: p.get_value(),
-                    value_string: p.get_value_text().into(),
+                    value_patch: p.get_value(),
+                    value_serializable: p.get_serializable(),
                 };
 
                 (*k, parameter)
@@ -118,8 +118,10 @@ impl SerdePatch {
 
             *v2_parameter = SerdePatchParameter {
                 index,
-                value_f32: v1_parameter.value_float.as_f32(),
-                value_string: v1_parameter.value_text.into(),
+                value_patch: v1_parameter.value_float.as_f32(),
+                value_serializable: SerializableRepresentation::Other(
+                    v1_parameter.value_text.into(),
+                ),
             };
         }
 
@@ -170,8 +172,8 @@ impl SerdePatch {
 #[derive(Serialize, Deserialize)]
 pub struct SerdePatchParameter {
     index: usize,
-    pub value_f32: f32,
-    value_string: CompactString,
+    pub value_patch: f32,
+    value_serializable: SerializableRepresentation,
 }
 
 pub fn bytes_are_v2(bytes: &[u8]) -> bool {

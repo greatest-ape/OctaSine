@@ -7,6 +7,7 @@ use once_cell::sync::Lazy;
 
 use super::utils::*;
 use super::ParameterValue;
+use super::SerializableRepresentation;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Ratio {
@@ -174,6 +175,10 @@ impl ParameterValue for OperatorFrequencyRatioValue {
     }
     fn get_formatted(self) -> CompactString {
         self.0.name.as_str().into()
+    }
+
+    fn get_serializable(&self) -> SerializableRepresentation {
+        SerializableRepresentation::Float(self.0.value)
     }
 }
 

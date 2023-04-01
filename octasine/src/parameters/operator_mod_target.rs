@@ -5,6 +5,7 @@ use compact_str::CompactString;
 
 use super::utils::*;
 use super::ParameterValue;
+use super::SerializableRepresentation;
 
 const OPERATOR_2_PERMUTATIONS: &[ModTargetStorage] = &[
     ModTargetStorage::new(&[true]),
@@ -140,6 +141,10 @@ impl ParameterValue for Operator2ModulationTargetValue {
     fn get_formatted(self) -> CompactString {
         format_compact!("{}", self.0)
     }
+
+    fn get_serializable(&self) -> SerializableRepresentation {
+        SerializableRepresentation::Other(self.get_formatted())
+    }
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -178,6 +183,10 @@ impl ParameterValue for Operator3ModulationTargetValue {
     fn get_formatted(self) -> CompactString {
         format_compact!("{}", self.0)
     }
+
+    fn get_serializable(&self) -> SerializableRepresentation {
+        SerializableRepresentation::Other(self.get_formatted())
+    }
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -215,5 +224,9 @@ impl ParameterValue for Operator4ModulationTargetValue {
     }
     fn get_formatted(self) -> CompactString {
         format_compact!("{}", self.0)
+    }
+
+    fn get_serializable(&self) -> SerializableRepresentation {
+        SerializableRepresentation::Other(self.get_formatted())
     }
 }

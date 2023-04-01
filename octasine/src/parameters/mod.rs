@@ -69,6 +69,15 @@ pub trait ParameterValue: Sized + Default + Copy {
     fn replace_from_patch(&mut self, value: f32) {
         *self = Self::new_from_patch(value);
     }
+    fn get_serializable(&self) -> SerializableRepresentation;
+}
+
+/// Serializable representation of parameter value for easing patch forward
+/// compatibility transformations
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub enum SerializableRepresentation {
+    Float(f64),
+    Other(CompactString),
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]

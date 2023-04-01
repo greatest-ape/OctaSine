@@ -4,6 +4,7 @@ use compact_str::CompactString;
 
 use super::utils::*;
 use super::ParameterValue;
+use super::SerializableRepresentation;
 use crate::common::*;
 
 pub const LFO_SHAPE_STEPS: [LfoShape; 8] = [
@@ -98,6 +99,10 @@ impl ParameterValue for LfoShapeValue {
             LfoShape::Sine => "SINE".into(),
             LfoShape::ReverseSine => "REV SINE".into(),
         }
+    }
+
+    fn get_serializable(&self) -> SerializableRepresentation {
+        SerializableRepresentation::Other(self.get_formatted())
     }
 }
 

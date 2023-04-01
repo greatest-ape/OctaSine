@@ -2,9 +2,7 @@
 
 * Patch format v2
   * criterion export and import benchmarks
-    * 75% of time is spent in ::core::fmt, mostly doing parameter value conversions
-      * an idea would be to instead of exporting textual representation to add new trait method
-        to ParameterValue returning enum of f64 or string for all non-float cases, so of interal data
+    * Make version CompactString for compatibility with release candidates etc?
     * Is CompactString really worth it, even with frequent clap state exports?
       * Overhead doesn't seem to be large, but might not actually be faster than string. ArrayString
         would be an option maybe

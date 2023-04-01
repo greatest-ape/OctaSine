@@ -2,6 +2,7 @@ use compact_str::CompactString;
 
 use super::{
     utils::*, LfoParameter, MasterParameter, OperatorParameter, Parameter, ParameterValue,
+    SerializableRepresentation,
 };
 
 // When adjusting this, remember to also modify get_lfo_target_parameters
@@ -129,6 +130,10 @@ impl ParameterValue for Lfo1TargetParameterValue {
     fn get_formatted(self) -> CompactString {
         self.0.parameter().name()
     }
+
+    fn get_serializable(&self) -> SerializableRepresentation {
+        SerializableRepresentation::Other(self.get_formatted())
+    }
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -160,6 +165,10 @@ impl ParameterValue for Lfo2TargetParameterValue {
     }
     fn get_formatted(self) -> CompactString {
         self.0.parameter().name()
+    }
+
+    fn get_serializable(&self) -> SerializableRepresentation {
+        SerializableRepresentation::Other(self.get_formatted())
     }
 }
 
@@ -193,6 +202,10 @@ impl ParameterValue for Lfo3TargetParameterValue {
     fn get_formatted(self) -> CompactString {
         self.0.parameter().name()
     }
+
+    fn get_serializable(&self) -> SerializableRepresentation {
+        SerializableRepresentation::Other(self.get_formatted())
+    }
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -224,6 +237,10 @@ impl ParameterValue for Lfo4TargetParameterValue {
     }
     fn get_formatted(self) -> CompactString {
         self.0.parameter().name()
+    }
+
+    fn get_serializable(&self) -> SerializableRepresentation {
+        SerializableRepresentation::Other(self.get_formatted())
     }
 }
 

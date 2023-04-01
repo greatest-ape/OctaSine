@@ -2,6 +2,7 @@ use compact_str::CompactString;
 
 use super::utils::*;
 use super::ParameterValue;
+use super::SerializableRepresentation;
 
 const LFO_MODE_STEPS: [LfoMode; 2] = [LfoMode::Forever, LfoMode::Once];
 
@@ -42,5 +43,9 @@ impl ParameterValue for LfoModeValue {
             LfoMode::Once => "ONCE".into(),
             LfoMode::Forever => "LOOP".into(),
         }
+    }
+
+    fn get_serializable(&self) -> SerializableRepresentation {
+        SerializableRepresentation::Other(self.get_formatted())
     }
 }

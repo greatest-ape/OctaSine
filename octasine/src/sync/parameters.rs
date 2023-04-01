@@ -11,6 +11,7 @@ pub struct PatchParameter {
     pub name: CompactString,
     pub value_from_text: fn(&str) -> Option<f32>,
     pub format: fn(f32) -> CompactString,
+    pub get_serializable: fn(f32) -> SerializableRepresentation,
     pub default_value: f32,
     pub clap_path: CompactString,
     pub parameter: WrappedParameter,
@@ -97,6 +98,7 @@ impl PatchParameter {
             value: AtomicFloat::new(V::default().to_patch()),
             value_from_text: |v| V::new_from_text(v).map(|v| v.to_patch()),
             format: |v| V::new_from_patch(v).get_formatted(),
+            get_serializable: |v| V::new_from_patch(v).get_serializable(),
             default_value: V::default().to_patch(),
             clap_path: parameter.parameter().clap_path().into(),
             parameter,
@@ -120,6 +122,10 @@ impl PatchParameter {
 
     pub fn get_value_text(&self) -> CompactString {
         (self.format)(self.value.get())
+    }
+
+    pub fn get_serializable(&self) -> SerializableRepresentation {
+        (self.get_serializable)(self.value.get())
     }
 
     pub fn set_from_text(&self, text: &str) -> bool {

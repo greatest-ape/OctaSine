@@ -2,7 +2,7 @@ use std::f32::consts::FRAC_PI_2;
 
 use compact_str::{format_compact, CompactString};
 
-use super::{utils::parse_valid_f32, ParameterValue};
+use super::{utils::parse_valid_f32, ParameterValue, SerializableRepresentation};
 
 #[derive(Debug, Clone, Copy)]
 pub struct OperatorPanningValue(f32);
@@ -72,5 +72,9 @@ impl ParameterValue for OperatorPanningValue {
             std::cmp::Ordering::Less => format_compact!("{}L", pan.abs()),
             std::cmp::Ordering::Equal => "C".into(),
         }
+    }
+
+    fn get_serializable(&self) -> SerializableRepresentation {
+        SerializableRepresentation::Float(self.0.into())
     }
 }

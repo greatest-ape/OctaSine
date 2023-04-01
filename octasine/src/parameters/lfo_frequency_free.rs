@@ -3,6 +3,7 @@ use compact_str::CompactString;
 
 use super::utils::*;
 use super::ParameterValue;
+use super::SerializableRepresentation;
 
 const LFO_FREQUENCY_FREE_STEPS: [f32; 7] = [1.0 / 16.0, 0.5, 0.9, 1.0, 1.1, 2.0, 16.0];
 
@@ -38,5 +39,9 @@ impl ParameterValue for LfoFrequencyFreeValue {
     }
     fn get_formatted(self) -> CompactString {
         format_compact!("{:.04}", self.0)
+    }
+
+    fn get_serializable(&self) -> SerializableRepresentation {
+        SerializableRepresentation::Float(self.0.into())
     }
 }
