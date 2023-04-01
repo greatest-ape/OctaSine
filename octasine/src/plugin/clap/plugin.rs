@@ -442,15 +442,10 @@ impl OctaSine {
                         try_push_fn(out_events, &event as *const _ as *const _);
                     }
                     EventToHost::RescanValues => {
-                        let host_params = self.get_params_extension();
-
-                        let rescan = host_params.rescan.unwrap();
-
-                        // FIXME: should maybe clear automations etc too
-                        rescan(self.host, CLAP_PARAM_RESCAN_VALUES);
+                        self.tell_host_to_rescan_values();
                     }
                     EventToHost::StateChanged => {
-                        self.mark_host_state_dirty();
+                        self.tell_host_state_is_dirty();
                     }
                 };
             }
@@ -482,15 +477,22 @@ impl OctaSine {
         }
     }
 
-    unsafe fn get_params_extension(&self) -> &clap_host_params {
+    unsafe fn tell_host_to_rescan_values(&self) {
         let host = &*(self.host);
 
         let get_extension = host.get_extension.unwrap();
 
-        &*(get_extension(self.host, CLAP_EXT_PARAMS.as_ptr()) as *const clap_host_params)
+        let ext = get_extension(self.host, CLAP_EXT_PARAMS.as_ptr()) as *const clap_host_params;
+
+        if ext.is_null() {
+            ::log::error!("host doesn't implement params extension");
+        } else {
+            // FIXME: should maybe clear automations etc too
+            (&*(ext)).rescan.unwrap()(self.host, CLAP_PARAM_RESCAN_VALUES);
+        }
     }
 
-    unsafe fn mark_host_state_dirty(&self) {
+    unsafe fn tell_host_state_is_dirty(&self) {
         let host = &*(self.host);
 
         let get_extension = host.get_extension.unwrap();
