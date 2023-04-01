@@ -474,12 +474,20 @@ pub mod tests {
                 .import_bank_from_bytes(&bank_1.export_fxb_bytes())
                 .unwrap();
 
+            let bank_3 = PatchBank::default();
+
+            bank_3
+                .import_bank_from_bytes(&bank_1.export_plain_bytes())
+                .unwrap();
+
             for preset_index in 0..bank_1.num_patches() {
                 bank_1.set_patch_index(preset_index);
                 bank_2.set_patch_index(preset_index);
+                bank_3.set_patch_index(preset_index);
 
                 let current_preset_1 = bank_1.get_current_patch();
                 let current_preset_2 = bank_2.get_current_patch();
+                let current_preset_3 = bank_3.get_current_patch();
 
                 for parameter_index in 0..current_preset_1.parameters.len() {
                     let parameter_1 = current_preset_1
@@ -494,7 +502,14 @@ pub mod tests {
                         .unwrap()
                         .1;
 
+                    let parameter_3 = current_preset_3
+                        .parameters
+                        .get_index(parameter_index)
+                        .unwrap()
+                        .1;
+
                     assert_eq!(parameter_1.get_value(), parameter_2.get_value());
+                    assert_eq!(parameter_1.get_value(), parameter_3.get_value());
                 }
             }
         }
