@@ -144,7 +144,7 @@ impl EnvelopeStagePath {
             stage_end_value,
             duration as f64,
             stage_duration as f64,
-        ) as f32;
+        );
 
         // Watch out for point.y.is_nan() when duration = 0.0 here
         let point = Point::new(

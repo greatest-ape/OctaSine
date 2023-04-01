@@ -112,10 +112,10 @@ impl ParameterValue for OperatorSustainVolumeValue {
         self.0
     }
     fn new_from_patch(value: f32) -> Self {
-        Self(value as f32)
+        Self(value)
     }
     fn to_patch(self) -> f32 {
-        self.0 as f32
+        self.0
     }
     fn get_formatted(self) -> CompactString {
         format_compact!("{:.04}", self.0)
@@ -172,10 +172,10 @@ impl ParameterValue for OperatorEnvelopeGroupValue {
         self
     }
     fn new_from_patch(value: f32) -> Self {
-        map_patch_value_to_step(&LOCK_STEPS[..], value)
+        map_patch_value_to_step(LOCK_STEPS, value)
     }
     fn to_patch(self) -> f32 {
-        map_step_to_patch_value(&LOCK_STEPS[..], self)
+        map_step_to_patch_value(LOCK_STEPS, self)
     }
     fn get_formatted(self) -> CompactString {
         format_compact!("{:?}", self)
@@ -193,21 +193,21 @@ mod tests {
     #[test]
     fn test_attack_duration_from_text() {
         assert_eq!(
-            OperatorAttackDurationValue::new_from_text("0.0".into())
+            OperatorAttackDurationValue::new_from_text("0.0")
                 .unwrap()
                 .get(),
             ENVELOPE_MIN_DURATION
         );
 
         assert_eq!(
-            OperatorAttackDurationValue::new_from_text("1.0".into())
+            OperatorAttackDurationValue::new_from_text("1.0")
                 .unwrap()
                 .get(),
             1.0
         );
 
         assert_eq!(
-            OperatorAttackDurationValue::new_from_text("10.0".into())
+            OperatorAttackDurationValue::new_from_text("10.0")
                 .unwrap()
                 .get(),
             ENVELOPE_MAX_DURATION

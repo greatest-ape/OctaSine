@@ -91,7 +91,7 @@ impl AudioState {
     }
 
     pub fn enqueue_note_event(&mut self, event: NoteEvent) {
-        if let Err(_) = self.pending_note_events.push(event) {
+        if self.pending_note_events.push(event).is_err() {
             ::log::error!("Audio note event buffer full");
         }
     }

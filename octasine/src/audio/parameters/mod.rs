@@ -142,7 +142,10 @@ impl AudioParameters {
         set_parameter_from_patch,
         f32,
         (),
-        |p: &mut dyn AudioParameterPatchInteraction, v| Some(p.set_patch_value(v))
+        |p: &mut dyn AudioParameterPatchInteraction, v| {
+            p.set_patch_value(v);
+            Some(())
+        }
     );
 
     #[cfg(test)]

@@ -107,7 +107,7 @@ pub fn update_lfo_target_values(
             frequency_ratio * frequency_free,
         );
 
-        let addition = voice_lfo.get_value(amount as f32);
+        let addition = voice_lfo.get_value(amount);
 
         lfo_values.set_or_add(target_index, addition);
     }

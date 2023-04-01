@@ -201,11 +201,7 @@ mod tests {
                         .iter()
                         .enumerate()
                         .filter_map(|(index, opt_value)| {
-                            if let Some(value) = opt_value {
-                                Some((index, *value))
-                            } else {
-                                None
-                            }
+                            opt_value.as_ref().map(|value| (index, *value))
                         })
                         .collect();
 

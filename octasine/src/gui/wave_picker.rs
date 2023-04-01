@@ -183,7 +183,7 @@ where
 
         for i in 0..WIDTH - 1 {
             let phase = Phase((i as f64) / (WIDTH - 1) as f64);
-            let y = WaveformChoices::calculate_for_current(self.shape, phase) as f32;
+            let y = WaveformChoices::calculate_for_current(self.shape, phase);
 
             let visual_y = HEIGHT_MIDDLE - y * SHAPE_HEIGHT_RANGE;
             let visual_x = 0.5 + i as f32;

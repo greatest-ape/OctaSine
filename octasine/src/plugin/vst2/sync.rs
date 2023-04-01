@@ -36,7 +36,7 @@ impl vst::plugin::PluginParameters for SyncState<vst::plugin::HostCallback> {
     fn get_parameter(&self, index: i32) -> f32 {
         self.patches
             .get_parameter_value(index as usize)
-            .unwrap_or(0.0) as f32
+            .unwrap_or(0.0)
     }
 
     /// Set the value of parameter at `index`. `value` is between 0.0 and 1.0.
@@ -127,7 +127,7 @@ impl crate::sync::GuiSyncHandle for Arc<SyncState<vst::plugin::HostCallback>> {
         if let Some(host) = self.host {
             // Host will occasionally set the value again, but that's
             // ok
-            host.automate(index as i32, value as f32);
+            host.automate(index as i32, value);
         }
 
         self.patches.set_parameter_from_gui(index, value);

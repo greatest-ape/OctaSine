@@ -27,9 +27,9 @@ impl Default for SampleRate {
     }
 }
 
-impl Into<TimePerSample> for SampleRate {
-    fn into(self) -> TimePerSample {
-        TimePerSample(1.0 / self.0)
+impl From<SampleRate> for TimePerSample {
+    fn from(val: SampleRate) -> Self {
+        TimePerSample(1.0 / val.0)
     }
 }
 

@@ -42,7 +42,6 @@ where
     Container::new(contents)
         .padding(0)
         .style(ContainerStyle::L2)
-        .into()
 }
 
 pub fn container_l3<'a, T>(contents: T) -> Container<'a, Message, Theme>
@@ -65,7 +64,6 @@ where
     Container::new(contents)
         .padding(0)
         .style(ContainerStyle::L3)
-        .into()
 }
 
 pub fn triple_container<'a, T>(contents: T) -> Container<'a, Message, Theme>

@@ -27,11 +27,11 @@ impl Settings {
     }
 
     pub fn save(&self) -> anyhow::Result<()> {
-        let _ = ::std::fs::create_dir(&get_file_storage_dir()?); // Ignore creation errors
+        let _ = ::std::fs::create_dir(get_file_storage_dir()?); // Ignore creation errors
 
         let file = ::std::fs::File::create(Self::get_config_file_path()?)?;
 
-        let _ = ::serde_json::to_writer_pretty(file, self)?;
+        ::serde_json::to_writer_pretty(file, self)?;
 
         Ok(())
     }

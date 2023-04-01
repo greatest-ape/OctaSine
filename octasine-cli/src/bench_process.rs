@@ -68,14 +68,13 @@ fn benchmark<A: AudioGen + Simd>(name: &str, expected_hash: &str) -> (bool, f32)
     const NUM_VOICES: usize = 4;
 
     let envelope_duration_parameters: Vec<Parameter> = (0..4)
-        .map(|i| {
+        .flat_map(|i| {
             vec![
                 Parameter::Operator(i, OperatorParameter::AttackDuration),
                 Parameter::Operator(i, OperatorParameter::DecayDuration),
                 Parameter::Operator(i, OperatorParameter::ReleaseDuration),
             ]
         })
-        .flatten()
         .collect();
 
     let wave_type_parameters: Vec<Parameter> = (0..4)
@@ -177,8 +176,8 @@ fn benchmark<A: AudioGen + Simd>(name: &str, expected_hash: &str) -> (bool, f32)
         }
 
         for (l, r) in lefts.iter().zip(rights.iter()) {
-            output_hasher.update(&l.to_ne_bytes());
-            output_hasher.update(&r.to_ne_bytes());
+            output_hasher.update(l.to_ne_bytes());
+            output_hasher.update(r.to_ne_bytes());
         }
     }
 

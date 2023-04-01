@@ -185,7 +185,7 @@ impl BooleanButton {
             patch_value_to_is_on: f,
             is_on_to_patch_value: g,
             button_style,
-            text: text.into(),
+            text,
             width,
             height,
         }

@@ -179,7 +179,7 @@ fn get_octasine_version() -> Version {
     Version::parse(env!("CARGO_PKG_VERSION")).unwrap()
 }
 
-fn deserialize_bytes<'a, T>(bytes: &'a [u8]) -> anyhow::Result<T>
+fn deserialize_bytes<T>(bytes: &[u8]) -> anyhow::Result<T>
 where
     T: Serialize + DeserializeOwned,
 {

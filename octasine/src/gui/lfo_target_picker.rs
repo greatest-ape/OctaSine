@@ -37,7 +37,7 @@ impl LfoTargetPicker {
         let target_parameters = get_lfo_target_parameters(lfo_index);
 
         let options = target_parameters
-            .into_iter()
+            .iter()
             .map(|target| LfoTarget {
                 value: *target,
                 title: target.parameter().name().to_uppercase(),

@@ -66,7 +66,7 @@ pub struct SerdePatch {
 }
 
 impl SerdePatch {
-    pub fn from_bytes<'a>(bytes: &'a [u8]) -> anyhow::Result<Self> {
+    pub fn from_bytes(bytes: &[u8]) -> anyhow::Result<Self> {
         Ok(generic_from_bytes(bytes)?)
     }
 }
@@ -78,7 +78,7 @@ pub struct SerdePatchBank {
 }
 
 impl SerdePatchBank {
-    pub fn from_bytes<'a>(bytes: &'a [u8]) -> anyhow::Result<Self> {
+    pub fn from_bytes(bytes: &[u8]) -> anyhow::Result<Self> {
         Ok(generic_from_bytes(bytes)?)
     }
 }
@@ -92,8 +92,8 @@ pub fn parse_version(v1_version: &str) -> anyhow::Result<Version> {
     Ok(Version::parse(&chars.take(5).collect::<String>())?)
 }
 
-fn generic_from_bytes<'a, T: DeserializeOwned>(
-    mut bytes: &'a [u8],
+fn generic_from_bytes<T: DeserializeOwned>(
+    mut bytes: &[u8],
 ) -> Result<T, impl ::std::error::Error> {
     bytes = split_off_slice_prefix(bytes, PREFIX);
     bytes = split_off_slice_suffix(bytes, SUFFIX);

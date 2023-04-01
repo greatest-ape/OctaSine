@@ -219,7 +219,7 @@ impl EnvelopeCanvas {
             x_offset,
             0.0,
             0.0,
-            self.attack_duration as f32,
+            self.attack_duration,
             1.0,
         );
 
@@ -230,8 +230,8 @@ impl EnvelopeCanvas {
             x_offset,
             self.attack_duration,
             1.0,
-            self.decay_duration as f32,
-            self.sustain_volume as f32,
+            self.decay_duration,
+            self.sustain_volume,
         );
 
         self.release_stage_path = EnvelopeStagePath::new(
@@ -241,7 +241,7 @@ impl EnvelopeCanvas {
             x_offset,
             self.attack_duration + self.decay_duration,
             self.sustain_volume,
-            self.release_duration as f32,
+            self.release_duration,
             0.0,
         );
     }

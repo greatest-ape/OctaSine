@@ -18,11 +18,11 @@ pub fn update_bank_from_bytes(bank: &PatchBank, bytes: &[u8]) -> anyhow::Result<
 
     for (index, patch) in bank.patches.iter().enumerate() {
         let serde_patch = if let Some(serde_patch) = serde_bank.patches.get(index) {
-            patch.set_name(serde_patch.name.as_str().into());
+            patch.set_name(serde_patch.name.as_str());
 
             serde_patch
         } else {
-            patch.set_name("".into());
+            patch.set_name("");
 
             &default_serde_patch
         };

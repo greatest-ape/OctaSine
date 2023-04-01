@@ -30,6 +30,7 @@ const OPERATOR_4_PERMUTATIONS: &[ModTargetStorage] = &[
 ];
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Default)]
 pub struct ModTargetStorage {
     indices: u8,
     iter_range: u8,
@@ -82,14 +83,7 @@ impl ModTargetStorage {
     }
 }
 
-impl Default for ModTargetStorage {
-    fn default() -> Self {
-        Self {
-            indices: 0,
-            iter_range: 0,
-        }
-    }
-}
+
 
 impl std::fmt::Display for ModTargetStorage {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

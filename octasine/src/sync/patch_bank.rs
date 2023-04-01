@@ -57,7 +57,7 @@ impl Patch {
     }
 
     fn process_name(name: &str) -> String {
-        name.chars().into_iter().filter(|c| c.is_ascii()).collect()
+        name.chars().filter(|c| c.is_ascii()).collect()
     }
 
     fn update_from_bytes(&self, bytes: &[u8]) -> anyhow::Result<()> {
@@ -65,7 +65,7 @@ impl Patch {
     }
 
     fn set_from_patch_parameters(&self, parameters: &IndexMap<ParameterKey, PatchParameter>) {
-        self.set_name("".into());
+        self.set_name("");
 
         for (parameter, default_value) in self
             .parameters
@@ -167,7 +167,7 @@ impl PatchBank {
 
     pub fn get_patch_name(&self, index: usize) -> Option<CompactString> {
         self.patches
-            .get(index as usize)
+            .get(index)
             .map(|p| format_compact!("{:03}: {}", index + 1, p.name.load_full()))
     }
 
@@ -254,7 +254,7 @@ impl PatchBank {
         let opt_parameter = self.get_parameter_by_index(index);
 
         if let Some(parameter) = opt_parameter {
-            parameter.set_value(value as f32);
+            parameter.set_value(value);
 
             self.parameter_change_info_audio.mark_as_changed(index);
             self.parameter_change_info_gui.mark_as_changed(index);
@@ -298,7 +298,7 @@ impl PatchBank {
         let mut patch_file_bytes = VecDeque::new();
 
         for path in paths {
-            match read_file(&path) {
+            match read_file(path) {
                 Ok(bytes) => match path.extension().and_then(|s| s.to_str()) {
                     Some("fxb") => {
                         bank_file_bytes.push(bytes);

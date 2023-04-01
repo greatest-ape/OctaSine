@@ -35,7 +35,7 @@ impl ParameterValue for OperatorPanningValue {
 
         if text.as_str() == "c" || text.as_str() == "0" {
             Some(Self(0.5))
-        } else if let Some(index) = text.rfind("r") {
+        } else if let Some(index) = text.rfind('r') {
             let mut text = text;
 
             text.remove(index);
@@ -43,7 +43,7 @@ impl ParameterValue for OperatorPanningValue {
             let value = parse_valid_f32(&text, 0.0, 50.0)?;
 
             Some(Self((0.5 + value / 100.0).min(1.0).max(0.0)))
-        } else if let Some(index) = text.rfind("l") {
+        } else if let Some(index) = text.rfind('l') {
             let mut text = text;
 
             text.remove(index);

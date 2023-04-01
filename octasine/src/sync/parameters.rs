@@ -94,13 +94,13 @@ impl PatchParameter {
 
     fn new<V: ParameterValue>(parameter: WrappedParameter) -> Self {
         Self {
-            name: parameter.parameter().name().into(),
+            name: parameter.parameter().name(),
             value: AtomicFloat::new(V::default().to_patch()),
             value_from_text: |v| V::new_from_text(v).map(|v| v.to_patch()),
             format: |v| V::new_from_patch(v).get_formatted(),
             get_serializable: |v| V::new_from_patch(v).get_serializable(),
             default_value: V::default().to_patch(),
-            clap_path: parameter.parameter().clap_path().into(),
+            clap_path: parameter.parameter().clap_path(),
             parameter,
         }
     }

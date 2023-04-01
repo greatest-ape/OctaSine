@@ -34,10 +34,10 @@ impl ParameterValue for MasterFrequencyValue {
         self.0
     }
     fn new_from_patch(value: f32) -> Self {
-        Self(map_patch_to_audio_value_with_steps(&MASTER_FREQUENCY_STEPS, value) as f64)
+        Self(map_patch_to_audio_value_with_steps(MASTER_FREQUENCY_STEPS, value) as f64)
     }
     fn to_patch(self) -> f32 {
-        map_audio_to_patch_value_with_steps(&MASTER_FREQUENCY_STEPS, self.0 as f32)
+        map_audio_to_patch_value_with_steps(MASTER_FREQUENCY_STEPS, self.0 as f32)
     }
     fn get_formatted(self) -> CompactString {
         if self.0 < 10000.0 {
@@ -48,6 +48,6 @@ impl ParameterValue for MasterFrequencyValue {
     }
 
     fn get_serializable(&self) -> SerializableRepresentation {
-        SerializableRepresentation::Float(self.0.into())
+        SerializableRepresentation::Float(self.0)
     }
 }

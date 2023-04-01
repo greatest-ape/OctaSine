@@ -58,7 +58,7 @@ enum OperatorModTargets {
 }
 
 impl OperatorModTargets {
-    fn active_indices<'a>(&'a self) -> impl Iterator<Item = usize> + 'a {
+    fn active_indices(&self) -> impl Iterator<Item = usize> + '_ {
         ModTargetStorage::active_indices(match self {
             Self::Two(v) => v.borrow(),
             Self::Three(v) => v.borrow(),

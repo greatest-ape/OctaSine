@@ -50,7 +50,7 @@ fn import_plain(c: &mut Criterion) {
         BenchmarkId::new("import_plain", "randomized"),
         &data,
         |b, data| {
-            b.iter(|| PatchBank::new_from_bytes(&data));
+            b.iter(|| PatchBank::new_from_bytes(data));
         },
     );
 }
@@ -62,7 +62,7 @@ fn import_fxb(c: &mut Criterion) {
         BenchmarkId::new("import_fxb", "randomized"),
         &data,
         |b, data| {
-            b.iter(|| PatchBank::new_from_bytes(&data));
+            b.iter(|| PatchBank::new_from_bytes(data));
         },
     );
 }

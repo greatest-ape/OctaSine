@@ -365,7 +365,7 @@ mod gen {
                         operator,
                         &mut voice.operators[operator_index],
                         &mut voice_data.operators[operator_index],
-                        &lfo_values,
+                        lfo_values,
                         time_per_sample,
                         voice_base_frequency,
                     )

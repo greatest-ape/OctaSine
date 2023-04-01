@@ -32,7 +32,6 @@ pub fn make_fxp(
         for (b, c) in buf[..27].iter_mut().zip(
             patch_name
                 .chars()
-                .into_iter()
                 .filter_map(|c| c.is_ascii().then_some(c as u8)),
         ) {
             *b = c;
@@ -44,7 +43,7 @@ pub fn make_fxp(
     bytes.extend_from_slice(&name_buf);
 
     bytes.write_i32::<BigEndian>(patch_bytes.len().try_into()?)?;
-    bytes.extend_from_slice(&patch_bytes);
+    bytes.extend_from_slice(patch_bytes);
 
     Ok(bytes)
 }
@@ -64,7 +63,7 @@ pub fn make_fxb(bank_bytes: &[u8], num_patches: usize) -> anyhow::Result<Vec<u8>
     bytes.extend(::std::iter::repeat(0).take(128)); // reserved padding for fxb version 1
 
     bytes.write_i32::<BigEndian>(bank_bytes.len().try_into()?)?;
-    bytes.extend_from_slice(&bank_bytes);
+    bytes.extend_from_slice(bank_bytes);
 
     Ok(bytes)
 }

@@ -269,7 +269,7 @@ where
 
         let default_value = Normal::from_clipped(default_patch_value);
         let value = NormalParam {
-            value: Normal::from_clipped(sync_handle.get_parameter(parameter) as f32),
+            value: Normal::from_clipped(sync_handle.get_parameter(parameter)),
             default: default_value,
         };
         let value_text = ValueText::new(sync_handle, parameter);
@@ -298,7 +298,7 @@ where
         // if !self.knob_state.is_dragging() {
         //     self.knob_state.set_normal(Normal::new(value as f32));
         // }
-        self.value.update(Normal::from_clipped(value as f32));
+        self.value.update(Normal::from_clipped(value));
 
         self.value_text.set_value(value);
     }
@@ -349,7 +349,7 @@ fn tick_marks_from_min_max_and_value(patch_value: f32) -> tick_marks::Group {
     let marks = vec![
         (Normal::from_clipped(0.0), tick_marks::Tier::One),
         (
-            Normal::from_clipped(patch_value as f32),
+            Normal::from_clipped(patch_value),
             tick_marks::Tier::Two,
         ),
         (Normal::from_clipped(1.0), tick_marks::Tier::One),

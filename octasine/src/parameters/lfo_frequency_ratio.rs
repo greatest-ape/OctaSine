@@ -56,6 +56,6 @@ impl ParameterValue for LfoFrequencyRatioValue {
     }
 
     fn get_serializable(&self) -> SerializableRepresentation {
-        SerializableRepresentation::Float(self.0.into())
+        SerializableRepresentation::Float(self.0)
     }
 }

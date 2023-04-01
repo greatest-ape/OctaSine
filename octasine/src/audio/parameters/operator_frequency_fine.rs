@@ -23,7 +23,7 @@ impl AudioParameter for OperatorFrequencyFineAudioParameter {
     ) -> <Self::ParameterValue as ParameterValue>::Value {
         if let Some(lfo_addition) = lfo_addition {
             // log2(1.5) / 2
-            const FACTOR: f32 = 0.5849625007211562 / 2.0;
+            const FACTOR: f32 = 0.584_962_5 / 2.0;
 
             self.get_value() * exp2_fast(FACTOR * lfo_addition) as f64
         } else {
