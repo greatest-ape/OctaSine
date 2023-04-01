@@ -443,23 +443,18 @@ pub mod tests {
     #[test]
     #[allow(clippy::float_cmp)]
     pub fn test_export_import() {
-        for _ in 0..20 {
+        fastrand::seed(123);
+
+        for _ in 0..50 {
             let bank_1 = PatchBank::default();
 
-            for preset_index in 0..bank_1.num_patches() {
-                bank_1.set_patch_index(preset_index);
+            for (patch_index, patch) in bank_1.patches.iter().enumerate() {
+                bank_1.set_patch_index(patch_index);
 
-                assert_eq!(bank_1.get_patch_index(), preset_index);
+                assert_eq!(bank_1.get_patch_index(), patch_index);
+                assert_eq!(bank_1.get_current_patch().get_name(), patch.get_name());
 
-                let current_preset = bank_1.get_current_patch();
-
-                for parameter_index in 0..current_preset.parameters.len() {
-                    let parameter = current_preset
-                        .parameters
-                        .get_index(parameter_index)
-                        .unwrap()
-                        .1;
-
+                for parameter in patch.parameters.values() {
                     let value = fastrand::f32();
 
                     parameter.set_value(value);
@@ -468,48 +463,28 @@ pub mod tests {
                 }
             }
 
-            let bank_2 = PatchBank::default();
+            let bank_2 = PatchBank::new_from_bytes(&bank_1.export_fxb_bytes());
+            let bank_3 = PatchBank::new_from_bytes(&bank_1.export_plain_bytes());
 
-            bank_2
-                .import_bank_from_bytes(&bank_1.export_fxb_bytes())
-                .unwrap();
+            for ((patch_1, patch_2), patch_3) in bank_1
+                .patches
+                .iter()
+                .zip(bank_2.patches.iter())
+                .zip(bank_3.patches.iter())
+            {
+                for ((p1, p2), p3) in patch_1
+                    .parameters
+                    .values()
+                    .zip(patch_2.parameters.values())
+                    .zip(patch_3.parameters.values())
+                {
+                    let values = [p1, p2, p3]
+                        .into_iter()
+                        .map(|p| (p.get_value(), p.get_value_text()))
+                        .collect::<Vec<_>>();
 
-            let bank_3 = PatchBank::default();
-
-            bank_3
-                .import_bank_from_bytes(&bank_1.export_plain_bytes())
-                .unwrap();
-
-            for preset_index in 0..bank_1.num_patches() {
-                bank_1.set_patch_index(preset_index);
-                bank_2.set_patch_index(preset_index);
-                bank_3.set_patch_index(preset_index);
-
-                let current_preset_1 = bank_1.get_current_patch();
-                let current_preset_2 = bank_2.get_current_patch();
-                let current_preset_3 = bank_3.get_current_patch();
-
-                for parameter_index in 0..current_preset_1.parameters.len() {
-                    let parameter_1 = current_preset_1
-                        .parameters
-                        .get_index(parameter_index)
-                        .unwrap()
-                        .1;
-
-                    let parameter_2 = current_preset_2
-                        .parameters
-                        .get_index(parameter_index)
-                        .unwrap()
-                        .1;
-
-                    let parameter_3 = current_preset_3
-                        .parameters
-                        .get_index(parameter_index)
-                        .unwrap()
-                        .1;
-
-                    assert_eq!(parameter_1.get_value(), parameter_2.get_value());
-                    assert_eq!(parameter_1.get_value(), parameter_3.get_value());
+                    assert_eq!(values[0], values[1]);
+                    assert_eq!(values[0], values[2]);
                 }
             }
         }
