@@ -19,7 +19,7 @@ pub fn compat_0_8_5(patch: &mut SerdePatch) {
         Parameter::Operator(2, OperatorParameter::WaveType).key(),
         Parameter::Operator(3, OperatorParameter::WaveType).key(),
     ];
-    // Operator wave type parameter indices
+
     for key in parameter_keys {
         let p = patch.parameters.get_mut(&key).unwrap();
 
