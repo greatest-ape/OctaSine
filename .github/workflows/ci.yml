@@ -92,13 +92,18 @@ jobs:
     - name: Install latest Rust
       uses: dtolnay/rust-toolchain@stable
 
+    - name: Install cargo-nextest
+      uses: taiki-e/install-action@nextest
+
     - name: Setup Rust dependency caching
       uses: Swatinem/rust-cache@v2
 
     - name: Run tests
-      run: cargo test --workspace --verbose --features "vst2 clap"
+      run: cargo nextest run --workspace --verbose --features "vst2 clap"
       env:
-        RUSTFLAGS: "-C target-cpu=native" 
+        # Set target-cpu=skylake to enable avx-2 but not avx-512, since the
+        # latter for some reason leads to SIGILL failures
+        RUSTFLAGS: "-C target-cpu=skylake" 
 
   cargo-deny:
     runs-on: ubuntu-latest
