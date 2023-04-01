@@ -22,7 +22,7 @@ const PREFIX_GZ: &[u8] = b"\n\nOCTASINE-DATA-V2-GZ\n\n";
 
 #[derive(Serialize, Deserialize)]
 pub struct SerdePatchBank {
-    octasine_version: [u64; 3],
+    octasine_version: Version,
     pub patches: Vec<SerdePatch>,
 }
 
@@ -37,7 +37,7 @@ impl SerdePatchBank {
     }
 
     pub fn from_v1(v1: super::v1::SerdePatchBank) -> anyhow::Result<Self> {
-        let octasine_version = parse_v1_version(&v1.octasine_version)?;
+        let octasine_version = super::v1::parse_version(&v1.octasine_version)?;
         let mut v2_patches = Vec::with_capacity(v1.patches.len());
 
         for v1_patch in v1.patches.into_iter() {
@@ -75,7 +75,7 @@ impl SerdePatchBank {
 
 #[derive(Serialize, Deserialize)]
 pub struct SerdePatch {
-    octasine_version: [u64; 3],
+    octasine_version: Version,
     pub name: CompactString,
     pub parameters: IndexMap<ParameterKey, SerdePatchParameter>,
 }
@@ -105,7 +105,7 @@ impl SerdePatch {
     }
 
     pub fn from_v1(v1: super::v1::SerdePatch) -> anyhow::Result<Self> {
-        let octasine_version = parse_v1_version(&v1.octasine_version)?;
+        let octasine_version = super::v1::parse_version(&v1.octasine_version)?;
 
         let mut v2_parameters = Self::new(&Patch::default()).parameters;
 
@@ -153,14 +153,8 @@ impl SerdePatch {
     }
 
     fn run_compatibility_changes(&mut self) {
-        let patch_version = {
-            let [major, minor, patch] = self.octasine_version;
-
-            Version::new(major, minor, patch)
-        };
-
         for (changed_in_version, f) in COMPATIBILITY_CHANGES {
-            if patch_version < *changed_in_version {
+            if self.octasine_version < *changed_in_version {
                 f(self);
             } else {
                 break;
@@ -181,16 +175,8 @@ pub fn bytes_are_v2(bytes: &[u8]) -> bool {
         || memchr::memmem::find(bytes, PREFIX_GZ).is_some()
 }
 
-fn get_octasine_version() -> [u64; 3] {
-    let version = Version::parse(env!("CARGO_PKG_VERSION")).unwrap();
-
-    [version.major, version.minor, version.patch]
-}
-
-fn parse_v1_version(v1_version: &str) -> anyhow::Result<[u64; 3]> {
-    let version = super::v1::parse_version(v1_version)?;
-
-    Ok([version.major, version.minor, version.patch])
+fn get_octasine_version() -> Version {
+    Version::parse(env!("CARGO_PKG_VERSION")).unwrap()
 }
 
 fn deserialize_bytes<'a, T>(bytes: &'a [u8]) -> anyhow::Result<T>

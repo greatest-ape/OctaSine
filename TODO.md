@@ -2,7 +2,6 @@
 
 * Patch format v2
   * criterion export and import benchmarks
-    * Make version CompactString for compatibility with release candidates etc?
     * Is CompactString really worth it, even with frequent clap state exports?
       * Overhead doesn't seem to be large, but might not actually be faster than string. ArrayString
         would be an option maybe
