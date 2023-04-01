@@ -3,7 +3,7 @@ mod compat;
 use std::io::{BufReader, Write};
 
 use compact_str::CompactString;
-use flate2::{read::GzDecoder, write::GzEncoder, Compression};
+use flate2::{bufread::GzDecoder, write::GzEncoder, Compression};
 use semver::Version;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 
