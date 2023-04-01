@@ -20,7 +20,7 @@ use clap_sys::{
         gui::CLAP_EXT_GUI,
         note_ports::CLAP_EXT_NOTE_PORTS,
         params::{clap_host_params, CLAP_EXT_PARAMS, CLAP_PARAM_RESCAN_VALUES},
-        state::CLAP_EXT_STATE,
+        state::{clap_host_state, CLAP_EXT_STATE},
     },
     host::clap_host,
     plugin::clap_plugin,
@@ -449,6 +449,9 @@ impl OctaSine {
                         // FIXME: should maybe clear automations etc too
                         rescan(self.host, CLAP_PARAM_RESCAN_VALUES);
                     }
+                    EventToHost::StateChanged => {
+                        self.mark_host_state_dirty();
+                    }
                 };
             }
         }
@@ -485,5 +488,19 @@ impl OctaSine {
         let get_extension = host.get_extension.unwrap();
 
         &*(get_extension(self.host, CLAP_EXT_PARAMS.as_ptr()) as *const clap_host_params)
+    }
+
+    unsafe fn mark_host_state_dirty(&self) {
+        let host = &*(self.host);
+
+        let get_extension = host.get_extension.unwrap();
+
+        let ext = get_extension(self.host, CLAP_EXT_STATE.as_ptr()) as *const clap_host_state;
+
+        if ext.is_null() {
+            ::log::error!("host doesn't implement state extension");
+        } else {
+            (&*(ext)).mark_dirty.unwrap()(self.host);
+        }
     }
 }

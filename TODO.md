@@ -3,7 +3,6 @@
 * Patch format v2
   * clap.state
     * tell host about changes (except parameters)
-      * when setting patch name
   * Include zoom state in patch?
   * Test
   * Test patch compatibility layer

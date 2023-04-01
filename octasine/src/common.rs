@@ -99,4 +99,5 @@ pub enum EventToHost {
     Automate(ParameterKey, f32),
     EndAutomating(ParameterKey),
     RescanValues,
+    StateChanged,
 }
