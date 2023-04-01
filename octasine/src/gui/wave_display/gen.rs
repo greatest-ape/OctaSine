@@ -30,7 +30,7 @@ pub(super) fn recalculate_canvas_points(
                         &mut rights[offset..end_offset],
                         operator_index,
                         operators,
-                        offset as usize,
+                        offset,
                     );
 
                     offset = end_offset;
@@ -44,7 +44,7 @@ pub(super) fn recalculate_canvas_points(
                         &mut rights[offset..end_offset],
                         operator_index,
                         operators,
-                        offset as usize,
+                        offset,
                     );
 
                     offset = end_offset;

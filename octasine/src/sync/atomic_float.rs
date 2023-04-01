@@ -33,7 +33,7 @@ mod tests {
         assert_eq!(atomic_float.get(), a);
 
         for i in 0..100 {
-            let b = 23896.3487 - i as f32;
+            let b = 23_896.35 - i as f32;
 
             atomic_float.set(b);
 

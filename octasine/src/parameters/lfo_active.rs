@@ -1,4 +1,6 @@
-use super::ParameterValue;
+use compact_str::CompactString;
+
+use super::{ParameterValue, SerializableRepresentation};
 
 #[derive(Debug, Clone, Copy)]
 pub struct LfoActiveValue(f32);
@@ -31,11 +33,15 @@ impl ParameterValue for LfoActiveValue {
     fn to_patch(self) -> f32 {
         self.0
     }
-    fn get_formatted(self) -> String {
+    fn get_formatted(self) -> CompactString {
         if self.0 < 0.5 {
             "Off".into()
         } else {
             "On".into()
         }
+    }
+
+    fn get_serializable(&self) -> SerializableRepresentation {
+        SerializableRepresentation::Other(self.get_formatted())
     }
 }

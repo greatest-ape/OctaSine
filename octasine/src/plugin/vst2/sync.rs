@@ -1,18 +1,14 @@
+use std::path::PathBuf;
 #[cfg(feature = "gui")]
 use std::sync::Arc;
 
+use compact_str::CompactString;
 #[cfg(feature = "gui")]
 use vst::host::Host;
 
 use crate::{parameters::WrappedParameter, sync::SyncState};
 #[cfg(feature = "gui")]
-use crate::{
-    settings::Settings,
-    sync::{
-        change_info::MAX_NUM_PARAMETERS,
-        serde::{SerdePatch, SerdePatchBank},
-    },
-};
+use crate::{settings::Settings, sync::change_info::MAX_NUM_PARAMETERS};
 
 impl vst::plugin::PluginParameters for SyncState<vst::plugin::HostCallback> {
     /// Get parameter label for parameter at `index` (e.g. "db", "sec", "ms", "%").
@@ -24,6 +20,7 @@ impl vst::plugin::PluginParameters for SyncState<vst::plugin::HostCallback> {
     fn get_parameter_text(&self, index: i32) -> String {
         self.patches
             .get_parameter_value_text(index as usize)
+            .map(String::from)
             .unwrap_or_else(|| "".to_string())
     }
 
@@ -31,6 +28,7 @@ impl vst::plugin::PluginParameters for SyncState<vst::plugin::HostCallback> {
     fn get_parameter_name(&self, index: i32) -> String {
         self.patches
             .get_parameter_name(index as usize)
+            .map(String::from)
             .unwrap_or_else(|| "".to_string())
     }
 
@@ -38,7 +36,7 @@ impl vst::plugin::PluginParameters for SyncState<vst::plugin::HostCallback> {
     fn get_parameter(&self, index: i32) -> f32 {
         self.patches
             .get_parameter_value(index as usize)
-            .unwrap_or(0.0) as f32
+            .unwrap_or(0.0)
     }
 
     /// Set the value of parameter at `index`. `value` is between 0.0 and 1.0.
@@ -73,26 +71,27 @@ impl vst::plugin::PluginParameters for SyncState<vst::plugin::HostCallback> {
 
     /// Set the current preset name.
     fn set_preset_name(&self, name: String) {
-        self.patches.set_patch_name(name);
+        self.patches.set_patch_name(&name);
     }
 
     /// Get the name of the preset at the index specified by `preset`.
     fn get_preset_name(&self, index: i32) -> String {
         self.patches
             .get_patch_name(index as usize)
+            .map(String::from)
             .unwrap_or_else(|| "".to_string())
     }
 
     /// If `preset_chunks` is set to true in plugin info, this should return the raw chunk data for
     /// the current preset.
     fn get_preset_data(&self) -> Vec<u8> {
-        self.patches.export_current_patch_bytes()
+        self.patches.get_current_patch().export_fxp_bytes()
     }
 
     /// If `preset_chunks` is set to true in plugin info, this should return the raw chunk data for
     /// the current plugin bank.
     fn get_bank_data(&self) -> Vec<u8> {
-        self.patches.export_bank_as_bytes()
+        self.patches.export_fxb_bytes()
     }
 
     /// If `preset_chunks` is set to true in plugin info, this should load a preset from the given
@@ -128,7 +127,7 @@ impl crate::sync::GuiSyncHandle for Arc<SyncState<vst::plugin::HostCallback>> {
         if let Some(host) = self.host {
             // Host will occasionally set the value again, but that's
             // ok
-            host.automate(index as i32, value as f32);
+            host.automate(index as i32, value);
         }
 
         self.patches.set_parameter_from_gui(index, value);
@@ -172,12 +171,12 @@ impl crate::sync::GuiSyncHandle for Arc<SyncState<vst::plugin::HostCallback>> {
             .get_parameter_value(parameter.index() as usize)
             .unwrap() // FIXME: unwrap
     }
-    fn format_parameter_value(&self, parameter: WrappedParameter, value: f32) -> String {
+    fn format_parameter_value(&self, parameter: WrappedParameter, value: f32) -> CompactString {
         self.patches
             .format_parameter_value(parameter.index() as usize, value)
             .unwrap() // FIXME: unwrap
     }
-    fn get_patches(&self) -> (usize, Vec<String>) {
+    fn get_patches(&self) -> (usize, Vec<CompactString>) {
         let index = self.patches.get_patch_index();
         let names = self.patches.get_patch_names();
 
@@ -190,10 +189,10 @@ impl crate::sync::GuiSyncHandle for Arc<SyncState<vst::plugin::HostCallback>> {
             host.update_display();
         }
     }
-    fn get_current_patch_name(&self) -> String {
+    fn get_current_patch_name(&self) -> CompactString {
         self.patches.get_current_patch_name()
     }
-    fn set_current_patch_name(&self, name: String) {
+    fn set_current_patch_name(&self, name: &str) {
         self.patches.set_patch_name(name);
 
         if let Some(host) = self.host {
@@ -209,24 +208,17 @@ impl crate::sync::GuiSyncHandle for Arc<SyncState<vst::plugin::HostCallback>> {
     fn get_gui_settings(&self) -> crate::gui::GuiSettings {
         Settings::load_or_default().gui
     }
-    fn export_patch(&self) -> (String, Vec<u8>) {
-        let name = self.patches.get_current_patch_filename_for_export();
-        let data = self.patches.export_current_patch_fxp_bytes();
+    fn export_patch(&self) -> (CompactString, Vec<u8>) {
+        let name = self.patches.get_current_patch().get_fxp_filename();
+        let data = self.patches.get_current_patch().export_fxp_bytes();
 
         (name, data)
     }
     fn export_bank(&self) -> Vec<u8> {
-        self.patches.export_bank_as_fxb_bytes()
+        self.patches.export_fxb_bytes()
     }
-    fn import_bank_from_serde(&self, serde_bank: SerdePatchBank) {
-        self.patches.import_bank_from_serde(serde_bank);
-
-        if let Some(host) = self.host {
-            host.update_display();
-        }
-    }
-    fn import_patches_from_serde(&self, serde_patches: Vec<SerdePatch>) {
-        self.patches.import_patches_from_serde(serde_patches);
+    fn import_bank_or_patches_from_paths(&self, paths: &[PathBuf]) {
+        self.patches.import_bank_or_patches_from_paths(paths);
 
         if let Some(host) = self.host {
             host.update_display();

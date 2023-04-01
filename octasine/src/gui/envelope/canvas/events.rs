@@ -117,8 +117,7 @@ impl EnvelopeCanvas {
                     operator_index: self.operator_index,
                     parameter_1: (
                         self.attack_duration_parameter,
-                        dragging_to_duration(self.viewport_factor, x, from, original_duration)
-                            as f32,
+                        dragging_to_duration(self.viewport_factor, x, from, original_duration),
                     ),
                     parameter_2: None,
                 };
@@ -159,12 +158,11 @@ impl EnvelopeCanvas {
                     operator_index: self.operator_index,
                     parameter_1: (
                         self.decay_duration_parameter,
-                        dragging_to_duration(self.viewport_factor, x, from, original_duration)
-                            as f32,
+                        dragging_to_duration(self.viewport_factor, x, from, original_duration),
                     ),
                     parameter_2: Some((
                         self.sustain_volume_parameter,
-                        dragging_to_end_value(y, from, original_end_value) as f32,
+                        dragging_to_end_value(y, from, original_end_value),
                     )),
                 };
 
@@ -210,8 +208,7 @@ impl EnvelopeCanvas {
                     operator_index: self.operator_index,
                     parameter_1: (
                         self.release_duration_parameter,
-                        dragging_to_duration(self.viewport_factor, x, from, original_duration)
-                            as f32,
+                        dragging_to_duration(self.viewport_factor, x, from, original_duration),
                     ),
                     parameter_2: None,
                 };
@@ -262,7 +259,7 @@ impl EnvelopeCanvas {
             state.release_dragger_status = EnvelopeDraggerStatus::Normal;
 
             let message = Message::ChangeEnvelopeParametersEnd {
-                operator_index: self.operator_index as u8,
+                operator_index: self.operator_index,
                 parameter_1: (self.release_duration_parameter, self.release_duration),
                 parameter_2: None,
             };
@@ -274,7 +271,7 @@ impl EnvelopeCanvas {
             state.decay_dragger_status = EnvelopeDraggerStatus::Normal;
 
             let message = Message::ChangeEnvelopeParametersEnd {
-                operator_index: self.operator_index as u8,
+                operator_index: self.operator_index,
                 parameter_1: (self.decay_duration_parameter, self.decay_duration),
                 parameter_2: Some((self.sustain_volume_parameter, self.sustain_volume)),
             };
@@ -286,7 +283,7 @@ impl EnvelopeCanvas {
             state.attack_dragger_status = EnvelopeDraggerStatus::Normal;
 
             let message = Message::ChangeEnvelopeParametersEnd {
-                operator_index: self.operator_index as u8,
+                operator_index: self.operator_index,
                 parameter_1: (self.attack_duration_parameter, self.attack_duration),
                 parameter_2: None,
             };

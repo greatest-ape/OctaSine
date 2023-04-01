@@ -21,7 +21,7 @@ impl StyleSheet for Theme {
             Self::Dark => {
                 use super::colors::dark::*;
                 Appearance {
-                    background_color: Color::TRANSPARENT.into(),
+                    background_color: Color::TRANSPARENT,
                     border_color_active: BORDER,
                     border_color_hovered: BORDER_HOVERED,
                     middle_line_color: GRAY_400,

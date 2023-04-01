@@ -1,10 +1,16 @@
-use std::sync::{
-    atomic::{AtomicBool, AtomicUsize, Ordering},
-    Arc,
+use std::{
+    collections::VecDeque,
+    io::Read,
+    path::PathBuf,
+    sync::{
+        atomic::{AtomicBool, AtomicUsize, Ordering},
+        Arc,
+    },
 };
 
 use arc_swap::ArcSwap;
 use array_init::array_init;
+use compact_str::{format_compact, CompactString};
 
 use crate::{common::IndexMap, parameters::ParameterKey};
 
@@ -31,58 +37,35 @@ impl Patch {
         }
     }
 
-    fn process_name(name: &str) -> String {
-        name.chars().into_iter().filter(|c| c.is_ascii()).collect()
+    pub fn get_fxp_filename(&self) -> CompactString {
+        match self.name.load_full().as_str() {
+            "" => "-.fxp".into(),
+            name => format_compact!("{}.fxp", name),
+        }
+    }
+
+    pub fn export_fxp_bytes(&self) -> Vec<u8> {
+        serialize_patch_fxp_bytes(self).expect("serialize patch")
     }
 
     pub fn get_name(&self) -> String {
         (*self.name.load_full()).clone()
     }
 
-    pub fn set_name(&self, name: String) {
-        self.name.store(Arc::new(Self::process_name(&name)));
+    pub fn set_name(&self, name: &str) {
+        self.name.store(Arc::new(Self::process_name(name)));
     }
 
-    pub fn import_bytes(&self, bytes: &[u8]) -> bool {
-        let res_serde_preset: Result<SerdePatch, _> = from_bytes(bytes);
-
-        if let Ok(serde_preset) = res_serde_preset {
-            self.import_serde_preset(&serde_preset);
-
-            true
-        } else {
-            false
-        }
+    fn process_name(name: &str) -> String {
+        name.chars().filter(|c| c.is_ascii()).collect()
     }
 
-    pub fn import_serde_preset(&self, serde_preset: &SerdePatch) {
-        self.set_name(serde_preset.name.clone());
-
-        for (index, parameter) in self.parameters.values().enumerate() {
-            if let Some(import_parameter) = serde_preset.parameters.get(index) {
-                parameter.set_value(import_parameter.value_float.as_f32())
-            }
-        }
-    }
-
-    pub fn export_bytes(&self) -> Vec<u8> {
-        self.export_serde_preset()
-            .to_bytes()
-            .expect("serialize preset")
-    }
-
-    pub fn export_fxp_bytes(&self) -> Vec<u8> {
-        self.export_serde_preset()
-            .to_fxp_bytes()
-            .expect("serialize preset")
-    }
-
-    pub fn export_serde_preset(&self) -> SerdePatch {
-        SerdePatch::new(self)
+    fn update_from_bytes(&self, bytes: &[u8]) -> anyhow::Result<()> {
+        update_patch_from_bytes(self, bytes)
     }
 
     fn set_from_patch_parameters(&self, parameters: &IndexMap<ParameterKey, PatchParameter>) {
-        self.set_name("-".into());
+        self.set_name("");
 
         for (parameter, default_value) in self
             .parameters
@@ -100,6 +83,7 @@ pub struct PatchBank {
     parameter_change_info_audio: ParameterChangeInfo,
     pub parameter_change_info_gui: ParameterChangeInfo,
     patches_changed: AtomicBool,
+    envelope_viewports_changed: AtomicBool,
 }
 
 impl Default for PatchBank {
@@ -116,6 +100,7 @@ impl PatchBank {
             parameter_change_info_audio: ParameterChangeInfo::default(),
             parameter_change_info_gui: ParameterChangeInfo::default(),
             patches_changed: AtomicBool::new(false),
+            envelope_viewports_changed: AtomicBool::new(false),
         }
     }
 
@@ -142,7 +127,7 @@ impl PatchBank {
             .map(|(i, _, p)| (i, p))
     }
 
-    fn get_current_patch(&self) -> &Patch {
+    pub fn get_current_patch(&self) -> &Patch {
         &self.patches[self.get_patch_index()]
     }
 
@@ -176,27 +161,29 @@ impl PatchBank {
         self.patch_index.store(index, Ordering::SeqCst);
         self.patches_changed.store(true, Ordering::SeqCst);
         self.mark_parameters_as_changed();
+        self.envelope_viewports_changed
+            .store(true, Ordering::SeqCst);
     }
 
-    pub fn get_patch_name(&self, index: usize) -> Option<String> {
+    pub fn get_patch_name(&self, index: usize) -> Option<CompactString> {
         self.patches
-            .get(index as usize)
-            .map(|p| format!("{:03}: {}", index + 1, p.name.load_full()))
+            .get(index)
+            .map(|p| format_compact!("{:03}: {}", index + 1, p.name.load_full()))
     }
 
-    pub fn get_current_patch_name(&self) -> String {
-        self.get_current_patch().name.load_full().to_string()
+    pub fn get_current_patch_name(&self) -> CompactString {
+        self.get_current_patch().name.load_full().as_str().into()
     }
 
-    pub fn get_patch_names(&self) -> Vec<String> {
+    pub fn get_patch_names(&self) -> Vec<CompactString> {
         self.patches
             .iter()
             .enumerate()
-            .map(|(index, p)| format!("{:03}: {}", index + 1, p.name.load_full()))
+            .map(|(index, p)| format_compact!("{:03}: {}", index + 1, p.name.load_full()))
             .collect()
     }
 
-    pub fn set_patch_name(&self, name: String) {
+    pub fn set_patch_name(&self, name: &str) {
         self.get_current_patch().set_name(name);
         self.patches_changed.store(true, Ordering::SeqCst);
     }
@@ -229,21 +216,21 @@ impl PatchBank {
             .map(|(_, p)| p.get_value())
     }
 
-    pub fn get_parameter_value_text(&self, index: usize) -> Option<String> {
+    pub fn get_parameter_value_text(&self, index: usize) -> Option<CompactString> {
         self.get_current_patch()
             .parameters
             .get_index(index)
             .map(|(_, p)| (p.get_value_text()))
     }
 
-    pub fn get_parameter_name(&self, index: usize) -> Option<String> {
+    pub fn get_parameter_name(&self, index: usize) -> Option<CompactString> {
         self.get_current_patch()
             .parameters
             .get_index(index)
             .map(|(_, p)| p.name.clone())
     }
 
-    pub fn format_parameter_value(&self, index: usize, value: f32) -> Option<String> {
+    pub fn format_parameter_value(&self, index: usize, value: f32) -> Option<CompactString> {
         self.get_current_patch()
             .parameters
             .get_index(index)
@@ -267,7 +254,7 @@ impl PatchBank {
         let opt_parameter = self.get_parameter_by_index(index);
 
         if let Some(parameter) = opt_parameter {
-            parameter.set_value(value as f32);
+            parameter.set_value(value);
 
             self.parameter_change_info_audio.mark_as_changed(index);
             self.parameter_change_info_gui.mark_as_changed(index);
@@ -306,42 +293,74 @@ impl PatchBank {
 
 // Import / export
 impl PatchBank {
-    /// Import serde bank into current bank, set sync parameters
-    pub fn import_bank_from_serde(&self, serde_bank: SerdePatchBank) {
-        let default_serde_preset = Patch::default().export_serde_preset();
+    pub fn import_bank_or_patches_from_paths(&self, paths: &[PathBuf]) {
+        let mut bank_file_bytes = Vec::new();
+        let mut patch_file_bytes = VecDeque::new();
 
-        for (index, preset) in self.patches.iter().enumerate() {
-            if let Some(serde_preset) = serde_bank.patches.get(index) {
-                preset.import_serde_preset(serde_preset);
-            } else {
-                preset.import_serde_preset(&default_serde_preset);
-                preset.set_name(format!("{:03}", index + 1));
+        for path in paths {
+            match read_file(path) {
+                Ok(bytes) => match path.extension().and_then(|s| s.to_str()) {
+                    Some("fxb") => {
+                        bank_file_bytes.push(bytes);
+                    }
+                    Some("fxp") => {
+                        patch_file_bytes.push_back(bytes);
+                    }
+                    _ => {
+                        ::log::warn!("Ignored file without fxp or fxb file extension");
+                    }
+                },
+                Err(err) => ::log::warn!(
+                    "Failed loading bank / patch bank from file {}: {:#}",
+                    path.display(),
+                    err
+                ),
+            };
+        }
+
+        match bank_file_bytes.pop() {
+            Some(bank_bytes) => {
+                if let Err(err) = self.import_bank_from_bytes(&bank_bytes) {
+                    ::log::error!("failed importing patch bank: {:#}", err);
+                }
+            }
+            None => {
+                // Import serde patches into current and following patches
+                let mut patch_iterator = self.patches[self.get_patch_index()..].iter().peekable();
+
+                for patch_bytes in patch_file_bytes {
+                    if patch_iterator.peek().is_none() {
+                        break;
+                    }
+
+                    patch_iterator.next_if(|patch| {
+                        if let Err(err) = patch.update_from_bytes(&patch_bytes) {
+                            ::log::error!("failed importing patch: {:#}", err);
+
+                            false
+                        } else {
+                            true
+                        }
+                    });
+                }
+
+                self.mark_parameters_as_changed();
+                self.patches_changed.store(true, Ordering::SeqCst);
+                self.envelope_viewports_changed
+                    .store(true, Ordering::SeqCst);
             }
         }
-
-        self.set_patch_index(0);
-        self.mark_parameters_as_changed();
-        self.patches_changed.store(true, Ordering::SeqCst);
-    }
-
-    /// Import serde patches into current and following patches
-    pub fn import_patches_from_serde(&self, serde_patches: Vec<SerdePatch>) {
-        for (patch, serde_patch) in self.patches[self.get_patch_index()..]
-            .iter()
-            .zip(serde_patches.iter())
-        {
-            patch.import_serde_preset(serde_patch);
-        }
-
-        self.mark_parameters_as_changed();
-        self.patches_changed.store(true, Ordering::SeqCst);
     }
 
     /// Import bytes into current bank, set sync parameters
-    pub fn import_bank_from_bytes(&self, bytes: &[u8]) -> Result<(), impl ::std::error::Error> {
-        match from_bytes::<SerdePatchBank>(bytes) {
-            Ok(serde_bank) => {
-                self.import_bank_from_serde(serde_bank);
+    pub fn import_bank_from_bytes(&self, bytes: &[u8]) -> anyhow::Result<()> {
+        match update_bank_from_bytes(self, bytes) {
+            Ok(()) => {
+                self.set_patch_index(0);
+                self.mark_parameters_as_changed();
+                self.patches_changed.store(true, Ordering::SeqCst);
+                self.envelope_viewports_changed
+                    .store(true, Ordering::SeqCst);
 
                 Ok(())
             }
@@ -350,30 +369,29 @@ impl PatchBank {
     }
 
     pub fn import_bytes_into_current_patch(&self, bytes: &[u8]) {
-        if self.get_current_patch().import_bytes(bytes) {
-            self.mark_parameters_as_changed();
-            self.patches_changed.store(true, Ordering::SeqCst);
+        match self.get_current_patch().update_from_bytes(bytes) {
+            Ok(()) => {
+                self.mark_parameters_as_changed();
+                self.patches_changed.store(true, Ordering::SeqCst);
+                self.envelope_viewports_changed
+                    .store(true, Ordering::SeqCst);
+            }
+            Err(err) => {
+                ::log::warn!("failed importing bytes into current patch: {:#}", err);
+            }
         }
     }
 
-    pub fn export_bank_as_bytes(&self) -> Vec<u8> {
-        SerdePatchBank::new(self)
-            .to_bytes()
-            .expect("serialize preset bank")
+    pub fn export_plain_bytes(&self) -> Vec<u8> {
+        let mut buffer = Vec::new();
+
+        serialize_bank_plain_bytes(&mut buffer, self).expect("serialize preset bank");
+
+        buffer
     }
 
-    pub fn export_bank_as_fxb_bytes(&self) -> Vec<u8> {
-        SerdePatchBank::new(self)
-            .to_fxb_bytes()
-            .expect("serialize preset bank")
-    }
-
-    pub fn export_current_patch_bytes(&self) -> Vec<u8> {
-        self.get_current_patch().export_bytes()
-    }
-
-    pub fn export_current_patch_fxp_bytes(&self) -> Vec<u8> {
-        self.get_current_patch().export_fxp_bytes()
+    pub fn export_fxb_bytes(&self) -> Vec<u8> {
+        serialize_bank_fxb_bytes(self).expect("serialize preset bank")
     }
 
     pub fn new_from_bytes(bytes: &[u8]) -> Self {
@@ -385,13 +403,6 @@ impl PatchBank {
 
         preset_bank
     }
-
-    pub fn get_current_patch_filename_for_export(&self) -> String {
-        match self.get_current_patch().name.load_full().as_str() {
-            "" => "-.fxp".into(),
-            name => format!("{}.fxp", name),
-        }
-    }
 }
 
 // Clear data
@@ -402,6 +413,8 @@ impl PatchBank {
 
         self.mark_parameters_as_changed();
         self.patches_changed.store(true, Ordering::SeqCst);
+        self.envelope_viewports_changed
+            .store(true, Ordering::SeqCst);
     }
 
     pub fn clear_bank(&self) {
@@ -415,6 +428,8 @@ impl PatchBank {
 
         self.mark_parameters_as_changed();
         self.patches_changed.store(true, Ordering::SeqCst);
+        self.envelope_viewports_changed
+            .store(true, Ordering::SeqCst);
     }
 }
 
@@ -428,23 +443,18 @@ pub mod tests {
     #[test]
     #[allow(clippy::float_cmp)]
     pub fn test_export_import() {
-        for _ in 0..20 {
+        fastrand::seed(123);
+
+        for _ in 0..50 {
             let bank_1 = PatchBank::default();
 
-            for preset_index in 0..bank_1.num_patches() {
-                bank_1.set_patch_index(preset_index);
+            for (patch_index, patch) in bank_1.patches.iter().enumerate() {
+                bank_1.set_patch_index(patch_index);
 
-                assert_eq!(bank_1.get_patch_index(), preset_index);
+                assert_eq!(bank_1.get_patch_index(), patch_index);
+                assert_eq!(bank_1.get_current_patch().get_name(), patch.get_name());
 
-                let current_preset = bank_1.get_current_patch();
-
-                for parameter_index in 0..current_preset.parameters.len() {
-                    let parameter = current_preset
-                        .parameters
-                        .get_index(parameter_index)
-                        .unwrap()
-                        .1;
-
+                for parameter in patch.parameters.values() {
                     let value = fastrand::f32();
 
                     parameter.set_value(value);
@@ -453,33 +463,28 @@ pub mod tests {
                 }
             }
 
-            let bank_2 = PatchBank::default();
+            let bank_2 = PatchBank::new_from_bytes(&bank_1.export_fxb_bytes());
+            let bank_3 = PatchBank::new_from_bytes(&bank_1.export_plain_bytes());
 
-            bank_2
-                .import_bank_from_bytes(&bank_1.export_bank_as_bytes())
-                .unwrap();
+            for ((patch_1, patch_2), patch_3) in bank_1
+                .patches
+                .iter()
+                .zip(bank_2.patches.iter())
+                .zip(bank_3.patches.iter())
+            {
+                for ((p1, p2), p3) in patch_1
+                    .parameters
+                    .values()
+                    .zip(patch_2.parameters.values())
+                    .zip(patch_3.parameters.values())
+                {
+                    let values = [p1, p2, p3]
+                        .into_iter()
+                        .map(|p| (p.get_value(), p.get_value_text()))
+                        .collect::<Vec<_>>();
 
-            for preset_index in 0..bank_1.num_patches() {
-                bank_1.set_patch_index(preset_index);
-                bank_2.set_patch_index(preset_index);
-
-                let current_preset_1 = bank_1.get_current_patch();
-                let current_preset_2 = bank_2.get_current_patch();
-
-                for parameter_index in 0..current_preset_1.parameters.len() {
-                    let parameter_1 = current_preset_1
-                        .parameters
-                        .get_index(parameter_index)
-                        .unwrap()
-                        .1;
-
-                    let parameter_2 = current_preset_2
-                        .parameters
-                        .get_index(parameter_index)
-                        .unwrap()
-                        .1;
-
-                    assert_eq!(parameter_1.get_value(), parameter_2.get_value());
+                    assert_eq!(values[0], values[1]);
+                    assert_eq!(values[0], values[2]);
                 }
             }
         }
@@ -493,4 +498,13 @@ pub mod tests {
         // actually ever did.)
         println!("Dummy info: {:?}", preset_bank.get_parameter_value(0));
     }
+}
+
+fn read_file(path: &::std::path::Path) -> anyhow::Result<Vec<u8>> {
+    let mut file = ::std::fs::File::open(path)?;
+    let mut bytes = Vec::new();
+
+    file.read_to_end(&mut bytes)?;
+
+    Ok(bytes)
 }

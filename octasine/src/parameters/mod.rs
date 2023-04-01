@@ -23,6 +23,7 @@ pub mod operator_volume;
 pub mod operator_wave_type;
 pub mod utils;
 
+use compact_str::{format_compact, CompactString};
 pub use lfo_active::LfoActiveValue;
 pub use lfo_amount::LfoAmountValue;
 pub use lfo_bpm_sync::LfoBpmSyncValue;
@@ -46,6 +47,7 @@ pub use operator_mod_target::*;
 pub use operator_panning::OperatorPanningValue;
 pub use operator_volume::OperatorVolumeValue;
 pub use operator_wave_type::OperatorWaveTypeValue;
+use serde::{Deserialize, Serialize};
 
 use crate::common::{NUM_LFOS, NUM_OPERATORS};
 
@@ -61,52 +63,67 @@ pub trait ParameterValue: Sized + Default + Copy {
 
     /// Get inner (audio gen) value
     fn get(self) -> Self::Value;
-    fn get_formatted(self) -> String;
+    fn get_formatted(self) -> CompactString;
     fn to_patch(self) -> f32;
 
     fn replace_from_patch(&mut self, value: f32) {
         *self = Self::new_from_patch(value);
     }
+    fn get_serializable(&self) -> SerializableRepresentation;
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+/// Serializable representation of parameter value for easing patch forward
+/// compatibility transformations
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub enum SerializableRepresentation {
+    Float(f64),
+    Other(CompactString),
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct ParameterKey(pub u32);
 
 include!(concat!(env!("OUT_DIR"), "/codegen.rs"));
 
 impl Parameter {
-    pub fn name(&self) -> String {
+    pub fn name(&self) -> CompactString {
         match self {
             Self::None => "None".into(),
             Self::Master(MasterParameter::Frequency) => "Master frequency".into(),
             Self::Master(MasterParameter::Volume) => "Master volume".into(),
             Self::Operator(index, p) => match p {
-                OperatorParameter::Volume => format!("OP {} vol", index + 1),
-                OperatorParameter::Active => format!("OP {} active", index + 1),
-                OperatorParameter::MixOut => format!("OP {} mix out", index + 1),
-                OperatorParameter::Panning => format!("OP {} pan", index + 1),
-                OperatorParameter::WaveType => format!("OP {} wave", index + 1),
-                OperatorParameter::ModTargets => format!("OP {} target", index + 1),
-                OperatorParameter::ModOut => format!("OP {} mod out", index + 1),
-                OperatorParameter::Feedback => format!("OP {} feedback", index + 1),
-                OperatorParameter::FrequencyRatio => format!("OP {} freq ratio", index + 1),
-                OperatorParameter::FrequencyFree => format!("OP {} freq free", index + 1),
-                OperatorParameter::FrequencyFine => format!("OP {} freq fine", index + 1),
-                OperatorParameter::AttackDuration => format!("OP {} attack time", index + 1),
-                OperatorParameter::DecayDuration => format!("OP {} decay time", index + 1),
-                OperatorParameter::SustainVolume => format!("OP {} sustain vol", index + 1),
-                OperatorParameter::ReleaseDuration => format!("OP {} release time", index + 1),
-                OperatorParameter::EnvelopeLockGroup => format!("OP {} lock group", index + 1),
+                OperatorParameter::Volume => format_compact!("OP {} vol", index + 1),
+                OperatorParameter::Active => format_compact!("OP {} active", index + 1),
+                OperatorParameter::MixOut => format_compact!("OP {} mix out", index + 1),
+                OperatorParameter::Panning => format_compact!("OP {} pan", index + 1),
+                OperatorParameter::WaveType => format_compact!("OP {} wave", index + 1),
+                OperatorParameter::ModTargets => format_compact!("OP {} target", index + 1),
+                OperatorParameter::ModOut => format_compact!("OP {} mod out", index + 1),
+                OperatorParameter::Feedback => format_compact!("OP {} feedback", index + 1),
+                OperatorParameter::FrequencyRatio => format_compact!("OP {} freq ratio", index + 1),
+                OperatorParameter::FrequencyFree => format_compact!("OP {} freq free", index + 1),
+                OperatorParameter::FrequencyFine => format_compact!("OP {} freq fine", index + 1),
+                OperatorParameter::AttackDuration => {
+                    format_compact!("OP {} attack time", index + 1)
+                }
+                OperatorParameter::DecayDuration => format_compact!("OP {} decay time", index + 1),
+                OperatorParameter::SustainVolume => format_compact!("OP {} sustain vol", index + 1),
+                OperatorParameter::ReleaseDuration => {
+                    format_compact!("OP {} release time", index + 1)
+                }
+                OperatorParameter::EnvelopeLockGroup => {
+                    format_compact!("OP {} lock group", index + 1)
+                }
             },
             Self::Lfo(index, p) => match p {
-                LfoParameter::Target => format!("LFO {} target", index + 1),
-                LfoParameter::BpmSync => format!("LFO {} bpm sync", index + 1),
-                LfoParameter::FrequencyRatio => format!("LFO {} freq ratio", index + 1),
-                LfoParameter::FrequencyFree => format!("LFO {} freq free", index + 1),
-                LfoParameter::Mode => format!("LFO {} oneshot", index + 1),
-                LfoParameter::Shape => format!("LFO {} shape", index + 1),
-                LfoParameter::Amount => format!("LFO {} amount", index + 1),
-                LfoParameter::Active => format!("LFO {} active", index + 1),
+                LfoParameter::Target => format_compact!("LFO {} target", index + 1),
+                LfoParameter::BpmSync => format_compact!("LFO {} bpm sync", index + 1),
+                LfoParameter::FrequencyRatio => format_compact!("LFO {} freq ratio", index + 1),
+                LfoParameter::FrequencyFree => format_compact!("LFO {} freq free", index + 1),
+                LfoParameter::Mode => format_compact!("LFO {} oneshot", index + 1),
+                LfoParameter::Shape => format_compact!("LFO {} shape", index + 1),
+                LfoParameter::Amount => format_compact!("LFO {} amount", index + 1),
+                LfoParameter::Active => format_compact!("LFO {} active", index + 1),
             },
         }
     }
@@ -119,12 +136,12 @@ impl Parameter {
         parameter_to_index(self)
     }
 
-    pub fn clap_path(&self) -> String {
+    pub fn clap_path(&self) -> CompactString {
         match self {
             Self::None => "None".into(),
             Self::Master(_) => "Master".into(),
-            Self::Operator(index, _) => format!("Operator {}", *index),
-            Self::Lfo(index, _) => format!("LFO {}", *index),
+            Self::Operator(index, _) => format_compact!("Operator {}", *index),
+            Self::Lfo(index, _) => format_compact!("LFO {}", *index),
         }
     }
 

@@ -1,7 +1,10 @@
 use std::f32::consts::TAU;
 
+use compact_str::CompactString;
+
 use super::utils::*;
 use super::ParameterValue;
+use super::SerializableRepresentation;
 use crate::common::*;
 
 pub const LFO_SHAPE_STEPS: [LfoShape; 8] = [
@@ -85,17 +88,21 @@ impl ParameterValue for LfoShapeValue {
     fn to_patch(self) -> f32 {
         map_step_to_patch_value(&LFO_SHAPE_STEPS[..], self.0)
     }
-    fn get_formatted(self) -> String {
+    fn get_formatted(self) -> CompactString {
         match self.0 {
-            LfoShape::Triangle => "TRIANGLE".to_string(),
-            LfoShape::ReverseTriangle => "REV TRNG".to_string(),
-            LfoShape::Saw => "SAW".to_string(),
-            LfoShape::ReverseSaw => "REV SAW".to_string(),
-            LfoShape::Square => "SQUARE".to_string(),
-            LfoShape::ReverseSquare => "REV SQR".to_string(),
-            LfoShape::Sine => "SINE".to_string(),
-            LfoShape::ReverseSine => "REV SINE".to_string(),
+            LfoShape::Triangle => "TRIANGLE".into(),
+            LfoShape::ReverseTriangle => "REV TRNG".into(),
+            LfoShape::Saw => "SAW".into(),
+            LfoShape::ReverseSaw => "REV SAW".into(),
+            LfoShape::Square => "SQUARE".into(),
+            LfoShape::ReverseSquare => "REV SQR".into(),
+            LfoShape::Sine => "SINE".into(),
+            LfoShape::ReverseSine => "REV SINE".into(),
         }
+    }
+
+    fn get_serializable(&self) -> SerializableRepresentation {
+        SerializableRepresentation::Other(self.get_formatted())
     }
 }
 

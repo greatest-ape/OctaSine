@@ -20,21 +20,21 @@ fn main() {
     for (parameter_index, parameter) in PARAMETERS.iter().copied().enumerate() {
         match parameter {
             Parameter::None => unreachable!(),
-            Parameter::Master(p) => write!(
+            Parameter::Master(p) => writeln!(
                 &mut file,
-                "Parameter::Master(MasterParameter::{:?}) => {},\n",
+                "Parameter::Master(MasterParameter::{:?}) => {},",
                 p, parameter_index
             )
             .unwrap(),
-            Parameter::Operator(operator_index, p) => write!(
+            Parameter::Operator(operator_index, p) => writeln!(
                 &mut file,
-                "Parameter::Operator({}, OperatorParameter::{:?}) => {},\n",
+                "Parameter::Operator({}, OperatorParameter::{:?}) => {},",
                 operator_index, p, parameter_index
             )
             .unwrap(),
-            Parameter::Lfo(lfo_index, p) => write!(
+            Parameter::Lfo(lfo_index, p) => writeln!(
                 &mut file,
-                "Parameter::Lfo({}, LfoParameter::{:?}) => {},\n",
+                "Parameter::Lfo({}, LfoParameter::{:?}) => {},",
                 lfo_index, p, parameter_index
             )
             .unwrap(),
@@ -42,7 +42,7 @@ fn main() {
     }
 
     write!(&mut file, "_ => unreachable!(),").unwrap();
-    write!(&mut file, "}}}}\n").unwrap();
+    writeln!(&mut file, "}}}}").unwrap();
 
     println!("cargo:rerun-if-changed=build.rs");
 }

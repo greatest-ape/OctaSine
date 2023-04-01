@@ -28,12 +28,12 @@ opt-level = 3
 [profile.test]
 opt-level = 3
 
-[profile.bench]
-inherits = "release"
-
 [profile.release-debug]
 inherits = "release"
 debug = true
+
+[profile.bench]
+inherits = "release-debug"
 
 [profile.release.package.sleef-trig]
 codegen-units = 1

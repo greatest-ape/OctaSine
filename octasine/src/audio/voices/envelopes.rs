@@ -188,7 +188,7 @@ mod tests {
     use super::*;
 
     fn valid_volume(volume: f32) -> bool {
-        volume >= 0.0 && volume <= 1.0
+        (0.0..=1.0).contains(&volume)
     }
 
     #[test]

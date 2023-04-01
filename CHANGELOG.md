@@ -4,9 +4,16 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+### Added
+
+- Implement [clap](https://cleveraudio.org/) state extension
+
 ### Changed
 
 - Upgrade to [iced](https://github.com/iced-rs/iced) v0.8
+- Use new patch bank / patch format with better provisions for forward
+  compatibility. Patches created with previous versions are automatically
+  converted when opened.
 
 ### Fixed
 

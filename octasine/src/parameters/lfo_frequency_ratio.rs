@@ -1,5 +1,9 @@
+use compact_str::format_compact;
+use compact_str::CompactString;
+
 use super::utils::*;
 use super::ParameterValue;
+use super::SerializableRepresentation;
 
 const LFO_FREQUENCY_RATIO_STEPS: [f32; 9] = [
     1.0 / 16.0,
@@ -47,7 +51,11 @@ impl ParameterValue for LfoFrequencyRatioValue {
     fn to_patch(self) -> f32 {
         map_step_to_patch_value(&LFO_FREQUENCY_RATIO_STEPS, self.0 as f32)
     }
-    fn get_formatted(self) -> String {
-        format!("{:.04}", self.0)
+    fn get_formatted(self) -> CompactString {
+        format_compact!("{:.04}", self.0)
+    }
+
+    fn get_serializable(&self) -> SerializableRepresentation {
+        SerializableRepresentation::Float(self.0)
     }
 }

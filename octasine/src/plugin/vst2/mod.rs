@@ -57,7 +57,7 @@ impl OctaSine {
         let time_info = self.sync.host?.get_time_info(mask)?;
 
         if (time_info.flags & mask) != 0 {
-            Some(BeatsPerMinute(time_info.tempo as f64))
+            Some(BeatsPerMinute(time_info.tempo))
         } else {
             None
         }

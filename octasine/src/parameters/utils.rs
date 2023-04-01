@@ -115,7 +115,7 @@ mod tests {
     }
 
     fn valid_parameter_value(value: f32) -> bool {
-        !(value.is_nan() || value > 1.0 || value < 0.0)
+        !(value.is_nan() || !(0.0..=1.0).contains(&value))
     }
 
     #[test]
@@ -160,7 +160,7 @@ mod tests {
     #[test]
     fn test_step_mapping() {
         fn prop(value: f32) -> TestResult {
-            if value < 0.0 || value > 1.0 {
+            if !(0.0..=1.0).contains(&value) {
                 return TestResult::discard();
             }
 
@@ -217,7 +217,7 @@ mod tests {
     #[test]
     fn test_smooth_step_mapping() {
         fn prop(parameter_value: f32) -> TestResult {
-            if parameter_value < 0.0 || parameter_value > 1.0 || parameter_value.is_nan() {
+            if !(0.0..=1.0).contains(&parameter_value) || parameter_value.is_nan() {
                 return TestResult::discard();
             }
 

@@ -20,6 +20,7 @@ use clap_sys::{
         gui::CLAP_EXT_GUI,
         note_ports::CLAP_EXT_NOTE_PORTS,
         params::{clap_host_params, CLAP_EXT_PARAMS, CLAP_PARAM_RESCAN_VALUES},
+        state::{clap_host_state, CLAP_EXT_STATE},
     },
     host::clap_host,
     plugin::clap_plugin,
@@ -278,6 +279,8 @@ impl OctaSine {
             &super::ext::gui::CONFIG as *const _ as *const c_void
         } else if id == CLAP_EXT_VOICE_INFO {
             &super::ext::voice_info::CONFIG as *const _ as *const c_void
+        } else if id == CLAP_EXT_STATE {
+            &super::ext::state::CONFIG as *const _ as *const c_void
         } else {
             null()
         }
@@ -439,12 +442,10 @@ impl OctaSine {
                         try_push_fn(out_events, &event as *const _ as *const _);
                     }
                     EventToHost::RescanValues => {
-                        let host_params = self.get_params_extension();
-
-                        let rescan = host_params.rescan.unwrap();
-
-                        // FIXME: should maybe clear automations etc too
-                        rescan(self.host, CLAP_PARAM_RESCAN_VALUES);
+                        self.tell_host_to_rescan_values();
+                    }
+                    EventToHost::StateChanged => {
+                        self.tell_host_state_is_dirty();
                     }
                 };
             }
@@ -476,11 +477,32 @@ impl OctaSine {
         }
     }
 
-    unsafe fn get_params_extension(&self) -> &clap_host_params {
+    unsafe fn tell_host_to_rescan_values(&self) {
         let host = &*(self.host);
 
         let get_extension = host.get_extension.unwrap();
 
-        &*(get_extension(self.host, CLAP_EXT_PARAMS.as_ptr()) as *const clap_host_params)
+        let ext = get_extension(self.host, CLAP_EXT_PARAMS.as_ptr()) as *const clap_host_params;
+
+        if ext.is_null() {
+            ::log::error!("host doesn't implement params extension");
+        } else {
+            // FIXME: should maybe clear automations etc too
+            (&*(ext)).rescan.unwrap()(self.host, CLAP_PARAM_RESCAN_VALUES);
+        }
+    }
+
+    unsafe fn tell_host_state_is_dirty(&self) {
+        let host = &*(self.host);
+
+        let get_extension = host.get_extension.unwrap();
+
+        let ext = get_extension(self.host, CLAP_EXT_STATE.as_ptr()) as *const clap_host_state;
+
+        if ext.is_null() {
+            ::log::error!("host doesn't implement state extension");
+        } else {
+            (&*(ext)).mark_dirty.unwrap()(self.host);
+        }
     }
 }

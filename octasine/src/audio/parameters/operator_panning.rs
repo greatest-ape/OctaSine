@@ -51,7 +51,7 @@ impl AudioParameter for OperatorPanningAudioParameter {
             let patch_value = Self::ParameterValue::new_from_audio(self.get_value()).to_patch();
 
             let new_panning = Self::ParameterValue::new_from_patch(
-                (patch_value + lfo_addition as f32).min(1.0).max(0.0),
+                (patch_value + lfo_addition).min(1.0).max(0.0),
             )
             .get();
 

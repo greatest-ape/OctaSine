@@ -41,7 +41,7 @@ impl ModOutLines {
         for path in self.paths.iter() {
             let stroke = Stroke::default().with_width(3.0).with_color(color);
 
-            frame.stroke(&path, stroke);
+            frame.stroke(path, stroke);
         }
     }
 }

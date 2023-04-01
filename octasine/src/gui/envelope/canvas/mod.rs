@@ -137,8 +137,8 @@ impl EnvelopeCanvas {
     }
 
     pub fn set_viewport(&mut self, viewport_factor: f32, x_offset: f32) {
-        self.viewport_factor = viewport_factor;
-        self.x_offset = Self::process_x_offset(x_offset, viewport_factor);
+        self.viewport_factor = viewport_factor.min(1.0);
+        self.x_offset = Self::process_x_offset(x_offset, self.viewport_factor);
 
         self.update_data();
     }
@@ -219,7 +219,7 @@ impl EnvelopeCanvas {
             x_offset,
             0.0,
             0.0,
-            self.attack_duration as f32,
+            self.attack_duration,
             1.0,
         );
 
@@ -230,8 +230,8 @@ impl EnvelopeCanvas {
             x_offset,
             self.attack_duration,
             1.0,
-            self.decay_duration as f32,
-            self.sustain_volume as f32,
+            self.decay_duration,
+            self.sustain_volume,
         );
 
         self.release_stage_path = EnvelopeStagePath::new(
@@ -241,7 +241,7 @@ impl EnvelopeCanvas {
             x_offset,
             self.attack_duration + self.decay_duration,
             self.sustain_volume,
-            self.release_duration as f32,
+            self.release_duration,
             0.0,
         );
     }

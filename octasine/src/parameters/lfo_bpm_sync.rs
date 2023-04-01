@@ -1,4 +1,6 @@
-use super::ParameterValue;
+use compact_str::CompactString;
+
+use super::{ParameterValue, SerializableRepresentation};
 
 #[derive(Debug, Clone, Copy)]
 pub struct LfoBpmSyncValue(pub bool);
@@ -35,11 +37,15 @@ impl ParameterValue for LfoBpmSyncValue {
             1.0
         }
     }
-    fn get_formatted(self) -> String {
+    fn get_formatted(self) -> CompactString {
         if self.0 {
-            "On".to_string()
+            "On".into()
         } else {
-            "Off".to_string()
+            "Off".into()
         }
+    }
+
+    fn get_serializable(&self) -> SerializableRepresentation {
+        SerializableRepresentation::Other(self.get_formatted())
     }
 }

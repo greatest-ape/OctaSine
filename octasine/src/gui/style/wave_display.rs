@@ -19,7 +19,7 @@ impl StyleSheet for Theme {
             Self::Dark => {
                 use super::colors::dark::*;
                 Appearance {
-                    background_color: Color::TRANSPARENT.into(),
+                    background_color: Color::TRANSPARENT,
                     border_color: BORDER_DARK,
                     middle_line_color: GRAY_400,
                     wave_line_color: BLUE,

@@ -1,7 +1,11 @@
 use std::borrow::Borrow;
 
+use compact_str::format_compact;
+use compact_str::CompactString;
+
 use super::utils::*;
 use super::ParameterValue;
+use super::SerializableRepresentation;
 
 const OPERATOR_2_PERMUTATIONS: &[ModTargetStorage] = &[
     ModTargetStorage::new(&[true]),
@@ -26,6 +30,7 @@ const OPERATOR_4_PERMUTATIONS: &[ModTargetStorage] = &[
 ];
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Default)]
 pub struct ModTargetStorage {
     indices: u8,
     iter_range: u8,
@@ -78,14 +83,7 @@ impl ModTargetStorage {
     }
 }
 
-impl Default for ModTargetStorage {
-    fn default() -> Self {
-        Self {
-            indices: 0,
-            iter_range: 0,
-        }
-    }
-}
+
 
 impl std::fmt::Display for ModTargetStorage {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -134,8 +132,12 @@ impl ParameterValue for Operator2ModulationTargetValue {
     fn to_patch(self) -> f32 {
         map_step_to_patch_value(OPERATOR_2_PERMUTATIONS, self.0)
     }
-    fn get_formatted(self) -> String {
-        self.0.to_string()
+    fn get_formatted(self) -> CompactString {
+        format_compact!("{}", self.0)
+    }
+
+    fn get_serializable(&self) -> SerializableRepresentation {
+        SerializableRepresentation::Other(self.get_formatted())
     }
 }
 
@@ -172,8 +174,12 @@ impl ParameterValue for Operator3ModulationTargetValue {
     fn to_patch(self) -> f32 {
         map_step_to_patch_value(OPERATOR_3_PERMUTATIONS, self.0)
     }
-    fn get_formatted(self) -> String {
-        self.0.to_string()
+    fn get_formatted(self) -> CompactString {
+        format_compact!("{}", self.0)
+    }
+
+    fn get_serializable(&self) -> SerializableRepresentation {
+        SerializableRepresentation::Other(self.get_formatted())
     }
 }
 
@@ -210,7 +216,11 @@ impl ParameterValue for Operator4ModulationTargetValue {
     fn to_patch(self) -> f32 {
         map_step_to_patch_value(OPERATOR_4_PERMUTATIONS, self.0)
     }
-    fn get_formatted(self) -> String {
-        self.0.to_string()
+    fn get_formatted(self) -> CompactString {
+        format_compact!("{}", self.0)
+    }
+
+    fn get_serializable(&self) -> SerializableRepresentation {
+        SerializableRepresentation::Other(self.get_formatted())
     }
 }

@@ -1,6 +1,8 @@
 use std::f32::consts::FRAC_PI_2;
 
-use super::{utils::parse_valid_f32, ParameterValue};
+use compact_str::{format_compact, CompactString};
+
+use super::{utils::parse_valid_f32, ParameterValue, SerializableRepresentation};
 
 #[derive(Debug, Clone, Copy)]
 pub struct OperatorPanningValue(f32);
@@ -33,7 +35,7 @@ impl ParameterValue for OperatorPanningValue {
 
         if text.as_str() == "c" || text.as_str() == "0" {
             Some(Self(0.5))
-        } else if let Some(index) = text.rfind("r") {
+        } else if let Some(index) = text.rfind('r') {
             let mut text = text;
 
             text.remove(index);
@@ -41,7 +43,7 @@ impl ParameterValue for OperatorPanningValue {
             let value = parse_valid_f32(&text, 0.0, 50.0)?;
 
             Some(Self((0.5 + value / 100.0).min(1.0).max(0.0)))
-        } else if let Some(index) = text.rfind("l") {
+        } else if let Some(index) = text.rfind('l') {
             let mut text = text;
 
             text.remove(index);
@@ -62,13 +64,17 @@ impl ParameterValue for OperatorPanningValue {
     fn to_patch(self) -> f32 {
         self.0
     }
-    fn get_formatted(self) -> String {
+    fn get_formatted(self) -> CompactString {
         let pan = ((self.0 - 0.5) * 100.0).round() as isize;
 
         match pan.cmp(&0) {
-            std::cmp::Ordering::Greater => format!("{}R", pan),
-            std::cmp::Ordering::Less => format!("{}L", pan.abs()),
-            std::cmp::Ordering::Equal => "C".to_string(),
+            std::cmp::Ordering::Greater => format_compact!("{}R", pan),
+            std::cmp::Ordering::Less => format_compact!("{}L", pan.abs()),
+            std::cmp::Ordering::Equal => "C".into(),
         }
+    }
+
+    fn get_serializable(&self) -> SerializableRepresentation {
+        SerializableRepresentation::Float(self.0.into())
     }
 }

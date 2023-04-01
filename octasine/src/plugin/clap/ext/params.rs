@@ -94,7 +94,7 @@ pub unsafe extern "C" fn value_to_text(
         .patches
         .get_parameter_by_key(&ParameterKey(param_id))
     {
-        if let Ok(text) = CString::new((parameter.format)(value as f32)) {
+        if let Ok(text) = CString::new((parameter.format)(value as f32).as_str()) {
             let bytes = text.as_bytes_with_nul();
 
             if bytes.len() > c_str_len as usize {
