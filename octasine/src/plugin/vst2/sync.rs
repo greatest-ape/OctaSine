@@ -209,7 +209,7 @@ impl crate::sync::GuiSyncHandle for Arc<SyncState<vst::plugin::HostCallback>> {
         Settings::load_or_default().gui
     }
     fn export_patch(&self) -> (CompactString, Vec<u8>) {
-        let name = self.patches.get_current_patch_filename_for_export();
+        let name = self.patches.get_current_patch().get_fxp_filename();
         let data = self.patches.get_current_patch().export_fxp_bytes();
 
         (name, data)

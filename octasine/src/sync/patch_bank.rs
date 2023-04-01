@@ -37,8 +37,15 @@ impl Patch {
         }
     }
 
-    fn process_name(name: &str) -> String {
-        name.chars().into_iter().filter(|c| c.is_ascii()).collect()
+    pub fn get_fxp_filename(&self) -> CompactString {
+        match self.name.load_full().as_str() {
+            "" => "-.fxp".into(),
+            name => format_compact!("{}.fxp", name),
+        }
+    }
+
+    pub fn export_fxp_bytes(&self) -> Vec<u8> {
+        serialize_patch_fxp_bytes(self).expect("serialize patch")
     }
 
     pub fn get_name(&self) -> String {
@@ -49,16 +56,16 @@ impl Patch {
         self.name.store(Arc::new(Self::process_name(name)));
     }
 
-    fn import_bytes(&self, bytes: &[u8]) -> anyhow::Result<()> {
+    fn process_name(name: &str) -> String {
+        name.chars().into_iter().filter(|c| c.is_ascii()).collect()
+    }
+
+    fn update_from_bytes(&self, bytes: &[u8]) -> anyhow::Result<()> {
         update_patch_from_bytes(self, bytes)
     }
 
-    pub fn export_fxp_bytes(&self) -> Vec<u8> {
-        serialize_patch_fxp_bytes(self).expect("serialize patch")
-    }
-
     fn set_from_patch_parameters(&self, parameters: &IndexMap<ParameterKey, PatchParameter>) {
-        self.set_name("-".into());
+        self.set_name("".into());
 
         for (parameter, default_value) in self
             .parameters
@@ -327,7 +334,7 @@ impl PatchBank {
                     }
 
                     patch_iterator.next_if(|patch| {
-                        if let Err(err) = patch.import_bytes(&patch_bytes) {
+                        if let Err(err) = patch.update_from_bytes(&patch_bytes) {
                             ::log::error!("failed importing patch: {:#}", err);
 
                             false
@@ -362,7 +369,7 @@ impl PatchBank {
     }
 
     pub fn import_bytes_into_current_patch(&self, bytes: &[u8]) {
-        match self.get_current_patch().import_bytes(bytes) {
+        match self.get_current_patch().update_from_bytes(bytes) {
             Ok(()) => {
                 self.mark_parameters_as_changed();
                 self.patches_changed.store(true, Ordering::SeqCst);
@@ -395,13 +402,6 @@ impl PatchBank {
             .expect("import bank from bytes");
 
         preset_bank
-    }
-
-    pub fn get_current_patch_filename_for_export(&self) -> CompactString {
-        match self.get_current_patch().name.load_full().as_str() {
-            "" => "-.fxp".into(),
-            name => format_compact!("{}.fxp", name),
-        }
     }
 }
 
