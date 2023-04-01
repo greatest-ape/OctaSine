@@ -7,7 +7,7 @@ mod serde;
 use std::path::PathBuf;
 
 use compact_str::CompactString;
-use patch_bank::PatchBank;
+pub use patch_bank::PatchBank;
 
 /// Thread-safe state used for parameter and preset calls
 pub struct SyncState<H> {

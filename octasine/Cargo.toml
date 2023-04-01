@@ -22,8 +22,13 @@ gui = ["iced_baseview/canvas", "iced_audio", "palette", "raw-window-handle", "rf
 name = "octasine"
 crate-type = ["cdylib", "lib"]
 
+[[bench]]
+name = "patch_bank_serde"
+harness = false
+
 [dev-dependencies]
 assert_approx_eq = "1"
+criterion = "0.3"
 quickcheck = { version = "1", default-features = false }
 
 [dependencies]
