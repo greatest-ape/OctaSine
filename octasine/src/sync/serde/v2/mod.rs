@@ -1,3 +1,5 @@
+mod compat;
+
 use std::io::{BufReader, Write};
 
 use compact_str::CompactString;
@@ -7,18 +9,16 @@ use serde::{de::DeserializeOwned, Deserialize, Serialize};
 
 use crate::{
     common::IndexMap,
-    parameters::{OperatorParameter, Parameter, ParameterKey},
+    parameters::{Parameter, ParameterKey},
     sync::patch_bank::{Patch, PatchBank},
 };
+
+use self::compat::COMPATIBILITY_CHANGES;
 
 use super::common::{make_fxb, make_fxp};
 
 const PREFIX_PLAIN: &[u8] = b"\n\nOCTASINE-DATA-V2-PLAIN\n\n";
 const PREFIX_GZ: &[u8] = b"\n\nOCTASINE-DATA-V2-GZ\n\n";
-
-const COMPATIBILITY_CHANGES: &[(Version, fn(&mut SerdePatch))] = &[
-    // (Version::new(0, 8, 5), compat_0_8_5),
-];
 
 #[derive(Serialize, Deserialize)]
 pub struct SerdePatchBank {
@@ -224,34 +224,4 @@ fn serialize_bytes_gz<W: Write, T: Serialize>(writer: &mut W, value: &T) -> anyh
     cbor4ii::serde::to_writer(&mut encoder, value)?;
 
     Ok(())
-}
-
-/// WIP: Version 0.8.5 introduces new operator wave forms
-///
-/// Prior versions only had sine and white noise variants
-#[allow(dead_code)]
-fn compat_0_8_5(patch: &mut SerdePatch) {
-    let parameter_keys = [
-        Parameter::Operator(0, OperatorParameter::WaveType).key(),
-        Parameter::Operator(1, OperatorParameter::WaveType).key(),
-        Parameter::Operator(2, OperatorParameter::WaveType).key(),
-        Parameter::Operator(3, OperatorParameter::WaveType).key(),
-    ];
-    // Operator wave type parameter indices
-    for key in parameter_keys {
-        let p = patch.parameters.get_mut(&key).unwrap();
-
-        // FIXME: set values valid for v0.8.5
-        match p.value_string.as_str() {
-            "SINE" => {
-                p.value_f32 = 0.0;
-            }
-            "NOISE" => {
-                p.value_f32 = 1.0;
-            }
-            v => {
-                ::log::error!("found invalid operator wave type {}", v);
-            }
-        }
-    }
 }
