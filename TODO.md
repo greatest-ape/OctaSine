@@ -1,10 +1,13 @@
 # TODO
 
 * Patch format v2
-  * criterion export and import benchmarks?
+  * criterion export and import benchmarks
+    * 75% of time is spent in ::core::fmt, mostly doing parameter value conversions
+      * an idea would be to instead of exporting textual representation to add new trait method
+        to ParameterValue returning enum of f64 or string for all non-float cases, so of interal data
     * Is CompactString really worth it, even with frequent clap state exports?
-    * Is it really beneficial to use IndexMap for parameters? Would Vec be better?
-    * Use array for patches since there are always 128?
+      * Overhead doesn't seem to be large, but might not actually be faster than string. ArrayString
+        would be an option maybe
   * clap.state
     * tell host about changes (except parameters)
   * Include zoom state in patch?
