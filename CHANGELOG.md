@@ -17,6 +17,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+- Make CLAP plugin GUI work in Bitwig on Windows; it still doesn't work in Bitwig on macOS or Linux
 - Fix clap miscompilation on Linux on aarch64
 
 ## 0.8.3 - 2023-02-14
