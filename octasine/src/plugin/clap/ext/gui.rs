@@ -59,8 +59,6 @@ unsafe extern "C" fn destroy(plugin: *const clap_plugin) {
     if let Some(mut handle) = plugin.gui_window_handle.lock().take() {
         handle.close_window();
     }
-
-    ::log::error!("destroy GUI");
 }
 
 extern "C" fn set_scale(_plugin: *const clap_plugin, _scale: f64) -> bool {
