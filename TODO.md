@@ -6,22 +6,23 @@
       * Overhead doesn't seem to be large, but might not actually be faster than string. ArrayString
         would be an option maybe
   * clap.state
-    * tell host about changes (except parameters)
+    * does host need to be told to fetch new state after "refresh values" is sent? (it likely wouldn't hurt to add it)
   * Include zoom state in patch?
   * Test
   * Test patch compatibility layer
   * Then release new version
     * Should look at data to include in patch export before then
 
+* Run miri on audio gen bench
 * Portamento
 * Mode where release never activates but mod out is deactivated. Will need
   extra checks for ending when all other operators not in this mode have ended
 * LFO free sync: restart at key press but at random phase value, see page 33:
   http://www.synthfool.com/docs/Yamaha/DX_Series/Yamaha%20DX-100%20Owners%20Manual.pdf
 * Add saw, square and triangle waves, and possibly others
-  * Implement saw function
   * Look at TX81Z waveforms: https://www.reddit.com/r/synthesizers/comments/rkyk6j/comment/hpgcu6r/?utm_source=share&utm_medium=web2x&context=3
 * GUI resources are not freed in Bitwig on macOS for both vst2 and clap plugins
+* CLAP GUI doesn't open on Bitwig on Linux
 
 ## High priority
 

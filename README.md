@@ -117,13 +117,13 @@ cargo xtask bundle octasine --release --features "clap"
 * Install dependencies, e.g.,
 
 ```sh
-sudo apt-get install cmake git build-essential libx11-dev libxcursor-dev libxcb-dri2-0-dev libxcb-icccm4-dev libx11-xcb-dev
+sudo apt-get install cmake git build-essential libx11-dev libxcursor-dev libxcb-dri2-0-dev libxcb-icccm4-dev libx11-xcb-dev pkg-config libgl-dev
 ```
 
 On Debian 10, you might need to install some more dependencies:
 
 ```sh
-sudo apt-get install pkg-config libfreetype6-dev libexpat1-dev
+sudo apt-get install libfreetype6-dev libexpat1-dev
 ```
 
 * Clone this repository to a folder on your computer, e.g.,
