@@ -10,10 +10,10 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- Upgrade to [iced](https://github.com/iced-rs/iced) v0.8
 - Use new patch bank / patch format with better provisions for forward
   compatibility. Patches created with previous versions are automatically
   converted when opened.
+- Upgrade to [iced](https://github.com/iced-rs/iced) v0.8
 
 ### Fixed
 
