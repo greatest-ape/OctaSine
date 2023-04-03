@@ -136,7 +136,7 @@ mod gen {
                 chunk[1] = phase;
             }
 
-            let phases = Pd::from_arr(phases_arr) * Pd::new(TAU);
+            let phases = Pd::from_arr(phases_arr);
 
             let mut mod_inputs = [
                 Pd::new_zeroed(),
@@ -150,20 +150,24 @@ mod gen {
             let operator_frequency = operator_data[operator_index].frequency();
 
             for i in (operator_index..4).rev() {
+                let relative_frequency = Pd::new(operator_data[i].frequency() / operator_frequency);
+                let feedback = Pd::new(operator_data[i].feedback.get() as f64);
+                let modulation_in = mod_inputs[i];
+                let phases = phases * relative_frequency;
+
                 let samples = match operator_data[i].wave_type.get() {
                     WaveType::Sine => {
-                        let phases = {
-                            let relative_frequency =
-                                Pd::new(operator_data[i].frequency() / operator_frequency);
-
-                            phases * relative_frequency
-                        };
-
-                        let feedback = Pd::new(operator_data[i].feedback.get() as f64);
-                        let modulation_in = mod_inputs[i];
+                        let phases = phases * Pd::new(TAU);
 
                         ((feedback * phases.fast_sin()) + modulation_in + phases).fast_sin()
                     }
+                    WaveType::Square => {
+                        ((feedback * phases.square()) + modulation_in + phases).square()
+                    }
+                    WaveType::Triangle => {
+                        ((feedback * phases.triangle()) + modulation_in + phases).triangle()
+                    }
+                    WaveType::Saw => ((feedback * phases.saw()) + modulation_in + phases).saw(),
                     WaveType::WhiteNoise => {
                         let mut random_numbers = <Pd as SimdPackedDouble>::Arr::default();
 

@@ -8,7 +8,7 @@ pub const COMPATIBILITY_CHANGES: &[(Version, fn(&mut SerdePatch))] = &[
     // (Version::new(0, 8, 5), compat_0_8_5),
 ];
 
-/// WIP: Version 0.8.5 introduces new operator wave forms
+/// New operator wave forms
 ///
 /// Prior versions only had sine and white noise variants
 #[allow(dead_code)]
