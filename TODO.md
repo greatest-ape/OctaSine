@@ -1,20 +1,10 @@
 # TODO
 
-* Patch format v2
-  * criterion export and import benchmarks
-    * Is CompactString really worth it, even with frequent clap state exports?
-      * Overhead doesn't seem to be large, but might not actually be faster than string. ArrayString
-        would be an option maybe
-  * clap.state
-    * does host need to be told to fetch new state after "refresh values" is sent? (it likely wouldn't hurt to add it)
-  * Include zoom state in patch?
-  * Test
-  * Test patch compatibility layer
-  * Then release new version
-    * Should look at data to include in patch export before then
-
+* Clear patch / clear bank crashes on Windows (CLAP and VST2). Renaming patches
+  and setting values works, though.
 * Run miri on audio gen bench
-* Portamento
+* Portamento / legato
+* Pitch bend
 * Mode where release never activates but mod out is deactivated. Will need
   extra checks for ending when all other operators not in this mode have ended
 * LFO free sync: restart at key press but at random phase value, see page 33:
@@ -22,7 +12,8 @@
 * Add saw, square and triangle waves, and possibly others
   * Look at TX81Z waveforms: https://www.reddit.com/r/synthesizers/comments/rkyk6j/comment/hpgcu6r/?utm_source=share&utm_medium=web2x&context=3
 * GUI resources are not freed in Bitwig on macOS for both vst2 and clap plugins
-* CLAP GUI doesn't open on Bitwig on Linux
+* CLAP GUI doesn't open on Bitwig on Linux (well, sometimes it does)
+* Include zoom state in patch?
 
 ## High priority
 
