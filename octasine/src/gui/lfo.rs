@@ -87,9 +87,7 @@ impl LfoWidgets {
                 .push(
                     Container::new(
                         Column::new()
-                            .push(Space::with_height(Length::Fixed(f32::from(
-                                LINE_HEIGHT,
-                            ))))
+                            .push(Space::with_height(Length::Fixed(f32::from(LINE_HEIGHT))))
                             .push(
                                 Row::new()
                                     .push(active)
