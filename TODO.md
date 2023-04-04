@@ -1,7 +1,5 @@
 # TODO
 
-* Clear patch / clear bank crashes on Windows (CLAP and VST2). Renaming patches
-  and setting values works, though.
 * Run miri on audio gen bench
 * Portamento / legato
 * Pitch bend
