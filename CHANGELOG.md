@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## Unreleased
+
+### Fixed
+
+- Fix crashes on Windows when clearing patch bank or patches
+- Display file pickers on top of plugin window on macOS
+
 ## 0.8.4 - 2023-04-03
 
 ### Added
