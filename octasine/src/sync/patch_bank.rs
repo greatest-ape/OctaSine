@@ -65,7 +65,7 @@ impl Patch {
     }
 
     fn set_from_patch_parameters(&self, parameters: &IndexMap<ParameterKey, PatchParameter>) {
-        self.set_name("");
+        self.set_name("-");
 
         for (parameter, default_value) in self
             .parameters

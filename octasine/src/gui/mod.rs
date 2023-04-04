@@ -20,7 +20,10 @@ use std::path::PathBuf;
 use anyhow::Context;
 use cfg_if::cfg_if;
 use compact_str::CompactString;
+use iced_aw::native::{Card, Modal};
+use iced_baseview::alignment::Horizontal;
 use iced_baseview::command::Action;
+use iced_baseview::widget::{Button, Text};
 use iced_baseview::{executor, window::WindowSubs, Application, Command, Subscription};
 use iced_baseview::{
     widget::Column, widget::Container, widget::Row, widget::Space, window::WindowQueue, Element,
@@ -123,6 +126,24 @@ pub enum Message {
     SaveBankOrPatchToFile(PathBuf, Vec<u8>),
     LoadBankOrPatchesFromPaths(Vec<PathBuf>),
     ChangeParameterByTextInput(WrappedParameter, CompactString),
+    ModalOpen(ModalAction),
+    ModalClose,
+    ModalYes,
+}
+
+#[derive(Debug, Clone)]
+pub enum ModalAction {
+    ClearPatch,
+    ClearBank,
+}
+
+impl ModalAction {
+    fn heading(&self) -> &str {
+        match self {
+            Self::ClearBank => "CLEAR ENTIRE PATCH BANK?",
+            Self::ClearPatch => "CLEAR CURRENT PATCH?",
+        }
+    }
 }
 
 pub struct OctaSineIcedApplication<H: GuiSyncHandle> {
@@ -137,6 +158,7 @@ pub struct OctaSineIcedApplication<H: GuiSyncHandle> {
     lfo_3: LfoWidgets,
     lfo_4: LfoWidgets,
     corner: CornerWidgets,
+    modal_action: Option<ModalAction>,
 }
 
 impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {
@@ -440,6 +462,7 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
             lfo_3,
             lfo_4,
             corner,
+            modal_action: None,
         };
 
         (app, Command::none())
@@ -592,7 +615,25 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
 
                 return Command::single(Action::Future(Box::pin(async move {
                     cfg_if!(
-                        if #[cfg(any(target_os = "macos", target_os = "windows"))] {
+                        if #[cfg(target_os = "macos")] {
+                            let mut builder = rfd::AsyncFileDialog::new()
+                                .set_title(TITLE)
+                                .add_filter("Patch", &["fxp"])
+                                .add_filter("Patch bank", &["fxb"]);
+
+                            if let Some(h) = CurrentWindowHandle::get() {
+                                builder = builder.set_parent(&h);
+                            }
+
+                            let opt_paths = builder
+                                .pick_files()
+                                .await
+                                .map(|handles|
+                                    handles.into_iter()
+                                        .map(|h| h.path().to_owned())
+                                        .collect::<Vec<PathBuf>>()
+                                );
+                        } else if #[cfg(target_os = "windows")] {
                             let opt_paths = rfd::AsyncFileDialog::new()
                                 .set_title(TITLE)
                                 .add_filter("Patch", &["fxp"])
@@ -631,7 +672,22 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
 
                 return Command::single(Action::Future(Box::pin(async move {
                     cfg_if!(
-                        if #[cfg(any(target_os = "macos", target_os = "windows"))] {
+                        if #[cfg(target_os = "macos")] {
+                            let mut builder = rfd::AsyncFileDialog::new()
+                                .set_title(TITLE)
+                                .add_filter("Patch", &["fxp"])
+                                .set_file_name(&patch_filename);
+
+                            if let Some(h) = CurrentWindowHandle::get() {
+                                builder = builder.set_parent(&h);
+                            }
+
+                            let opt_path_buf = builder
+                                .save_file()
+                                .await
+                                .map(|handle| handle.path().to_owned());
+                        }
+                        else if #[cfg(target_os = "windows")] {
                             let opt_path_buf = rfd::AsyncFileDialog::new()
                                 .set_title(TITLE)
                                 .add_filter("Patch", &["fxp"])
@@ -664,7 +720,21 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
 
                 return Command::single(Action::Future(Box::pin(async move {
                     cfg_if!(
-                        if #[cfg(any(target_os = "macos", target_os = "windows"))] {
+                        if #[cfg(target_os = "macos")] {
+                            let mut builder = rfd::AsyncFileDialog::new()
+                                .set_title(TITLE)
+                                .add_filter("Patch bank", &["fxb"])
+                                .set_file_name(FILENAME);
+
+                            if let Some(h) = CurrentWindowHandle::get() {
+                                builder = builder.set_parent(&h);
+                            }
+
+                            let opt_path_buf = builder
+                                .save_file()
+                                .await
+                                .map(|handle| handle.path().to_owned());
+                        } else if #[cfg(target_os = "windows")] {
                             let opt_path_buf = rfd::AsyncFileDialog::new()
                                 .set_title(TITLE)
                                 .add_filter("Patch bank", &["fxb"])
@@ -672,7 +742,7 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                                 .save_file()
                                 .await
                                 .map(|handle| handle.path().to_owned());
-                        } else {
+                        } else  {
                             let opt_path_buf = tinyfiledialogs::save_file_dialog_with_filter(
                                 TITLE,
                                 FILENAME,
@@ -701,28 +771,10 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                 }
             }
             Message::ClearPatch => {
-                let answer = tinyfiledialogs::message_box_yes_no(
-                    "Clear OctaSine patch",
-                    "Are you sure that you want to clear the currently active OctaSine patch?",
-                    tinyfiledialogs::MessageBoxIcon::Warning,
-                    tinyfiledialogs::YesNo::No,
-                );
-
-                if let tinyfiledialogs::YesNo::Yes = answer {
-                    self.sync_handle.clear_patch();
-                }
+                self.modal_action = Some(ModalAction::ClearPatch);
             }
             Message::ClearBank => {
-                let answer = tinyfiledialogs::message_box_yes_no(
-                    "Clear OctaSine patch bank",
-                    "Are you sure that you want to clear the whole active OctaSine patch bank?",
-                    tinyfiledialogs::MessageBoxIcon::Warning,
-                    tinyfiledialogs::YesNo::No,
-                );
-
-                if let tinyfiledialogs::YesNo::Yes = answer {
-                    self.sync_handle.clear_bank();
-                }
+                self.modal_action = Some(ModalAction::ClearBank);
             }
             Message::SaveBankOrPatchToFile(path_buf, bytes) => {
                 if let Err(err) = save_data_to_file(path_buf, bytes) {
@@ -749,13 +801,28 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                     }
                 }
             }
+            Message::ModalOpen(action) => {
+                self.modal_action = Some(action);
+            }
+            Message::ModalClose => {
+                self.modal_action = None;
+            }
+            Message::ModalYes => match self.modal_action.take() {
+                Some(ModalAction::ClearBank) => {
+                    self.sync_handle.clear_bank();
+                }
+                Some(ModalAction::ClearPatch) => {
+                    self.sync_handle.clear_patch();
+                }
+                None => (),
+            },
         }
 
         Command::none()
     }
 
     fn view(&self) -> Element<'_, Self::Message, Self::Theme> {
-        Container::new(
+        let content = Container::new(
             Column::new()
                 .push(Space::with_height(Length::Fixed(LINE_HEIGHT.into())))
                 .push(self.operator_4.view(&self.theme))
@@ -786,7 +853,37 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                 ),
         )
         .height(Length::Fill)
-        .style(ContainerStyle::L0)
+        .style(ContainerStyle::L0);
+
+        Modal::new(self.modal_action.is_some(), content, || {
+            Card::new(
+                Text::new(
+                    self.modal_action
+                        .as_ref()
+                        .map(ModalAction::heading)
+                        .unwrap_or(""),
+                ),
+                Row::new()
+                    .spacing(LINE_HEIGHT / 2)
+                    // .padding(LINE_HEIGHT)
+                    .width(Length::Fill)
+                    .push(
+                        Button::new(Text::new("YES").horizontal_alignment(Horizontal::Center))
+                            .width(Length::Fill)
+                            .on_press(Message::ModalYes),
+                    )
+                    .push(
+                        Button::new(Text::new("NO").horizontal_alignment(Horizontal::Center))
+                            .width(Length::Fill)
+                            .on_press(Message::ModalClose),
+                    ),
+            )
+            .max_width(LINE_HEIGHT as f32 * 16.0)
+            .padding(LINE_HEIGHT as f32)
+            .into()
+        })
+        .backdrop(Message::ModalClose)
+        .on_esc(Message::ModalClose)
         .into()
     }
 
@@ -838,5 +935,46 @@ pub fn get_iced_baseview_settings<H: GuiSyncHandle>(
             always_redraw: true,
         },
         flags: sync_handle,
+    }
+}
+
+#[cfg(target_os = "macos")]
+struct CurrentWindowHandle(rwh05::RawWindowHandle);
+
+#[cfg(target_os = "macos")]
+impl CurrentWindowHandle {
+    fn get() -> Option<Self> {
+        use objc::{class, msg_send, runtime::Object, sel, sel_impl};
+
+        unsafe {
+            let ns_app: *mut Object = msg_send![class!(NSApplication), sharedApplication];
+            if ns_app.is_null() {
+                return None;
+            }
+
+            let ns_window: *mut Object = msg_send![ns_app, keyWindow];
+            if ns_window.is_null() {
+                return None;
+            }
+
+            let ns_view: *mut Object = msg_send![ns_window, contentView];
+            if ns_view.is_null() {
+                return None;
+            }
+
+            let mut handle = rwh05::AppKitWindowHandle::empty();
+
+            handle.ns_window = ns_window as *mut core::ffi::c_void;
+            handle.ns_view = ns_view as *mut core::ffi::c_void;
+
+            Some(Self(rwh05::RawWindowHandle::AppKit(handle)))
+        }
+    }
+}
+
+#[cfg(target_os = "macos")]
+unsafe impl rwh05::HasRawWindowHandle for CurrentWindowHandle {
+    fn raw_window_handle(&self) -> rwh05::RawWindowHandle {
+        self.0
     }
 }
