@@ -1,5 +1,5 @@
 use iced_baseview::{open_blocking, open_parented};
-use raw_window_handle::{HasRawWindowHandle, RawWindowHandle};
+use rwh04::{HasRawWindowHandle, RawWindowHandle};
 
 use crate::{
     gui::{get_iced_baseview_settings, GUI_HEIGHT, GUI_WIDTH},
@@ -70,7 +70,7 @@ pub struct ParentWindow(pub *mut ::core::ffi::c_void);
 unsafe impl HasRawWindowHandle for ParentWindow {
     #[cfg(target_os = "macos")]
     fn raw_window_handle(&self) -> RawWindowHandle {
-        let mut handle = raw_window_handle::AppKitHandle::empty();
+        let mut handle = rwh04::AppKitHandle::empty();
 
         handle.ns_view = self.0;
 
@@ -79,7 +79,7 @@ unsafe impl HasRawWindowHandle for ParentWindow {
 
     #[cfg(target_os = "windows")]
     fn raw_window_handle(&self) -> RawWindowHandle {
-        let mut handle = raw_window_handle::Win32Handle::empty();
+        let mut handle = rwh04::Win32Handle::empty();
 
         handle.hwnd = self.0;
 
@@ -88,7 +88,7 @@ unsafe impl HasRawWindowHandle for ParentWindow {
 
     #[cfg(target_os = "linux")]
     fn raw_window_handle(&self) -> RawWindowHandle {
-        let mut handle = raw_window_handle::XcbHandle::empty();
+        let mut handle = rwh04::XcbHandle::empty();
 
         handle.window = self.0 as u32;
 

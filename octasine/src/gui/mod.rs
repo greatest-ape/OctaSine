@@ -615,7 +615,25 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
 
                 return Command::single(Action::Future(Box::pin(async move {
                     cfg_if!(
-                        if #[cfg(any(target_os = "macos", target_os = "windows"))] {
+                        if #[cfg(target_os = "macos")] {
+                            let mut builder = rfd::AsyncFileDialog::new()
+                                .set_title(TITLE)
+                                .add_filter("Patch", &["fxp"])
+                                .add_filter("Patch bank", &["fxb"]);
+
+                            if let Some(h) = CurrentWindowHandle::get() {
+                                builder = builder.set_parent(&h);
+                            }
+
+                            let opt_paths = builder
+                                .pick_files()
+                                .await
+                                .map(|handles|
+                                    handles.into_iter()
+                                        .map(|h| h.path().to_owned())
+                                        .collect::<Vec<PathBuf>>()
+                                );
+                        } else if #[cfg(target_os = "windows")] {
                             let opt_paths = rfd::AsyncFileDialog::new()
                                 .set_title(TITLE)
                                 .add_filter("Patch", &["fxp"])
@@ -654,7 +672,22 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
 
                 return Command::single(Action::Future(Box::pin(async move {
                     cfg_if!(
-                        if #[cfg(any(target_os = "macos", target_os = "windows"))] {
+                        if #[cfg(target_os = "macos")] {
+                            let mut builder = rfd::AsyncFileDialog::new()
+                                .set_title(TITLE)
+                                .add_filter("Patch", &["fxp"])
+                                .set_file_name(&patch_filename);
+
+                            if let Some(h) = CurrentWindowHandle::get() {
+                                builder = builder.set_parent(&h);
+                            }
+
+                            let opt_path_buf = builder
+                                .save_file()
+                                .await
+                                .map(|handle| handle.path().to_owned());
+                        }
+                        else if #[cfg(target_os = "windows")] {
                             let opt_path_buf = rfd::AsyncFileDialog::new()
                                 .set_title(TITLE)
                                 .add_filter("Patch", &["fxp"])
@@ -687,7 +720,21 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
 
                 return Command::single(Action::Future(Box::pin(async move {
                     cfg_if!(
-                        if #[cfg(any(target_os = "macos", target_os = "windows"))] {
+                        if #[cfg(target_os = "macos")] {
+                            let mut builder = rfd::AsyncFileDialog::new()
+                                .set_title(TITLE)
+                                .add_filter("Patch bank", &["fxb"])
+                                .set_file_name(FILENAME);
+
+                            if let Some(h) = CurrentWindowHandle::get() {
+                                builder = builder.set_parent(&h);
+                            }
+
+                            let opt_path_buf = builder
+                                .save_file()
+                                .await
+                                .map(|handle| handle.path().to_owned());
+                        } else if #[cfg(target_os = "windows")] {
                             let opt_path_buf = rfd::AsyncFileDialog::new()
                                 .set_title(TITLE)
                                 .add_filter("Patch bank", &["fxb"])
@@ -695,7 +742,7 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                                 .save_file()
                                 .await
                                 .map(|handle| handle.path().to_owned());
-                        } else {
+                        } else  {
                             let opt_path_buf = tinyfiledialogs::save_file_dialog_with_filter(
                                 TITLE,
                                 FILENAME,
@@ -888,5 +935,46 @@ pub fn get_iced_baseview_settings<H: GuiSyncHandle>(
             always_redraw: true,
         },
         flags: sync_handle,
+    }
+}
+
+#[cfg(target_os = "macos")]
+struct CurrentWindowHandle(rwh05::RawWindowHandle);
+
+#[cfg(target_os = "macos")]
+impl CurrentWindowHandle {
+    fn get() -> Option<Self> {
+        use objc::{class, msg_send, runtime::Object, sel, sel_impl};
+
+        unsafe {
+            let ns_app: *mut Object = msg_send![class!(NSApplication), sharedApplication];
+            if ns_app.is_null() {
+                return None;
+            }
+
+            let ns_window: *mut Object = msg_send![ns_app, keyWindow];
+            if ns_window.is_null() {
+                return None;
+            }
+
+            let ns_view: *mut Object = msg_send![ns_window, contentView];
+            if ns_view.is_null() {
+                return None;
+            }
+
+            let mut handle = rwh05::AppKitWindowHandle::empty();
+
+            handle.ns_window = ns_window as *mut core::ffi::c_void;
+            handle.ns_view = ns_view as *mut core::ffi::c_void;
+
+            Some(Self(rwh05::RawWindowHandle::AppKit(handle)))
+        }
+    }
+}
+
+#[cfg(target_os = "macos")]
+unsafe impl rwh05::HasRawWindowHandle for CurrentWindowHandle {
+    fn raw_window_handle(&self) -> rwh05::RawWindowHandle {
+        self.0
     }
 }
