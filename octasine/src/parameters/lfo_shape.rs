@@ -123,6 +123,8 @@ fn lfo_saw(phase: Phase) -> f32 {
 }
 
 /// LFO square wave
+/// 
+/// Kept for backwards compatibility
 fn lfo_square(phase: Phase) -> f32 {
     // To check absense of branches, make function public and run:
     // `cargo asm --lib -p octasine "octasine::parameters::lfo_shape::square" --rust --color`

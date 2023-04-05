@@ -553,25 +553,38 @@ mod gen {
         modulation_inputs: Pd,
         key_velocity: Pd,
     ) -> (Pd, Pd) {
-        let sample = if operator_data.wave_type == WaveType::WhiteNoise {
-            let mut random_numbers = <Pd as SimdPackedDouble>::Arr::default();
+        let phase = Pd::from_arr(operator_data.phase);
+        let feedback = Pd::from_arr(operator_data.feedback);
 
-            for chunk in random_numbers.chunks_exact_mut(2) {
-                let random = rng.f64();
+        let sample = match operator_data.wave_type {
+            WaveType::Sine => {
+                let phase = phase * Pd::new(TAU);
 
-                chunk[0] = random;
-                chunk[1] = random;
+                (phase + (key_velocity * (feedback * phase.fast_sin()) + modulation_inputs))
+                    .fast_sin()
             }
+            WaveType::Square => {
+                (phase + (key_velocity * (feedback * phase.square()) + modulation_inputs)).square()
+            }
+            WaveType::Triangle => (phase
+                + (key_velocity * (feedback * phase.triangle()) + modulation_inputs))
+                .triangle(),
+            WaveType::Saw => {
+                (phase + (key_velocity * (feedback * phase.saw()) + modulation_inputs)).saw()
+            }
+            WaveType::WhiteNoise => {
+                let mut random_numbers = <Pd as SimdPackedDouble>::Arr::default();
 
-            // Convert random numbers to range -1.0 to 1.0
-            Pd::new(2.0) * (Pd::from_arr(random_numbers) - Pd::new(0.5))
-        } else {
-            let phase = Pd::from_arr(operator_data.phase);
-            let feedback = Pd::from_arr(operator_data.feedback);
+                for chunk in random_numbers.chunks_exact_mut(2) {
+                    let random = rng.f64();
 
-            let phase = phase * Pd::new(TAU);
+                    chunk[0] = random;
+                    chunk[1] = random;
+                }
 
-            (phase + (key_velocity * (feedback * phase.fast_sin()) + modulation_inputs)).fast_sin()
+                // Convert random numbers to range -1.0 to 1.0
+                Pd::new(2.0) * (Pd::from_arr(random_numbers) - Pd::new(0.5))
+            }
         };
 
         let volume = Pd::from_arr(operator_data.volume);
