@@ -1,5 +1,6 @@
 # TODO
 
+* Use standard triangle function instead of lfo_triangle, it should produce same output
 * Run miri on audio gen bench
 * Portamento / legato
 * Pitch bend
@@ -7,8 +8,12 @@
   extra checks for ending when all other operators not in this mode have ended
 * LFO free sync: restart at key press but at random phase value, see page 33:
   http://www.synthfool.com/docs/Yamaha/DX_Series/Yamaha%20DX-100%20Owners%20Manual.pdf
-* Add saw, square and triangle waves, and possibly others
-  * Look at TX81Z waveforms: https://www.reddit.com/r/synthesizers/comments/rkyk6j/comment/hpgcu6r/?utm_source=share&utm_medium=web2x&context=3
+* Add other waveforms?
+  * Look at TX81Z waveforms:
+    * https://en.wikipedia.org/wiki/Yamaha_YM2414
+    * https://www.tinyloops.com/doc/yamaha_tq5/waveforms.html
+    * https://www.reddit.com/r/synthesizers/comments/rkyk6j/comment/hpgcu6r/?utm_source=share&utm_medium=web2x&context=3
+  * Look at OPL waveforms: https://en.wikipedia.org/wiki/Yamaha_OPL
 * GUI resources are not freed in Bitwig on macOS for both vst2 and clap plugins
 * CLAP GUI doesn't open on Bitwig on Linux (well, sometimes it does)
 * Include zoom state in patch?
