@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+### Added
+
+- Add square, triangle and saw operator waveforms. Patches should load
+  properly, but waveform parameter automations will have a different effect
+  than previously.
+
 ### Fixed
 
 - Fix crashes on Windows when clearing patch bank or patches
