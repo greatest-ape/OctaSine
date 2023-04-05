@@ -5,7 +5,7 @@ use crate::parameters::{OperatorParameter, Parameter, SerializableRepresentation
 use super::SerdePatch;
 
 pub const COMPATIBILITY_CHANGES: &[(Version, fn(&mut SerdePatch))] = &[
-    // (Version::new(0, 8, 5), compat_0_8_5),
+    (Version::new(0, 8, 5), compat_0_8_5),
 ];
 
 /// New operator wave forms
@@ -25,7 +25,7 @@ pub fn compat_0_8_5(patch: &mut SerdePatch) {
 
         match &p.value_serializable {
             SerializableRepresentation::Other(s) => {
-                // FIXME: set values valid for v0.8.5
+                // These values will in most (but not all) cases already be set
                 match s.as_str() {
                     "SINE" => {
                         p.value_patch = 0.0;
