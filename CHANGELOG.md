@@ -2,13 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
-## Unreleased
+## 0.8.5 - 2023-04-05
 
 ### Added
 
-- Add square, triangle and saw operator waveforms. Patches should load
-  properly, but waveform parameter automations will have a different effect
-  than previously.
+- Add square, triangle and saw operator waveforms. Patches created with
+  previous versions should load from files perfectly. DAW projects should
+  load perfectly in most cases, but if you've used automations on the
+  waveform parameter, the effect will not be the same as before.
 
 ### Fixed
 
