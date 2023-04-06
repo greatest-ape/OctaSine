@@ -16,6 +16,7 @@ pub mod pick_list;
 pub mod radio;
 pub mod scrollable;
 pub mod text;
+pub mod text_input;
 pub mod wave_display;
 pub mod wave_picker;
 

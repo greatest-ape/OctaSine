@@ -38,7 +38,7 @@ cfg_if::cfg_if! {
             fn set_parameter(&self, parameter: WrappedParameter, value: f32);
             /// Set parameter immediately. Wrap in begin and end edit commands if necessary
             fn set_parameter_immediate(&self, parameter: WrappedParameter, value: f32);
-            fn set_parameter_from_text(&self, parameter: WrappedParameter, text: &str) -> Option<f32>;
+            fn parse_parameter_from_text(&self, parameter: WrappedParameter, text: &str) -> Option<f32>;
             /// Set parameter without telling host
             fn set_parameter_audio_only(&self, parameter: WrappedParameter, value: f32);
             fn get_parameter(&self, parameter: WrappedParameter) -> f32;

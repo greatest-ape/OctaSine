@@ -1,5 +1,8 @@
 # TODO
 
+* Implement modal for renaming patches
+* In modal for setting parameters by text, change to dropdown for fixed-value
+  parameters?
 * Use standard triangle function instead of lfo_triangle, it should produce same output
 * Run miri on audio gen bench
 * Portamento / legato

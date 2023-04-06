@@ -23,7 +23,7 @@ use compact_str::CompactString;
 use iced_aw::native::{Card, Modal};
 use iced_baseview::alignment::Horizontal;
 use iced_baseview::command::Action;
-use iced_baseview::widget::{Button, Text};
+use iced_baseview::widget::{Button, Text, TextInput};
 use iced_baseview::{executor, window::WindowSubs, Application, Command, Subscription};
 use iced_baseview::{
     widget::Column, widget::Container, widget::Row, widget::Space, window::WindowQueue, Element,
@@ -125,25 +125,25 @@ pub enum Message {
     ClearBank,
     SaveBankOrPatchToFile(PathBuf, Vec<u8>),
     LoadBankOrPatchesFromPaths(Vec<PathBuf>),
-    ChangeParameterByTextInput(WrappedParameter, CompactString),
+    ChangeParameterByTextInput {
+        parameter: WrappedParameter,
+        value_text: CompactString,
+    },
     ModalOpen(ModalAction),
     ModalClose,
     ModalYes,
+    ModalSetParameterUpdateText(String),
 }
 
 #[derive(Debug, Clone)]
 pub enum ModalAction {
     ClearPatch,
     ClearBank,
-}
-
-impl ModalAction {
-    fn heading(&self) -> &str {
-        match self {
-            Self::ClearBank => "CLEAR ENTIRE PATCH BANK?",
-            Self::ClearPatch => "CLEAR CURRENT PATCH?",
-        }
-    }
+    SetParameter {
+        parameter: WrappedParameter,
+        value_text: CompactString,
+        parse_failed: bool,
+    },
 }
 
 pub struct OctaSineIcedApplication<H: GuiSyncHandle> {
@@ -477,6 +477,13 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
         Subscription::none()
     }
 
+    fn ignore_non_modifier_keys(&self) -> Option<bool> {
+        Some(!matches!(
+            self.modal_action,
+            Some(ModalAction::SetParameter { .. })
+        ))
+    }
+
     #[cfg(feature = "wgpu")]
     fn renderer_settings() -> iced_baseview::renderer::Settings {
         iced_baseview::renderer::Settings {
@@ -784,22 +791,15 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
             Message::LoadBankOrPatchesFromPaths(paths) => {
                 self.sync_handle.import_bank_or_patches_from_paths(&paths);
             }
-            Message::ChangeParameterByTextInput(parameter, current_text_value) => {
-                if let Some(new_text_value) = tinyfiledialogs::input_box(
-                    "Change OctaSine parameter value",
-                    &format!(
-                        "Please provide a new value for {}",
-                        parameter.parameter().name()
-                    ),
-                    &current_text_value,
-                ) {
-                    if let Some(new_value) = self
-                        .sync_handle
-                        .set_parameter_from_text(parameter, &new_text_value)
-                    {
-                        self.set_value(parameter.parameter(), new_value, true);
-                    }
-                }
+            Message::ChangeParameterByTextInput {
+                parameter,
+                value_text,
+            } => {
+                self.modal_action = Some(ModalAction::SetParameter {
+                    parameter,
+                    value_text,
+                    parse_failed: false,
+                });
             }
             Message::ModalOpen(action) => {
                 self.modal_action = Some(action);
@@ -814,8 +814,39 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                 Some(ModalAction::ClearPatch) => {
                     self.sync_handle.clear_patch();
                 }
+                Some(ModalAction::SetParameter {
+                    parameter,
+                    value_text,
+                    ..
+                }) => {
+                    // Parse again here to avoid having to pass around patch value
+                    if let Some(value_patch) = self
+                        .sync_handle
+                        .parse_parameter_from_text(parameter, value_text.as_str())
+                    {
+                        self.sync_handle
+                            .set_parameter_immediate(parameter, value_patch);
+
+                        self.set_value(parameter.parameter(), value_patch, true);
+                    }
+                }
                 None => (),
             },
+            Message::ModalSetParameterUpdateText(new_text) => {
+                if let Some(ModalAction::SetParameter {
+                    value_text,
+                    parameter,
+                    parse_failed,
+                }) = self.modal_action.as_mut()
+                {
+                    *parse_failed = self
+                        .sync_handle
+                        .parse_parameter_from_text(*parameter, new_text.as_str())
+                        .is_none();
+
+                    *value_text = new_text.into();
+                }
+            }
         }
 
         Command::none()
@@ -856,16 +887,23 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
         .style(ContainerStyle::L0);
 
         Modal::new(self.modal_action.is_some(), content, || {
-            Card::new(
-                Text::new(
-                    self.modal_action
-                        .as_ref()
-                        .map(ModalAction::heading)
-                        .unwrap_or(""),
-                ),
-                Row::new()
+            let modal_action = if let Some(modal_action) = self.modal_action.as_ref() {
+                modal_action
+            } else {
+                return Row::new().into();
+            };
+
+            let heading = match modal_action {
+                ModalAction::ClearBank => "CLEAR ENTIRE PATCH BANK?".into(),
+                ModalAction::ClearPatch => "CLEAR CURRENT PATCH?".into(),
+                ModalAction::SetParameter { parameter, .. } => {
+                    format!("SET {}", parameter.parameter().name().to_uppercase())
+                }
+            };
+
+            let body: Element<'_, Self::Message, Self::Theme> = match modal_action {
+                ModalAction::ClearBank | ModalAction::ClearPatch => Row::new()
                     .spacing(LINE_HEIGHT / 2)
-                    // .padding(LINE_HEIGHT)
                     .width(Length::Fill)
                     .push(
                         Button::new(Text::new("YES").horizontal_alignment(Horizontal::Center))
@@ -876,11 +914,52 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                         Button::new(Text::new("NO").horizontal_alignment(Horizontal::Center))
                             .width(Length::Fill)
                             .on_press(Message::ModalClose),
-                    ),
-            )
-            .max_width(LINE_HEIGHT as f32 * 16.0)
-            .padding(LINE_HEIGHT as f32)
-            .into()
+                    )
+                    .into(),
+                ModalAction::SetParameter {
+                    value_text: text,
+                    parse_failed,
+                    ..
+                } => {
+                    let mut text_input = TextInput::new("", &text, |text| {
+                        Message::ModalSetParameterUpdateText(text)
+                    })
+                    .width(Length::Fill);
+
+                    let mut ok_button =
+                        Button::new(Text::new("OK").horizontal_alignment(Horizontal::Center))
+                            .width(Length::Fill);
+
+                    if !parse_failed {
+                        text_input = text_input.on_submit(Message::ModalYes);
+                        ok_button = ok_button.on_press(Message::ModalYes);
+                    }
+
+                    Column::new()
+                        .spacing(LINE_HEIGHT)
+                        .push(text_input)
+                        .push(
+                            Row::new()
+                                .spacing(LINE_HEIGHT / 2)
+                                .width(Length::Fill)
+                                .push(ok_button)
+                                .push(
+                                    Button::new(
+                                        Text::new("CANCEL")
+                                            .horizontal_alignment(Horizontal::Center),
+                                    )
+                                    .width(Length::Fill)
+                                    .on_press(Message::ModalClose),
+                                ),
+                        )
+                        .into()
+                }
+            };
+
+            Card::new(Text::new(heading), body)
+                .max_width(LINE_HEIGHT as f32 * 16.0)
+                .padding(LINE_HEIGHT as f32)
+                .into()
         })
         .backdrop(Message::ModalClose)
         .on_esc(Message::ModalClose)

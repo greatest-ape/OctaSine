@@ -1531,7 +1531,7 @@ dependencies = [
 [[package]]
 name = "iced_baseview"
 version = "0.0.3"
-source = "git+https://github.com/BillyDM/iced_baseview.git?rev=e2dac0b#e2dac0b0894b327ab45840c35cab86e557e840c1"
+source = "git+https://github.com/BillyDM/iced_baseview.git?rev=adc7417#adc74173f4fb494229a25ea779a9ac89ed7b9b09"
 dependencies = [
  "baseview",
  "cfg-if",

@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## Unreleased
+
+### Changed
+
+- Implement modal for setting parameter values by text input
+
 ## 0.8.5 - 2023-04-05
 
 ### Added

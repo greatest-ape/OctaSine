@@ -14,29 +14,29 @@ use super::{style::Theme, GuiSyncHandle, Message};
 #[derive(Debug, Clone)]
 pub struct ValueText<P: ParameterValue> {
     parameter: WrappedParameter,
-    text: CompactString,
+    value_text: CompactString,
     phantom_data: PhantomData<P>,
 }
 
 impl<P: ParameterValue> ValueText<P> {
     pub fn new<H: GuiSyncHandle>(sync_handle: &H, parameter: WrappedParameter) -> Self {
-        let value = sync_handle.get_parameter(parameter);
-        let text = P::new_from_patch(value).get_formatted();
+        let value_patch = sync_handle.get_parameter(parameter);
+        let value_text = P::new_from_patch(value_patch).get_formatted();
 
         Self {
             parameter,
-            text,
+            value_text,
             phantom_data: Default::default(),
         }
     }
 
     pub fn set_value(&mut self, value: f32) {
-        self.text = P::new_from_patch(value).get_formatted();
+        self.value_text = P::new_from_patch(value).get_formatted();
     }
 
     pub fn view(&self, theme: &Theme) -> Element<Message, Theme> {
         Button::new(
-            Text::new(self.text.clone())
+            Text::new(self.value_text.clone())
                 .horizontal_alignment(Horizontal::Center)
                 .width(Length::Fill)
                 .font(theme.font_regular())
@@ -45,10 +45,10 @@ impl<P: ParameterValue> ValueText<P> {
         .padding(0)
         .width(Length::Fill)
         .style(ButtonStyle::Value)
-        .on_press(Message::ChangeParameterByTextInput(
-            self.parameter,
-            self.text.clone(),
-        ))
+        .on_press(Message::ChangeParameterByTextInput {
+            parameter: self.parameter,
+            value_text: self.value_text.clone(),
+        })
         .into()
     }
 }
