@@ -42,7 +42,7 @@ cfg-if = "1"
 cbor4ii = { version = "0.3", features = ["serde1", "use_std"] }
 compact_str = { version = "0.7", features = ["serde"] }
 directories = "4"
-duplicate = "0.4"
+duplicate = "1"
 fast-math = "0.1"
 fastrand = "1"
 flate2 = "1"
