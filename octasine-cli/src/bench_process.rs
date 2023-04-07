@@ -15,7 +15,7 @@ use octasine::simd::{Simd, SimdPackedDouble};
 /// Benchmark OctaSine process functions and check output sample accuracy
 pub fn run() -> anyhow::Result<()> {
     // Don't forget trailing space
-    let hash = "9d 12 91 53 d7 f5 f4 6d ";
+    let hash = "62 43 a2 0f bc e3 52 c9 ";
 
     let mut all_sleef_hashes_match = true;
 
@@ -84,7 +84,7 @@ fn benchmark<A: AudioGen + Simd>(name: &str, expected_hash: &str) -> (bool, f32)
     let parameters_to_automate: HashSet<usize> = PARAMETERS
         .iter()
         .copied()
-        .filter(|p| !envelope_duration_parameters.contains(p) && !wave_type_parameters.contains(p))
+        .filter(|p| !envelope_duration_parameters.contains(p))
         .map(|p| p.to_index() as usize)
         .collect();
 
@@ -136,6 +136,11 @@ fn benchmark<A: AudioGen + Simd>(name: &str, expected_hash: &str) -> (bool, f32)
         octasine.sync.set_parameter(p.to_index() as i32, 0.0);
     }
 
+    let wave_type_parameter_indices = wave_type_parameters
+        .into_iter()
+        .map(|p| p.to_index() as usize)
+        .collect::<Vec<_>>();
+
     let now = Instant::now();
 
     for i in 0..BUFFER_ITERATIONS {
@@ -156,7 +161,12 @@ fn benchmark<A: AudioGen + Simd>(name: &str, expected_hash: &str) -> (bool, f32)
         for i in 0..PARAMETERS.len() {
             // Always generate random numbers so that hash comparisons can be
             // made with/without certain parameters
-            let value = fastrand::f32();
+            let mut value = fastrand::f32();
+
+            if wave_type_parameter_indices.contains(&i) {
+                // Avoid setting wave type to noise
+                value = value * 0.79;
+            }
 
             if parameters_to_automate.contains(&i) {
                 octasine.sync.set_parameter(i as i32, value);
