@@ -6,7 +6,8 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- Implement modal for setting parameter values by text input
+- Replace native popup window with interal modal for renaming patches and for
+  setting parameter values by text input
 
 ## 0.8.5 - 2023-04-05
 
