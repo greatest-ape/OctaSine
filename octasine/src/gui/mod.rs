@@ -890,7 +890,7 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                     text_is_valid,
                 }) = self.modal_action.as_mut()
                 {
-                    *text_is_valid = new_text.chars().all(|c| c.is_ascii_graphic());
+                    *text_is_valid = new_text.chars().all(|c| c.is_ascii_graphic() || c == ' ');
 
                     *value_text = new_text.into();
                 }
