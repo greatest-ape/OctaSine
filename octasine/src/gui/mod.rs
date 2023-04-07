@@ -23,7 +23,7 @@ use compact_str::CompactString;
 use iced_aw::native::{Card, Modal};
 use iced_baseview::alignment::Horizontal;
 use iced_baseview::command::Action;
-use iced_baseview::widget::{Button, Text, TextInput};
+use iced_baseview::widget::{Button, PickList, Text, TextInput};
 use iced_baseview::{executor, window::WindowSubs, Application, Command, Subscription};
 use iced_baseview::{
     widget::Column, widget::Container, widget::Row, widget::Space, window::WindowQueue, Element,
@@ -132,17 +132,23 @@ pub enum Message {
     ModalOpen(ModalAction),
     ModalClose,
     ModalYes,
-    ModalSetParameterUpdateText(String),
+    ModalSetParameterByTextUpdate(String),
+    ModalSetParameterByChoicesUpdate(CompactString),
 }
 
 #[derive(Debug, Clone)]
 pub enum ModalAction {
     ClearPatch,
     ClearBank,
-    SetParameter {
+    SetParameterByText {
         parameter: WrappedParameter,
         value_text: CompactString,
         parse_failed: bool,
+    },
+    SetParameterByChoices {
+        parameter: WrappedParameter,
+        options: Vec<CompactString>,
+        choice: CompactString,
     },
 }
 
@@ -480,7 +486,7 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
     fn ignore_non_modifier_keys(&self) -> Option<bool> {
         Some(!matches!(
             self.modal_action,
-            Some(ModalAction::SetParameter { .. })
+            Some(ModalAction::SetParameterByText { .. })
         ))
     }
 
@@ -795,7 +801,25 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                 parameter,
                 value_text,
             } => {
-                self.modal_action = Some(ModalAction::SetParameter {
+                // PickList will not display choices properly, see https://github.com/iced-rs/iced/issues/1591,
+                // so don't use choice input yet
+                /*
+                if let Some(options) = self.sync_handle.get_parameter_text_choices(parameter) {
+                    self.modal_action = Some(ModalAction::SetParameterByChoices {
+                        parameter,
+                        options,
+                        choice: value_text,
+                    });
+                } else {
+                    self.modal_action = Some(ModalAction::SetParameterByText {
+                        parameter,
+                        value_text,
+                        parse_failed: false,
+                    });
+                }
+                */
+
+                self.modal_action = Some(ModalAction::SetParameterByText {
                     parameter,
                     value_text,
                     parse_failed: false,
@@ -814,7 +838,7 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                 Some(ModalAction::ClearPatch) => {
                     self.sync_handle.clear_patch();
                 }
-                Some(ModalAction::SetParameter {
+                Some(ModalAction::SetParameterByText {
                     parameter,
                     value_text,
                     ..
@@ -830,10 +854,23 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                         self.set_value(parameter.parameter(), value_patch, true);
                     }
                 }
+                Some(ModalAction::SetParameterByChoices {
+                    parameter, choice, ..
+                }) => {
+                    if let Some(value_patch) = self
+                        .sync_handle
+                        .parse_parameter_from_text(parameter, choice.as_str())
+                    {
+                        self.sync_handle
+                            .set_parameter_immediate(parameter, value_patch);
+
+                        self.set_value(parameter.parameter(), value_patch, true);
+                    }
+                }
                 None => (),
             },
-            Message::ModalSetParameterUpdateText(new_text) => {
-                if let Some(ModalAction::SetParameter {
+            Message::ModalSetParameterByTextUpdate(new_text) => {
+                if let Some(ModalAction::SetParameterByText {
                     value_text,
                     parameter,
                     parse_failed,
@@ -845,6 +882,13 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                         .is_none();
 
                     *value_text = new_text.into();
+                }
+            }
+            Message::ModalSetParameterByChoicesUpdate(new_choice) => {
+                if let Some(ModalAction::SetParameterByChoices { choice, .. }) =
+                    self.modal_action.as_mut()
+                {
+                    *choice = new_choice.into();
                 }
             }
         }
@@ -896,7 +940,8 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
             let heading = match modal_action {
                 ModalAction::ClearBank => "CLEAR ENTIRE PATCH BANK?".into(),
                 ModalAction::ClearPatch => "CLEAR CURRENT PATCH?".into(),
-                ModalAction::SetParameter { parameter, .. } => {
+                ModalAction::SetParameterByText { parameter, .. }
+                | ModalAction::SetParameterByChoices { parameter, .. } => {
                     format!("SET {}", parameter.parameter().name().to_uppercase())
                 }
             };
@@ -916,13 +961,13 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                             .on_press(Message::ModalClose),
                     )
                     .into(),
-                ModalAction::SetParameter {
+                ModalAction::SetParameterByText {
                     value_text: text,
                     parse_failed,
                     ..
                 } => {
                     let mut text_input = TextInput::new("", &text, |text| {
-                        Message::ModalSetParameterUpdateText(text)
+                        Message::ModalSetParameterByTextUpdate(text)
                     })
                     .width(Length::Fill);
 
@@ -954,6 +999,36 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                         )
                         .into()
                 }
+                ModalAction::SetParameterByChoices {
+                    options, choice, ..
+                } => Column::new()
+                    .spacing(LINE_HEIGHT)
+                    .push(
+                        PickList::new(options, Some(choice.clone()), |choice| {
+                            Message::ModalSetParameterByChoicesUpdate(choice)
+                        })
+                        .width(Length::Fill),
+                    )
+                    .push(
+                        Row::new()
+                            .spacing(LINE_HEIGHT / 2)
+                            .width(Length::Fill)
+                            .push(
+                                Button::new(
+                                    Text::new("OK").horizontal_alignment(Horizontal::Center),
+                                )
+                                .width(Length::Fill)
+                                .on_press(Message::ModalYes),
+                            )
+                            .push(
+                                Button::new(
+                                    Text::new("CANCEL").horizontal_alignment(Horizontal::Center),
+                                )
+                                .width(Length::Fill)
+                                .on_press(Message::ModalClose),
+                            ),
+                    )
+                    .into(),
             };
 
             Card::new(Text::new(heading), body)

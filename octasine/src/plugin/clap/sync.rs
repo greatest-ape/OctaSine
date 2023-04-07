@@ -99,6 +99,16 @@ impl GuiSyncHandle for Arc<SyncState<ClapGuiSyncHandle>> {
 
         parser(text)
     }
+    fn get_parameter_text_choices(
+        &self,
+        parameter: WrappedParameter,
+    ) -> Option<Vec<CompactString>> {
+        self.patches
+            .get_current_patch()
+            .parameters
+            .get(&parameter.key())
+            .and_then(|p| p.text_choices.clone())
+    }
     fn set_parameter_audio_only(&self, parameter: WrappedParameter, value: f32) {
         self.patches
             .set_parameter_from_gui(parameter.index() as usize, value);
