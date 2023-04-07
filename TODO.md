@@ -1,8 +1,10 @@
 # TODO
 
-* Implement modal for renaming patches
+* In modal for setting parameters by text, display full f32 representation,
+  not rounded one
 * In modal for setting parameters by text, change to dropdown for fixed-value
-  parameters?
+  parameters
+  * Needs fix of https://github.com/iced-rs/iced_aw/issues/77
 * Use standard triangle function instead of lfo_triangle, it should produce same output
 * Run miri on audio gen bench
 * Portamento / legato

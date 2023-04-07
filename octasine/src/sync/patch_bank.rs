@@ -57,7 +57,7 @@ impl Patch {
     }
 
     fn process_name(name: &str) -> String {
-        name.chars().filter(|c| c.is_ascii()).collect()
+        name.chars().filter(|c| c.is_ascii_graphic()).collect()
     }
 
     fn update_from_bytes(&self, bytes: &[u8]) -> anyhow::Result<()> {
