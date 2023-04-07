@@ -7,6 +7,7 @@ use std::sync::Arc;
 use vst::api::{Events, Supported};
 use vst::event::Event;
 use vst::host::Host;
+#[allow(deprecated)]
 use vst::plugin::{CanDo, Category, HostCallback, Info, Plugin, PluginParameters};
 
 use crate::audio::gen::process_f32_runtime_select;
@@ -64,6 +65,7 @@ impl OctaSine {
     }
 }
 
+#[allow(deprecated)]
 impl Plugin for OctaSine {
     fn process(&mut self, buffer: &mut vst::buffer::AudioBuffer<f32>) {
         let (l, r) = &mut buffer.split().1.split_at_mut(1);
