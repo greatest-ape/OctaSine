@@ -145,22 +145,25 @@ impl crate::sync::GuiSyncHandle for Arc<SyncState<vst::plugin::HostCallback>> {
         self.patches
             .set_parameter_from_gui(parameter.index() as usize, value);
     }
-    fn set_parameter_from_text(&self, parameter: WrappedParameter, text: &str) -> Option<f32> {
-        let index = parameter.index() as usize;
+    fn parse_parameter_from_text(&self, parameter: WrappedParameter, text: &str) -> Option<f32> {
+        let parser = self
+            .patches
+            .get_current_patch()
+            .parameters
+            .get(&parameter.key())?
+            .value_from_text;
 
-        if self.patches.set_parameter_text_from_gui(index, text) {
-            let value = self.patches.get_parameter_value(index).unwrap();
-
-            if let Some(host) = self.host {
-                host.begin_edit(index as i32);
-                host.automate(index as i32, value);
-                host.end_edit(index as i32);
-            }
-
-            Some(value)
-        } else {
-            None
-        }
+        parser(text)
+    }
+    fn get_parameter_text_choices(
+        &self,
+        parameter: WrappedParameter,
+    ) -> Option<Vec<CompactString>> {
+        self.patches
+            .get_current_patch()
+            .parameters
+            .get(&parameter.key())
+            .and_then(|p| p.text_choices.clone())
     }
     fn set_parameter_audio_only(&self, parameter: WrappedParameter, value: f32) {
         self.patches

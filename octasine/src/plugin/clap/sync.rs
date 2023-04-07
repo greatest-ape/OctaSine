@@ -79,32 +79,35 @@ impl GuiSyncHandle for Arc<SyncState<ClapGuiSyncHandle>> {
         if let Some(host) = &self.host {
             let key = parameter.key();
 
-            host.send_event(EventToHost::Automate(key, value));
+            host.send_events([
+                EventToHost::StartAutomating(key),
+                EventToHost::Automate(key, value),
+                EventToHost::EndAutomating(key),
+            ]);
         }
 
         self.patches
             .set_parameter_from_gui(parameter.index() as usize, value);
     }
-    fn set_parameter_from_text(&self, parameter: WrappedParameter, text: &str) -> Option<f32> {
-        let index = parameter.index() as usize;
+    fn parse_parameter_from_text(&self, parameter: WrappedParameter, text: &str) -> Option<f32> {
+        let parser = self
+            .patches
+            .get_current_patch()
+            .parameters
+            .get(&parameter.key())?
+            .value_from_text;
 
-        if self.patches.set_parameter_text_from_gui(index, text) {
-            let value = self.patches.get_parameter_value(index).unwrap();
-
-            if let Some(host) = &self.host {
-                let key = parameter.key();
-
-                host.send_events([
-                    EventToHost::StartAutomating(key),
-                    EventToHost::Automate(key, value),
-                    EventToHost::EndAutomating(key),
-                ]);
-            }
-
-            Some(value)
-        } else {
-            None
-        }
+        parser(text)
+    }
+    fn get_parameter_text_choices(
+        &self,
+        parameter: WrappedParameter,
+    ) -> Option<Vec<CompactString>> {
+        self.patches
+            .get_current_patch()
+            .parameters
+            .get(&parameter.key())
+            .and_then(|p| p.text_choices.clone())
     }
     fn set_parameter_audio_only(&self, parameter: WrappedParameter, value: f32) {
         self.patches

@@ -180,6 +180,14 @@ impl ParameterValue for OperatorFrequencyRatioValue {
     fn get_serializable(&self) -> SerializableRepresentation {
         SerializableRepresentation::Float(self.0.value)
     }
+    fn get_text_choices() -> Option<Vec<CompactString>> {
+        Some(
+            OPERATOR_RATIO_STEPS
+                .iter()
+                .map(|ratio| CompactString::new(ratio.name.as_str()))
+                .collect(),
+        )
+    }
 }
 
 #[cfg(test)]

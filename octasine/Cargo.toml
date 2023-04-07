@@ -28,7 +28,7 @@ harness = false
 
 [dev-dependencies]
 assert_approx_eq = "1"
-criterion = "0.3"
+criterion = "0.4"
 quickcheck = { version = "1", default-features = false }
 
 [dependencies]
@@ -41,8 +41,8 @@ byteorder = "1"
 cfg-if = "1"
 cbor4ii = { version = "0.3", features = ["serde1", "use_std"] }
 compact_str = { version = "0.7", features = ["serde"] }
-directories = "4"
-duplicate = "0.4"
+directories = "5"
+duplicate = "1"
 fast-math = "0.1"
 fastrand = "1"
 flate2 = "1"
@@ -63,7 +63,7 @@ sleef-trig = "0.1.0"
 
 # vst2
 
-vst = { version = "0.3", optional = true }
+vst = { version = "0.4", optional = true }
 
 # clap
 
@@ -84,7 +84,7 @@ tinyfiledialogs = { version = "3", optional = true }
 
 [dependencies.iced_baseview]
 git = "https://github.com/BillyDM/iced_baseview.git"
-rev = "e2dac0b"
+rev = "adc7417"
 default-features = false
 features = ["canvas"]
 optional = true

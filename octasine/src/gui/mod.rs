@@ -23,7 +23,7 @@ use compact_str::CompactString;
 use iced_aw::native::{Card, Modal};
 use iced_baseview::alignment::Horizontal;
 use iced_baseview::command::Action;
-use iced_baseview::widget::{Button, Text};
+use iced_baseview::widget::{Button, PickList, Text, TextInput};
 use iced_baseview::{executor, window::WindowSubs, Application, Command, Subscription};
 use iced_baseview::{
     widget::Column, widget::Container, widget::Row, widget::Space, window::WindowQueue, Element,
@@ -125,23 +125,43 @@ pub enum Message {
     ClearBank,
     SaveBankOrPatchToFile(PathBuf, Vec<u8>),
     LoadBankOrPatchesFromPaths(Vec<PathBuf>),
-    ChangeParameterByTextInput(WrappedParameter, CompactString),
+    ChangeParameterByTextInput {
+        parameter: WrappedParameter,
+        value_text: CompactString,
+    },
     ModalOpen(ModalAction),
     ModalClose,
     ModalYes,
+    ModalRenamePatchUpdate(String),
+    ModalSetParameterByTextUpdate(String),
+    ModalSetParameterByChoicesUpdate(CompactString),
 }
 
 #[derive(Debug, Clone)]
 pub enum ModalAction {
     ClearPatch,
     ClearBank,
+    RenamePatch {
+        value_text: CompactString,
+        text_is_valid: bool,
+    },
+    SetParameterByText {
+        parameter: WrappedParameter,
+        value_text: CompactString,
+        text_is_valid: bool,
+    },
+    SetParameterByChoices {
+        parameter: WrappedParameter,
+        options: Vec<CompactString>,
+        choice: CompactString,
+    },
 }
 
 impl ModalAction {
-    fn heading(&self) -> &str {
+    fn requires_text_input(&self) -> bool {
         match self {
-            Self::ClearBank => "CLEAR ENTIRE PATCH BANK?",
-            Self::ClearPatch => "CLEAR CURRENT PATCH?",
+            Self::RenamePatch { .. } | Self::SetParameterByText { .. } => true,
+            Self::ClearBank | Self::ClearPatch | Self::SetParameterByChoices { .. } => false,
         }
     }
 }
@@ -477,6 +497,14 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
         Subscription::none()
     }
 
+    fn ignore_non_modifier_keys(&self) -> Option<bool> {
+        if let Some(modal_action) = self.modal_action.as_ref() {
+            Some(!modal_action.requires_text_input())
+        } else {
+            Some(true)
+        }
+    }
+
     #[cfg(feature = "wgpu")]
     fn renderer_settings() -> iced_baseview::renderer::Settings {
         iced_baseview::renderer::Settings {
@@ -760,15 +788,12 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                 })));
             }
             Message::RenamePatch => {
-                let previous_name = self.sync_handle.get_current_patch_name();
+                let value_text = self.sync_handle.get_current_patch_name();
 
-                if let Some(name) = tinyfiledialogs::input_box(
-                    "Change OctaSine patch name",
-                    "Please provide a new name for this patch",
-                    &previous_name,
-                ) {
-                    self.sync_handle.set_current_patch_name(&name);
-                }
+                self.modal_action = Some(ModalAction::RenamePatch {
+                    value_text,
+                    text_is_valid: true,
+                });
             }
             Message::ClearPatch => {
                 self.modal_action = Some(ModalAction::ClearPatch);
@@ -784,22 +809,33 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
             Message::LoadBankOrPatchesFromPaths(paths) => {
                 self.sync_handle.import_bank_or_patches_from_paths(&paths);
             }
-            Message::ChangeParameterByTextInput(parameter, current_text_value) => {
-                if let Some(new_text_value) = tinyfiledialogs::input_box(
-                    "Change OctaSine parameter value",
-                    &format!(
-                        "Please provide a new value for {}",
-                        parameter.parameter().name()
-                    ),
-                    &current_text_value,
-                ) {
-                    if let Some(new_value) = self
-                        .sync_handle
-                        .set_parameter_from_text(parameter, &new_text_value)
-                    {
-                        self.set_value(parameter.parameter(), new_value, true);
-                    }
+            Message::ChangeParameterByTextInput {
+                parameter,
+                value_text,
+            } => {
+                // PickList will not display choices properly, see https://github.com/iced-rs/iced/issues/1591,
+                // so don't use choice input yet
+                /*
+                if let Some(options) = self.sync_handle.get_parameter_text_choices(parameter) {
+                    self.modal_action = Some(ModalAction::SetParameterByChoices {
+                        parameter,
+                        options,
+                        choice: value_text,
+                    });
+                } else {
+                    self.modal_action = Some(ModalAction::SetParameterByText {
+                        parameter,
+                        value_text,
+                        parse_failed: false,
+                    });
                 }
+                */
+
+                self.modal_action = Some(ModalAction::SetParameterByText {
+                    parameter,
+                    value_text,
+                    text_is_valid: true,
+                });
             }
             Message::ModalOpen(action) => {
                 self.modal_action = Some(action);
@@ -814,8 +850,73 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                 Some(ModalAction::ClearPatch) => {
                     self.sync_handle.clear_patch();
                 }
+                Some(ModalAction::RenamePatch { value_text, .. }) => {
+                    self.sync_handle.set_current_patch_name(value_text.as_str());
+                }
+                Some(ModalAction::SetParameterByText {
+                    parameter,
+                    value_text,
+                    ..
+                }) => {
+                    // Parse again here to avoid having to pass around patch value
+                    if let Some(value_patch) = self
+                        .sync_handle
+                        .parse_parameter_from_text(parameter, value_text.as_str())
+                    {
+                        self.sync_handle
+                            .set_parameter_immediate(parameter, value_patch);
+
+                        self.set_value(parameter.parameter(), value_patch, true);
+                    }
+                }
+                Some(ModalAction::SetParameterByChoices {
+                    parameter, choice, ..
+                }) => {
+                    if let Some(value_patch) = self
+                        .sync_handle
+                        .parse_parameter_from_text(parameter, choice.as_str())
+                    {
+                        self.sync_handle
+                            .set_parameter_immediate(parameter, value_patch);
+
+                        self.set_value(parameter.parameter(), value_patch, true);
+                    }
+                }
                 None => (),
             },
+            Message::ModalRenamePatchUpdate(new_text) => {
+                if let Some(ModalAction::RenamePatch {
+                    value_text,
+                    text_is_valid,
+                }) = self.modal_action.as_mut()
+                {
+                    *text_is_valid = new_text.chars().all(|c| c.is_ascii_graphic() || c == ' ');
+
+                    *value_text = new_text.into();
+                }
+            }
+            Message::ModalSetParameterByTextUpdate(new_text) => {
+                if let Some(ModalAction::SetParameterByText {
+                    value_text,
+                    parameter,
+                    text_is_valid,
+                }) = self.modal_action.as_mut()
+                {
+                    *text_is_valid = self
+                        .sync_handle
+                        .parse_parameter_from_text(*parameter, new_text.as_str())
+                        .is_some();
+
+                    *value_text = new_text.into();
+                }
+            }
+            Message::ModalSetParameterByChoicesUpdate(new_choice) => {
+                if let Some(ModalAction::SetParameterByChoices { choice, .. }) =
+                    self.modal_action.as_mut()
+                {
+                    *choice = new_choice.into();
+                }
+            }
         }
 
         Command::none()
@@ -856,16 +957,25 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
         .style(ContainerStyle::L0);
 
         Modal::new(self.modal_action.is_some(), content, || {
-            Card::new(
-                Text::new(
-                    self.modal_action
-                        .as_ref()
-                        .map(ModalAction::heading)
-                        .unwrap_or(""),
-                ),
-                Row::new()
+            let modal_action = if let Some(modal_action) = self.modal_action.as_ref() {
+                modal_action
+            } else {
+                return Row::new().into();
+            };
+
+            let heading = match modal_action {
+                ModalAction::ClearBank => "CLEAR ENTIRE PATCH BANK?".into(),
+                ModalAction::ClearPatch => "CLEAR CURRENT PATCH?".into(),
+                ModalAction::RenamePatch { .. } => "RENAME PATCH".into(),
+                ModalAction::SetParameterByText { parameter, .. }
+                | ModalAction::SetParameterByChoices { parameter, .. } => {
+                    format!("SET {}", parameter.parameter().name().to_uppercase())
+                }
+            };
+
+            let body: Element<'_, Self::Message, Self::Theme> = match modal_action {
+                ModalAction::ClearBank | ModalAction::ClearPatch => Row::new()
                     .spacing(LINE_HEIGHT / 2)
-                    // .padding(LINE_HEIGHT)
                     .width(Length::Fill)
                     .push(
                         Button::new(Text::new("YES").horizontal_alignment(Horizontal::Center))
@@ -876,11 +986,119 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                         Button::new(Text::new("NO").horizontal_alignment(Horizontal::Center))
                             .width(Length::Fill)
                             .on_press(Message::ModalClose),
-                    ),
-            )
-            .max_width(LINE_HEIGHT as f32 * 16.0)
-            .padding(LINE_HEIGHT as f32)
-            .into()
+                    )
+                    .into(),
+                ModalAction::RenamePatch {
+                    value_text,
+                    text_is_valid,
+                } => {
+                    let mut text_input = TextInput::new("", &value_text, |text| {
+                        Message::ModalRenamePatchUpdate(text)
+                    })
+                    .width(Length::Fill);
+
+                    let mut ok_button =
+                        Button::new(Text::new("OK").horizontal_alignment(Horizontal::Center))
+                            .width(Length::Fill);
+
+                    if *text_is_valid {
+                        text_input = text_input.on_submit(Message::ModalYes);
+                        ok_button = ok_button.on_press(Message::ModalYes);
+                    }
+
+                    Column::new()
+                        .spacing(LINE_HEIGHT)
+                        .push(text_input)
+                        .push(
+                            Row::new()
+                                .spacing(LINE_HEIGHT / 2)
+                                .width(Length::Fill)
+                                .push(ok_button)
+                                .push(
+                                    Button::new(
+                                        Text::new("CANCEL")
+                                            .horizontal_alignment(Horizontal::Center),
+                                    )
+                                    .width(Length::Fill)
+                                    .on_press(Message::ModalClose),
+                                ),
+                        )
+                        .into()
+                }
+                ModalAction::SetParameterByText {
+                    value_text: text,
+                    text_is_valid,
+                    ..
+                } => {
+                    let mut text_input = TextInput::new("", &text, |text| {
+                        Message::ModalSetParameterByTextUpdate(text)
+                    })
+                    .width(Length::Fill);
+
+                    let mut ok_button =
+                        Button::new(Text::new("OK").horizontal_alignment(Horizontal::Center))
+                            .width(Length::Fill);
+
+                    if *text_is_valid {
+                        text_input = text_input.on_submit(Message::ModalYes);
+                        ok_button = ok_button.on_press(Message::ModalYes);
+                    }
+
+                    Column::new()
+                        .spacing(LINE_HEIGHT)
+                        .push(text_input)
+                        .push(
+                            Row::new()
+                                .spacing(LINE_HEIGHT / 2)
+                                .width(Length::Fill)
+                                .push(ok_button)
+                                .push(
+                                    Button::new(
+                                        Text::new("CANCEL")
+                                            .horizontal_alignment(Horizontal::Center),
+                                    )
+                                    .width(Length::Fill)
+                                    .on_press(Message::ModalClose),
+                                ),
+                        )
+                        .into()
+                }
+                ModalAction::SetParameterByChoices {
+                    options, choice, ..
+                } => Column::new()
+                    .spacing(LINE_HEIGHT)
+                    .push(
+                        PickList::new(options, Some(choice.clone()), |choice| {
+                            Message::ModalSetParameterByChoicesUpdate(choice)
+                        })
+                        .width(Length::Fill),
+                    )
+                    .push(
+                        Row::new()
+                            .spacing(LINE_HEIGHT / 2)
+                            .width(Length::Fill)
+                            .push(
+                                Button::new(
+                                    Text::new("OK").horizontal_alignment(Horizontal::Center),
+                                )
+                                .width(Length::Fill)
+                                .on_press(Message::ModalYes),
+                            )
+                            .push(
+                                Button::new(
+                                    Text::new("CANCEL").horizontal_alignment(Horizontal::Center),
+                                )
+                                .width(Length::Fill)
+                                .on_press(Message::ModalClose),
+                            ),
+                    )
+                    .into(),
+            };
+
+            Card::new(Text::new(heading), body)
+                .max_width(LINE_HEIGHT as f32 * 16.0)
+                .padding(LINE_HEIGHT as f32)
+                .into()
         })
         .backdrop(Message::ModalClose)
         .on_esc(Message::ModalClose)

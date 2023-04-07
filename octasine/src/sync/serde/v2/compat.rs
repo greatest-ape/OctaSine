@@ -4,9 +4,8 @@ use crate::parameters::{OperatorParameter, Parameter, SerializableRepresentation
 
 use super::SerdePatch;
 
-pub const COMPATIBILITY_CHANGES: &[(Version, fn(&mut SerdePatch))] = &[
-    (Version::new(0, 8, 5), compat_0_8_5),
-];
+pub const COMPATIBILITY_CHANGES: &[(Version, fn(&mut SerdePatch))] =
+    &[(Version::new(0, 8, 5), compat_0_8_5)];
 
 /// New operator wave forms
 ///

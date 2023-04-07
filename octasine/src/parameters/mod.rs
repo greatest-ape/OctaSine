@@ -70,6 +70,9 @@ pub trait ParameterValue: Sized + Default + Copy {
         *self = Self::new_from_patch(value);
     }
     fn get_serializable(&self) -> SerializableRepresentation;
+    fn get_text_choices() -> Option<Vec<CompactString>> {
+        None
+    }
 }
 
 /// Serializable representation of parameter value for easing patch forward
