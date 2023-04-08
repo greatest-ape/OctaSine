@@ -12,7 +12,7 @@ use crate::parameters::{
 use crate::sync::GuiSyncHandle;
 
 use super::boolean_button::{
-    lfo_active_button, lfo_bpm_sync_button, lfo_mode_button, BooleanButton,
+    lfo_active_button, lfo_bpm_sync_button, lfo_key_sync_button, lfo_mode_button, BooleanButton,
 };
 use super::common::{container_l1, container_l2, container_l3, space_l3, tooltip};
 use super::knob::{self, OctaSineKnob};
@@ -27,6 +27,7 @@ pub struct LfoWidgets {
     pub shape: WavePicker<LfoShapeValue>,
     pub mode: BooleanButton,
     pub bpm_sync: BooleanButton,
+    pub key_sync: BooleanButton,
     pub frequency_ratio: OctaSineKnob<LfoFrequencyRatioValue>,
     pub frequency_free: OctaSineKnob<LfoFrequencyFreeValue>,
     pub amount: OctaSineKnob<LfoAmountValue>,
@@ -43,6 +44,7 @@ impl LfoWidgets {
             shape: WavePicker::new(sync_handle, lfo_wave_type_parameter, "SHAPE"),
             mode: lfo_mode_button(sync_handle, lfo_index),
             bpm_sync: lfo_bpm_sync_button(sync_handle, lfo_index),
+            key_sync: lfo_key_sync_button(sync_handle, lfo_index),
             frequency_ratio: knob::lfo_frequency_ratio(sync_handle, lfo_index),
             frequency_free: knob::lfo_frequency_free(sync_handle, lfo_index),
             amount: knob::lfo_amount(sync_handle, lfo_index),
@@ -80,6 +82,12 @@ impl LfoWidgets {
             self.mode.view(),
         );
         let active = tooltip(theme, "Toggle mute", Position::Top, self.active.view());
+        let key_sync = tooltip(
+            theme,
+            "Sync LFO cycle with key presses",
+            Position::Top,
+            self.key_sync.view(),
+        );
 
         container_l1(
             Row::new()
@@ -91,8 +99,10 @@ impl LfoWidgets {
                             .push(
                                 Row::new()
                                     .push(active)
+                                    .push(Space::with_width(Length::Fixed(3.0)))
+                                    .push(key_sync)
                                     .push(Space::with_width(Length::Fixed(f32::from(
-                                        LINE_HEIGHT * 6 - 3 - 1,
+                                        LINE_HEIGHT * 5 - 6 - 1,
                                     ))))
                                     .push(bpm_sync)
                                     .push(Space::with_width(Length::Fixed(3.0)))

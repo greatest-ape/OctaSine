@@ -3,6 +3,7 @@ pub mod lfo_amount;
 pub mod lfo_bpm_sync;
 pub mod lfo_frequency_free;
 pub mod lfo_frequency_ratio;
+pub mod lfo_key_sync;
 pub mod lfo_mode;
 pub mod lfo_shape;
 pub mod lfo_target;
@@ -29,6 +30,7 @@ pub use lfo_amount::LfoAmountValue;
 pub use lfo_bpm_sync::LfoBpmSyncValue;
 pub use lfo_frequency_free::LfoFrequencyFreeValue;
 pub use lfo_frequency_ratio::LfoFrequencyRatioValue;
+pub use lfo_key_sync::LfoKeySyncValue;
 pub use lfo_mode::LfoModeValue;
 pub use lfo_shape::LfoShapeValue;
 pub use lfo_target::*;
@@ -127,6 +129,7 @@ impl Parameter {
                 LfoParameter::Shape => format_compact!("LFO {} shape", index + 1),
                 LfoParameter::Amount => format_compact!("LFO {} amount", index + 1),
                 LfoParameter::Active => format_compact!("LFO {} active", index + 1),
+                LfoParameter::KeySync => format_compact!("LFO {} key sync", index + 1),
             },
         }
     }
@@ -180,6 +183,7 @@ impl Parameter {
                 LfoParameter::Shape => format!("LFO {} shape", index + 1),
                 LfoParameter::Amount => format!("LFO {} amount", index + 1),
                 LfoParameter::Active => format!("LFO {} active", index + 1),
+                LfoParameter::KeySync => format!("LFO {} key sync", index + 1),
             },
         };
 

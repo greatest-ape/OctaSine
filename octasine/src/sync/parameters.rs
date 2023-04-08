@@ -88,6 +88,7 @@ impl PatchParameter {
                         3 => Self::new::<Lfo4TargetParameterValue>(parameter),
                         _ => panic!("Unsupported parameter"),
                     },
+                    KeySync => Self::new::<LfoKeySyncValue>(parameter),
                 }
             }
         }

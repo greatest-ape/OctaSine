@@ -303,6 +303,7 @@ impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {
                     LfoParameter::Shape => lfo.shape.set_value(v),
                     LfoParameter::Amount => lfo.amount.set_value(v),
                     LfoParameter::Active => lfo.active.set_value(v),
+                    LfoParameter::KeySync => lfo.key_sync.set_value(v),
                 }
             }
         }

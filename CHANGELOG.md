@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+### Added
+
+- Add LFO key sync parameter. When set to "off", LFO phase will be randomized
+  when it is activated by a key press.
+
 ### Changed
 
 - Replace native popup windows for renaming patches and setting parameters by

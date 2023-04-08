@@ -9,7 +9,10 @@ use crate::common::*;
 use envelopes::*;
 use lfos::*;
 
-use super::interpolation::{InterpolationDuration, Interpolator};
+use super::{
+    interpolation::{InterpolationDuration, Interpolator},
+    parameters::AudioParameters,
+};
 
 const VELOCITY_INTERPOLATION_DURATION: InterpolationDuration =
     InterpolationDuration::exactly_10ms();
@@ -117,6 +120,7 @@ impl Voice {
     #[inline]
     pub fn press_key(
         &mut self,
+        parameters: &AudioParameters,
         velocity: KeyVelocity,
         #[cfg_attr(not(feature = "clap"), allow(unused_variables))] opt_clap_note_id: Option<i32>,
     ) {
@@ -132,8 +136,8 @@ impl Voice {
             operator.volume_envelope.restart();
         }
 
-        for lfo in self.lfos.iter_mut() {
-            lfo.restart();
+        for (lfo, parameters) in self.lfos.iter_mut().zip(parameters.lfos.iter()) {
+            lfo.restart(parameters);
         }
 
         #[cfg(feature = "clap")]

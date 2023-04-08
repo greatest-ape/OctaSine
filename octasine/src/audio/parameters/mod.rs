@@ -130,6 +130,7 @@ macro_rules! impl_patch_interaction {
                         LfoParameter::Shape => $f(&mut lfo.shape, input),
                         LfoParameter::Amount => $f(&mut lfo.amount, input),
                         LfoParameter::Active => $f(&mut lfo.active, input),
+                        LfoParameter::KeySync => $f(&mut lfo.key_sync, input),
                     }
                 }
             }
@@ -257,6 +258,7 @@ pub struct LfoAudioParameters {
     pub shape: SimpleAudioParameter<LfoShapeValue>,
     pub amount: LfoAmountAudioParameter,
     pub active: LfoActiveAudioParameter,
+    pub key_sync: SimpleAudioParameter<LfoKeySyncValue>,
 }
 
 impl LfoAudioParameters {
@@ -270,6 +272,7 @@ impl LfoAudioParameters {
             shape: Default::default(),
             amount: Default::default(),
             active: Default::default(),
+            key_sync: Default::default(),
         }
     }
 

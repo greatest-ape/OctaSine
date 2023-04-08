@@ -4,6 +4,7 @@ use iced_baseview::widget::canvas::{
 };
 use iced_baseview::{Color, Element, Length, Point, Rectangle, Size};
 
+use crate::parameters::lfo_key_sync::LfoKeySyncValue;
 use crate::parameters::lfo_mode::LfoMode;
 use crate::parameters::operator_envelope::OperatorEnvelopeGroupValue;
 use crate::parameters::{
@@ -60,6 +61,19 @@ pub fn lfo_bpm_sync_button<H: GuiSyncHandle>(sync_handle: &H, lfo_index: usize) 
         LINE_HEIGHT,
         |v| LfoBpmSyncValue::new_from_patch(v).get(),
         |on| LfoBpmSyncValue::new_from_audio(on).to_patch(),
+        BooleanButtonStyle::Regular,
+    )
+}
+
+pub fn lfo_key_sync_button<H: GuiSyncHandle>(sync_handle: &H, lfo_index: usize) -> BooleanButton {
+    BooleanButton::new(
+        sync_handle,
+        Parameter::Lfo(lfo_index as u8, LfoParameter::KeySync),
+        "K",
+        LINE_HEIGHT,
+        LINE_HEIGHT,
+        |v| LfoKeySyncValue::new_from_patch(v).get(),
+        |on| LfoKeySyncValue::new_from_audio(on).to_patch(),
         BooleanButtonStyle::Regular,
     )
 }

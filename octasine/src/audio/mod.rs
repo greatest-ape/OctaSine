@@ -157,7 +157,7 @@ impl AudioState {
     }
 
     fn key_on(&mut self, pitch: u8, velocity: KeyVelocity, opt_clap_note_id: Option<i32>) {
-        self.voices[pitch as usize].press_key(velocity, opt_clap_note_id);
+        self.voices[pitch as usize].press_key(&self.parameters, velocity, opt_clap_note_id);
     }
 
     fn key_off(&mut self, pitch: u8) {
