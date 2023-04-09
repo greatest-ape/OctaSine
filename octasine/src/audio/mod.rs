@@ -189,3 +189,34 @@ impl AudioState {
             .unwrap()
     }
 }
+
+/// Convert MIDI pitch bend data to f32 in range -1.0 to 1.0, representing
+/// minimum and maximum pitch bend
+#[allow(dead_code)]
+fn interpret_midi_pitch_bend(lsb: u8, msb: u8) -> f32 {
+    let amount = ((msb as u16) << 7) | (lsb as u16);
+
+    let mut x = (amount as f32) - 8_192.0;
+
+    // Do we really want to do this? We could use 8191.5 in both cases instead
+    if x > 0.0 {
+        x *= 1.0 / 8_191.0;
+    }
+    if x < 0.0 {
+        x *= 1.0 / 8_192.0;
+    }
+
+    x
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::audio::interpret_midi_pitch_bend;
+
+    #[test]
+    fn test_interpret_midi_pitch_bend() {
+        assert_eq!(interpret_midi_pitch_bend(0, 64), 0.0);
+        assert_eq!(interpret_midi_pitch_bend(0, 0), -1.0);
+        assert_eq!(interpret_midi_pitch_bend(127, 127), 1.0);
+    }
+}
