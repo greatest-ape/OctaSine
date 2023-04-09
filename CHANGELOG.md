@@ -6,13 +6,10 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
-- Add LFO key sync parameter. When set to "off", LFO phase will be randomized
-  when it is activated by a key press.
-
-### Changed
-
-- Replace native popup windows for renaming patches and setting parameters by
-  text with interal modals
+- Add LFO key sync parameter, controlling initial phase of LFOs when activated
+  by a key press. With the default of value of "on", the phase starts at zero.
+  When value is set to "off", the LFO will instead start at a random point of
+  the wave cycle.
 
 ## 0.8.5 - 2023-04-05
 
