@@ -198,7 +198,8 @@ fn interpret_midi_pitch_bend(lsb: u8, msb: u8) -> f32 {
 
     let mut x = (amount as f32) - 8_192.0;
 
-    // Do we really want to do this? We could use 8191.5 in both cases instead
+    // Do we really want to do this? Another option is to clamp negative
+    // values at -8191 (e.g. treat -8192 as equivalent to -8191)
     if x > 0.0 {
         x *= 1.0 / 8_191.0;
     }
