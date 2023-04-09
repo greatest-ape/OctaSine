@@ -3,6 +3,8 @@
 * In modal for setting parameters by text, change to dropdown for fixed-value
   parameters
   * Needs fix of https://github.com/iced-rs/iced_aw/issues/77
+  * See https://github.com/iced-rs/iced/issues/940
+  * Consider using radios instead, or skipping this entirely
 * Run miri on audio gen bench
 * Portamento / legato
 * Pitch bend
