@@ -96,10 +96,6 @@ pub enum NoteEventInner {
     ClapBpm {
         bpm: BeatsPerMinute,
     },
-    ClapGlobalPitchBend {
-        /// Semitones, from -120 to 120
-        tuning: f64,
-    },
 }
 
 #[derive(Debug, Clone, Copy)]

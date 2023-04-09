@@ -164,9 +164,6 @@ impl AudioState {
             NoteEventInner::ClapBpm { bpm } => {
                 self.set_bpm(bpm);
             }
-            NoteEventInner::ClapGlobalPitchBend { tuning } => {
-                self.global_pitch_bend.update_from_semitones(tuning);
-            }
         }
     }
 
@@ -195,7 +192,6 @@ impl AudioState {
     }
 }
 
-/// Pitch bend in semitones
 #[derive(Clone, Copy, Debug)]
 pub struct GlobalPitchBend {
     factor: f32,
@@ -227,10 +223,6 @@ impl GlobalPitchBend {
         }
 
         self.factor = x;
-    }
-    pub fn update_from_semitones(&mut self, semitones: f64) {
-        self.factor = semitones as f32;
-        self.semitone_range = 1.0;
     }
     pub fn as_frequency_multiplier(&self) -> f64 {
         crate::math::exp2_fast(self.factor * self.semitone_range * (1.0 / 12.0)).into()
