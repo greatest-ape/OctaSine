@@ -13,7 +13,8 @@ use clap_sys::{
         CLAP_CORE_EVENT_SPACE_ID, CLAP_EVENT_IS_LIVE, CLAP_EVENT_MIDI, CLAP_EVENT_NOTE_END,
         CLAP_EVENT_NOTE_EXPRESSION, CLAP_EVENT_NOTE_OFF, CLAP_EVENT_NOTE_ON,
         CLAP_EVENT_PARAM_GESTURE_BEGIN, CLAP_EVENT_PARAM_GESTURE_END, CLAP_EVENT_PARAM_VALUE,
-        CLAP_EVENT_TRANSPORT, CLAP_NOTE_EXPRESSION_PRESSURE, CLAP_TRANSPORT_HAS_TEMPO,
+        CLAP_EVENT_TRANSPORT, CLAP_NOTE_EXPRESSION_PRESSURE, CLAP_NOTE_EXPRESSION_TUNING,
+        CLAP_TRANSPORT_HAS_TEMPO,
     },
     ext::{
         audio_ports::CLAP_EXT_AUDIO_PORTS,
@@ -335,6 +336,18 @@ impl OctaSine {
                         };
 
                         self.audio.lock().enqueue_note_event(event);
+                    }
+                    CLAP_NOTE_EXPRESSION_TUNING => {
+                        if event.note_id == -1 {
+                            let event = NoteEvent {
+                                delta_frames: event.header.time,
+                                event: NoteEventInner::ClapGlobalPitchBend {
+                                    tuning: event.value,
+                                },
+                            };
+
+                            self.audio.lock().enqueue_note_event(event);
+                        }
                     }
                     _ => (),
                 };

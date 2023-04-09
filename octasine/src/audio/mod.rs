@@ -143,7 +143,7 @@ impl AudioState {
                         self.sustain_pedal_on = v >= 64;
                     }
                     [0b_1110, lsb, msb] => {
-                        self.global_pitch_bend = GlobalPitchBend::from_midi(lsb, msb);
+                        self.global_pitch_bend.update_from_midi(lsb, msb);
                     }
                     _ => (),
                 }
@@ -163,6 +163,9 @@ impl AudioState {
             }
             NoteEventInner::ClapBpm { bpm } => {
                 self.set_bpm(bpm);
+            }
+            NoteEventInner::ClapGlobalPitchBend { tuning } => {
+                self.global_pitch_bend.update_from_semitones(tuning);
             }
         }
     }
@@ -192,18 +195,24 @@ impl AudioState {
     }
 }
 
-/// Pitch bend as value between -1.0 and 1.0
+/// Pitch bend in semitones
 #[derive(Clone, Copy, Debug)]
-pub struct GlobalPitchBend(f32);
+pub struct GlobalPitchBend {
+    factor: f32,
+    semitone_range: f32,
+}
 
 impl Default for GlobalPitchBend {
     fn default() -> Self {
-        Self(0.0)
+        Self {
+            factor: 0.0,
+            semitone_range: 2.0,
+        }
     }
 }
 
 impl GlobalPitchBend {
-    pub fn from_midi(lsb: u8, msb: u8) -> Self {
+    pub fn update_from_midi(&mut self, lsb: u8, msb: u8) {
         let amount = ((msb as u16) << 7) | (lsb as u16);
 
         let mut x = (amount as f32) - 8_192.0;
@@ -217,10 +226,14 @@ impl GlobalPitchBend {
             x *= 1.0 / 8_192.0;
         }
 
-        Self(x)
+        self.factor = x;
     }
-    pub fn as_frequency_multiplier(&self, semitone_range: f32) -> f64 {
-        crate::math::exp2_fast(self.0 * semitone_range * (1.0 / 12.0)).into()
+    pub fn update_from_semitones(&mut self, semitones: f64) {
+        self.factor = semitones as f32;
+        self.semitone_range = 1.0;
+    }
+    pub fn as_frequency_multiplier(&self) -> f64 {
+        crate::math::exp2_fast(self.factor * self.semitone_range * (1.0 / 12.0)).into()
     }
 }
 
@@ -229,9 +242,16 @@ mod tests {
     use super::GlobalPitchBend;
 
     #[test]
-    fn test_interpret_midi_pitch_bend() {
-        assert_eq!(GlobalPitchBend::from_midi(0, 64).0, 0.0);
-        assert_eq!(GlobalPitchBend::from_midi(0, 0).0, -1.0);
-        assert_eq!(GlobalPitchBend::from_midi(127, 127).0, 1.0);
+    fn test_global_pitch_bend_from_midi() {
+        let mut pitch_bend = GlobalPitchBend::default();
+
+        pitch_bend.update_from_midi(0, 64);
+        assert_eq!(pitch_bend.factor, 0.0);
+
+        pitch_bend.update_from_midi(0, 0);
+        assert_eq!(pitch_bend.factor, -1.0);
+
+        pitch_bend.update_from_midi(127, 127);
+        assert_eq!(pitch_bend.factor, 1.0);
     }
 }
