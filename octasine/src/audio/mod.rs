@@ -32,6 +32,7 @@ pub struct AudioState {
     time_per_sample: TimePerSample,
     bpm: BeatsPerMinute,
     bpm_lfo_multiplier: BpmLfoMultiplier,
+    pub global_pitch_bend: GlobalPitchBend,
     sustain_pedal_on: bool,
     parameters: AudioParameters,
     rng: Rng,
@@ -52,6 +53,7 @@ impl Default for AudioState {
             time_per_sample: SampleRate::default().into(),
             bpm: Default::default(),
             bpm_lfo_multiplier: BeatsPerMinute::default().into(),
+            global_pitch_bend: Default::default(),
             sustain_pedal_on: false,
             parameters: AudioParameters::default(),
             rng: Rng::new(),
@@ -140,9 +142,9 @@ impl AudioState {
                     [0b_1011, 64, v] => {
                         self.sustain_pedal_on = v >= 64;
                     }
-                    // TODO: pitch bend
-                    #[allow(unused_variables)]
-                    [0b_1110, lsb, msb] => (),
+                    [0b_1110, lsb, msb] => {
+                        self.global_pitch_bend = GlobalPitchBend::from_midi(lsb, msb);
+                    }
                     _ => (),
                 }
             }
@@ -190,34 +192,46 @@ impl AudioState {
     }
 }
 
-/// Convert MIDI pitch bend data to f32 in range -1.0 to 1.0, representing
-/// minimum and maximum pitch bend
-#[allow(dead_code)]
-fn interpret_midi_pitch_bend(lsb: u8, msb: u8) -> f32 {
-    let amount = ((msb as u16) << 7) | (lsb as u16);
+/// Pitch bend as value between -1.0 and 1.0
+#[derive(Clone, Copy, Debug)]
+pub struct GlobalPitchBend(f32);
 
-    let mut x = (amount as f32) - 8_192.0;
-
-    // Do we really want to do this? Another option is to clamp negative
-    // values at -8191 (e.g. treat -8192 as equivalent to -8191)
-    if x > 0.0 {
-        x *= 1.0 / 8_191.0;
+impl Default for GlobalPitchBend {
+    fn default() -> Self {
+        Self(0.0)
     }
-    if x < 0.0 {
-        x *= 1.0 / 8_192.0;
-    }
+}
 
-    x
+impl GlobalPitchBend {
+    pub fn from_midi(lsb: u8, msb: u8) -> Self {
+        let amount = ((msb as u16) << 7) | (lsb as u16);
+
+        let mut x = (amount as f32) - 8_192.0;
+
+        // Do we really want to do this? Another option is to clamp negative
+        // values at -8191 (e.g. treat -8192 as equivalent to -8191)
+        if x > 0.0 {
+            x *= 1.0 / 8_191.0;
+        }
+        if x < 0.0 {
+            x *= 1.0 / 8_192.0;
+        }
+
+        Self(x)
+    }
+    pub fn as_frequency_multiplier(&self, semitone_range: f32) -> f64 {
+        crate::math::exp2_fast(self.0 * semitone_range * (1.0 / 12.0)).into()
+    }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::audio::interpret_midi_pitch_bend;
+    use super::GlobalPitchBend;
 
     #[test]
     fn test_interpret_midi_pitch_bend() {
-        assert_eq!(interpret_midi_pitch_bend(0, 64), 0.0);
-        assert_eq!(interpret_midi_pitch_bend(0, 0), -1.0);
-        assert_eq!(interpret_midi_pitch_bend(127, 127), 1.0);
+        assert_eq!(GlobalPitchBend::from_midi(0, 64).0, 0.0);
+        assert_eq!(GlobalPitchBend::from_midi(0, 0).0, -1.0);
+        assert_eq!(GlobalPitchBend::from_midi(127, 127).0, 1.0);
     }
 }

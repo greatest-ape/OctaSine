@@ -346,10 +346,12 @@ mod gen {
                 const MASTER_FREQUENCY_INDEX: u8 =
                     Parameter::Master(MasterParameter::Frequency).to_index();
 
-                let master_frequency = audio_state
+                let mut master_frequency = audio_state
                     .parameters
                     .master_frequency
                     .get_value_with_lfo_addition(lfo_values.get(MASTER_FREQUENCY_INDEX));
+
+                master_frequency *= audio_state.global_pitch_bend.as_frequency_multiplier(2.0);
 
                 let voice_base_frequency = voice.midi_pitch.get_frequency(master_frequency);
 
