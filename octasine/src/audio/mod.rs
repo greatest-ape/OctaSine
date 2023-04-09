@@ -140,6 +140,9 @@ impl AudioState {
                     [0b_1011, 64, v] => {
                         self.sustain_pedal_on = v >= 64;
                     }
+                    // TODO: pitch bend
+                    #[allow(unused_variables)]
+                    [0b_1110, lsb, msb] => (),
                     _ => (),
                 }
             }
