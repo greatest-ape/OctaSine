@@ -8,11 +8,12 @@ use std::{
 use atomic_refcell::AtomicRefCell;
 use clap_sys::{
     events::{
-        clap_event_header, clap_event_midi, clap_event_note, clap_event_param_gesture,
-        clap_event_param_value, clap_event_transport, clap_output_events, CLAP_CORE_EVENT_SPACE_ID,
-        CLAP_EVENT_IS_LIVE, CLAP_EVENT_MIDI, CLAP_EVENT_NOTE_END, CLAP_EVENT_NOTE_OFF,
-        CLAP_EVENT_NOTE_ON, CLAP_EVENT_PARAM_GESTURE_BEGIN, CLAP_EVENT_PARAM_GESTURE_END,
-        CLAP_EVENT_PARAM_VALUE, CLAP_EVENT_TRANSPORT, CLAP_TRANSPORT_HAS_TEMPO,
+        clap_event_header, clap_event_midi, clap_event_note, clap_event_note_expression,
+        clap_event_param_gesture, clap_event_param_value, clap_event_transport, clap_output_events,
+        CLAP_CORE_EVENT_SPACE_ID, CLAP_EVENT_IS_LIVE, CLAP_EVENT_MIDI, CLAP_EVENT_NOTE_END,
+        CLAP_EVENT_NOTE_EXPRESSION, CLAP_EVENT_NOTE_OFF, CLAP_EVENT_NOTE_ON,
+        CLAP_EVENT_PARAM_GESTURE_BEGIN, CLAP_EVENT_PARAM_GESTURE_END, CLAP_EVENT_PARAM_VALUE,
+        CLAP_EVENT_TRANSPORT, CLAP_NOTE_EXPRESSION_PRESSURE, CLAP_TRANSPORT_HAS_TEMPO,
     },
     ext::{
         audio_ports::CLAP_EXT_AUDIO_PORTS,
@@ -319,6 +320,24 @@ impl OctaSine {
                 };
 
                 self.audio.lock().enqueue_note_event(event);
+            }
+            CLAP_EVENT_NOTE_EXPRESSION => {
+                let event = &*(event_header as *const clap_event_note_expression);
+
+                match event.expression_id {
+                    CLAP_NOTE_EXPRESSION_PRESSURE => {
+                        let event = NoteEvent {
+                            delta_frames: event.header.time,
+                            event: NoteEventInner::ClapNotePressure {
+                                key: event.key as u8,
+                                pressure: event.value,
+                            },
+                        };
+
+                        self.audio.lock().enqueue_note_event(event);
+                    }
+                    _ => (),
+                };
             }
             CLAP_EVENT_MIDI => {
                 let event = &*(event_header as *const clap_event_midi);

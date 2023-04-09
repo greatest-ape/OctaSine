@@ -153,6 +153,9 @@ impl AudioState {
             } => {
                 self.key_on(key, KeyVelocity(velocity as f32), Some(clap_note_id));
             }
+            NoteEventInner::ClapNotePressure { key, pressure } => {
+                self.aftertouch(key, KeyVelocity(pressure as f32));
+            }
             NoteEventInner::ClapNoteOff { key } => {
                 self.key_off(key);
             }
