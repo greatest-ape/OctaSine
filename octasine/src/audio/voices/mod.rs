@@ -148,6 +148,10 @@ impl Voice {
         self.active = true;
     }
 
+    pub fn aftertouch(&mut self, velocity: KeyVelocity) {
+        self.key_velocity_interpolator.set_value(velocity.0)
+    }
+
     #[inline]
     pub fn release_key(&mut self) {
         self.key_pressed = false;

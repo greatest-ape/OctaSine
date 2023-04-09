@@ -129,10 +129,13 @@ impl AudioState {
                 data[0] >>= 4;
 
                 match data {
-                    [0b_1000, pitch, _] => self.key_off(pitch),
-                    [0b_1001, pitch, 0] => self.key_off(pitch),
-                    [0b_1001, pitch, velocity] => {
-                        self.key_on(pitch, KeyVelocity::from_midi_velocity(velocity), None)
+                    [0b_1000, key, _] => self.key_off(key),
+                    [0b_1001, key, 0] => self.key_off(key),
+                    [0b_1001, key, velocity] => {
+                        self.key_on(key, KeyVelocity::from_midi_velocity(velocity), None)
+                    }
+                    [0b_1010, key, pressure] => {
+                        self.aftertouch(key, KeyVelocity::from_midi_velocity(pressure));
                     }
                     [0b_1011, 64, v] => {
                         self.sustain_pedal_on = v >= 64;
@@ -156,12 +159,16 @@ impl AudioState {
         }
     }
 
-    fn key_on(&mut self, pitch: u8, velocity: KeyVelocity, opt_clap_note_id: Option<i32>) {
-        self.voices[pitch as usize].press_key(&self.parameters, velocity, opt_clap_note_id);
+    fn key_on(&mut self, key: u8, velocity: KeyVelocity, opt_clap_note_id: Option<i32>) {
+        self.voices[key as usize].press_key(&self.parameters, velocity, opt_clap_note_id);
     }
 
-    fn key_off(&mut self, pitch: u8) {
-        self.voices[pitch as usize].release_key();
+    fn key_off(&mut self, key: u8) {
+        self.voices[key as usize].release_key();
+    }
+
+    fn aftertouch(&mut self, key: u8, velocity: KeyVelocity) {
+        self.voices[key as usize].aftertouch(velocity);
     }
 
     #[cfg(test)]
