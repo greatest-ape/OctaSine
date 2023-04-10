@@ -175,8 +175,10 @@ impl AudioState {
         self.voices[key as usize].release_key();
     }
 
+    #[allow(unused_variables)]
     fn aftertouch(&mut self, key: u8, velocity: KeyVelocity) {
-        self.voices[key as usize].aftertouch(velocity);
+        // Disabled for now
+        // self.voices[key as usize].aftertouch(velocity);
     }
 
     #[cfg(test)]

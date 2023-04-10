@@ -12,7 +12,6 @@ All notable changes to this project will be documented in this file.
   the wave cycle.
 - Add pitch bend support, including parameters for upwards and downwards
   semitone range accessible from the patch action dropdown menu.
-- Support polyphonic aftertouch
 
 ## 0.8.5 - 2023-04-05
 

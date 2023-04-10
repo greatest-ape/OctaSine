@@ -10,6 +10,8 @@
 * Mode where release never activates but mod out is deactivated. Will need
   extra checks for ending when all other operators not in this mode have ended
 * Velocity sensitivity
+* Aftertouch
+  * Parameter for how much voice volume is affected?
 * Consider scale factor for GUI
 * Add other waveforms?
   * Look at TX81Z waveforms:
