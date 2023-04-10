@@ -55,6 +55,7 @@ impl LfoWidgets {
     pub fn theme_changed(&mut self) {
         self.mode.theme_changed();
         self.bpm_sync.theme_changed();
+        self.key_sync.theme_changed();
         self.active.theme_changed();
         self.shape.theme_changed();
     }
