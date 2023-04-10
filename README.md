@@ -29,7 +29,7 @@ Frequency modulation synthesizer plugin (VST2, CLAP). Runs on macOS, Windows and
 
 ### Four operators
 
-Four FM operators with parameters for wave form (sine or noise), volume, panning, feedback and frequency (ratio, free and fine), with visualizations of stereo wave forms after modulation.
+Four FM operators with parameters for wave form (sine, square, triangle, saw and noise), volume, panning, feedback and frequency (ratio, free and fine), with visualizations of stereo wave forms after modulation.
 
 ### Flexible routing
 
