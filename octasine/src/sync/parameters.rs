@@ -1,6 +1,9 @@
 use compact_str::CompactString;
 
-use crate::{common::IndexMap, parameters::*};
+use crate::{
+    common::IndexMap,
+    parameters::{master_pitch_bend_range::MasterPitchBendRangeValue, *},
+};
 
 use super::atomic_float::AtomicFloat;
 
@@ -37,6 +40,12 @@ impl PatchParameter {
             Parameter::Master(master_parameter) => match master_parameter {
                 MasterParameter::Frequency => Self::new::<MasterFrequencyValue>(parameter),
                 MasterParameter::Volume => Self::new::<MasterVolumeValue>(parameter),
+                MasterParameter::PitchBendRangeUp => {
+                    Self::new::<MasterPitchBendRangeValue>(parameter)
+                }
+                MasterParameter::PitchBendRangeDown => {
+                    Self::new::<MasterPitchBendRangeValue>(parameter)
+                }
             },
             Parameter::Operator(index, operator_parameter) => {
                 use OperatorParameter::*;

@@ -10,6 +10,8 @@ All notable changes to this project will be documented in this file.
   by a key press. With the default of value of "on", the phase starts at zero.
   When value is set to "off", the LFO will instead start at a random point of
   the wave cycle.
+- Add pitch bend support, including parameters for pitch bend range. The
+  parameters can be accessed from the patch action dropdown menu.
 - Support polyphonic aftertouch
 
 ## 0.8.5 - 2023-04-05

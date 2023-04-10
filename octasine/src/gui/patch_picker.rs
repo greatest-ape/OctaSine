@@ -11,6 +11,7 @@ use super::LINE_HEIGHT;
 use super::{style::Theme, GuiSyncHandle, Message, FONT_SIZE};
 
 const ACTIONS: &[Action] = &[
+    Action::PatchSettings,
     Action::RenamePatch,
     Action::SavePatch,
     Action::SaveBank,
@@ -21,6 +22,7 @@ const ACTIONS: &[Action] = &[
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum Action {
+    PatchSettings,
     RenamePatch,
     SavePatch,
     SaveBank,
@@ -32,6 +34,7 @@ enum Action {
 impl Action {
     fn to_message(self) -> Message {
         match self {
+            Self::PatchSettings => Message::ShowPatchSettings,
             Self::RenamePatch => Message::RenamePatch,
             Self::SavePatch => Message::SavePatch,
             Self::SaveBank => Message::SaveBank,
@@ -45,6 +48,7 @@ impl Action {
 impl Display for Action {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
+            Self::PatchSettings => write!(f, "EDIT PATCH SETTINGS"),
             Self::RenamePatch => write!(f, "RENAME PATCH"),
             Self::SavePatch => write!(f, "SAVE PATCH"),
             Self::SaveBank => write!(f, "SAVE BANK"),

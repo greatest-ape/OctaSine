@@ -351,7 +351,22 @@ mod gen {
                     .master_frequency
                     .get_value_with_lfo_addition(lfo_values.get(MASTER_FREQUENCY_INDEX));
 
-                master_frequency *= audio_state.global_pitch_bend.as_frequency_multiplier();
+                let pitch_bend_frequency_multiplier = {
+                    let range_up = audio_state
+                        .parameters
+                        .master_pitch_bend_range_up
+                        .get_value();
+                    let range_down = audio_state
+                        .parameters
+                        .master_pitch_bend_range_down
+                        .get_value();
+
+                    audio_state
+                        .global_pitch_bend
+                        .as_frequency_multiplier(range_up, range_down)
+                };
+
+                master_frequency *= pitch_bend_frequency_multiplier;
 
                 let voice_base_frequency = voice.midi_pitch.get_frequency(master_frequency);
 

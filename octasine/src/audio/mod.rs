@@ -195,15 +195,11 @@ impl AudioState {
 #[derive(Clone, Copy, Debug)]
 pub struct GlobalPitchBend {
     factor: f32,
-    semitone_range: f32,
 }
 
 impl Default for GlobalPitchBend {
     fn default() -> Self {
-        Self {
-            factor: 0.0,
-            semitone_range: 2.0,
-        }
+        Self { factor: 0.0 }
     }
 }
 
@@ -224,8 +220,14 @@ impl GlobalPitchBend {
 
         self.factor = x;
     }
-    pub fn as_frequency_multiplier(&self) -> f64 {
-        crate::math::exp2_fast(self.factor * self.semitone_range * (1.0 / 12.0)).into()
+    pub fn as_frequency_multiplier(&self, range_up: f32, range_down: f32) -> f64 {
+        let semitone_range = if self.factor >= 0.0 {
+            range_up
+        } else {
+            range_down
+        };
+
+        crate::math::exp2_fast(self.factor * semitone_range * (1.0 / 12.0)).into()
     }
 }
 

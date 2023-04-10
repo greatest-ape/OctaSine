@@ -5,6 +5,7 @@ use iced_baseview::{
     Alignment, Element, Length,
 };
 
+use crate::parameters::master_pitch_bend_range::MasterPitchBendRangeValue;
 use crate::parameters::{
     LfoAmountValue, LfoFrequencyFreeValue, LfoFrequencyRatioValue, LfoParameter,
     MasterFrequencyValue, MasterParameter, MasterVolumeValue, OperatorFeedbackValue,
@@ -49,6 +50,32 @@ where
         "FREQ",
         TickMarkType::MinMaxAndDefault,
         KnobStyle::Bipolar,
+    )
+}
+
+pub fn master_pitch_bend_range_up<H>(sync_handle: &H) -> OctaSineKnob<MasterPitchBendRangeValue>
+where
+    H: GuiSyncHandle,
+{
+    OctaSineKnob::new(
+        sync_handle,
+        Parameter::Master(MasterParameter::PitchBendRangeUp),
+        "UP",
+        TickMarkType::MinMaxAndDefault,
+        KnobStyle::Regular,
+    )
+}
+
+pub fn master_pitch_bend_range_down<H>(sync_handle: &H) -> OctaSineKnob<MasterPitchBendRangeValue>
+where
+    H: GuiSyncHandle,
+{
+    OctaSineKnob::new(
+        sync_handle,
+        Parameter::Master(MasterParameter::PitchBendRangeDown),
+        "DOWN",
+        TickMarkType::MinMaxAndDefault,
+        KnobStyle::Regular,
     )
 }
 

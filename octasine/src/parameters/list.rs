@@ -100,6 +100,8 @@ pub const PARAMETERS: &[Parameter] = &[
     Parameter::Lfo(1, LfoParameter::KeySync),
     Parameter::Lfo(2, LfoParameter::KeySync),
     Parameter::Lfo(3, LfoParameter::KeySync),
+    Parameter::Master(MasterParameter::PitchBendRangeUp),
+    Parameter::Master(MasterParameter::PitchBendRangeDown),
 ];
 
 /// Parameter enum used to abstract over parameter indices
@@ -116,6 +118,8 @@ pub enum Parameter {
 pub enum MasterParameter {
     Volume,
     Frequency,
+    PitchBendRangeUp,
+    PitchBendRangeDown,
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]

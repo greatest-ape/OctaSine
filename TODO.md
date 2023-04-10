@@ -7,8 +7,6 @@
   * Consider using radios instead, or skipping this entirely
 * Run miri on audio gen bench
 * Portamento / legato
-* Pitch bend
-  * Set semitone range
 * Mode where release never activates but mod out is deactivated. Will need
   extra checks for ending when all other operators not in this mode have ended
 * Velocity sensitivity
