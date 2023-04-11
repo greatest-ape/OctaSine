@@ -32,7 +32,9 @@ use iced_baseview::{
 use serde::{Deserialize, Serialize};
 
 use crate::common::NUM_OPERATORS;
-use crate::parameters::master_pitch_bend_range::MasterPitchBendRangeValue;
+use crate::parameters::master_pitch_bend_range::{
+    MasterPitchBendRangeDownValue, MasterPitchBendRangeUpValue,
+};
 use crate::parameters::*;
 use crate::sync::GuiSyncHandle;
 
@@ -166,8 +168,8 @@ pub struct OctaSineIcedApplication<H: GuiSyncHandle> {
     lfo_4: LfoWidgets,
     corner: CornerWidgets,
     modal_action: Option<ModalAction>,
-    master_pitch_bend_up: OctaSineKnob<MasterPitchBendRangeValue>,
-    master_pitch_bend_down: OctaSineKnob<MasterPitchBendRangeValue>,
+    master_pitch_bend_up: OctaSineKnob<MasterPitchBendRangeUpValue>,
+    master_pitch_bend_down: OctaSineKnob<MasterPitchBendRangeDownValue>,
 }
 
 impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {

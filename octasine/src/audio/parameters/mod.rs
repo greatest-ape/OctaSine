@@ -4,7 +4,6 @@ mod lfo_amount;
 mod lfo_frequency_free;
 mod lfo_target;
 mod master_frequency;
-mod master_pitch_bend_range;
 mod master_volume;
 mod operator_active;
 mod operator_frequency_fine;
@@ -18,6 +17,9 @@ mod operator_volume;
 use array_init::array_init;
 
 use crate::common::{SampleRate, NUM_LFOS, NUM_OPERATORS};
+use crate::parameters::master_pitch_bend_range::{
+    MasterPitchBendRangeDownValue, MasterPitchBendRangeUpValue,
+};
 use crate::parameters::*;
 
 use self::common::{AudioParameter, InterpolatableAudioParameter, SimpleAudioParameter};
@@ -26,9 +28,6 @@ use self::lfo_amount::LfoAmountAudioParameter;
 use self::lfo_frequency_free::LfoFrequencyFreeAudioParameter;
 use self::lfo_target::LfoTargetAudioParameter;
 use self::master_frequency::MasterFrequencyAudioParameter;
-use self::master_pitch_bend_range::{
-    MasterPitchBendRangeDownAudioParameter, MasterPitchBendRangeUpAudioParameter,
-};
 use self::master_volume::MasterVolumeAudioParameter;
 use self::operator_frequency_fine::OperatorFrequencyFineAudioParameter;
 use self::operator_frequency_free::OperatorFrequencyFreeAudioParameter;
@@ -60,8 +59,8 @@ impl<P: AudioParameter> AudioParameterPatchInteraction for P {
 pub struct AudioParameters {
     pub master_volume: MasterVolumeAudioParameter,
     pub master_frequency: MasterFrequencyAudioParameter,
-    pub master_pitch_bend_range_up: MasterPitchBendRangeUpAudioParameter,
-    pub master_pitch_bend_range_down: MasterPitchBendRangeDownAudioParameter,
+    pub master_pitch_bend_range_up: SimpleAudioParameter<MasterPitchBendRangeUpValue>,
+    pub master_pitch_bend_range_down: SimpleAudioParameter<MasterPitchBendRangeDownValue>,
     pub operators: [OperatorAudioParameters; NUM_OPERATORS],
     pub lfos: [LfoAudioParameters; NUM_LFOS],
 }

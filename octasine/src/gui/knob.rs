@@ -5,7 +5,9 @@ use iced_baseview::{
     Alignment, Element, Length,
 };
 
-use crate::parameters::master_pitch_bend_range::MasterPitchBendRangeValue;
+use crate::parameters::master_pitch_bend_range::{
+    MasterPitchBendRangeDownValue, MasterPitchBendRangeUpValue,
+};
 use crate::parameters::{
     LfoAmountValue, LfoFrequencyFreeValue, LfoFrequencyRatioValue, LfoParameter,
     MasterFrequencyValue, MasterParameter, MasterVolumeValue, OperatorFeedbackValue,
@@ -35,7 +37,6 @@ where
         Parameter::Master(MasterParameter::Volume),
         "VOLUME",
         TickMarkType::MinMaxAndDefault,
-        // |theme| theme.knob_regular(),
         KnobStyle::Regular,
     )
 }
@@ -53,31 +54,37 @@ where
     )
 }
 
-pub fn master_pitch_bend_range_up<H>(sync_handle: &H) -> OctaSineKnob<MasterPitchBendRangeValue>
+pub fn master_pitch_bend_range_up<H>(sync_handle: &H) -> OctaSineKnob<MasterPitchBendRangeUpValue>
 where
     H: GuiSyncHandle,
 {
-    OctaSineKnob::new_with_default_sync_value(
+    OctaSineKnob::new_with_values(
         sync_handle,
         Parameter::Master(MasterParameter::PitchBendRangeUp),
         "UP",
         TickMarkType::MinMaxAndDefault,
-        MasterPitchBendRangeValue::default_up().to_patch(),
         KnobStyle::Bipolar,
+        MasterPitchBendRangeUpValue::default().to_patch(),
+        0.5,
+        0.5,
     )
 }
 
-pub fn master_pitch_bend_range_down<H>(sync_handle: &H) -> OctaSineKnob<MasterPitchBendRangeValue>
+pub fn master_pitch_bend_range_down<H>(
+    sync_handle: &H,
+) -> OctaSineKnob<MasterPitchBendRangeDownValue>
 where
     H: GuiSyncHandle,
 {
-    OctaSineKnob::new_with_default_sync_value(
+    OctaSineKnob::new_with_values(
         sync_handle,
         Parameter::Master(MasterParameter::PitchBendRangeDown),
         "DOWN",
         TickMarkType::MinMaxAndDefault,
-        MasterPitchBendRangeValue::default_down().to_patch(),
-        KnobStyle::Regular,
+        KnobStyle::Bipolar,
+        MasterPitchBendRangeDownValue::default().to_patch(),
+        0.5,
+        0.5,
     )
 }
 
@@ -88,12 +95,11 @@ pub fn operator_volume<H>(
 where
     H: GuiSyncHandle,
 {
-    OctaSineKnob::new_with_default_sync_value(
+    OctaSineKnob::new(
         sync_handle,
         Parameter::Operator(operator_index as u8, OperatorParameter::Volume),
         "VOL",
         TickMarkType::MinMaxAndDefault,
-        OperatorVolumeValue::default().to_patch(),
         KnobStyle::Regular,
     )
 }
@@ -102,13 +108,17 @@ pub fn operator_mix<H>(sync_handle: &H, operator_index: usize) -> OctaSineKnob<O
 where
     H: GuiSyncHandle,
 {
-    OctaSineKnob::new_with_default_sync_value(
+    let default_and_center = OperatorMixOutValue::new(operator_index).to_patch();
+
+    OctaSineKnob::new_with_values(
         sync_handle,
         Parameter::Operator(operator_index as u8, OperatorParameter::MixOut),
         "MIX OUT",
         TickMarkType::MinMaxAndDefault,
-        OperatorMixOutValue::new(operator_index).to_patch(),
         KnobStyle::Regular,
+        default_and_center,
+        default_and_center,
+        default_and_center,
     )
 }
 
@@ -259,7 +269,7 @@ pub struct OctaSineKnob<P: ParameterValue> {
     title: String,
     value: NormalParam,
     value_text: ValueText<P>,
-    default_value: Normal,
+    center_value: Normal,
     parameter: WrappedParameter,
     phantom_data: ::std::marker::PhantomData<P>,
     knob_style: KnobStyle,
@@ -276,36 +286,41 @@ where
         tick_mark_type: TickMarkType,
         knob_style: KnobStyle,
     ) -> Self {
-        Self::new_with_default_sync_value(
+        let patch_value = P::default().to_patch();
+
+        Self::new_with_values(
             sync_handle,
             parameter,
             title,
             tick_mark_type,
-            P::default().to_patch(),
             knob_style,
+            patch_value,
+            patch_value,
+            patch_value,
         )
     }
 
-    fn new_with_default_sync_value<H: GuiSyncHandle>(
+    fn new_with_values<H: GuiSyncHandle>(
         sync_handle: &H,
         parameter: Parameter,
         title: &str,
         tick_mark_type: TickMarkType,
-        default_patch_value: f32,
         knob_style: KnobStyle,
+        default_patch_value: f32,
+        center_value: f32,
+        tick_mark_center_value: f32,
     ) -> Self {
         let parameter = parameter.into();
 
-        let default_value = Normal::from_clipped(default_patch_value);
         let value = NormalParam {
             value: Normal::from_clipped(sync_handle.get_parameter(parameter)),
-            default: default_value,
+            default: Normal::from_clipped(default_patch_value),
         };
         let value_text = ValueText::new(sync_handle, parameter);
 
         let tick_marks = match tick_mark_type {
             TickMarkType::MinMaxAndDefault => {
-                tick_marks_from_min_max_and_value(default_patch_value)
+                tick_marks_from_min_max_and_value(tick_mark_center_value)
             }
         };
 
@@ -315,13 +330,12 @@ where
             title: title.to_string(),
             value,
             value_text,
-            default_value,
+            center_value: Normal::from_clipped(center_value),
             parameter,
             phantom_data: ::std::marker::PhantomData::default(),
             knob_style,
         }
     }
-
     pub fn set_value(&mut self, value: f32) {
         // FIXME
         // if !self.knob_state.is_dragging() {
@@ -350,7 +364,7 @@ where
         .size(KNOB_SIZE)
         .modifier_keys(modifier_keys)
         .style(self.knob_style)
-        .bipolar_center(self.default_value);
+        .bipolar_center(self.center_value);
 
         if let Some(text_marks) = self.text_marks.as_ref() {
             knob = knob.text_marks(text_marks);

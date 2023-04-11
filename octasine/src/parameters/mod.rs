@@ -37,6 +37,7 @@ pub use lfo_shape::LfoShapeValue;
 pub use lfo_target::*;
 pub use list::*;
 pub use master_frequency::MasterFrequencyValue;
+pub use master_pitch_bend_range::{MasterPitchBendRangeDownValue, MasterPitchBendRangeUpValue};
 pub use master_volume::MasterVolumeValue;
 pub use operator_active::OperatorActiveValue;
 pub use operator_envelope::*;
