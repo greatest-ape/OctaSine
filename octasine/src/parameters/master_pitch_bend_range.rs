@@ -6,15 +6,19 @@ use super::ParameterValue;
 use super::SerializableRepresentation;
 
 const STEPS: &[f32] = &[
-    0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 24.0, 48.0,
+    -48.0, -24.0, -12.0, -11.0, -10.0, -9.0, -8.0, -7.0, -6.0, -5.0, -4.0, -3.0, -2.0, -1.0, 0.0,
+    1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 24.0, 48.0,
 ];
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Default, Debug, Clone, Copy)]
 pub struct MasterPitchBendRangeValue(f32);
 
-impl Default for MasterPitchBendRangeValue {
-    fn default() -> Self {
+impl MasterPitchBendRangeValue {
+    pub fn default_up() -> Self {
         Self(2.0)
+    }
+    pub fn default_down() -> Self {
+        Self(-2.0)
     }
 }
 

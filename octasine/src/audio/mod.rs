@@ -226,7 +226,7 @@ impl GlobalPitchBend {
         let semitone_range = if self.factor >= 0.0 {
             range_up
         } else {
-            range_down
+            -range_down
         };
 
         crate::math::exp2_fast(self.factor * semitone_range * (1.0 / 12.0)).into()

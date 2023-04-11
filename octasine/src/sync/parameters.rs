@@ -41,10 +41,10 @@ impl PatchParameter {
                 MasterParameter::Frequency => Self::new::<MasterFrequencyValue>(parameter),
                 MasterParameter::Volume => Self::new::<MasterVolumeValue>(parameter),
                 MasterParameter::PitchBendRangeUp => {
-                    Self::new::<MasterPitchBendRangeValue>(parameter)
+                    Self::new_with_value(parameter, MasterPitchBendRangeValue::default_up())
                 }
                 MasterParameter::PitchBendRangeDown => {
-                    Self::new::<MasterPitchBendRangeValue>(parameter)
+                    Self::new_with_value(parameter, MasterPitchBendRangeValue::default_down())
                 }
             },
             Parameter::Operator(index, operator_parameter) => {

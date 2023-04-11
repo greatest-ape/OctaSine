@@ -57,12 +57,13 @@ pub fn master_pitch_bend_range_up<H>(sync_handle: &H) -> OctaSineKnob<MasterPitc
 where
     H: GuiSyncHandle,
 {
-    OctaSineKnob::new(
+    OctaSineKnob::new_with_default_sync_value(
         sync_handle,
         Parameter::Master(MasterParameter::PitchBendRangeUp),
         "UP",
         TickMarkType::MinMaxAndDefault,
-        KnobStyle::Regular,
+        MasterPitchBendRangeValue::default_up().to_patch(),
+        KnobStyle::Bipolar,
     )
 }
 
@@ -70,11 +71,12 @@ pub fn master_pitch_bend_range_down<H>(sync_handle: &H) -> OctaSineKnob<MasterPi
 where
     H: GuiSyncHandle,
 {
-    OctaSineKnob::new(
+    OctaSineKnob::new_with_default_sync_value(
         sync_handle,
         Parameter::Master(MasterParameter::PitchBendRangeDown),
         "DOWN",
         TickMarkType::MinMaxAndDefault,
+        MasterPitchBendRangeValue::default_down().to_patch(),
         KnobStyle::Regular,
     )
 }
