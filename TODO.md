@@ -1,6 +1,5 @@
 # TODO
 
-* Pitch bend: fix slowness
 * In modal for setting parameters by text, change to dropdown for fixed-value
   parameters
   * Needs fix of https://github.com/iced-rs/iced_aw/issues/77
