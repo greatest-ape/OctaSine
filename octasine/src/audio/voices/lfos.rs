@@ -1,5 +1,8 @@
 use crate::{
-    audio::interpolation::InterpolationDuration,
+    audio::{
+        interpolation::InterpolationDuration,
+        parameters::{common::AudioParameter, LfoAudioParameters},
+    },
     common::*,
     parameters::{lfo_mode::LfoMode, lfo_shape::LfoShape},
 };
@@ -172,8 +175,12 @@ impl VoiceLfo {
         value * amount
     }
 
-    pub fn restart(&mut self) {
-        self.phase = Phase(0.0);
+    pub fn restart(&mut self, parameters: &LfoAudioParameters) {
+        self.phase = if parameters.key_sync.get_value() {
+            Phase(0.0)
+        } else {
+            Phase(fastrand::f64())
+        };
         self.current_shape = None;
 
         match self.stage {

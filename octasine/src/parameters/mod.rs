@@ -3,11 +3,13 @@ pub mod lfo_amount;
 pub mod lfo_bpm_sync;
 pub mod lfo_frequency_free;
 pub mod lfo_frequency_ratio;
+pub mod lfo_key_sync;
 pub mod lfo_mode;
 pub mod lfo_shape;
 pub mod lfo_target;
 pub mod list;
 pub mod master_frequency;
+pub mod master_pitch_bend_range;
 pub mod master_volume;
 pub mod operator_active;
 pub mod operator_envelope;
@@ -29,11 +31,13 @@ pub use lfo_amount::LfoAmountValue;
 pub use lfo_bpm_sync::LfoBpmSyncValue;
 pub use lfo_frequency_free::LfoFrequencyFreeValue;
 pub use lfo_frequency_ratio::LfoFrequencyRatioValue;
+pub use lfo_key_sync::LfoKeySyncValue;
 pub use lfo_mode::LfoModeValue;
 pub use lfo_shape::LfoShapeValue;
 pub use lfo_target::*;
 pub use list::*;
 pub use master_frequency::MasterFrequencyValue;
+pub use master_pitch_bend_range::{MasterPitchBendRangeDownValue, MasterPitchBendRangeUpValue};
 pub use master_volume::MasterVolumeValue;
 pub use operator_active::OperatorActiveValue;
 pub use operator_envelope::*;
@@ -94,6 +98,8 @@ impl Parameter {
             Self::None => "None".into(),
             Self::Master(MasterParameter::Frequency) => "Master frequency".into(),
             Self::Master(MasterParameter::Volume) => "Master volume".into(),
+            Self::Master(MasterParameter::PitchBendRangeUp) => "Pitch bend range (up)".into(),
+            Self::Master(MasterParameter::PitchBendRangeDown) => "Pitch bend range (down)".into(),
             Self::Operator(index, p) => match p {
                 OperatorParameter::Volume => format_compact!("OP {} vol", index + 1),
                 OperatorParameter::Active => format_compact!("OP {} active", index + 1),
@@ -127,6 +133,7 @@ impl Parameter {
                 LfoParameter::Shape => format_compact!("LFO {} shape", index + 1),
                 LfoParameter::Amount => format_compact!("LFO {} amount", index + 1),
                 LfoParameter::Active => format_compact!("LFO {} active", index + 1),
+                LfoParameter::KeySync => format_compact!("LFO {} key sync", index + 1),
             },
         }
     }
@@ -153,6 +160,12 @@ impl Parameter {
             Self::None => "None".into(),
             Self::Master(MasterParameter::Frequency) => "Master frequency".into(),
             Self::Master(MasterParameter::Volume) => "Master volume".into(),
+            Self::Master(MasterParameter::PitchBendRangeUp) => {
+                "Master pitch bend range (up)".into()
+            }
+            Self::Master(MasterParameter::PitchBendRangeDown) => {
+                "Master pitch bend range (down)".into()
+            }
             Self::Operator(index, p) => match p {
                 OperatorParameter::Volume => format!("OP {} vol", index + 1),
                 OperatorParameter::Active => format!("OP {} active", index + 1),
@@ -180,6 +193,7 @@ impl Parameter {
                 LfoParameter::Shape => format!("LFO {} shape", index + 1),
                 LfoParameter::Amount => format!("LFO {} amount", index + 1),
                 LfoParameter::Active => format!("LFO {} active", index + 1),
+                LfoParameter::KeySync => format!("LFO {} key sync", index + 1),
             },
         };
 

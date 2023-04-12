@@ -88,6 +88,11 @@ pub enum NoteEventInner {
     ClapNoteOff {
         key: u8,
     },
+    ClapNotePressure {
+        key: u8,
+        // 0..1
+        pressure: f64,
+    },
     ClapBpm {
         bpm: BeatsPerMinute,
     },

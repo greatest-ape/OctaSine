@@ -37,6 +37,12 @@ impl PatchParameter {
             Parameter::Master(master_parameter) => match master_parameter {
                 MasterParameter::Frequency => Self::new::<MasterFrequencyValue>(parameter),
                 MasterParameter::Volume => Self::new::<MasterVolumeValue>(parameter),
+                MasterParameter::PitchBendRangeUp => {
+                    Self::new::<MasterPitchBendRangeUpValue>(parameter)
+                }
+                MasterParameter::PitchBendRangeDown => {
+                    Self::new::<MasterPitchBendRangeDownValue>(parameter)
+                }
             },
             Parameter::Operator(index, operator_parameter) => {
                 use OperatorParameter::*;
@@ -88,6 +94,7 @@ impl PatchParameter {
                         3 => Self::new::<Lfo4TargetParameterValue>(parameter),
                         _ => panic!("Unsupported parameter"),
                     },
+                    KeySync => Self::new::<LfoKeySyncValue>(parameter),
                 }
             }
         }

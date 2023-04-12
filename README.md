@@ -29,7 +29,7 @@ Frequency modulation synthesizer plugin (VST2, CLAP). Runs on macOS, Windows and
 
 ### Four operators
 
-Four FM operators with parameters for wave form (sine or noise), volume, panning, feedback and frequency (ratio, free and fine), with visualizations of stereo wave forms after modulation.
+Four FM operators with parameters for wave form (sine, square, triangle, saw and noise), volume, panning, feedback and frequency (ratio, free and fine), with visualizations of stereo wave forms after modulation.
 
 ### Flexible routing
 
@@ -79,7 +79,7 @@ cd OctaSine
 * Unless you want to use the bleeding edge development branch, switch to the latest stable version, e.g.:
 
 ```sh
-git checkout tags/v0.8.4
+git checkout tags/v0.8.6
 ```
 
 * Build and install the plugin:
@@ -98,7 +98,7 @@ git checkout tags/v0.8.4
 * Unless you want to use the bleeding edge development branch, switch to the latest stable version, e.g.:
 
 ```sh
-git checkout tags/v0.8.4
+git checkout tags/v0.8.6
 ```
 
 * Build and install the plugin:
@@ -138,7 +138,7 @@ cd OctaSine
 * Unless you want to use the bleeding edge development branch, switch to the latest stable version, e.g.:
 
 ```sh
-git checkout tags/v0.8.4
+git checkout tags/v0.8.6
 ```
 
 * Build and install the plugin

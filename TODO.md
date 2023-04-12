@@ -3,13 +3,16 @@
 * In modal for setting parameters by text, change to dropdown for fixed-value
   parameters
   * Needs fix of https://github.com/iced-rs/iced_aw/issues/77
+  * See https://github.com/iced-rs/iced/issues/940
+  * Consider using radios instead, or skipping this entirely
 * Run miri on audio gen bench
 * Portamento / legato
-* Pitch bend
 * Mode where release never activates but mod out is deactivated. Will need
   extra checks for ending when all other operators not in this mode have ended
-* LFO free sync: restart at key press but at random phase value, see page 33:
-  http://www.synthfool.com/docs/Yamaha/DX_Series/Yamaha%20DX-100%20Owners%20Manual.pdf
+* Velocity sensitivity
+* Aftertouch
+  * Parameter for how much voice volume is affected?
+* Consider scale factor for GUI
 * Add other waveforms?
   * Look at TX81Z waveforms:
     * https://en.wikipedia.org/wiki/Yamaha_YM2414

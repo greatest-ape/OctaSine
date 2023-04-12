@@ -96,6 +96,12 @@ pub const PARAMETERS: &[Parameter] = &[
     Parameter::Lfo(3, LfoParameter::Shape),
     Parameter::Lfo(3, LfoParameter::Amount),
     Parameter::Lfo(3, LfoParameter::Active),
+    Parameter::Lfo(0, LfoParameter::KeySync),
+    Parameter::Lfo(1, LfoParameter::KeySync),
+    Parameter::Lfo(2, LfoParameter::KeySync),
+    Parameter::Lfo(3, LfoParameter::KeySync),
+    Parameter::Master(MasterParameter::PitchBendRangeUp),
+    Parameter::Master(MasterParameter::PitchBendRangeDown),
 ];
 
 /// Parameter enum used to abstract over parameter indices
@@ -112,6 +118,8 @@ pub enum Parameter {
 pub enum MasterParameter {
     Volume,
     Frequency,
+    PitchBendRangeUp,
+    PitchBendRangeDown,
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
@@ -144,4 +152,6 @@ pub enum LfoParameter {
     Shape,
     Amount,
     Active,
+    /// Sync LFO phase to key presses. If turned off, start at random phase
+    KeySync,
 }

@@ -1,6 +1,6 @@
 [package]
 name = "octasine"
-version = "0.8.5"
+version = "0.8.6"
 authors = ["Joakim Frostegård <joakim.frostegard@gmail.com>"]
 license = "AGPL-3.0"
 edition = "2021"

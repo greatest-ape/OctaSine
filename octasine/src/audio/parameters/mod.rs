@@ -17,6 +17,9 @@ mod operator_volume;
 use array_init::array_init;
 
 use crate::common::{SampleRate, NUM_LFOS, NUM_OPERATORS};
+use crate::parameters::master_pitch_bend_range::{
+    MasterPitchBendRangeDownValue, MasterPitchBendRangeUpValue,
+};
 use crate::parameters::*;
 
 use self::common::{AudioParameter, InterpolatableAudioParameter, SimpleAudioParameter};
@@ -56,6 +59,8 @@ impl<P: AudioParameter> AudioParameterPatchInteraction for P {
 pub struct AudioParameters {
     pub master_volume: MasterVolumeAudioParameter,
     pub master_frequency: MasterFrequencyAudioParameter,
+    pub master_pitch_bend_range_up: SimpleAudioParameter<MasterPitchBendRangeUpValue>,
+    pub master_pitch_bend_range_down: SimpleAudioParameter<MasterPitchBendRangeDownValue>,
     pub operators: [OperatorAudioParameters; NUM_OPERATORS],
     pub lfos: [LfoAudioParameters; NUM_LFOS],
 }
@@ -65,6 +70,8 @@ impl Default for AudioParameters {
         Self {
             master_volume: Default::default(),
             master_frequency: Default::default(),
+            master_pitch_bend_range_up: Default::default(),
+            master_pitch_bend_range_down: Default::default(),
             operators: array_init(OperatorAudioParameters::new),
             lfos: array_init(LfoAudioParameters::new),
         }
@@ -79,6 +86,12 @@ macro_rules! impl_patch_interaction {
                 Parameter::Master(p) => match p {
                     MasterParameter::Volume => $f(&mut self.master_volume, input),
                     MasterParameter::Frequency => $f(&mut self.master_frequency, input),
+                    MasterParameter::PitchBendRangeUp => {
+                        $f(&mut self.master_pitch_bend_range_up, input)
+                    }
+                    MasterParameter::PitchBendRangeDown => {
+                        $f(&mut self.master_pitch_bend_range_down, input)
+                    }
                 },
                 Parameter::Operator(index, p) => {
                     use OperatorParameter::*;
@@ -130,6 +143,7 @@ macro_rules! impl_patch_interaction {
                         LfoParameter::Shape => $f(&mut lfo.shape, input),
                         LfoParameter::Amount => $f(&mut lfo.amount, input),
                         LfoParameter::Active => $f(&mut lfo.active, input),
+                        LfoParameter::KeySync => $f(&mut lfo.key_sync, input),
                     }
                 }
             }
@@ -257,6 +271,7 @@ pub struct LfoAudioParameters {
     pub shape: SimpleAudioParameter<LfoShapeValue>,
     pub amount: LfoAmountAudioParameter,
     pub active: LfoActiveAudioParameter,
+    pub key_sync: SimpleAudioParameter<LfoKeySyncValue>,
 }
 
 impl LfoAudioParameters {
@@ -270,6 +285,7 @@ impl LfoAudioParameters {
             shape: Default::default(),
             amount: Default::default(),
             active: Default::default(),
+            key_sync: Default::default(),
         }
     }
 

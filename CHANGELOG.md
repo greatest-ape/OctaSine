@@ -2,12 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
-## Unreleased
+## 0.8.6 - 2023-04-12
 
-### Changed
+### Added
 
-- Replace native popup windows for renaming patches and setting parameters by
-  text with interal modals
+- Add LFO key sync parameter, controlling initial phase of LFOs when activated
+  by a key press. With the default of value of "on", the phase starts at zero.
+  When value is set to "off", the LFO will instead start at a random point of
+  the wave cycle.
+- Add pitch bend support. Parameters for upwards and downwards semitone range
+  are accessible from the patch action dropdown menu.
 
 ## 0.8.5 - 2023-04-05
 
