@@ -1,15 +1,18 @@
 # TODO
 
-* In modal for setting parameters by text, change to dropdown for fixed-value
-  parameters
-  * Needs fix of https://github.com/iced-rs/iced_aw/issues/77
-  * See https://github.com/iced-rs/iced/issues/940
-  * Consider using radios instead, or skipping this entirely
-* Run miri on audio gen bench
+* Per-operator velocity sensitivity for mod out, mix out and feedback
+* Reset phase when envelopes end
+* Audio inconsistencies on attack, see vospi email
 * Portamento / legato
+
+* In modal for setting parameters by text, change to radios for fixed-value
+  parameters
+  * Dropdown won't work because of
+    * https://github.com/iced-rs/iced_aw/issues/77
+    * https://github.com/iced-rs/iced/issues/940
+* Run miri on audio gen bench
 * Mode where release never activates but mod out is deactivated. Will need
   extra checks for ending when all other operators not in this mode have ended
-* Velocity sensitivity
 * Aftertouch
   * Parameter for how much voice volume is affected?
 * Consider scale factor for GUI
@@ -22,6 +25,7 @@
 * GUI resources are not freed in Bitwig on macOS for both vst2 and clap plugins
 * CLAP GUI doesn't open on Bitwig on Linux (well, sometimes it does)
 * Include zoom state in patch?
+* Per-operator fixed-note mode?
 
 ## High priority
 
