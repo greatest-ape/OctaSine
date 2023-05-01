@@ -102,18 +102,18 @@ pub const PARAMETERS: &[Parameter] = &[
     Parameter::Lfo(3, LfoParameter::KeySync),
     Parameter::Master(MasterParameter::PitchBendRangeUp),
     Parameter::Master(MasterParameter::PitchBendRangeDown),
-    Parameter::Operator(0, OperatorParameter::VelocitySensitivityFeedback),
     Parameter::Operator(0, OperatorParameter::VelocitySensitivityMixOut),
     Parameter::Operator(0, OperatorParameter::VelocitySensitivityModOut),
-    Parameter::Operator(1, OperatorParameter::VelocitySensitivityFeedback),
+    Parameter::Operator(0, OperatorParameter::VelocitySensitivityFeedback),
     Parameter::Operator(1, OperatorParameter::VelocitySensitivityMixOut),
     Parameter::Operator(1, OperatorParameter::VelocitySensitivityModOut),
-    Parameter::Operator(2, OperatorParameter::VelocitySensitivityFeedback),
+    Parameter::Operator(1, OperatorParameter::VelocitySensitivityFeedback),
     Parameter::Operator(2, OperatorParameter::VelocitySensitivityMixOut),
     Parameter::Operator(2, OperatorParameter::VelocitySensitivityModOut),
-    Parameter::Operator(3, OperatorParameter::VelocitySensitivityFeedback),
+    Parameter::Operator(2, OperatorParameter::VelocitySensitivityFeedback),
     Parameter::Operator(3, OperatorParameter::VelocitySensitivityMixOut),
     Parameter::Operator(3, OperatorParameter::VelocitySensitivityModOut),
+    Parameter::Operator(3, OperatorParameter::VelocitySensitivityFeedback),
 ];
 
 /// Parameter enum used to abstract over parameter indices

@@ -91,9 +91,9 @@ struct VoiceOperatorData<const W: usize> {
     phase: [f64; W],
     wave_type: WaveType,
     modulation_targets: ModTargetStorage,
-    velocity_sensitivity_feedback: [f64; W],
     velocity_sensitivity_mix_out: [f64; W],
     velocity_sensitivity_mod_out: [f64; W],
+    velocity_sensitivity_feedback: [f64; W],
 }
 
 impl<const W: usize> Default for VoiceOperatorData<W> {
@@ -109,9 +109,9 @@ impl<const W: usize> Default for VoiceOperatorData<W> {
             phase: [0.0; W],
             wave_type: Default::default(),
             modulation_targets: Default::default(),
-            velocity_sensitivity_feedback: [0.0; W],
             velocity_sensitivity_mix_out: [0.0; W],
             velocity_sensitivity_mod_out: [0.0; W],
+            velocity_sensitivity_feedback: [0.0; W],
         }
     }
 }
@@ -491,6 +491,24 @@ mod gen {
             operator_data.constant_power_panning[sample_index_offset] = l as f64;
             operator_data.constant_power_panning[sample_index_offset + 1] = r as f64;
         }
+
+        set_value_for_both_channels(
+            &mut operator_data.velocity_sensitivity_mix_out,
+            sample_index,
+            operator_parameters.velocity_sensitivity_mix_out.get_value() as f64,
+        );
+        set_value_for_both_channels(
+            &mut operator_data.velocity_sensitivity_mod_out,
+            sample_index,
+            operator_parameters.velocity_sensitivity_mod_out.get_value() as f64,
+        );
+        set_value_for_both_channels(
+            &mut operator_data.velocity_sensitivity_feedback,
+            sample_index,
+            operator_parameters
+                .velocity_sensitivity_feedback
+                .get_value() as f64,
+        );
 
         let frequency_ratio = operator_parameters
             .frequency_ratio

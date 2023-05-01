@@ -125,13 +125,13 @@ impl Parameter {
                     format_compact!("OP {} lock group", index + 1)
                 }
                 OperatorParameter::VelocitySensitivityFeedback => {
-                    format_compact!("OP {} vel sens feed", index + 1)
+                    format_compact!("OP {} feed vel sen", index + 1)
                 }
                 OperatorParameter::VelocitySensitivityMixOut => {
-                    format_compact!("OP {} vel sens mix", index + 1)
+                    format_compact!("OP {} mix vel sen", index + 1)
                 }
                 OperatorParameter::VelocitySensitivityModOut => {
-                    format_compact!("OP {} vel sens mod", index + 1)
+                    format_compact!("OP {} mod vel sen", index + 1)
                 }
             },
             Self::Lfo(index, p) => match p {
@@ -194,13 +194,13 @@ impl Parameter {
                 OperatorParameter::ReleaseDuration => format!("OP {} release time", index + 1),
                 OperatorParameter::EnvelopeLockGroup => format!("OP {} lock group", index + 1),
                 OperatorParameter::VelocitySensitivityFeedback => {
-                    format!("OP {} velocity sensitivity feedback", index + 1)
+                    format!("OP {} feedback velocity sensitivity", index + 1)
                 }
                 OperatorParameter::VelocitySensitivityMixOut => {
-                    format!("OP {} velocity sensitivity mix out", index + 1)
+                    format!("OP {} mix out velocity sensitivity", index + 1)
                 }
                 OperatorParameter::VelocitySensitivityModOut => {
-                    format!("OP {} velocity sensitivity mod out", index + 1)
+                    format!("OP {} mod out velocity sensitivity", index + 1)
                 }
             },
             Self::Lfo(index, p) => match p {
