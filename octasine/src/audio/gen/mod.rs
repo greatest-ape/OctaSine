@@ -540,14 +540,14 @@ mod gen {
     unsafe fn gen_audio(
         rng: &mut fastrand::Rng,
         volume_velocity_sensitivity: [f64; Pd::WIDTH],
-        voices: &[VoiceData<{ Pd::WIDTH }>],
+        active_voices: &[VoiceData<{ Pd::WIDTH }>],
         audio_buffer_lefts: &mut [f32],
         audio_buffer_rights: &mut [f32],
     ) {
         // Pd::SAMPLES * 2 because of two channels. Even index = left channel
         let mut total_mix_out = Pd::new_zeroed();
 
-        for voice_data in voices.iter() {
+        for voice_data in active_voices.iter() {
             let operator_generate_audio = run_operator_dependency_analysis(voice_data);
 
             // Voice modulation input storage, indexed by operator
@@ -587,12 +587,12 @@ mod gen {
             total_mix_out += voice_mix_out * volume_velocity_factor * master_volume;
         }
 
-        let mix_out_arr = (total_mix_out * Pd::new(MASTER_VOLUME_FACTOR))
+        let total_mix_out_arr = (total_mix_out * Pd::new(MASTER_VOLUME_FACTOR))
             .min(Pd::new(LIMIT))
             .max(Pd::new(-LIMIT))
             .to_arr();
 
-        for (sample_index, chunk) in mix_out_arr.chunks_exact(2).enumerate() {
+        for (sample_index, chunk) in total_mix_out_arr.chunks_exact(2).enumerate() {
             audio_buffer_lefts[sample_index] = chunk[0] as f32;
             audio_buffer_rights[sample_index] = chunk[1] as f32;
         }
