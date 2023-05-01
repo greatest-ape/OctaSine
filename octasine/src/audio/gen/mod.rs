@@ -607,32 +607,32 @@ mod gen {
         key_velocity: Pd,
     ) -> (Pd, Pd) {
         let phase = Pd::from_arr(operator_data.phase);
-        let feedback = Pd::from_arr(operator_data.feedback);
+        let feedback = {
+            let feedback = Pd::from_arr(operator_data.feedback);
+            let velocity_sensitivity = Pd::from_arr(operator_data.velocity_sensitivity_feedback);
 
-        let feedback_velocity_factor = velocity_factor(
-            Pd::from_arr(operator_data.velocity_sensitivity_feedback),
-            key_velocity,
-        );
+            feedback * velocity_factor(velocity_sensitivity, key_velocity)
+        };
 
         let sample = match operator_data.wave_type {
             WaveType::Sine => {
                 let phase = phase * Pd::new(TAU);
-                let feedback = feedback_velocity_factor * feedback * phase.fast_sin();
+                let feedback = feedback * phase.fast_sin();
 
                 (phase + feedback + modulation_inputs).fast_sin()
             }
             WaveType::Square => {
-                let feedback = feedback_velocity_factor * feedback * phase.square();
+                let feedback = feedback * phase.square();
 
                 (phase + feedback + modulation_inputs).square()
             }
             WaveType::Triangle => {
-                let feedback = feedback_velocity_factor * feedback * phase.triangle();
+                let feedback = feedback * phase.triangle();
 
                 (phase + feedback + modulation_inputs).triangle()
             }
             WaveType::Saw => {
-                let feedback = feedback_velocity_factor * feedback * phase.saw();
+                let feedback = feedback * phase.saw();
 
                 (phase + feedback + modulation_inputs).saw()
             }
