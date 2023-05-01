@@ -21,6 +21,7 @@ pub mod operator_mix_out;
 pub mod operator_mod_out;
 pub mod operator_mod_target;
 pub mod operator_panning;
+pub mod operator_velocity_sensitivity;
 pub mod operator_volume;
 pub mod operator_wave_type;
 pub mod utils;
@@ -123,6 +124,15 @@ impl Parameter {
                 OperatorParameter::EnvelopeLockGroup => {
                     format_compact!("OP {} lock group", index + 1)
                 }
+                OperatorParameter::VelocitySensitivityFeedback => {
+                    format_compact!("OP {} vel sens feed", index + 1)
+                }
+                OperatorParameter::VelocitySensitivityMixOut => {
+                    format_compact!("OP {} vel sens mix", index + 1)
+                }
+                OperatorParameter::VelocitySensitivityModOut => {
+                    format_compact!("OP {} vel sens mod", index + 1)
+                }
             },
             Self::Lfo(index, p) => match p {
                 LfoParameter::Target => format_compact!("LFO {} target", index + 1),
@@ -183,6 +193,15 @@ impl Parameter {
                 OperatorParameter::SustainVolume => format!("OP {} sustain vol", index + 1),
                 OperatorParameter::ReleaseDuration => format!("OP {} release time", index + 1),
                 OperatorParameter::EnvelopeLockGroup => format!("OP {} lock group", index + 1),
+                OperatorParameter::VelocitySensitivityFeedback => {
+                    format!("OP {} velocity sensitivity feedback", index + 1)
+                }
+                OperatorParameter::VelocitySensitivityMixOut => {
+                    format!("OP {} velocity sensitivity mix out", index + 1)
+                }
+                OperatorParameter::VelocitySensitivityModOut => {
+                    format!("OP {} velocity sensitivity mod out", index + 1)
+                }
             },
             Self::Lfo(index, p) => match p {
                 LfoParameter::Target => format!("LFO {} target", index + 1),

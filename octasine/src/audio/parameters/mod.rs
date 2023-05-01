@@ -20,6 +20,7 @@ use crate::common::{SampleRate, NUM_LFOS, NUM_OPERATORS};
 use crate::parameters::master_pitch_bend_range::{
     MasterPitchBendRangeDownValue, MasterPitchBendRangeUpValue,
 };
+use crate::parameters::operator_velocity_sensitivity::OperatorVelocitySensitivityValue;
 use crate::parameters::*;
 
 use self::common::{AudioParameter, InterpolatableAudioParameter, SimpleAudioParameter};
@@ -129,6 +130,15 @@ macro_rules! impl_patch_interaction {
                             $f(&mut operator.volume_envelope.release_duration, input)
                         }
                         EnvelopeLockGroup => $f(&mut operator.volume_envelope.lock_group, input),
+                        VelocitySensitivityFeedback => {
+                            $f(&mut operator.velocity_sensitivity_feedback, input)
+                        }
+                        VelocitySensitivityMixOut => {
+                            $f(&mut operator.velocity_sensitivity_mix_out, input)
+                        }
+                        VelocitySensitivityModOut => {
+                            $f(&mut operator.velocity_sensitivity_mod_out, input)
+                        }
                     }
                 }
                 Parameter::Lfo(index, p) => {
@@ -197,6 +207,12 @@ pub struct OperatorAudioParameters {
     pub frequency_free: OperatorFrequencyFreeAudioParameter,
     pub frequency_fine: OperatorFrequencyFineAudioParameter,
     pub volume_envelope: OperatorEnvelopeAudioParameters,
+    pub velocity_sensitivity_feedback:
+        InterpolatableAudioParameter<OperatorVelocitySensitivityValue>,
+    pub velocity_sensitivity_mix_out:
+        InterpolatableAudioParameter<OperatorVelocitySensitivityValue>,
+    pub velocity_sensitivity_mod_out:
+        InterpolatableAudioParameter<OperatorVelocitySensitivityValue>,
 }
 
 impl OperatorAudioParameters {
@@ -220,6 +236,9 @@ impl OperatorAudioParameters {
             frequency_free: Default::default(),
             frequency_fine: Default::default(),
             volume_envelope: Default::default(),
+            velocity_sensitivity_feedback: Default::default(),
+            velocity_sensitivity_mix_out: Default::default(),
+            velocity_sensitivity_mod_out: Default::default(),
         }
     }
 
@@ -240,6 +259,12 @@ impl OperatorAudioParameters {
         self.frequency_free.advance_one_sample(sample_rate);
         self.frequency_fine.advance_one_sample(sample_rate);
         self.volume_envelope.advance_one_sample(sample_rate);
+        self.velocity_sensitivity_feedback
+            .advance_one_sample(sample_rate);
+        self.velocity_sensitivity_mix_out
+            .advance_one_sample(sample_rate);
+        self.velocity_sensitivity_mod_out
+            .advance_one_sample(sample_rate);
     }
 }
 

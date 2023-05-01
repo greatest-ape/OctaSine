@@ -1,6 +1,9 @@
 use compact_str::CompactString;
 
-use crate::{common::IndexMap, parameters::*};
+use crate::{
+    common::IndexMap,
+    parameters::{operator_velocity_sensitivity::OperatorVelocitySensitivityValue, *},
+};
 
 use super::atomic_float::AtomicFloat;
 
@@ -74,6 +77,11 @@ impl PatchParameter {
                         1 | 2 | 3 => Self::new::<OperatorModOutValue>(parameter),
                         _ => panic!("Unsupported parameter"),
                     },
+                    VelocitySensitivityFeedback
+                    | VelocitySensitivityMixOut
+                    | VelocitySensitivityModOut => {
+                        Self::new::<OperatorVelocitySensitivityValue>(parameter)
+                    }
                 }
             }
             Parameter::Lfo(index, lfo_parameter) => {
