@@ -2,7 +2,10 @@ use compact_str::CompactString;
 
 use crate::{
     common::IndexMap,
-    parameters::{operator_velocity_sensitivity::OperatorVelocitySensitivityValue, *},
+    parameters::{
+        master_velocity_sensitivity::MasterVelocitySensitivityValue,
+        operator_velocity_sensitivity::OperatorVelocitySensitivityValue, *,
+    },
 };
 
 use super::atomic_float::AtomicFloat;
@@ -45,6 +48,9 @@ impl PatchParameter {
                 }
                 MasterParameter::PitchBendRangeDown => {
                     Self::new::<MasterPitchBendRangeDownValue>(parameter)
+                }
+                MasterParameter::VelocitySensitivityVolume => {
+                    Self::new::<MasterVelocitySensitivityValue>(parameter)
                 }
             },
             Parameter::Operator(index, operator_parameter) => {

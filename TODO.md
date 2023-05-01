@@ -1,6 +1,7 @@
 # TODO
 
 * Per-operator velocity sensitivity for mod out, mix out and feedback
+  * Remove for mix out
   * GUI
 * Reset phase when envelopes end
 * Audio inconsistencies on attack, see vospi email

@@ -186,6 +186,9 @@ impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {
             Parameter::Master(MasterParameter::PitchBendRangeDown) => {
                 self.master_pitch_bend_down.set_value(v)
             }
+            Parameter::Master(MasterParameter::VelocitySensitivityVolume) => {
+                // TODO
+            }
             outer_p @ Parameter::Operator(index, p) => {
                 self.operator_1.wave_display.set_value(outer_p, v);
                 self.operator_2.wave_display.set_value(outer_p, v);

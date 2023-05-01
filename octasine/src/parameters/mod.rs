@@ -10,6 +10,7 @@ pub mod lfo_target;
 pub mod list;
 pub mod master_frequency;
 pub mod master_pitch_bend_range;
+pub mod master_velocity_sensitivity;
 pub mod master_volume;
 pub mod operator_active;
 pub mod operator_envelope;
@@ -101,6 +102,9 @@ impl Parameter {
             Self::Master(MasterParameter::Volume) => "Master volume".into(),
             Self::Master(MasterParameter::PitchBendRangeUp) => "Pitch bend range (up)".into(),
             Self::Master(MasterParameter::PitchBendRangeDown) => "Pitch bend range (down)".into(),
+            Self::Master(MasterParameter::VelocitySensitivityVolume) => {
+                "Volume velocity sensitivity".into()
+            }
             Self::Operator(index, p) => match p {
                 OperatorParameter::Volume => format_compact!("OP {} vol", index + 1),
                 OperatorParameter::Active => format_compact!("OP {} active", index + 1),
@@ -175,6 +179,9 @@ impl Parameter {
             }
             Self::Master(MasterParameter::PitchBendRangeDown) => {
                 "Master pitch bend range (down)".into()
+            }
+            Self::Master(MasterParameter::VelocitySensitivityVolume) => {
+                "Voice volume velocity sensitivity".into()
             }
             Self::Operator(index, p) => match p {
                 OperatorParameter::Volume => format!("OP {} vol", index + 1),

@@ -20,6 +20,7 @@ use crate::common::{SampleRate, NUM_LFOS, NUM_OPERATORS};
 use crate::parameters::master_pitch_bend_range::{
     MasterPitchBendRangeDownValue, MasterPitchBendRangeUpValue,
 };
+use crate::parameters::master_velocity_sensitivity::MasterVelocitySensitivityValue;
 use crate::parameters::operator_velocity_sensitivity::OperatorVelocitySensitivityValue;
 use crate::parameters::*;
 
@@ -62,6 +63,7 @@ pub struct AudioParameters {
     pub master_frequency: MasterFrequencyAudioParameter,
     pub master_pitch_bend_range_up: SimpleAudioParameter<MasterPitchBendRangeUpValue>,
     pub master_pitch_bend_range_down: SimpleAudioParameter<MasterPitchBendRangeDownValue>,
+    pub volume_velocity_sensitivity: InterpolatableAudioParameter<MasterVelocitySensitivityValue>,
     pub operators: [OperatorAudioParameters; NUM_OPERATORS],
     pub lfos: [LfoAudioParameters; NUM_LFOS],
 }
@@ -73,6 +75,7 @@ impl Default for AudioParameters {
             master_frequency: Default::default(),
             master_pitch_bend_range_up: Default::default(),
             master_pitch_bend_range_down: Default::default(),
+            volume_velocity_sensitivity: Default::default(),
             operators: array_init(OperatorAudioParameters::new),
             lfos: array_init(LfoAudioParameters::new),
         }
@@ -92,6 +95,9 @@ macro_rules! impl_patch_interaction {
                     }
                     MasterParameter::PitchBendRangeDown => {
                         $f(&mut self.master_pitch_bend_range_down, input)
+                    }
+                    MasterParameter::VelocitySensitivityVolume => {
+                        $f(&mut self.volume_velocity_sensitivity, input)
                     }
                 },
                 Parameter::Operator(index, p) => {
@@ -183,6 +189,7 @@ impl AudioParameters {
     pub fn advance_one_sample(&mut self, sample_rate: SampleRate) {
         self.master_volume.advance_one_sample(sample_rate);
         self.master_frequency.advance_one_sample(sample_rate);
+        self.volume_velocity_sensitivity.advance_one_sample(sample_rate);
 
         for operator in self.operators.iter_mut() {
             operator.advance_one_sample(sample_rate);

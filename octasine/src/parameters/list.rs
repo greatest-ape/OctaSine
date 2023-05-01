@@ -102,6 +102,7 @@ pub const PARAMETERS: &[Parameter] = &[
     Parameter::Lfo(3, LfoParameter::KeySync),
     Parameter::Master(MasterParameter::PitchBendRangeUp),
     Parameter::Master(MasterParameter::PitchBendRangeDown),
+    Parameter::Master(MasterParameter::VelocitySensitivityVolume),
     Parameter::Operator(0, OperatorParameter::VelocitySensitivityMixOut),
     Parameter::Operator(0, OperatorParameter::VelocitySensitivityModOut),
     Parameter::Operator(0, OperatorParameter::VelocitySensitivityFeedback),
@@ -132,6 +133,7 @@ pub enum MasterParameter {
     Frequency,
     PitchBendRangeUp,
     PitchBendRangeDown,
+    VelocitySensitivityVolume,
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
