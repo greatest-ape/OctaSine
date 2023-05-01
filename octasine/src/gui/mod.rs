@@ -284,7 +284,6 @@ impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {
                         self.update_envelope_group_statuses();
                     }
                     OperatorParameter::VelocitySensitivityFeedback
-                    | OperatorParameter::VelocitySensitivityMixOut
                     | OperatorParameter::VelocitySensitivityModOut => {
                         // TODO
                     }

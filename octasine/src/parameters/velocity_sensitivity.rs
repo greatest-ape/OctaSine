@@ -3,15 +3,15 @@ use compact_str::{format_compact, CompactString};
 use super::{utils::parse_valid_f32, ParameterValue, SerializableRepresentation};
 
 #[derive(Debug, Clone, Copy)]
-pub struct OperatorVelocitySensitivityValue(f32);
+pub struct VelocitySensitivityValue(f32);
 
-impl Default for OperatorVelocitySensitivityValue {
+impl Default for VelocitySensitivityValue {
     fn default() -> Self {
         Self(1.0)
     }
 }
 
-impl ParameterValue for OperatorVelocitySensitivityValue {
+impl ParameterValue for VelocitySensitivityValue {
     type Value = f32;
 
     fn new_from_audio(value: Self::Value) -> Self {

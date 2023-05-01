@@ -93,7 +93,6 @@ struct VoiceOperatorData<const W: usize> {
     phase: [f64; W],
     wave_type: WaveType,
     modulation_targets: ModTargetStorage,
-    velocity_sensitivity_mix_out: [f64; W],
     velocity_sensitivity_mod_out: [f64; W],
     velocity_sensitivity_feedback: [f64; W],
 }
@@ -111,7 +110,6 @@ impl<const W: usize> Default for VoiceOperatorData<W> {
             phase: [0.0; W],
             wave_type: Default::default(),
             modulation_targets: Default::default(),
-            velocity_sensitivity_mix_out: [0.0; W],
             velocity_sensitivity_mod_out: [0.0; W],
             velocity_sensitivity_feedback: [0.0; W],
         }
@@ -505,11 +503,6 @@ mod gen {
         }
 
         set_value_for_both_channels(
-            &mut operator_data.velocity_sensitivity_mix_out,
-            sample_index,
-            operator_parameters.velocity_sensitivity_mix_out.get_value() as f64,
-        );
-        set_value_for_both_channels(
             &mut operator_data.velocity_sensitivity_mod_out,
             sample_index,
             operator_parameters.velocity_sensitivity_mod_out.get_value() as f64,
@@ -676,13 +669,9 @@ mod gen {
 
         let mix_out = {
             let pan_factor = Pd::from_arr(operator_data.constant_power_panning);
-            let velocity_factor = velocity_factor(
-                Pd::from_arr(operator_data.velocity_sensitivity_mix_out),
-                key_velocity,
-            );
             let mix_out = Pd::from_arr(operator_data.mix_out);
 
-            sample * pan_factor * velocity_factor * mix_out
+            sample * pan_factor * mix_out
         };
         let mod_out = {
             let pan_factor = linear_panning_factor(panning);

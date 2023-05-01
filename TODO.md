@@ -1,7 +1,7 @@
 # TODO
 
-* Per-operator velocity sensitivity for mod out, mix out and feedback
-  * Remove for mix out
+* Per-operator velocity sensitivity
+  * Audio output really unchanged? Probably it is
   * GUI
 * Reset phase when envelopes end
 * Audio inconsistencies on attack, see vospi email

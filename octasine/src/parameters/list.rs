@@ -103,16 +103,12 @@ pub const PARAMETERS: &[Parameter] = &[
     Parameter::Master(MasterParameter::PitchBendRangeUp),
     Parameter::Master(MasterParameter::PitchBendRangeDown),
     Parameter::Master(MasterParameter::VelocitySensitivityVolume),
-    Parameter::Operator(0, OperatorParameter::VelocitySensitivityMixOut),
     Parameter::Operator(0, OperatorParameter::VelocitySensitivityModOut),
     Parameter::Operator(0, OperatorParameter::VelocitySensitivityFeedback),
-    Parameter::Operator(1, OperatorParameter::VelocitySensitivityMixOut),
     Parameter::Operator(1, OperatorParameter::VelocitySensitivityModOut),
     Parameter::Operator(1, OperatorParameter::VelocitySensitivityFeedback),
-    Parameter::Operator(2, OperatorParameter::VelocitySensitivityMixOut),
     Parameter::Operator(2, OperatorParameter::VelocitySensitivityModOut),
     Parameter::Operator(2, OperatorParameter::VelocitySensitivityFeedback),
-    Parameter::Operator(3, OperatorParameter::VelocitySensitivityMixOut),
     Parameter::Operator(3, OperatorParameter::VelocitySensitivityModOut),
     Parameter::Operator(3, OperatorParameter::VelocitySensitivityFeedback),
 ];
@@ -154,9 +150,8 @@ pub enum OperatorParameter {
     SustainVolume,
     ReleaseDuration,
     EnvelopeLockGroup,
-    VelocitySensitivityFeedback,
-    VelocitySensitivityMixOut,
     VelocitySensitivityModOut,
+    VelocitySensitivityFeedback,
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]

@@ -10,7 +10,6 @@ pub mod lfo_target;
 pub mod list;
 pub mod master_frequency;
 pub mod master_pitch_bend_range;
-pub mod master_velocity_sensitivity;
 pub mod master_volume;
 pub mod operator_active;
 pub mod operator_envelope;
@@ -22,10 +21,10 @@ pub mod operator_mix_out;
 pub mod operator_mod_out;
 pub mod operator_mod_target;
 pub mod operator_panning;
-pub mod operator_velocity_sensitivity;
 pub mod operator_volume;
 pub mod operator_wave_type;
 pub mod utils;
+pub mod velocity_sensitivity;
 
 use compact_str::{format_compact, CompactString};
 pub use lfo_active::LfoActiveValue;
@@ -103,7 +102,7 @@ impl Parameter {
             Self::Master(MasterParameter::PitchBendRangeUp) => "Pitch bend range (up)".into(),
             Self::Master(MasterParameter::PitchBendRangeDown) => "Pitch bend range (down)".into(),
             Self::Master(MasterParameter::VelocitySensitivityVolume) => {
-                "Volume velocity sensitivity".into()
+                "Mix out sensitivity".into()
             }
             Self::Operator(index, p) => match p {
                 OperatorParameter::Volume => format_compact!("OP {} vol", index + 1),
@@ -128,14 +127,11 @@ impl Parameter {
                 OperatorParameter::EnvelopeLockGroup => {
                     format_compact!("OP {} lock group", index + 1)
                 }
-                OperatorParameter::VelocitySensitivityFeedback => {
-                    format_compact!("OP {} feed vel sen", index + 1)
-                }
-                OperatorParameter::VelocitySensitivityMixOut => {
-                    format_compact!("OP {} mix vel sen", index + 1)
-                }
                 OperatorParameter::VelocitySensitivityModOut => {
-                    format_compact!("OP {} mod vel sen", index + 1)
+                    format_compact!("OP {} mod out sensitivity", index + 1)
+                }
+                OperatorParameter::VelocitySensitivityFeedback => {
+                    format_compact!("OP {} feedback sensitivity", index + 1)
                 }
             },
             Self::Lfo(index, p) => match p {
@@ -181,7 +177,7 @@ impl Parameter {
                 "Master pitch bend range (down)".into()
             }
             Self::Master(MasterParameter::VelocitySensitivityVolume) => {
-                "Voice volume velocity sensitivity".into()
+                "Master volume velocity sensitivity".into()
             }
             Self::Operator(index, p) => match p {
                 OperatorParameter::Volume => format!("OP {} vol", index + 1),
@@ -200,14 +196,11 @@ impl Parameter {
                 OperatorParameter::SustainVolume => format!("OP {} sustain vol", index + 1),
                 OperatorParameter::ReleaseDuration => format!("OP {} release time", index + 1),
                 OperatorParameter::EnvelopeLockGroup => format!("OP {} lock group", index + 1),
-                OperatorParameter::VelocitySensitivityFeedback => {
-                    format!("OP {} feedback velocity sensitivity", index + 1)
-                }
-                OperatorParameter::VelocitySensitivityMixOut => {
-                    format!("OP {} mix out velocity sensitivity", index + 1)
-                }
                 OperatorParameter::VelocitySensitivityModOut => {
                     format!("OP {} mod out velocity sensitivity", index + 1)
+                }
+                OperatorParameter::VelocitySensitivityFeedback => {
+                    format!("OP {} feedback velocity sensitivity", index + 1)
                 }
             },
             Self::Lfo(index, p) => match p {
