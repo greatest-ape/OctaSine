@@ -91,6 +91,9 @@ struct VoiceOperatorData<const W: usize> {
     phase: [f64; W],
     wave_type: WaveType,
     modulation_targets: ModTargetStorage,
+    velocity_sensitivity_feedback: [f64; W],
+    velocity_sensitivity_mix_out: [f64; W],
+    velocity_sensitivity_mod_out: [f64; W],
 }
 
 impl<const W: usize> Default for VoiceOperatorData<W> {
@@ -106,6 +109,9 @@ impl<const W: usize> Default for VoiceOperatorData<W> {
             phase: [0.0; W],
             wave_type: Default::default(),
             modulation_targets: Default::default(),
+            velocity_sensitivity_feedback: [0.0; W],
+            velocity_sensitivity_mix_out: [0.0; W],
+            velocity_sensitivity_mod_out: [0.0; W],
         }
     }
 }
@@ -573,21 +579,32 @@ mod gen {
         let phase = Pd::from_arr(operator_data.phase);
         let feedback = Pd::from_arr(operator_data.feedback);
 
+        let feedback_velocity_factor = velocity_factor(
+            Pd::from_arr(operator_data.velocity_sensitivity_feedback),
+            key_velocity,
+        );
+
         let sample = match operator_data.wave_type {
             WaveType::Sine => {
                 let phase = phase * Pd::new(TAU);
+                let feedback = feedback_velocity_factor * feedback * phase.fast_sin();
 
-                (phase + (key_velocity * (feedback * phase.fast_sin()) + modulation_inputs))
-                    .fast_sin()
+                (phase + feedback + modulation_inputs).fast_sin()
             }
             WaveType::Square => {
-                (phase + (key_velocity * (feedback * phase.square()) + modulation_inputs)).square()
+                let feedback = feedback_velocity_factor * feedback * phase.square();
+
+                (phase + feedback + modulation_inputs).square()
             }
-            WaveType::Triangle => (phase
-                + (key_velocity * (feedback * phase.triangle()) + modulation_inputs))
-                .triangle(),
+            WaveType::Triangle => {
+                let feedback = feedback_velocity_factor * feedback * phase.triangle();
+
+                (phase + feedback + modulation_inputs).triangle()
+            }
             WaveType::Saw => {
-                (phase + (key_velocity * (feedback * phase.saw()) + modulation_inputs)).saw()
+                let feedback = feedback_velocity_factor * feedback * phase.saw();
+
+                (phase + feedback + modulation_inputs).saw()
             }
             WaveType::WhiteNoise => {
                 let mut random_numbers = <Pd as SimdPackedDouble>::Arr::default();
@@ -608,7 +625,7 @@ mod gen {
         let envelope_volume = Pd::from_arr(operator_data.envelope_volume);
         let panning = Pd::from_arr(operator_data.panning);
 
-        let sample = sample * key_velocity * volume * envelope_volume;
+        let sample = sample * volume * envelope_volume;
 
         // Mix channels depending on panning of current operator. If panned to
         // the middle, just pass through the stereo signals. If panned to any
@@ -622,15 +639,23 @@ mod gen {
 
         let mix_out = {
             let pan_factor = Pd::from_arr(operator_data.constant_power_panning);
+            let velocity_factor = velocity_factor(
+                Pd::from_arr(operator_data.velocity_sensitivity_mix_out),
+                key_velocity,
+            );
             let mix_out = Pd::from_arr(operator_data.mix_out);
 
-            sample * pan_factor * mix_out
+            sample * pan_factor * velocity_factor * mix_out
         };
         let mod_out = {
             let pan_factor = linear_panning_factor(panning);
+            let velocity_factor = velocity_factor(
+                Pd::from_arr(operator_data.velocity_sensitivity_mod_out),
+                key_velocity,
+            );
             let mod_out = Pd::from_arr(operator_data.mod_out);
 
-            sample * pan_factor * mod_out
+            sample * pan_factor * velocity_factor * mod_out
         };
 
         (mix_out, mod_out)
@@ -699,6 +724,13 @@ mod gen {
         let pan = Pd::new(2.0) * (panning - Pd::new(0.5));
 
         (pan * Pd::new_from_pair(-1.0, 1.0)).max(Pd::new_zeroed())
+    }
+
+    #[feature_gate]
+    #[target_feature_enable]
+    #[inline]
+    unsafe fn velocity_factor(sensitivity: Pd, velocity: Pd) -> Pd {
+        sensitivity * velocity + (Pd::new(1.0) - sensitivity)
     }
 
     #[cfg(test)]
