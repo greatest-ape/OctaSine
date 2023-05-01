@@ -1,9 +1,12 @@
 # TODO
 
 * Per-operator velocity sensitivity for mod out, mix out and feedback
+  * GUI
 * Reset phase when envelopes end
 * Audio inconsistencies on attack, see vospi email
 * Portamento / legato
+* Consider f64 interpolator and maybe even f64 parameters, since now we
+  convert all the time in audio gen
 
 * In modal for setting parameters by text, change to radios for fixed-value
   parameters
