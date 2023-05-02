@@ -51,7 +51,7 @@ use self::style::container::ContainerStyle;
 
 use crate::settings::Settings;
 
-pub const GUI_WIDTH: usize = 12 * 81;
+pub const GUI_WIDTH: usize = 12 * 83;
 pub const GUI_HEIGHT: usize = 12 * 55;
 
 const FONT_SIZE: u16 = 12;
@@ -187,7 +187,7 @@ impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {
                 self.master_pitch_bend_down.set_value(v)
             }
             Parameter::Master(MasterParameter::VelocitySensitivityVolume) => {
-                // TODO
+                self.corner.volume_velocity_sensitivity.set_value(v)
             }
             outer_p @ Parameter::Operator(index, p) => {
                 self.operator_1.wave_display.set_value(outer_p, v);

@@ -4,7 +4,9 @@ use iced_baseview::{
 };
 
 use crate::{
-    parameters::{MasterFrequencyValue, MasterVolumeValue},
+    parameters::{
+        velocity_sensitivity::VelocitySensitivityValue, MasterFrequencyValue, MasterVolumeValue,
+    },
     sync::GuiSyncHandle,
     utils::get_version_info,
 };
@@ -21,6 +23,7 @@ use super::{
 pub struct CornerWidgets {
     pub master_volume: OctaSineKnob<MasterVolumeValue>,
     pub master_frequency: OctaSineKnob<MasterFrequencyValue>,
+    pub volume_velocity_sensitivity: OctaSineKnob<VelocitySensitivityValue>,
     pub modulation_matrix: ModulationMatrix,
     pub patch_picker: PatchPicker,
 }
@@ -29,12 +32,14 @@ impl CornerWidgets {
     pub fn new<H: GuiSyncHandle>(sync_handle: &H) -> Self {
         let master_volume = knob::master_volume(sync_handle);
         let master_frequency = knob::master_frequency(sync_handle);
+        let volume_velocity_sensitivity = knob::master_velocity_sensitivity(sync_handle);
         let modulation_matrix = ModulationMatrix::new(sync_handle);
         let patch_picker = PatchPicker::new(sync_handle);
 
         Self {
             master_volume,
             master_frequency,
+            volume_velocity_sensitivity,
             modulation_matrix,
             patch_picker,
         }
@@ -66,7 +71,9 @@ impl CornerWidgets {
                 .push(container_l3(self.master_volume.view(theme)))
                 .push(space_l3())
                 .push(container_l3(self.master_frequency.view(theme)))
-                .push(Space::with_width(Length::Fixed(f32::from(LINE_HEIGHT * 3)))), // Extend to end
+                .push(space_l3())
+                .push(container_l3(self.volume_velocity_sensitivity.view(theme)))
+                .push(Space::with_width(Length::Fixed(f32::from(LINE_HEIGHT * 1)))), // Extend to end
         ));
 
         let logo = {
@@ -110,7 +117,7 @@ impl CornerWidgets {
                         Text::new("OctaSine")
                             .size(FONT_SIZE * 3 / 2)
                             .height(Length::Fixed(f32::from(FONT_SIZE * 3 / 2)))
-                            .width(Length::Fixed(f32::from(LINE_HEIGHT * 8)))
+                            .width(Length::Fixed(f32::from(LINE_HEIGHT * 6)))
                             .font(theme.font_heading())
                             .horizontal_alignment(Horizontal::Center),
                     )
@@ -122,7 +129,7 @@ impl CornerWidgets {
                             .push(info_button),
                     ),
             )
-            .width(Length::Fixed(f32::from(LINE_HEIGHT * 7)))
+            .width(Length::Fixed(f32::from(LINE_HEIGHT * 6)))
             .height(Length::Fixed(f32::from(LINE_HEIGHT * 6)))
         };
 

@@ -1,3 +1,4 @@
+use iced_baseview::alignment::Vertical;
 use iced_baseview::widget::tooltip::Position;
 use iced_baseview::{
     alignment::Horizontal, widget::Column, widget::Container, widget::Row, widget::Space,
@@ -17,6 +18,7 @@ use super::common::{container_l1, container_l2, container_l3, space_l2, space_l3
 use super::envelope::Envelope;
 use super::knob::{self, OctaSineKnob};
 use super::mod_target_picker;
+use super::style::container::ContainerStyle;
 use super::style::Theme;
 use super::wave_display::WaveDisplay;
 use super::wave_picker::WavePicker;
@@ -181,6 +183,26 @@ impl OperatorWidgets {
         let envelope = container_l2(self.envelope.view(theme))
             .height(Length::Fixed(f32::from(LINE_HEIGHT * 8)));
 
+        let shift = Row::new()
+            .push(Space::with_width(LINE_HEIGHT / 2))
+            .push(
+                Column::new()
+                    .push(Space::with_height(LINE_HEIGHT * 3 + LINE_HEIGHT / 2))
+                    .push(
+                        Container::new(
+                            Text::new(">")
+                                .vertical_alignment(Vertical::Center)
+                                .horizontal_alignment(Horizontal::Center)
+                                .size(LINE_HEIGHT)
+                                .height(LINE_HEIGHT)
+                                .width(LINE_HEIGHT),
+                        )
+                        .padding(0)
+                        .style(ContainerStyle::L3),
+                    ),
+            )
+            .push(Space::with_width(LINE_HEIGHT / 2));
+
         container_l1(
             Row::new()
                 .push(heading)
@@ -190,7 +212,8 @@ impl OperatorWidgets {
                 .push(space_l2())
                 .push(frequency_group)
                 .push(space_l2())
-                .push(envelope),
+                .push(envelope)
+                .push(shift),
         )
         .into()
     }

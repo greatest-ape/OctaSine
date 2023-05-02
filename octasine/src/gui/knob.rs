@@ -8,6 +8,7 @@ use iced_baseview::{
 use crate::parameters::master_pitch_bend_range::{
     MasterPitchBendRangeDownValue, MasterPitchBendRangeUpValue,
 };
+use crate::parameters::velocity_sensitivity::VelocitySensitivityValue;
 use crate::parameters::{
     LfoAmountValue, LfoFrequencyFreeValue, LfoFrequencyRatioValue, LfoParameter,
     MasterFrequencyValue, MasterParameter, MasterVolumeValue, OperatorFeedbackValue,
@@ -51,6 +52,19 @@ where
         "FREQ",
         TickMarkType::MinMaxAndDefault,
         KnobStyle::Bipolar,
+    )
+}
+
+pub fn master_velocity_sensitivity<H>(sync_handle: &H) -> OctaSineKnob<VelocitySensitivityValue>
+where
+    H: GuiSyncHandle,
+{
+    OctaSineKnob::new(
+        sync_handle,
+        Parameter::Master(MasterParameter::VelocitySensitivityVolume),
+        "SENS",
+        TickMarkType::MinMaxAndDefault,
+        KnobStyle::Regular,
     )
 }
 
