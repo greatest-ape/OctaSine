@@ -5,6 +5,7 @@ use iced_baseview::{
     widget::Text, Alignment, Element, Length,
 };
 
+use crate::parameters::velocity_sensitivity::VelocitySensitivityValue;
 use crate::parameters::{
     Operator2ModulationTargetValue, Operator3ModulationTargetValue, Operator4ModulationTargetValue,
     OperatorFeedbackValue, OperatorFrequencyFineValue, OperatorFrequencyFreeValue,
@@ -32,6 +33,7 @@ pub enum ModTargetPicker {
 
 pub struct OperatorWidgets {
     index: usize,
+    pub shifted: bool,
     pub volume: OctaSineKnob<OperatorVolumeValue>,
     pub mute_button: BooleanButton,
     pub mix: OctaSineKnob<OperatorMixOutValue>,
@@ -43,6 +45,8 @@ pub struct OperatorWidgets {
     pub frequency_ratio: OctaSineKnob<OperatorFrequencyRatioValue>,
     pub frequency_free: OctaSineKnob<OperatorFrequencyFreeValue>,
     pub frequency_fine: OctaSineKnob<OperatorFrequencyFineValue>,
+    pub mod_out_velocity_sensitivity: OctaSineKnob<VelocitySensitivityValue>,
+    pub feedback_velocity_sensitivity: OctaSineKnob<VelocitySensitivityValue>,
     pub envelope: Envelope,
     pub wave_display: WaveDisplay,
 }
@@ -73,6 +77,7 @@ impl OperatorWidgets {
 
         Self {
             index: operator_index,
+            shifted: true,
             volume: knob::operator_volume(sync_handle, operator_index),
             mute_button: operator_mute_button(sync_handle, operator_index),
             mix: knob::operator_mix(sync_handle, operator_index),
@@ -86,6 +91,14 @@ impl OperatorWidgets {
             frequency_fine: knob::operator_frequency_fine(sync_handle, operator_index),
             envelope: Envelope::new(sync_handle, operator_index),
             wave_display: WaveDisplay::new(sync_handle, operator_index),
+            mod_out_velocity_sensitivity: knob::operator_mod_out_velocity_sensitivity(
+                sync_handle,
+                operator_index,
+            ),
+            feedback_velocity_sensitivity: knob::operator_feedback_velocity_sensitivity(
+                sync_handle,
+                operator_index,
+            ),
         }
     }
 
@@ -180,10 +193,34 @@ impl OperatorWidgets {
                 .push(container_l3(self.frequency_fine.view(theme))),
         );
 
-        let envelope = container_l2(self.envelope.view(theme))
-            .height(Length::Fixed(f32::from(LINE_HEIGHT * 8)));
+        let end = if self.shifted {
+            container_l2(
+                Row::new()
+                    .push(space_l3())
+                    .push(container_l3(
+                        Column::new()
+                            .push(Space::with_height(LINE_HEIGHT * 2))
+                            .push(
+                                Text::new("VELOCITY\nSENSITIVITY")
+                                    .width(LINE_HEIGHT * 6)
+                                    .height(LINE_HEIGHT * 2)
+                                    .font(theme.font_heading())
+                                    .horizontal_alignment(Horizontal::Center),
+                            ),
+                    ))
+                    .push(space_l3())
+                    .push(container_l3(self.mod_out_velocity_sensitivity.view(theme)))
+                    .push(space_l3())
+                    .push(container_l3(self.feedback_velocity_sensitivity.view(theme)))
+                    .push(space_l3().width(LINE_HEIGHT * 8)),
+            )
+        } else {
+            container_l2(self.envelope.view(theme))
+                .height(Length::Fixed(f32::from(LINE_HEIGHT * 8)))
+                .into()
+        };
 
-        let shift = Row::new()
+        let shift_button = Row::new()
             .push(Space::with_width(LINE_HEIGHT / 2))
             .push(
                 Column::new()
@@ -212,8 +249,8 @@ impl OperatorWidgets {
                 .push(space_l2())
                 .push(frequency_group)
                 .push(space_l2())
-                .push(envelope)
-                .push(shift),
+                .push(end)
+                .push(shift_button),
         )
         .into()
     }

@@ -232,6 +232,44 @@ where
     )
 }
 
+pub fn operator_feedback_velocity_sensitivity<H>(
+    sync_handle: &H,
+    operator_index: usize,
+) -> OctaSineKnob<VelocitySensitivityValue>
+where
+    H: GuiSyncHandle,
+{
+    OctaSineKnob::new(
+        sync_handle,
+        Parameter::Operator(
+            operator_index as u8,
+            OperatorParameter::VelocitySensitivityFeedback,
+        ),
+        "FEEDBACK",
+        TickMarkType::MinMaxAndDefault,
+        KnobStyle::Regular,
+    )
+}
+
+pub fn operator_mod_out_velocity_sensitivity<H>(
+    sync_handle: &H,
+    operator_index: usize,
+) -> OctaSineKnob<VelocitySensitivityValue>
+where
+    H: GuiSyncHandle,
+{
+    OctaSineKnob::new(
+        sync_handle,
+        Parameter::Operator(
+            operator_index as u8,
+            OperatorParameter::VelocitySensitivityModOut,
+        ),
+        "MOD OUT",
+        TickMarkType::MinMaxAndDefault,
+        KnobStyle::Regular,
+    )
+}
+
 pub fn lfo_frequency_ratio<H>(
     sync_handle: &H,
     lfo_index: usize,
