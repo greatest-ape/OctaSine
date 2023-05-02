@@ -21,7 +21,6 @@ use super::envelope::Envelope;
 use super::knob::{self, OctaSineKnob};
 use super::mod_target_picker;
 use super::style::button::ButtonStyle;
-use super::style::container::ContainerStyle;
 use super::style::Theme;
 use super::wave_display::WaveDisplay;
 use super::wave_picker::WavePicker;
@@ -198,20 +197,6 @@ impl OperatorWidgets {
         let end = if self.shifted {
             container_l2(
                 Row::new()
-                    /*
-                    .push(space_l3())
-                    .push(container_l3(
-                        Column::new()
-                            .push(Space::with_height(LINE_HEIGHT * 2))
-                            .push(
-                                Text::new("VELOCITY\nSENSITIVITY")
-                                    .width(LINE_HEIGHT * 6)
-                                    .height(LINE_HEIGHT * 2)
-                                    .font(theme.font_heading())
-                                    .horizontal_alignment(Horizontal::Center),
-                            ),
-                    ))
-                    */
                     .push(space_l3())
                     .push(container_l3(self.mod_out_velocity_sensitivity.view(theme)))
                     .push(space_l3())
@@ -225,15 +210,18 @@ impl OperatorWidgets {
         };
 
         let toggle_extra_controls = {
-            let button = Button::new(" C")
-                .width(LINE_HEIGHT)
-                .height(LINE_HEIGHT)
-                .padding(0)
-                .style(ButtonStyle::Regular)
-                .on_press(Message::ShiftOperatorView(self.index));
+            let button = Button::new(
+                Text::new("C")
+                    .horizontal_alignment(Horizontal::Center)
+                    .vertical_alignment(Vertical::Center),
+            )
+            .width(LINE_HEIGHT)
+            .height(LINE_HEIGHT)
+            .padding(0)
+            .style(ButtonStyle::Regular)
+            .on_press(Message::ShiftOperatorView(self.index));
 
             Row::new()
-                // .push(Space::with_width(LINE_HEIGHT / 2))
                 .push(Space::with_width(LINE_HEIGHT))
                 .push(
                     Column::new()
@@ -245,7 +233,6 @@ impl OperatorWidgets {
                             button,
                         )),
                 )
-                // .push(Space::with_width(LINE_HEIGHT / 2))
                 .push(Space::with_width(LINE_HEIGHT))
         };
 
