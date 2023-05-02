@@ -9,12 +9,6 @@ Frequency modulation synthesizer plugin (VST2, CLAP). Runs on macOS, Windows and
   <a href="https://www.octasine.com">OctaSine.com</a>
 </p>
 
-<p align="center">
-  <strong>Audio examples</strong><br>
-  <a href="https://soundcloud.com/octasine">SoundCloud</a>
-</p>
-
-
 ## Screenshots
 
 ### Light mode
