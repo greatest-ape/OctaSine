@@ -1,5 +1,6 @@
 use iced_baseview::alignment::Vertical;
 use iced_baseview::widget::tooltip::Position;
+use iced_baseview::widget::Button;
 use iced_baseview::{
     alignment::Horizontal, widget::Column, widget::Container, widget::Row, widget::Space,
     widget::Text, Alignment, Element, Length,
@@ -19,6 +20,7 @@ use super::common::{container_l1, container_l2, container_l3, space_l2, space_l3
 use super::envelope::Envelope;
 use super::knob::{self, OctaSineKnob};
 use super::mod_target_picker;
+use super::style::button::ButtonStyle;
 use super::style::container::ContainerStyle;
 use super::style::Theme;
 use super::wave_display::WaveDisplay;
@@ -77,7 +79,7 @@ impl OperatorWidgets {
 
         Self {
             index: operator_index,
-            shifted: true,
+            shifted: false,
             volume: knob::operator_volume(sync_handle, operator_index),
             mute_button: operator_mute_button(sync_handle, operator_index),
             mix: knob::operator_mix(sync_handle, operator_index),
@@ -222,25 +224,28 @@ impl OperatorWidgets {
                 .into()
         };
 
-        let shift_button = Row::new()
-            .push(Space::with_width(LINE_HEIGHT / 2))
-            .push(
-                Column::new()
-                    .push(Space::with_height(LINE_HEIGHT * 3 + LINE_HEIGHT / 2))
-                    .push(
-                        Container::new(
-                            Text::new(">")
-                                .vertical_alignment(Vertical::Center)
-                                .horizontal_alignment(Horizontal::Center)
-                                .size(LINE_HEIGHT)
-                                .height(LINE_HEIGHT)
-                                .width(LINE_HEIGHT),
-                        )
-                        .padding(0)
-                        .style(ContainerStyle::L3),
-                    ),
-            )
-            .push(Space::with_width(LINE_HEIGHT / 2));
+        let toggle_extra_controls = {
+            let button = Button::new(" E")
+                .width(LINE_HEIGHT)
+                .height(LINE_HEIGHT)
+                .padding(0)
+                .style(ButtonStyle::Regular)
+                .on_press(Message::ShiftOperatorView(self.index));
+
+            Row::new()
+                .push(Space::with_width(LINE_HEIGHT / 2))
+                .push(
+                    Column::new()
+                        .push(Space::with_height(LINE_HEIGHT * 3 + LINE_HEIGHT / 2))
+                        .push(tooltip(
+                            theme,
+                            "Toggle extra controls",
+                            Position::Top,
+                            button,
+                        )),
+                )
+                .push(Space::with_width(LINE_HEIGHT / 2))
+        };
 
         container_l1(
             Row::new()
@@ -252,7 +257,7 @@ impl OperatorWidgets {
                 .push(frequency_group)
                 .push(space_l2())
                 .push(end)
-                .push(shift_button),
+                .push(toggle_extra_controls),
         )
         .into()
     }

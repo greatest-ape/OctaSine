@@ -122,6 +122,7 @@ pub enum Message {
         x_offset: f32,
     },
     SwitchTheme,
+    ShiftOperatorView(usize),
     SavePatch,
     SaveBank,
     LoadBankOrPatch,
@@ -286,7 +287,7 @@ impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {
                     OperatorParameter::VelocitySensitivityModOut => {
                         operator.mod_out_velocity_sensitivity.set_value(v)
                     }
-                    OperatorParameter::VelocitySensitivityFeedback=> {
+                    OperatorParameter::VelocitySensitivityFeedback => {
                         operator.feedback_velocity_sensitivity.set_value(v)
                     }
                 }
@@ -641,6 +642,17 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                 self.operator_4.theme_changed();
 
                 self.save_settings();
+            }
+            Message::ShiftOperatorView(operator_index) => {
+                let operator = match operator_index {
+                    0 => &mut self.operator_1,
+                    1 => &mut self.operator_2,
+                    2 => &mut self.operator_3,
+                    3 => &mut self.operator_4,
+                    _ => panic!("Invalid operator index {}", operator_index),
+                };
+
+                operator.shifted = !operator.shifted;
             }
             Message::LoadBankOrPatch => {
                 const TITLE: &str = "Load OctaSine patch bank or patches";
