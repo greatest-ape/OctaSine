@@ -72,8 +72,7 @@ impl CornerWidgets {
                 .push(space_l3())
                 .push(container_l3(self.master_frequency.view(theme)))
                 .push(space_l3())
-                .push(container_l3(self.volume_velocity_sensitivity.view(theme)))
-                .push(Space::with_width(Length::Fixed(f32::from(LINE_HEIGHT * 1)))), // Extend to end
+                .push(container_l3(self.volume_velocity_sensitivity.view(theme))), // .push(Space::with_width(Length::Fixed(f32::from(LINE_HEIGHT * 1)))), // Extend to end
         ));
 
         let logo = {
@@ -138,12 +137,12 @@ impl CornerWidgets {
                 Row::new()
                     .push(mod_matrix)
                     .push(Space::with_width(Length::Fixed(LINE_HEIGHT.into())))
-                    .push(master),
+                    .push(triple_container(self.patch_picker.view(theme))),
             )
             .push(Space::with_height(Length::Fixed(LINE_HEIGHT.into())))
             .push(
                 Row::new()
-                    .push(triple_container(self.patch_picker.view(theme)))
+                    .push(master)
                     .push(Space::with_width(Length::Fixed(LINE_HEIGHT.into())))
                     .push(triple_container(logo)),
             )

@@ -216,7 +216,7 @@ impl OperatorWidgets {
                     .push(container_l3(self.mod_out_velocity_sensitivity.view(theme)))
                     .push(space_l3())
                     .push(container_l3(self.feedback_velocity_sensitivity.view(theme)))
-                    .push(space_l3().width(LINE_HEIGHT * 14)),
+                    .push(space_l3().width(LINE_HEIGHT * 13)),
             )
         } else {
             container_l2(self.envelope.view(theme))
@@ -225,7 +225,7 @@ impl OperatorWidgets {
         };
 
         let toggle_extra_controls = {
-            let button = Button::new(" E")
+            let button = Button::new(" C")
                 .width(LINE_HEIGHT)
                 .height(LINE_HEIGHT)
                 .padding(0)
@@ -233,7 +233,8 @@ impl OperatorWidgets {
                 .on_press(Message::ShiftOperatorView(self.index));
 
             Row::new()
-                .push(Space::with_width(LINE_HEIGHT / 2))
+                // .push(Space::with_width(LINE_HEIGHT / 2))
+                .push(Space::with_width(LINE_HEIGHT))
                 .push(
                     Column::new()
                         .push(Space::with_height(LINE_HEIGHT * 3 + LINE_HEIGHT / 2))
@@ -244,7 +245,8 @@ impl OperatorWidgets {
                             button,
                         )),
                 )
-                .push(Space::with_width(LINE_HEIGHT / 2))
+                // .push(Space::with_width(LINE_HEIGHT / 2))
+                .push(Space::with_width(LINE_HEIGHT))
         };
 
         container_l1(

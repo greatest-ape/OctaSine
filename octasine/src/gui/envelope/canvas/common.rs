@@ -6,7 +6,7 @@ use crate::audio::voices::log10_table::Log10Table;
 use crate::gui::style::Theme;
 use crate::gui::{SnapPoint, LINE_HEIGHT};
 
-pub const WIDTH: u16 = LINE_HEIGHT * 19;
+pub const WIDTH: u16 = LINE_HEIGHT * 18;
 pub const HEIGHT: u16 = LINE_HEIGHT * 5;
 
 pub const SIZE: Size = Size {
