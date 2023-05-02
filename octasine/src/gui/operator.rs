@@ -196,6 +196,7 @@ impl OperatorWidgets {
         let end = if self.shifted {
             container_l2(
                 Row::new()
+                    /*
                     .push(space_l3())
                     .push(container_l3(
                         Column::new()
@@ -208,11 +209,12 @@ impl OperatorWidgets {
                                     .horizontal_alignment(Horizontal::Center),
                             ),
                     ))
+                    */
                     .push(space_l3())
                     .push(container_l3(self.mod_out_velocity_sensitivity.view(theme)))
                     .push(space_l3())
                     .push(container_l3(self.feedback_velocity_sensitivity.view(theme)))
-                    .push(space_l3().width(LINE_HEIGHT * 8)),
+                    .push(space_l3().width(LINE_HEIGHT * 14)),
             )
         } else {
             container_l2(self.envelope.view(theme))

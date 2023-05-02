@@ -62,7 +62,7 @@ where
     OctaSineKnob::new(
         sync_handle,
         Parameter::Master(MasterParameter::VelocitySensitivityVolume),
-        "SENS",
+        "VOL VS",
         TickMarkType::MinMaxAndDefault,
         KnobStyle::Regular,
     )
@@ -245,7 +245,7 @@ where
             operator_index as u8,
             OperatorParameter::VelocitySensitivityFeedback,
         ),
-        "FEEDBACK",
+        "FB VS",
         TickMarkType::MinMaxAndDefault,
         KnobStyle::Regular,
     )
@@ -264,7 +264,7 @@ where
             operator_index as u8,
             OperatorParameter::VelocitySensitivityModOut,
         ),
-        "MOD OUT",
+        "MOD VS",
         TickMarkType::MinMaxAndDefault,
         KnobStyle::Regular,
     )

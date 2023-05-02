@@ -283,9 +283,11 @@ impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {
                         // Group buttons don't send message triggering update by themselves
                         self.update_envelope_group_statuses();
                     }
-                    OperatorParameter::VelocitySensitivityFeedback
-                    | OperatorParameter::VelocitySensitivityModOut => {
-                        // TODO
+                    OperatorParameter::VelocitySensitivityModOut => {
+                        operator.mod_out_velocity_sensitivity.set_value(v)
+                    }
+                    OperatorParameter::VelocitySensitivityFeedback=> {
+                        operator.feedback_velocity_sensitivity.set_value(v)
                     }
                 }
             }
