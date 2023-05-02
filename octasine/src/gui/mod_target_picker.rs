@@ -1,3 +1,4 @@
+use iced_baseview::widget::tooltip::Position;
 use iced_baseview::{
     alignment::Horizontal, widget::Checkbox, widget::Column, widget::Space, widget::Text,
     Alignment, Element, Length,
@@ -10,6 +11,7 @@ use crate::parameters::{
 };
 use crate::sync::GuiSyncHandle;
 
+use super::common::tooltip;
 use super::style::Theme;
 use super::{Message, FONT_SIZE, LINE_HEIGHT};
 
@@ -73,6 +75,12 @@ where
             .horizontal_alignment(Horizontal::Center)
             .font(theme.font_bold())
             .height(Length::Fixed(LINE_HEIGHT.into()));
+        let title = tooltip(
+            theme,
+            "Target operators for modulation",
+            Position::Top,
+            title,
+        );
 
         let mut checkboxes = Column::new().spacing(4);
 
