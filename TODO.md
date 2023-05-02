@@ -1,10 +1,10 @@
 # TODO
 
 * Per-operator velocity sensitivity
+  * Parameter names should be same as in GUI
   * Audio output really unchanged?
     * Difference should really only be if it has an effect if it is done before
       or after mono mix factor shenanigans
-  * GUI
 * Reset phase when envelopes end
 * Audio inconsistencies on attack, see vospi email
 * Portamento / legato
