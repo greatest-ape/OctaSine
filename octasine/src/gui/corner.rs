@@ -76,59 +76,58 @@ impl CornerWidgets {
         ));
 
         let logo = {
+            let controls_button = tooltip(
+                theme,
+                "Change visible controls",
+                Position::Top,
+                Button::new(
+                    Text::new("CONTROLS")
+                        .font(theme.font_regular())
+                        .height(Length::Fixed(LINE_HEIGHT.into()))
+                        .horizontal_alignment(Horizontal::Center),
+                )
+                .padding(theme.button_padding())
+                .on_press(Message::ToggleExtraControls),
+            );
             let theme_button = tooltip(
                 theme,
                 "Switch color theme",
-                Position::Top,
+                Position::Bottom,
                 Button::new(
                     Text::new("THEME")
                         .font(theme.font_regular())
-                        .height(Length::Fixed(LINE_HEIGHT.into())),
+                        .height(Length::Fixed(LINE_HEIGHT.into()))
+                        .horizontal_alignment(Horizontal::Center),
                 )
                 .on_press(Message::SwitchTheme)
                 .padding(theme.button_padding()),
             );
 
-            let info_button = tooltip(
-                theme,
-                get_info_text(),
-                Position::FollowCursor,
-                Button::new(
-                    Text::new("INFO")
-                        .font(theme.font_regular())
-                        .height(Length::Fixed(LINE_HEIGHT.into())),
-                )
-                .on_press(Message::NoOp)
-                .padding(theme.button_padding()),
-            );
-
-            // Helps with issues arising from use of different font weights
-            let logo_button_space = match theme {
-                Theme::Dark => 3.0,
-                Theme::Light => 2.0,
-            };
-
             Container::new(
                 Column::new()
                     .align_items(Alignment::Center)
-                    .push(Space::with_height(Length::Fixed(LINE_HEIGHT.into())))
-                    .push(
+                    .width(Length::Fill)
+                    .push(controls_button)
+                    .push(Space::with_height(Length::Fixed(f32::from(
+                        LINE_HEIGHT / 2 + LINE_HEIGHT / 4,
+                    ))))
+                    .push(tooltip(
+                        theme,
+                        get_info_text(),
+                        Position::Top,
                         Text::new("OctaSine")
                             .size(FONT_SIZE * 3 / 2)
                             .height(Length::Fixed(f32::from(FONT_SIZE * 3 / 2)))
-                            .width(Length::Fixed(f32::from(LINE_HEIGHT * 6)))
+                            .width(Length::Fill)
                             .font(theme.font_heading())
                             .horizontal_alignment(Horizontal::Center),
-                    )
-                    .push(Space::with_height(Length::Fixed(LINE_HEIGHT.into())))
-                    .push(
-                        Row::new()
-                            .push(theme_button)
-                            .push(Space::with_width(Length::Fixed(logo_button_space)))
-                            .push(info_button),
-                    ),
+                    ))
+                    .push(Space::with_height(Length::Fixed(f32::from(
+                        LINE_HEIGHT / 2 + LINE_HEIGHT / 4,
+                    ))))
+                    .push(theme_button),
             )
-            .width(Length::Fixed(f32::from(LINE_HEIGHT * 6)))
+            .width(Length::Fixed(f32::from(LINE_HEIGHT * 5)))
             .height(Length::Fixed(f32::from(LINE_HEIGHT * 6)))
         };
 
@@ -137,12 +136,12 @@ impl CornerWidgets {
                 Row::new()
                     .push(mod_matrix)
                     .push(Space::with_width(Length::Fixed(LINE_HEIGHT.into())))
-                    .push(triple_container(self.patch_picker.view(theme))),
+                    .push(master),
             )
             .push(Space::with_height(Length::Fixed(LINE_HEIGHT.into())))
             .push(
                 Row::new()
-                    .push(master)
+                    .push(triple_container(self.patch_picker.view(theme)))
                     .push(Space::with_width(Length::Fixed(LINE_HEIGHT.into())))
                     .push(triple_container(logo)),
             )

@@ -1,6 +1,4 @@
-use iced_baseview::alignment::Vertical;
 use iced_baseview::widget::tooltip::Position;
-use iced_baseview::widget::Button;
 use iced_baseview::{
     alignment::Horizontal, widget::Column, widget::Container, widget::Row, widget::Space,
     widget::Text, Alignment, Element, Length,
@@ -20,7 +18,6 @@ use super::common::{container_l1, container_l2, container_l3, space_l2, space_l3
 use super::envelope::Envelope;
 use super::knob::{self, OctaSineKnob};
 use super::mod_target_picker;
-use super::style::button::ButtonStyle;
 use super::style::Theme;
 use super::wave_display::WaveDisplay;
 use super::wave_picker::WavePicker;
@@ -201,39 +198,12 @@ impl OperatorWidgets {
                     .push(container_l3(self.mod_out_velocity_sensitivity.view(theme)))
                     .push(space_l3())
                     .push(container_l3(self.feedback_velocity_sensitivity.view(theme)))
-                    .push(space_l3().width(LINE_HEIGHT * 13)),
+                    .push(space_l3().width(LINE_HEIGHT * 15)),
             )
         } else {
             container_l2(self.envelope.view(theme))
                 .height(Length::Fixed(f32::from(LINE_HEIGHT * 8)))
                 .into()
-        };
-
-        let toggle_extra_controls = {
-            let button = Button::new(
-                Text::new("C")
-                    .horizontal_alignment(Horizontal::Center)
-                    .vertical_alignment(Vertical::Center),
-            )
-            .width(LINE_HEIGHT)
-            .height(LINE_HEIGHT)
-            .padding(0)
-            .style(ButtonStyle::Regular)
-            .on_press(Message::ShiftOperatorView(self.index));
-
-            Row::new()
-                .push(Space::with_width(LINE_HEIGHT))
-                .push(
-                    Column::new()
-                        .push(Space::with_height(LINE_HEIGHT * 3 + LINE_HEIGHT / 2))
-                        .push(tooltip(
-                            theme,
-                            "Toggle extra controls",
-                            Position::Top,
-                            button,
-                        )),
-                )
-                .push(Space::with_width(LINE_HEIGHT))
         };
 
         container_l1(
@@ -245,8 +215,7 @@ impl OperatorWidgets {
                 .push(space_l2())
                 .push(frequency_group)
                 .push(space_l2())
-                .push(end)
-                .push(toggle_extra_controls),
+                .push(end),
         )
         .into()
     }

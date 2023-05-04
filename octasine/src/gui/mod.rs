@@ -51,7 +51,7 @@ use self::style::container::ContainerStyle;
 
 use crate::settings::Settings;
 
-pub const GUI_WIDTH: usize = 12 * 83;
+pub const GUI_WIDTH: usize = 12 * 82;
 pub const GUI_HEIGHT: usize = 12 * 55;
 
 const FONT_SIZE: u16 = 12;
@@ -122,7 +122,7 @@ pub enum Message {
         x_offset: f32,
     },
     SwitchTheme,
-    ShiftOperatorView(usize),
+    ToggleExtraControls,
     SavePatch,
     SaveBank,
     LoadBankOrPatch,
@@ -643,16 +643,15 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
 
                 self.save_settings();
             }
-            Message::ShiftOperatorView(operator_index) => {
-                let operator = match operator_index {
-                    0 => &mut self.operator_1,
-                    1 => &mut self.operator_2,
-                    2 => &mut self.operator_3,
-                    3 => &mut self.operator_4,
-                    _ => panic!("Invalid operator index {}", operator_index),
-                };
-
-                operator.shifted = !operator.shifted;
+            Message::ToggleExtraControls => {
+                for operator in [
+                    &mut self.operator_1,
+                    &mut self.operator_2,
+                    &mut self.operator_3,
+                    &mut self.operator_4,
+                ] {
+                    operator.shifted = !operator.shifted;
+                }
             }
             Message::LoadBankOrPatch => {
                 const TITLE: &str = "Load OctaSine patch bank or patches";
