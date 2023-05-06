@@ -102,7 +102,7 @@ impl Parameter {
             Self::Master(MasterParameter::PitchBendRangeUp) => "Pitch bend range (up)".into(),
             Self::Master(MasterParameter::PitchBendRangeDown) => "Pitch bend range (down)".into(),
             Self::Master(MasterParameter::VelocitySensitivityVolume) => {
-                "Mix out sensitivity".into()
+                "Vol velocity sensitivity".into()
             }
             Self::Operator(index, p) => match p {
                 OperatorParameter::Volume => format_compact!("OP {} vol", index + 1),
@@ -128,10 +128,10 @@ impl Parameter {
                     format_compact!("OP {} lock group", index + 1)
                 }
                 OperatorParameter::VelocitySensitivityModOut => {
-                    format_compact!("OP {} mod out sensitivity", index + 1)
+                    format_compact!("OP {} mod out vs", index + 1)
                 }
                 OperatorParameter::VelocitySensitivityFeedback => {
-                    format_compact!("OP {} feedback sensitivity", index + 1)
+                    format_compact!("OP {} feedback vs", index + 1)
                 }
             },
             Self::Lfo(index, p) => match p {
