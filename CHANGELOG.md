@@ -6,14 +6,15 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
-- Add velocity sensitivity parameters:
-  - Final voice volume velocity sensitiviy
-  - Per-operator modulation output velocity sensitivity
-  - Per-operator feedback velocity sensitivity
+- Add velocity sensitivity parameters, i.e., parameters for how key press
+  velocity affects:
+  - Final voice volume
+  - Modulation output (per-operator)
+  - Feedback (per-operator)
 
 ### Changed
 
-- Make plugin window 16 pixels wider to accomodate new controls.
+- Make plugin window 12 pixels wider to accomodate new controls.
 
 ## 0.8.6 - 2023-04-12
 
