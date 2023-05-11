@@ -41,6 +41,7 @@
   * consider portable mathematics everywhere, e.g., with libm crate (it is f32
     only though)
   * bhaskara constant power panning
+  * feedback and mod out velocity sensitivity should default to zero
 * clap
   * Clap validation in CI
     * Converting parameter values between string and float multiple times
