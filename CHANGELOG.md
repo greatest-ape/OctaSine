@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## Unreleased
+
+Audio output is not bit-for-bit identical to version 0.8.6, but there should be
+no audible differences.
+
+### Added
+
+- Add velocity sensitivity parameters, i.e., parameters for how key press
+  velocity affects:
+  - Final voice volume
+  - Modulation output (per-operator)
+  - Feedback (per-operator)
+
+### Changed
+
+- Make plugin window 12 pixels wider to accomodate new controls.
+
 ## 0.8.6 - 2023-04-12
 
 ### Added

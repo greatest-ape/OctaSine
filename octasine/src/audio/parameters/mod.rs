@@ -20,6 +20,7 @@ use crate::common::{SampleRate, NUM_LFOS, NUM_OPERATORS};
 use crate::parameters::master_pitch_bend_range::{
     MasterPitchBendRangeDownValue, MasterPitchBendRangeUpValue,
 };
+use crate::parameters::velocity_sensitivity::VelocitySensitivityValue;
 use crate::parameters::*;
 
 use self::common::{AudioParameter, InterpolatableAudioParameter, SimpleAudioParameter};
@@ -61,6 +62,7 @@ pub struct AudioParameters {
     pub master_frequency: MasterFrequencyAudioParameter,
     pub master_pitch_bend_range_up: SimpleAudioParameter<MasterPitchBendRangeUpValue>,
     pub master_pitch_bend_range_down: SimpleAudioParameter<MasterPitchBendRangeDownValue>,
+    pub volume_velocity_sensitivity: InterpolatableAudioParameter<VelocitySensitivityValue>,
     pub operators: [OperatorAudioParameters; NUM_OPERATORS],
     pub lfos: [LfoAudioParameters; NUM_LFOS],
 }
@@ -72,6 +74,7 @@ impl Default for AudioParameters {
             master_frequency: Default::default(),
             master_pitch_bend_range_up: Default::default(),
             master_pitch_bend_range_down: Default::default(),
+            volume_velocity_sensitivity: Default::default(),
             operators: array_init(OperatorAudioParameters::new),
             lfos: array_init(LfoAudioParameters::new),
         }
@@ -91,6 +94,9 @@ macro_rules! impl_patch_interaction {
                     }
                     MasterParameter::PitchBendRangeDown => {
                         $f(&mut self.master_pitch_bend_range_down, input)
+                    }
+                    MasterParameter::VelocitySensitivityVolume => {
+                        $f(&mut self.volume_velocity_sensitivity, input)
                     }
                 },
                 Parameter::Operator(index, p) => {
@@ -129,6 +135,12 @@ macro_rules! impl_patch_interaction {
                             $f(&mut operator.volume_envelope.release_duration, input)
                         }
                         EnvelopeLockGroup => $f(&mut operator.volume_envelope.lock_group, input),
+                        VelocitySensitivityModOut => {
+                            $f(&mut operator.velocity_sensitivity_mod_out, input)
+                        }
+                        VelocitySensitivityFeedback => {
+                            $f(&mut operator.velocity_sensitivity_feedback, input)
+                        }
                     }
                 }
                 Parameter::Lfo(index, p) => {
@@ -173,6 +185,8 @@ impl AudioParameters {
     pub fn advance_one_sample(&mut self, sample_rate: SampleRate) {
         self.master_volume.advance_one_sample(sample_rate);
         self.master_frequency.advance_one_sample(sample_rate);
+        self.volume_velocity_sensitivity
+            .advance_one_sample(sample_rate);
 
         for operator in self.operators.iter_mut() {
             operator.advance_one_sample(sample_rate);
@@ -197,6 +211,8 @@ pub struct OperatorAudioParameters {
     pub frequency_free: OperatorFrequencyFreeAudioParameter,
     pub frequency_fine: OperatorFrequencyFineAudioParameter,
     pub volume_envelope: OperatorEnvelopeAudioParameters,
+    pub velocity_sensitivity_mod_out: InterpolatableAudioParameter<VelocitySensitivityValue>,
+    pub velocity_sensitivity_feedback: InterpolatableAudioParameter<VelocitySensitivityValue>,
 }
 
 impl OperatorAudioParameters {
@@ -220,6 +236,8 @@ impl OperatorAudioParameters {
             frequency_free: Default::default(),
             frequency_fine: Default::default(),
             volume_envelope: Default::default(),
+            velocity_sensitivity_mod_out: Default::default(),
+            velocity_sensitivity_feedback: Default::default(),
         }
     }
 
@@ -240,6 +258,10 @@ impl OperatorAudioParameters {
         self.frequency_free.advance_one_sample(sample_rate);
         self.frequency_fine.advance_one_sample(sample_rate);
         self.volume_envelope.advance_one_sample(sample_rate);
+        self.velocity_sensitivity_mod_out
+            .advance_one_sample(sample_rate);
+        self.velocity_sensitivity_feedback
+            .advance_one_sample(sample_rate);
     }
 }
 

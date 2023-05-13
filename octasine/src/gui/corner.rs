@@ -4,7 +4,9 @@ use iced_baseview::{
 };
 
 use crate::{
-    parameters::{MasterFrequencyValue, MasterVolumeValue},
+    parameters::{
+        velocity_sensitivity::VelocitySensitivityValue, MasterFrequencyValue, MasterVolumeValue,
+    },
     sync::GuiSyncHandle,
     utils::get_version_info,
 };
@@ -21,6 +23,7 @@ use super::{
 pub struct CornerWidgets {
     pub master_volume: OctaSineKnob<MasterVolumeValue>,
     pub master_frequency: OctaSineKnob<MasterFrequencyValue>,
+    pub volume_velocity_sensitivity: OctaSineKnob<VelocitySensitivityValue>,
     pub modulation_matrix: ModulationMatrix,
     pub patch_picker: PatchPicker,
 }
@@ -29,12 +32,14 @@ impl CornerWidgets {
     pub fn new<H: GuiSyncHandle>(sync_handle: &H) -> Self {
         let master_volume = knob::master_volume(sync_handle);
         let master_frequency = knob::master_frequency(sync_handle);
+        let volume_velocity_sensitivity = knob::master_velocity_sensitivity(sync_handle);
         let modulation_matrix = ModulationMatrix::new(sync_handle);
         let patch_picker = PatchPicker::new(sync_handle);
 
         Self {
             master_volume,
             master_frequency,
+            volume_velocity_sensitivity,
             modulation_matrix,
             patch_picker,
         }
@@ -66,63 +71,63 @@ impl CornerWidgets {
                 .push(container_l3(self.master_volume.view(theme)))
                 .push(space_l3())
                 .push(container_l3(self.master_frequency.view(theme)))
-                .push(Space::with_width(Length::Fixed(f32::from(LINE_HEIGHT * 3)))), // Extend to end
+                .push(space_l3())
+                .push(container_l3(self.volume_velocity_sensitivity.view(theme))), // .push(Space::with_width(Length::Fixed(f32::from(LINE_HEIGHT * 1)))), // Extend to end
         ));
 
         let logo = {
+            let controls_button = tooltip(
+                theme,
+                "Change visible controls",
+                Position::Top,
+                Button::new(
+                    Text::new("CONTROLS")
+                        .font(theme.font_regular())
+                        .height(Length::Fixed(LINE_HEIGHT.into()))
+                        .horizontal_alignment(Horizontal::Center),
+                )
+                .padding(theme.button_padding())
+                .on_press(Message::ToggleExtraControls),
+            );
             let theme_button = tooltip(
                 theme,
                 "Switch color theme",
-                Position::Top,
+                Position::Bottom,
                 Button::new(
                     Text::new("THEME")
                         .font(theme.font_regular())
-                        .height(Length::Fixed(LINE_HEIGHT.into())),
+                        .height(Length::Fixed(LINE_HEIGHT.into()))
+                        .horizontal_alignment(Horizontal::Center),
                 )
                 .on_press(Message::SwitchTheme)
                 .padding(theme.button_padding()),
             );
 
-            let info_button = tooltip(
-                theme,
-                get_info_text(),
-                Position::FollowCursor,
-                Button::new(
-                    Text::new("INFO")
-                        .font(theme.font_regular())
-                        .height(Length::Fixed(LINE_HEIGHT.into())),
-                )
-                .on_press(Message::NoOp)
-                .padding(theme.button_padding()),
-            );
-
-            // Helps with issues arising from use of different font weights
-            let logo_button_space = match theme {
-                Theme::Dark => 3.0,
-                Theme::Light => 2.0,
-            };
-
             Container::new(
                 Column::new()
                     .align_items(Alignment::Center)
-                    .push(Space::with_height(Length::Fixed(LINE_HEIGHT.into())))
-                    .push(
+                    .width(Length::Fill)
+                    .push(controls_button)
+                    .push(Space::with_height(Length::Fixed(f32::from(
+                        LINE_HEIGHT / 2 + LINE_HEIGHT / 4,
+                    ))))
+                    .push(tooltip(
+                        theme,
+                        get_info_text(),
+                        Position::Top,
                         Text::new("OctaSine")
                             .size(FONT_SIZE * 3 / 2)
                             .height(Length::Fixed(f32::from(FONT_SIZE * 3 / 2)))
-                            .width(Length::Fixed(f32::from(LINE_HEIGHT * 8)))
+                            .width(Length::Fill)
                             .font(theme.font_heading())
                             .horizontal_alignment(Horizontal::Center),
-                    )
-                    .push(Space::with_height(Length::Fixed(LINE_HEIGHT.into())))
-                    .push(
-                        Row::new()
-                            .push(theme_button)
-                            .push(Space::with_width(Length::Fixed(logo_button_space)))
-                            .push(info_button),
-                    ),
+                    ))
+                    .push(Space::with_height(Length::Fixed(f32::from(
+                        LINE_HEIGHT / 2 + LINE_HEIGHT / 4,
+                    ))))
+                    .push(theme_button),
             )
-            .width(Length::Fixed(f32::from(LINE_HEIGHT * 7)))
+            .width(Length::Fixed(f32::from(LINE_HEIGHT * 5)))
             .height(Length::Fixed(f32::from(LINE_HEIGHT * 6)))
         };
 

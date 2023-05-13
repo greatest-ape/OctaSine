@@ -102,6 +102,15 @@ pub const PARAMETERS: &[Parameter] = &[
     Parameter::Lfo(3, LfoParameter::KeySync),
     Parameter::Master(MasterParameter::PitchBendRangeUp),
     Parameter::Master(MasterParameter::PitchBendRangeDown),
+    Parameter::Master(MasterParameter::VelocitySensitivityVolume),
+    Parameter::Operator(0, OperatorParameter::VelocitySensitivityModOut),
+    Parameter::Operator(0, OperatorParameter::VelocitySensitivityFeedback),
+    Parameter::Operator(1, OperatorParameter::VelocitySensitivityModOut),
+    Parameter::Operator(1, OperatorParameter::VelocitySensitivityFeedback),
+    Parameter::Operator(2, OperatorParameter::VelocitySensitivityModOut),
+    Parameter::Operator(2, OperatorParameter::VelocitySensitivityFeedback),
+    Parameter::Operator(3, OperatorParameter::VelocitySensitivityModOut),
+    Parameter::Operator(3, OperatorParameter::VelocitySensitivityFeedback),
 ];
 
 /// Parameter enum used to abstract over parameter indices
@@ -120,6 +129,7 @@ pub enum MasterParameter {
     Frequency,
     PitchBendRangeUp,
     PitchBendRangeDown,
+    VelocitySensitivityVolume,
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
@@ -140,6 +150,8 @@ pub enum OperatorParameter {
     SustainVolume,
     ReleaseDuration,
     EnvelopeLockGroup,
+    VelocitySensitivityModOut,
+    VelocitySensitivityFeedback,
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]

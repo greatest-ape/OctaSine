@@ -1,4 +1,5 @@
 use iced_audio::{graphics::knob, text_marks, tick_marks, Normal, NormalParam};
+use iced_baseview::widget::tooltip::Position;
 use iced_baseview::widget::Container;
 use iced_baseview::{
     alignment::Horizontal, keyboard::Modifiers, widget::Column, widget::Space, widget::Text,
@@ -8,6 +9,7 @@ use iced_baseview::{
 use crate::parameters::master_pitch_bend_range::{
     MasterPitchBendRangeDownValue, MasterPitchBendRangeUpValue,
 };
+use crate::parameters::velocity_sensitivity::VelocitySensitivityValue;
 use crate::parameters::{
     LfoAmountValue, LfoFrequencyFreeValue, LfoFrequencyRatioValue, LfoParameter,
     MasterFrequencyValue, MasterParameter, MasterVolumeValue, OperatorFeedbackValue,
@@ -17,6 +19,7 @@ use crate::parameters::{
 };
 use crate::sync::GuiSyncHandle;
 
+use super::common::tooltip;
 use super::style::knob::KnobStyle;
 use super::style::Theme;
 use super::value_text::ValueText;
@@ -36,6 +39,7 @@ where
         sync_handle,
         Parameter::Master(MasterParameter::Volume),
         "VOLUME",
+        "Master volume",
         TickMarkType::MinMaxAndDefault,
         KnobStyle::Regular,
     )
@@ -49,8 +53,23 @@ where
         sync_handle,
         Parameter::Master(MasterParameter::Frequency),
         "FREQ",
+        "Master frequency",
         TickMarkType::MinMaxAndDefault,
         KnobStyle::Bipolar,
+    )
+}
+
+pub fn master_velocity_sensitivity<H>(sync_handle: &H) -> OctaSineKnob<VelocitySensitivityValue>
+where
+    H: GuiSyncHandle,
+{
+    OctaSineKnob::new(
+        sync_handle,
+        Parameter::Master(MasterParameter::VelocitySensitivityVolume),
+        "VOL VS",
+        "Volume velocity sensitivity",
+        TickMarkType::MinMaxAndDefault,
+        KnobStyle::Regular,
     )
 }
 
@@ -62,6 +81,7 @@ where
         sync_handle,
         Parameter::Master(MasterParameter::PitchBendRangeUp),
         "UP",
+        "Upward pitch bench range",
         TickMarkType::MinMaxAndDefault,
         KnobStyle::Bipolar,
         MasterPitchBendRangeUpValue::default().to_patch(),
@@ -80,6 +100,7 @@ where
         sync_handle,
         Parameter::Master(MasterParameter::PitchBendRangeDown),
         "DOWN",
+        "Downward pitch bench range",
         TickMarkType::MinMaxAndDefault,
         KnobStyle::Bipolar,
         MasterPitchBendRangeDownValue::default().to_patch(),
@@ -99,6 +120,7 @@ where
         sync_handle,
         Parameter::Operator(operator_index as u8, OperatorParameter::Volume),
         "VOL",
+        "Volume",
         TickMarkType::MinMaxAndDefault,
         KnobStyle::Regular,
     )
@@ -114,6 +136,7 @@ where
         sync_handle,
         Parameter::Operator(operator_index as u8, OperatorParameter::MixOut),
         "MIX OUT",
+        "Amount of signal sent directly to DAW",
         TickMarkType::MinMaxAndDefault,
         KnobStyle::Regular,
         default_and_center,
@@ -133,6 +156,7 @@ where
         sync_handle,
         Parameter::Operator(operator_index as u8, OperatorParameter::Panning),
         "PAN",
+        "Panning",
         TickMarkType::MinMaxAndDefault,
         KnobStyle::Bipolar,
     )
@@ -149,6 +173,7 @@ where
         sync_handle,
         Parameter::Operator(operator_index as u8, OperatorParameter::ModOut),
         "MOD OUT",
+        "Amount of signal sent to modulation targets",
         TickMarkType::MinMaxAndDefault,
         KnobStyle::Regular,
     )
@@ -165,6 +190,7 @@ where
         sync_handle,
         Parameter::Operator(operator_index as u8, OperatorParameter::Feedback),
         "FEEDBACK",
+        "Amount of self-modulation",
         TickMarkType::MinMaxAndDefault,
         KnobStyle::Regular,
     )
@@ -181,6 +207,7 @@ where
         sync_handle,
         Parameter::Operator(operator_index as u8, OperatorParameter::FrequencyRatio),
         "RATIO",
+        "Frequency - fixed ratios",
         TickMarkType::MinMaxAndDefault,
         KnobStyle::Bipolar,
     )
@@ -197,6 +224,7 @@ where
         sync_handle,
         Parameter::Operator(operator_index as u8, OperatorParameter::FrequencyFree),
         "FREE",
+        "Frequency - free",
         TickMarkType::MinMaxAndDefault,
         KnobStyle::Bipolar,
     )
@@ -213,8 +241,49 @@ where
         sync_handle,
         Parameter::Operator(operator_index as u8, OperatorParameter::FrequencyFine),
         "FINE",
+        "Frequency - fine tuning",
         TickMarkType::MinMaxAndDefault,
         KnobStyle::Bipolar,
+    )
+}
+
+pub fn operator_feedback_velocity_sensitivity<H>(
+    sync_handle: &H,
+    operator_index: usize,
+) -> OctaSineKnob<VelocitySensitivityValue>
+where
+    H: GuiSyncHandle,
+{
+    OctaSineKnob::new(
+        sync_handle,
+        Parameter::Operator(
+            operator_index as u8,
+            OperatorParameter::VelocitySensitivityFeedback,
+        ),
+        "FB VS",
+        "Feedback velocity sensitivity",
+        TickMarkType::MinMaxAndDefault,
+        KnobStyle::Regular,
+    )
+}
+
+pub fn operator_mod_out_velocity_sensitivity<H>(
+    sync_handle: &H,
+    operator_index: usize,
+) -> OctaSineKnob<VelocitySensitivityValue>
+where
+    H: GuiSyncHandle,
+{
+    OctaSineKnob::new(
+        sync_handle,
+        Parameter::Operator(
+            operator_index as u8,
+            OperatorParameter::VelocitySensitivityModOut,
+        ),
+        "MOD VS",
+        "Modulation output velocity sensitivity",
+        TickMarkType::MinMaxAndDefault,
+        KnobStyle::Regular,
     )
 }
 
@@ -229,6 +298,7 @@ where
         sync_handle,
         Parameter::Lfo(lfo_index as u8, LfoParameter::FrequencyRatio),
         "RATIO",
+        "Frequency - fixed ratios",
         TickMarkType::MinMaxAndDefault,
         KnobStyle::Bipolar,
     )
@@ -245,6 +315,7 @@ where
         sync_handle,
         Parameter::Lfo(lfo_index as u8, LfoParameter::FrequencyFree),
         "FREE",
+        "Frequency - free",
         TickMarkType::MinMaxAndDefault,
         KnobStyle::Bipolar,
     )
@@ -258,6 +329,7 @@ where
         sync_handle,
         Parameter::Lfo(lfo_index as u8, LfoParameter::Amount),
         "AMOUNT",
+        "How much LFO affects target parameter",
         TickMarkType::MinMaxAndDefault,
         KnobStyle::Regular,
     )
@@ -267,6 +339,7 @@ pub struct OctaSineKnob<P: ParameterValue> {
     text_marks: Option<text_marks::Group>,
     tick_marks: Option<tick_marks::Group>,
     title: String,
+    tooltip_text: String,
     value: NormalParam,
     value_text: ValueText<P>,
     center_value: Normal,
@@ -283,6 +356,7 @@ where
         sync_handle: &H,
         parameter: Parameter,
         title: &str,
+        tooltip_text: &str,
         tick_mark_type: TickMarkType,
         knob_style: KnobStyle,
     ) -> Self {
@@ -292,6 +366,7 @@ where
             sync_handle,
             parameter,
             title,
+            tooltip_text,
             tick_mark_type,
             knob_style,
             patch_value,
@@ -304,6 +379,7 @@ where
         sync_handle: &H,
         parameter: Parameter,
         title: &str,
+        tooltip_text: &str,
         tick_mark_type: TickMarkType,
         knob_style: KnobStyle,
         default_patch_value: f32,
@@ -328,6 +404,7 @@ where
             text_marks: None,
             tick_marks: Some(tick_marks),
             title: title.to_string(),
+            tooltip_text: tooltip_text.to_string(),
             value,
             value_text,
             center_value: Normal::from_clipped(center_value),
@@ -351,6 +428,7 @@ where
             .horizontal_alignment(Horizontal::Center)
             .font(theme.font_bold())
             .height(Length::Fixed(LINE_HEIGHT.into()));
+        let title = tooltip(theme, &self.tooltip_text, Position::Top, title);
 
         let parameter = self.parameter;
 

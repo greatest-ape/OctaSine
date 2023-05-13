@@ -51,7 +51,7 @@ use self::style::container::ContainerStyle;
 
 use crate::settings::Settings;
 
-pub const GUI_WIDTH: usize = 12 * 81;
+pub const GUI_WIDTH: usize = 12 * 82;
 pub const GUI_HEIGHT: usize = 12 * 55;
 
 const FONT_SIZE: u16 = 12;
@@ -122,6 +122,7 @@ pub enum Message {
         x_offset: f32,
     },
     SwitchTheme,
+    ToggleExtraControls,
     SavePatch,
     SaveBank,
     LoadBankOrPatch,
@@ -185,6 +186,9 @@ impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {
             }
             Parameter::Master(MasterParameter::PitchBendRangeDown) => {
                 self.master_pitch_bend_down.set_value(v)
+            }
+            Parameter::Master(MasterParameter::VelocitySensitivityVolume) => {
+                self.corner.volume_velocity_sensitivity.set_value(v)
             }
             outer_p @ Parameter::Operator(index, p) => {
                 self.operator_1.wave_display.set_value(outer_p, v);
@@ -279,6 +283,12 @@ impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {
 
                         // Group buttons don't send message triggering update by themselves
                         self.update_envelope_group_statuses();
+                    }
+                    OperatorParameter::VelocitySensitivityModOut => {
+                        operator.mod_out_velocity_sensitivity.set_value(v)
+                    }
+                    OperatorParameter::VelocitySensitivityFeedback => {
+                        operator.feedback_velocity_sensitivity.set_value(v)
                     }
                 }
             }
@@ -632,6 +642,16 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                 self.operator_4.theme_changed();
 
                 self.save_settings();
+            }
+            Message::ToggleExtraControls => {
+                for operator in [
+                    &mut self.operator_1,
+                    &mut self.operator_2,
+                    &mut self.operator_3,
+                    &mut self.operator_4,
+                ] {
+                    operator.shifted = !operator.shifted;
+                }
             }
             Message::LoadBankOrPatch => {
                 const TITLE: &str = "Load OctaSine patch bank or patches";

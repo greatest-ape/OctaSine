@@ -1,9 +1,16 @@
 # TODO
 
-* Per-operator velocity sensitivity for mod out, mix out and feedback
 * Reset phase when envelopes end
 * Audio inconsistencies on attack, see vospi email
 * Portamento / legato
+* Consider f64 interpolator and maybe even f64 parameters, since now we
+  convert all the time in audio gen
+* Percussion adjustments
+  * A global percussion mode
+    * Ignore note off events
+    * Decay leads directly to release
+  * Per-operator "constant volume modulation mode" with constant envelope
+    volume, no mix out, ends when all operators not in mode have ended
 
 * In modal for setting parameters by text, change to radios for fixed-value
   parameters
@@ -35,6 +42,7 @@
   * consider portable mathematics everywhere, e.g., with libm crate (it is f32
     only though)
   * bhaskara constant power panning
+  * feedback and mod out velocity sensitivity should default to zero
 * clap
   * Clap validation in CI
     * Converting parameter values between string and float multiple times

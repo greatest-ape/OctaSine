@@ -1,6 +1,7 @@
 use iced_baseview::widget::canvas::{
     event, path, Cache, Canvas, Cursor, Frame, Geometry, Path, Program, Stroke,
 };
+use iced_baseview::widget::tooltip::Position;
 use iced_baseview::{
     alignment::Horizontal, widget::Column, widget::Space, widget::Text, Alignment, Color, Element,
     Length, Point, Rectangle, Size,
@@ -10,6 +11,7 @@ use crate::common::{Phase, WaveformChoices};
 use crate::parameters::{Parameter, ParameterValue, WrappedParameter};
 use crate::sync::GuiSyncHandle;
 
+use super::common::tooltip;
 use super::style::Theme;
 use super::value_text::ValueText;
 use super::{Message, LINE_HEIGHT};
@@ -83,6 +85,7 @@ where
             .horizontal_alignment(Horizontal::Center)
             .font(theme.font_bold())
             .height(Length::Fixed(LINE_HEIGHT.into()));
+        let title = tooltip(theme, "Wave form", Position::Top, title);
 
         Column::new()
             .width(Length::Fixed(f32::from(LINE_HEIGHT * 4)))

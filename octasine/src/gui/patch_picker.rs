@@ -131,7 +131,7 @@ impl PatchPicker {
                 ))))
                 .push(patch_picker),
         )
-        .width(Length::Fixed(f32::from(LINE_HEIGHT * 9)))
+        .width(Length::Fixed(f32::from(LINE_HEIGHT * 12)))
         .height(Length::Fixed(f32::from(LINE_HEIGHT * 6)))
         .into()
     }

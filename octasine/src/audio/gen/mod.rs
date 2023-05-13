@@ -34,6 +34,7 @@ pub trait AudioGen {
 /// (stereo) samples, depending on the SIMD instruction width.
 pub struct AudioGenData<const W: usize> {
     lfo_target_values: LfoTargetValues,
+    volume_velocity_sensitivity: [f64; W],
     voices: [VoiceData<W>; 128],
 }
 
@@ -41,6 +42,7 @@ impl<const W: usize> Default for AudioGenData<W> {
     fn default() -> Self {
         Self {
             lfo_target_values: Default::default(),
+            volume_velocity_sensitivity: [0.0; W],
             voices: array_init::array_init(|_| Default::default()),
         }
     }
@@ -91,6 +93,8 @@ struct VoiceOperatorData<const W: usize> {
     phase: [f64; W],
     wave_type: WaveType,
     modulation_targets: ModTargetStorage,
+    velocity_sensitivity_mod_out: [f64; W],
+    velocity_sensitivity_feedback: [f64; W],
 }
 
 impl<const W: usize> Default for VoiceOperatorData<W> {
@@ -106,6 +110,8 @@ impl<const W: usize> Default for VoiceOperatorData<W> {
             phase: [0.0; W],
             wave_type: Default::default(),
             modulation_targets: Default::default(),
+            velocity_sensitivity_mod_out: [0.0; W],
+            velocity_sensitivity_feedback: [0.0; W],
         }
     }
 }
@@ -235,6 +241,7 @@ mod gen {
 
             gen_audio(
                 &mut audio_state.rng,
+                audio_state.audio_gen_data_field.volume_velocity_sensitivity,
                 &audio_state.audio_gen_data_field.voices[..num_valid_voice_datas],
                 lefts,
                 rights,
@@ -254,6 +261,15 @@ mod gen {
                 .parameters
                 .advance_one_sample(audio_state.sample_rate);
             audio_state.process_events_for_sample(position + sample_index);
+
+            set_value_for_both_channels(
+                &mut audio_state.audio_gen_data_field.volume_velocity_sensitivity,
+                sample_index,
+                audio_state
+                    .parameters
+                    .volume_velocity_sensitivity
+                    .get_value() as f64,
+            );
 
             let operators = &mut audio_state.parameters.operators;
             let lfo_values = &mut audio_state.audio_gen_data_field.lfo_target_values;
@@ -486,6 +502,19 @@ mod gen {
             operator_data.constant_power_panning[sample_index_offset + 1] = r as f64;
         }
 
+        set_value_for_both_channels(
+            &mut operator_data.velocity_sensitivity_mod_out,
+            sample_index,
+            operator_parameters.velocity_sensitivity_mod_out.get_value() as f64,
+        );
+        set_value_for_both_channels(
+            &mut operator_data.velocity_sensitivity_feedback,
+            sample_index,
+            operator_parameters
+                .velocity_sensitivity_feedback
+                .get_value() as f64,
+        );
+
         let frequency_ratio = operator_parameters
             .frequency_ratio
             .get_value_with_lfo_addition(lfo_values.get(RATIO_INDICES[operator_index]));
@@ -510,21 +539,22 @@ mod gen {
     #[target_feature_enable]
     unsafe fn gen_audio(
         rng: &mut fastrand::Rng,
-        voices: &[VoiceData<{ Pd::WIDTH }>],
+        volume_velocity_sensitivity: [f64; Pd::WIDTH],
+        active_voices: &[VoiceData<{ Pd::WIDTH }>],
         audio_buffer_lefts: &mut [f32],
         audio_buffer_rights: &mut [f32],
     ) {
         // Pd::SAMPLES * 2 because of two channels. Even index = left channel
-        let mut mix_out_sum = Pd::new_zeroed();
+        let mut total_mix_out = Pd::new_zeroed();
 
-        for voice_data in voices.iter() {
+        for voice_data in active_voices.iter() {
             let operator_generate_audio = run_operator_dependency_analysis(voice_data);
 
             // Voice modulation input storage, indexed by operator
             let mut voice_modulation_inputs = [Pd::new_zeroed(); 4];
+            let mut voice_mix_out = Pd::new_zeroed();
 
             let key_velocity = Pd::from_arr(voice_data.key_velocity);
-            let master_volume = Pd::from_arr(voice_data.master_volume);
 
             // Go through operators downwards, starting with operator 4
             for operator_index in (0..4).map(|i| 3 - i) {
@@ -542,21 +572,27 @@ mod gen {
                     key_velocity,
                 );
 
-                mix_out_sum += mix_out * master_volume;
+                voice_mix_out += mix_out;
 
                 // Add modulation output to target operators' modulation inputs
                 for target in operator_voice_data.modulation_targets.active_indices() {
                     voice_modulation_inputs[target] += mod_out;
                 }
             }
+
+            let master_volume = Pd::from_arr(voice_data.master_volume);
+            let volume_velocity_factor =
+                velocity_factor(Pd::from_arr(volume_velocity_sensitivity), key_velocity);
+
+            total_mix_out += voice_mix_out * volume_velocity_factor * master_volume;
         }
 
-        let mix_out_arr = (mix_out_sum * Pd::new(MASTER_VOLUME_FACTOR))
+        let total_mix_out_arr = (total_mix_out * Pd::new(MASTER_VOLUME_FACTOR))
             .min(Pd::new(LIMIT))
             .max(Pd::new(-LIMIT))
             .to_arr();
 
-        for (sample_index, chunk) in mix_out_arr.chunks_exact(2).enumerate() {
+        for (sample_index, chunk) in total_mix_out_arr.chunks_exact(2).enumerate() {
             audio_buffer_lefts[sample_index] = chunk[0] as f32;
             audio_buffer_rights[sample_index] = chunk[1] as f32;
         }
@@ -571,23 +607,34 @@ mod gen {
         key_velocity: Pd,
     ) -> (Pd, Pd) {
         let phase = Pd::from_arr(operator_data.phase);
-        let feedback = Pd::from_arr(operator_data.feedback);
+        let feedback = {
+            let feedback = Pd::from_arr(operator_data.feedback);
+            let velocity_sensitivity = Pd::from_arr(operator_data.velocity_sensitivity_feedback);
+
+            feedback * velocity_factor(velocity_sensitivity, key_velocity)
+        };
 
         let sample = match operator_data.wave_type {
             WaveType::Sine => {
                 let phase = phase * Pd::new(TAU);
+                let feedback = feedback * phase.fast_sin();
 
-                (phase + (key_velocity * (feedback * phase.fast_sin()) + modulation_inputs))
-                    .fast_sin()
+                (phase + feedback + modulation_inputs).fast_sin()
             }
             WaveType::Square => {
-                (phase + (key_velocity * (feedback * phase.square()) + modulation_inputs)).square()
+                let feedback = feedback * phase.square();
+
+                (phase + feedback + modulation_inputs).square()
             }
-            WaveType::Triangle => (phase
-                + (key_velocity * (feedback * phase.triangle()) + modulation_inputs))
-                .triangle(),
+            WaveType::Triangle => {
+                let feedback = feedback * phase.triangle();
+
+                (phase + feedback + modulation_inputs).triangle()
+            }
             WaveType::Saw => {
-                (phase + (key_velocity * (feedback * phase.saw()) + modulation_inputs)).saw()
+                let feedback = feedback * phase.saw();
+
+                (phase + feedback + modulation_inputs).saw()
             }
             WaveType::WhiteNoise => {
                 let mut random_numbers = <Pd as SimdPackedDouble>::Arr::default();
@@ -608,7 +655,7 @@ mod gen {
         let envelope_volume = Pd::from_arr(operator_data.envelope_volume);
         let panning = Pd::from_arr(operator_data.panning);
 
-        let sample = sample * key_velocity * volume * envelope_volume;
+        let sample = sample * volume * envelope_volume;
 
         // Mix channels depending on panning of current operator. If panned to
         // the middle, just pass through the stereo signals. If panned to any
@@ -628,9 +675,13 @@ mod gen {
         };
         let mod_out = {
             let pan_factor = linear_panning_factor(panning);
+            let velocity_factor = velocity_factor(
+                Pd::from_arr(operator_data.velocity_sensitivity_mod_out),
+                key_velocity,
+            );
             let mod_out = Pd::from_arr(operator_data.mod_out);
 
-            sample * pan_factor * mod_out
+            sample * pan_factor * velocity_factor * mod_out
         };
 
         (mix_out, mod_out)
@@ -699,6 +750,13 @@ mod gen {
         let pan = Pd::new(2.0) * (panning - Pd::new(0.5));
 
         (pan * Pd::new_from_pair(-1.0, 1.0)).max(Pd::new_zeroed())
+    }
+
+    #[feature_gate]
+    #[target_feature_enable]
+    #[inline]
+    unsafe fn velocity_factor(sensitivity: Pd, velocity: Pd) -> Pd {
+        sensitivity * velocity + (Pd::new(1.0) - sensitivity)
     }
 
     #[cfg(test)]

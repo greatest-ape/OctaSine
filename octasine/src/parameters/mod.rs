@@ -24,6 +24,7 @@ pub mod operator_panning;
 pub mod operator_volume;
 pub mod operator_wave_type;
 pub mod utils;
+pub mod velocity_sensitivity;
 
 use compact_str::{format_compact, CompactString};
 pub use lfo_active::LfoActiveValue;
@@ -100,6 +101,9 @@ impl Parameter {
             Self::Master(MasterParameter::Volume) => "Master volume".into(),
             Self::Master(MasterParameter::PitchBendRangeUp) => "Pitch bend range (up)".into(),
             Self::Master(MasterParameter::PitchBendRangeDown) => "Pitch bend range (down)".into(),
+            Self::Master(MasterParameter::VelocitySensitivityVolume) => {
+                "Vol velocity sensitivity".into()
+            }
             Self::Operator(index, p) => match p {
                 OperatorParameter::Volume => format_compact!("OP {} vol", index + 1),
                 OperatorParameter::Active => format_compact!("OP {} active", index + 1),
@@ -122,6 +126,12 @@ impl Parameter {
                 }
                 OperatorParameter::EnvelopeLockGroup => {
                     format_compact!("OP {} lock group", index + 1)
+                }
+                OperatorParameter::VelocitySensitivityModOut => {
+                    format_compact!("OP {} mod out vs", index + 1)
+                }
+                OperatorParameter::VelocitySensitivityFeedback => {
+                    format_compact!("OP {} feedback vs", index + 1)
                 }
             },
             Self::Lfo(index, p) => match p {
@@ -166,6 +176,9 @@ impl Parameter {
             Self::Master(MasterParameter::PitchBendRangeDown) => {
                 "Master pitch bend range (down)".into()
             }
+            Self::Master(MasterParameter::VelocitySensitivityVolume) => {
+                "Master volume velocity sensitivity".into()
+            }
             Self::Operator(index, p) => match p {
                 OperatorParameter::Volume => format!("OP {} vol", index + 1),
                 OperatorParameter::Active => format!("OP {} active", index + 1),
@@ -183,6 +196,12 @@ impl Parameter {
                 OperatorParameter::SustainVolume => format!("OP {} sustain vol", index + 1),
                 OperatorParameter::ReleaseDuration => format!("OP {} release time", index + 1),
                 OperatorParameter::EnvelopeLockGroup => format!("OP {} lock group", index + 1),
+                OperatorParameter::VelocitySensitivityModOut => {
+                    format!("OP {} mod out velocity sensitivity", index + 1)
+                }
+                OperatorParameter::VelocitySensitivityFeedback => {
+                    format!("OP {} feedback velocity sensitivity", index + 1)
+                }
             },
             Self::Lfo(index, p) => match p {
                 LfoParameter::Target => format!("LFO {} target", index + 1),
