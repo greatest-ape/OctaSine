@@ -1,15 +1,16 @@
 # TODO
 
-* Per-operator velocity sensitivity
-  * Parameter names should be same as in GUI
-  * Audio output really unchanged?
-    * Difference should really only be if it has an effect if it is done before
-      or after mono mix factor shenanigans
 * Reset phase when envelopes end
 * Audio inconsistencies on attack, see vospi email
 * Portamento / legato
 * Consider f64 interpolator and maybe even f64 parameters, since now we
   convert all the time in audio gen
+* Percussion adjustments
+  * A global percussion mode
+    * Ignore note off events
+    * Decay leads directly to release
+  * Per-operator "constant volume modulation mode" with constant envelope
+    volume, no mix out, ends when all operators not in mode have ended
 
 * In modal for setting parameters by text, change to radios for fixed-value
   parameters
