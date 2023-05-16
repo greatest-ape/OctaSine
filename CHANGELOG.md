@@ -17,7 +17,9 @@ no audible differences.
 
 ### Changed
 
-- Make plugin window 12 pixels wider to accomodate new controls.
+- Add parameter tooltips for better discoverability
+- Change layout of bottom right worner and make plugin window 12 pixels wider
+  to accomodate new controls.
 
 ## 0.8.6 - 2023-04-12
 
