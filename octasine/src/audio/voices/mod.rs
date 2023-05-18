@@ -83,6 +83,7 @@ pub struct Voice {
     pub active: bool,
     pub midi_pitch: MidiPitch,
     pub key_pressed: bool,
+    pub pitch_interpolator: Interpolator,
     key_velocity_interpolator: Interpolator,
     pub operators: [VoiceOperator; NUM_OPERATORS],
     pub lfos: [VoiceLfo; NUM_LFOS],
@@ -98,6 +99,10 @@ impl Voice {
             active: false,
             midi_pitch,
             key_pressed: false,
+            pitch_interpolator: Interpolator::new(
+                midi_pitch.frequency_factor as f32,
+                InterpolationDuration::exactly_1s(),
+            ),
             key_velocity_interpolator: Interpolator::new(
                 KeyVelocity::default().0,
                 VELOCITY_INTERPOLATION_DURATION,
@@ -109,9 +114,11 @@ impl Voice {
         }
     }
 
-    pub fn advance_velocity_interpolator_one_sample(&mut self, sample_rate: SampleRate) {
+    pub fn advance_interpolators_one_sample(&mut self, sample_rate: SampleRate) {
         self.key_velocity_interpolator
-            .advance_one_sample(sample_rate, &mut |_| ())
+            .advance_one_sample(sample_rate, &mut |_| ());
+        self.pitch_interpolator
+            .advance_one_sample(sample_rate, &mut |_| ());
     }
 
     pub fn get_key_velocity(&mut self) -> KeyVelocity {
@@ -123,12 +130,23 @@ impl Voice {
         &mut self,
         parameters: &AudioParameters,
         velocity: KeyVelocity,
+        new_key: Option<u8>,
         #[cfg_attr(not(feature = "clap"), allow(unused_variables))] opt_clap_note_id: Option<i32>,
     ) {
         if self.active {
             self.key_velocity_interpolator.set_value(velocity.0)
         } else {
             self.key_velocity_interpolator.force_set_value(velocity.0)
+        }
+
+        if let Some(key) = new_key {
+            let midi_pitch = MidiPitch::new(key);
+
+            self.pitch_interpolator
+                .set_value(midi_pitch.frequency_factor as f32);
+            self.midi_pitch = midi_pitch;
+
+            // TODO: send clap note ended event for old note id?
         }
 
         self.key_pressed = true;

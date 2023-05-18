@@ -38,6 +38,9 @@ impl InterpolationDuration {
     pub const fn exactly_100ms() -> Self {
         Self(0.1)
     }
+    pub const fn exactly_1s() -> Self {
+        Self(1.0)
+    }
 }
 
 /// Interpolation value factor for increasing precision and avoiding subnormals

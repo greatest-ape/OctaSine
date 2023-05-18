@@ -309,7 +309,7 @@ mod gen {
                     }
                 };
 
-                voice.advance_velocity_interpolator_one_sample(audio_state.sample_rate);
+                voice.advance_interpolators_one_sample(audio_state.sample_rate);
 
                 for (operator_index, operator) in operators.iter_mut().enumerate() {
                     voice.operators[operator_index]

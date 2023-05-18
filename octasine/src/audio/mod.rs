@@ -167,15 +167,33 @@ impl AudioState {
     }
 
     fn key_on(&mut self, key: u8, velocity: KeyVelocity, opt_clap_note_id: Option<i32>) {
-        let voice = match self.voices.shift_remove(&key) {
-            Some(voice) => self.voices.entry(key).or_insert(voice),
-            None => self
-                .voices
-                .entry(key)
-                .or_insert(Voice::new(MidiPitch::new(key))),
-        };
+        let max_num_voices = 1usize;
 
-        voice.press_key(&self.parameters, velocity, opt_clap_note_id);
+        if let Some(voice) = self.voices.shift_remove(&key) {
+            // Voice already exists, so move it to last the position (most
+            // recently pressed)
+            self.voices.entry(key).or_insert(voice).press_key(
+                &self.parameters,
+                velocity,
+                None,
+                opt_clap_note_id,
+            );
+        } else if self.voices.len() >= max_num_voices {
+            // Maximum number of active voices was reached, so steal the least
+            // recently pressed voice
+            let voice = self.voices.shift_remove_index(0).unwrap().1;
+
+            let voice = self.voices.entry(key).or_insert(voice);
+
+            voice.press_key(&self.parameters, velocity, Some(key), opt_clap_note_id);
+        } else {
+            // Voice does not exist and maximum number of voices is not
+            // reached, so create and insert new voice
+            self.voices
+                .entry(key)
+                .or_insert(Voice::new(MidiPitch::new(key)))
+                .press_key(&self.parameters, velocity, None, opt_clap_note_id);
+        }
     }
 
     fn key_off(&mut self, key: u8) {
