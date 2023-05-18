@@ -11,6 +11,7 @@ pub mod list;
 pub mod master_frequency;
 pub mod master_pitch_bend_range;
 pub mod master_volume;
+pub mod num_voices;
 pub mod operator_active;
 pub mod operator_envelope;
 pub mod operator_feedback;
@@ -104,6 +105,7 @@ impl Parameter {
             Self::Master(MasterParameter::VelocitySensitivityVolume) => {
                 "Vol velocity sensitivity".into()
             }
+            Self::Master(MasterParameter::NumVoices) => "Num voices".into(),
             Self::Operator(index, p) => match p {
                 OperatorParameter::Volume => format_compact!("OP {} vol", index + 1),
                 OperatorParameter::Active => format_compact!("OP {} active", index + 1),
@@ -179,6 +181,7 @@ impl Parameter {
             Self::Master(MasterParameter::VelocitySensitivityVolume) => {
                 "Master volume velocity sensitivity".into()
             }
+            Self::Master(MasterParameter::NumVoices) => "Num voices".into(),
             Self::Operator(index, p) => match p {
                 OperatorParameter::Volume => format!("OP {} vol", index + 1),
                 OperatorParameter::Active => format!("OP {} active", index + 1),

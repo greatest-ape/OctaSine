@@ -13,7 +13,9 @@ use crate::{common::*, parameters::Parameter};
 use parameters::*;
 use voices::*;
 
-use self::{gen::AudioGenData, voices::log10_table::Log10Table};
+use self::{
+    gen::AudioGenData, parameters::common::AudioParameter, voices::log10_table::Log10Table,
+};
 
 #[cfg(feature = "clap")]
 pub struct ClapNoteEnded {
@@ -167,7 +169,7 @@ impl AudioState {
     }
 
     fn key_on(&mut self, key: u8, velocity: KeyVelocity, opt_clap_note_id: Option<i32>) {
-        let max_num_voices = 1usize;
+        let max_active_voices = self.parameters.num_voices.get_value() as usize;
 
         if let Some(voice) = self.voices.shift_remove(&key) {
             // Voice already exists, so move it to last the position (most
@@ -178,7 +180,7 @@ impl AudioState {
                 None,
                 opt_clap_note_id,
             );
-        } else if self.voices.len() >= max_num_voices {
+        } else if self.voices.len() >= max_active_voices {
             // Maximum number of active voices was reached, so steal the least
             // recently pressed voice
             let voice = self.voices.shift_remove_index(0).unwrap().1;
