@@ -5,7 +5,6 @@ pub mod voices;
 
 use std::mem::MaybeUninit;
 
-use array_init::array_init;
 use fastrand::Rng;
 use ringbuf::{LocalRb, Rb};
 
@@ -37,7 +36,7 @@ pub struct AudioState {
     parameters: AudioParameters,
     rng: Rng,
     log10table: Log10Table,
-    pub voices: [Voice; 128],
+    pub voices: IndexMap<u8, Voice>,
     pending_note_events: LocalRb<NoteEvent, Vec<MaybeUninit<NoteEvent>>>,
     audio_gen_data_w2: Box<AudioGenData<2>>,
     #[cfg(target_arch = "x86_64")]
@@ -58,7 +57,7 @@ impl Default for AudioState {
             parameters: AudioParameters::default(),
             rng: Rng::new(),
             log10table: Default::default(),
-            voices: array_init(|i| Voice::new(MidiPitch::new(i as u8))),
+            voices: Default::default(),
             pending_note_events: LocalRb::new(1024),
             audio_gen_data_w2: Default::default(),
             #[cfg(target_arch = "x86_64")]
@@ -168,17 +167,29 @@ impl AudioState {
     }
 
     fn key_on(&mut self, key: u8, velocity: KeyVelocity, opt_clap_note_id: Option<i32>) {
-        self.voices[key as usize].press_key(&self.parameters, velocity, opt_clap_note_id);
+        let voice = match self.voices.shift_remove(&key) {
+            Some(voice) => self.voices.entry(key).or_insert(voice),
+            None => self
+                .voices
+                .entry(key)
+                .or_insert(Voice::new(MidiPitch::new(key))),
+        };
+
+        voice.press_key(&self.parameters, velocity, opt_clap_note_id);
     }
 
     fn key_off(&mut self, key: u8) {
-        self.voices[key as usize].release_key();
+        if let Some(voice) = self.voices.get_mut(&key) {
+            voice.release_key();
+        }
     }
 
     #[allow(unused_variables)]
     fn aftertouch(&mut self, key: u8, velocity: KeyVelocity) {
         // Disabled for now
-        // self.voices[key as usize].aftertouch(velocity);
+        // if let Some(voice) = self.voices.get_mut(&key) {
+        //     voice.aftertouch(velocity);
+        // }
     }
 
     #[cfg(test)]

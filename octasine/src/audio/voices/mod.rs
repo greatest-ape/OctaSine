@@ -79,6 +79,7 @@ impl Default for VoiceOperator {
 
 #[derive(Debug, Clone)]
 pub struct Voice {
+    /// Has received at least one key press and has at least one envelope still running
     pub active: bool,
     pub midi_pitch: MidiPitch,
     pub key_pressed: bool,

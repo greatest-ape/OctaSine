@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## Unreleased
+
+Breaking changes.
+
+### Fixed
+
+- Reset voice phases when they end
+
 ## 0.8.7 - 2023-05-16
 
 Audio output is not bit-for-bit identical to version 0.8.6, but there should be
