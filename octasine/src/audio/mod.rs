@@ -53,6 +53,21 @@ pub struct AudioState {
 
 impl Default for AudioState {
     fn default() -> Self {
+        let voices = {
+            let mut voices = IndexMap::default();
+
+            voices.reserve(128);
+
+            voices
+        };
+        let pressed_keys = {
+            let mut pressed_keys = IndexSet::default();
+
+            pressed_keys.reserve(128);
+
+            pressed_keys
+        };
+
         Self {
             sample_rate: SampleRate::default(),
             time_per_sample: SampleRate::default().into(),
@@ -63,8 +78,8 @@ impl Default for AudioState {
             parameters: AudioParameters::default(),
             rng: Rng::new(),
             log10table: Default::default(),
-            voices: Default::default(),
-            pressed_keys: Default::default(),
+            voices,
+            pressed_keys,
             pending_note_events: LocalRb::new(1024),
             audio_gen_data_w2: Default::default(),
             #[cfg(target_arch = "x86_64")]
