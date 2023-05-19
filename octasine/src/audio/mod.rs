@@ -319,6 +319,7 @@ impl AudioState {
                     if let Some(voice) = self.voices.shift_remove(&key) {
                         let glide = !matches!(portamento_mode, PortamentoMode::Off);
 
+                        // FIXME: likely causes issues if voice already exists here
                         self.voices
                             .entry(*go_to_key)
                             .or_insert(voice)
