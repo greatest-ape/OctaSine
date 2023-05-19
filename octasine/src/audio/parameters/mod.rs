@@ -20,8 +20,9 @@ use crate::common::{SampleRate, NUM_LFOS, NUM_OPERATORS};
 use crate::parameters::master_pitch_bend_range::{
     MasterPitchBendRangeDownValue, MasterPitchBendRangeUpValue,
 };
-use crate::parameters::num_voices::NumVoicesValue;
+use crate::parameters::portamento_mode::PortamentoModeValue;
 use crate::parameters::velocity_sensitivity::VelocitySensitivityValue;
+use crate::parameters::voice_mode::VoiceModeValue;
 use crate::parameters::*;
 
 use self::common::{AudioParameter, InterpolatableAudioParameter, SimpleAudioParameter};
@@ -64,7 +65,8 @@ pub struct AudioParameters {
     pub master_pitch_bend_range_up: SimpleAudioParameter<MasterPitchBendRangeUpValue>,
     pub master_pitch_bend_range_down: SimpleAudioParameter<MasterPitchBendRangeDownValue>,
     pub volume_velocity_sensitivity: InterpolatableAudioParameter<VelocitySensitivityValue>,
-    pub num_voices: SimpleAudioParameter<NumVoicesValue>,
+    pub voice_mode: SimpleAudioParameter<VoiceModeValue>,
+    pub portamento_mode: SimpleAudioParameter<PortamentoModeValue>,
     pub operators: [OperatorAudioParameters; NUM_OPERATORS],
     pub lfos: [LfoAudioParameters; NUM_LFOS],
 }
@@ -77,7 +79,8 @@ impl Default for AudioParameters {
             master_pitch_bend_range_up: Default::default(),
             master_pitch_bend_range_down: Default::default(),
             volume_velocity_sensitivity: Default::default(),
-            num_voices: Default::default(),
+            voice_mode: Default::default(),
+            portamento_mode: Default::default(),
             operators: array_init(OperatorAudioParameters::new),
             lfos: array_init(LfoAudioParameters::new),
         }
@@ -101,7 +104,8 @@ macro_rules! impl_patch_interaction {
                     MasterParameter::VelocitySensitivityVolume => {
                         $f(&mut self.volume_velocity_sensitivity, input)
                     }
-                    MasterParameter::NumVoices => $f(&mut self.num_voices, input),
+                    MasterParameter::VoiceMode => $f(&mut self.voice_mode, input),
+                    MasterParameter::PortamentoMode => $f(&mut self.portamento_mode, input),
                 },
                 Parameter::Operator(index, p) => {
                     use OperatorParameter::*;

@@ -2,7 +2,10 @@ use compact_str::CompactString;
 
 use crate::{
     common::IndexMap,
-    parameters::{num_voices::NumVoicesValue, velocity_sensitivity::VelocitySensitivityValue, *},
+    parameters::{
+        portamento_mode::PortamentoModeValue, velocity_sensitivity::VelocitySensitivityValue,
+        voice_mode::VoiceModeValue, *,
+    },
 };
 
 use super::atomic_float::AtomicFloat;
@@ -49,7 +52,8 @@ impl PatchParameter {
                 MasterParameter::VelocitySensitivityVolume => {
                     Self::new::<VelocitySensitivityValue>(parameter)
                 }
-                MasterParameter::NumVoices => Self::new::<NumVoicesValue>(parameter),
+                MasterParameter::VoiceMode => Self::new::<VoiceModeValue>(parameter),
+                MasterParameter::PortamentoMode => Self::new::<PortamentoModeValue>(parameter),
             },
             Parameter::Operator(index, operator_parameter) => {
                 use OperatorParameter::*;

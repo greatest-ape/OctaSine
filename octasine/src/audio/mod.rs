@@ -8,7 +8,10 @@ use std::mem::MaybeUninit;
 use fastrand::Rng;
 use ringbuf::{LocalRb, Rb};
 
-use crate::{common::*, parameters::Parameter};
+use crate::{
+    common::*,
+    parameters::{portamento_mode::PortamentoMode, voice_mode::VoiceMode, Parameter},
+};
 
 use parameters::*;
 use voices::*;
@@ -169,8 +172,82 @@ impl AudioState {
     }
 
     fn key_on(&mut self, key: u8, velocity: KeyVelocity, opt_clap_note_id: Option<i32>) {
-        let max_active_voices = self.parameters.num_voices.get_value() as usize;
+        let voice_mode = self.parameters.voice_mode.get_value();
+        let portamento_mode = self.parameters.portamento_mode.get_value();
 
+        match voice_mode {
+            VoiceMode::Polyphonic => {
+                match portamento_mode {
+                    PortamentoMode::Off => {
+                        // Shift voice to / insert voice at last position
+                        // (indicating most recently pressed)
+                        let voice = if let Some(voice) = self.voices.shift_remove(&key) {
+                            self.voices.entry(key).or_insert(voice)
+                        } else {
+                            self.voices
+                                .entry(key)
+                                .or_insert(Voice::new(MidiPitch::new(key)))
+                        };
+
+                        voice.press_key(
+                            &self.parameters,
+                            velocity,
+                            Some(key),
+                            None,
+                            opt_clap_note_id,
+                        );
+                    }
+                    PortamentoMode::Auto | PortamentoMode::Always => {
+                        let opt_glide_from_key = match portamento_mode {
+                            PortamentoMode::Auto => self
+                                .voices
+                                .iter()
+                                .rev()
+                                .filter(|(k, v)| **k != key && v.key_pressed)
+                                .map(|(key, _)| *key)
+                                .next(),
+                            PortamentoMode::Always => self
+                                .voices
+                                .iter()
+                                .rev()
+                                .filter(|(k, _)| **k != key)
+                                .map(|(key, _)| *key)
+                                .next(),
+                            _ => unreachable!(),
+                        };
+
+                        let voice = if let Some(voice) = self.voices.shift_remove(&key) {
+                            self.voices.entry(key).or_insert(voice)
+                        } else {
+                            self.voices
+                                .entry(key)
+                                .or_insert(Voice::new(MidiPitch::new(key)))
+                        };
+
+                        if let Some(glide_from_key) = opt_glide_from_key {
+                            voice.press_key(
+                                &self.parameters,
+                                velocity,
+                                Some(glide_from_key),
+                                Some(key),
+                                opt_clap_note_id,
+                            );
+                        } else {
+                            voice.press_key(
+                                &self.parameters,
+                                velocity,
+                                Some(key),
+                                None,
+                                opt_clap_note_id,
+                            );
+                        }
+                    }
+                }
+            }
+            VoiceMode::Monophonic => {}
+        }
+
+        /*
         if let Some(voice) = self.voices.shift_remove(&key) {
             // Voice already exists, so move it to last the position (most
             // recently pressed)
@@ -180,7 +257,7 @@ impl AudioState {
                 None,
                 opt_clap_note_id,
             );
-        } else if self.voices.len() >= max_active_voices {
+        } else if self.voices.len() >= 0 {
             // Maximum number of active voices was reached, so steal the least
             // recently pressed voice
             let voice = self.voices.shift_remove_index(0).unwrap().1;
@@ -196,6 +273,7 @@ impl AudioState {
                 .or_insert(Voice::new(MidiPitch::new(key)))
                 .press_key(&self.parameters, velocity, None, opt_clap_note_id);
         }
+        */
     }
 
     fn key_off(&mut self, key: u8) {

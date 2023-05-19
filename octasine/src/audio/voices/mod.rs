@@ -130,7 +130,8 @@ impl Voice {
         &mut self,
         parameters: &AudioParameters,
         velocity: KeyVelocity,
-        new_key: Option<u8>,
+        initial_key: Option<u8>,
+        target_key: Option<u8>,
         #[cfg_attr(not(feature = "clap"), allow(unused_variables))] opt_clap_note_id: Option<i32>,
     ) {
         if self.active {
@@ -139,7 +140,15 @@ impl Voice {
             self.key_velocity_interpolator.force_set_value(velocity.0)
         }
 
-        if let Some(key) = new_key {
+        if let Some(key) = initial_key {
+            let midi_pitch = MidiPitch::new(key);
+
+            self.pitch_interpolator
+                .force_set_value(midi_pitch.frequency_factor as f32);
+            self.midi_pitch = midi_pitch;
+        }
+
+        if let Some(key) = target_key {
             let midi_pitch = MidiPitch::new(key);
 
             self.pitch_interpolator

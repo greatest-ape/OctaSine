@@ -111,7 +111,8 @@ pub const PARAMETERS: &[Parameter] = &[
     Parameter::Operator(2, OperatorParameter::VelocitySensitivityFeedback),
     Parameter::Operator(3, OperatorParameter::VelocitySensitivityModOut),
     Parameter::Operator(3, OperatorParameter::VelocitySensitivityFeedback),
-    Parameter::Master(MasterParameter::NumVoices),
+    Parameter::Master(MasterParameter::VoiceMode),
+    Parameter::Master(MasterParameter::PortamentoMode),
 ];
 
 /// Parameter enum used to abstract over parameter indices
@@ -131,7 +132,8 @@ pub enum MasterParameter {
     PitchBendRangeUp,
     PitchBendRangeDown,
     VelocitySensitivityVolume,
-    NumVoices,
+    VoiceMode,
+    PortamentoMode,
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]

@@ -376,7 +376,8 @@ mod gen {
 
                 master_frequency *= pitch_bend_frequency_multiplier;
 
-                let voice_base_frequency = voice.midi_pitch.get_frequency(master_frequency);
+                let voice_base_frequency =
+                    voice.pitch_interpolator.get_value() as f64 * master_frequency;
 
                 for (operator_index, operator) in operators.iter_mut().enumerate() {
                     if voice.operators[operator_index].volume_envelope.is_ended() {

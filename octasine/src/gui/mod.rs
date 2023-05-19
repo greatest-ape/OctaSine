@@ -190,7 +190,10 @@ impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {
             Parameter::Master(MasterParameter::VelocitySensitivityVolume) => {
                 self.corner.volume_velocity_sensitivity.set_value(v)
             }
-            Parameter::Master(MasterParameter::NumVoices) => {
+            Parameter::Master(MasterParameter::VoiceMode) => {
+                // TODO
+            }
+            Parameter::Master(MasterParameter::PortamentoMode) => {
                 // TODO
             }
             outer_p @ Parameter::Operator(index, p) => {
