@@ -177,71 +177,51 @@ impl AudioState {
 
         match voice_mode {
             VoiceMode::Polyphonic => {
-                match portamento_mode {
-                    PortamentoMode::Off => {
-                        // Shift voice to / insert voice at last position
-                        // (indicating most recently pressed)
-                        let voice = if let Some(voice) = self.voices.shift_remove(&key) {
-                            self.voices.entry(key).or_insert(voice)
-                        } else {
-                            self.voices
-                                .entry(key)
-                                .or_insert(Voice::new(MidiPitch::new(key)))
-                        };
+                // FIXME: an option would be to use first pressed instead?
+                let opt_glide_from_key = match portamento_mode {
+                    PortamentoMode::Off => None,
+                    PortamentoMode::Auto => self
+                        .voices
+                        .iter()
+                        .rev()
+                        .filter(|(k, v)| **k != key && v.key_pressed)
+                        .map(|(key, _)| *key)
+                        .next(),
+                    // FIXME: should maybe prefer pressed keys?
+                    PortamentoMode::Always => self
+                        .voices
+                        .iter()
+                        .rev()
+                        .filter(|(k, _)| **k != key)
+                        .map(|(key, _)| *key)
+                        .next(),
+                };
 
-                        voice.press_key(
-                            &self.parameters,
-                            velocity,
-                            Some(key),
-                            None,
-                            opt_clap_note_id,
-                        );
-                    }
-                    PortamentoMode::Auto | PortamentoMode::Always => {
-                        let opt_glide_from_key = match portamento_mode {
-                            PortamentoMode::Auto => self
-                                .voices
-                                .iter()
-                                .rev()
-                                .filter(|(k, v)| **k != key && v.key_pressed)
-                                .map(|(key, _)| *key)
-                                .next(),
-                            PortamentoMode::Always => self
-                                .voices
-                                .iter()
-                                .rev()
-                                .filter(|(k, _)| **k != key)
-                                .map(|(key, _)| *key)
-                                .next(),
-                            _ => unreachable!(),
-                        };
+                let voice = if let Some(voice) = self.voices.shift_remove(&key) {
+                    // Shift voice to last position (most recently pressed)
+                    self.voices.entry(key).or_insert(voice)
+                } else {
+                    self.voices
+                        .entry(key)
+                        .or_insert(Voice::new(MidiPitch::new(key)))
+                };
 
-                        let voice = if let Some(voice) = self.voices.shift_remove(&key) {
-                            self.voices.entry(key).or_insert(voice)
-                        } else {
-                            self.voices
-                                .entry(key)
-                                .or_insert(Voice::new(MidiPitch::new(key)))
-                        };
-
-                        if let Some(glide_from_key) = opt_glide_from_key {
-                            voice.press_key(
-                                &self.parameters,
-                                velocity,
-                                Some(glide_from_key),
-                                Some(key),
-                                opt_clap_note_id,
-                            );
-                        } else {
-                            voice.press_key(
-                                &self.parameters,
-                                velocity,
-                                Some(key),
-                                None,
-                                opt_clap_note_id,
-                            );
-                        }
-                    }
+                if let Some(glide_from_key) = opt_glide_from_key {
+                    voice.press_key(
+                        &self.parameters,
+                        velocity,
+                        Some(glide_from_key),
+                        Some(key),
+                        opt_clap_note_id,
+                    );
+                } else {
+                    voice.press_key(
+                        &self.parameters,
+                        velocity,
+                        Some(key),
+                        None,
+                        opt_clap_note_id,
+                    );
                 }
             }
             VoiceMode::Monophonic => {}
