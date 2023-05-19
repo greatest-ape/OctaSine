@@ -11,7 +11,7 @@ const KILL_DURATION: f64 = INTERPOLATION_DURATION;
 
 #[derive(Debug, Copy, Clone)]
 pub struct VoiceOperatorVolumeEnvelope {
-    pub stage: EnvelopeStage,
+    stage: EnvelopeStage,
     duration: VoiceDuration,
     duration_at_stage_change: VoiceDuration,
     volume_at_stage_change: f32,

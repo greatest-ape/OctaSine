@@ -236,52 +236,49 @@ impl AudioState {
                     .rev()
                     .filter(|k| **k != key)
                     .copied();
+                let mut voice_key_iter = self
+                    .voices
+                    .iter()
+                    .rev()
+                    .filter(|(k, _)| **k != key)
+                    .map(|(key, _)| *key);
 
                 let (opt_replace_key, opt_glide_from_key) = match portamento_mode {
                     PortamentoMode::Off => {
-                        let opt_replace_key = pressed_key_iter.next();
+                        let opt_replace_key = voice_key_iter.next();
 
                         (opt_replace_key, None)
                     }
                     PortamentoMode::Auto => {
-                        let opt_replace_key = pressed_key_iter.next();
+                        let opt_glide_key = pressed_key_iter.next();
+                        let opt_replace_key =
+                            opt_glide_key.and_then(|k| self.voices.contains_key(&k).then_some(k));
 
-                        (opt_replace_key, opt_replace_key)
+                        (opt_replace_key, opt_glide_key)
                     }
                     PortamentoMode::Always => {
-                        let opt_replace_key = pressed_key_iter
-                            .chain(
-                                self.voices
-                                    .iter()
-                                    .rev()
-                                    .filter(|(k, _)| **k != key)
-                                    .map(|(key, _)| *key),
-                            )
-                            .next();
+                        let opt_glide_key = pressed_key_iter.chain(voice_key_iter).next();
+                        let opt_replace_key =
+                            opt_glide_key.and_then(|k| self.voices.contains_key(&k).then_some(k));
 
                         (opt_replace_key, opt_replace_key)
                     }
                 };
 
-                ::log::error!("key_on: key: {}", key);
-
-                let voice = if let Some(voice) = self.voices.shift_remove(&key) {
-                    ::log::error!("key_on:   moving voice {} to last in list (no overwrite)", key);
-                    self.voices.entry(key).or_insert(voice)
-                } else if let Some(voice) =
+                let voice = if let Some(voice) =
                     opt_replace_key.and_then(|k| self.voices.shift_remove(&k))
                 {
-                    ::log::error!("key_on:   moving voice {} to key {}", opt_replace_key.unwrap(), key);
+                    self.voices.entry(key).or_insert(voice)
+                } else if let Some(voice) = self.voices.shift_remove(&key) {
                     self.voices.entry(key).or_insert(voice)
                 } else {
-                    ::log::error!("key_on:   inserting voice {}", key);
                     self.voices
                         .entry(key)
                         .or_insert(Voice::new(MidiPitch::new(key)))
                 };
 
+                // FIXME: maybe don't force-set if pitch is currently interpolating?
                 if let Some(glide_from_key) = opt_glide_from_key {
-                    ::log::error!("key_on:   will glide from {} to {}", glide_from_key, key);
                     voice.press_key(
                         &self.parameters,
                         velocity,
@@ -290,7 +287,6 @@ impl AudioState {
                         opt_clap_note_id,
                     );
                 } else {
-                    ::log::error!("key_on:   will force-start at key {} and won't glide", key);
                     voice.press_key(
                         &self.parameters,
                         velocity,
@@ -301,11 +297,8 @@ impl AudioState {
                 }
 
                 for (k, voice) in self.voices.iter_mut() {
-                    // FIXME: should we really filter by key_pressed?
-                    if voice.key_pressed && *k != key {
-                        ::log::error!("key_on:   triggering key release for voice {}", k);
-                        // voice.kill_envelopes();
-                        voice.release_key();
+                    if *k != key {
+                        voice.kill_envelopes();
                     }
                 }
             }
@@ -325,28 +318,20 @@ impl AudioState {
                 }
             }
             VoiceMode::Monophonic => {
-                // ::log::error!("{}, {:?}, {:?}", key, self.pressed_keys, self.voices.keys().collect::<Vec<_>>());
-                ::log::error!("key_off: key {}", key);
-
-                for (k, v) in self.voices.iter() {
-                    let voice_envelope_stages = v.operators.iter().map(|o| o.volume_envelope.stage).collect::<Vec<_>>();
-                    ::log::error!("key_off:   voice {} stages: {:?}", k, voice_envelope_stages);
-                }
-
                 if let Some(go_to_key) = self.pressed_keys.iter().rev().next() {
                     if let Some(voice) = self.voices.shift_remove(&key) {
                         let glide = !matches!(portamento_mode, PortamentoMode::Off);
-                        ::log::error!("key_off:   moving voice from {} to {}, glide: {}", key, *go_to_key, glide);
-                        ::log::error!("           voice {} already exists: {}", *go_to_key, self.voices.contains_key(go_to_key));
 
-                        // FIXME: likely causes issues if voice already exists here
+                        // Edge case: voice can technically already exist here,
+                        // as a previously killed voice which hasn't ended yet
+                        // (should be rare), or when switching from polyphonic
+                        // mode. If this happens, there will be disconuities.
                         self.voices
                             .entry(*go_to_key)
                             .or_insert(voice)
                             .change_pitch(*go_to_key, glide);
                     }
                 } else if let Some(voice) = self.voices.get_mut(&key) {
-                    ::log::error!("key_off:   releasing voice at key {}", key);
                     voice.release_key();
                 }
             }
