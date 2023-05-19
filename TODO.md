@@ -1,5 +1,12 @@
 # TODO
 
+* Envelopes:
+  * Kill phase doesn't need log10 interpolation
+  * Go to kill phase after release, in preparation for allowing release end
+    value to be non-zero?
+* Monophonic portamento: maybe don't force-set initial voice pitch if pitch is
+  currently interpolating? Probably not possible?
+
 * Reset phase when envelopes end
 * Audio inconsistencies on attack, see vospi email
 * Portamento / legato

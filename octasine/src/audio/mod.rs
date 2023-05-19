@@ -278,6 +278,7 @@ impl AudioState {
                 };
 
                 // FIXME: maybe don't force-set if pitch is currently interpolating?
+                // Probably not possible.
                 if let Some(glide_from_key) = opt_glide_from_key {
                     voice.press_key(
                         &self.parameters,
