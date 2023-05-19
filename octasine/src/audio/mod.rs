@@ -320,7 +320,7 @@ impl AudioState {
                     if let Some(voice) = self.voices.shift_remove(&key) {
                         let glide = !matches!(portamento_mode, PortamentoMode::Off);
 
-                        // FIXME: shouldn't be inserted at end??
+                        // FIXME: shouldn't be inserted at end but at index of removed key?
                         self.voices
                             .entry(key)
                             .or_insert(voice)
