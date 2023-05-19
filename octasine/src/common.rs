@@ -68,6 +68,7 @@ pub enum EnvelopeStage {
     Sustain,
     Release,
     Ended,
+    Kill,
 }
 
 #[derive(Debug, Clone, Copy)]

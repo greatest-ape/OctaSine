@@ -7,10 +7,11 @@ use super::log10_table::Log10Table;
 use super::VoiceDuration;
 
 const INTERPOLATION_DURATION: f64 = 0.00333;
+const KILL_DURATION: f64 = INTERPOLATION_DURATION;
 
 #[derive(Debug, Copy, Clone)]
 pub struct VoiceOperatorVolumeEnvelope {
-    stage: EnvelopeStage,
+    pub stage: EnvelopeStage,
     duration: VoiceDuration,
     duration_at_stage_change: VoiceDuration,
     volume_at_stage_change: f32,
@@ -47,7 +48,7 @@ impl VoiceOperatorVolumeEnvelope {
 
                     return;
                 }
-                Release | Ended => (),
+                Release | Kill | Ended => (),
             }
         }
 
@@ -65,6 +66,14 @@ impl VoiceOperatorVolumeEnvelope {
                 self.volume_at_stage_change = self.last_volume;
             }
             Release if duration_since_stage_change >= parameters.release_duration.get_value() => {
+                self.stage = Ended;
+                self.duration_at_stage_change = VoiceDuration(0.0);
+                self.volume_at_stage_change = 0.0;
+
+                // Set voice operator phase to zero if envelope just ended
+                voice_operator_phase.0 = 0.0;
+            }
+            Kill if duration_since_stage_change >= KILL_DURATION => {
                 self.stage = Ended;
                 self.duration_at_stage_change = VoiceDuration(0.0);
                 self.volume_at_stage_change = 0.0;
@@ -112,6 +121,13 @@ impl VoiceOperatorVolumeEnvelope {
                 self.duration_since_stage_change(),
                 parameters.release_duration.get_value(),
             ),
+            Kill => Self::calculate_curve(
+                log10table,
+                self.volume_at_stage_change,
+                0.0,
+                self.duration_since_stage_change(),
+                KILL_DURATION,
+            ),
             Ended => unreachable!(),
         };
 
@@ -157,6 +173,12 @@ impl VoiceOperatorVolumeEnvelope {
                 ..Default::default()
             }
         };
+    }
+
+    pub fn kill(&mut self) {
+        self.stage = EnvelopeStage::Kill;
+        self.duration_at_stage_change = self.duration;
+        self.volume_at_stage_change = self.last_volume;
     }
 
     #[inline]

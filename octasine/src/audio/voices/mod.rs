@@ -189,6 +189,12 @@ impl Voice {
         self.key_pressed = false;
     }
 
+    pub fn kill_envelopes(&mut self) {
+        for operator in self.operators.iter_mut() {
+            operator.volume_envelope.kill();
+        }
+    }
+
     #[inline]
     pub fn deactivate_if_envelopes_ended(
         &mut self,
