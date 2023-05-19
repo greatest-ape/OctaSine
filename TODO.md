@@ -4,11 +4,14 @@
   * Kill phase doesn't need log10 interpolation
   * Go to kill phase after release, in preparation for allowing release end
     value to be non-zero?
-* Monophonic portamento: maybe don't force-set initial voice pitch if pitch is
-  currently interpolating? Probably not possible?
-* Polyphonic portamento
-  * Look over
-  * Maybe glide from lowest pressed note instead?
+* Portamento
+  * Implement glide time / possibly vague amount if I want constant rate option
+  * Monophonic portamento: maybe don't force-set initial voice pitch if pitch is
+    currently interpolating? Probably not possible?
+  * Polyphonic portamento
+    * Look over
+    * Maybe glide from lowest pressed note instead?
+  * Interaction with clap note ended events
 
 * Reset phase when envelopes end
 * Audio inconsistencies on attack, see vospi email
