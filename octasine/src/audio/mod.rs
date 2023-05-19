@@ -314,19 +314,16 @@ impl AudioState {
                     voice.release_key();
                 }
             }
-            // FIXME: partly broken, maybe issues in key_on too
             VoiceMode::Monophonic => {
                 if let Some(go_to_key) = self.pressed_keys.iter().rev().next() {
                     if let Some(voice) = self.voices.shift_remove(&key) {
                         let glide = !matches!(portamento_mode, PortamentoMode::Off);
 
-                        // FIXME: shouldn't be inserted at end but at index of removed key?
                         self.voices
-                            .entry(key)
+                            .entry(*go_to_key)
                             .or_insert(voice)
                             .change_pitch(*go_to_key, glide);
                     }
-                    // FIXME: issues with multiple keys pressed
                 } else if let Some(voice) = self.voices.get_mut(&key) {
                     voice.release_key();
                 }
