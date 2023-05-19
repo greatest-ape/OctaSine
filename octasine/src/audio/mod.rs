@@ -231,11 +231,11 @@ impl AudioState {
             }
             VoiceMode::Monophonic => {
                 let mut pressed_key_iter = self
-                    .voices
+                    .pressed_keys
                     .iter()
                     .rev()
-                    .filter(|(k, v)| **k != key && v.key_pressed)
-                    .map(|(key, _)| *key);
+                    .filter(|k| **k != key)
+                    .copied();
 
                 let (opt_replace_key, opt_glide_from_key) = match portamento_mode {
                     PortamentoMode::Off => {
@@ -305,8 +305,32 @@ impl AudioState {
     fn key_off(&mut self, key: u8) {
         self.pressed_keys.shift_remove(&key);
 
-        if let Some(voice) = self.voices.get_mut(&key) {
-            voice.release_key();
+        let voice_mode = self.parameters.voice_mode.get_value();
+        let portamento_mode = self.parameters.portamento_mode.get_value();
+
+        match voice_mode {
+            VoiceMode::Polyphonic => {
+                if let Some(voice) = self.voices.get_mut(&key) {
+                    voice.release_key();
+                }
+            }
+            // FIXME: partly broken, maybe issues in key_on too
+            VoiceMode::Monophonic => {
+                if let Some(go_to_key) = self.pressed_keys.iter().rev().next() {
+                    if let Some(voice) = self.voices.shift_remove(&key) {
+                        let glide = !matches!(portamento_mode, PortamentoMode::Off);
+
+                        // FIXME: shouldn't be inserted at end??
+                        self.voices
+                            .entry(key)
+                            .or_insert(voice)
+                            .change_pitch(*go_to_key, glide);
+                    }
+                    // FIXME: issues with multiple keys pressed
+                } else if let Some(voice) = self.voices.get_mut(&key) {
+                    voice.release_key();
+                }
+            }
         }
     }
 

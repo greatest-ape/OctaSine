@@ -141,19 +141,11 @@ impl Voice {
         }
 
         if let Some(key) = initial_key {
-            let midi_pitch = MidiPitch::new(key);
-
-            self.pitch_interpolator
-                .force_set_value(midi_pitch.frequency_factor as f32);
-            self.midi_pitch = midi_pitch;
+            self.change_pitch(key, false);
         }
 
         if let Some(key) = target_key {
-            let midi_pitch = MidiPitch::new(key);
-
-            self.pitch_interpolator
-                .set_value(midi_pitch.frequency_factor as f32);
-            self.midi_pitch = midi_pitch;
+            self.change_pitch(key, true);
 
             // TODO: send clap note ended event for old note id?
         }
@@ -174,6 +166,18 @@ impl Voice {
         }
 
         self.active = true;
+    }
+
+    pub fn change_pitch(&mut self, key: u8, interpolate: bool) {
+        self.midi_pitch = MidiPitch::new(key);
+
+        if interpolate {
+            self.pitch_interpolator
+                .set_value(self.midi_pitch.frequency_factor as f32);
+        } else {
+            self.pitch_interpolator
+                .force_set_value(self.midi_pitch.frequency_factor as f32);
+        }
     }
 
     pub fn aftertouch(&mut self, velocity: KeyVelocity) {
