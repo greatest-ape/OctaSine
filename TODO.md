@@ -6,6 +6,9 @@
     value to be non-zero?
 * Monophonic portamento: maybe don't force-set initial voice pitch if pitch is
   currently interpolating? Probably not possible?
+* Polyphonic portamento
+  * Look over
+  * Maybe glide from lowest pressed note instead?
 
 * Reset phase when envelopes end
 * Audio inconsistencies on attack, see vospi email
