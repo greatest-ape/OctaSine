@@ -42,6 +42,7 @@ pub struct AudioState {
     rng: Rng,
     log10table: Log10Table,
     pub voices: IndexMap<u8, Voice>,
+    pressed_keys: IndexSet<u8>,
     pending_note_events: LocalRb<NoteEvent, Vec<MaybeUninit<NoteEvent>>>,
     audio_gen_data_w2: Box<AudioGenData<2>>,
     #[cfg(target_arch = "x86_64")]
@@ -63,6 +64,7 @@ impl Default for AudioState {
             rng: Rng::new(),
             log10table: Default::default(),
             voices: Default::default(),
+            pressed_keys: Default::default(),
             pending_note_events: LocalRb::new(1024),
             audio_gen_data_w2: Default::default(),
             #[cfg(target_arch = "x86_64")]
@@ -172,6 +174,9 @@ impl AudioState {
     }
 
     fn key_on(&mut self, key: u8, velocity: KeyVelocity, opt_clap_note_id: Option<i32>) {
+        self.pressed_keys.shift_remove(&key);
+        self.pressed_keys.insert(key);
+
         let voice_mode = self.parameters.voice_mode.get_value();
         let portamento_mode = self.parameters.portamento_mode.get_value();
 
@@ -224,39 +229,82 @@ impl AudioState {
                     );
                 }
             }
-            VoiceMode::Monophonic => {}
+            VoiceMode::Monophonic => {
+                let mut pressed_key_iter = self
+                    .voices
+                    .iter()
+                    .rev()
+                    .filter(|(k, v)| **k != key && v.key_pressed)
+                    .map(|(key, _)| *key);
+
+                let (opt_replace_key, opt_glide_from_key) = match portamento_mode {
+                    PortamentoMode::Off => {
+                        let opt_replace_key = pressed_key_iter.next();
+
+                        (opt_replace_key, None)
+                    }
+                    PortamentoMode::Auto => {
+                        let opt_replace_key = pressed_key_iter.next();
+
+                        (opt_replace_key, opt_replace_key)
+                    }
+                    PortamentoMode::Always => {
+                        let opt_replace_key = pressed_key_iter
+                            .chain(
+                                self.voices
+                                    .iter()
+                                    .rev()
+                                    .filter(|(k, _)| **k != key)
+                                    .map(|(key, _)| *key),
+                            )
+                            .next();
+
+                        (opt_replace_key, opt_replace_key)
+                    }
+                };
+
+                let voice = if let Some(voice) = self.voices.shift_remove(&key) {
+                    self.voices.entry(key).or_insert(voice)
+                } else if let Some(voice) =
+                    opt_replace_key.and_then(|k| self.voices.shift_remove(&k))
+                {
+                    self.voices.entry(key).or_insert(voice)
+                } else {
+                    self.voices
+                        .entry(key)
+                        .or_insert(Voice::new(MidiPitch::new(key)))
+                };
+
+                if let Some(glide_from_key) = opt_glide_from_key {
+                    voice.press_key(
+                        &self.parameters,
+                        velocity,
+                        Some(glide_from_key),
+                        Some(key),
+                        opt_clap_note_id,
+                    );
+                } else {
+                    voice.press_key(
+                        &self.parameters,
+                        velocity,
+                        Some(key),
+                        None,
+                        opt_clap_note_id,
+                    );
+                }
+
+                for (k, voice) in self.voices.iter_mut() {
+                    if voice.key_pressed && *k != key {
+                        voice.release_key(); // FIXME: should be fast release
+                    }
+                }
+            }
         }
-
-        /*
-        if let Some(voice) = self.voices.shift_remove(&key) {
-            // Voice already exists, so move it to last the position (most
-            // recently pressed)
-            self.voices.entry(key).or_insert(voice).press_key(
-                &self.parameters,
-                velocity,
-                None,
-                opt_clap_note_id,
-            );
-        } else if self.voices.len() >= 0 {
-            // Maximum number of active voices was reached, so steal the least
-            // recently pressed voice
-            let voice = self.voices.shift_remove_index(0).unwrap().1;
-
-            let voice = self.voices.entry(key).or_insert(voice);
-
-            voice.press_key(&self.parameters, velocity, Some(key), opt_clap_note_id);
-        } else {
-            // Voice does not exist and maximum number of voices is not
-            // reached, so create and insert new voice
-            self.voices
-                .entry(key)
-                .or_insert(Voice::new(MidiPitch::new(key)))
-                .press_key(&self.parameters, velocity, None, opt_clap_note_id);
-        }
-        */
     }
 
     fn key_off(&mut self, key: u8) {
+        self.pressed_keys.shift_remove(&key);
+
         if let Some(voice) = self.voices.get_mut(&key) {
             voice.release_key();
         }
