@@ -261,7 +261,7 @@ impl AudioState {
                             opt_clap_note_id,
                         );
                     }
-                    PortamentoMode::Auto | PortamentoMode::Always => {
+                    PortamentoMode::Auto => {
                         if !self.mono_voice.active || self.pressed_keys.len() == 1 {
                             self.mono_voice.press_key(
                                 &self.parameters,
@@ -279,13 +279,39 @@ impl AudioState {
                                 opt_clap_note_id,
                             )
                         } else {
-                            let glide = if let PortamentoMode::Auto = portamento_mode {
-                                self.pressed_keys.contains(&self.mono_voice.key())
-                            } else {
-                                true
-                            };
+                            let glide = self.pressed_keys.contains(&self.mono_voice.key());
 
                             self.mono_voice.change_pitch(key, glide);
+                            self.mono_voice.sustain_if_released();
+                        }
+                    }
+                    PortamentoMode::Always => {
+                        if !self.mono_voice.active {
+                            self.mono_voice.press_key(
+                                &self.parameters,
+                                velocity,
+                                Some(key),
+                                None,
+                                opt_clap_note_id,
+                            )
+                        } else if self.mono_voice.key() == key {
+                            self.mono_voice.press_key(
+                                &self.parameters,
+                                velocity,
+                                None,
+                                None,
+                                opt_clap_note_id,
+                            )
+                        } else if self.pressed_keys.len() == 1 {
+                            self.mono_voice.press_key(
+                                &self.parameters,
+                                velocity,
+                                None,
+                                Some(key),
+                                opt_clap_note_id,
+                            )
+                        } else {
+                            self.mono_voice.change_pitch(key, true);
                             self.mono_voice.sustain_if_released();
                         }
                     }
