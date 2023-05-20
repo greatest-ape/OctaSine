@@ -247,114 +247,34 @@ impl AudioState {
                 }
             }
             VoiceMode::Monophonic => {
-                let mut pressed_key_iter = self
-                    .pressed_keys
-                    .iter()
-                    .rev()
-                    .filter(|k| **k != key)
-                    .copied();
-                let mut voice_key_iter = self
-                    .voices
-                    .iter()
-                    .rev()
-                    .filter(|(k, _)| **k != key)
-                    .map(|(key, _)| *key);
-
-                let (opt_replace_key, opt_glide_from_key) = match portamento_mode {
-                    PortamentoMode::Off => {
-                        let opt_replace_key = voice_key_iter.next();
-
-                        if self.pressed_keys.first().copied() == Some(key) && self.voices.contains_key(&key) {
-                            // This key is the only active one, retrigger it
-                            if let Some(voice) = self.voices.shift_remove(&key) {
-                                self.voices.entry(key).or_insert(voice).press_key(&self.parameters, velocity, Some(key), None, opt_clap_note_id);
-                            } else {
-                                // FIXME: can this even happen?
-                            }
-                        } else if let Some(mut stolen_voice) = pressed_key_iter.next().and_then(|k| self.voices.shift_remove(&k)) {
-                            // Steal most recently pressed other voice, change its pitch to this key
-                            stolen_voice.change_pitch(key, false);
-
-                            if let Some(mut prev_voice) = self.voices.insert(key, stolen_voice) {
-                                // There could already be a voice running here in rare cases??
-                                prev_voice.kill_envelopes();
-
-                                // TODO: add to voice purgatory
-                            }
-                        } else {
-                            // There are no voices, so create a new one
-                            self.voices
-                                .entry(key)
-                                .or_insert(Voice::new(MidiPitch::new(key)))
-                                .press_key(
-                                    &self.parameters,
-                                    velocity,
-                                    Some(key),
-                                    None,
-                                    opt_clap_note_id,
-                                );
-                                
-                        }
-
-                        (opt_replace_key, None)
-                    }
-                    PortamentoMode::Auto => {
-                        let opt_glide_key = pressed_key_iter.next();
-                        let opt_replace_key =
-                            opt_glide_key.and_then(|k| self.voices.contains_key(&k).then_some(k));
-
-                        (opt_replace_key, opt_glide_key)
-                    }
-                    PortamentoMode::Always => {
-                        let opt_glide_key = pressed_key_iter.chain(voice_key_iter).next();
-                        let opt_replace_key =
-                            opt_glide_key.and_then(|k| self.voices.contains_key(&k).then_some(k));
-                        
-
-
-                        (opt_replace_key, opt_replace_key)
-                    }
-                };
-
-                /*
-
-                let voice = if let Some(voice) =
-                    opt_replace_key.and_then(|k| self.voices.shift_remove(&k))
-                {
-                    self.voices.entry(key).or_insert(voice)
-                } else if let Some(voice) = self.voices.shift_remove(&key) {
-                    self.voices.entry(key).or_insert(voice)
-                } else {
-                    self.voices
-                        .entry(key)
-                        .or_insert(Voice::new(MidiPitch::new(key)))
-                };
-
-                // FIXME: maybe don't force-set if pitch is currently interpolating?
-                // Probably not possible.
-                if let Some(glide_from_key) = opt_glide_from_key {
-                    voice.press_key(
-                        &self.parameters,
-                        velocity,
-                        Some(glide_from_key),
-                        Some(key),
-                        opt_clap_note_id,
-                    );
-                } else {
-                    voice.press_key(
-                        &self.parameters,
-                        velocity,
-                        Some(key),
-                        None,
-                        opt_clap_note_id,
-                    );
+                for (_, voice) in self.voices.iter_mut() {
+                    voice.kill_envelopes();
                 }
 
-                */
+                let (mono_voice_key, mono_voice) = &mut self.mono_voice;
 
-                for (k, voice) in self.voices.iter_mut() {
-                    if *k != key {
-                        voice.kill_envelopes();
+                match portamento_mode {
+                    PortamentoMode::Off => {
+                        mono_voice.press_key(&self.parameters, velocity, Some(key), None, opt_clap_note_id);
+
+                        *mono_voice_key = key;
+                    }
+                    PortamentoMode::Auto | PortamentoMode::Always  => {
+                        if !mono_voice.active {
+                            mono_voice.press_key(&self.parameters, velocity, Some(key), None, opt_clap_note_id)
+                        } else if *mono_voice_key == key {
+                            mono_voice.press_key(&self.parameters, velocity, None, None, opt_clap_note_id)
+                        } else {
+                            let glide = if let PortamentoMode::Auto = portamento_mode {
+                                self.pressed_keys.contains(mono_voice_key)
+                            } else {
+                                true
+                            };
+
+                            mono_voice.change_pitch(key, glide);
+                        }
+
+                        *mono_voice_key = key;
                     }
                 }
             }
