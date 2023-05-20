@@ -289,8 +289,8 @@ impl AudioState {
                                 true
                             };
 
-                            // FIXME: needs to set stage to sustain
                             mono_voice.change_pitch(key, glide);
+                            mono_voice.sustain_if_released();
                         }
 
                         *mono_voice_key = key;
