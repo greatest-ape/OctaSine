@@ -178,14 +178,6 @@ impl Voice {
         }
     }
 
-    pub fn sustain_if_released(&mut self) {
-        for operator in self.operators.iter_mut() {
-            operator.volume_envelope.sustain_if_released();
-        }
-
-        self.key_pressed = true;
-    }
-
     pub fn aftertouch(&mut self, velocity: KeyVelocity) {
         self.key_velocity_interpolator.set_value(velocity.0)
     }

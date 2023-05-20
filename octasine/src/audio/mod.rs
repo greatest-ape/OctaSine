@@ -251,69 +251,62 @@ impl AudioState {
                     voice.kill_envelopes();
                 }
 
-                match portamento_mode {
-                    PortamentoMode::Off => {
+                if portamento_mode == PortamentoMode::Off {
+                    self.mono_voice.press_key(
+                        &self.parameters,
+                        velocity,
+                        Some(key),
+                        None,
+                        opt_clap_note_id,
+                    );
+                } else {
+                    if !self.mono_voice.active {
+                        // mono_voice is inactive: trigger key press and force initial key
                         self.mono_voice.press_key(
                             &self.parameters,
                             velocity,
                             Some(key),
                             None,
                             opt_clap_note_id,
-                        );
-                    }
-                    PortamentoMode::Auto => {
-                        if !self.mono_voice.active || self.pressed_keys.len() == 1 {
-                            self.mono_voice.press_key(
-                                &self.parameters,
-                                velocity,
-                                Some(key),
-                                None,
-                                opt_clap_note_id,
-                            )
-                        } else if self.mono_voice.key() == key {
-                            self.mono_voice.press_key(
-                                &self.parameters,
-                                velocity,
-                                None,
-                                None,
-                                opt_clap_note_id,
-                            )
-                        } else {
-                            let glide = self.pressed_keys.contains(&self.mono_voice.key());
+                        )
+                    } else if self.mono_voice.key() == key {
+                        // mono_voice is active and for current key: retrigger key, but don't
+                        // force an initial key in case there are previous glides
+                        self.mono_voice.press_key(
+                            &self.parameters,
+                            velocity,
+                            None,
+                            None,
+                            opt_clap_note_id,
+                        )
+                    } else if !self.mono_voice.key_pressed {
+                        // mono_voice is active for a different key and is in release stage
 
-                            self.mono_voice.change_pitch(key, glide);
-                            self.mono_voice.sustain_if_released();
-                        }
-                    }
-                    PortamentoMode::Always => {
-                        if !self.mono_voice.active {
+                        if portamento_mode == PortamentoMode::Auto {
+                            // Auto portamento mode: trigger key press for voice with new key
+                            // without glide
                             self.mono_voice.press_key(
                                 &self.parameters,
                                 velocity,
                                 Some(key),
                                 None,
-                                opt_clap_note_id,
-                            )
-                        } else if self.mono_voice.key() == key {
-                            self.mono_voice.press_key(
-                                &self.parameters,
-                                velocity,
-                                None,
-                                None,
-                                opt_clap_note_id,
-                            )
-                        } else if self.pressed_keys.len() == 1 {
-                            self.mono_voice.press_key(
-                                &self.parameters,
-                                velocity,
-                                None,
-                                Some(key),
                                 opt_clap_note_id,
                             )
                         } else {
-                            self.mono_voice.change_pitch(key, true);
-                            self.mono_voice.sustain_if_released();
+                            // Always portamento mode: trigger key press for voice with new key
+                            // with glide
+                            self.mono_voice.press_key(
+                                &self.parameters,
+                                velocity,
+                                None,
+                                Some(key),
+                                opt_clap_note_id,
+                            )
                         }
+                    } else {
+                        // mono_voice is active for a different key and is in
+                        // attack/decay/sustain phase: trigger pitch change with glide
+                        self.mono_voice.change_pitch(key, true);
                     }
                 }
             }

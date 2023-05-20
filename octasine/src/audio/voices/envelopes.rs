@@ -175,14 +175,6 @@ impl VoiceOperatorVolumeEnvelope {
         };
     }
 
-    pub fn sustain_if_released(&mut self) {
-        if self.stage == EnvelopeStage::Release {
-            self.stage = EnvelopeStage::Sustain;
-            self.duration_at_stage_change = self.duration;
-            self.volume_at_stage_change = self.last_volume;
-        }
-    }
-
     pub fn kill(&mut self) {
         self.stage = EnvelopeStage::Kill;
         self.duration_at_stage_change = self.duration;
