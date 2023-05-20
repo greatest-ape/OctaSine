@@ -289,6 +289,7 @@ impl AudioState {
                                 true
                             };
 
+                            // FIXME: needs to set stage to sustain
                             mono_voice.change_pitch(key, glide);
                         }
 
@@ -317,7 +318,7 @@ impl AudioState {
                 if let Some(go_to_key) = self.pressed_keys.last() {
                     mono_voice.change_pitch(*go_to_key, portamento_mode != PortamentoMode::Off);
 
-                    *mono_voice_key = key;
+                    *mono_voice_key = *go_to_key;
                 } else {
                     mono_voice.release_key();
                 }
