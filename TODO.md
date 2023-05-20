@@ -5,9 +5,8 @@
   * Go to kill phase after release, in preparation for allowing release end
     value to be non-zero?
 * Portamento
+  * Should LFOs not be restarted in some cases?
   * Implement glide time / possibly vague amount if I want constant rate option
-  * Monophonic portamento: maybe don't force-set initial voice pitch if pitch is
-    currently interpolating? Probably not possible?
   * Polyphonic portamento
     * Look over
     * Maybe glide from lowest pressed note instead?
