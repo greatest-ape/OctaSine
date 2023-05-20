@@ -35,7 +35,9 @@ pub trait AudioGen {
 pub struct AudioGenData<const W: usize> {
     lfo_target_values: LfoTargetValues,
     volume_velocity_sensitivity: [f64; W],
-    voices: [VoiceData<W>; 128],
+    /// Allocate room for data for 128 polyphonic voices as well as the mono
+    /// voice, even if they won't all be used at once in practice.
+    voices: [VoiceData<W>; 129],
 }
 
 impl<const W: usize> Default for AudioGenData<W> {
@@ -226,7 +228,10 @@ mod gen {
             assert_eq!(lefts.len(), Pd::SAMPLES);
             assert_eq!(rights.len(), Pd::SAMPLES);
 
-            if audio_state.pending_note_events.is_empty() & audio_state.voices.is_empty() {
+            if audio_state.pending_note_events.is_empty()
+                & audio_state.poly_voices.is_empty()
+                & !audio_state.mono_voice.1.active
+            {
                 for (l, r) in lefts.iter_mut().zip(rights.iter_mut()) {
                     *l = 0.0;
                     *r = 0.0;
@@ -272,13 +277,22 @@ mod gen {
             let operators = &mut audio_state.parameters.operators;
             let lfo_values = &mut audio_state.audio_gen_data_field.lfo_target_values;
 
-            for (voice_index, voice) in audio_state.voices.iter_mut() {
+            let voice_iterator = audio_state
+                .poly_voices
+                .iter_mut()
+                .chain(
+                    ::std::iter::once((&128u8, &mut audio_state.mono_voice.1))
+                        .filter(|(_, v)| v.active),
+                )
+                .map(|(k, v)| (*k, v));
+
+            for (voice_index, voice) in voice_iterator {
                 // Select an appropriate VoiceData item to fill with data
                 let voice_data = if sample_index == 0 {
                     let voice_data =
                         &mut audio_state.audio_gen_data_field.voices[num_valid_voice_datas];
 
-                    voice_data.voice_index = *voice_index;
+                    voice_data.voice_index = voice_index;
 
                     voice_data.reset_envelope_volumes();
 
@@ -292,14 +306,14 @@ mod gen {
                     if let Some(voice_data) = audio_state.audio_gen_data_field.voices
                         [..num_valid_voice_datas]
                         .iter_mut()
-                        .find(|voice_data| voice_data.voice_index == *voice_index)
+                        .find(|voice_data| voice_data.voice_index == voice_index)
                     {
                         voice_data
                     } else {
                         let voice_data =
                             &mut audio_state.audio_gen_data_field.voices[num_valid_voice_datas];
 
-                        voice_data.voice_index = *voice_index;
+                        voice_data.voice_index = voice_index;
 
                         voice_data.reset_envelope_volumes();
 
@@ -405,7 +419,7 @@ mod gen {
                 );
             }
 
-            audio_state.voices.retain(|_, voice| voice.active);
+            audio_state.poly_voices.retain(|_, voice| voice.active);
         }
 
         num_valid_voice_datas

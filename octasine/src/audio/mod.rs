@@ -41,8 +41,8 @@ pub struct AudioState {
     parameters: AudioParameters,
     rng: Rng,
     log10table: Log10Table,
-    pub voices: IndexMap<u8, Voice>,
-    mono_voice: (u8, Voice),
+    pub poly_voices: IndexMap<u8, Voice>,
+    pub mono_voice: (u8, Voice),
     pressed_keys: IndexSet<u8>,
     pending_note_events: LocalRb<NoteEvent, Vec<MaybeUninit<NoteEvent>>>,
     audio_gen_data_w2: Box<AudioGenData<2>>,
@@ -79,7 +79,7 @@ impl Default for AudioState {
             parameters: AudioParameters::default(),
             rng: Rng::new(),
             log10table: Default::default(),
-            voices,
+            poly_voices: voices,
             mono_voice: (0, Voice::new(MidiPitch::new(0))),
             pressed_keys,
             pending_note_events: LocalRb::new(1024),
@@ -203,7 +203,7 @@ impl AudioState {
                 let opt_glide_from_key = match portamento_mode {
                     PortamentoMode::Off => None,
                     PortamentoMode::Auto => self
-                        .voices
+                        .poly_voices
                         .iter()
                         .rev()
                         .filter(|(k, v)| **k != key && v.key_pressed)
@@ -211,7 +211,7 @@ impl AudioState {
                         .next(),
                     // FIXME: should maybe prefer pressed keys?
                     PortamentoMode::Always => self
-                        .voices
+                        .poly_voices
                         .iter()
                         .rev()
                         .filter(|(k, _)| **k != key)
@@ -219,11 +219,11 @@ impl AudioState {
                         .next(),
                 };
 
-                let voice = if let Some(voice) = self.voices.shift_remove(&key) {
+                let voice = if let Some(voice) = self.poly_voices.shift_remove(&key) {
                     // Shift voice to last position (most recently pressed)
-                    self.voices.entry(key).or_insert(voice)
+                    self.poly_voices.entry(key).or_insert(voice)
                 } else {
-                    self.voices
+                    self.poly_voices
                         .entry(key)
                         .or_insert(Voice::new(MidiPitch::new(key)))
                 };
@@ -247,7 +247,7 @@ impl AudioState {
                 }
             }
             VoiceMode::Monophonic => {
-                for (_, voice) in self.voices.iter_mut() {
+                for (_, voice) in self.poly_voices.iter_mut() {
                     voice.kill_envelopes();
                 }
 
@@ -307,7 +307,7 @@ impl AudioState {
 
         match voice_mode {
             VoiceMode::Polyphonic => {
-                if let Some(voice) = self.voices.get_mut(&key) {
+                if let Some(voice) = self.poly_voices.get_mut(&key) {
                     voice.release_key();
                 }
             }
