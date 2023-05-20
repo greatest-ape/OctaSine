@@ -42,6 +42,7 @@ pub struct AudioState {
     rng: Rng,
     log10table: Log10Table,
     pub voices: IndexMap<u8, Voice>,
+    mono_voice: (u8, Voice),
     pressed_keys: IndexSet<u8>,
     pending_note_events: LocalRb<NoteEvent, Vec<MaybeUninit<NoteEvent>>>,
     audio_gen_data_w2: Box<AudioGenData<2>>,
@@ -79,6 +80,7 @@ impl Default for AudioState {
             rng: Rng::new(),
             log10table: Default::default(),
             voices,
+            mono_voice: (0, Voice::new(MidiPitch::new(0))),
             pressed_keys,
             pending_note_events: LocalRb::new(1024),
             audio_gen_data_w2: Default::default(),
@@ -262,6 +264,38 @@ impl AudioState {
                     PortamentoMode::Off => {
                         let opt_replace_key = voice_key_iter.next();
 
+                        if self.pressed_keys.first().copied() == Some(key) && self.voices.contains_key(&key) {
+                            // This key is the only active one, retrigger it
+                            if let Some(voice) = self.voices.shift_remove(&key) {
+                                self.voices.entry(key).or_insert(voice).press_key(&self.parameters, velocity, Some(key), None, opt_clap_note_id);
+                            } else {
+                                // FIXME: can this even happen?
+                            }
+                        } else if let Some(mut stolen_voice) = pressed_key_iter.next().and_then(|k| self.voices.shift_remove(&k)) {
+                            // Steal most recently pressed other voice, change its pitch to this key
+                            stolen_voice.change_pitch(key, false);
+
+                            if let Some(mut prev_voice) = self.voices.insert(key, stolen_voice) {
+                                // There could already be a voice running here in rare cases??
+                                prev_voice.kill_envelopes();
+
+                                // TODO: add to voice purgatory
+                            }
+                        } else {
+                            // There are no voices, so create a new one
+                            self.voices
+                                .entry(key)
+                                .or_insert(Voice::new(MidiPitch::new(key)))
+                                .press_key(
+                                    &self.parameters,
+                                    velocity,
+                                    Some(key),
+                                    None,
+                                    opt_clap_note_id,
+                                );
+                                
+                        }
+
                         (opt_replace_key, None)
                     }
                     PortamentoMode::Auto => {
@@ -275,10 +309,14 @@ impl AudioState {
                         let opt_glide_key = pressed_key_iter.chain(voice_key_iter).next();
                         let opt_replace_key =
                             opt_glide_key.and_then(|k| self.voices.contains_key(&k).then_some(k));
+                        
+
 
                         (opt_replace_key, opt_replace_key)
                     }
                 };
+
+                /*
 
                 let voice = if let Some(voice) =
                     opt_replace_key.and_then(|k| self.voices.shift_remove(&k))
@@ -311,6 +349,8 @@ impl AudioState {
                         opt_clap_note_id,
                     );
                 }
+
+                */
 
                 for (k, voice) in self.voices.iter_mut() {
                     if *k != key {
