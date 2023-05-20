@@ -255,15 +255,33 @@ impl AudioState {
 
                 match portamento_mode {
                     PortamentoMode::Off => {
-                        mono_voice.press_key(&self.parameters, velocity, Some(key), None, opt_clap_note_id);
+                        mono_voice.press_key(
+                            &self.parameters,
+                            velocity,
+                            Some(key),
+                            None,
+                            opt_clap_note_id,
+                        );
 
                         *mono_voice_key = key;
                     }
-                    PortamentoMode::Auto | PortamentoMode::Always  => {
+                    PortamentoMode::Auto | PortamentoMode::Always => {
                         if !mono_voice.active {
-                            mono_voice.press_key(&self.parameters, velocity, Some(key), None, opt_clap_note_id)
+                            mono_voice.press_key(
+                                &self.parameters,
+                                velocity,
+                                Some(key),
+                                None,
+                                opt_clap_note_id,
+                            )
                         } else if *mono_voice_key == key {
-                            mono_voice.press_key(&self.parameters, velocity, None, None, opt_clap_note_id)
+                            mono_voice.press_key(
+                                &self.parameters,
+                                velocity,
+                                None,
+                                None,
+                                opt_clap_note_id,
+                            )
                         } else {
                             let glide = if let PortamentoMode::Auto = portamento_mode {
                                 self.pressed_keys.contains(mono_voice_key)
@@ -294,21 +312,14 @@ impl AudioState {
                 }
             }
             VoiceMode::Monophonic => {
-                if let Some(go_to_key) = self.pressed_keys.iter().rev().next() {
-                    if let Some(voice) = self.voices.shift_remove(&key) {
-                        let glide = !matches!(portamento_mode, PortamentoMode::Off);
+                let (mono_voice_key, mono_voice) = &mut self.mono_voice;
 
-                        // Edge case: voice can technically already exist here,
-                        // as a previously killed voice which hasn't ended yet
-                        // (should be rare), or when switching from polyphonic
-                        // mode. If this happens, there will be disconuities.
-                        self.voices
-                            .entry(*go_to_key)
-                            .or_insert(voice)
-                            .change_pitch(*go_to_key, glide);
-                    }
-                } else if let Some(voice) = self.voices.get_mut(&key) {
-                    voice.release_key();
+                if let Some(go_to_key) = self.pressed_keys.last() {
+                    mono_voice.change_pitch(*go_to_key, portamento_mode != PortamentoMode::Off);
+
+                    *mono_voice_key = key;
+                } else {
+                    mono_voice.release_key();
                 }
             }
         }
