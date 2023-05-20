@@ -38,7 +38,6 @@ impl KeyVelocity {
 #[derive(Debug, Copy, Clone)]
 pub struct MidiPitch {
     frequency_factor: f64,
-    #[cfg(feature = "clap")]
     key: u8,
 }
 
@@ -46,7 +45,6 @@ impl MidiPitch {
     pub fn new(midi_pitch: u8) -> Self {
         Self {
             frequency_factor: Self::calculate_frequency_factor(midi_pitch),
-            #[cfg(feature = "clap")]
             key: midi_pitch,
         }
     }
@@ -184,10 +182,16 @@ impl Voice {
         for operator in self.operators.iter_mut() {
             operator.volume_envelope.sustain_if_released();
         }
+
+        self.key_pressed = true;
     }
 
     pub fn aftertouch(&mut self, velocity: KeyVelocity) {
         self.key_velocity_interpolator.set_value(velocity.0)
+    }
+
+    pub fn key(&self) -> u8 {
+        self.midi_pitch.key
     }
 
     #[inline]

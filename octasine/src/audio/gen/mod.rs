@@ -230,7 +230,7 @@ mod gen {
 
             if audio_state.pending_note_events.is_empty()
                 & audio_state.poly_voices.is_empty()
-                & !audio_state.mono_voice.1.active
+                & !audio_state.mono_voice.active
             {
                 for (l, r) in lefts.iter_mut().zip(rights.iter_mut()) {
                     *l = 0.0;
@@ -281,7 +281,7 @@ mod gen {
                 .poly_voices
                 .iter_mut()
                 .chain(
-                    ::std::iter::once((&128u8, &mut audio_state.mono_voice.1))
+                    ::std::iter::once((&128u8, &mut audio_state.mono_voice))
                         .filter(|(_, v)| v.active),
                 )
                 .map(|(k, v)| (*k, v));

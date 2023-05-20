@@ -42,7 +42,7 @@ pub struct AudioState {
     rng: Rng,
     log10table: Log10Table,
     pub poly_voices: IndexMap<u8, Voice>,
-    pub mono_voice: (u8, Voice),
+    pub mono_voice: Voice,
     pressed_keys: IndexSet<u8>,
     pending_note_events: LocalRb<NoteEvent, Vec<MaybeUninit<NoteEvent>>>,
     audio_gen_data_w2: Box<AudioGenData<2>>,
@@ -80,7 +80,7 @@ impl Default for AudioState {
             rng: Rng::new(),
             log10table: Default::default(),
             poly_voices: voices,
-            mono_voice: (0, Voice::new(MidiPitch::new(0))),
+            mono_voice: Voice::new(MidiPitch::new(0)),
             pressed_keys,
             pending_note_events: LocalRb::new(1024),
             audio_gen_data_w2: Default::default(),
@@ -251,31 +251,27 @@ impl AudioState {
                     voice.kill_envelopes();
                 }
 
-                let (mono_voice_key, mono_voice) = &mut self.mono_voice;
-
                 match portamento_mode {
                     PortamentoMode::Off => {
-                        mono_voice.press_key(
+                        self.mono_voice.press_key(
                             &self.parameters,
                             velocity,
                             Some(key),
                             None,
                             opt_clap_note_id,
                         );
-
-                        *mono_voice_key = key;
                     }
                     PortamentoMode::Auto | PortamentoMode::Always => {
-                        if !mono_voice.active {
-                            mono_voice.press_key(
+                        if !self.mono_voice.active || self.pressed_keys.len() == 1 {
+                            self.mono_voice.press_key(
                                 &self.parameters,
                                 velocity,
                                 Some(key),
                                 None,
                                 opt_clap_note_id,
                             )
-                        } else if *mono_voice_key == key {
-                            mono_voice.press_key(
+                        } else if self.mono_voice.key() == key {
+                            self.mono_voice.press_key(
                                 &self.parameters,
                                 velocity,
                                 None,
@@ -284,16 +280,14 @@ impl AudioState {
                             )
                         } else {
                             let glide = if let PortamentoMode::Auto = portamento_mode {
-                                self.pressed_keys.contains(mono_voice_key)
+                                self.pressed_keys.contains(&self.mono_voice.key())
                             } else {
                                 true
                             };
 
-                            mono_voice.change_pitch(key, glide);
-                            mono_voice.sustain_if_released();
+                            self.mono_voice.change_pitch(key, glide);
+                            self.mono_voice.sustain_if_released();
                         }
-
-                        *mono_voice_key = key;
                     }
                 }
             }
@@ -313,14 +307,11 @@ impl AudioState {
                 }
             }
             VoiceMode::Monophonic => {
-                let (mono_voice_key, mono_voice) = &mut self.mono_voice;
-
                 if let Some(go_to_key) = self.pressed_keys.last() {
-                    mono_voice.change_pitch(*go_to_key, portamento_mode != PortamentoMode::Off);
-
-                    *mono_voice_key = *go_to_key;
+                    self.mono_voice
+                        .change_pitch(*go_to_key, portamento_mode != PortamentoMode::Off);
                 } else {
-                    mono_voice.release_key();
+                    self.mono_voice.release_key();
                 }
             }
         }
