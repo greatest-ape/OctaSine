@@ -216,6 +216,10 @@ impl Voice {
                 lfo.envelope_ended();
             }
 
+            for operator in self.operators.iter_mut() {
+                operator.last_phase.0 = 0.0;
+            }
+
             #[cfg(feature = "clap")]
             if let Some(clap_note_id) = self.clap_note_id {
                 use ringbuf::Rb;

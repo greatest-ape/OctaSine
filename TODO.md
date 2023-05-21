@@ -11,7 +11,6 @@
     * Look over - always mode should maybe prefer pressed keys
   * Interaction with clap note ended events
 
-* Reset phase when envelopes end
 * Audio inconsistencies on attack, see vospi email
 * Portamento / legato
 * Consider f64 interpolator and maybe even f64 parameters, since now we
