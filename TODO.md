@@ -12,7 +12,6 @@
   * Interaction with clap note ended events
 
 * Audio inconsistencies on attack, see vospi email
-* Portamento / legato
 * Consider f64 interpolator and maybe even f64 parameters, since now we
   convert all the time in audio gen
 * Percussion adjustments
@@ -28,8 +27,6 @@
     * https://github.com/iced-rs/iced_aw/issues/77
     * https://github.com/iced-rs/iced/issues/940
 * Run miri on audio gen bench
-* Mode where release never activates but mod out is deactivated. Will need
-  extra checks for ending when all other operators not in this mode have ended
 * Aftertouch
   * Parameter for how much voice volume is affected?
 * Consider scale factor for GUI
