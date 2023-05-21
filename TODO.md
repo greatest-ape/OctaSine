@@ -6,10 +6,9 @@
     value to be non-zero?
 * Portamento
   * Should LFOs not be restarted in some cases?
-  * Implement glide time / possibly vague amount if I want constant rate option
+  * Implement constant time and constant rate modes, possibly even BPM-synced time
   * Polyphonic portamento
-    * Look over
-    * Maybe glide from lowest pressed note instead?
+    * Look over - always mode should maybe prefer pressed keys
   * Interaction with clap note ended events
 
 * Reset phase when envelopes end
