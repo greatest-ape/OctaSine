@@ -21,6 +21,7 @@ use crate::parameters::master_pitch_bend_range::{
     MasterPitchBendRangeDownValue, MasterPitchBendRangeUpValue,
 };
 use crate::parameters::portamento_mode::PortamentoModeValue;
+use crate::parameters::portamento_time::PortamentoTimeValue;
 use crate::parameters::velocity_sensitivity::VelocitySensitivityValue;
 use crate::parameters::voice_mode::VoiceModeValue;
 use crate::parameters::*;
@@ -67,6 +68,7 @@ pub struct AudioParameters {
     pub volume_velocity_sensitivity: InterpolatableAudioParameter<VelocitySensitivityValue>,
     pub voice_mode: SimpleAudioParameter<VoiceModeValue>,
     pub portamento_mode: SimpleAudioParameter<PortamentoModeValue>,
+    pub portamento_time: SimpleAudioParameter<PortamentoTimeValue>,
     pub operators: [OperatorAudioParameters; NUM_OPERATORS],
     pub lfos: [LfoAudioParameters; NUM_LFOS],
 }
@@ -81,6 +83,7 @@ impl Default for AudioParameters {
             volume_velocity_sensitivity: Default::default(),
             voice_mode: Default::default(),
             portamento_mode: Default::default(),
+            portamento_time: Default::default(),
             operators: array_init(OperatorAudioParameters::new),
             lfos: array_init(LfoAudioParameters::new),
         }
@@ -106,6 +109,7 @@ macro_rules! impl_patch_interaction {
                     }
                     MasterParameter::VoiceMode => $f(&mut self.voice_mode, input),
                     MasterParameter::PortamentoMode => $f(&mut self.portamento_mode, input),
+                    MasterParameter::PortamentoTime => $f(&mut self.portamento_time, input),
                 },
                 Parameter::Operator(index, p) => {
                     use OperatorParameter::*;

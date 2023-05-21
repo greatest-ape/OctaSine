@@ -129,7 +129,7 @@ impl Voice {
         parameters: &AudioParameters,
         velocity: KeyVelocity,
         initial_key: Option<u8>,
-        target_key: Option<u8>,
+        target_key: Option<(u8, f64)>,
         #[cfg_attr(not(feature = "clap"), allow(unused_variables))] opt_clap_note_id: Option<i32>,
     ) {
         if self.active {
@@ -139,11 +139,11 @@ impl Voice {
         }
 
         if let Some(key) = initial_key {
-            self.change_pitch(key, false);
+            self.change_pitch(key, None);
         }
 
-        if let Some(key) = target_key {
-            self.change_pitch(key, true);
+        if let Some((key, portamento_time)) = target_key {
+            self.change_pitch(key, Some(portamento_time));
 
             // TODO: send clap note ended event for old note id?
         }
@@ -166,10 +166,13 @@ impl Voice {
         self.active = true;
     }
 
-    pub fn change_pitch(&mut self, key: u8, interpolate: bool) {
+    pub fn change_pitch(&mut self, key: u8, interpolate: Option<f64>) {
         self.midi_pitch = MidiPitch::new(key);
 
-        if interpolate {
+        if let Some(portamento_time) = interpolate {
+            self.pitch_interpolator
+                .change_duration(InterpolationDuration(portamento_time));
+
             self.pitch_interpolator
                 .set_value(self.midi_pitch.frequency_factor as f32);
         } else {

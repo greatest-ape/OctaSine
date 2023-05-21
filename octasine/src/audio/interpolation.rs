@@ -1,7 +1,7 @@
 use crate::common::SampleRate;
 
 #[derive(Debug, Copy, Clone)]
-pub struct InterpolationDuration(f64);
+pub struct InterpolationDuration(pub f64);
 
 #[allow(dead_code)]
 impl InterpolationDuration {
@@ -131,6 +131,14 @@ impl Interpolator {
         self.current_value = target_value * FACTOR;
         self.cached_value = target_value;
         self.steps_remaining = 0;
+    }
+
+    pub fn change_duration(&mut self, duration: InterpolationDuration) {
+        if (duration.0 - self.interpolation_duration.0).abs() > 0.001 {
+            self.interpolation_duration = duration;
+
+            self.restart_interpolation();
+        }
     }
 }
 

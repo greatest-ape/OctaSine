@@ -233,7 +233,7 @@ impl AudioState {
                         &self.parameters,
                         velocity,
                         Some(glide_from_key),
-                        Some(key),
+                        Some((key, self.parameters.portamento_time.get_value() as f64)),
                         opt_clap_note_id,
                     );
                 } else {
@@ -299,14 +299,17 @@ impl AudioState {
                                 &self.parameters,
                                 velocity,
                                 None,
-                                Some(key),
+                                Some((key, self.parameters.portamento_time.get_value() as f64)),
                                 opt_clap_note_id,
                             )
                         }
                     } else {
                         // mono_voice is active for a different key and is in
                         // attack/decay/sustain phase: trigger pitch change with glide
-                        self.mono_voice.change_pitch(key, true);
+                        self.mono_voice.change_pitch(
+                            key,
+                            Some(self.parameters.portamento_time.get_value() as f64),
+                        );
                     }
                 }
             }
@@ -327,8 +330,14 @@ impl AudioState {
             }
             VoiceMode::Monophonic => {
                 if let Some(go_to_key) = self.pressed_keys.last() {
+                    let opt_portamento_time = if let PortamentoMode::Off = portamento_mode {
+                        None
+                    } else {
+                        Some(self.parameters.portamento_time.get_value() as f64)
+                    };
+
                     self.mono_voice
-                        .change_pitch(*go_to_key, portamento_mode != PortamentoMode::Off);
+                        .change_pitch(*go_to_key, opt_portamento_time);
                 } else {
                     self.mono_voice.release_key();
                 }

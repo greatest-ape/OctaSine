@@ -3,8 +3,8 @@ use compact_str::CompactString;
 use crate::{
     common::IndexMap,
     parameters::{
-        portamento_mode::PortamentoModeValue, velocity_sensitivity::VelocitySensitivityValue,
-        voice_mode::VoiceModeValue, *,
+        portamento_mode::PortamentoModeValue, portamento_time::PortamentoTimeValue,
+        velocity_sensitivity::VelocitySensitivityValue, voice_mode::VoiceModeValue, *,
     },
 };
 
@@ -54,6 +54,7 @@ impl PatchParameter {
                 }
                 MasterParameter::VoiceMode => Self::new::<VoiceModeValue>(parameter),
                 MasterParameter::PortamentoMode => Self::new::<PortamentoModeValue>(parameter),
+                MasterParameter::PortamentoTime => Self::new::<PortamentoTimeValue>(parameter),
             },
             Parameter::Operator(index, operator_parameter) => {
                 use OperatorParameter::*;

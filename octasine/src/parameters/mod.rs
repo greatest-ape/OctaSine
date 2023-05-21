@@ -24,6 +24,7 @@ pub mod operator_panning;
 pub mod operator_volume;
 pub mod operator_wave_type;
 pub mod portamento_mode;
+pub mod portamento_time;
 pub mod utils;
 pub mod velocity_sensitivity;
 pub mod voice_mode;
@@ -108,6 +109,7 @@ impl Parameter {
             }
             Self::Master(MasterParameter::VoiceMode) => "Voice mode".into(),
             Self::Master(MasterParameter::PortamentoMode) => "Portamento mode".into(),
+            Self::Master(MasterParameter::PortamentoTime) => "Portamento time".into(),
             Self::Operator(index, p) => match p {
                 OperatorParameter::Volume => format_compact!("OP {} vol", index + 1),
                 OperatorParameter::Active => format_compact!("OP {} active", index + 1),
@@ -185,6 +187,7 @@ impl Parameter {
             }
             Self::Master(MasterParameter::VoiceMode) => "Voice mode".into(),
             Self::Master(MasterParameter::PortamentoMode) => "Portamento mode".into(),
+            Self::Master(MasterParameter::PortamentoTime) => "Portamento time".into(),
             Self::Operator(index, p) => match p {
                 OperatorParameter::Volume => format!("OP {} vol", index + 1),
                 OperatorParameter::Active => format!("OP {} active", index + 1),

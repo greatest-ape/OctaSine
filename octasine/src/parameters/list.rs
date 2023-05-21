@@ -113,6 +113,7 @@ pub const PARAMETERS: &[Parameter] = &[
     Parameter::Operator(3, OperatorParameter::VelocitySensitivityFeedback),
     Parameter::Master(MasterParameter::VoiceMode),
     Parameter::Master(MasterParameter::PortamentoMode),
+    Parameter::Master(MasterParameter::PortamentoTime),
 ];
 
 /// Parameter enum used to abstract over parameter indices
@@ -134,6 +135,7 @@ pub enum MasterParameter {
     VelocitySensitivityVolume,
     VoiceMode,
     PortamentoMode,
+    PortamentoTime,
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
