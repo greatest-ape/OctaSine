@@ -133,7 +133,7 @@ where
     OctaSineKnob::new(
         sync_handle,
         Parameter::Master(MasterParameter::PortamentoMode),
-        "GLIDE M",
+        "GLIDE",
         "Portamento mode",
         TickMarkType::MinMaxAndDefault,
         KnobStyle::Regular,
