@@ -9,7 +9,10 @@ use iced_baseview::{
 use crate::parameters::master_pitch_bend_range::{
     MasterPitchBendRangeDownValue, MasterPitchBendRangeUpValue,
 };
+use crate::parameters::portamento_mode::PortamentoModeValue;
+use crate::parameters::portamento_time::PortamentoTimeValue;
 use crate::parameters::velocity_sensitivity::VelocitySensitivityValue;
+use crate::parameters::voice_mode::VoiceModeValue;
 use crate::parameters::{
     LfoAmountValue, LfoFrequencyFreeValue, LfoFrequencyRatioValue, LfoParameter,
     MasterFrequencyValue, MasterParameter, MasterVolumeValue, OperatorFeedbackValue,
@@ -106,6 +109,48 @@ where
         MasterPitchBendRangeDownValue::default().to_patch(),
         0.5,
         0.5,
+    )
+}
+
+pub fn voice_mode<H>(sync_handle: &H) -> OctaSineKnob<VoiceModeValue>
+where
+    H: GuiSyncHandle,
+{
+    OctaSineKnob::new(
+        sync_handle,
+        Parameter::Master(MasterParameter::VoiceMode),
+        "MODE",
+        "Voice mode",
+        TickMarkType::MinMaxAndDefault,
+        KnobStyle::Regular,
+    )
+}
+
+pub fn portamento_mode<H>(sync_handle: &H) -> OctaSineKnob<PortamentoModeValue>
+where
+    H: GuiSyncHandle,
+{
+    OctaSineKnob::new(
+        sync_handle,
+        Parameter::Master(MasterParameter::PortamentoMode),
+        "MODE",
+        "Portamento mode",
+        TickMarkType::MinMaxAndDefault,
+        KnobStyle::Regular,
+    )
+}
+
+pub fn portamento_time<H>(sync_handle: &H) -> OctaSineKnob<PortamentoTimeValue>
+where
+    H: GuiSyncHandle,
+{
+    OctaSineKnob::new(
+        sync_handle,
+        Parameter::Master(MasterParameter::PortamentoTime),
+        "TIME",
+        "Portamento time",
+        TickMarkType::MinMaxAndDefault,
+        KnobStyle::Regular,
     )
 }
 
