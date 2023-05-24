@@ -12,7 +12,7 @@ pub struct PortamentoTimeValue(f32);
 
 impl Default for PortamentoTimeValue {
     fn default() -> Self {
-        Self(1.0)
+        Self(0.1)
     }
 }
 
