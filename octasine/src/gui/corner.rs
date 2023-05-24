@@ -149,9 +149,9 @@ impl CornerWidgets {
                 Row::new()
                     .push(container_l3(self.master_volume.view(theme)))
                     .push(space_l3())
-                    .push(container_l3(self.portamento_mode.view(theme)))
+                    .push(container_l3(self.master_frequency.view(theme)))
                     .push(space_l3())
-                    .push(container_l3(self.portamento_time.view(theme))),
+                    .push(container_l3(self.volume_velocity_sensitivity.view(theme))),
             )))
             .push(Space::with_width(Length::Fixed(LINE_HEIGHT.into())))
             .push(triple_container(logo));
@@ -168,9 +168,9 @@ impl CornerWidgets {
                     Row::new()
                         .push(container_l3(self.voice_mode.view(theme)))
                         .push(space_l3())
-                        .push(container_l3(self.volume_velocity_sensitivity.view(theme)))
+                        .push(container_l3(self.portamento_mode.view(theme)))
                         .push(space_l3())
-                        .push(container_l3(self.master_frequency.view(theme)))
+                        .push(container_l3(self.portamento_time.view(theme)))
                         .push(space_l3())
                         .push(container_l3(self.master_pitch_bend_up.view(theme)))
                         .push(space_l3())
