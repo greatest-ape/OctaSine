@@ -144,8 +144,8 @@ impl CornerWidgets {
             .height(Length::Fixed(f32::from(LINE_HEIGHT * 6)))
         };
 
-        let top: Element<Message, Theme> = if self.alternative_controls {
-            Row::new()
+        if !self.alternative_controls {
+            let top = Row::new()
                 .push(triple_container(logo))
                 .push(Space::with_width(Length::Fixed(LINE_HEIGHT.into())))
                 .push(container_l1(container_l2(
@@ -155,51 +155,50 @@ impl CornerWidgets {
                         .push(container_l3(self.master_frequency.view(theme)))
                         .push(space_l3())
                         .push(container_l3(self.volume_velocity_sensitivity.view(theme))),
-                )))
-                .into()
-        } else {
-            Row::new()
-                .push(triple_container(logo))
-                .push(Space::with_width(Length::Fixed(LINE_HEIGHT.into())))
-                .push(container_l1(container_l2(
-                    Row::new()
-                        .push(container_l3(self.master_volume.view(theme)))
-                        .push(space_l3())
-                        .push(container_l3(self.master_frequency.view(theme)))
-                        .push(space_l3())
-                        .push(container_l3(self.volume_velocity_sensitivity.view(theme))),
-                )))
-                .into()
-        };
+                )));
 
-        let bottom: Element<Message, Theme> = if self.alternative_controls {
-            Row::new()
-                .push(container_l1(container_l2(
-                    Row::new()
-                        .push(container_l3(self.voice_mode.view(theme)))
-                        .push(space_l3())
-                        .push(container_l3(self.portamento_mode.view(theme)))
-                        .push(space_l3())
-                        .push(container_l3(self.portamento_time.view(theme)))
-                        .push(space_l3())
-                        .push(container_l3(self.master_pitch_bend_up.view(theme)))
-                        .push(space_l3())
-                        .push(container_l3(self.master_pitch_bend_down.view(theme))),
-                )))
-                .into()
-        } else {
-            Row::new()
+            let bottom = Row::new()
                 .push(mod_matrix)
                 .push(Space::with_width(Length::Fixed(LINE_HEIGHT.into())))
-                .push(triple_container(self.patch_picker.view(theme)))
-                .into()
-        };
+                .push(triple_container(self.patch_picker.view(theme)));
 
-        Column::new()
-            .push(top)
-            .push(Space::with_height(Length::Fixed(LINE_HEIGHT.into())))
-            .push(bottom)
-            .into()
+            Column::new()
+                .push(top)
+                .push(Space::with_height(Length::Fixed(LINE_HEIGHT.into())))
+                .push(bottom)
+                .into()
+        } else {
+            let top = Row::new()
+                .push(triple_container(logo))
+                .push(Space::with_width(Length::Fixed(LINE_HEIGHT.into())))
+                .push(container_l1(container_l2(
+                    Row::new()
+                        .push(container_l3(self.master_volume.view(theme)))
+                        .push(space_l3())
+                        .push(container_l3(self.master_frequency.view(theme)))
+                        .push(space_l3())
+                        .push(container_l3(self.volume_velocity_sensitivity.view(theme))),
+                )));
+
+            let bottom = Row::new().push(container_l1(container_l2(
+                Row::new()
+                    .push(container_l3(self.voice_mode.view(theme)))
+                    .push(space_l3())
+                    .push(container_l3(self.portamento_mode.view(theme)))
+                    .push(space_l3())
+                    .push(container_l3(self.portamento_time.view(theme)))
+                    .push(space_l3())
+                    .push(container_l3(self.master_pitch_bend_up.view(theme)))
+                    .push(space_l3())
+                    .push(container_l3(self.master_pitch_bend_down.view(theme))),
+            )));
+
+            Column::new()
+                .push(top)
+                .push(Space::with_height(Length::Fixed(LINE_HEIGHT.into())))
+                .push(bottom)
+                .into()
+        }
     }
 }
 
