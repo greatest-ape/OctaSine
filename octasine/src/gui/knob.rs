@@ -83,8 +83,8 @@ where
     OctaSineKnob::new_with_values(
         sync_handle,
         Parameter::Master(MasterParameter::PitchBendRangeUp),
-        "UP",
-        "Upward pitch bench range",
+        "PB UP",
+        "Pitch bench range - upward",
         TickMarkType::MinMaxAndDefault,
         KnobStyle::Bipolar,
         MasterPitchBendRangeUpValue::default().to_patch(),
@@ -102,8 +102,8 @@ where
     OctaSineKnob::new_with_values(
         sync_handle,
         Parameter::Master(MasterParameter::PitchBendRangeDown),
-        "DOWN",
-        "Downward pitch bench range",
+        "PB DOWN",
+        "Pitch bench range - downward",
         TickMarkType::MinMaxAndDefault,
         KnobStyle::Bipolar,
         MasterPitchBendRangeDownValue::default().to_patch(),
@@ -119,7 +119,7 @@ where
     OctaSineKnob::new(
         sync_handle,
         Parameter::Master(MasterParameter::VoiceMode),
-        "MODE",
+        "VOICES",
         "Voice mode",
         TickMarkType::MinMaxAndDefault,
         KnobStyle::Regular,
@@ -133,7 +133,7 @@ where
     OctaSineKnob::new(
         sync_handle,
         Parameter::Master(MasterParameter::PortamentoMode),
-        "MODE",
+        "GLIDE M",
         "Portamento mode",
         TickMarkType::MinMaxAndDefault,
         KnobStyle::Regular,
@@ -147,7 +147,7 @@ where
     OctaSineKnob::new(
         sync_handle,
         Parameter::Master(MasterParameter::PortamentoTime),
-        "TIME",
+        "GLIDE T",
         "Portamento time",
         TickMarkType::MinMaxAndDefault,
         KnobStyle::Regular,

@@ -32,12 +32,6 @@ use iced_baseview::{
 use serde::{Deserialize, Serialize};
 
 use crate::common::NUM_OPERATORS;
-use crate::parameters::master_pitch_bend_range::{
-    MasterPitchBendRangeDownValue, MasterPitchBendRangeUpValue,
-};
-use crate::parameters::portamento_mode::PortamentoModeValue;
-use crate::parameters::portamento_time::PortamentoTimeValue;
-use crate::parameters::voice_mode::VoiceModeValue;
 use crate::parameters::*;
 use crate::sync::GuiSyncHandle;
 
@@ -46,12 +40,8 @@ use operator::OperatorWidgets;
 use patch_picker::PatchPicker;
 use style::Theme;
 
-use self::common::{container_l2, container_l3, space_l3};
+use self::common::{container_l2, container_l3};
 use self::corner::CornerWidgets;
-use self::knob::{
-    master_pitch_bend_range_down, master_pitch_bend_range_up, portamento_mode, portamento_time,
-    voice_mode, OctaSineKnob,
-};
 use self::operator::ModTargetPicker;
 use self::style::container::ContainerStyle;
 
@@ -175,11 +165,6 @@ pub struct OctaSineIcedApplication<H: GuiSyncHandle> {
     lfo_4: LfoWidgets,
     corner: CornerWidgets,
     modal_action: Option<ModalAction>,
-    master_pitch_bend_up: OctaSineKnob<MasterPitchBendRangeUpValue>,
-    master_pitch_bend_down: OctaSineKnob<MasterPitchBendRangeDownValue>,
-    voice_mode: OctaSineKnob<VoiceModeValue>,
-    portamento_mode: OctaSineKnob<PortamentoModeValue>,
-    portamento_time: OctaSineKnob<PortamentoTimeValue>,
 }
 
 impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {
@@ -191,17 +176,21 @@ impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {
                 self.corner.master_frequency.set_value(v)
             }
             Parameter::Master(MasterParameter::PitchBendRangeUp) => {
-                self.master_pitch_bend_up.set_value(v)
+                self.corner.master_pitch_bend_up.set_value(v)
             }
             Parameter::Master(MasterParameter::PitchBendRangeDown) => {
-                self.master_pitch_bend_down.set_value(v)
+                self.corner.master_pitch_bend_down.set_value(v)
             }
             Parameter::Master(MasterParameter::VelocitySensitivityVolume) => {
                 self.corner.volume_velocity_sensitivity.set_value(v)
             }
-            Parameter::Master(MasterParameter::VoiceMode) => self.voice_mode.set_value(v),
-            Parameter::Master(MasterParameter::PortamentoMode) => self.portamento_mode.set_value(v),
-            Parameter::Master(MasterParameter::PortamentoTime) => self.portamento_time.set_value(v),
+            Parameter::Master(MasterParameter::VoiceMode) => self.corner.voice_mode.set_value(v),
+            Parameter::Master(MasterParameter::PortamentoMode) => {
+                self.corner.portamento_mode.set_value(v)
+            }
+            Parameter::Master(MasterParameter::PortamentoTime) => {
+                self.corner.portamento_time.set_value(v)
+            }
             outer_p @ Parameter::Operator(index, p) => {
                 self.operator_1.wave_display.set_value(outer_p, v);
                 self.operator_2.wave_display.set_value(outer_p, v);
@@ -490,13 +479,6 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
 
         let corner = CornerWidgets::new(&sync_handle);
 
-        let master_pitch_bend_up = master_pitch_bend_range_up(&sync_handle);
-        let master_pitch_bend_down = master_pitch_bend_range_down(&sync_handle);
-
-        let voice_mode = voice_mode(&sync_handle);
-        let portamento_mode = portamento_mode(&sync_handle);
-        let portamento_time = portamento_time(&sync_handle);
-
         let app = Self {
             sync_handle,
             theme: style,
@@ -510,11 +492,6 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
             lfo_4,
             corner,
             modal_action: None,
-            master_pitch_bend_up,
-            master_pitch_bend_down,
-            voice_mode,
-            portamento_mode,
-            portamento_time,
         };
 
         (app, Command::none())
@@ -671,6 +648,8 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                 ] {
                     operator.shifted = !operator.shifted;
                 }
+
+                self.corner.alternative_controls = !self.corner.alternative_controls;
             }
             Message::LoadBankOrPatch => {
                 const TITLE: &str = "Load OctaSine patch bank or patches";
@@ -1021,67 +1000,18 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                 ModalAction::PatchSettings => {
                     let body = Column::new()
                         .push(
-                            Row::new()
-                                .push(container_l2(
-                                    Column::new()
-                                        .push(Space::with_height(LINE_HEIGHT))
-                                        .push(
-                                            Text::new("VOICE")
-                                                .size(FONT_SIZE + FONT_SIZE / 2)
-                                                .font(self.theme.font_heading())
-                                                .horizontal_alignment(Horizontal::Center)
-                                                .width(Length::Fixed(f32::from(LINE_HEIGHT * 4))),
-                                        )
-                                        .push(
-                                            Row::new().push(container_l3(
-                                                self.voice_mode.view(&self.theme),
-                                            )),
-                                        ),
-                                ))
-                                .push(Space::with_width(LINE_HEIGHT))
-                                .push(container_l2(
-                                    Column::new()
-                                        .push(Space::with_height(LINE_HEIGHT))
-                                        .push(
-                                            Text::new("PORTAMENTO")
-                                                .size(FONT_SIZE + FONT_SIZE / 2)
-                                                .font(self.theme.font_heading())
-                                                .horizontal_alignment(Horizontal::Center)
-                                                .width(Length::Fixed(f32::from(LINE_HEIGHT * 8))),
-                                        )
-                                        .push(
-                                            Row::new()
-                                                .push(container_l3(
-                                                    self.portamento_mode.view(&self.theme),
-                                                ))
-                                                .push(space_l3())
-                                                .push(container_l3(
-                                                    self.portamento_time.view(&self.theme),
-                                                )),
-                                        ),
-                                ))
-                                .push(Space::with_width(LINE_HEIGHT))
-                                .push(container_l2(
-                                    Column::new()
-                                        .push(Space::with_height(LINE_HEIGHT))
-                                        .push(
-                                            Text::new("PITCH BEND")
-                                                .size(FONT_SIZE + FONT_SIZE / 2)
-                                                .font(self.theme.font_heading())
-                                                .horizontal_alignment(Horizontal::Center)
-                                                .width(Length::Fixed(f32::from(LINE_HEIGHT * 8))),
-                                        )
-                                        .push(
-                                            Row::new()
-                                                .push(container_l3(
-                                                    self.master_pitch_bend_up.view(&self.theme),
-                                                ))
-                                                .push(space_l3())
-                                                .push(container_l3(
-                                                    self.master_pitch_bend_down.view(&self.theme),
-                                                )),
-                                        ),
-                                )),
+                            Row::new().push(container_l2(
+                                Column::new()
+                                    .push(Space::with_height(LINE_HEIGHT))
+                                    .push(
+                                        Text::new("EXTRAS")
+                                            .size(FONT_SIZE + FONT_SIZE / 2)
+                                            .font(self.theme.font_heading())
+                                            .horizontal_alignment(Horizontal::Center)
+                                            .width(Length::Fixed(f32::from(LINE_HEIGHT * 8))),
+                                    )
+                                    .push(Row::new().push(container_l3(Text::new("NOTHING")))),
+                            )),
                         )
                         .push(Space::with_height(LINE_HEIGHT))
                         .push(

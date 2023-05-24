@@ -11,7 +11,7 @@ use super::LINE_HEIGHT;
 use super::{style::Theme, GuiSyncHandle, Message, FONT_SIZE};
 
 const ACTIONS: &[Action] = &[
-    Action::PatchSettings,
+    // Action::PatchSettings, // Disabled for now
     Action::RenamePatch,
     Action::SavePatch,
     Action::SaveBank,
