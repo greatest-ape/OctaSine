@@ -10,6 +10,8 @@
   * Polyphonic portamento
     * Look over - always mode should maybe prefer pressed keys
   * Interaction with clap note ended events
+* In alternative controls mode, maybe display a small envelope editor?
+* Operator 1 modulation output velocity sensitivity makes no sense
 
 * Audio inconsistencies on attack, see vospi email
 * Consider f64 interpolator and maybe even f64 parameters, since now we
