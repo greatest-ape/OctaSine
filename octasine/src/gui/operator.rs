@@ -195,7 +195,11 @@ impl OperatorWidgets {
             container_l2(
                 Row::new()
                     .push(space_l3())
-                    .push(container_l3(self.mod_out_velocity_sensitivity.view(theme)))
+                    .push(if self.index > 0 {
+                        container_l3(self.mod_out_velocity_sensitivity.view(theme))
+                    } else {
+                        container_l3(Space::with_width(LINE_HEIGHT * 4))
+                    })
                     .push(space_l3())
                     .push(container_l3(self.feedback_velocity_sensitivity.view(theme)))
                     .push(space_l3().width(LINE_HEIGHT * 15)),
