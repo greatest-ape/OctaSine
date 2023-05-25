@@ -145,6 +145,8 @@ impl CornerWidgets {
         };
 
         let bottom = Row::new()
+            .push(triple_container(logo))
+            .push(Space::with_width(Length::Fixed(LINE_HEIGHT.into())))
             .push(container_l1(container_l2(
                 Row::new()
                     .push(container_l3(self.master_volume.view(theme)))
@@ -152,9 +154,7 @@ impl CornerWidgets {
                     .push(container_l3(self.master_frequency.view(theme)))
                     .push(space_l3())
                     .push(container_l3(self.volume_velocity_sensitivity.view(theme))),
-            )))
-            .push(Space::with_width(Length::Fixed(LINE_HEIGHT.into())))
-            .push(triple_container(logo));
+            )));
 
         let top: Element<Message, Theme> = if !self.alternative_controls {
             Row::new()
