@@ -47,9 +47,9 @@ impl ParameterValue for PortamentoModeValue {
     }
     fn get_formatted(self) -> CompactString {
         match self.0 {
-            PortamentoMode::Off => "Off".into(),
-            PortamentoMode::Auto => "Auto".into(),
-            PortamentoMode::Always => "Always".into(),
+            PortamentoMode::Off => "OFF".into(),
+            PortamentoMode::Auto => "AUTO".into(),
+            PortamentoMode::Always => "ALWAYS".into(),
         }
     }
 

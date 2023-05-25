@@ -45,8 +45,8 @@ impl ParameterValue for VoiceModeValue {
     }
     fn get_formatted(self) -> CompactString {
         match self.0 {
-            VoiceMode::Polyphonic => "Poly".into(),
-            VoiceMode::Monophonic => "Mono".into(),
+            VoiceMode::Polyphonic => "POLY".into(),
+            VoiceMode::Monophonic => "MONO".into(),
         }
     }
 
