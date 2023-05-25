@@ -260,9 +260,7 @@ mod gen {
         for sample_index in 0..Pd::SAMPLES {
             let time_per_sample = audio_state.time_per_sample;
 
-            audio_state
-                .parameters
-                .advance_one_sample(audio_state.sample_rate);
+            audio_state.advance_one_sample();
             audio_state.process_events_for_sample(position + sample_index);
 
             set_value_for_both_channels(

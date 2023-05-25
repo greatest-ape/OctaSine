@@ -45,6 +45,7 @@ pub struct AudioState {
     pub monophonic_voice: Voice,
     monophonic_pressed_keys: IndexSet<u8>,
     pending_note_events: LocalRb<NoteEvent, Vec<MaybeUninit<NoteEvent>>>,
+    opt_last_voice_mode: Option<VoiceMode>,
     audio_gen_data_w2: Box<AudioGenData<2>>,
     #[cfg(target_arch = "x86_64")]
     audio_gen_data_w4: Box<AudioGenData<4>>,
@@ -54,14 +55,14 @@ pub struct AudioState {
 
 impl Default for AudioState {
     fn default() -> Self {
-        let voices = {
+        let polyphonic_voices = {
             let mut voices = IndexMap::default();
 
             voices.reserve(128);
 
             voices
         };
-        let pressed_keys = {
+        let monophonic_pressed_keys = {
             let mut pressed_keys = IndexSet::default();
 
             pressed_keys.reserve(128);
@@ -79,10 +80,11 @@ impl Default for AudioState {
             parameters: AudioParameters::default(),
             rng: Rng::new(),
             log10table: Default::default(),
-            polyphonic_voices: voices,
+            polyphonic_voices,
             monophonic_voice: Voice::new(MidiPitch::new(0)),
-            monophonic_pressed_keys: pressed_keys,
+            monophonic_pressed_keys,
             pending_note_events: LocalRb::new(1024),
+            opt_last_voice_mode: None,
             audio_gen_data_w2: Default::default(),
             #[cfg(target_arch = "x86_64")]
             audio_gen_data_w4: Default::default(),
@@ -119,6 +121,30 @@ impl AudioState {
         if self.pending_note_events.push(event).is_err() {
             ::log::error!("Audio note event buffer full");
         }
+    }
+
+    pub fn advance_one_sample(&mut self) {
+        self.parameters.advance_one_sample(self.sample_rate);
+
+        let voice_mode = self.parameters.voice_mode.get_value();
+
+        if let Some(last_voice_mode) = self.opt_last_voice_mode {
+            match (last_voice_mode, voice_mode) {
+                (VoiceMode::Polyphonic, VoiceMode::Monophonic) => {
+                    self.monophonic_pressed_keys.clear();
+
+                    for voice in self.polyphonic_voices.values_mut() {
+                        voice.kill_envelopes();
+                    }
+                }
+                (VoiceMode::Monophonic, VoiceMode::Polyphonic) => {
+                    self.monophonic_voice.kill_envelopes();
+                }
+                _ => (),
+            }
+        }
+
+        self.opt_last_voice_mode = Some(voice_mode);
     }
 
     #[cfg(feature = "vst2")]
@@ -247,10 +273,6 @@ impl AudioState {
                 self.monophonic_pressed_keys.shift_remove(&key);
                 self.monophonic_pressed_keys.insert(key);
 
-                for (_, voice) in self.polyphonic_voices.iter_mut() {
-                    voice.kill_envelopes();
-                }
-
                 if portamento_mode == PortamentoMode::Off {
                     self.monophonic_voice.press_key(
                         &self.parameters,
@@ -317,10 +339,6 @@ impl AudioState {
     }
 
     fn key_off(&mut self, key: u8) {
-        // Remove pressed keys no matter the voice mode, in order to avoid
-        // lingering key presses when switching from monophonic to polyphonic
-        self.monophonic_pressed_keys.shift_remove(&key);
-
         let voice_mode = self.parameters.voice_mode.get_value();
         let portamento_mode = self.parameters.portamento_mode.get_value();
 
@@ -331,7 +349,9 @@ impl AudioState {
                 }
             }
             VoiceMode::Monophonic => {
-                if let Some(go_to_key) = self.monophonic_pressed_keys.last() {
+                self.monophonic_pressed_keys.shift_remove(&key);
+
+                if let Some(go_to_key) = self.monophonic_pressed_keys.last().copied() {
                     let opt_portamento_time = if let PortamentoMode::Off = portamento_mode {
                         None
                     } else {
@@ -339,7 +359,7 @@ impl AudioState {
                     };
 
                     self.monophonic_voice
-                        .change_pitch(*go_to_key, opt_portamento_time);
+                        .change_pitch(go_to_key, opt_portamento_time);
                 } else {
                     self.monophonic_voice.release_key();
                 }
@@ -353,11 +373,6 @@ impl AudioState {
         // if let Some(voice) = self.voices.get_mut(&key) {
         //     voice.aftertouch(velocity);
         // }
-    }
-
-    #[cfg(test)]
-    pub fn advance_one_sample(&mut self, sample_rate: SampleRate) {
-        self.parameters.advance_one_sample(sample_rate);
     }
 
     #[cfg(test)]
