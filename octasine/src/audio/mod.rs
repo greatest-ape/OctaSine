@@ -41,9 +41,9 @@ pub struct AudioState {
     parameters: AudioParameters,
     rng: Rng,
     log10table: Log10Table,
-    pub poly_voices: IndexMap<u8, Voice>,
-    pub mono_voice: Voice,
-    pressed_keys: IndexSet<u8>,
+    pub polyphonic_voices: IndexMap<u8, Voice>,
+    pub monophonic_voice: Voice,
+    monophonic_pressed_keys: IndexSet<u8>,
     pending_note_events: LocalRb<NoteEvent, Vec<MaybeUninit<NoteEvent>>>,
     audio_gen_data_w2: Box<AudioGenData<2>>,
     #[cfg(target_arch = "x86_64")]
@@ -79,9 +79,9 @@ impl Default for AudioState {
             parameters: AudioParameters::default(),
             rng: Rng::new(),
             log10table: Default::default(),
-            poly_voices: voices,
-            mono_voice: Voice::new(MidiPitch::new(0)),
-            pressed_keys,
+            polyphonic_voices: voices,
+            monophonic_voice: Voice::new(MidiPitch::new(0)),
+            monophonic_pressed_keys: pressed_keys,
             pending_note_events: LocalRb::new(1024),
             audio_gen_data_w2: Default::default(),
             #[cfg(target_arch = "x86_64")]
@@ -191,9 +191,6 @@ impl AudioState {
     }
 
     fn key_on(&mut self, key: u8, velocity: KeyVelocity, opt_clap_note_id: Option<i32>) {
-        self.pressed_keys.shift_remove(&key);
-        self.pressed_keys.insert(key);
-
         let voice_mode = self.parameters.voice_mode.get_value();
         let portamento_mode = self.parameters.portamento_mode.get_value();
 
@@ -203,7 +200,7 @@ impl AudioState {
                 let opt_glide_from_key = match portamento_mode {
                     PortamentoMode::Off => None,
                     PortamentoMode::Auto => self
-                        .poly_voices
+                        .polyphonic_voices
                         .iter()
                         .rev()
                         .filter(|(k, v)| **k != key && v.key_pressed)
@@ -211,7 +208,7 @@ impl AudioState {
                         .next(),
                     // FIXME: should maybe prefer pressed keys?
                     PortamentoMode::Always => self
-                        .poly_voices
+                        .polyphonic_voices
                         .iter()
                         .rev()
                         .filter(|(k, _)| **k != key)
@@ -219,11 +216,11 @@ impl AudioState {
                         .next(),
                 };
 
-                let voice = if let Some(voice) = self.poly_voices.shift_remove(&key) {
+                let voice = if let Some(voice) = self.polyphonic_voices.shift_remove(&key) {
                     // Shift voice to last position (most recently pressed)
-                    self.poly_voices.entry(key).or_insert(voice)
+                    self.polyphonic_voices.entry(key).or_insert(voice)
                 } else {
-                    self.poly_voices
+                    self.polyphonic_voices
                         .entry(key)
                         .or_insert(Voice::new(MidiPitch::new(key)))
                 };
@@ -247,12 +244,15 @@ impl AudioState {
                 }
             }
             VoiceMode::Monophonic => {
-                for (_, voice) in self.poly_voices.iter_mut() {
+                self.monophonic_pressed_keys.shift_remove(&key);
+                self.monophonic_pressed_keys.insert(key);
+
+                for (_, voice) in self.polyphonic_voices.iter_mut() {
                     voice.kill_envelopes();
                 }
 
                 if portamento_mode == PortamentoMode::Off {
-                    self.mono_voice.press_key(
+                    self.monophonic_voice.press_key(
                         &self.parameters,
                         velocity,
                         Some(key),
@@ -260,32 +260,32 @@ impl AudioState {
                         opt_clap_note_id,
                     );
                 } else {
-                    if !self.mono_voice.active {
+                    if !self.monophonic_voice.active {
                         // mono_voice is inactive: trigger key press and force initial key
-                        self.mono_voice.press_key(
+                        self.monophonic_voice.press_key(
                             &self.parameters,
                             velocity,
                             Some(key),
                             None,
                             opt_clap_note_id,
                         )
-                    } else if self.mono_voice.key() == key {
+                    } else if self.monophonic_voice.key() == key {
                         // mono_voice is active and for current key: retrigger key, but don't
                         // force an initial key in case there are previous glides
-                        self.mono_voice.press_key(
+                        self.monophonic_voice.press_key(
                             &self.parameters,
                             velocity,
                             None,
                             None,
                             opt_clap_note_id,
                         )
-                    } else if !self.mono_voice.key_pressed {
+                    } else if !self.monophonic_voice.key_pressed {
                         // mono_voice is active for a different key and is in release stage
 
                         if portamento_mode == PortamentoMode::Auto {
                             // Auto portamento mode: trigger key press for voice with new key
                             // without glide
-                            self.mono_voice.press_key(
+                            self.monophonic_voice.press_key(
                                 &self.parameters,
                                 velocity,
                                 Some(key),
@@ -295,7 +295,7 @@ impl AudioState {
                         } else {
                             // Always portamento mode: trigger key press for voice with new key
                             // with glide
-                            self.mono_voice.press_key(
+                            self.monophonic_voice.press_key(
                                 &self.parameters,
                                 velocity,
                                 None,
@@ -306,7 +306,7 @@ impl AudioState {
                     } else {
                         // mono_voice is active for a different key and is in
                         // attack/decay/sustain phase: trigger pitch change with glide
-                        self.mono_voice.change_pitch(
+                        self.monophonic_voice.change_pitch(
                             key,
                             Some(self.parameters.portamento_time.get_value() as f64),
                         );
@@ -317,29 +317,31 @@ impl AudioState {
     }
 
     fn key_off(&mut self, key: u8) {
-        self.pressed_keys.shift_remove(&key);
+        // Remove pressed keys no matter the voice mode, in order to avoid
+        // lingering key presses when switching from monophonic to polyphonic
+        self.monophonic_pressed_keys.shift_remove(&key);
 
         let voice_mode = self.parameters.voice_mode.get_value();
         let portamento_mode = self.parameters.portamento_mode.get_value();
 
         match voice_mode {
             VoiceMode::Polyphonic => {
-                if let Some(voice) = self.poly_voices.get_mut(&key) {
+                if let Some(voice) = self.polyphonic_voices.get_mut(&key) {
                     voice.release_key();
                 }
             }
             VoiceMode::Monophonic => {
-                if let Some(go_to_key) = self.pressed_keys.last() {
+                if let Some(go_to_key) = self.monophonic_pressed_keys.last() {
                     let opt_portamento_time = if let PortamentoMode::Off = portamento_mode {
                         None
                     } else {
                         Some(self.parameters.portamento_time.get_value() as f64)
                     };
 
-                    self.mono_voice
+                    self.monophonic_voice
                         .change_pitch(*go_to_key, opt_portamento_time);
                 } else {
-                    self.mono_voice.release_key();
+                    self.monophonic_voice.release_key();
                 }
             }
         }

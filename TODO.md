@@ -5,6 +5,7 @@
   * Go to kill phase after release, in preparation for allowing release end
     value to be non-zero?
 * Portamento
+  * Glide time should be finer resolution for small values
   * Should LFOs not be restarted in some cases?
   * Implement constant time and constant rate modes, possibly even BPM-synced time
   * Polyphonic portamento
