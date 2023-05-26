@@ -62,7 +62,7 @@ impl CornerWidgets {
             sync_handle,
             Parameter::Master(MasterParameter::VoiceMode),
             "POLY",
-            LINE_HEIGHT * 3 + 4,
+            LINE_HEIGHT * 2 + 6,
             LINE_HEIGHT,
             Default::default(),
             |v| v < 0.5,
@@ -73,7 +73,7 @@ impl CornerWidgets {
             sync_handle,
             Parameter::Master(MasterParameter::PortamentoMode),
             "PORT",
-            LINE_HEIGHT * 3 + 4,
+            LINE_HEIGHT * 2 + 6,
             LINE_HEIGHT,
             Default::default(),
             |v| v > 0.5,
@@ -243,14 +243,14 @@ impl CornerWidgets {
                     .push(Space::with_height(LINE_HEIGHT))
                     .push(voice_mode_button)
                     .push(Space::with_height(LINE_HEIGHT / 2))
-                    .push(portamento_button)
-                    .push(Space::with_height(LINE_HEIGHT / 2))
                     .push(
                         Row::new()
-                            .push(legato_button)
-                            .push(Space::with_width(Length::Fixed(4.0)))
-                            .push(portamento_type_button)
+                            .push(portamento_button)
+                            // .push(Space::with_width(Length::Fixed(4.0)))
+                            // .push(portamento_type_button)
                     )
+                    .push(Space::with_height(LINE_HEIGHT / 2))
+                    .push(legato_button)
             )
             // .height(Length::Fixed(f32::from(LINE_HEIGHT * 6)))
         };
