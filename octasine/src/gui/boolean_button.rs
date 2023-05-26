@@ -14,6 +14,7 @@ use crate::parameters::{
 use crate::sync::GuiSyncHandle;
 
 use super::style::boolean_button::BooleanButtonStyle;
+use super::SnapPoint;
 use super::{style::Theme, Message, FONT_SIZE, LINE_HEIGHT};
 
 #[derive(Debug, Clone)]

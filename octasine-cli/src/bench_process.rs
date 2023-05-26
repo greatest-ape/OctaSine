@@ -8,7 +8,7 @@ use sha2::{Digest, Sha256};
 use vst::plugin::PluginParameters;
 
 use octasine::audio::gen::AudioGen;
-use octasine::parameters::{OperatorParameter, Parameter, PARAMETERS, MasterParameter};
+use octasine::parameters::{MasterParameter, OperatorParameter, Parameter, PARAMETERS};
 use octasine::plugin::vst2::OctaSine;
 use octasine::simd::{Simd, SimdPackedDouble};
 
