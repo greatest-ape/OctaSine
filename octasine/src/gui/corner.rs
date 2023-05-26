@@ -62,8 +62,9 @@ impl CornerWidgets {
             sync_handle,
             Parameter::Master(MasterParameter::VoiceMode),
             "POLY",
-            LINE_HEIGHT * 3,
+            LINE_HEIGHT * 3 + 4,
             LINE_HEIGHT,
+            Default::default(),
             |v| v < 0.5,
             |b| if b { 0.0 } else { 1.0 },
             BooleanButtonStyle::Regular,
@@ -72,8 +73,9 @@ impl CornerWidgets {
             sync_handle,
             Parameter::Master(MasterParameter::PortamentoMode),
             "PORT",
-            LINE_HEIGHT * 3,
+            LINE_HEIGHT * 3 + 4,
             LINE_HEIGHT,
+            Default::default(),
             |v| v > 0.5,
             |b| if b { 1.0 } else { 0.0 },
             BooleanButtonStyle::Regular,
@@ -81,9 +83,11 @@ impl CornerWidgets {
         let legato_button = BooleanButton::new(
             sync_handle,
             Parameter::Master(MasterParameter::PortamentoMode),
-            "L",
+            "LEG",
+            LINE_HEIGHT * 2,
             LINE_HEIGHT,
-            LINE_HEIGHT,
+            // super::boolean_button::BooleanButtonTextAlignment::Offsets { x: 3.5, y: -0.5 },
+            Default::default(),
             |v| v < 0.5,
             |b| if b { 0.0 } else { 1.0 },
             BooleanButtonStyle::Regular,
@@ -91,11 +95,13 @@ impl CornerWidgets {
         let portamento_type_button = BooleanButton::new(
             sync_handle,
             Parameter::Master(MasterParameter::PortamentoMode),
-            "T",
+            "R",
             LINE_HEIGHT,
             LINE_HEIGHT,
-            |v| v < 0.5,
-            |b| if b { 0.0 } else { 1.0 },
+            // super::boolean_button::BooleanButtonTextAlignment::Offsets { x: 3.5, y: 0.0 },
+            Default::default(),
+            |v| v >= 0.5,
+            |b| if b { 1.0 } else { 0.0 },
             BooleanButtonStyle::Regular,
         );
 
@@ -224,7 +230,7 @@ impl CornerWidgets {
             );
             let portamento_type_button = tooltip(
                 theme,
-                "Toggle constant time/rate portamento mode",
+                "Toggle constant rate portamento",
                 Position::Bottom,
                 self.portamento_type_button.view(),
             );
@@ -243,8 +249,8 @@ impl CornerWidgets {
                         Row::new()
                             .push(legato_button)
                             .push(Space::with_width(Length::Fixed(4.0)))
-                            .push(portamento_type_button),
-                    ),
+                            .push(portamento_type_button)
+                    )
             )
             // .height(Length::Fixed(f32::from(LINE_HEIGHT * 6)))
         };
