@@ -147,7 +147,7 @@ where
     OctaSineKnob::new(
         sync_handle,
         Parameter::Master(MasterParameter::PortamentoTime),
-        "PORT",
+        "GLIDE T",
         "Portamento time",
         TickMarkType::MinMaxAndDefault,
         KnobStyle::Regular,

@@ -1,22 +1,32 @@
-use compact_str::CompactString;
+use compact_str::{format_compact, CompactString};
 
 use super::{
     utils::{map_patch_value_to_step, map_step_to_patch_value},
     ParameterValue, SerializableRepresentation,
 };
 
-const STEPS: &[PortamentoMode] = &[
+pub const PORTAMENTO_MODE_STEPS: &[PortamentoMode] = &[
     PortamentoMode::Off,
     PortamentoMode::Auto,
-    PortamentoMode::Always,
+    PortamentoMode::On,
 ];
 
-#[derive(Debug, Clone, Copy, PartialEq, Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum PortamentoMode {
     #[default]
     Off,
     Auto,
-    Always,
+    On,
+}
+
+impl ::std::fmt::Display for PortamentoMode {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(match self {
+            Self::Off => "OFF",
+            Self::Auto => "AUTO",
+            Self::On => "ON",
+        })
+    }
 }
 
 #[derive(Debug, Clone, Copy, Default)]
@@ -32,7 +42,7 @@ impl ParameterValue for PortamentoModeValue {
         match text.trim().to_lowercase().as_str() {
             "off" => Some(Self(PortamentoMode::Off)),
             "auto" => Some(Self(PortamentoMode::Auto)),
-            "always" => Some(Self(PortamentoMode::Always)),
+            "always" => Some(Self(PortamentoMode::On)),
             _ => None,
         }
     }
@@ -40,17 +50,13 @@ impl ParameterValue for PortamentoModeValue {
         self.0
     }
     fn new_from_patch(value: f32) -> Self {
-        Self(map_patch_value_to_step(&STEPS[..], value))
+        Self(map_patch_value_to_step(&PORTAMENTO_MODE_STEPS[..], value))
     }
     fn to_patch(self) -> f32 {
-        map_step_to_patch_value(&STEPS[..], self.0)
+        map_step_to_patch_value(&PORTAMENTO_MODE_STEPS[..], self.0)
     }
     fn get_formatted(self) -> CompactString {
-        match self.0 {
-            PortamentoMode::Off => "OFF".into(),
-            PortamentoMode::Auto => "AUTO".into(),
-            PortamentoMode::Always => "ALWAYS".into(),
-        }
+        format_compact!("{}", self.0)
     }
 
     fn get_serializable(&self) -> SerializableRepresentation {

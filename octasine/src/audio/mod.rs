@@ -233,7 +233,7 @@ impl AudioState {
                         .map(|(key, _)| *key)
                         .next(),
                     // FIXME: should maybe prefer pressed keys?
-                    PortamentoMode::Always => self
+                    PortamentoMode::On => self
                         .polyphonic_voices
                         .iter()
                         .rev()

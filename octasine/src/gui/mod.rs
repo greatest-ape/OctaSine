@@ -184,9 +184,11 @@ impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {
             Parameter::Master(MasterParameter::VelocitySensitivityVolume) => {
                 self.corner.volume_velocity_sensitivity.set_value(v)
             }
-            Parameter::Master(MasterParameter::VoiceMode) => self.corner.voice_mode.set_value(v),
+            Parameter::Master(MasterParameter::VoiceMode) => {
+                self.corner.voice_mode_button.set_value(v)
+            }
             Parameter::Master(MasterParameter::PortamentoMode) => {
-                self.corner.portamento_mode.set_value(v)
+                self.corner.portamento_mode_value = v;
             }
             Parameter::Master(MasterParameter::PortamentoTime) => {
                 self.corner.portamento_time.set_value(v)

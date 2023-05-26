@@ -1,17 +1,24 @@
 use iced_baseview::{
-    alignment::Horizontal, widget::tooltip::Position, widget::Button, widget::Column,
-    widget::Container, widget::Row, widget::Space, widget::Text, Alignment, Element, Length,
+    alignment::Horizontal,
+    widget::tooltip::Position,
+    widget::Button,
+    widget::Container,
+    widget::Row,
+    widget::Space,
+    widget::Text,
+    widget::{Column, PickList},
+    Alignment, Element, Length,
 };
 
 use crate::{
     parameters::{
         list::{MasterParameter, Parameter},
         master_pitch_bend_range::{MasterPitchBendRangeDownValue, MasterPitchBendRangeUpValue},
-        portamento_mode::PortamentoModeValue,
+        portamento_mode::{PortamentoMode, PortamentoModeValue, PORTAMENTO_MODE_STEPS},
         portamento_time::PortamentoTimeValue,
         velocity_sensitivity::VelocitySensitivityValue,
         voice_mode::VoiceModeValue,
-        MasterFrequencyValue, MasterVolumeValue,
+        MasterFrequencyValue, MasterVolumeValue, ParameterValue,
     },
     sync::GuiSyncHandle,
     utils::get_version_info,
@@ -43,6 +50,7 @@ pub struct CornerWidgets {
     pub portamento_button: BooleanButton,
     pub legato_button: BooleanButton,
     pub portamento_type_button: BooleanButton,
+    pub portamento_mode_value: f32,
 }
 
 impl CornerWidgets {
@@ -105,6 +113,9 @@ impl CornerWidgets {
             BooleanButtonStyle::Regular,
         );
 
+        let portamento_mode_value =
+            sync_handle.get_parameter(Parameter::Master(MasterParameter::PortamentoMode).into());
+
         Self {
             alternative_controls: false,
             master_volume,
@@ -121,6 +132,7 @@ impl CornerWidgets {
             portamento_button,
             legato_button,
             portamento_type_button,
+            portamento_mode_value,
         }
     }
 
@@ -209,6 +221,13 @@ impl CornerWidgets {
                 .width(LINE_HEIGHT * 4);
             let title = tooltip(theme, "Voice settings", Position::Top, title);
 
+            let title2 = Text::new("GLIDE")
+                .horizontal_alignment(Horizontal::Center)
+                .font(theme.font_bold())
+                .height(Length::Fixed(LINE_HEIGHT.into()))
+                .width(LINE_HEIGHT * 4);
+            let title2 = tooltip(theme, "Portamento", Position::Top, title2);
+
             let voice_mode_button = tooltip(
                 theme,
                 "Toggle polyphonic / monophonic",
@@ -235,22 +254,34 @@ impl CornerWidgets {
                 self.portamento_type_button.view(),
             );
 
+            let portmento_mode_picker = PickList::new(
+                PORTAMENTO_MODE_STEPS,
+                Some(PortamentoModeValue::new_from_patch(self.portamento_mode_value).get()),
+                move |option| {
+                    let v = PortamentoModeValue::new_from_audio(option).to_patch();
+
+                    Message::ChangeSingleParameterImmediate(
+                        Parameter::Master(MasterParameter::PortamentoMode).into(),
+                        v,
+                    )
+                },
+            )
+            .font(theme.font_regular())
+            .text_size(FONT_SIZE)
+            .padding(theme.picklist_padding())
+            .width(Length::Fixed(f32::from(LINE_HEIGHT * 3)));
+
             Container::new(
                 Column::new()
                     .width(Length::Fixed(f32::from(LINE_HEIGHT * 4)))
                     .align_items(Alignment::Center)
+                    .push(title2)
+                    .push(Space::with_height(LINE_HEIGHT / 4))
+                    .push(portmento_mode_picker)
+                    .push(Space::with_height(LINE_HEIGHT - LINE_HEIGHT / 4))
                     .push(title)
-                    .push(Space::with_height(LINE_HEIGHT))
-                    .push(voice_mode_button)
                     .push(Space::with_height(LINE_HEIGHT / 2))
-                    .push(
-                        Row::new()
-                            .push(portamento_button)
-                            // .push(Space::with_width(Length::Fixed(4.0)))
-                            // .push(portamento_type_button)
-                    )
-                    .push(Space::with_height(LINE_HEIGHT / 2))
-                    .push(legato_button)
+                    .push(voice_mode_button),
             )
             // .height(Length::Fixed(f32::from(LINE_HEIGHT * 6)))
         };
@@ -262,9 +293,9 @@ impl CornerWidgets {
                 Row::new()
                     .push(container_l3(self.master_volume.view(theme)))
                     .push(space_l3())
-                    .push(container_l3(voice_buttons))
+                    .push(container_l3(self.portamento_time.view(theme)))
                     .push(space_l3())
-                    .push(container_l3(self.portamento_time.view(theme))), // .push(container_l3(self.volume_velocity_sensitivity.view(theme))),
+                    .push(container_l3(voice_buttons)),
             )));
 
         let top: Element<Message, Theme> = if !self.alternative_controls {

@@ -172,7 +172,10 @@ pub fn envelope_group_b_button<H: GuiSyncHandle>(
 pub enum BooleanButtonTextAlignment {
     #[default]
     Center,
-    Offsets { x: f32, y: f32 }
+    Offsets {
+        x: f32,
+        y: f32,
+    },
 }
 
 pub struct BooleanButton {
@@ -277,7 +280,8 @@ impl BooleanButton {
 
         match self.text_alignment {
             BooleanButtonTextAlignment::Center => {
-                text.position = Point::new(f32::from(self.width) / 2.0, f32::from(self.height) / 2.0);
+                text.position =
+                    Point::new(f32::from(self.width) / 2.0, f32::from(self.height) / 2.0);
                 text.horizontal_alignment = Horizontal::Center;
                 text.vertical_alignment = Vertical::Center;
             }
@@ -286,7 +290,11 @@ impl BooleanButton {
             }
         }
 
-        ::log::info!("{:?}: position: {:?}", self.parameter.parameter().name(), text.position);
+        ::log::info!(
+            "{:?}: position: {:?}",
+            self.parameter.parameter().name(),
+            text.position
+        );
 
         frame.fill_text(text);
     }
@@ -309,7 +317,11 @@ impl Program<Message, Theme> for BooleanButton {
         _cursor: Cursor,
     ) -> Vec<Geometry> {
         let geometry = self.cache.draw(bounds.size(), |frame| {
-            ::log::info!("{:?}: bounds: {:?}", self.parameter.parameter().name(), bounds);
+            ::log::info!(
+                "{:?}: bounds: {:?}",
+                self.parameter.parameter().name(),
+                bounds
+            );
             self.draw_background(state, frame, theme);
             self.draw_border(state, frame, theme);
             self.draw_text(state, frame, theme);
