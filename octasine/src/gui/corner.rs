@@ -236,13 +236,13 @@ impl CornerWidgets {
             Row::new()
                 .push(container_l1(container_l2(
                     Row::new()
-                        .push(container_l3(self.master_frequency.view(theme)))
-                        .push(space_l3())
-                        .push(container_l3(self.volume_velocity_sensitivity.view(theme)))
-                        .push(space_l3())
                         .push(container_l3(self.master_pitch_bend_up.view(theme)))
                         .push(space_l3())
                         .push(container_l3(self.master_pitch_bend_down.view(theme)))
+                        .push(space_l3())
+                        .push(container_l3(self.volume_velocity_sensitivity.view(theme)))
+                        .push(space_l3())
+                        .push(container_l3(self.master_frequency.view(theme)))
                         .push(space_l3())
                         .push(container_l3(Space::with_width(LINE_HEIGHT * 4))),
                 )))
