@@ -14,7 +14,6 @@ use crate::parameters::{
 use crate::sync::GuiSyncHandle;
 
 use super::style::boolean_button::BooleanButtonStyle;
-use super::SnapPoint;
 use super::{style::Theme, Message, FONT_SIZE, LINE_HEIGHT};
 
 #[derive(Debug, Clone)]
@@ -41,7 +40,6 @@ pub fn operator_mute_button<H: GuiSyncHandle>(
         "M",
         LINE_HEIGHT,
         LINE_HEIGHT,
-        Default::default(),
         |v| OperatorActiveValue::new_from_patch(v).get() == 0.0,
         |is_muted| {
             if is_muted {
@@ -61,7 +59,6 @@ pub fn lfo_bpm_sync_button<H: GuiSyncHandle>(sync_handle: &H, lfo_index: usize) 
         "B",
         LINE_HEIGHT,
         LINE_HEIGHT,
-        Default::default(),
         |v| LfoBpmSyncValue::new_from_patch(v).get(),
         |on| LfoBpmSyncValue::new_from_audio(on).to_patch(),
         BooleanButtonStyle::Regular,
@@ -75,7 +72,6 @@ pub fn lfo_key_sync_button<H: GuiSyncHandle>(sync_handle: &H, lfo_index: usize) 
         "K",
         LINE_HEIGHT,
         LINE_HEIGHT,
-        Default::default(),
         |v| LfoKeySyncValue::new_from_patch(v).get(),
         |on| LfoKeySyncValue::new_from_audio(on).to_patch(),
         BooleanButtonStyle::Regular,
@@ -89,7 +85,6 @@ pub fn lfo_mode_button<H: GuiSyncHandle>(sync_handle: &H, lfo_index: usize) -> B
         "1",
         LINE_HEIGHT,
         LINE_HEIGHT,
-        Default::default(),
         |v| LfoModeValue::new_from_patch(v).get() == LfoMode::Once,
         |is_oneshot| {
             if is_oneshot {
@@ -109,7 +104,6 @@ pub fn lfo_active_button<H: GuiSyncHandle>(sync_handle: &H, lfo_index: usize) ->
         "M",
         LINE_HEIGHT,
         LINE_HEIGHT,
-        Default::default(),
         |v| LfoActiveValue::new_from_patch(v).get() == 0.0,
         |is_muted| {
             if is_muted {
@@ -132,7 +126,6 @@ pub fn envelope_group_a_button<H: GuiSyncHandle>(
         "A",
         LINE_HEIGHT,
         LINE_HEIGHT,
-        Default::default(),
         |v| OperatorEnvelopeGroupValue::new_from_patch(v).get() == OperatorEnvelopeGroupValue::A,
         |is_active| {
             if is_active {
@@ -155,7 +148,6 @@ pub fn envelope_group_b_button<H: GuiSyncHandle>(
         "B",
         LINE_HEIGHT,
         LINE_HEIGHT,
-        Default::default(),
         |v| OperatorEnvelopeGroupValue::new_from_patch(v).get() == OperatorEnvelopeGroupValue::B,
         |is_active| {
             if is_active {
@@ -166,16 +158,6 @@ pub fn envelope_group_b_button<H: GuiSyncHandle>(
         },
         BooleanButtonStyle::Regular,
     )
-}
-
-#[derive(Debug, Clone, Copy, Default)]
-pub enum BooleanButtonTextAlignment {
-    #[default]
-    Center,
-    Offsets {
-        x: f32,
-        y: f32,
-    },
 }
 
 pub struct BooleanButton {
@@ -189,7 +171,6 @@ pub struct BooleanButton {
     text: &'static str,
     width: u16,
     height: u16,
-    text_alignment: BooleanButtonTextAlignment,
 }
 
 impl BooleanButton {
@@ -199,7 +180,6 @@ impl BooleanButton {
         text: &'static str,
         width: u16,
         height: u16,
-        text_alignment: BooleanButtonTextAlignment,
         f: fn(f32) -> bool,
         g: fn(bool) -> f32,
         button_style: BooleanButtonStyle,
@@ -222,7 +202,6 @@ impl BooleanButton {
             text,
             width,
             height,
-            text_alignment,
         }
     }
 
@@ -270,31 +249,16 @@ impl BooleanButton {
     }
 
     fn draw_text(&self, state: &CanvasState, frame: &mut Frame, theme: &Theme) {
-        let mut text = Text {
+        let text = Text {
             content: self.text.to_string(),
             color: self.appearance(state, theme).text_color,
             size: f32::from(FONT_SIZE),
             font: theme.font_regular(),
+            position: Point::new(f32::from(self.width) / 2.0, f32::from(self.height) / 2.0),
+            horizontal_alignment: Horizontal::Center,
+            vertical_alignment: Vertical::Center,
             ..Default::default()
         };
-
-        match self.text_alignment {
-            BooleanButtonTextAlignment::Center => {
-                text.position =
-                    Point::new(f32::from(self.width) / 2.0, f32::from(self.height) / 2.0);
-                text.horizontal_alignment = Horizontal::Center;
-                text.vertical_alignment = Vertical::Center;
-            }
-            BooleanButtonTextAlignment::Offsets { x, y } => {
-                text.position = Point::new(x, y);
-            }
-        }
-
-        ::log::info!(
-            "{:?}: position: {:?}",
-            self.parameter.parameter().name(),
-            text.position
-        );
 
         frame.fill_text(text);
     }
@@ -317,11 +281,6 @@ impl Program<Message, Theme> for BooleanButton {
         _cursor: Cursor,
     ) -> Vec<Geometry> {
         let geometry = self.cache.draw(bounds.size(), |frame| {
-            ::log::info!(
-                "{:?}: bounds: {:?}",
-                self.parameter.parameter().name(),
-                bounds
-            );
             self.draw_background(state, frame, theme);
             self.draw_border(state, frame, theme);
             self.draw_text(state, frame, theme);
