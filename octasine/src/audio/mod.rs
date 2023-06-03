@@ -233,12 +233,10 @@ impl AudioState {
                     GlideMode::Off => None,
                     GlideMode::Auto => most_recent_still_pressed_keys.next(),
                     GlideMode::On => {
-                        let most_recently_added_keys = self
-                            .polyphonic_voices
-                            .iter()
-                            .rev()
-                            .filter(|(k, _)| **k != key)
-                            .map(|(key, _)| *key);
+                        // Don't filter out current voice here, since we don't
+                        // want glide if it was most recently pressed
+                        let most_recently_added_keys =
+                            self.polyphonic_voices.iter().rev().map(|(key, _)| *key);
 
                         most_recent_still_pressed_keys
                             .chain(most_recently_added_keys)
