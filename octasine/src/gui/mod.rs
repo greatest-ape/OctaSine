@@ -118,7 +118,7 @@ pub enum Message {
         x_offset: f32,
     },
     SwitchTheme,
-    ToggleExtraControls,
+    ToggleAlternativeControls,
     SavePatch,
     SaveBank,
     LoadBankOrPatch,
@@ -639,14 +639,14 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
 
                 self.save_settings();
             }
-            Message::ToggleExtraControls => {
+            Message::ToggleAlternativeControls => {
                 for operator in [
                     &mut self.operator_1,
                     &mut self.operator_2,
                     &mut self.operator_3,
                     &mut self.operator_4,
                 ] {
-                    operator.shifted = !operator.shifted;
+                    operator.alternative_controls = !operator.alternative_controls;
                 }
 
                 self.corner.alternative_controls = !self.corner.alternative_controls;

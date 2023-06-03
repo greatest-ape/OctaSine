@@ -31,7 +31,7 @@ pub enum ModTargetPicker {
 
 pub struct OperatorWidgets {
     index: usize,
-    pub shifted: bool,
+    pub alternative_controls: bool,
     pub volume: OctaSineKnob<OperatorVolumeValue>,
     pub mute_button: BooleanButton,
     pub mix: OctaSineKnob<OperatorMixOutValue>,
@@ -75,7 +75,7 @@ impl OperatorWidgets {
 
         Self {
             index: operator_index,
-            shifted: false,
+            alternative_controls: false,
             volume: knob::operator_volume(sync_handle, operator_index),
             mute_button: operator_mute_button(sync_handle, operator_index),
             mix: knob::operator_mix(sync_handle, operator_index),
@@ -191,7 +191,7 @@ impl OperatorWidgets {
                 .push(container_l3(self.frequency_fine.view(theme))),
         );
 
-        let end = if self.shifted {
+        let end = if self.alternative_controls {
             container_l2(
                 Row::new()
                     .push(space_l3())

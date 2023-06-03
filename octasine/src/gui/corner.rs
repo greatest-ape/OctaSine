@@ -127,7 +127,7 @@ impl CornerWidgets {
                         .horizontal_alignment(Horizontal::Center),
                 )
                 .padding(theme.button_padding())
-                .on_press(Message::ToggleExtraControls),
+                .on_press(Message::ToggleAlternativeControls),
             );
             let theme_button = tooltip(
                 theme,
