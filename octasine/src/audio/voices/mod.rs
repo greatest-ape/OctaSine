@@ -142,8 +142,8 @@ impl Voice {
             self.change_pitch(key, None);
         }
 
-        if let Some((key, portamento_time)) = target_key {
-            self.change_pitch(key, Some(portamento_time));
+        if let Some((key, glide_time)) = target_key {
+            self.change_pitch(key, Some(glide_time));
 
             // TODO: send clap note ended event for old note id?
         }
@@ -169,9 +169,9 @@ impl Voice {
     pub fn change_pitch(&mut self, key: u8, interpolate: Option<f64>) {
         self.midi_pitch = MidiPitch::new(key);
 
-        if let Some(portamento_time) = interpolate {
+        if let Some(glide_time) = interpolate {
             self.pitch_interpolator
-                .change_duration(InterpolationDuration(portamento_time));
+                .change_duration(InterpolationDuration(glide_time));
 
             self.pitch_interpolator
                 .set_value(self.midi_pitch.frequency_factor as f32);

@@ -14,8 +14,8 @@ use crate::{
     parameters::{
         list::{MasterParameter, Parameter},
         master_pitch_bend_range::{MasterPitchBendRangeDownValue, MasterPitchBendRangeUpValue},
-        portamento_mode::{PortamentoMode, PortamentoModeValue},
-        portamento_time::PortamentoTimeValue,
+        glide_mode::{GlideMode, GlideModeValue},
+        glide_time::GlideTimeValue,
         velocity_sensitivity::VelocitySensitivityValue,
         voice_mode::VoiceModeValue,
         MasterFrequencyValue, MasterVolumeValue, ParameterValue,
@@ -44,10 +44,10 @@ pub struct CornerWidgets {
     pub master_pitch_bend_up: OctaSineKnob<MasterPitchBendRangeUpValue>,
     pub master_pitch_bend_down: OctaSineKnob<MasterPitchBendRangeDownValue>,
     pub voice_mode: OctaSineKnob<VoiceModeValue>,
-    pub portamento_mode: OctaSineKnob<PortamentoModeValue>,
-    pub portamento_time: OctaSineKnob<PortamentoTimeValue>,
+    pub glide_mode: OctaSineKnob<GlideModeValue>,
+    pub glide_time: OctaSineKnob<GlideTimeValue>,
     pub voice_mode_button: BooleanButton,
-    pub portamento_mode_value: f32,
+    pub glide_mode_value: f32,
 }
 
 impl CornerWidgets {
@@ -60,8 +60,8 @@ impl CornerWidgets {
         let master_pitch_bend_up = knob::master_pitch_bend_range_up(sync_handle);
         let master_pitch_bend_down = knob::master_pitch_bend_range_down(sync_handle);
         let voice_mode = knob::voice_mode(sync_handle);
-        let portamento_mode = knob::portamento_mode(sync_handle);
-        let portamento_time = knob::portamento_time(sync_handle);
+        let glide_mode = knob::glide_mode(sync_handle);
+        let glide_time = knob::glide_time(sync_handle);
 
         let voice_mode_button = BooleanButton::new(
             sync_handle,
@@ -74,8 +74,8 @@ impl CornerWidgets {
             BooleanButtonStyle::Regular,
         );
 
-        let portamento_mode_value =
-            sync_handle.get_parameter(Parameter::Master(MasterParameter::PortamentoMode).into());
+        let glide_mode_value =
+            sync_handle.get_parameter(Parameter::Master(MasterParameter::GlideMode).into());
 
         Self {
             alternative_controls: false,
@@ -87,10 +87,10 @@ impl CornerWidgets {
             master_pitch_bend_up,
             master_pitch_bend_down,
             voice_mode,
-            portamento_mode,
-            portamento_time,
+            glide_mode,
+            glide_time,
             voice_mode_button,
-            portamento_mode_value,
+            glide_mode_value,
         }
     }
 
@@ -172,13 +172,13 @@ impl CornerWidgets {
         };
 
         let voice_buttons = {
-            let portamento_mode_title = Text::new("GLIDE")
+            let glide_mode_title = Text::new("GLIDE")
                 .horizontal_alignment(Horizontal::Center)
                 .font(theme.font_bold())
                 .height(Length::Fixed(LINE_HEIGHT.into()))
                 .width(LINE_HEIGHT * 4);
-            let portamento_mode_title =
-                tooltip(theme, "Portamento", Position::Top, portamento_mode_title);
+            let glide_mode_title =
+                tooltip(theme, "Glide", Position::Top, glide_mode_title);
 
             let voice_mode_title = Text::new("VOICES")
                 .horizontal_alignment(Horizontal::Center)
@@ -189,20 +189,20 @@ impl CornerWidgets {
                 tooltip(theme, "Voice settings", Position::Top, voice_mode_title);
 
             // This order is more intuitive in the GUI
-            const MODE_STEPS_REVERSE: &[PortamentoMode] = &[
-                PortamentoMode::On,
-                PortamentoMode::Auto,
-                PortamentoMode::Off,
+            const MODE_STEPS_REVERSE: &[GlideMode] = &[
+                GlideMode::On,
+                GlideMode::Auto,
+                GlideMode::Off,
             ];
 
             let portmento_mode_picker = PickList::new(
                 MODE_STEPS_REVERSE,
-                Some(PortamentoModeValue::new_from_patch(self.portamento_mode_value).get()),
+                Some(GlideModeValue::new_from_patch(self.glide_mode_value).get()),
                 move |option| {
-                    let v = PortamentoModeValue::new_from_audio(option).to_patch();
+                    let v = GlideModeValue::new_from_audio(option).to_patch();
 
                     Message::ChangeSingleParameterImmediate(
-                        Parameter::Master(MasterParameter::PortamentoMode).into(),
+                        Parameter::Master(MasterParameter::GlideMode).into(),
                         v,
                     )
                 },
@@ -223,7 +223,7 @@ impl CornerWidgets {
                 Column::new()
                     .width(Length::Fixed(f32::from(LINE_HEIGHT * 4)))
                     .align_items(Alignment::Center)
-                    .push(portamento_mode_title)
+                    .push(glide_mode_title)
                     .push(Space::with_height(LINE_HEIGHT / 4))
                     .push(portmento_mode_picker)
                     .push(Space::with_height(LINE_HEIGHT - LINE_HEIGHT / 4))
@@ -263,7 +263,7 @@ impl CornerWidgets {
                 Row::new()
                     .push(container_l3(self.master_volume.view(theme)))
                     .push(space_l3())
-                    .push(container_l3(self.portamento_time.view(theme)))
+                    .push(container_l3(self.glide_time.view(theme)))
                     .push(space_l3())
                     .push(container_l3(voice_buttons)),
             )));

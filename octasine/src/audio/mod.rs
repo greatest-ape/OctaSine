@@ -10,7 +10,7 @@ use ringbuf::{LocalRb, Rb};
 
 use crate::{
     common::*,
-    parameters::{portamento_mode::PortamentoMode, voice_mode::VoiceMode, Parameter},
+    parameters::{glide_mode::GlideMode, voice_mode::VoiceMode, Parameter},
 };
 
 use parameters::*;
@@ -218,14 +218,14 @@ impl AudioState {
 
     fn key_on(&mut self, key: u8, velocity: KeyVelocity, opt_clap_note_id: Option<i32>) {
         let voice_mode = self.parameters.voice_mode.get_value();
-        let portamento_mode = self.parameters.portamento_mode.get_value();
+        let glide_mode = self.parameters.glide_mode.get_value();
 
         match voice_mode {
             VoiceMode::Polyphonic => {
                 // FIXME: an option would be to use first pressed instead?
-                let opt_glide_from_key = match portamento_mode {
-                    PortamentoMode::Off => None,
-                    PortamentoMode::Auto => self
+                let opt_glide_from_key = match glide_mode {
+                    GlideMode::Off => None,
+                    GlideMode::Auto => self
                         .polyphonic_voices
                         .iter()
                         .rev()
@@ -233,7 +233,7 @@ impl AudioState {
                         .map(|(key, _)| *key)
                         .next(),
                     // FIXME: should maybe prefer pressed keys?
-                    PortamentoMode::On => self
+                    GlideMode::On => self
                         .polyphonic_voices
                         .iter()
                         .rev()
@@ -256,7 +256,7 @@ impl AudioState {
                         &self.parameters,
                         velocity,
                         Some(glide_from_key),
-                        Some((key, self.parameters.portamento_time.get_value() as f64)),
+                        Some((key, self.parameters.glide_time.get_value() as f64)),
                         opt_clap_note_id,
                     );
                 } else {
@@ -273,7 +273,7 @@ impl AudioState {
                 self.monophonic_pressed_keys.shift_remove(&key);
                 self.monophonic_pressed_keys.insert(key);
 
-                if portamento_mode == PortamentoMode::Off {
+                if glide_mode == GlideMode::Off {
                     self.monophonic_voice.press_key(
                         &self.parameters,
                         velocity,
@@ -304,8 +304,8 @@ impl AudioState {
                     } else if !self.monophonic_voice.key_pressed {
                         // mono_voice is active for a different key and is in release stage
 
-                        if portamento_mode == PortamentoMode::Auto {
-                            // Auto portamento mode: trigger key press for voice with new key
+                        if glide_mode == GlideMode::Auto {
+                            // Auto glide mode: trigger key press for voice with new key
                             // without glide
                             self.monophonic_voice.press_key(
                                 &self.parameters,
@@ -315,13 +315,13 @@ impl AudioState {
                                 opt_clap_note_id,
                             )
                         } else {
-                            // Always portamento mode: trigger key press for voice with new key
+                            // Always glide mode: trigger key press for voice with new key
                             // with glide
                             self.monophonic_voice.press_key(
                                 &self.parameters,
                                 velocity,
                                 None,
-                                Some((key, self.parameters.portamento_time.get_value() as f64)),
+                                Some((key, self.parameters.glide_time.get_value() as f64)),
                                 opt_clap_note_id,
                             )
                         }
@@ -330,7 +330,7 @@ impl AudioState {
                         // attack/decay/sustain phase: trigger pitch change with glide
                         self.monophonic_voice.change_pitch(
                             key,
-                            Some(self.parameters.portamento_time.get_value() as f64),
+                            Some(self.parameters.glide_time.get_value() as f64),
                         );
                     }
                 }
@@ -340,7 +340,7 @@ impl AudioState {
 
     fn key_off(&mut self, key: u8) {
         let voice_mode = self.parameters.voice_mode.get_value();
-        let portamento_mode = self.parameters.portamento_mode.get_value();
+        let glide_mode = self.parameters.glide_mode.get_value();
 
         match voice_mode {
             VoiceMode::Polyphonic => {
@@ -352,14 +352,14 @@ impl AudioState {
                 self.monophonic_pressed_keys.shift_remove(&key);
 
                 if let Some(go_to_key) = self.monophonic_pressed_keys.last().copied() {
-                    let opt_portamento_time = if let PortamentoMode::Off = portamento_mode {
+                    let opt_glide_time = if let GlideMode::Off = glide_mode {
                         None
                     } else {
-                        Some(self.parameters.portamento_time.get_value() as f64)
+                        Some(self.parameters.glide_time.get_value() as f64)
                     };
 
                     self.monophonic_voice
-                        .change_pitch(go_to_key, opt_portamento_time);
+                        .change_pitch(go_to_key, opt_glide_time);
                 } else {
                     self.monophonic_voice.release_key();
                 }

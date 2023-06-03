@@ -8,15 +8,15 @@ use super::{
 const STEPS: &[f32] = &[0.0, 4.0];
 
 #[derive(Debug, Clone, Copy)]
-pub struct PortamentoTimeValue(f32);
+pub struct GlideTimeValue(f32);
 
-impl Default for PortamentoTimeValue {
+impl Default for GlideTimeValue {
     fn default() -> Self {
         Self(0.1)
     }
 }
 
-impl ParameterValue for PortamentoTimeValue {
+impl ParameterValue for GlideTimeValue {
     type Value = f32;
 
     fn new_from_audio(value: Self::Value) -> Self {

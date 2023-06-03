@@ -9,8 +9,8 @@ use iced_baseview::{
 use crate::parameters::master_pitch_bend_range::{
     MasterPitchBendRangeDownValue, MasterPitchBendRangeUpValue,
 };
-use crate::parameters::portamento_mode::PortamentoModeValue;
-use crate::parameters::portamento_time::PortamentoTimeValue;
+use crate::parameters::glide_mode::GlideModeValue;
+use crate::parameters::glide_time::GlideTimeValue;
 use crate::parameters::velocity_sensitivity::VelocitySensitivityValue;
 use crate::parameters::voice_mode::VoiceModeValue;
 use crate::parameters::{
@@ -126,29 +126,29 @@ where
     )
 }
 
-pub fn portamento_mode<H>(sync_handle: &H) -> OctaSineKnob<PortamentoModeValue>
+pub fn glide_mode<H>(sync_handle: &H) -> OctaSineKnob<GlideModeValue>
 where
     H: GuiSyncHandle,
 {
     OctaSineKnob::new(
         sync_handle,
-        Parameter::Master(MasterParameter::PortamentoMode),
+        Parameter::Master(MasterParameter::GlideMode),
         "GLIDE",
-        "Portamento mode",
+        "Glide mode",
         TickMarkType::MinMaxAndDefault,
         KnobStyle::Regular,
     )
 }
 
-pub fn portamento_time<H>(sync_handle: &H) -> OctaSineKnob<PortamentoTimeValue>
+pub fn glide_time<H>(sync_handle: &H) -> OctaSineKnob<GlideTimeValue>
 where
     H: GuiSyncHandle,
 {
     OctaSineKnob::new(
         sync_handle,
-        Parameter::Master(MasterParameter::PortamentoTime),
+        Parameter::Master(MasterParameter::GlideTime),
         "GLIDE T",
-        "Portamento time",
+        "Glide time",
         TickMarkType::MinMaxAndDefault,
         KnobStyle::Regular,
     )

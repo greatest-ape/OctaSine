@@ -5,21 +5,21 @@ use super::{
     ParameterValue, SerializableRepresentation,
 };
 
-pub const PORTAMENTO_MODE_STEPS: &[PortamentoMode] = &[
-    PortamentoMode::Off,
-    PortamentoMode::Auto,
-    PortamentoMode::On,
+pub const PORTAMENTO_MODE_STEPS: &[GlideMode] = &[
+    GlideMode::Off,
+    GlideMode::Auto,
+    GlideMode::On,
 ];
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
-pub enum PortamentoMode {
+pub enum GlideMode {
     #[default]
     Off,
     Auto,
     On,
 }
 
-impl ::std::fmt::Display for PortamentoMode {
+impl ::std::fmt::Display for GlideMode {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_str(match self {
             Self::Off => "OFF",
@@ -30,19 +30,19 @@ impl ::std::fmt::Display for PortamentoMode {
 }
 
 #[derive(Debug, Clone, Copy, Default)]
-pub struct PortamentoModeValue(PortamentoMode);
+pub struct GlideModeValue(GlideMode);
 
-impl ParameterValue for PortamentoModeValue {
-    type Value = PortamentoMode;
+impl ParameterValue for GlideModeValue {
+    type Value = GlideMode;
 
     fn new_from_audio(value: Self::Value) -> Self {
         Self(value)
     }
     fn new_from_text(text: &str) -> Option<Self> {
         match text.trim().to_lowercase().as_str() {
-            "off" => Some(Self(PortamentoMode::Off)),
-            "auto" => Some(Self(PortamentoMode::Auto)),
-            "always" => Some(Self(PortamentoMode::On)),
+            "off" => Some(Self(GlideMode::Off)),
+            "auto" => Some(Self(GlideMode::Auto)),
+            "always" => Some(Self(GlideMode::On)),
             _ => None,
         }
     }
