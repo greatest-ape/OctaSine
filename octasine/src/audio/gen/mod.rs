@@ -210,8 +210,6 @@ pub fn process_f32_runtime_select<F>(
     ]
 )]
 mod gen {
-    use arrayvec::ArrayVec;
-
     #[feature_gate]
     use super::*;
 
@@ -289,10 +287,10 @@ mod gen {
             // Temporary storage for ownership reasons
             // bool = voice.is_monophonic
             #[cfg(feature = "clap")]
-            let mut ended_clap_notes: ArrayVec<
+            let mut ended_clap_notes: ::arrayvec::ArrayVec<
                 (bool, crate::audio::ClapNoteEnded),
                 129,
-            > = ArrayVec::new();
+            > = ::arrayvec::ArrayVec::new();
 
             for (voice_index, voice) in voice_iterator {
                 // Select an appropriate VoiceData item to fill with data
@@ -419,6 +417,7 @@ mod gen {
                     )
                 }
 
+                #[cfg_attr(not(feature = "clap"), allow(unused_variables))]
                 let deactivated = voice.deactivate_if_envelopes_ended();
 
                 #[cfg(feature = "clap")]
