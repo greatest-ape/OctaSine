@@ -40,7 +40,6 @@ use operator::OperatorWidgets;
 use patch_picker::PatchPicker;
 use style::Theme;
 
-use self::common::{container_l2, container_l3};
 use self::corner::CornerWidgets;
 use self::operator::ModTargetPicker;
 use self::style::container::ContainerStyle;
@@ -125,7 +124,6 @@ pub enum Message {
     RenamePatch,
     ClearPatch,
     ClearBank,
-    ShowPatchSettings,
     SaveBankOrPatchToFile(PathBuf, Vec<u8>),
     LoadBankOrPatchesFromPaths(Vec<PathBuf>),
     ChangeParameterByTextInput {
@@ -149,7 +147,6 @@ pub enum ModalAction {
         options: Vec<CompactString>,
         choice: CompactString,
     },
-    PatchSettings,
 }
 
 pub struct OctaSineIcedApplication<H: GuiSyncHandle> {
@@ -815,9 +812,6 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
             Message::ClearBank => {
                 self.modal_action = Some(ModalAction::ClearBank);
             }
-            Message::ShowPatchSettings => {
-                self.modal_action = Some(ModalAction::PatchSettings);
-            }
             Message::SaveBankOrPatchToFile(path_buf, bytes) => {
                 if let Err(err) = save_data_to_file(path_buf, bytes) {
                     ::log::error!("Error saving patch/patch bank to file: {:#}", err)
@@ -874,7 +868,6 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                         self.set_value(parameter.parameter(), value_patch, true);
                     }
                 }
-                Some(ModalAction::PatchSettings) => (),
                 None => (),
             },
             Message::ModalSetParameterByChoicesUpdate(new_choice) => {
@@ -936,7 +929,6 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                 ModalAction::SetParameterByChoices { parameter, .. } => {
                     format!("SET {}", parameter.parameter().name().to_uppercase())
                 }
-                ModalAction::PatchSettings => "PATCH SETTINGS".into(),
             };
 
             match modal_action {
@@ -994,40 +986,6 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
 
                     Card::new(Text::new(heading), body)
                         .max_width(LINE_HEIGHT as f32 * 16.0)
-                        .padding(LINE_HEIGHT as f32)
-                        .into()
-                }
-                ModalAction::PatchSettings => {
-                    let body = Column::new()
-                        .push(
-                            Row::new().push(container_l2(
-                                Column::new()
-                                    .push(Space::with_height(LINE_HEIGHT))
-                                    .push(
-                                        Text::new("EXTRAS")
-                                            .size(FONT_SIZE + FONT_SIZE / 2)
-                                            .font(self.theme.font_heading())
-                                            .horizontal_alignment(Horizontal::Center)
-                                            .width(Length::Fixed(f32::from(LINE_HEIGHT * 8))),
-                                    )
-                                    .push(Row::new().push(container_l3(Text::new("NOTHING")))),
-                            )),
-                        )
-                        .push(Space::with_height(LINE_HEIGHT))
-                        .push(
-                            Row::new()
-                                .spacing(LINE_HEIGHT / 2)
-                                .width(Length::Fill)
-                                .push(
-                                    Button::new(
-                                        Text::new("CLOSE").horizontal_alignment(Horizontal::Center),
-                                    )
-                                    .width(Length::Fill)
-                                    .on_press(Message::ModalYes),
-                                ),
-                        );
-                    Card::new(Text::new(heading), body)
-                        .max_width(LINE_HEIGHT as f32 * 30.0)
                         .padding(LINE_HEIGHT as f32)
                         .into()
                 }
