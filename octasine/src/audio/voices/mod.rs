@@ -58,6 +58,10 @@ impl MidiPitch {
     pub fn get_frequency(self, master_frequency: f64) -> f64 {
         self.frequency_factor * master_frequency
     }
+
+    pub fn key(&self) -> u8 {
+        self.key
+    }
 }
 
 #[derive(Debug, Copy, Clone)]
@@ -77,6 +81,7 @@ impl Default for VoiceOperator {
 
 #[derive(Debug, Clone)]
 pub struct Voice {
+    pub is_monophonic: bool,
     /// Has received at least one key press and has at least one envelope still running
     pub active: bool,
     pub midi_pitch: MidiPitch,
@@ -90,10 +95,11 @@ pub struct Voice {
 }
 
 impl Voice {
-    pub fn new(midi_pitch: MidiPitch) -> Self {
+    pub fn new(midi_pitch: MidiPitch, is_monophonic: bool) -> Self {
         let operators = [VoiceOperator::default(); NUM_OPERATORS];
 
         Self {
+            is_monophonic,
             active: false,
             midi_pitch,
             key_pressed: false,
@@ -201,11 +207,7 @@ impl Voice {
     }
 
     #[inline]
-    pub fn deactivate_if_envelopes_ended(
-        &mut self,
-        #[cfg(feature = "clap")] clap_ended_notes: &mut super::ClapEndedNotesRb,
-        #[cfg(feature = "clap")] sample_index: usize,
-    ) {
+    pub fn deactivate_if_envelopes_ended(&mut self) -> bool {
         let all_envelopes_ended = self
             .operators
             .iter()
@@ -220,23 +222,9 @@ impl Voice {
                 operator.last_phase.0 = 0.0;
             }
 
-            #[cfg(feature = "clap")]
-            if let Some(clap_note_id) = self.clap_note_id {
-                use ringbuf::Rb;
-
-                let note_ended = super::ClapNoteEnded {
-                    key: self.midi_pitch.key,
-                    clap_note_id,
-                    sample_index: sample_index as u32,
-                };
-
-                if let Err(_) = clap_ended_notes.push(note_ended) {
-                    // Should never happen
-                    ::log::error!("Clap ended notes buffer full");
-                }
-            }
-
             self.active = false;
         }
+
+        all_envelopes_ended
     }
 }

@@ -82,7 +82,7 @@ impl Default for AudioState {
             rng: Rng::new(),
             log10table: Default::default(),
             polyphonic_voices,
-            monophonic_voice: Voice::new(MidiPitch::new(0)),
+            monophonic_voice: Voice::new(MidiPitch::new(0), true),
             monophonic_pressed_keys,
             pending_note_events: LocalRb::new(1024),
             opt_last_voice_mode: None,
@@ -139,6 +139,8 @@ impl AudioState {
                     }
                 }
                 (VoiceMode::Monophonic, VoiceMode::Polyphonic) => {
+                    self.monophonic_pressed_keys.clear();
+
                     self.monophonic_voice.kill_envelopes();
                 }
                 _ => (),
@@ -251,7 +253,7 @@ impl AudioState {
                 } else {
                     self.polyphonic_voices
                         .entry(key)
-                        .or_insert(Voice::new(MidiPitch::new(key)))
+                        .or_insert(Voice::new(MidiPitch::new(key), false))
                 };
 
                 if let Some(glide_from_key) = opt_glide_from_key {
