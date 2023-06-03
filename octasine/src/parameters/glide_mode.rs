@@ -5,11 +5,7 @@ use super::{
     ParameterValue, SerializableRepresentation,
 };
 
-pub const PORTAMENTO_MODE_STEPS: &[GlideMode] = &[
-    GlideMode::Off,
-    GlideMode::Auto,
-    GlideMode::On,
-];
+pub const PORTAMENTO_MODE_STEPS: &[GlideMode] = &[GlideMode::Off, GlideMode::Auto, GlideMode::On];
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum GlideMode {

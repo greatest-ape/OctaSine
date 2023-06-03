@@ -12,10 +12,10 @@ use iced_baseview::{
 
 use crate::{
     parameters::{
-        list::{MasterParameter, Parameter},
-        master_pitch_bend_range::{MasterPitchBendRangeDownValue, MasterPitchBendRangeUpValue},
         glide_mode::{GlideMode, GlideModeValue},
         glide_time::GlideTimeValue,
+        list::{MasterParameter, Parameter},
+        master_pitch_bend_range::{MasterPitchBendRangeDownValue, MasterPitchBendRangeUpValue},
         velocity_sensitivity::VelocitySensitivityValue,
         voice_mode::VoiceModeValue,
         MasterFrequencyValue, MasterVolumeValue, ParameterValue,
@@ -177,8 +177,7 @@ impl CornerWidgets {
                 .font(theme.font_bold())
                 .height(Length::Fixed(LINE_HEIGHT.into()))
                 .width(LINE_HEIGHT * 4);
-            let glide_mode_title =
-                tooltip(theme, "Glide", Position::Top, glide_mode_title);
+            let glide_mode_title = tooltip(theme, "Glide", Position::Top, glide_mode_title);
 
             let voice_mode_title = Text::new("VOICES")
                 .horizontal_alignment(Horizontal::Center)
@@ -189,11 +188,8 @@ impl CornerWidgets {
                 tooltip(theme, "Voice settings", Position::Top, voice_mode_title);
 
             // This order is more intuitive in the GUI
-            const MODE_STEPS_REVERSE: &[GlideMode] = &[
-                GlideMode::On,
-                GlideMode::Auto,
-                GlideMode::Off,
-            ];
+            const MODE_STEPS_REVERSE: &[GlideMode] =
+                &[GlideMode::On, GlideMode::Auto, GlideMode::Off];
 
             let portmento_mode_picker = PickList::new(
                 MODE_STEPS_REVERSE,

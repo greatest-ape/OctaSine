@@ -1,3 +1,5 @@
+pub mod glide_mode;
+pub mod glide_time;
 pub mod lfo_active;
 pub mod lfo_amount;
 pub mod lfo_bpm_sync;
@@ -23,8 +25,6 @@ pub mod operator_mod_target;
 pub mod operator_panning;
 pub mod operator_volume;
 pub mod operator_wave_type;
-pub mod glide_mode;
-pub mod glide_time;
 pub mod utils;
 pub mod velocity_sensitivity;
 pub mod voice_mode;

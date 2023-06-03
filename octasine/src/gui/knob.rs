@@ -6,11 +6,11 @@ use iced_baseview::{
     Alignment, Element, Length,
 };
 
+use crate::parameters::glide_mode::GlideModeValue;
+use crate::parameters::glide_time::GlideTimeValue;
 use crate::parameters::master_pitch_bend_range::{
     MasterPitchBendRangeDownValue, MasterPitchBendRangeUpValue,
 };
-use crate::parameters::glide_mode::GlideModeValue;
-use crate::parameters::glide_time::GlideTimeValue;
 use crate::parameters::velocity_sensitivity::VelocitySensitivityValue;
 use crate::parameters::voice_mode::VoiceModeValue;
 use crate::parameters::{

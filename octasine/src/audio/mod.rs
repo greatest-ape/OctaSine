@@ -328,10 +328,8 @@ impl AudioState {
                     } else {
                         // mono_voice is active for a different key and is in
                         // attack/decay/sustain phase: trigger pitch change with glide
-                        self.monophonic_voice.change_pitch(
-                            key,
-                            Some(self.parameters.glide_time.get_value() as f64),
-                        );
+                        self.monophonic_voice
+                            .change_pitch(key, Some(self.parameters.glide_time.get_value() as f64));
                     }
                 }
             }
