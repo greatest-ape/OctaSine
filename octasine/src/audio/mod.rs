@@ -222,24 +222,28 @@ impl AudioState {
 
         match voice_mode {
             VoiceMode::Polyphonic => {
-                // FIXME: an option would be to use first pressed instead?
+                let mut most_recent_still_pressed_keys = self
+                    .polyphonic_voices
+                    .iter()
+                    .rev()
+                    .filter(|(k, v)| **k != key && v.key_pressed)
+                    .map(|(key, _)| *key);
+
                 let opt_glide_from_key = match glide_mode {
                     GlideMode::Off => None,
-                    GlideMode::Auto => self
-                        .polyphonic_voices
-                        .iter()
-                        .rev()
-                        .filter(|(k, v)| **k != key && v.key_pressed)
-                        .map(|(key, _)| *key)
-                        .next(),
-                    // FIXME: should maybe prefer pressed keys?
-                    GlideMode::On => self
-                        .polyphonic_voices
-                        .iter()
-                        .rev()
-                        .filter(|(k, _)| **k != key)
-                        .map(|(key, _)| *key)
-                        .next(),
+                    GlideMode::Auto => most_recent_still_pressed_keys.next(),
+                    GlideMode::On => {
+                        let most_recently_added_keys = self
+                            .polyphonic_voices
+                            .iter()
+                            .rev()
+                            .filter(|(k, _)| **k != key)
+                            .map(|(key, _)| *key);
+
+                        most_recent_still_pressed_keys
+                            .chain(most_recently_added_keys)
+                            .next()
+                    }
                 };
 
                 let voice = if let Some(voice) = self.polyphonic_voices.shift_remove(&key) {
