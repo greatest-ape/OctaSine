@@ -7,11 +7,9 @@
 * Portamento
   * Should LFOs not be restarted in some cases?
   * Implement constant time and constant rate modes, possibly even BPM-synced time
-  * Polyphonic - when pressing currently active key again, keep key
-    interpolation as is (don't force to key)
-  * Interaction with clap note ended events
+  * Polyphonic - look through implementation, can maybe be cleaner
+  * Double-check clap note ended events?
 * In alternative controls mode, maybe display a small envelope editor?
-* Operator 1 modulation output velocity sensitivity makes no sense
 
 * Audio inconsistencies on attack, see vospi email
 * Consider f64 interpolator and maybe even f64 parameters, since now we
@@ -41,7 +39,6 @@
 * GUI resources are not freed in Bitwig on macOS for both vst2 and clap plugins
 * CLAP GUI doesn't open on Bitwig on Linux (well, sometimes it does)
 * Include zoom state in patch?
-* Per-operator fixed-note mode?
 
 ## High priority
 
