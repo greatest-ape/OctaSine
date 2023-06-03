@@ -14,7 +14,7 @@ use crate::{
     parameters::{
         list::{MasterParameter, Parameter},
         master_pitch_bend_range::{MasterPitchBendRangeDownValue, MasterPitchBendRangeUpValue},
-        portamento_mode::{PortamentoModeValue, PORTAMENTO_MODE_STEPS},
+        portamento_mode::{PortamentoMode, PortamentoModeValue},
         portamento_time::PortamentoTimeValue,
         velocity_sensitivity::VelocitySensitivityValue,
         voice_mode::VoiceModeValue,
@@ -188,8 +188,15 @@ impl CornerWidgets {
             let voice_mode_title =
                 tooltip(theme, "Voice settings", Position::Top, voice_mode_title);
 
+            // This order is more intuitive in the GUI
+            const MODE_STEPS_REVERSE: &[PortamentoMode] = &[
+                PortamentoMode::On,
+                PortamentoMode::Auto,
+                PortamentoMode::Off,
+            ];
+
             let portmento_mode_picker = PickList::new(
-                PORTAMENTO_MODE_STEPS,
+                MODE_STEPS_REVERSE,
                 Some(PortamentoModeValue::new_from_patch(self.portamento_mode_value).get()),
                 move |option| {
                     let v = PortamentoModeValue::new_from_audio(option).to_patch();
@@ -236,13 +243,13 @@ impl CornerWidgets {
             Row::new()
                 .push(container_l1(container_l2(
                     Row::new()
-                        .push(container_l3(self.master_pitch_bend_up.view(theme)))
-                        .push(space_l3())
-                        .push(container_l3(self.master_pitch_bend_down.view(theme)))
+                        .push(container_l3(self.master_frequency.view(theme)))
                         .push(space_l3())
                         .push(container_l3(self.volume_velocity_sensitivity.view(theme)))
                         .push(space_l3())
-                        .push(container_l3(self.master_frequency.view(theme)))
+                        .push(container_l3(self.master_pitch_bend_up.view(theme)))
+                        .push(space_l3())
+                        .push(container_l3(self.master_pitch_bend_down.view(theme)))
                         .push(space_l3())
                         .push(container_l3(Space::with_width(LINE_HEIGHT * 4))),
                 )))
