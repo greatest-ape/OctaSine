@@ -4,7 +4,18 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
-Breaking changes.
+Breaking changes: voice phases are reset when they end, which can audibly
+impact existing projects.
+
+### Added
+
+- Add monophonic voice mode
+- Add glide (portamento). It can be set to off, auto (only on when playing
+  legato) or on (always glides)
+
+### Changed
+
+- Replace patch settings overlay with button for switching visible controls
 
 ### Fixed
 
