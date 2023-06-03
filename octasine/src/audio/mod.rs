@@ -21,6 +21,7 @@ use self::{
 };
 
 #[cfg(feature = "clap")]
+#[derive(Debug)]
 pub struct ClapNoteEnded {
     pub key: u8,
     pub clap_note_id: i32,
@@ -43,7 +44,7 @@ pub struct AudioState {
     log10table: Log10Table,
     pub polyphonic_voices: IndexMap<u8, Voice>,
     pub monophonic_voice: Voice,
-    monophonic_pressed_keys: IndexSet<u8>,
+    monophonic_pressed_keys: IndexMap<u8, Option<i32>>,
     pending_note_events: LocalRb<NoteEvent, Vec<MaybeUninit<NoteEvent>>>,
     opt_last_voice_mode: Option<VoiceMode>,
     audio_gen_data_w2: Box<AudioGenData<2>>,
@@ -63,7 +64,7 @@ impl Default for AudioState {
             voices
         };
         let monophonic_pressed_keys = {
-            let mut pressed_keys = IndexSet::default();
+            let mut pressed_keys = IndexMap::default();
 
             pressed_keys.reserve(128);
 
@@ -166,22 +167,22 @@ impl AudioState {
                 Some(event_delta_frames) if event_delta_frames == buffer_offset => {
                     let event = self.pending_note_events.pop().unwrap();
 
-                    self.process_note_event(event.event);
+                    self.process_note_event(event.event, event_delta_frames);
                 }
                 _ => break,
             }
         }
     }
 
-    fn process_note_event(&mut self, event: NoteEventInner) {
+    fn process_note_event(&mut self, event: NoteEventInner, sample_index: usize) {
         match event {
             NoteEventInner::Midi { mut data } => {
                 // Discard channel bits of status byte
                 data[0] >>= 4;
 
                 match data {
-                    [0b_1000, key, _] => self.key_off(key),
-                    [0b_1001, key, 0] => self.key_off(key),
+                    [0b_1000, key, _] => self.key_off(key, sample_index),
+                    [0b_1001, key, 0] => self.key_off(key, sample_index),
                     [0b_1001, key, velocity] => {
                         self.key_on(key, KeyVelocity::from_midi_velocity(velocity), None)
                     }
@@ -208,7 +209,7 @@ impl AudioState {
                 self.aftertouch(key, KeyVelocity(pressure as f32));
             }
             NoteEventInner::ClapNoteOff { key } => {
-                self.key_off(key);
+                self.key_off(key, sample_index);
             }
             NoteEventInner::ClapBpm { bpm } => {
                 self.set_bpm(bpm);
@@ -273,7 +274,7 @@ impl AudioState {
             }
             VoiceMode::Monophonic => {
                 self.monophonic_pressed_keys.shift_remove(&key);
-                self.monophonic_pressed_keys.insert(key);
+                self.monophonic_pressed_keys.insert(key, opt_clap_note_id);
 
                 if glide_mode == GlideMode::Off {
                     self.monophonic_voice.press_key(
@@ -338,7 +339,7 @@ impl AudioState {
         }
     }
 
-    fn key_off(&mut self, key: u8) {
+    fn key_off(&mut self, key: u8, sample_index: usize) {
         let voice_mode = self.parameters.voice_mode.get_value();
         let glide_mode = self.parameters.glide_mode.get_value();
 
@@ -349,9 +350,9 @@ impl AudioState {
                 }
             }
             VoiceMode::Monophonic => {
-                self.monophonic_pressed_keys.shift_remove(&key);
+                let opt_clap_note_id = self.monophonic_pressed_keys.shift_remove(&key).flatten();
 
-                if let Some(go_to_key) = self.monophonic_pressed_keys.last().copied() {
+                if let Some(go_to_key) = self.monophonic_pressed_keys.last().map(|(k, _)| *k) {
                     let opt_glide_time = if let GlideMode::Off = glide_mode {
                         None
                     } else {
@@ -360,6 +361,17 @@ impl AudioState {
 
                     self.monophonic_voice
                         .change_pitch(go_to_key, opt_glide_time);
+
+                    #[cfg(feature = "clap")]
+                    if let Some(clap_note_id) = opt_clap_note_id {
+                        if let Err(err) = self.clap_ended_notes.push(ClapNoteEnded {
+                            key,
+                            clap_note_id,
+                            sample_index: sample_index as u32,
+                        }) {
+                            ::log::error!("clap_ended_notes buffer full, couldn't push {:?}", err);
+                        }
+                    }
                 } else {
                     self.monophonic_voice.release_key();
                 }
