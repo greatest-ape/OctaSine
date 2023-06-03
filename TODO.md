@@ -7,6 +7,8 @@
 * Portamento
   * Should LFOs not be restarted in some cases?
   * Implement constant time and constant rate modes, possibly even BPM-synced time
+  * Polyphonic - when pressing currently active key again, keep key
+    interpolation as is (don't force to key)
   * Interaction with clap note ended events
 * In alternative controls mode, maybe display a small envelope editor?
 * Operator 1 modulation output velocity sensitivity makes no sense
