@@ -182,14 +182,16 @@ impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {
                 self.corner.volume_velocity_sensitivity.set_value(v)
             }
             Parameter::Master(MasterParameter::VoiceMode) => {
-                self.corner.voice_mode_button.set_value(v)
+                self.corner.patch_picker.voice_mode_button.set_value(v)
             }
             Parameter::Master(MasterParameter::GlideActive) => {
-                self.corner.glide_active_value = v;
+                self.corner.glide_active = v;
             }
             Parameter::Master(MasterParameter::GlideTime) => self.corner.glide_time.set_value(v),
-            Parameter::Master(MasterParameter::GlideBpmSync) => (), // FIXME
-            Parameter::Master(MasterParameter::GlideMode) => (),    // FIXME
+            Parameter::Master(MasterParameter::GlideBpmSync) => {
+                self.corner.glide_bpm_sync.set_value(v)
+            }
+            Parameter::Master(MasterParameter::GlideMode) => self.corner.glide_mode.set_value(v),
             outer_p @ Parameter::Operator(index, p) => {
                 self.operator_1.wave_display.set_value(outer_p, v);
                 self.operator_2.wave_display.set_value(outer_p, v);

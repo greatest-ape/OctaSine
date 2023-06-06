@@ -4,8 +4,10 @@ use iced_baseview::widget::canvas::{
 };
 use iced_baseview::{Color, Element, Length, Point, Rectangle, Size};
 
+use crate::parameters::glide_mode::{GlideMode, GlideModeValue};
 use crate::parameters::lfo_key_sync::LfoKeySyncValue;
 use crate::parameters::lfo_mode::LfoMode;
+use crate::parameters::list::MasterParameter;
 use crate::parameters::operator_envelope::OperatorEnvelopeGroupValue;
 use crate::parameters::{
     LfoActiveValue, LfoBpmSyncValue, LfoModeValue, LfoParameter, OperatorActiveValue,
@@ -155,6 +157,48 @@ pub fn envelope_group_b_button<H: GuiSyncHandle>(
             } else {
                 OperatorEnvelopeGroupValue::Off.to_patch()
             }
+        },
+        BooleanButtonStyle::Regular,
+    )
+}
+
+pub fn voice_mode_button<H: GuiSyncHandle>(sync_handle: &H) -> BooleanButton {
+    BooleanButton::new(
+        sync_handle,
+        Parameter::Master(MasterParameter::VoiceMode),
+        "POLY",
+        LINE_HEIGHT * 2 + 6,
+        LINE_HEIGHT,
+        |v| v < 0.5,
+        |b| if b { 0.0 } else { 1.0 },
+        BooleanButtonStyle::Regular,
+    )
+}
+
+pub fn glide_bpm_sync_button<H: GuiSyncHandle>(sync_handle: &H) -> BooleanButton {
+    BooleanButton::new(
+        sync_handle,
+        Parameter::Master(MasterParameter::GlideBpmSync),
+        "B",
+        LINE_HEIGHT,
+        LINE_HEIGHT,
+        |v| v > 0.5,
+        |b| if b { 1.0 } else { 0.0 },
+        BooleanButtonStyle::Regular,
+    )
+}
+
+pub fn glide_mode_button<H: GuiSyncHandle>(sync_handle: &H) -> BooleanButton {
+    BooleanButton::new(
+        sync_handle,
+        Parameter::Master(MasterParameter::GlideMode),
+        "R",
+        LINE_HEIGHT,
+        LINE_HEIGHT,
+        |v| GlideModeValue::new_from_patch(v).get() == GlideMode::Lcr,
+        |b| {
+            GlideModeValue::new_from_audio(if b { GlideMode::Lcr } else { GlideMode::Lct })
+                .to_patch()
         },
         BooleanButtonStyle::Regular,
     )

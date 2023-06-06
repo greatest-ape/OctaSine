@@ -12,7 +12,7 @@ use iced_baseview::{
 
 use crate::{
     parameters::{
-        glide_active::{GlideActive, GlideActiveValue},
+        glide_active::{GlideActive, GlideActiveValue, GLIDE_ACTIVE_STEPS},
         glide_time::GlideTimeValue,
         list::{MasterParameter, Parameter},
         master_pitch_bend_range::{MasterPitchBendRangeDownValue, MasterPitchBendRangeUpValue},
@@ -25,7 +25,7 @@ use crate::{
 };
 
 use super::{
-    boolean_button::BooleanButton,
+    boolean_button::{glide_bpm_sync_button, glide_mode_button, voice_mode_button, BooleanButton},
     common::{container_l1, container_l2, container_l3, space_l3, tooltip, triple_container},
     knob::{self, OctaSineKnob},
     mod_matrix::ModulationMatrix,
@@ -43,11 +43,11 @@ pub struct CornerWidgets {
     pub patch_picker: PatchPicker,
     pub master_pitch_bend_up: OctaSineKnob<MasterPitchBendRangeUpValue>,
     pub master_pitch_bend_down: OctaSineKnob<MasterPitchBendRangeDownValue>,
-    pub voice_mode: OctaSineKnob<VoiceModeValue>,
-    pub glide_mode: OctaSineKnob<GlideActiveValue>,
     pub glide_time: OctaSineKnob<GlideTimeValue>,
-    pub voice_mode_button: BooleanButton,
-    pub glide_active_value: f32,
+    pub glide_bpm_sync: BooleanButton,
+    pub glide_mode: BooleanButton,
+    pub voice_mode: BooleanButton,
+    pub glide_active: f32,
 }
 
 impl CornerWidgets {
@@ -59,23 +59,14 @@ impl CornerWidgets {
         let patch_picker = PatchPicker::new(sync_handle);
         let master_pitch_bend_up = knob::master_pitch_bend_range_up(sync_handle);
         let master_pitch_bend_down = knob::master_pitch_bend_range_down(sync_handle);
-        let voice_mode = knob::voice_mode(sync_handle);
-        let glide_mode = knob::glide_mode(sync_handle);
         let glide_time = knob::glide_time(sync_handle);
 
-        let voice_mode_button = BooleanButton::new(
-            sync_handle,
-            Parameter::Master(MasterParameter::VoiceMode),
-            "POLY",
-            LINE_HEIGHT * 2 + 6,
-            LINE_HEIGHT,
-            |v| v < 0.5,
-            |b| if b { 0.0 } else { 1.0 },
-            BooleanButtonStyle::Regular,
-        );
-
-        let glide_mode_value =
+        let glide_active =
             sync_handle.get_parameter(Parameter::Master(MasterParameter::GlideActive).into());
+
+        let glide_bpm_sync = glide_bpm_sync_button(sync_handle);
+        let glide_mode = glide_mode_button(sync_handle);
+        let voice_mode = voice_mode_button(sync_handle);
 
         Self {
             alternative_controls: false,
@@ -87,10 +78,10 @@ impl CornerWidgets {
             master_pitch_bend_up,
             master_pitch_bend_down,
             voice_mode,
-            glide_mode,
+            glide_active,
             glide_time,
-            voice_mode_button,
-            glide_active_value: glide_mode_value,
+            glide_bpm_sync,
+            glide_mode,
         }
     }
 
@@ -187,13 +178,28 @@ impl CornerWidgets {
             let voice_mode_title =
                 tooltip(theme, "Voice settings", Position::Top, voice_mode_title);
 
-            // This order is more intuitive in the GUI
-            const MODE_STEPS_REVERSE: &[GlideActive] =
-                &[GlideActive::On, GlideActive::Auto, GlideActive::Off];
+            let glide_bpm_sync = tooltip(
+                theme,
+                "Toggle BPM sync",
+                Position::Top,
+                self.glide_bpm_sync.view(),
+            );
+            let glide_mode = tooltip(
+                theme,
+                "Toggle constant time / constant rate mode",
+                Position::Top,
+                self.glide_mode.view(),
+            );
+            let voice_mode = tooltip(
+                theme,
+                "Toggle polyphonic voices / monophonic voice",
+                Position::Top,
+                self.voice_mode.view(),
+            );
 
             let portmento_mode_picker = PickList::new(
-                MODE_STEPS_REVERSE,
-                Some(GlideActiveValue::new_from_patch(self.glide_active_value).get()),
+                GLIDE_ACTIVE_STEPS,
+                Some(GlideActiveValue::new_from_patch(self.glide_active).get()),
                 move |option| {
                     let v = GlideActiveValue::new_from_audio(option).to_patch();
 
@@ -208,24 +214,22 @@ impl CornerWidgets {
             .padding(theme.picklist_padding())
             .width(Length::Fixed(f32::from(LINE_HEIGHT * 3)));
 
-            let voice_mode_button = tooltip(
-                theme,
-                "Toggle polyphonic / monophonic",
-                Position::Top,
-                self.voice_mode_button.view(),
-            );
-
             Container::new(
                 Column::new()
                     .width(Length::Fixed(f32::from(LINE_HEIGHT * 4)))
                     .align_items(Alignment::Center)
                     .push(glide_mode_title)
-                    .push(Space::with_height(LINE_HEIGHT / 4))
+                    // .push(Space::with_height(LINE_HEIGHT / 2 + LINE_HEIGHT / 4))
+                    .push(Space::with_height(LINE_HEIGHT))
                     .push(portmento_mode_picker)
-                    .push(Space::with_height(LINE_HEIGHT - LINE_HEIGHT / 4))
-                    .push(voice_mode_title)
                     .push(Space::with_height(LINE_HEIGHT / 2))
-                    .push(voice_mode_button),
+                    .push(
+                        Row::new()
+                            .push(glide_bpm_sync)
+                            .push(Space::with_width(Length::Fixed(4.0)))
+                            .push(glide_mode),
+                    ), // .push(Space::with_height(LINE_HEIGHT / 2 + LINE_HEIGHT / 4))
+                       // .push(voice_mode),
             )
         };
 

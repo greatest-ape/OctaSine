@@ -2,11 +2,14 @@ use std::fmt::Display;
 
 use compact_str::CompactString;
 use iced_baseview::alignment::Horizontal;
-use iced_baseview::widget::PickList;
+use iced_baseview::widget::tooltip::Position;
+use iced_baseview::widget::{PickList, Row};
 use iced_baseview::{
     widget::Column, widget::Container, widget::Space, widget::Text, Alignment, Element, Length,
 };
 
+use super::boolean_button::{voice_mode_button, BooleanButton};
+use super::common::tooltip;
 use super::LINE_HEIGHT;
 use super::{style::Theme, GuiSyncHandle, Message, FONT_SIZE};
 
@@ -70,6 +73,7 @@ impl Display for Patch {
 pub struct PatchPicker {
     patch_options: Vec<Patch>,
     patch_index: usize,
+    pub voice_mode_button: BooleanButton,
 }
 
 impl PatchPicker {
@@ -82,9 +86,12 @@ impl PatchPicker {
             .map(|(index, title)| Patch { index, title })
             .collect();
 
+        let voice_mode_button = voice_mode_button(sync_handle);
+
         Self {
             patch_options,
             patch_index,
+            voice_mode_button,
         }
     }
 
@@ -106,21 +113,36 @@ impl PatchPicker {
             .placeholder("ACTIONS..")
             .width(Length::Fill);
 
+        let voice_mode_button = tooltip(
+            theme,
+            "Toggle polyphonic / monophonic voice mode",
+            Position::Top,
+            self.voice_mode_button.view(),
+        );
+
         Container::new(
             Column::new()
-                .align_items(Alignment::Center)
                 .push(action_picker)
                 .push(Space::with_height(Length::Fixed(f32::from(
                     LINE_HEIGHT / 2 + LINE_HEIGHT / 4,
                 ))))
                 .push(
-                    Text::new("Patch")
-                        .size(f32::from(FONT_SIZE * 3 / 2))
-                        .height(Length::Fixed(f32::from(FONT_SIZE * 3 / 2)))
-                        .width(Length::Fixed(f32::from(LINE_HEIGHT * 10)))
-                        .font(theme.font_heading())
-                        // .color(theme.heading_color()) // FIXME
-                        .horizontal_alignment(Horizontal::Center),
+                    Row::new()
+                        .push(Column::new().width(LINE_HEIGHT * 3))
+                        .push(
+                            Text::new("Patch")
+                                .size(f32::from(FONT_SIZE * 3 / 2))
+                                .height(Length::Fixed(f32::from(FONT_SIZE * 3 / 2)))
+                                .font(theme.font_heading())
+                                .horizontal_alignment(Horizontal::Center)
+                                .width(LINE_HEIGHT * 6),
+                        )
+                        .push(Space::with_width(LINE_HEIGHT / 2))
+                        .push(
+                            Column::new()
+                                .push(Space::with_height(3))
+                                .push(voice_mode_button),
+                        ),
                 )
                 .push(Space::with_height(Length::Fixed(f32::from(
                     LINE_HEIGHT / 2 + LINE_HEIGHT / 4,
