@@ -10,7 +10,9 @@ use ringbuf::{LocalRb, Rb};
 
 use crate::{
     common::*,
-    parameters::{glide_mode::GlideMode, voice_mode::VoiceMode, Parameter},
+    parameters::{
+        glide_active::GlideActive, glide_mode::GlideMode, voice_mode::VoiceMode, Parameter,
+    },
 };
 
 use parameters::*;
@@ -221,7 +223,7 @@ impl AudioState {
 
     fn key_on(&mut self, key: u8, velocity: KeyVelocity, opt_clap_note_id: Option<i32>) {
         let voice_mode = self.parameters.voice_mode.get_value();
-        let glide_mode = self.parameters.glide_mode.get_value();
+        let glide_active = self.parameters.glide_active.get_value();
 
         match voice_mode {
             VoiceMode::Polyphonic => {
@@ -232,10 +234,10 @@ impl AudioState {
                     .filter(|(k, v)| **k != key && v.key_pressed)
                     .map(|(key, _)| *key);
 
-                let opt_glide_from_key = match glide_mode {
-                    GlideMode::Off => None,
-                    GlideMode::Auto => most_recent_still_pressed_keys.next(),
-                    GlideMode::On => {
+                let opt_glide_from_key = match glide_active {
+                    GlideActive::Off => None,
+                    GlideActive::Auto => most_recent_still_pressed_keys.next(),
+                    GlideActive::On => {
                         // Don't filter out current voice here, since we don't
                         // want glide if it was most recently pressed
                         let most_recently_added_keys =
@@ -260,11 +262,14 @@ impl AudioState {
                     if glide_from_key == key {
                         voice.press_key(&self.parameters, velocity, None, None, opt_clap_note_id);
                     } else {
+                        let glide_time =
+                            Self::glide_time(&self.parameters, self.bpm, glide_from_key, key);
+
                         voice.press_key(
                             &self.parameters,
                             velocity,
                             Some(glide_from_key),
-                            Some((key, self.parameters.glide_time.get_value() as f64)),
+                            Some((key, glide_time)),
                             opt_clap_note_id,
                         );
                     }
@@ -282,7 +287,7 @@ impl AudioState {
                 self.monophonic_pressed_keys.shift_remove(&key);
                 self.monophonic_pressed_keys.insert(key, opt_clap_note_id);
 
-                if glide_mode == GlideMode::Off {
+                if glide_active == GlideActive::Off {
                     self.monophonic_voice.press_key(
                         &self.parameters,
                         velocity,
@@ -313,7 +318,7 @@ impl AudioState {
                     } else if !self.monophonic_voice.key_pressed {
                         // mono_voice is active for a different key and is in release stage
 
-                        if glide_mode == GlideMode::Auto {
+                        if glide_active == GlideActive::Auto {
                             // Auto glide mode: trigger key press for voice with new key
                             // without glide
                             self.monophonic_voice.press_key(
@@ -326,19 +331,34 @@ impl AudioState {
                         } else {
                             // Always glide mode: trigger key press for voice with new key
                             // with glide
+
+                            let glide_time = Self::glide_time(
+                                &self.parameters,
+                                self.bpm,
+                                self.monophonic_voice.key(),
+                                key,
+                            );
+
                             self.monophonic_voice.press_key(
                                 &self.parameters,
                                 velocity,
                                 None,
-                                Some((key, self.parameters.glide_time.get_value() as f64)),
+                                Some((key, glide_time)),
                                 opt_clap_note_id,
                             )
                         }
                     } else {
                         // mono_voice is active for a different key and is in
                         // attack/decay/sustain phase: trigger pitch change with glide
-                        self.monophonic_voice
-                            .change_pitch(key, Some(self.parameters.glide_time.get_value() as f64));
+
+                        let glide_time = Self::glide_time(
+                            &self.parameters,
+                            self.bpm,
+                            self.monophonic_voice.key(),
+                            key,
+                        );
+
+                        self.monophonic_voice.change_pitch(key, Some(glide_time));
                     }
                 }
             }
@@ -351,7 +371,7 @@ impl AudioState {
         #[cfg_attr(not(feature = "clap"), allow(unused_variables))] sample_index: usize,
     ) {
         let voice_mode = self.parameters.voice_mode.get_value();
-        let glide_mode = self.parameters.glide_mode.get_value();
+        let glide_mode = self.parameters.glide_active.get_value();
 
         match voice_mode {
             VoiceMode::Polyphonic => {
@@ -364,7 +384,7 @@ impl AudioState {
                 let opt_clap_note_id = self.monophonic_pressed_keys.shift_remove(&key).flatten();
 
                 if let Some(go_to_key) = self.monophonic_pressed_keys.last().map(|(k, _)| *k) {
-                    let opt_glide_time = if let GlideMode::Off = glide_mode {
+                    let opt_glide_time = if let GlideActive::Off = glide_mode {
                         None
                     } else {
                         Some(self.parameters.glide_time.get_value() as f64)
@@ -403,6 +423,24 @@ impl AudioState {
         self.parameters
             .compare_patch_value(parameter, value)
             .unwrap()
+    }
+
+    fn glide_time(
+        parameters: &AudioParameters,
+        bpm: BeatsPerMinute,
+        from_key: u8,
+        to_key: u8,
+    ) -> f64 {
+        let mut glide_time = parameters.glide_time.get_value() as f64;
+
+        if parameters.glide_bpm_sync.get_value() {
+            glide_time *= 120.0 / bpm.0;
+        }
+        if let GlideMode::Lcr = parameters.glide_mode.get_value() {
+            glide_time *= (from_key as f64 - to_key as f64).abs() * (1.0 / 12.0);
+        }
+
+        glide_time
     }
 }
 

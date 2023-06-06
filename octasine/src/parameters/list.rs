@@ -112,8 +112,10 @@ pub const PARAMETERS: &[Parameter] = &[
     Parameter::Operator(3, OperatorParameter::VelocitySensitivityModOut),
     Parameter::Operator(3, OperatorParameter::VelocitySensitivityFeedback),
     Parameter::Master(MasterParameter::VoiceMode),
-    Parameter::Master(MasterParameter::GlideMode),
+    Parameter::Master(MasterParameter::GlideActive),
     Parameter::Master(MasterParameter::GlideTime),
+    Parameter::Master(MasterParameter::GlideBpmSync),
+    Parameter::Master(MasterParameter::GlideMode),
 ];
 
 /// Parameter enum used to abstract over parameter indices
@@ -134,8 +136,10 @@ pub enum MasterParameter {
     PitchBendRangeDown,
     VelocitySensitivityVolume,
     VoiceMode,
-    GlideMode,
+    GlideActive,
     GlideTime,
+    GlideBpmSync,
+    GlideMode,
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]

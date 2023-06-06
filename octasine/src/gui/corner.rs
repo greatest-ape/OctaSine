@@ -12,7 +12,7 @@ use iced_baseview::{
 
 use crate::{
     parameters::{
-        glide_mode::{GlideMode, GlideModeValue},
+        glide_active::{GlideActive, GlideActiveValue},
         glide_time::GlideTimeValue,
         list::{MasterParameter, Parameter},
         master_pitch_bend_range::{MasterPitchBendRangeDownValue, MasterPitchBendRangeUpValue},
@@ -44,10 +44,10 @@ pub struct CornerWidgets {
     pub master_pitch_bend_up: OctaSineKnob<MasterPitchBendRangeUpValue>,
     pub master_pitch_bend_down: OctaSineKnob<MasterPitchBendRangeDownValue>,
     pub voice_mode: OctaSineKnob<VoiceModeValue>,
-    pub glide_mode: OctaSineKnob<GlideModeValue>,
+    pub glide_mode: OctaSineKnob<GlideActiveValue>,
     pub glide_time: OctaSineKnob<GlideTimeValue>,
     pub voice_mode_button: BooleanButton,
-    pub glide_mode_value: f32,
+    pub glide_active_value: f32,
 }
 
 impl CornerWidgets {
@@ -75,7 +75,7 @@ impl CornerWidgets {
         );
 
         let glide_mode_value =
-            sync_handle.get_parameter(Parameter::Master(MasterParameter::GlideMode).into());
+            sync_handle.get_parameter(Parameter::Master(MasterParameter::GlideActive).into());
 
         Self {
             alternative_controls: false,
@@ -90,7 +90,7 @@ impl CornerWidgets {
             glide_mode,
             glide_time,
             voice_mode_button,
-            glide_mode_value,
+            glide_active_value: glide_mode_value,
         }
     }
 
@@ -188,17 +188,17 @@ impl CornerWidgets {
                 tooltip(theme, "Voice settings", Position::Top, voice_mode_title);
 
             // This order is more intuitive in the GUI
-            const MODE_STEPS_REVERSE: &[GlideMode] =
-                &[GlideMode::On, GlideMode::Auto, GlideMode::Off];
+            const MODE_STEPS_REVERSE: &[GlideActive] =
+                &[GlideActive::On, GlideActive::Auto, GlideActive::Off];
 
             let portmento_mode_picker = PickList::new(
                 MODE_STEPS_REVERSE,
-                Some(GlideModeValue::new_from_patch(self.glide_mode_value).get()),
+                Some(GlideActiveValue::new_from_patch(self.glide_active_value).get()),
                 move |option| {
-                    let v = GlideModeValue::new_from_audio(option).to_patch();
+                    let v = GlideActiveValue::new_from_audio(option).to_patch();
 
                     Message::ChangeSingleParameterImmediate(
-                        Parameter::Master(MasterParameter::GlideMode).into(),
+                        Parameter::Master(MasterParameter::GlideActive).into(),
                         v,
                     )
                 },

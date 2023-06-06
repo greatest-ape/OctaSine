@@ -1,3 +1,5 @@
+pub mod glide_active;
+pub mod glide_bpm_sync;
 pub mod glide_mode;
 pub mod glide_time;
 pub mod lfo_active;
@@ -108,8 +110,10 @@ impl Parameter {
                 "Vol velocity sensitivity".into()
             }
             Self::Master(MasterParameter::VoiceMode) => "Voice mode".into(),
-            Self::Master(MasterParameter::GlideMode) => "Glide mode".into(),
+            Self::Master(MasterParameter::GlideActive) => "Glide active".into(),
             Self::Master(MasterParameter::GlideTime) => "Glide time".into(),
+            Self::Master(MasterParameter::GlideBpmSync) => "Glide bpm sync".into(),
+            Self::Master(MasterParameter::GlideMode) => "Glide mode".into(),
             Self::Operator(index, p) => match p {
                 OperatorParameter::Volume => format_compact!("OP {} vol", index + 1),
                 OperatorParameter::Active => format_compact!("OP {} active", index + 1),
@@ -186,8 +190,10 @@ impl Parameter {
                 "Master volume velocity sensitivity".into()
             }
             Self::Master(MasterParameter::VoiceMode) => "Voice mode".into(),
-            Self::Master(MasterParameter::GlideMode) => "Glide mode".into(),
+            Self::Master(MasterParameter::GlideActive) => "Glide active".into(),
             Self::Master(MasterParameter::GlideTime) => "Glide time".into(),
+            Self::Master(MasterParameter::GlideBpmSync) => "Glide bpm sync".into(),
+            Self::Master(MasterParameter::GlideMode) => "Glide mode".into(),
             Self::Operator(index, p) => match p {
                 OperatorParameter::Volume => format!("OP {} vol", index + 1),
                 OperatorParameter::Active => format!("OP {} active", index + 1),

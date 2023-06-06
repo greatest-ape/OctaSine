@@ -5,37 +5,41 @@ use super::{
     ParameterValue, SerializableRepresentation,
 };
 
-pub const PORTAMENTO_MODE_STEPS: &[GlideMode] = &[GlideMode::Lct, GlideMode::Lcr];
+pub const PORTAMENTO_MODE_STEPS: &[GlideActive] =
+    &[GlideActive::Off, GlideActive::Auto, GlideActive::On];
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
-pub enum GlideMode {
+pub enum GlideActive {
     #[default]
-    Lct,
-    Lcr,
+    Off,
+    Auto,
+    On,
 }
 
-impl ::std::fmt::Display for GlideMode {
+impl ::std::fmt::Display for GlideActive {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_str(match self {
-            Self::Lct => "LCT",
-            Self::Lcr => "LCR",
+            Self::Off => "OFF",
+            Self::Auto => "AUTO",
+            Self::On => "ON",
         })
     }
 }
 
 #[derive(Debug, Clone, Copy, Default)]
-pub struct GlideModeValue(GlideMode);
+pub struct GlideActiveValue(GlideActive);
 
-impl ParameterValue for GlideModeValue {
-    type Value = GlideMode;
+impl ParameterValue for GlideActiveValue {
+    type Value = GlideActive;
 
     fn new_from_audio(value: Self::Value) -> Self {
         Self(value)
     }
     fn new_from_text(text: &str) -> Option<Self> {
         match text.trim().to_lowercase().as_str() {
-            "lct" => Some(Self(GlideMode::Lct)),
-            "lcr" => Some(Self(GlideMode::Lcr)),
+            "off" => Some(Self(GlideActive::Off)),
+            "auto" => Some(Self(GlideActive::Auto)),
+            "always" => Some(Self(GlideActive::On)),
             _ => None,
         }
     }

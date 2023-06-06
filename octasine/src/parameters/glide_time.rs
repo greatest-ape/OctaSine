@@ -12,7 +12,7 @@ pub struct GlideTimeValue(f32);
 
 impl Default for GlideTimeValue {
     fn default() -> Self {
-        Self(0.1)
+        Self(0.125)
     }
 }
 

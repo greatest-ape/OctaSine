@@ -3,6 +3,7 @@ use compact_str::CompactString;
 use crate::{
     common::IndexMap,
     parameters::{
+        glide_active::GlideActiveValue, glide_bpm_sync::GlideBpmSyncValue,
         glide_mode::GlideModeValue, glide_time::GlideTimeValue,
         velocity_sensitivity::VelocitySensitivityValue, voice_mode::VoiceModeValue, *,
     },
@@ -53,8 +54,10 @@ impl PatchParameter {
                     Self::new::<VelocitySensitivityValue>(parameter)
                 }
                 MasterParameter::VoiceMode => Self::new::<VoiceModeValue>(parameter),
-                MasterParameter::GlideMode => Self::new::<GlideModeValue>(parameter),
+                MasterParameter::GlideActive => Self::new::<GlideActiveValue>(parameter),
                 MasterParameter::GlideTime => Self::new::<GlideTimeValue>(parameter),
+                MasterParameter::GlideBpmSync => Self::new::<GlideBpmSyncValue>(parameter),
+                MasterParameter::GlideMode => Self::new::<GlideModeValue>(parameter),
             },
             Parameter::Operator(index, operator_parameter) => {
                 use OperatorParameter::*;

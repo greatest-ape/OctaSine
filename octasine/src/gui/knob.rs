@@ -6,7 +6,7 @@ use iced_baseview::{
     Alignment, Element, Length,
 };
 
-use crate::parameters::glide_mode::GlideModeValue;
+use crate::parameters::glide_active::GlideActiveValue;
 use crate::parameters::glide_time::GlideTimeValue;
 use crate::parameters::master_pitch_bend_range::{
     MasterPitchBendRangeDownValue, MasterPitchBendRangeUpValue,
@@ -126,13 +126,13 @@ where
     )
 }
 
-pub fn glide_mode<H>(sync_handle: &H) -> OctaSineKnob<GlideModeValue>
+pub fn glide_mode<H>(sync_handle: &H) -> OctaSineKnob<GlideActiveValue>
 where
     H: GuiSyncHandle,
 {
     OctaSineKnob::new(
         sync_handle,
-        Parameter::Master(MasterParameter::GlideMode),
+        Parameter::Master(MasterParameter::GlideActive),
         "GLIDE",
         "Glide mode",
         TickMarkType::MinMaxAndDefault,
