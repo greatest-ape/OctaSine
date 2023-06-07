@@ -5,6 +5,8 @@
   * Go to kill phase after release, in preparation for allowing release end
     value to be non-zero?
 * Portamento
+  * Clicks when retriggering still running note with much lower velocity,
+    in both mono and poly
   * Do we want the option of restarting LFOs on key press in mono mode?
   * Polyphonic - look through implementation, can maybe be cleaner
   * Store key velocities for pressed keys?
