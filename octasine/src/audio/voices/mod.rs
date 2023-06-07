@@ -150,8 +150,6 @@ impl Voice {
 
         if let Some((key, glide_time)) = target_key {
             self.change_pitch(key, Some(glide_time));
-
-            // TODO: send clap note ended event for old note id?
         }
 
         self.key_pressed = true;
