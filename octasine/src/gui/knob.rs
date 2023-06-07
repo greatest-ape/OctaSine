@@ -6,13 +6,11 @@ use iced_baseview::{
     Alignment, Element, Length,
 };
 
-use crate::parameters::glide_active::GlideActiveValue;
 use crate::parameters::glide_time::GlideTimeValue;
 use crate::parameters::master_pitch_bend_range::{
     MasterPitchBendRangeDownValue, MasterPitchBendRangeUpValue,
 };
 use crate::parameters::velocity_sensitivity::VelocitySensitivityValue;
-use crate::parameters::voice_mode::VoiceModeValue;
 use crate::parameters::{
     LfoAmountValue, LfoFrequencyFreeValue, LfoFrequencyRatioValue, LfoParameter,
     MasterFrequencyValue, MasterParameter, MasterVolumeValue, OperatorFeedbackValue,
@@ -112,34 +110,6 @@ where
     )
 }
 
-pub fn voice_mode<H>(sync_handle: &H) -> OctaSineKnob<VoiceModeValue>
-where
-    H: GuiSyncHandle,
-{
-    OctaSineKnob::new(
-        sync_handle,
-        Parameter::Master(MasterParameter::VoiceMode),
-        "VOICES",
-        "Voice mode",
-        TickMarkType::MinMaxAndDefault,
-        KnobStyle::Regular,
-    )
-}
-
-pub fn glide_mode<H>(sync_handle: &H) -> OctaSineKnob<GlideActiveValue>
-where
-    H: GuiSyncHandle,
-{
-    OctaSineKnob::new(
-        sync_handle,
-        Parameter::Master(MasterParameter::GlideActive),
-        "GLIDE",
-        "Glide mode",
-        TickMarkType::MinMaxAndDefault,
-        KnobStyle::Regular,
-    )
-}
-
 pub fn glide_time<H>(sync_handle: &H) -> OctaSineKnob<GlideTimeValue>
 where
     H: GuiSyncHandle,
@@ -147,7 +117,7 @@ where
     OctaSineKnob::new(
         sync_handle,
         Parameter::Master(MasterParameter::GlideTime),
-        "GLIDE T",
+        "GL TIME",
         "Glide time",
         TickMarkType::MinMaxAndDefault,
         KnobStyle::Regular,

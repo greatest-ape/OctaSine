@@ -5,7 +5,7 @@ use iced_baseview::alignment::Horizontal;
 use iced_baseview::widget::tooltip::Position;
 use iced_baseview::widget::{PickList, Row};
 use iced_baseview::{
-    widget::Column, widget::Container, widget::Space, widget::Text, Alignment, Element, Length,
+    widget::Column, widget::Container, widget::Space, widget::Text, Element, Length,
 };
 
 use super::boolean_button::{voice_mode_button, BooleanButton};
@@ -93,6 +93,10 @@ impl PatchPicker {
             patch_index,
             voice_mode_button,
         }
+    }
+
+    pub fn theme_changed(&mut self) {
+        self.voice_mode_button.theme_changed();
     }
 
     pub fn view(&self, theme: &Theme) -> Element<Message, Theme> {

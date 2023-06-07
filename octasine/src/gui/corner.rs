@@ -12,12 +12,11 @@ use iced_baseview::{
 
 use crate::{
     parameters::{
-        glide_active::{GlideActive, GlideActiveValue, GLIDE_ACTIVE_STEPS},
+        glide_active::{GlideActiveValue, GLIDE_ACTIVE_STEPS},
         glide_time::GlideTimeValue,
         list::{MasterParameter, Parameter},
         master_pitch_bend_range::{MasterPitchBendRangeDownValue, MasterPitchBendRangeUpValue},
         velocity_sensitivity::VelocitySensitivityValue,
-        voice_mode::VoiceModeValue,
         MasterFrequencyValue, MasterVolumeValue, ParameterValue,
     },
     sync::GuiSyncHandle,
@@ -25,12 +24,12 @@ use crate::{
 };
 
 use super::{
-    boolean_button::{glide_bpm_sync_button, glide_mode_button, voice_mode_button, BooleanButton},
+    boolean_button::{glide_bpm_sync_button, glide_mode_button, BooleanButton},
     common::{container_l1, container_l2, container_l3, space_l3, tooltip, triple_container},
     knob::{self, OctaSineKnob},
     mod_matrix::ModulationMatrix,
     patch_picker::PatchPicker,
-    style::{boolean_button::BooleanButtonStyle, container::ContainerStyle, Theme},
+    style::{container::ContainerStyle, Theme},
     Message, FONT_SIZE, LINE_HEIGHT,
 };
 
@@ -46,7 +45,6 @@ pub struct CornerWidgets {
     pub glide_time: OctaSineKnob<GlideTimeValue>,
     pub glide_bpm_sync: BooleanButton,
     pub glide_mode: BooleanButton,
-    pub voice_mode: BooleanButton,
     pub glide_active: f32,
 }
 
@@ -66,7 +64,6 @@ impl CornerWidgets {
 
         let glide_bpm_sync = glide_bpm_sync_button(sync_handle);
         let glide_mode = glide_mode_button(sync_handle);
-        let voice_mode = voice_mode_button(sync_handle);
 
         Self {
             alternative_controls: false,
@@ -77,7 +74,6 @@ impl CornerWidgets {
             patch_picker,
             master_pitch_bend_up,
             master_pitch_bend_down,
-            voice_mode,
             glide_active,
             glide_time,
             glide_bpm_sync,
@@ -86,7 +82,10 @@ impl CornerWidgets {
     }
 
     pub fn theme_changed(&mut self) {
+        self.patch_picker.theme_changed();
         self.modulation_matrix.theme_changed();
+        self.glide_bpm_sync.theme_changed();
+        self.glide_mode.theme_changed();
     }
 
     pub fn view(&self, theme: &Theme) -> Element<'_, Message, Theme> {
@@ -163,38 +162,28 @@ impl CornerWidgets {
         };
 
         let voice_buttons = {
-            let glide_mode_title = Text::new("GLIDE")
-                .horizontal_alignment(Horizontal::Center)
-                .font(theme.font_bold())
-                .height(Length::Fixed(LINE_HEIGHT.into()))
-                .width(LINE_HEIGHT * 4);
-            let glide_mode_title = tooltip(theme, "Glide", Position::Top, glide_mode_title);
-
-            let voice_mode_title = Text::new("VOICES")
-                .horizontal_alignment(Horizontal::Center)
-                .font(theme.font_bold())
-                .height(Length::Fixed(LINE_HEIGHT.into()))
-                .width(LINE_HEIGHT * 4);
-            let voice_mode_title =
-                tooltip(theme, "Voice settings", Position::Top, voice_mode_title);
+            let glide_mode_title = tooltip(
+                theme,
+                "Glide (portamento)",
+                Position::Top,
+                Text::new("GLIDE")
+                    .horizontal_alignment(Horizontal::Center)
+                    .font(theme.font_bold())
+                    .height(Length::Fixed(LINE_HEIGHT.into()))
+                    .width(LINE_HEIGHT * 4),
+            );
 
             let glide_bpm_sync = tooltip(
                 theme,
-                "Toggle BPM sync",
+                "Toggle glide BPM sync",
                 Position::Top,
                 self.glide_bpm_sync.view(),
             );
             let glide_mode = tooltip(
                 theme,
-                "Toggle constant time / constant rate mode",
+                "Toggle glide constant time / constant rate mode",
                 Position::Top,
                 self.glide_mode.view(),
-            );
-            let voice_mode = tooltip(
-                theme,
-                "Toggle polyphonic voices / monophonic voice",
-                Position::Top,
-                self.voice_mode.view(),
             );
 
             let portmento_mode_picker = PickList::new(
@@ -263,9 +252,9 @@ impl CornerWidgets {
                 Row::new()
                     .push(container_l3(self.master_volume.view(theme)))
                     .push(space_l3())
-                    .push(container_l3(self.glide_time.view(theme)))
+                    .push(container_l3(voice_buttons))
                     .push(space_l3())
-                    .push(container_l3(voice_buttons)),
+                    .push(container_l3(self.glide_time.view(theme))),
             )));
 
         Column::new()
