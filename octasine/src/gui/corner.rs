@@ -164,7 +164,7 @@ impl CornerWidgets {
         let voice_buttons = {
             let glide_mode_title = tooltip(
                 theme,
-                "Glide (portamento)",
+                "Glide (portamento)\nLEG = glide when playing legato",
                 Position::Top,
                 Text::new("GLIDE")
                     .horizontal_alignment(Horizontal::Center)

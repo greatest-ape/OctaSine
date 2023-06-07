@@ -9,10 +9,13 @@ impact existing projects.
 
 ### Added
 
-- Add monophonic voice mode in addition to the previous polyphonic mode
+- Add monophonic voice mode
+  - When envelopes are restarted, attack will proceed from last volume instead
+    of from zero
 - Add glide (portamento)
   - Available for both polyphonic and monophonic voice modes
-  - Can be set to off, legato or on (always glides)
+  - Can be set to OFF, LEG (only glide when playing legato) or ON (always
+    glide)
   - Supports linear constant time (LCT) and linear constant rate (LCR, time
     per octave) modes
   - Supports optional BPM sync for time/rate

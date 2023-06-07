@@ -6,13 +6,13 @@ use super::{
 };
 
 pub const GLIDE_ACTIVE_STEPS: &[GlideActive] =
-    &[GlideActive::Off, GlideActive::Auto, GlideActive::On];
+    &[GlideActive::Off, GlideActive::Legato, GlideActive::On];
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum GlideActive {
     #[default]
     Off,
-    Auto,
+    Legato,
     On,
 }
 
@@ -20,7 +20,7 @@ impl ::std::fmt::Display for GlideActive {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_str(match self {
             Self::Off => "OFF",
-            Self::Auto => "AUTO",
+            Self::Legato => "LEG",
             Self::On => "ON",
         })
     }
@@ -38,8 +38,8 @@ impl ParameterValue for GlideActiveValue {
     fn new_from_text(text: &str) -> Option<Self> {
         match text.trim().to_lowercase().as_str() {
             "off" => Some(Self(GlideActive::Off)),
-            "auto" => Some(Self(GlideActive::Auto)),
-            "always" => Some(Self(GlideActive::On)),
+            "leg" | "legato" => Some(Self(GlideActive::Legato)),
+            "on" => Some(Self(GlideActive::On)),
             _ => None,
         }
     }

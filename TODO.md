@@ -5,7 +5,6 @@
   * Go to kill phase after release, in preparation for allowing release end
     value to be non-zero?
 * Portamento
-  * Rename auto mode to legato (LEG) mode
   * Should LFOs not be restarted in some cases?
   * Polyphonic - look through implementation, can maybe be cleaner
   * Store key velocities for pressed keys?

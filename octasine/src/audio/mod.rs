@@ -236,7 +236,7 @@ impl AudioState {
 
                 let opt_glide_from_key = match glide_active {
                     GlideActive::Off => None,
-                    GlideActive::Auto => most_recent_still_pressed_keys.next(),
+                    GlideActive::Legato => most_recent_still_pressed_keys.next(),
                     GlideActive::On => {
                         // Don't filter out current voice here, since we don't
                         // want glide if it was most recently pressed
@@ -316,7 +316,7 @@ impl AudioState {
                             opt_clap_note_id,
                         )
                     } else if !self.monophonic_voice.key_pressed
-                        && glide_active == GlideActive::Auto
+                        && glide_active == GlideActive::Legato
                     {
                         // mono_voice is active for a different key and is in release stage,
                         // and glide mode is auto: trigger key press for voice with new key
