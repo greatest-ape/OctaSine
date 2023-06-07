@@ -6,6 +6,7 @@
     value to be non-zero?
 * Portamento
   * Mono: maybe envelopes should be restarted but keep current value?
+  * Rename auto mode to legato (LEG) mode
   * Should LFOs not be restarted in some cases?
   * Polyphonic - look through implementation, can maybe be cleaner
 * In alternative controls mode, maybe display a small envelope editor?

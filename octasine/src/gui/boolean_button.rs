@@ -4,11 +4,13 @@ use iced_baseview::widget::canvas::{
 };
 use iced_baseview::{Color, Element, Length, Point, Rectangle, Size};
 
+use crate::parameters::glide_bpm_sync::GlideBpmSyncValue;
 use crate::parameters::glide_mode::{GlideMode, GlideModeValue};
 use crate::parameters::lfo_key_sync::LfoKeySyncValue;
 use crate::parameters::lfo_mode::LfoMode;
 use crate::parameters::list::MasterParameter;
 use crate::parameters::operator_envelope::OperatorEnvelopeGroupValue;
+use crate::parameters::voice_mode::{VoiceMode, VoiceModeValue};
 use crate::parameters::{
     LfoActiveValue, LfoBpmSyncValue, LfoModeValue, LfoParameter, OperatorActiveValue,
     OperatorParameter, Parameter, ParameterValue, WrappedParameter,
@@ -169,8 +171,16 @@ pub fn voice_mode_button<H: GuiSyncHandle>(sync_handle: &H) -> BooleanButton {
         "POLY",
         LINE_HEIGHT * 2 + 6,
         LINE_HEIGHT,
-        |v| v < 0.5,
-        |b| if b { 0.0 } else { 1.0 },
+        |v| VoiceModeValue::new_from_patch(v).get() == VoiceMode::Polyphonic,
+        |b| {
+            let mode = if b {
+                VoiceMode::Polyphonic
+            } else {
+                VoiceMode::Monophonic
+            };
+
+            VoiceModeValue::new_from_audio(mode).to_patch()
+        },
         BooleanButtonStyle::Regular,
     )
 }
@@ -182,8 +192,8 @@ pub fn glide_bpm_sync_button<H: GuiSyncHandle>(sync_handle: &H) -> BooleanButton
         "B",
         LINE_HEIGHT,
         LINE_HEIGHT,
-        |v| v > 0.5,
-        |b| if b { 1.0 } else { 0.0 },
+        |v| GlideBpmSyncValue::new_from_patch(v).get(),
+        |b| GlideBpmSyncValue::new_from_audio(b).to_patch(),
         BooleanButtonStyle::Regular,
     )
 }
@@ -197,8 +207,9 @@ pub fn glide_mode_button<H: GuiSyncHandle>(sync_handle: &H) -> BooleanButton {
         LINE_HEIGHT,
         |v| GlideModeValue::new_from_patch(v).get() == GlideMode::Lcr,
         |b| {
-            GlideModeValue::new_from_audio(if b { GlideMode::Lcr } else { GlideMode::Lct })
-                .to_patch()
+            let mode = if b { GlideMode::Lcr } else { GlideMode::Lct };
+
+            GlideModeValue::new_from_audio(mode).to_patch()
         },
         BooleanButtonStyle::Regular,
     )
