@@ -9,13 +9,18 @@ impact existing projects.
 
 ### Added
 
-- Add monophonic voice mode
-- Add glide (portamento). It can be set to off, auto (only on when playing
-  legato) or on (always glides)
+- Add monophonic voice mode in addition to the previous polyphonic mode
+- Add glide (portamento)
+  - Available for both polyphonic and monophonic voice modes
+  - Can be set to off, legato or on (always glides)
+  - Supports linear constant time (LCT) and linear constant rate (LCR, time
+    per octave) modes
+  - Supports optional BPM sync for time/rate
 
 ### Changed
 
-- Replace patch settings overlay with button for switching visible controls
+- Replace patch settings overlay with button for toggling alternative visible
+  controls
 
 ### Fixed
 
