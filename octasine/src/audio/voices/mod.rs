@@ -158,8 +158,10 @@ impl Voice {
             operator.volume_envelope.restart(self.is_monophonic);
         }
 
-        for (lfo, parameters) in self.lfos.iter_mut().zip(parameters.lfos.iter()) {
-            lfo.restart(parameters);
+        if !(self.is_monophonic & self.active) {
+            for (lfo, parameters) in self.lfos.iter_mut().zip(parameters.lfos.iter()) {
+                lfo.restart(parameters);
+            }
         }
 
         #[cfg(feature = "clap")]
@@ -170,7 +172,7 @@ impl Voice {
         self.active = true;
     }
 
-    pub fn change_pitch(&mut self, key: u8, interpolate: Option<f64>) {
+    fn change_pitch(&mut self, key: u8, interpolate: Option<f64>) {
         self.midi_pitch = MidiPitch::new(key);
 
         if let Some(glide_time) = interpolate {

@@ -5,7 +5,7 @@
   * Go to kill phase after release, in preparation for allowing release end
     value to be non-zero?
 * Portamento
-  * Should LFOs not be restarted in some cases?
+  * Do we want the option of restarting LFOs on key press in mono mode?
   * Polyphonic - look through implementation, can maybe be cleaner
   * Store key velocities for pressed keys?
   * Interpolate key velocity for glide duration?
