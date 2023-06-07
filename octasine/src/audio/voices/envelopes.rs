@@ -16,6 +16,8 @@ pub struct VoiceOperatorVolumeEnvelope {
     duration_at_stage_change: VoiceDuration,
     volume_at_stage_change: f32,
     last_volume: f32,
+    /// Value to interpolate from when restarting without keeping initial
+    /// volume
     restarting_from_volume: Option<f32>,
 }
 
@@ -101,7 +103,7 @@ impl VoiceOperatorVolumeEnvelope {
         let volume = match self.stage {
             Attack => Self::calculate_curve(
                 log10table,
-                0.0,
+                self.volume_at_stage_change,
                 1.0,
                 self.duration_since_stage_change(),
                 parameters.attack_duration.get_value(),
@@ -163,16 +165,21 @@ impl VoiceOperatorVolumeEnvelope {
         start_volume + (end_volume - start_volume) * (curve + linear)
     }
 
-    #[inline]
-    pub fn restart(&mut self) {
-        *self = if let EnvelopeStage::Ended = self.stage {
-            Self::default()
+    pub fn restart(&mut self, keep_value: bool) {
+        if let EnvelopeStage::Ended = self.stage {
+            *self = Self::default();
+        } else if keep_value {
+            *self = Self {
+                volume_at_stage_change: self.last_volume,
+                last_volume: self.last_volume,
+                ..Default::default()
+            }
         } else {
-            Self {
+            *self = Self {
                 restarting_from_volume: Some(self.last_volume),
                 ..Default::default()
             }
-        };
+        }
     }
 
     pub fn kill(&mut self) {

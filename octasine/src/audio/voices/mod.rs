@@ -155,7 +155,7 @@ impl Voice {
         self.key_pressed = true;
 
         for operator in self.operators.iter_mut() {
-            operator.volume_envelope.restart();
+            operator.volume_envelope.restart(self.is_monophonic);
         }
 
         for (lfo, parameters) in self.lfos.iter_mut().zip(parameters.lfos.iter()) {

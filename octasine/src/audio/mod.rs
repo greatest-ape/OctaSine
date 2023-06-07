@@ -358,7 +358,13 @@ impl AudioState {
                             key,
                         );
 
-                        self.monophonic_voice.change_pitch(key, Some(glide_time));
+                        self.monophonic_voice.press_key(
+                            &self.parameters,
+                            velocity,
+                            None,
+                            Some((key, glide_time)),
+                            opt_clap_note_id,
+                        )
                     }
                 }
             }
@@ -384,14 +390,24 @@ impl AudioState {
                 let opt_clap_note_id = self.monophonic_pressed_keys.shift_remove(&key).flatten();
 
                 if let Some(go_to_key) = self.monophonic_pressed_keys.last().map(|(k, _)| *k) {
-                    let opt_glide_time = if let GlideActive::Off = glide_mode {
+                    let opt_glide = if let GlideActive::Off = glide_mode {
                         None
                     } else {
-                        Some(self.parameters.glide_time.get_value() as f64)
+                        let glide_time =
+                            Self::glide_time(&self.parameters, self.bpm, key, go_to_key);
+
+                        Some((go_to_key, glide_time))
                     };
 
-                    self.monophonic_voice
-                        .change_pitch(go_to_key, opt_glide_time);
+                    let current_velocity = self.monophonic_voice.get_key_velocity();
+
+                    self.monophonic_voice.press_key(
+                        &self.parameters,
+                        current_velocity,
+                        None,
+                        opt_glide,
+                        opt_clap_note_id,
+                    );
 
                     #[cfg(feature = "clap")]
                     if let Some(clap_note_id) = opt_clap_note_id {
