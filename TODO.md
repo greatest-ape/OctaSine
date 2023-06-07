@@ -9,6 +9,7 @@
   * Should LFOs not be restarted in some cases?
   * Polyphonic - look through implementation, can maybe be cleaner
   * Store key velocities for pressed keys?
+  * Interpolate key velocity for glide duration?
 * In alternative controls mode, maybe display a small envelope editor?
 
 * Audio inconsistencies on attack, see vospi email
