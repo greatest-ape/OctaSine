@@ -315,41 +315,23 @@ impl AudioState {
                             None,
                             opt_clap_note_id,
                         )
-                    } else if !self.monophonic_voice.key_pressed {
-                        // mono_voice is active for a different key and is in release stage
-
-                        if glide_active == GlideActive::Auto {
-                            // Auto glide mode: trigger key press for voice with new key
-                            // without glide
-                            self.monophonic_voice.press_key(
-                                &self.parameters,
-                                velocity,
-                                Some(key),
-                                None,
-                                opt_clap_note_id,
-                            )
-                        } else {
-                            // Always glide mode: trigger key press for voice with new key
-                            // with glide
-
-                            let glide_time = Self::glide_time(
-                                &self.parameters,
-                                self.bpm,
-                                self.monophonic_voice.key(),
-                                key,
-                            );
-
-                            self.monophonic_voice.press_key(
-                                &self.parameters,
-                                velocity,
-                                None,
-                                Some((key, glide_time)),
-                                opt_clap_note_id,
-                            )
-                        }
+                    } else if !self.monophonic_voice.key_pressed
+                        && glide_active == GlideActive::Auto
+                    {
+                        // mono_voice is active for a different key and is in release stage,
+                        // and glide mode is auto: trigger key press for voice with new key
+                        // without glide
+                        self.monophonic_voice.press_key(
+                            &self.parameters,
+                            velocity,
+                            Some(key),
+                            None,
+                            opt_clap_note_id,
+                        )
                     } else {
                         // mono_voice is active for a different key and is in
-                        // attack/decay/sustain phase: trigger pitch change with glide
+                        // attack/decay/sustain phase (e.g. key is pressed):
+                        // trigger key press for voice with new key with glide
 
                         let glide_time = Self::glide_time(
                             &self.parameters,
@@ -399,6 +381,7 @@ impl AudioState {
                         Some((go_to_key, glide_time))
                     };
 
+                    // FIXME: maybe previous velocity should be stored in pressed_keys?
                     let current_velocity = self.monophonic_voice.get_key_velocity();
 
                     self.monophonic_voice.press_key(
