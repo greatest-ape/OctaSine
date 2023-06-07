@@ -5,10 +5,9 @@
   * Go to kill phase after release, in preparation for allowing release end
     value to be non-zero?
 * Portamento
+  * Mono: maybe envelopes should be restarted but keep current value?
   * Should LFOs not be restarted in some cases?
-  * Implement constant time and constant rate modes, possibly even BPM-synced time
   * Polyphonic - look through implementation, can maybe be cleaner
-  * Double-check clap note ended events?
 * In alternative controls mode, maybe display a small envelope editor?
 
 * Audio inconsistencies on attack, see vospi email
