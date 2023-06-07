@@ -10,6 +10,18 @@
   * Polyphonic - look through implementation, can maybe be cleaner
   * Store key velocities for pressed keys?
   * Interpolate key velocity for glide duration?
+    ```rust
+    // Add to beginning of voice.press_key
+    if let Some((_, glide_time)) = target_key {
+        self.key_velocity_interpolator
+            .change_duration(InterpolationDuration(
+                glide_time.max(VELOCITY_INTERPOLATION_DURATION.0),
+            ));
+    } else {
+        self.key_velocity_interpolator
+            .change_duration(VELOCITY_INTERPOLATION_DURATION);
+    }
+    ```
 * In alternative controls mode, maybe display a small envelope editor?
 
 * Audio inconsistencies on attack, see vospi email
