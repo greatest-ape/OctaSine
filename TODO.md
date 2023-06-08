@@ -1,13 +1,10 @@
 # TODO
 
 * Envelopes:
-  * Kill phase doesn't need log10 interpolation
   * Go to kill phase after release, in preparation for allowing release end
     value to be non-zero?
 * Portamento
-  * Clicks when retriggering still running note with much lower velocity,
-    in both mono and poly
-  * Do we want the option of restarting LFOs on key press in mono mode?
+  * Look at envelope and LFO restarts
   * Polyphonic - look through implementation, can maybe be cleaner
   * Store key velocities for pressed keys?
   * Interpolate key velocity for glide duration?
