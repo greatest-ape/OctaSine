@@ -368,42 +368,64 @@ impl AudioState {
                 }
             }
             VoiceMode::Monophonic => {
+                let key_was_most_recently_pressed = self
+                    .monophonic_pressed_keys
+                    .last()
+                    .map(|(k, _)| *k == key)
+                    .unwrap_or(false);
+
                 #[cfg_attr(not(feature = "clap"), allow(unused_variables))]
-                let opt_clap_note_id = self.monophonic_pressed_keys.shift_remove(&key).flatten();
+                let opt_removed_clap_note_id =
+                    self.monophonic_pressed_keys.shift_remove(&key).flatten();
 
-                if let Some(go_to_key) = self.monophonic_pressed_keys.last().map(|(k, _)| *k) {
-                    let opt_glide = if let GlideActive::Off = glide_mode {
-                        None
-                    } else {
-                        let glide_time =
-                            Self::glide_time(&self.parameters, self.bpm, key, go_to_key);
+                if key_was_most_recently_pressed {
+                    if let Some(next_most_recently_pressed_key) =
+                        self.monophonic_pressed_keys.last().map(|(k, _)| *k)
+                    {
+                        // FIXME: maybe previous velocity should be stored in pressed_keys?
+                        let current_velocity = self.monophonic_voice.get_key_velocity();
 
-                        Some((go_to_key, glide_time))
-                    };
+                        if let GlideActive::Off = glide_mode {
+                            self.monophonic_voice.press_key(
+                                &self.parameters,
+                                current_velocity,
+                                Some(next_most_recently_pressed_key),
+                                None,
+                                opt_removed_clap_note_id,
+                            );
+                        } else {
+                            let glide_time = Self::glide_time(
+                                &self.parameters,
+                                self.bpm,
+                                key,
+                                next_most_recently_pressed_key,
+                            );
 
-                    // FIXME: maybe previous velocity should be stored in pressed_keys?
-                    let current_velocity = self.monophonic_voice.get_key_velocity();
+                            self.monophonic_voice.press_key(
+                                &self.parameters,
+                                current_velocity,
+                                None,
+                                Some((next_most_recently_pressed_key, glide_time)),
+                                opt_removed_clap_note_id,
+                            );
+                        };
 
-                    self.monophonic_voice.press_key(
-                        &self.parameters,
-                        current_velocity,
-                        None,
-                        opt_glide,
-                        opt_clap_note_id,
-                    );
-
-                    #[cfg(feature = "clap")]
-                    if let Some(clap_note_id) = opt_clap_note_id {
-                        if let Err(err) = self.clap_ended_notes.push(ClapNoteEnded {
-                            key,
-                            clap_note_id,
-                            sample_index: sample_index as u32,
-                        }) {
-                            ::log::error!("clap_ended_notes buffer full, couldn't push {:?}", err);
+                        #[cfg(feature = "clap")]
+                        if let Some(clap_note_id) = opt_removed_clap_note_id {
+                            if let Err(err) = self.clap_ended_notes.push(ClapNoteEnded {
+                                key,
+                                clap_note_id,
+                                sample_index: sample_index as u32,
+                            }) {
+                                ::log::error!(
+                                    "clap_ended_notes buffer full, couldn't push {:?}",
+                                    err
+                                );
+                            }
                         }
+                    } else {
+                        self.monophonic_voice.release_key();
                     }
-                } else {
-                    self.monophonic_voice.release_key();
                 }
             }
         }
