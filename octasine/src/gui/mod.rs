@@ -192,6 +192,9 @@ impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {
                 self.corner.glide_bpm_sync.set_value(v)
             }
             Parameter::Master(MasterParameter::GlideMode) => self.corner.glide_mode.set_value(v),
+            Parameter::Master(MasterParameter::GlideRetrigger) => {
+                self.corner.glide_retrigger.set_value(v)
+            }
             outer_p @ Parameter::Operator(index, p) => {
                 self.operator_1.wave_display.set_value(outer_p, v);
                 self.operator_2.wave_display.set_value(outer_p, v);

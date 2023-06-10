@@ -4,8 +4,9 @@ use crate::{
     common::IndexMap,
     parameters::{
         glide_active::GlideActiveValue, glide_bpm_sync::GlideBpmSyncValue,
-        glide_mode::GlideModeValue, glide_time::GlideTimeValue,
-        velocity_sensitivity::VelocitySensitivityValue, voice_mode::VoiceModeValue, *,
+        glide_mode::GlideModeValue, glide_retrigger::GlideRetriggerValue,
+        glide_time::GlideTimeValue, velocity_sensitivity::VelocitySensitivityValue,
+        voice_mode::VoiceModeValue, *,
     },
 };
 
@@ -58,6 +59,7 @@ impl PatchParameter {
                 MasterParameter::GlideTime => Self::new::<GlideTimeValue>(parameter),
                 MasterParameter::GlideBpmSync => Self::new::<GlideBpmSyncValue>(parameter),
                 MasterParameter::GlideMode => Self::new::<GlideModeValue>(parameter),
+                MasterParameter::GlideRetrigger => Self::new::<GlideRetriggerValue>(parameter),
             },
             Parameter::Operator(index, operator_parameter) => {
                 use OperatorParameter::*;

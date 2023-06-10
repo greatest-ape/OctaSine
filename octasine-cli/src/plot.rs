@@ -4,7 +4,7 @@ use plotlib::repr::Plot;
 use plotlib::style::{LineStyle, PointMarker, PointStyle};
 use plotlib::view::{ContinuousView, View};
 
-use octasine::audio::parameters::{OperatorEnvelopeAudioParameters, AudioParameters};
+use octasine::audio::parameters::{AudioParameters, OperatorEnvelopeAudioParameters};
 use octasine::audio::voices::envelopes::VoiceOperatorVolumeEnvelope;
 use octasine::audio::voices::lfos::*;
 use octasine::audio::voices::log10_table::Log10Table;

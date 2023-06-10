@@ -20,6 +20,7 @@ use crate::common::{SampleRate, NUM_LFOS, NUM_OPERATORS};
 use crate::parameters::glide_active::GlideActiveValue;
 use crate::parameters::glide_bpm_sync::GlideBpmSyncValue;
 use crate::parameters::glide_mode::GlideModeValue;
+use crate::parameters::glide_retrigger::GlideRetriggerValue;
 use crate::parameters::glide_time::GlideTimeValue;
 use crate::parameters::master_pitch_bend_range::{
     MasterPitchBendRangeDownValue, MasterPitchBendRangeUpValue,
@@ -73,6 +74,7 @@ pub struct AudioParameters {
     pub glide_time: SimpleAudioParameter<GlideTimeValue>,
     pub glide_bpm_sync: SimpleAudioParameter<GlideBpmSyncValue>,
     pub glide_mode: SimpleAudioParameter<GlideModeValue>,
+    pub glide_retrigger: SimpleAudioParameter<GlideRetriggerValue>,
     pub operators: [OperatorAudioParameters; NUM_OPERATORS],
     pub lfos: [LfoAudioParameters; NUM_LFOS],
 }
@@ -90,6 +92,7 @@ impl Default for AudioParameters {
             glide_time: Default::default(),
             glide_bpm_sync: Default::default(),
             glide_mode: Default::default(),
+            glide_retrigger: Default::default(),
             operators: array_init(OperatorAudioParameters::new),
             lfos: array_init(LfoAudioParameters::new),
         }
@@ -118,6 +121,7 @@ macro_rules! impl_patch_interaction {
                     MasterParameter::GlideTime => $f(&mut self.glide_time, input),
                     MasterParameter::GlideBpmSync => $f(&mut self.glide_bpm_sync, input),
                     MasterParameter::GlideMode => $f(&mut self.glide_mode, input),
+                    MasterParameter::GlideRetrigger => $f(&mut self.glide_retrigger, input),
                 },
                 Parameter::Operator(index, p) => {
                     use OperatorParameter::*;

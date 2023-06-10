@@ -6,6 +6,7 @@ use iced_baseview::{Color, Element, Length, Point, Rectangle, Size};
 
 use crate::parameters::glide_bpm_sync::GlideBpmSyncValue;
 use crate::parameters::glide_mode::{GlideMode, GlideModeValue};
+use crate::parameters::glide_retrigger::GlideRetriggerValue;
 use crate::parameters::lfo_key_sync::LfoKeySyncValue;
 use crate::parameters::lfo_mode::LfoMode;
 use crate::parameters::list::MasterParameter;
@@ -211,6 +212,19 @@ pub fn glide_mode_button<H: GuiSyncHandle>(sync_handle: &H) -> BooleanButton {
 
             GlideModeValue::new_from_audio(mode).to_patch()
         },
+        BooleanButtonStyle::Regular,
+    )
+}
+
+pub fn glide_retrigger_button<H: GuiSyncHandle>(sync_handle: &H) -> BooleanButton {
+    BooleanButton::new(
+        sync_handle,
+        Parameter::Master(MasterParameter::GlideRetrigger),
+        "R",
+        LINE_HEIGHT,
+        LINE_HEIGHT,
+        |v| GlideRetriggerValue::new_from_patch(v).get(),
+        |b| GlideRetriggerValue::new_from_audio(b).to_patch(),
         BooleanButtonStyle::Regular,
     )
 }

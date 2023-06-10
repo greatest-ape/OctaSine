@@ -24,7 +24,9 @@ use crate::{
 };
 
 use super::{
-    boolean_button::{glide_bpm_sync_button, glide_mode_button, BooleanButton},
+    boolean_button::{
+        glide_bpm_sync_button, glide_mode_button, glide_retrigger_button, BooleanButton,
+    },
     common::{container_l1, container_l2, container_l3, space_l3, tooltip, triple_container},
     knob::{self, OctaSineKnob},
     mod_matrix::ModulationMatrix,
@@ -45,6 +47,7 @@ pub struct CornerWidgets {
     pub glide_time: OctaSineKnob<GlideTimeValue>,
     pub glide_bpm_sync: BooleanButton,
     pub glide_mode: BooleanButton,
+    pub glide_retrigger: BooleanButton,
     pub glide_active: f32,
 }
 
@@ -64,6 +67,7 @@ impl CornerWidgets {
 
         let glide_bpm_sync = glide_bpm_sync_button(sync_handle);
         let glide_mode = glide_mode_button(sync_handle);
+        let glide_retrigger = glide_retrigger_button(sync_handle);
 
         Self {
             alternative_controls: false,
@@ -78,6 +82,7 @@ impl CornerWidgets {
             glide_time,
             glide_bpm_sync,
             glide_mode,
+            glide_retrigger,
         }
     }
 
@@ -86,6 +91,7 @@ impl CornerWidgets {
         self.modulation_matrix.theme_changed();
         self.glide_bpm_sync.theme_changed();
         self.glide_mode.theme_changed();
+        self.glide_retrigger.theme_changed();
     }
 
     pub fn view(&self, theme: &Theme) -> Element<'_, Message, Theme> {
@@ -185,6 +191,12 @@ impl CornerWidgets {
                 Position::Top,
                 self.glide_mode.view(),
             );
+            let glide_retrigger = tooltip(
+                theme,
+                "Retrigger envelopes and LFOs when gliding in monophonic mode.\n(Envelopes in release phase will always be retriggered.)",
+                Position::Top,
+                self.glide_retrigger.view(),
+            );
 
             let portmento_mode_picker = PickList::new(
                 GLIDE_ACTIVE_STEPS,
@@ -217,8 +229,9 @@ impl CornerWidgets {
                             .push(glide_bpm_sync)
                             .push(Space::with_width(Length::Fixed(4.0)))
                             .push(glide_mode),
-                    ), // .push(Space::with_height(LINE_HEIGHT / 2 + LINE_HEIGHT / 4))
-                       // .push(voice_mode),
+                    )
+                    .push(Space::with_height(LINE_HEIGHT / 2))
+                    .push(glide_retrigger),
             )
         };
 

@@ -1,6 +1,7 @@
 pub mod glide_active;
 pub mod glide_bpm_sync;
 pub mod glide_mode;
+pub mod glide_retrigger;
 pub mod glide_time;
 pub mod lfo_active;
 pub mod lfo_amount;
@@ -114,6 +115,7 @@ impl Parameter {
             Self::Master(MasterParameter::GlideTime) => "Glide time".into(),
             Self::Master(MasterParameter::GlideBpmSync) => "Glide bpm sync".into(),
             Self::Master(MasterParameter::GlideMode) => "Glide mode".into(),
+            Self::Master(MasterParameter::GlideRetrigger) => "Glide retrigger".into(),
             Self::Operator(index, p) => match p {
                 OperatorParameter::Volume => format_compact!("OP {} vol", index + 1),
                 OperatorParameter::Active => format_compact!("OP {} active", index + 1),
@@ -194,6 +196,7 @@ impl Parameter {
             Self::Master(MasterParameter::GlideTime) => "Glide time".into(),
             Self::Master(MasterParameter::GlideBpmSync) => "Glide bpm sync".into(),
             Self::Master(MasterParameter::GlideMode) => "Glide mode".into(),
+            Self::Master(MasterParameter::GlideRetrigger) => "Glide retrigger".into(),
             Self::Operator(index, p) => match p {
                 OperatorParameter::Volume => format!("OP {} vol", index + 1),
                 OperatorParameter::Active => format!("OP {} active", index + 1),

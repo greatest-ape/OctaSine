@@ -65,6 +65,14 @@ impl MidiPitch {
 }
 
 #[derive(Debug, Copy, Clone)]
+pub struct VoiceGlide {
+    pub to_key: u8,
+    pub time: f64,
+    pub retrigger_envelopes: bool,
+    pub retrigger_lfos: bool,
+}
+
+#[derive(Debug, Copy, Clone)]
 pub struct VoiceOperator {
     pub last_phase: Phase,
     pub volume_envelope: VoiceOperatorVolumeEnvelope,
@@ -135,7 +143,7 @@ impl Voice {
         parameters: &AudioParameters,
         velocity: KeyVelocity,
         initial_key: Option<u8>,
-        target_key: Option<(u8, f64)>,
+        target_key: Option<VoiceGlide>,
         #[cfg_attr(not(feature = "clap"), allow(unused_variables))] opt_clap_note_id: Option<i32>,
     ) {
         if self.active {
@@ -148,17 +156,28 @@ impl Voice {
             self.change_pitch(key, None);
         }
 
-        if let Some((key, glide_time)) = target_key {
-            self.change_pitch(key, Some(glide_time));
+        let mut retrigger_envelopes = true;
+        let mut retrigger_lfos = true;
+
+        if let Some(VoiceGlide {
+            to_key,
+            time,
+            retrigger_envelopes: re,
+            retrigger_lfos: rl,
+        }) = target_key
+        {
+            retrigger_envelopes = re;
+            retrigger_lfos = rl;
+
+            self.change_pitch(to_key, Some(time));
         }
 
-        self.key_pressed = true;
-
-        for operator in self.operators.iter_mut() {
-            operator.volume_envelope.restart(self.is_monophonic);
+        if retrigger_envelopes {
+            for operator in self.operators.iter_mut() {
+                operator.volume_envelope.restart(self.is_monophonic);
+            }
         }
-
-        if !(self.is_monophonic & self.active) {
+        if retrigger_lfos {
             for (lfo, parameters) in self.lfos.iter_mut().zip(parameters.lfos.iter()) {
                 lfo.restart(parameters);
             }
@@ -169,6 +188,7 @@ impl Voice {
             self.clap_note_id = opt_clap_note_id;
         }
 
+        self.key_pressed = true;
         self.active = true;
     }
 

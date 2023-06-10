@@ -224,6 +224,7 @@ impl AudioState {
     fn key_on(&mut self, key: u8, velocity: KeyVelocity, opt_clap_note_id: Option<i32>) {
         let voice_mode = self.parameters.voice_mode.get_value();
         let glide_active = self.parameters.glide_active.get_value();
+        let glide_retrigger = self.parameters.glide_retrigger.get_value();
 
         match voice_mode {
             VoiceMode::Polyphonic => {
@@ -262,14 +263,18 @@ impl AudioState {
                     if glide_from_key == key {
                         voice.press_key(&self.parameters, velocity, None, None, opt_clap_note_id);
                     } else {
-                        let glide_time =
-                            Self::glide_time(&self.parameters, self.bpm, glide_from_key, key);
+                        let glide = VoiceGlide {
+                            to_key: key,
+                            time: Self::glide_time(&self.parameters, self.bpm, glide_from_key, key),
+                            retrigger_envelopes: true,
+                            retrigger_lfos: true,
+                        };
 
                         voice.press_key(
                             &self.parameters,
                             velocity,
                             Some(glide_from_key),
-                            Some((key, glide_time)),
+                            Some(glide),
                             opt_clap_note_id,
                         );
                     }
@@ -287,7 +292,7 @@ impl AudioState {
                 self.monophonic_pressed_keys.shift_remove(&key);
                 self.monophonic_pressed_keys.insert(key, opt_clap_note_id);
 
-                if glide_active == GlideActive::Off {
+                if glide_active == GlideActive::Off || !self.monophonic_voice.active {
                     self.monophonic_voice.press_key(
                         &self.parameters,
                         velocity,
@@ -295,32 +300,21 @@ impl AudioState {
                         None,
                         opt_clap_note_id,
                     );
-                } else {
-                    if !self.monophonic_voice.active {
-                        // mono_voice is inactive: trigger key press and force initial key
-                        self.monophonic_voice.press_key(
-                            &self.parameters,
-                            velocity,
-                            Some(key),
-                            None,
-                            opt_clap_note_id,
-                        )
-                    } else if self.monophonic_voice.key() == key {
-                        // mono_voice is active and for current key: retrigger key, but don't
-                        // force an initial key in case there are previous glides
-                        self.monophonic_voice.press_key(
-                            &self.parameters,
-                            velocity,
-                            None,
-                            None,
-                            opt_clap_note_id,
-                        )
-                    } else if !self.monophonic_voice.key_pressed
-                        && glide_active == GlideActive::Legato
-                    {
-                        // mono_voice is active for a different key and is in release stage,
-                        // and glide mode is auto: trigger key press for voice with new key
-                        // without glide
+                } else if self.monophonic_voice.key() == key {
+                    // mono_voice is active and for current key: retrigger key, but don't
+                    // force an initial key in case there are previous glides
+                    self.monophonic_voice.press_key(
+                        &self.parameters,
+                        velocity,
+                        None,
+                        None,
+                        opt_clap_note_id,
+                    )
+                } else if !self.monophonic_voice.key_pressed {
+                    // mono voice is active for another key, but in release stage
+
+                    if glide_active == GlideActive::Legato {
+                        // trigger key press for voice with new key without glide
                         self.monophonic_voice.press_key(
                             &self.parameters,
                             velocity,
@@ -329,25 +323,55 @@ impl AudioState {
                             opt_clap_note_id,
                         )
                     } else {
-                        // mono_voice is active for a different key and is in
-                        // attack/decay/sustain phase (e.g. key is pressed):
-                        // trigger key press for voice with new key with glide
+                        // in always glide mode: glide to new key and retrigger
+                        // envelopes since voice is in release phase
 
-                        let glide_time = Self::glide_time(
-                            &self.parameters,
-                            self.bpm,
-                            self.monophonic_voice.key(),
-                            key,
-                        );
+                        let glide = VoiceGlide {
+                            to_key: key,
+                            time: Self::glide_time(
+                                &self.parameters,
+                                self.bpm,
+                                self.monophonic_voice.key(),
+                                key,
+                            ),
+                            retrigger_envelopes: true,
+                            retrigger_lfos: glide_retrigger,
+                        };
 
                         self.monophonic_voice.press_key(
                             &self.parameters,
                             velocity,
                             None,
-                            Some((key, glide_time)),
+                            Some(glide),
                             opt_clap_note_id,
                         )
                     }
+                } else {
+                    // mono_voice is active for a different key and is in
+                    // attack/decay/sustain phase (e.g. key is pressed):
+                    // trigger key press for voice with new key with glide,
+                    // use glide_retrigger parameter to determine whether to
+                    // retrigger envelopes and LFOs
+
+                    let glide = VoiceGlide {
+                        to_key: key,
+                        time: Self::glide_time(
+                            &self.parameters,
+                            self.bpm,
+                            self.monophonic_voice.key(),
+                            key,
+                        ),
+                        retrigger_envelopes: glide_retrigger,
+                        retrigger_lfos: glide_retrigger,
+                    };
+
+                    self.monophonic_voice.press_key(
+                        &self.parameters,
+                        velocity,
+                        None,
+                        Some(glide),
+                        opt_clap_note_id,
+                    )
                 }
             }
         }
@@ -360,6 +384,7 @@ impl AudioState {
     ) {
         let voice_mode = self.parameters.voice_mode.get_value();
         let glide_mode = self.parameters.glide_active.get_value();
+        let glide_retrigger = self.parameters.glide_retrigger.get_value();
 
         match voice_mode {
             VoiceMode::Polyphonic => {
@@ -394,18 +419,23 @@ impl AudioState {
                                 opt_removed_clap_note_id,
                             );
                         } else {
-                            let glide_time = Self::glide_time(
-                                &self.parameters,
-                                self.bpm,
-                                key,
-                                next_most_recently_pressed_key,
-                            );
+                            let glide = VoiceGlide {
+                                to_key: next_most_recently_pressed_key,
+                                time: Self::glide_time(
+                                    &self.parameters,
+                                    self.bpm,
+                                    key,
+                                    next_most_recently_pressed_key,
+                                ),
+                                retrigger_envelopes: glide_retrigger,
+                                retrigger_lfos: glide_retrigger,
+                            };
 
                             self.monophonic_voice.press_key(
                                 &self.parameters,
                                 current_velocity,
                                 None,
-                                Some((next_most_recently_pressed_key, glide_time)),
+                                Some(glide),
                                 opt_removed_clap_note_id,
                             );
                         };

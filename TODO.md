@@ -4,7 +4,6 @@
   * Go to kill phase after release, in preparation for allowing release end
     value to be non-zero?
 * Portamento
-  * Look at envelope and LFO restarts
   * Polyphonic - look through implementation, can maybe be cleaner
   * Store key velocities for pressed keys?
   * Interpolate key velocity for glide duration?

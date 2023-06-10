@@ -116,6 +116,7 @@ pub const PARAMETERS: &[Parameter] = &[
     Parameter::Master(MasterParameter::GlideTime),
     Parameter::Master(MasterParameter::GlideBpmSync),
     Parameter::Master(MasterParameter::GlideMode),
+    Parameter::Master(MasterParameter::GlideRetrigger),
 ];
 
 /// Parameter enum used to abstract over parameter indices
@@ -140,6 +141,7 @@ pub enum MasterParameter {
     GlideTime,
     GlideBpmSync,
     GlideMode,
+    GlideRetrigger,
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
