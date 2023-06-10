@@ -170,7 +170,7 @@ impl CornerWidgets {
         let voice_buttons = {
             let glide_mode_title = tooltip(
                 theme,
-                "Glide (portamento)\nLEG = glide when playing legato",
+                "Glide (portamento)\n\nLEG = glide only when playing legato",
                 Position::Top,
                 Text::new("GLIDE")
                     .horizontal_alignment(Horizontal::Center)
@@ -181,17 +181,19 @@ impl CornerWidgets {
 
             let glide_bpm_sync =
                 tooltip(theme, "BPM sync", Position::Top, self.glide_bpm_sync.view());
-            let glide_mode = tooltip(
-                theme,
-                "Linear constant rate / linear constant time glide",
-                Position::Top,
-                self.glide_mode.view(),
-            );
+
             let glide_retrigger = tooltip(
                 theme,
-                "Retrigger envelopes and LFOs when gliding in monophonic mode.\n(Envelopes in release phase will always be retriggered.)",
+                "Retrigger envelopes and LFOs when gliding in monophonic mode\n(envelopes in release phase will always be retriggered)",
                 Position::Top,
                 self.glide_retrigger.view(),
+            );
+
+            let glide_mode = tooltip(
+                theme,
+                "Linear constant rate / linear constant time",
+                Position::Top,
+                self.glide_mode.view(),
             );
 
             let glide_active_picker = PickList::new(
