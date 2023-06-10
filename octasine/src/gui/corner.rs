@@ -220,8 +220,7 @@ impl CornerWidgets {
                     .width(Length::Fixed(f32::from(LINE_HEIGHT * 4)))
                     .align_items(Alignment::Center)
                     .push(glide_mode_title)
-                    // .push(Space::with_height(LINE_HEIGHT / 2 + LINE_HEIGHT / 4))
-                    .push(Space::with_height(LINE_HEIGHT))
+                    .push(Space::with_height(LINE_HEIGHT / 2 + LINE_HEIGHT / 4))
                     .push(portmento_mode_picker)
                     .push(Space::with_height(LINE_HEIGHT / 2))
                     .push(
@@ -230,7 +229,7 @@ impl CornerWidgets {
                             .push(Space::with_width(Length::Fixed(4.0)))
                             .push(glide_mode),
                     )
-                    .push(Space::with_height(LINE_HEIGHT / 2))
+                    .push(Space::with_height(LINE_HEIGHT / 4))
                     .push(glide_retrigger),
             )
         };
