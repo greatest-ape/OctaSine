@@ -203,8 +203,8 @@ pub fn glide_mode_button<H: GuiSyncHandle>(sync_handle: &H) -> BooleanButton {
     BooleanButton::new(
         sync_handle,
         Parameter::Master(MasterParameter::GlideMode),
-        "R",
-        LINE_HEIGHT,
+        "LCR",
+        LINE_HEIGHT * 2,
         LINE_HEIGHT,
         |v| GlideModeValue::new_from_patch(v).get() == GlideMode::Lcr,
         |b| {

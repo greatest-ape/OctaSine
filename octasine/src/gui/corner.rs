@@ -179,15 +179,11 @@ impl CornerWidgets {
                     .width(LINE_HEIGHT * 4),
             );
 
-            let glide_bpm_sync = tooltip(
-                theme,
-                "Toggle glide BPM sync",
-                Position::Top,
-                self.glide_bpm_sync.view(),
-            );
+            let glide_bpm_sync =
+                tooltip(theme, "BPM sync", Position::Top, self.glide_bpm_sync.view());
             let glide_mode = tooltip(
                 theme,
-                "Toggle constant time / constant rate glide",
+                "Linear constant rate / linear constant time glide",
                 Position::Top,
                 self.glide_mode.view(),
             );
@@ -198,7 +194,7 @@ impl CornerWidgets {
                 self.glide_retrigger.view(),
             );
 
-            let portmento_mode_picker = PickList::new(
+            let glide_active_picker = PickList::new(
                 GLIDE_ACTIVE_STEPS,
                 Some(GlideActiveValue::new_from_patch(self.glide_active).get()),
                 move |option| {
@@ -220,17 +216,17 @@ impl CornerWidgets {
                     .width(Length::Fixed(f32::from(LINE_HEIGHT * 4)))
                     .align_items(Alignment::Center)
                     .push(glide_mode_title)
-                    .push(Space::with_height(LINE_HEIGHT / 2 + LINE_HEIGHT / 4))
-                    .push(portmento_mode_picker)
+                    .push(Space::with_height(LINE_HEIGHT / 2))
+                    .push(glide_active_picker)
                     .push(Space::with_height(LINE_HEIGHT / 2))
                     .push(
                         Row::new()
                             .push(glide_bpm_sync)
                             .push(Space::with_width(Length::Fixed(4.0)))
-                            .push(glide_mode),
+                            .push(glide_retrigger),
                     )
-                    .push(Space::with_height(LINE_HEIGHT / 4))
-                    .push(glide_retrigger),
+                    .push(Space::with_height(LINE_HEIGHT / 2))
+                    .push(glide_mode),
             )
         };
 
