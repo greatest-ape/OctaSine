@@ -35,7 +35,9 @@ pub trait AudioGen {
 pub struct AudioGenData<const W: usize> {
     lfo_target_values: LfoTargetValues,
     volume_velocity_sensitivity: [f64; W],
-    voices: [VoiceData<W>; 128],
+    /// Allocate room for data for 128 polyphonic voices as well as the mono
+    /// voice, even if they won't all be used at once in practice.
+    voices: [VoiceData<W>; 129],
 }
 
 impl<const W: usize> Default for AudioGenData<W> {
@@ -227,7 +229,8 @@ mod gen {
             assert_eq!(rights.len(), Pd::SAMPLES);
 
             if audio_state.pending_note_events.is_empty()
-                && !audio_state.voices.iter().any(|v| v.active)
+                & audio_state.polyphonic_voices.is_empty()
+                & !audio_state.monophonic_voice.active
             {
                 for (l, r) in lefts.iter_mut().zip(rights.iter_mut()) {
                     *l = 0.0;
@@ -257,9 +260,7 @@ mod gen {
         for sample_index in 0..Pd::SAMPLES {
             let time_per_sample = audio_state.time_per_sample;
 
-            audio_state
-                .parameters
-                .advance_one_sample(audio_state.sample_rate);
+            audio_state.advance_one_sample();
             audio_state.process_events_for_sample(position + sample_index);
 
             set_value_for_both_channels(
@@ -274,13 +275,24 @@ mod gen {
             let operators = &mut audio_state.parameters.operators;
             let lfo_values = &mut audio_state.audio_gen_data_field.lfo_target_values;
 
-            for (voice_index, voice) in audio_state
-                .voices
+            let voice_iterator = audio_state
+                .polyphonic_voices
                 .iter_mut()
-                .enumerate()
-                .filter(|(_, voice)| voice.active)
-                .map(|(voice_index, voice)| (voice_index as u8, voice))
-            {
+                .chain(
+                    ::std::iter::once((&128u8, &mut audio_state.monophonic_voice))
+                        .filter(|(_, v)| v.active),
+                )
+                .map(|(k, v)| (*k, v));
+
+            // Temporary storage for ownership reasons
+            // bool = voice.is_monophonic
+            #[cfg(feature = "clap")]
+            let mut ended_clap_notes: ::arrayvec::ArrayVec<
+                (bool, crate::audio::ClapNoteEnded),
+                129,
+            > = ::arrayvec::ArrayVec::new();
+
+            for (voice_index, voice) in voice_iterator {
                 // Select an appropriate VoiceData item to fill with data
                 let voice_data = if sample_index == 0 {
                     let voice_data =
@@ -317,7 +329,7 @@ mod gen {
                     }
                 };
 
-                voice.advance_velocity_interpolator_one_sample(audio_state.sample_rate);
+                voice.advance_interpolators_one_sample(audio_state.sample_rate);
 
                 for (operator_index, operator) in operators.iter_mut().enumerate() {
                     voice.operators[operator_index]
@@ -384,7 +396,8 @@ mod gen {
 
                 master_frequency *= pitch_bend_frequency_multiplier;
 
-                let voice_base_frequency = voice.midi_pitch.get_frequency(master_frequency);
+                let voice_base_frequency =
+                    voice.pitch_interpolator.get_value() as f64 * master_frequency;
 
                 for (operator_index, operator) in operators.iter_mut().enumerate() {
                     if voice.operators[operator_index].volume_envelope.is_ended() {
@@ -404,13 +417,78 @@ mod gen {
                     )
                 }
 
-                voice.deactivate_if_envelopes_ended(
-                    #[cfg(feature = "clap")]
-                    &mut audio_state.clap_ended_notes,
-                    #[cfg(feature = "clap")]
-                    (position + sample_index),
-                );
+                #[cfg_attr(not(feature = "clap"), allow(unused_variables))]
+                let deactivated = voice.deactivate_if_envelopes_ended();
+
+                #[cfg(feature = "clap")]
+                if deactivated {
+                    if let Some(clap_note_id) = voice.clap_note_id {
+                        let key = voice.midi_pitch.key();
+
+                        let note_ended = crate::audio::ClapNoteEnded {
+                            key,
+                            clap_note_id,
+                            sample_index: (position + sample_index) as u32,
+                        };
+
+                        if let Err(err) =
+                            ended_clap_notes.try_push((voice.is_monophonic, note_ended))
+                        {
+                            ::log::error!(
+                                "ended clap notes ArrayVec full, cant push {:?}",
+                                err.element()
+                            );
+                        }
+                    }
+                }
             }
+
+            #[cfg(feature = "clap")]
+            for (voice_was_monophonic, event) in ended_clap_notes.drain(..) {
+                /// Avoid sending clap note ended event if we just switched
+                /// between voice modes and the corresponding key is already
+                /// active
+                fn should_push(
+                    audio_state: &AudioState,
+                    voice_was_monophonic: bool,
+                    key: u8,
+                    clap_note_id: i32,
+                ) -> bool {
+                    if voice_was_monophonic {
+                        if let Some(voice) = audio_state.polyphonic_voices.get(&key) {
+                            if voice.active && voice.clap_note_id == Some(clap_note_id) {
+                                return false;
+                            }
+                        }
+                    } else {
+                        let v = &audio_state.monophonic_voice;
+
+                        if v.active && v.key() == key && v.clap_note_id == Some(clap_note_id) {
+                            return false;
+                        }
+                    }
+
+                    true
+                }
+
+                use ringbuf::Rb;
+
+                if should_push(
+                    audio_state,
+                    voice_was_monophonic,
+                    event.key,
+                    event.clap_note_id,
+                ) {
+                    if let Err(_) = audio_state.clap_ended_notes.push(event) {
+                        // Should never happen
+                        ::log::error!("Clap ended notes buffer full");
+                    }
+                }
+            }
+
+            audio_state
+                .polyphonic_voices
+                .retain(|_, voice| voice.active);
         }
 
         num_valid_voice_datas

@@ -38,7 +38,6 @@ impl KeyVelocity {
 #[derive(Debug, Copy, Clone)]
 pub struct MidiPitch {
     frequency_factor: f64,
-    #[cfg(feature = "clap")]
     key: u8,
 }
 
@@ -46,7 +45,6 @@ impl MidiPitch {
     pub fn new(midi_pitch: u8) -> Self {
         Self {
             frequency_factor: Self::calculate_frequency_factor(midi_pitch),
-            #[cfg(feature = "clap")]
             key: midi_pitch,
         }
     }
@@ -60,6 +58,18 @@ impl MidiPitch {
     pub fn get_frequency(self, master_frequency: f64) -> f64 {
         self.frequency_factor * master_frequency
     }
+
+    pub fn key(&self) -> u8 {
+        self.key
+    }
+}
+
+#[derive(Debug, Copy, Clone)]
+pub struct VoiceGlide {
+    pub to_key: u8,
+    pub time: f64,
+    pub retrigger_envelopes: bool,
+    pub retrigger_lfos: bool,
 }
 
 #[derive(Debug, Copy, Clone)]
@@ -79,9 +89,12 @@ impl Default for VoiceOperator {
 
 #[derive(Debug, Clone)]
 pub struct Voice {
+    pub is_monophonic: bool,
+    /// Has received at least one key press and has at least one envelope still running
     pub active: bool,
     pub midi_pitch: MidiPitch,
     pub key_pressed: bool,
+    pub pitch_interpolator: Interpolator,
     key_velocity_interpolator: Interpolator,
     pub operators: [VoiceOperator; NUM_OPERATORS],
     pub lfos: [VoiceLfo; NUM_LFOS],
@@ -90,13 +103,18 @@ pub struct Voice {
 }
 
 impl Voice {
-    pub fn new(midi_pitch: MidiPitch) -> Self {
+    pub fn new(midi_pitch: MidiPitch, is_monophonic: bool) -> Self {
         let operators = [VoiceOperator::default(); NUM_OPERATORS];
 
         Self {
+            is_monophonic,
             active: false,
             midi_pitch,
             key_pressed: false,
+            pitch_interpolator: Interpolator::new(
+                midi_pitch.frequency_factor as f32,
+                InterpolationDuration::exactly_1s(),
+            ),
             key_velocity_interpolator: Interpolator::new(
                 KeyVelocity::default().0,
                 VELOCITY_INTERPOLATION_DURATION,
@@ -108,9 +126,11 @@ impl Voice {
         }
     }
 
-    pub fn advance_velocity_interpolator_one_sample(&mut self, sample_rate: SampleRate) {
+    pub fn advance_interpolators_one_sample(&mut self, sample_rate: SampleRate) {
         self.key_velocity_interpolator
-            .advance_one_sample(sample_rate, &mut |_| ())
+            .advance_one_sample(sample_rate, &mut |_| ());
+        self.pitch_interpolator
+            .advance_one_sample(sample_rate, &mut |_| ());
     }
 
     pub fn get_key_velocity(&mut self) -> KeyVelocity {
@@ -122,6 +142,8 @@ impl Voice {
         &mut self,
         parameters: &AudioParameters,
         velocity: KeyVelocity,
+        initial_key: Option<u8>,
+        target_key: Option<VoiceGlide>,
         #[cfg_attr(not(feature = "clap"), allow(unused_variables))] opt_clap_note_id: Option<i32>,
     ) {
         if self.active {
@@ -130,14 +152,35 @@ impl Voice {
             self.key_velocity_interpolator.force_set_value(velocity.0)
         }
 
-        self.key_pressed = true;
-
-        for operator in self.operators.iter_mut() {
-            operator.volume_envelope.restart();
+        if let Some(key) = initial_key {
+            self.change_pitch(key, None);
         }
 
-        for (lfo, parameters) in self.lfos.iter_mut().zip(parameters.lfos.iter()) {
-            lfo.restart(parameters);
+        let mut retrigger_envelopes = true;
+        let mut retrigger_lfos = true;
+
+        if let Some(VoiceGlide {
+            to_key,
+            time,
+            retrigger_envelopes: re,
+            retrigger_lfos: rl,
+        }) = target_key
+        {
+            retrigger_envelopes = re;
+            retrigger_lfos = rl;
+
+            self.change_pitch(to_key, Some(time));
+        }
+
+        if retrigger_envelopes {
+            for operator in self.operators.iter_mut() {
+                operator.volume_envelope.restart(self.is_monophonic);
+            }
+        }
+        if retrigger_lfos {
+            for (lfo, parameters) in self.lfos.iter_mut().zip(parameters.lfos.iter()) {
+                lfo.restart(parameters);
+            }
         }
 
         #[cfg(feature = "clap")]
@@ -145,11 +188,31 @@ impl Voice {
             self.clap_note_id = opt_clap_note_id;
         }
 
+        self.key_pressed = true;
         self.active = true;
+    }
+
+    fn change_pitch(&mut self, key: u8, interpolate: Option<f64>) {
+        self.midi_pitch = MidiPitch::new(key);
+
+        if let Some(glide_time) = interpolate {
+            self.pitch_interpolator
+                .change_duration(InterpolationDuration(glide_time));
+
+            self.pitch_interpolator
+                .set_value(self.midi_pitch.frequency_factor as f32);
+        } else {
+            self.pitch_interpolator
+                .force_set_value(self.midi_pitch.frequency_factor as f32);
+        }
     }
 
     pub fn aftertouch(&mut self, velocity: KeyVelocity) {
         self.key_velocity_interpolator.set_value(velocity.0)
+    }
+
+    pub fn key(&self) -> u8 {
+        self.midi_pitch.key
     }
 
     #[inline]
@@ -157,12 +220,14 @@ impl Voice {
         self.key_pressed = false;
     }
 
+    pub fn kill_envelopes(&mut self) {
+        for operator in self.operators.iter_mut() {
+            operator.volume_envelope.kill();
+        }
+    }
+
     #[inline]
-    pub fn deactivate_if_envelopes_ended(
-        &mut self,
-        #[cfg(feature = "clap")] clap_ended_notes: &mut super::ClapEndedNotesRb,
-        #[cfg(feature = "clap")] sample_index: usize,
-    ) {
+    pub fn deactivate_if_envelopes_ended(&mut self) -> bool {
         let all_envelopes_ended = self
             .operators
             .iter()
@@ -173,23 +238,13 @@ impl Voice {
                 lfo.envelope_ended();
             }
 
-            #[cfg(feature = "clap")]
-            if let Some(clap_note_id) = self.clap_note_id {
-                use ringbuf::Rb;
-
-                let note_ended = super::ClapNoteEnded {
-                    key: self.midi_pitch.key,
-                    clap_note_id,
-                    sample_index: sample_index as u32,
-                };
-
-                if let Err(_) = clap_ended_notes.push(note_ended) {
-                    // Should never happen
-                    ::log::error!("Clap ended notes buffer full");
-                }
+            for operator in self.operators.iter_mut() {
+                operator.last_phase.0 = 0.0;
             }
 
             self.active = false;
         }
+
+        all_envelopes_ended
     }
 }

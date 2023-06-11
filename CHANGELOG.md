@@ -2,6 +2,34 @@
 
 All notable changes to this project will be documented in this file.
 
+## Unreleased
+
+Breaking changes: voice phases are reset when they end, which can audibly
+impact existing projects.
+
+### Added
+
+- Add monophonic voice mode
+  - In monophonic mode, when envelopes are restarted, attack will proceed from
+    the previous volume instead of from zero volume
+- Add glide (portamento)
+  - Available for both polyphonic and monophonic voice modes
+  - Can be set to OFF, LEG (only glide when playing legato) or ON (always
+    glide)
+  - Supports linear constant time (LCT) and linear constant rate (LCR, time
+    per octave) modes
+  - Supports optional BPM sync for time/rate
+  - Optionally retrigger envelopes and LFOs when gliding in monophonic mode
+
+### Changed
+
+- Replace patch settings overlay with button for toggling alternative visible
+  controls
+
+### Fixed
+
+- Reset voice phases when they end
+
 ## 0.8.7 - 2023-05-16
 
 Audio output is not bit-for-bit identical to version 0.8.6, but there should be

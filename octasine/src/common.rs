@@ -8,6 +8,7 @@ pub const OPERATOR_MOD_INDEX_STEPS: [f32; 16] = [
 ];
 
 pub type IndexMap<K, V> = indexmap::IndexMap<K, V, ahash::RandomState>;
+pub type IndexSet<K> = indexmap::IndexSet<K, ahash::RandomState>;
 
 pub trait WaveformChoices: PartialEq + Copy {
     fn calculate_for_current(self, phase: Phase) -> f32;
@@ -67,6 +68,7 @@ pub enum EnvelopeStage {
     Sustain,
     Release,
     Ended,
+    Kill,
 }
 
 #[derive(Debug, Clone, Copy)]

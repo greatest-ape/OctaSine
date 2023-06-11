@@ -4,9 +4,14 @@ use iced_baseview::widget::canvas::{
 };
 use iced_baseview::{Color, Element, Length, Point, Rectangle, Size};
 
+use crate::parameters::glide_bpm_sync::GlideBpmSyncValue;
+use crate::parameters::glide_mode::{GlideMode, GlideModeValue};
+use crate::parameters::glide_retrigger::GlideRetriggerValue;
 use crate::parameters::lfo_key_sync::LfoKeySyncValue;
 use crate::parameters::lfo_mode::LfoMode;
+use crate::parameters::list::MasterParameter;
 use crate::parameters::operator_envelope::OperatorEnvelopeGroupValue;
+use crate::parameters::voice_mode::{VoiceMode, VoiceModeValue};
 use crate::parameters::{
     LfoActiveValue, LfoBpmSyncValue, LfoModeValue, LfoParameter, OperatorActiveValue,
     OperatorParameter, Parameter, ParameterValue, WrappedParameter,
@@ -160,6 +165,70 @@ pub fn envelope_group_b_button<H: GuiSyncHandle>(
     )
 }
 
+pub fn voice_mode_button<H: GuiSyncHandle>(sync_handle: &H) -> BooleanButton {
+    BooleanButton::new(
+        sync_handle,
+        Parameter::Master(MasterParameter::VoiceMode),
+        "POLY",
+        LINE_HEIGHT * 2 + 6,
+        LINE_HEIGHT,
+        |v| VoiceModeValue::new_from_patch(v).get() == VoiceMode::Polyphonic,
+        |b| {
+            let mode = if b {
+                VoiceMode::Polyphonic
+            } else {
+                VoiceMode::Monophonic
+            };
+
+            VoiceModeValue::new_from_audio(mode).to_patch()
+        },
+        BooleanButtonStyle::Regular,
+    )
+}
+
+pub fn glide_bpm_sync_button<H: GuiSyncHandle>(sync_handle: &H) -> BooleanButton {
+    BooleanButton::new(
+        sync_handle,
+        Parameter::Master(MasterParameter::GlideBpmSync),
+        "B",
+        LINE_HEIGHT,
+        LINE_HEIGHT,
+        |v| GlideBpmSyncValue::new_from_patch(v).get(),
+        |b| GlideBpmSyncValue::new_from_audio(b).to_patch(),
+        BooleanButtonStyle::Regular,
+    )
+}
+
+pub fn glide_mode_button<H: GuiSyncHandle>(sync_handle: &H) -> BooleanButton {
+    BooleanButton::new(
+        sync_handle,
+        Parameter::Master(MasterParameter::GlideMode),
+        "LCR",
+        LINE_HEIGHT * 2,
+        LINE_HEIGHT,
+        |v| GlideModeValue::new_from_patch(v).get() == GlideMode::Lcr,
+        |b| {
+            let mode = if b { GlideMode::Lcr } else { GlideMode::Lct };
+
+            GlideModeValue::new_from_audio(mode).to_patch()
+        },
+        BooleanButtonStyle::Regular,
+    )
+}
+
+pub fn glide_retrigger_button<H: GuiSyncHandle>(sync_handle: &H) -> BooleanButton {
+    BooleanButton::new(
+        sync_handle,
+        Parameter::Master(MasterParameter::GlideRetrigger),
+        "R",
+        LINE_HEIGHT,
+        LINE_HEIGHT,
+        |v| GlideRetriggerValue::new_from_patch(v).get(),
+        |b| GlideRetriggerValue::new_from_audio(b).to_patch(),
+        BooleanButtonStyle::Regular,
+    )
+}
+
 pub struct BooleanButton {
     parameter: WrappedParameter,
     on: bool,
@@ -249,16 +318,14 @@ impl BooleanButton {
     }
 
     fn draw_text(&self, state: &CanvasState, frame: &mut Frame, theme: &Theme) {
-        let position = Point::new(f32::from(self.width) / 2.0, f32::from(self.height) / 2.0);
-
         let text = Text {
             content: self.text.to_string(),
             color: self.appearance(state, theme).text_color,
             size: f32::from(FONT_SIZE),
             font: theme.font_regular(),
+            position: Point::new(f32::from(self.width) / 2.0, f32::from(self.height) / 2.0),
             horizontal_alignment: Horizontal::Center,
             vertical_alignment: Vertical::Center,
-            position,
             ..Default::default()
         };
 

@@ -32,9 +32,6 @@ use iced_baseview::{
 use serde::{Deserialize, Serialize};
 
 use crate::common::NUM_OPERATORS;
-use crate::parameters::master_pitch_bend_range::{
-    MasterPitchBendRangeDownValue, MasterPitchBendRangeUpValue,
-};
 use crate::parameters::*;
 use crate::sync::GuiSyncHandle;
 
@@ -43,9 +40,7 @@ use operator::OperatorWidgets;
 use patch_picker::PatchPicker;
 use style::Theme;
 
-use self::common::{container_l2, container_l3, space_l3};
 use self::corner::CornerWidgets;
-use self::knob::{master_pitch_bend_range_down, master_pitch_bend_range_up, OctaSineKnob};
 use self::operator::ModTargetPicker;
 use self::style::container::ContainerStyle;
 
@@ -122,14 +117,13 @@ pub enum Message {
         x_offset: f32,
     },
     SwitchTheme,
-    ToggleExtraControls,
+    ToggleAlternativeControls,
     SavePatch,
     SaveBank,
     LoadBankOrPatch,
     RenamePatch,
     ClearPatch,
     ClearBank,
-    ShowPatchSettings,
     SaveBankOrPatchToFile(PathBuf, Vec<u8>),
     LoadBankOrPatchesFromPaths(Vec<PathBuf>),
     ChangeParameterByTextInput {
@@ -153,7 +147,6 @@ pub enum ModalAction {
         options: Vec<CompactString>,
         choice: CompactString,
     },
-    PatchSettings,
 }
 
 pub struct OctaSineIcedApplication<H: GuiSyncHandle> {
@@ -169,8 +162,6 @@ pub struct OctaSineIcedApplication<H: GuiSyncHandle> {
     lfo_4: LfoWidgets,
     corner: CornerWidgets,
     modal_action: Option<ModalAction>,
-    master_pitch_bend_up: OctaSineKnob<MasterPitchBendRangeUpValue>,
-    master_pitch_bend_down: OctaSineKnob<MasterPitchBendRangeDownValue>,
 }
 
 impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {
@@ -182,13 +173,27 @@ impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {
                 self.corner.master_frequency.set_value(v)
             }
             Parameter::Master(MasterParameter::PitchBendRangeUp) => {
-                self.master_pitch_bend_up.set_value(v)
+                self.corner.master_pitch_bend_up.set_value(v)
             }
             Parameter::Master(MasterParameter::PitchBendRangeDown) => {
-                self.master_pitch_bend_down.set_value(v)
+                self.corner.master_pitch_bend_down.set_value(v)
             }
             Parameter::Master(MasterParameter::VelocitySensitivityVolume) => {
                 self.corner.volume_velocity_sensitivity.set_value(v)
+            }
+            Parameter::Master(MasterParameter::VoiceMode) => {
+                self.corner.patch_picker.voice_mode_button.set_value(v)
+            }
+            Parameter::Master(MasterParameter::GlideActive) => {
+                self.corner.glide_active = v;
+            }
+            Parameter::Master(MasterParameter::GlideTime) => self.corner.glide_time.set_value(v),
+            Parameter::Master(MasterParameter::GlideBpmSync) => {
+                self.corner.glide_bpm_sync.set_value(v)
+            }
+            Parameter::Master(MasterParameter::GlideMode) => self.corner.glide_mode.set_value(v),
+            Parameter::Master(MasterParameter::GlideRetrigger) => {
+                self.corner.glide_retrigger.set_value(v)
             }
             outer_p @ Parameter::Operator(index, p) => {
                 self.operator_1.wave_display.set_value(outer_p, v);
@@ -478,9 +483,6 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
 
         let corner = CornerWidgets::new(&sync_handle);
 
-        let master_pitch_bend_up = master_pitch_bend_range_up(&sync_handle);
-        let master_pitch_bend_down = master_pitch_bend_range_down(&sync_handle);
-
         let app = Self {
             sync_handle,
             theme: style,
@@ -494,8 +496,6 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
             lfo_4,
             corner,
             modal_action: None,
-            master_pitch_bend_up,
-            master_pitch_bend_down,
         };
 
         (app, Command::none())
@@ -643,15 +643,17 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
 
                 self.save_settings();
             }
-            Message::ToggleExtraControls => {
+            Message::ToggleAlternativeControls => {
                 for operator in [
                     &mut self.operator_1,
                     &mut self.operator_2,
                     &mut self.operator_3,
                     &mut self.operator_4,
                 ] {
-                    operator.shifted = !operator.shifted;
+                    operator.alternative_controls = !operator.alternative_controls;
                 }
+
+                self.corner.alternative_controls = !self.corner.alternative_controls;
             }
             Message::LoadBankOrPatch => {
                 const TITLE: &str = "Load OctaSine patch bank or patches";
@@ -817,9 +819,6 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
             Message::ClearBank => {
                 self.modal_action = Some(ModalAction::ClearBank);
             }
-            Message::ShowPatchSettings => {
-                self.modal_action = Some(ModalAction::PatchSettings);
-            }
             Message::SaveBankOrPatchToFile(path_buf, bytes) => {
                 if let Err(err) = save_data_to_file(path_buf, bytes) {
                     ::log::error!("Error saving patch/patch bank to file: {:#}", err)
@@ -876,7 +875,6 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                         self.set_value(parameter.parameter(), value_patch, true);
                     }
                 }
-                Some(ModalAction::PatchSettings) => (),
                 None => (),
             },
             Message::ModalSetParameterByChoicesUpdate(new_choice) => {
@@ -938,7 +936,6 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                 ModalAction::SetParameterByChoices { parameter, .. } => {
                     format!("SET {}", parameter.parameter().name().to_uppercase())
                 }
-                ModalAction::PatchSettings => "PATCH SETTINGS".into(),
             };
 
             match modal_action {
@@ -996,47 +993,6 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
 
                     Card::new(Text::new(heading), body)
                         .max_width(LINE_HEIGHT as f32 * 16.0)
-                        .padding(LINE_HEIGHT as f32)
-                        .into()
-                }
-                ModalAction::PatchSettings => {
-                    let body = Column::new()
-                        .push(container_l2(
-                            Column::new()
-                                .push(Space::with_height(LINE_HEIGHT))
-                                .push(
-                                    Text::new("GLOBAL PITCH BEND RANGE")
-                                        .size(FONT_SIZE + FONT_SIZE / 2)
-                                        .font(self.theme.font_heading())
-                                        .horizontal_alignment(Horizontal::Center)
-                                        .width(Length::Fixed(f32::from(LINE_HEIGHT * 8))),
-                                )
-                                .push(
-                                    Row::new()
-                                        .push(container_l3(
-                                            self.master_pitch_bend_up.view(&self.theme),
-                                        ))
-                                        .push(space_l3())
-                                        .push(container_l3(
-                                            self.master_pitch_bend_down.view(&self.theme),
-                                        )),
-                                ),
-                        ))
-                        .push(Space::with_height(LINE_HEIGHT))
-                        .push(
-                            Row::new()
-                                .spacing(LINE_HEIGHT / 2)
-                                .width(Length::Fill)
-                                .push(
-                                    Button::new(
-                                        Text::new("CLOSE").horizontal_alignment(Horizontal::Center),
-                                    )
-                                    .width(Length::Fill)
-                                    .on_press(Message::ModalYes),
-                                ),
-                        );
-                    Card::new(Text::new(heading), body)
-                        .max_width(LINE_HEIGHT as f32 * 12.0)
                         .padding(LINE_HEIGHT as f32)
                         .into()
                 }

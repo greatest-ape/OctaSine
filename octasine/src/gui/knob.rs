@@ -6,6 +6,7 @@ use iced_baseview::{
     Alignment, Element, Length,
 };
 
+use crate::parameters::glide_time::GlideTimeValue;
 use crate::parameters::master_pitch_bend_range::{
     MasterPitchBendRangeDownValue, MasterPitchBendRangeUpValue,
 };
@@ -80,8 +81,8 @@ where
     OctaSineKnob::new_with_values(
         sync_handle,
         Parameter::Master(MasterParameter::PitchBendRangeUp),
-        "UP",
-        "Upward pitch bench range",
+        "PB UP",
+        "Pitch bench range - upward",
         TickMarkType::MinMaxAndDefault,
         KnobStyle::Bipolar,
         MasterPitchBendRangeUpValue::default().to_patch(),
@@ -99,13 +100,27 @@ where
     OctaSineKnob::new_with_values(
         sync_handle,
         Parameter::Master(MasterParameter::PitchBendRangeDown),
-        "DOWN",
-        "Downward pitch bench range",
+        "PB DOWN",
+        "Pitch bench range - downward",
         TickMarkType::MinMaxAndDefault,
         KnobStyle::Bipolar,
         MasterPitchBendRangeDownValue::default().to_patch(),
         0.5,
         0.5,
+    )
+}
+
+pub fn glide_time<H>(sync_handle: &H) -> OctaSineKnob<GlideTimeValue>
+where
+    H: GuiSyncHandle,
+{
+    OctaSineKnob::new(
+        sync_handle,
+        Parameter::Master(MasterParameter::GlideTime),
+        "GL TIME",
+        "Glide time",
+        TickMarkType::MinMaxAndDefault,
+        KnobStyle::Regular,
     )
 }
 

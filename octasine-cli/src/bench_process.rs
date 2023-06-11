@@ -8,14 +8,14 @@ use sha2::{Digest, Sha256};
 use vst::plugin::PluginParameters;
 
 use octasine::audio::gen::AudioGen;
-use octasine::parameters::{OperatorParameter, Parameter, PARAMETERS};
+use octasine::parameters::{MasterParameter, OperatorParameter, Parameter, PARAMETERS};
 use octasine::plugin::vst2::OctaSine;
 use octasine::simd::{Simd, SimdPackedDouble};
 
 /// Benchmark OctaSine process functions and check output sample accuracy
 pub fn run() -> anyhow::Result<()> {
     // Don't forget trailing space
-    let hash = "f4 7d 21 94 a6 6d f4 eb ";
+    let hash = "9d 7c 44 11 22 0b d7 c8 ";
 
     let mut all_sleef_hashes_match = true;
 
@@ -166,6 +166,14 @@ fn benchmark<A: AudioGen + Simd>(name: &str, expected_hash: &str) -> (bool, f32)
             if wave_type_parameter_indices.contains(&i) {
                 // Avoid setting wave type to noise
                 value = value * 0.79;
+            }
+
+            const VOICE_MODE_INDEX: u8 = Parameter::Master(MasterParameter::VoiceMode).to_index();
+
+            // Only automate voice mode just before key on events, since
+            // voices are killed when the parameter changes
+            if i == VOICE_MODE_INDEX as usize && i % 1024 != 0 {
+                continue;
             }
 
             if parameters_to_automate.contains(&i) {

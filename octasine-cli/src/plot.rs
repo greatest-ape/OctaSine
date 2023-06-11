@@ -4,7 +4,7 @@ use plotlib::repr::Plot;
 use plotlib::style::{LineStyle, PointMarker, PointStyle};
 use plotlib::view::{ContinuousView, View};
 
-use octasine::audio::parameters::OperatorEnvelopeAudioParameters;
+use octasine::audio::parameters::{AudioParameters, OperatorEnvelopeAudioParameters};
 use octasine::audio::voices::envelopes::VoiceOperatorVolumeEnvelope;
 use octasine::audio::voices::lfos::*;
 use octasine::audio::voices::log10_table::Log10Table;
@@ -13,15 +13,16 @@ use octasine::parameters::lfo_mode::LfoMode;
 use octasine::parameters::lfo_shape::LfoShape;
 
 pub fn run() -> anyhow::Result<()> {
-    // plot_lfo_values("tmp/lfo.svg");
-    plot_square("tmp/square-wave.svg");
-    plot_triangle("tmp/triangle-wave.svg");
-    plot_saw("tmp/saw-wave.svg");
+    // plot_square("tmp/square-wave.svg");
+    // plot_triangle("tmp/triangle-wave.svg");
+    // plot_saw("tmp/saw-wave.svg");
     // plot_envelope_stage(0.1, 0.0, 1.0, "tmp/attack.svg");
+    plot_lfo_values("tmp/lfo.svg");
 
     Ok(())
 }
 
+#[allow(dead_code)]
 fn plot_saw(filename: &str) {
     use octasine::simd::SimdPackedDouble;
 
@@ -60,6 +61,7 @@ fn plot_saw(filename: &str) {
     Page::single(&v).save(&filename).unwrap();
 }
 
+#[allow(dead_code)]
 fn plot_square(filename: &str) {
     use octasine::simd::SimdPackedDouble;
 
@@ -98,6 +100,7 @@ fn plot_square(filename: &str) {
     Page::single(&v).save(&filename).unwrap();
 }
 
+#[allow(dead_code)]
 fn plot_triangle(filename: &str) {
     use octasine::simd::SimdPackedDouble;
 
@@ -163,7 +166,6 @@ fn plot_envelope_stage(length: f64, start_volume: f64, end_volume: f64, filename
     Page::single(&v).save(&filename).unwrap();
 }
 
-/*
 fn plot_lfo_values(filename: &str) {
     let press_key_at_samples = vec![
         15000,
@@ -187,8 +189,10 @@ fn plot_lfo_values(filename: &str) {
     let magnitude = 1.0;
 
     let log10table = Log10Table::default();
+    let audio_parameters = AudioParameters::default();
     let mut lfo = VoiceLfo::default();
     let mut envelope = VoiceOperatorVolumeEnvelope::default();
+    let mut phase = Phase(0.0);
     let mut processing_parameter_envelope = OperatorEnvelopeAudioParameters::default();
     let mut key_pressed = false;
 
@@ -214,6 +218,7 @@ fn plot_lfo_values(filename: &str) {
 
         envelope.advance_one_sample(
             &mut processing_parameter_envelope,
+            &mut phase,
             key_pressed,
             time_per_sample,
         );
@@ -227,10 +232,10 @@ fn plot_lfo_values(filename: &str) {
         }
 
         if press_key_at_samples.contains(&i) {
-            lfo.restart();
+            lfo.restart(&audio_parameters.lfos[0]);
 
             key_pressed = true;
-            envelope.restart();
+            envelope.restart(false);
 
             restart_points.push((i as f64, 0.0));
             restart_points.push((i as f64, 1.0));
@@ -294,4 +299,3 @@ fn plot_lfo_values(filename: &str) {
 
     Page::single(&v).save(&filename).unwrap();
 }
-*/

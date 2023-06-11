@@ -28,6 +28,9 @@ mod tests {
     #[test]
     fn test_parameter_interaction() {
         let mut audio = AudioState::default();
+
+        audio.set_sample_rate(SampleRate(44100.0));
+
         let sync = SyncState::<()>::new(None);
 
         let mut patch_values = Vec::new();
@@ -42,12 +45,8 @@ mod tests {
 
         update_audio_parameters(&mut audio, &sync);
 
-        let sample_rate = SampleRate(44100.0);
-
-        {
-            for _ in 0..44100 {
-                audio.advance_one_sample(sample_rate);
-            }
+        for _ in 0..44100 {
+            audio.advance_one_sample();
         }
 
         for (i, parameter) in PARAMETERS.iter().copied().enumerate() {

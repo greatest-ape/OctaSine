@@ -17,10 +17,16 @@ mod operator_volume;
 use array_init::array_init;
 
 use crate::common::{SampleRate, NUM_LFOS, NUM_OPERATORS};
+use crate::parameters::glide_active::GlideActiveValue;
+use crate::parameters::glide_bpm_sync::GlideBpmSyncValue;
+use crate::parameters::glide_mode::GlideModeValue;
+use crate::parameters::glide_retrigger::GlideRetriggerValue;
+use crate::parameters::glide_time::GlideTimeValue;
 use crate::parameters::master_pitch_bend_range::{
     MasterPitchBendRangeDownValue, MasterPitchBendRangeUpValue,
 };
 use crate::parameters::velocity_sensitivity::VelocitySensitivityValue;
+use crate::parameters::voice_mode::VoiceModeValue;
 use crate::parameters::*;
 
 use self::common::{AudioParameter, InterpolatableAudioParameter, SimpleAudioParameter};
@@ -63,6 +69,12 @@ pub struct AudioParameters {
     pub master_pitch_bend_range_up: SimpleAudioParameter<MasterPitchBendRangeUpValue>,
     pub master_pitch_bend_range_down: SimpleAudioParameter<MasterPitchBendRangeDownValue>,
     pub volume_velocity_sensitivity: InterpolatableAudioParameter<VelocitySensitivityValue>,
+    pub voice_mode: SimpleAudioParameter<VoiceModeValue>,
+    pub glide_active: SimpleAudioParameter<GlideActiveValue>,
+    pub glide_time: SimpleAudioParameter<GlideTimeValue>,
+    pub glide_bpm_sync: SimpleAudioParameter<GlideBpmSyncValue>,
+    pub glide_mode: SimpleAudioParameter<GlideModeValue>,
+    pub glide_retrigger: SimpleAudioParameter<GlideRetriggerValue>,
     pub operators: [OperatorAudioParameters; NUM_OPERATORS],
     pub lfos: [LfoAudioParameters; NUM_LFOS],
 }
@@ -75,6 +87,12 @@ impl Default for AudioParameters {
             master_pitch_bend_range_up: Default::default(),
             master_pitch_bend_range_down: Default::default(),
             volume_velocity_sensitivity: Default::default(),
+            voice_mode: Default::default(),
+            glide_active: Default::default(),
+            glide_time: Default::default(),
+            glide_bpm_sync: Default::default(),
+            glide_mode: Default::default(),
+            glide_retrigger: Default::default(),
             operators: array_init(OperatorAudioParameters::new),
             lfos: array_init(LfoAudioParameters::new),
         }
@@ -98,6 +116,12 @@ macro_rules! impl_patch_interaction {
                     MasterParameter::VelocitySensitivityVolume => {
                         $f(&mut self.volume_velocity_sensitivity, input)
                     }
+                    MasterParameter::VoiceMode => $f(&mut self.voice_mode, input),
+                    MasterParameter::GlideActive => $f(&mut self.glide_active, input),
+                    MasterParameter::GlideTime => $f(&mut self.glide_time, input),
+                    MasterParameter::GlideBpmSync => $f(&mut self.glide_bpm_sync, input),
+                    MasterParameter::GlideMode => $f(&mut self.glide_mode, input),
+                    MasterParameter::GlideRetrigger => $f(&mut self.glide_retrigger, input),
                 },
                 Parameter::Operator(index, p) => {
                     use OperatorParameter::*;

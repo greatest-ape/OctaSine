@@ -43,7 +43,7 @@ impl ParameterValue for MasterPitchBendRangeUpValue {
         map_step_to_patch_value(STEPS, self.0)
     }
     fn get_formatted(self) -> CompactString {
-        format_compact!("{:.0} semis", self.0)
+        format_compact!("{:.0} SEMIS", self.0)
     }
 
     fn get_serializable(&self) -> SerializableRepresentation {
@@ -84,7 +84,7 @@ impl ParameterValue for MasterPitchBendRangeDownValue {
         map_step_to_patch_value(STEPS, self.0)
     }
     fn get_formatted(self) -> CompactString {
-        format_compact!("{:.0} semis", self.0)
+        format_compact!("{:.0} SEMIS", self.0)
     }
 
     fn get_serializable(&self) -> SerializableRepresentation {
