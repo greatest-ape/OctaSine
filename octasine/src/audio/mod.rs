@@ -239,14 +239,13 @@ impl AudioState {
                     GlideActive::Off => None,
                     GlideActive::Legato => most_recent_still_pressed_keys.next(),
                     GlideActive::On => {
-                        // Don't filter out current voice here, since we don't
-                        // want glide if it was most recently pressed
-                        let most_recently_added_keys =
-                            self.polyphonic_voices.iter().rev().map(|(key, _)| *key);
-
                         most_recent_still_pressed_keys
-                            .chain(most_recently_added_keys)
+                            // Additionally look at voices in release phase. Don't filter out
+                            // current voice here, since if is most recently added, we want to
+                            // return None later instead of gliding from next one
+                            .chain(self.polyphonic_voices.iter().rev().map(|(key, _)| *key))
                             .next()
+                            .filter(|k| *k != key)
                     }
                 };
 
@@ -260,24 +259,20 @@ impl AudioState {
                 };
 
                 if let Some(glide_from_key) = opt_glide_from_key {
-                    if glide_from_key == key {
-                        voice.press_key(&self.parameters, velocity, None, None, opt_clap_note_id);
-                    } else {
-                        let glide = VoiceGlide {
-                            to_key: key,
-                            time: Self::glide_time(&self.parameters, self.bpm, glide_from_key, key),
-                            retrigger_envelopes: true,
-                            retrigger_lfos: true,
-                        };
+                    let glide = VoiceGlide {
+                        to_key: key,
+                        time: Self::glide_time(&self.parameters, self.bpm, glide_from_key, key),
+                        retrigger_envelopes: true,
+                        retrigger_lfos: true,
+                    };
 
-                        voice.press_key(
-                            &self.parameters,
-                            velocity,
-                            Some(glide_from_key),
-                            Some(glide),
-                            opt_clap_note_id,
-                        );
-                    }
+                    voice.press_key(
+                        &self.parameters,
+                        velocity,
+                        Some(glide_from_key),
+                        Some(glide),
+                        opt_clap_note_id,
+                    );
                 } else {
                     voice.press_key(
                         &self.parameters,
