@@ -4,6 +4,7 @@
   * Go to kill phase after release, in preparation for allowing release end
     value to be non-zero?
 * Portamento
+  * When glide time is zero, sometimes no note change at all
   * Store key velocities for pressed keys?
   * Interpolate key velocity for glide duration?
     ```rust
@@ -19,6 +20,7 @@
     }
     ```
 * In alternative controls mode, maybe display a small envelope editor?
+* LFOs: should take DAW offset within beat into account
 
 * Audio inconsistencies on attack, see vospi email
 * Consider f64 interpolator and maybe even f64 parameters, since now we
