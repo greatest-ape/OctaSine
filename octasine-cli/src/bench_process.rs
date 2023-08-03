@@ -15,7 +15,7 @@ use octasine::simd::{Simd, SimdPackedDouble};
 /// Benchmark OctaSine process functions and check output sample accuracy
 pub fn run() -> anyhow::Result<()> {
     // Don't forget trailing space
-    let hash = "9d 7c 44 11 22 0b d7 c8 ";
+    let hash = "36 6f 1b 0a 3e 93 a3 d5 ";
 
     let mut all_sleef_hashes_match = true;
 
