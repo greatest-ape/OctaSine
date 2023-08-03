@@ -74,8 +74,8 @@ parking_lot = { version = "0.12", optional = true }
 
 # GUI
 
-iced_audio = { version = "0.11", default-features = false, optional = true }
-iced_aw = { version = "0.4", features = ["modal", "card"], optional = true }
+iced_audio = { version = "0.12", default-features = false, optional = true }
+iced_aw = { version = "0.5", features = ["modal", "card"], optional = true }
 palette = { version = "0.6", optional = true }
 rfd = { version = "0.11", optional = true, default-features = false, features = ["xdg-portal"] }
 rwh04 = { package = "raw-window-handle", version = "0.4", optional = true }
@@ -84,7 +84,7 @@ tinyfiledialogs = { version = "3", optional = true }
 
 [dependencies.iced_baseview]
 git = "https://github.com/BillyDM/iced_baseview.git"
-rev = "adc7417"
+rev = "9506c90"
 default-features = false
 features = ["canvas"]
 optional = true

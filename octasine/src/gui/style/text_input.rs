@@ -15,6 +15,7 @@ impl StyleSheet for Theme {
                     border_radius: 3.0,
                     border_width: 1.0,
                     border_color: GRAY_300,
+                    icon_color: GRAY_300,
                 }
             }
             Self::Light => {
@@ -25,12 +26,16 @@ impl StyleSheet for Theme {
                     border_radius: 3.0,
                     border_width: 1.0,
                     border_color: BORDER,
+                    icon_color: BORDER,
                 }
             }
         }
     }
 
     fn focused(&self, style: &Self::Style) -> Appearance {
+        self.active(style)
+    }
+    fn disabled(&self, style: &Self::Style) -> Appearance {
         self.active(style)
     }
 
@@ -53,5 +58,9 @@ impl StyleSheet for Theme {
             Self::Dark => super::colors::dark::GRAY_500,
             Self::Light => super::colors::light::GRAY_700,
         }
+    }
+
+    fn disabled_color(&self, style: &Self::Style) -> iced_baseview::Color {
+        self.value_color(style)
     }
 }
