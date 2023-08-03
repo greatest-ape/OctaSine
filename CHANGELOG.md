@@ -2,10 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
-## Unreleased
+## 0.9.0 - 2023-08-03
 
 This release contains breaking changes. Voice phases are reset when they end,
-which can audibly impact existing projects. 
+which can audibly impact existing projects.
 
 ### Added
 
