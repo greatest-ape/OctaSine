@@ -1,5 +1,5 @@
-pub const PLUGIN_UNIQUE_VST2_ID: i32 = 1_438_048_625;
-pub const PLUGIN_SEMVER_NAME: &str = "OctaSine v0.8";
+pub const PLUGIN_UNIQUE_VST2_ID: i32 = 1_438_048_626;
+pub const PLUGIN_SEMVER_NAME: &str = "OctaSine v0.9";
 
 pub fn crate_version_to_vst2_format(crate_version: &str) -> i32 {
     format!("{:0<4}", crate_version.replace('.', ""))

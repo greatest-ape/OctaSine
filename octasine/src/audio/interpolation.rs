@@ -6,7 +6,7 @@ pub struct InterpolationDuration(pub f64);
 #[allow(dead_code)]
 impl InterpolationDuration {
     pub fn samples(&self, sample_rate: SampleRate) -> usize {
-        (self.0 * sample_rate.0).round() as usize
+        ((self.0 * sample_rate.0).round() as usize).max(1)
     }
     /// 1.04 ms. 45.9375 samples with 44.1 Hz, 50 with 48 kHz
     pub const fn approx_1ms() -> Self {

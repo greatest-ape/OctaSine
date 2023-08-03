@@ -2,16 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
-## Unreleased
+## 0.9.0 - 2023-08-03
 
-Breaking changes: voice phases are reset when they end, which can audibly
-impact existing projects.
+This release contains breaking changes. Voice phases are reset when they end,
+which can audibly impact existing projects.
 
 ### Added
 
-- Add monophonic voice mode
-  - In monophonic mode, when envelopes are restarted, attack will proceed from
-    the previous volume instead of from zero volume
+- Add monophonic voice mode (only once voice active at a time). In this mode,
+  when envelopes are restarted, attack will proceed from the previous volume,
+  not from zero
 - Add glide (portamento)
   - Available for both polyphonic and monophonic voice modes
   - Can be set to OFF, LEG (only glide when playing legato) or ON (always
@@ -28,7 +28,9 @@ impact existing projects.
 
 ### Fixed
 
-- Reset voice phases when they end
+- Reset voice phases when they end. This fixes an issue where subsequent key
+  presses without intermediate parameter changes do not result in identical
+  sounds.
 
 ## 0.8.7 - 2023-05-16
 

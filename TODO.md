@@ -3,22 +3,9 @@
 * Envelopes:
   * Go to kill phase after release, in preparation for allowing release end
     value to be non-zero?
-* Portamento
-  * Store key velocities for pressed keys?
-  * Interpolate key velocity for glide duration?
-    ```rust
-    // Add to beginning of voice.press_key
-    if let Some((_, glide_time)) = target_key {
-        self.key_velocity_interpolator
-            .change_duration(InterpolationDuration(
-                glide_time.max(VELOCITY_INTERPOLATION_DURATION.0),
-            ));
-    } else {
-        self.key_velocity_interpolator
-            .change_duration(VELOCITY_INTERPOLATION_DURATION);
-    }
-    ```
 * In alternative controls mode, maybe display a small envelope editor?
+* should LFOs take DAW offset within beat into account?
+* Mod matrix should ideally indicate whether mod out is actually active
 
 * Audio inconsistencies on attack, see vospi email
 * Consider f64 interpolator and maybe even f64 parameters, since now we
@@ -54,10 +41,9 @@
 * When making breaking audio changes
   * exp2 scaling or similar for frequency and volume parameters for better
     external LFO potential
-  * consider portable mathematics everywhere, e.g., with libm crate (it is f32
-    only though)
+    * will require a fast f64 exp2 implementation, e.g. ported from sleef
+  * consider portable mathematics everywhere
   * bhaskara constant power panning
-  * feedback and mod out velocity sensitivity should default to zero
 * clap
   * Clap validation in CI
     * Converting parameter values between string and float multiple times

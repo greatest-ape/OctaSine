@@ -1,6 +1,6 @@
 [package]
 name = "octasine"
-version = "0.8.7"
+version = "0.9.0"
 authors = ["Joakim Frostegård <joakim.frostegard@gmail.com>"]
 license = "AGPL-3.0"
 edition = "2021"
@@ -28,7 +28,7 @@ harness = false
 
 [dev-dependencies]
 assert_approx_eq = "1"
-criterion = "0.4"
+criterion = "0.5"
 quickcheck = { version = "1", default-features = false }
 
 [dependencies]
@@ -44,10 +44,10 @@ compact_str = { version = "0.7", features = ["serde"] }
 directories = "5"
 duplicate = "1"
 fast-math = "0.1"
-fastrand = "1"
+fastrand = "2"
 flate2 = "1"
 git-testament = "0.2"
-indexmap = { version = "1", features = ["serde"] }
+indexmap = { version = "2", features = ["serde"] }
 log = { version = "0.4", default-features = false }
 log-panics = "2"
 memchr = "2"
@@ -74,8 +74,8 @@ parking_lot = { version = "0.12", optional = true }
 
 # GUI
 
-iced_audio = { version = "0.11", default-features = false, optional = true }
-iced_aw = { version = "0.4", features = ["modal", "card"], optional = true }
+iced_audio = { version = "0.12", default-features = false, optional = true }
+iced_aw = { version = "0.5", features = ["modal", "card"], optional = true }
 palette = { version = "0.6", optional = true }
 rfd = { version = "0.11", optional = true, default-features = false, features = ["xdg-portal"] }
 rwh04 = { package = "raw-window-handle", version = "0.4", optional = true }
@@ -84,7 +84,7 @@ tinyfiledialogs = { version = "3", optional = true }
 
 [dependencies.iced_baseview]
 git = "https://github.com/BillyDM/iced_baseview.git"
-rev = "adc7417"
+rev = "9506c90"
 default-features = false
 features = ["canvas"]
 optional = true

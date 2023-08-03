@@ -5,4 +5,4 @@ edition = "2021"
 license = "ISC"
 
 [dependencies]
-nih_plug_xtask = { git = "https://github.com/robbert-vdh/nih-plug.git", rev = "32957c2" }
+nih_plug_xtask = { git = "https://github.com/robbert-vdh/nih-plug.git", rev = "5ae23f5" }

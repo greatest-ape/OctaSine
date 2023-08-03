@@ -47,22 +47,24 @@ impl StyleSheet for Theme {
     }
 
     fn dragging(&self, style: &Self::Style) -> Scrollbar {
-        self.hovered(style)
+        self.hovered(style, true)
     }
 
-    fn hovered(&self, style: &Self::Style) -> Scrollbar {
+    fn hovered(&self, style: &Self::Style, is_mouse_over_scrollbar: bool) -> Scrollbar {
         let mut appearance = self.active(style);
 
-        match self {
-            Self::Light => {
-                use super::colors::light::*;
+        if is_mouse_over_scrollbar {
+            match self {
+                Self::Light => {
+                    use super::colors::light::*;
 
-                appearance.scroller.color = GRAY_400;
-            }
-            Self::Dark => {
-                use super::colors::dark::*;
+                    appearance.scroller.color = GRAY_400;
+                }
+                Self::Dark => {
+                    use super::colors::dark::*;
 
-                appearance.scroller.color = GRAY_800;
+                    appearance.scroller.color = GRAY_800;
+                }
             }
         }
 
