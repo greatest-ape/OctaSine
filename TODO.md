@@ -20,6 +20,7 @@
     ```
 * In alternative controls mode, maybe display a small envelope editor?
 * LFOs: should take DAW offset within beat into account
+* Mod matrix should ideally indicate whether mod out is actually active
 
 * Audio inconsistencies on attack, see vospi email
 * Consider f64 interpolator and maybe even f64 parameters, since now we
