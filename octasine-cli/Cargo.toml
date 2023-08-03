@@ -18,7 +18,7 @@ octasine = { path = "../octasine", version = "0.8.7", default-features = false, 
 anyhow = "1"
 clap = { version = "4", features = ["derive"] }
 colored = "2"
-fastrand = "1"
+fastrand = "2"
 serde = "1"
 serde_json = "1"
 sha2 = "0.10"
