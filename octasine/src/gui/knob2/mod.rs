@@ -79,16 +79,17 @@ impl KnobWithText {
 }
 
 pub struct Knob {
-    variant: KnobVariant,
     parameter: WrappedParameter,
-    cache: Cache,
-    center: Point,
-    radius: f32,
+    variant: KnobVariant,
     /// Where to place anchor dot
     anchor_dot_value: Option<f32>,
     /// Value to reset to when double-clicking
     reset_value: f32,
     value: f32,
+
+    cache: Cache,
+    center: Point,
+    radius: f32,
 }
 
 impl Knob {
@@ -106,12 +107,13 @@ impl Knob {
         Self {
             parameter,
             variant,
-            cache: Cache::default(),
-            center,
-            radius: (KNOB_SIZE / 2) as f32 - 1.0,
             anchor_dot_value,
             reset_value,
             value,
+
+            cache: Cache::default(),
+            center,
+            radius: (KNOB_SIZE / 2) as f32 - 1.0,
         }
     }
 
@@ -219,12 +221,7 @@ pub struct KnobState {
     last_cursor_position: Point,
     modifier_key_pressed: bool,
     previous_click: Option<(Point, Instant)>,
-    click_state: ClickState,
-}
-
-pub enum ClickState {
-    Regular,
-    Dragging,
+    is_dragging: bool,
 }
 
 impl Default for KnobState {
@@ -233,7 +230,7 @@ impl Default for KnobState {
             last_cursor_position: Point::default(),
             modifier_key_pressed: false,
             previous_click: None,
-            click_state: ClickState::Regular,
+            is_dragging: false,
         }
     }
 }
@@ -267,15 +264,6 @@ impl Program<Message, Theme> for Knob {
         vec![geometry]
     }
 
-    fn mouse_interaction(
-        &self,
-        _state: &Self::State,
-        _bounds: iced_baseview::Rectangle,
-        _cursor: iced_baseview::widget::canvas::Cursor,
-    ) -> iced_baseview::mouse::Interaction {
-        iced_baseview::mouse::Interaction::Pointer
-    }
-
     fn update(
         &self,
         state: &mut Self::State,
@@ -288,7 +276,7 @@ impl Program<Message, Theme> for Knob {
     ) {
         match event {
             canvas::Event::Mouse(mouse::Event::CursorMoved { position }) => {
-                if let ClickState::Dragging = state.click_state {
+                if state.is_dragging {
                     let speed = if state.modifier_key_pressed {
                         0.0005
                     } else {
@@ -308,12 +296,13 @@ impl Program<Message, Theme> for Knob {
                 }
             }
             canvas::Event::Mouse(mouse::Event::ButtonPressed(Button::Left)) => {
-                if let ClickState::Regular = state.click_state {
+                if !state.is_dragging {
                     if let Some((point, time)) = state.previous_click {
                         if point.distance(state.last_cursor_position) < 5.0
                             && time.elapsed() < Duration::from_millis(300)
                         {
-                            state.click_state = ClickState::Regular;
+                            state.is_dragging = false;
+                            state.previous_click = None;
 
                             let message = Message::ChangeSingleParameterImmediate(
                                 self.parameter,
@@ -325,7 +314,7 @@ impl Program<Message, Theme> for Knob {
                     }
 
                     if self.is_cursor_over_knob(bounds, state.last_cursor_position) {
-                        state.click_state = ClickState::Dragging;
+                        state.is_dragging = true;
                         state.previous_click = Some((state.last_cursor_position, Instant::now()));
 
                         let message = Message::ChangeSingleParameterBegin(self.parameter);
@@ -335,8 +324,8 @@ impl Program<Message, Theme> for Knob {
                 }
             }
             canvas::Event::Mouse(mouse::Event::ButtonReleased(Button::Left)) => {
-                if let ClickState::Dragging = state.click_state {
-                    state.click_state = ClickState::Regular;
+                if state.is_dragging {
+                    state.is_dragging = false;
 
                     let message = Message::ChangeSingleParameterEnd(self.parameter);
 
