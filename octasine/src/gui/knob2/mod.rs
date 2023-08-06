@@ -3,9 +3,10 @@ use std::f32::consts::PI;
 use iced_baseview::{
     alignment::Horizontal,
     event::Status,
-    mouse::Button,
+    keyboard,
+    mouse::{self, Button},
     widget::{
-        canvas::{path::Arc, Cache, Frame, Path, Program, Stroke},
+        canvas::{self, path::Arc, Cache, Frame, Path, Program, Stroke},
         Canvas, Column, Container, Text,
     },
     Color, Element, Length, Point,
@@ -200,19 +201,21 @@ impl Knob {
 
 pub struct KnobState {
     last_cursor_position: Point,
-    state: KnobState2,
+    modifier_key_pressed: bool,
+    click_state: ClickState,
 }
 
-pub enum KnobState2 {
+pub enum ClickState {
     Regular,
-    Dragging { from_point: Point, from_value: f32 },
+    Dragging,
 }
 
 impl Default for KnobState {
     fn default() -> Self {
         Self {
             last_cursor_position: Point::default(),
-            state: KnobState2::Regular,
+            modifier_key_pressed: false,
+            click_state: ClickState::Regular,
         }
     }
 }
@@ -266,28 +269,28 @@ impl Program<Message, Theme> for Knob {
         Option<Message>,
     ) {
         match event {
-            iced_baseview::widget::canvas::Event::Mouse(
-                iced_baseview::mouse::Event::CursorMoved { position },
-            ) => {
-                state.last_cursor_position = position;
+            canvas::Event::Mouse(mouse::Event::CursorMoved { position }) => {
+                if let ClickState::Dragging = state.click_state {
+                    let speed = if state.modifier_key_pressed {
+                        0.0005
+                    } else {
+                        0.005
+                    };
 
-                if let KnobState2::Dragging {
-                    from_point,
-                    from_value,
-                } = state.state
-                {
-                    let diff = from_point.y - position.y;
-                    let new_value = (from_value + diff * 0.005).clamp(0.0, 1.0);
+                    let diff = state.last_cursor_position.y - position.y;
+                    let new_value = (self.value + diff * speed).clamp(0.0, 1.0);
 
                     let message = Message::ChangeSingleParameterSetValue(self.parameter, new_value);
 
+                    state.last_cursor_position = position;
+
                     return (Status::Captured, Some(message));
+                } else {
+                    state.last_cursor_position = position;
                 }
             }
-            iced_baseview::widget::canvas::Event::Mouse(
-                iced_baseview::mouse::Event::ButtonPressed(Button::Left),
-            ) => {
-                if let KnobState2::Regular = state.state {
+            canvas::Event::Mouse(mouse::Event::ButtonPressed(Button::Left)) => {
+                if let ClickState::Regular = state.click_state {
                     if bounds.contains(state.last_cursor_position) {
                         let relative_cursor_position = Point {
                             x: state.last_cursor_position.x - bounds.x,
@@ -295,10 +298,7 @@ impl Program<Message, Theme> for Knob {
                         };
 
                         if relative_cursor_position.distance(self.center) <= self.radius {
-                            state.state = KnobState2::Dragging {
-                                from_point: state.last_cursor_position,
-                                from_value: self.value,
-                            };
+                            state.click_state = ClickState::Dragging;
 
                             let message = Message::ChangeSingleParameterBegin(self.parameter);
 
@@ -307,16 +307,21 @@ impl Program<Message, Theme> for Knob {
                     }
                 }
             }
-            iced_baseview::widget::canvas::Event::Mouse(
-                iced_baseview::mouse::Event::ButtonReleased(Button::Left),
-            ) => {
-                if let KnobState2::Dragging { .. } = state.state {
-                    state.state = KnobState2::Regular;
+            canvas::Event::Mouse(mouse::Event::ButtonReleased(Button::Left)) => {
+                if let ClickState::Dragging = state.click_state {
+                    state.click_state = ClickState::Regular;
 
                     let message = Message::ChangeSingleParameterEnd(self.parameter);
 
                     return (Status::Captured, Some(message));
                 }
+            }
+            canvas::Event::Keyboard(
+                keyboard::Event::ModifiersChanged(modifiers)
+                | keyboard::Event::KeyPressed { modifiers, .. }
+                | keyboard::Event::KeyReleased { modifiers, .. },
+            ) => {
+                state.modifier_key_pressed = modifiers.shift();
             }
             _ => (),
         }
