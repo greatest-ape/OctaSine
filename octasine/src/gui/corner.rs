@@ -91,6 +91,7 @@ impl CornerWidgets {
     }
 
     pub fn theme_changed(&mut self) {
+        self.master_volume2.theme_changed();
         self.patch_picker.theme_changed();
         self.modulation_matrix.theme_changed();
         self.glide_bpm_sync.theme_changed();

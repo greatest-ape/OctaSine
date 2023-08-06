@@ -169,7 +169,7 @@ impl<H: GuiSyncHandle> OctaSineIcedApplication<H> {
     fn set_value(&mut self, parameter: Parameter, v: f32, internal: bool) {
         match parameter {
             Parameter::None => (),
-            Parameter::Master(MasterParameter::Volume) => self.corner.master_volume.set_value(v),
+            Parameter::Master(MasterParameter::Volume) => self.corner.master_volume2.set_value(v),
             Parameter::Master(MasterParameter::Frequency) => {
                 self.corner.master_frequency.set_value(v)
             }

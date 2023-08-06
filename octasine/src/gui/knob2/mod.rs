@@ -2,6 +2,8 @@ use std::f32::consts::PI;
 
 use iced_baseview::{
     alignment::Horizontal,
+    event::Status,
+    mouse::Button,
     widget::{
         canvas::{path::Arc, Cache, Frame, Path, Program, Stroke},
         Canvas, Column, Container, Text,
@@ -9,10 +11,9 @@ use iced_baseview::{
     Color, Element, Length, Point,
 };
 
-use super::{
-    style::{knob2::KnobStyle, Theme},
-    Message, LINE_HEIGHT,
-};
+use crate::parameters::{list::Parameter, WrappedParameter};
+
+use super::{style::Theme, Message, LINE_HEIGHT};
 
 const KNOB_SIZE: u16 = LINE_HEIGHT * 2;
 const CANVAS_SIZE: u16 = KNOB_SIZE * 2;
@@ -33,9 +34,19 @@ pub struct KnobWithText {
 
 impl KnobWithText {
     pub fn new() -> Self {
+        let p = Parameter::Master(crate::parameters::list::MasterParameter::Volume).into();
+
         Self {
-            canvas: Knob::new(KnobVariant::Regular, Some(0.5), 0.5, 0.5),
+            canvas: Knob::new(p, KnobVariant::Regular, Some(0.5), 0.5, 0.5),
         }
+    }
+
+    pub fn set_value(&mut self, value: f32) {
+        self.canvas.set_value(value);
+    }
+
+    pub fn theme_changed(&mut self) {
+        self.canvas.theme_changed();
     }
 
     pub fn view(&self, theme: &Theme) -> Element<Message, Theme> {
@@ -65,10 +76,10 @@ impl KnobWithText {
 
 pub struct Knob {
     variant: KnobVariant,
+    parameter: WrappedParameter,
     cache: Cache,
     center: Point,
     radius: f32,
-    style: KnobStyle,
     /// Where to place anchor dot
     anchor_dot_value: Option<f32>,
     /// Value to reset to when double-clicking
@@ -78,6 +89,7 @@ pub struct Knob {
 
 impl Knob {
     pub fn new(
+        parameter: WrappedParameter,
         variant: KnobVariant,
         anchor_dot_value: Option<f32>,
         reset_value: f32,
@@ -88,11 +100,11 @@ impl Knob {
         let center = Point::new((center_x).into(), (center_y).into());
 
         Self {
+            parameter,
             variant,
             cache: Cache::default(),
             center,
             radius: (KNOB_SIZE / 2) as f32 - 1.0,
-            style: Default::default(),
             anchor_dot_value,
             reset_value,
             value,
@@ -102,6 +114,10 @@ impl Knob {
     pub fn set_value(&mut self, value: f32) {
         self.value = value;
 
+        self.cache.clear();
+    }
+
+    pub fn theme_changed(&mut self) {
         self.cache.clear();
     }
 
@@ -184,12 +200,19 @@ impl Knob {
 
 pub struct KnobState {
     last_cursor_position: Point,
+    state: KnobState2,
+}
+
+pub enum KnobState2 {
+    Regular,
+    Dragging { from_point: Point, from_value: f32 },
 }
 
 impl Default for KnobState {
     fn default() -> Self {
         Self {
-            last_cursor_position: Point::new(0.0, 0.0),
+            last_cursor_position: Point::default(),
+            state: KnobState2::Regular,
         }
     }
 }
@@ -199,13 +222,13 @@ impl Program<Message, Theme> for Knob {
 
     fn draw(
         &self,
-        state: &Self::State,
+        _state: &Self::State,
         theme: &Theme,
         bounds: iced_baseview::Rectangle,
-        cursor: iced_baseview::widget::canvas::Cursor,
+        _cursor: iced_baseview::widget::canvas::Cursor,
     ) -> Vec<iced_baseview::widget::canvas::Geometry> {
         let geometry = self.cache.draw(bounds.size(), |frame| {
-            let appearance = StyleSheet::active(theme, self.style);
+            let appearance = StyleSheet::active(theme, ());
 
             self.draw_arc(frame, appearance.arc_empty_color, 1.0);
             self.draw_arc(frame, appearance.arc_filled_color, self.value);
@@ -234,14 +257,70 @@ impl Program<Message, Theme> for Knob {
 
     fn update(
         &self,
-        _state: &mut Self::State,
-        _event: iced_baseview::widget::canvas::Event,
-        _bounds: iced_baseview::Rectangle,
+        state: &mut Self::State,
+        event: iced_baseview::widget::canvas::Event,
+        bounds: iced_baseview::Rectangle,
         _cursor: iced_baseview::widget::canvas::Cursor,
     ) -> (
         iced_baseview::widget::canvas::event::Status,
         Option<Message>,
     ) {
+        match event {
+            iced_baseview::widget::canvas::Event::Mouse(
+                iced_baseview::mouse::Event::CursorMoved { position },
+            ) => {
+                state.last_cursor_position = position;
+
+                if let KnobState2::Dragging {
+                    from_point,
+                    from_value,
+                } = state.state
+                {
+                    let diff = from_point.y - position.y;
+                    let new_value = (from_value + diff * 0.005).clamp(0.0, 1.0);
+
+                    let message = Message::ChangeSingleParameterSetValue(self.parameter, new_value);
+
+                    return (Status::Captured, Some(message));
+                }
+            }
+            iced_baseview::widget::canvas::Event::Mouse(
+                iced_baseview::mouse::Event::ButtonPressed(Button::Left),
+            ) => {
+                if let KnobState2::Regular = state.state {
+                    if bounds.contains(state.last_cursor_position) {
+                        let relative_cursor_position = Point {
+                            x: state.last_cursor_position.x - bounds.x,
+                            y: state.last_cursor_position.y - bounds.y,
+                        };
+
+                        if relative_cursor_position.distance(self.center) <= self.radius {
+                            state.state = KnobState2::Dragging {
+                                from_point: state.last_cursor_position,
+                                from_value: self.value,
+                            };
+
+                            let message = Message::ChangeSingleParameterBegin(self.parameter);
+
+                            return (Status::Captured, Some(message));
+                        }
+                    }
+                }
+            }
+            iced_baseview::widget::canvas::Event::Mouse(
+                iced_baseview::mouse::Event::ButtonReleased(Button::Left),
+            ) => {
+                if let KnobState2::Dragging { .. } = state.state {
+                    state.state = KnobState2::Regular;
+
+                    let message = Message::ChangeSingleParameterEnd(self.parameter);
+
+                    return (Status::Captured, Some(message));
+                }
+            }
+            _ => (),
+        }
+
         (iced_baseview::widget::canvas::event::Status::Ignored, None)
     }
 }
