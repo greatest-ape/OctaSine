@@ -4,23 +4,21 @@ use std::{
 };
 
 use iced_baseview::{
-    alignment::Horizontal,
     event::Status,
     keyboard,
     mouse::{self, Button},
     widget::{
         canvas::{self, path::Arc, Cache, Frame, LineCap, Path, Program, Stroke},
-        Canvas, Column, Container, Text,
+        Canvas,
     },
     Color, Element, Length, Point, Rectangle,
 };
 
-use crate::parameters::{list::Parameter, WrappedParameter};
+use crate::parameters::WrappedParameter;
 
 use super::{style::Theme, Message, LINE_HEIGHT};
 
 const KNOB_SIZE: u16 = LINE_HEIGHT * 2;
-const CANVAS_SIZE: u16 = KNOB_SIZE * 2;
 
 const ARC_EXTRA_ANGLE: f32 = PI * 0.5 / 3.0 * 2.0;
 const ARC_START_ANGLE: f32 = PI - ARC_EXTRA_ANGLE;
@@ -28,62 +26,29 @@ const ARC_END_ANGLE_ADDITION: f32 = PI + 2.0 * ARC_EXTRA_ANGLE;
 
 const MARKER_DOT_DISTANCE: u16 = LINE_HEIGHT / 2;
 
-fn arc_angle(value: f32) -> f32 {
-    ARC_START_ANGLE + value * ARC_END_ANGLE_ADDITION
+pub trait StyleSheet {
+    type Style: Copy;
+
+    fn active(&self, style: Self::Style) -> Appearance;
 }
 
-pub struct KnobWithText {
-    canvas: Knob,
+pub struct Appearance {
+    pub arc_empty_color: Color,
+    pub arc_filled_color: Color,
+    pub notch_color: Color,
+    pub anchor_dot_color: Color,
+    pub end_dot_color: Color,
 }
 
-impl KnobWithText {
-    pub fn new() -> Self {
-        let p = Parameter::Master(crate::parameters::list::MasterParameter::Volume).into();
-
-        Self {
-            canvas: Knob::new(p, KnobVariant::Regular, Some(0.5), 0.5, 0.5),
-        }
-    }
-
-    pub fn set_value(&mut self, value: f32) {
-        self.canvas.set_value(value);
-    }
-
-    pub fn theme_changed(&mut self) {
-        self.canvas.theme_changed();
-    }
-
-    pub fn view(&self, theme: &Theme) -> Element<Message, Theme> {
-        let title = Text::new("VOL")
-            .horizontal_alignment(Horizontal::Center)
-            .font(theme.font_bold())
-            .height(Length::Fixed(LINE_HEIGHT.into()))
-            .width(Length::from(CANVAS_SIZE));
-        let value = Text::new("0.0")
-            .horizontal_alignment(Horizontal::Center)
-            .font(theme.font_regular())
-            .height(Length::Fixed(LINE_HEIGHT.into()))
-            .width(Length::from(CANVAS_SIZE));
-
-        Column::new()
-            .width(Length::Fixed(f32::from(CANVAS_SIZE)))
-            .push(title)
-            .push(
-                Container::new(self.canvas.view())
-                    .width(CANVAS_SIZE)
-                    .height(CANVAS_SIZE),
-            )
-            .push(value)
-            .into()
-    }
+pub enum KnobVariant {
+    Regular,
+    Bipolar { center: f32 },
 }
 
 pub struct Knob {
     parameter: WrappedParameter,
     variant: KnobVariant,
-    /// Where to place anchor dot
     anchor_dot_value: Option<f32>,
-    /// Value to reset to when double-clicking
     reset_value: f32,
     value: f32,
 
@@ -349,21 +314,6 @@ impl Program<Message, Theme> for Knob {
     }
 }
 
-pub trait StyleSheet {
-    type Style: Copy;
-
-    fn active(&self, style: Self::Style) -> Appearance;
-}
-
-pub struct Appearance {
-    pub arc_empty_color: Color,
-    pub arc_filled_color: Color,
-    pub notch_color: Color,
-    pub anchor_dot_color: Color,
-    pub end_dot_color: Color,
-}
-
-pub enum KnobVariant {
-    Regular,
-    Bipolar { center: f32 },
+fn arc_angle(value: f32) -> f32 {
+    ARC_START_ANGLE + value * ARC_END_ANGLE_ADDITION
 }
