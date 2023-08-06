@@ -17,9 +17,11 @@ use super::{
 const KNOB_SIZE: u16 = LINE_HEIGHT * 2;
 const CANVAS_SIZE: u16 = KNOB_SIZE * 2;
 
-const ARC_EXTRA_ANGLE: f32 = PI * 0.25;
+const ARC_EXTRA_ANGLE: f32 = PI * 0.5 / 3.0 * 2.0;
 const ARC_START_ANGLE: f32 = PI - ARC_EXTRA_ANGLE;
 const ARC_END_ANGLE_ADDITION: f32 = PI + 2.0 * ARC_EXTRA_ANGLE;
+
+const MARKER_DOT_DISTANCE: u16 = LINE_HEIGHT / 2;
 
 fn arc_angle(value: f32) -> f32 {
     ARC_START_ANGLE + value * ARC_END_ANGLE_ADDITION
@@ -39,7 +41,7 @@ impl Knob {
             canvas: KnobCanvas {
                 cache: Cache::default(),
                 center,
-                radius: (KNOB_SIZE / 2) as f32,
+                radius: (KNOB_SIZE / 2) as f32 - 1.0,
                 style: Default::default(),
             },
         }
@@ -133,19 +135,15 @@ impl KnobCanvas {
         frame.stroke(&path, stroke);
     }
 
-    fn draw_marker(&self, frame: &mut Frame, value: f32, color: Color) {
+    fn draw_marker_dot(&self, frame: &mut Frame, value: f32, color: Color) {
         let path = Path::new(|builder| {
             let angle = arc_angle(value);
-
-            let bla = (KNOB_SIZE / 4) as f32;
-
-            let x_addition = angle.cos() * (self.radius + bla);
-            let y_addition = angle.sin() * (self.radius + bla);
+            let distance = self.radius + MARKER_DOT_DISTANCE as f32;
 
             let mut point = self.center;
 
-            point.x += x_addition;
-            point.y += y_addition;
+            point.x += angle.cos() * distance;
+            point.y += angle.sin() * distance;
 
             builder.circle(point, 1.0)
         });
@@ -165,7 +163,7 @@ struct KnobCanvasState {
 
 impl Default for KnobCanvasState {
     fn default() -> Self {
-        Self { value: 0.5 }
+        Self { value: 0.37 }
     }
 }
 
@@ -182,13 +180,14 @@ impl Program<Message, Theme> for KnobCanvas {
         let geometry = self.cache.draw(bounds.size(), |frame| {
             let appearance = StyleSheet::active(theme, self.style);
 
-            self.draw_arc(frame, appearance.arc_empty, 1.0);
-            self.draw_arc(frame, appearance.arc_filled, state.value);
+            self.draw_arc(frame, appearance.arc_empty_color, 1.0);
+            self.draw_arc(frame, appearance.arc_filled_color, state.value);
 
-            self.draw_notch(frame, appearance.notch, state.value);
+            self.draw_notch(frame, appearance.notch_color, state.value);
 
-            self.draw_marker(frame, 0.0, appearance.secondary_marker);
-            self.draw_marker(frame, 1.0, appearance.secondary_marker);
+            self.draw_marker_dot(frame, 0.0, appearance.end_dot_color);
+            self.draw_marker_dot(frame, 1.0, appearance.end_dot_color);
+            self.draw_marker_dot(frame, 0.5, appearance.anchor_dot_color);
         });
 
         vec![geometry]
@@ -224,9 +223,9 @@ pub trait StyleSheet {
 }
 
 pub struct Appearance {
-    pub arc_empty: Color,
-    pub arc_filled: Color,
-    pub notch: Color,
-    pub primary_marker: Color,
-    pub secondary_marker: Color,
+    pub arc_empty_color: Color,
+    pub arc_filled_color: Color,
+    pub notch_color: Color,
+    pub anchor_dot_color: Color,
+    pub end_dot_color: Color,
 }
