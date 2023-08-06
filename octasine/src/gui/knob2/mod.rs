@@ -87,7 +87,8 @@ pub struct Knob {
     reset_value: f32,
     value: f32,
 
-    cache: Cache,
+    cache_theme_sensitive: Cache,
+    cache_value_sensitive: Cache,
     center: Point,
     radius: f32,
 }
@@ -111,7 +112,8 @@ impl Knob {
             reset_value,
             value,
 
-            cache: Cache::default(),
+            cache_theme_sensitive: Cache::default(),
+            cache_value_sensitive: Cache::default(),
             center,
             radius: (KNOB_SIZE / 2) as f32 - 1.0,
         }
@@ -120,11 +122,12 @@ impl Knob {
     pub fn set_value(&mut self, value: f32) {
         self.value = value;
 
-        self.cache.clear();
+        self.cache_value_sensitive.clear();
     }
 
     pub fn theme_changed(&mut self) {
-        self.cache.clear();
+        self.cache_theme_sensitive.clear();
+        self.cache_value_sensitive.clear();
     }
 
     pub fn view(&self) -> Element<Message, Theme> {
@@ -245,13 +248,10 @@ impl Program<Message, Theme> for Knob {
         bounds: iced_baseview::Rectangle,
         _cursor: iced_baseview::widget::canvas::Cursor,
     ) -> Vec<iced_baseview::widget::canvas::Geometry> {
-        let geometry = self.cache.draw(bounds.size(), |frame| {
+        let a = self.cache_theme_sensitive.draw(bounds.size(), |frame| {
             let appearance = StyleSheet::active(theme, ());
 
             self.draw_arc(frame, appearance.arc_empty_color, 1.0);
-            self.draw_arc(frame, appearance.arc_filled_color, self.value);
-
-            self.draw_notch(frame, appearance.notch_color, self.value);
 
             self.draw_marker_dot(frame, 0.0, appearance.end_dot_color);
             self.draw_marker_dot(frame, 1.0, appearance.end_dot_color);
@@ -260,8 +260,14 @@ impl Program<Message, Theme> for Knob {
                 self.draw_marker_dot(frame, anchor_dot_value, appearance.anchor_dot_color);
             }
         });
+        let b = self.cache_value_sensitive.draw(bounds.size(), |frame| {
+            let appearance = StyleSheet::active(theme, ());
 
-        vec![geometry]
+            self.draw_arc(frame, appearance.arc_filled_color, self.value);
+            self.draw_notch(frame, appearance.notch_color, self.value);
+        });
+
+        vec![a, b]
     }
 
     fn update(
