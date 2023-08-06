@@ -1,4 +1,7 @@
-use std::f32::consts::PI;
+use std::{
+    f32::consts::PI,
+    time::{Duration, Instant},
+};
 
 use iced_baseview::{
     alignment::Horizontal,
@@ -9,7 +12,7 @@ use iced_baseview::{
         canvas::{self, path::Arc, Cache, Frame, Path, Program, Stroke},
         Canvas, Column, Container, Text,
     },
-    Color, Element, Length, Point,
+    Color, Element, Length, Point, Rectangle,
 };
 
 use crate::parameters::{list::Parameter, WrappedParameter};
@@ -197,11 +200,25 @@ impl Knob {
 
         frame.stroke(&path, stroke);
     }
+
+    fn is_cursor_over_knob(&self, bounds: Rectangle, cursor: Point) -> bool {
+        if bounds.contains(cursor) {
+            let relative_cursor_position = Point {
+                x: cursor.x - bounds.x,
+                y: cursor.y - bounds.y,
+            };
+
+            relative_cursor_position.distance(self.center) <= self.radius
+        } else {
+            false
+        }
+    }
 }
 
 pub struct KnobState {
     last_cursor_position: Point,
     modifier_key_pressed: bool,
+    previous_click: Option<(Point, Instant)>,
     click_state: ClickState,
 }
 
@@ -215,6 +232,7 @@ impl Default for KnobState {
         Self {
             last_cursor_position: Point::default(),
             modifier_key_pressed: false,
+            previous_click: None,
             click_state: ClickState::Regular,
         }
     }
@@ -291,19 +309,28 @@ impl Program<Message, Theme> for Knob {
             }
             canvas::Event::Mouse(mouse::Event::ButtonPressed(Button::Left)) => {
                 if let ClickState::Regular = state.click_state {
-                    if bounds.contains(state.last_cursor_position) {
-                        let relative_cursor_position = Point {
-                            x: state.last_cursor_position.x - bounds.x,
-                            y: state.last_cursor_position.y - bounds.y,
-                        };
+                    if let Some((point, time)) = state.previous_click {
+                        if point.distance(state.last_cursor_position) < 5.0
+                            && time.elapsed() < Duration::from_millis(300)
+                        {
+                            state.click_state = ClickState::Regular;
 
-                        if relative_cursor_position.distance(self.center) <= self.radius {
-                            state.click_state = ClickState::Dragging;
-
-                            let message = Message::ChangeSingleParameterBegin(self.parameter);
+                            let message = Message::ChangeSingleParameterImmediate(
+                                self.parameter,
+                                self.reset_value,
+                            );
 
                             return (Status::Captured, Some(message));
                         }
+                    }
+
+                    if self.is_cursor_over_knob(bounds, state.last_cursor_position) {
+                        state.click_state = ClickState::Dragging;
+                        state.previous_click = Some((state.last_cursor_position, Instant::now()));
+
+                        let message = Message::ChangeSingleParameterBegin(self.parameter);
+
+                        return (Status::Captured, Some(message));
                     }
                 }
             }
