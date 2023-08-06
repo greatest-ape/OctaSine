@@ -38,7 +38,7 @@ use super::{
 pub struct CornerWidgets {
     pub alternative_controls: bool,
     pub master_volume: OctaSineKnob<MasterVolumeValue>,
-    pub master_volume2: super::knob2::Knob,
+    pub master_volume2: super::knob2::KnobWithText,
     pub master_frequency: OctaSineKnob<MasterFrequencyValue>,
     pub volume_velocity_sensitivity: OctaSineKnob<VelocitySensitivityValue>,
     pub modulation_matrix: ModulationMatrix,
@@ -70,7 +70,7 @@ impl CornerWidgets {
         let glide_mode = glide_mode_button(sync_handle);
         let glide_retrigger = glide_retrigger_button(sync_handle);
 
-        let master_volume2 = super::knob2::Knob::new();
+        let master_volume2 = super::knob2::KnobWithText::new();
 
         Self {
             alternative_controls: false,

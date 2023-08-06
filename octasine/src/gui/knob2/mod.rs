@@ -27,23 +27,14 @@ fn arc_angle(value: f32) -> f32 {
     ARC_START_ANGLE + value * ARC_END_ANGLE_ADDITION
 }
 
-pub struct Knob {
-    canvas: KnobCanvas,
+pub struct KnobWithText {
+    canvas: Knob,
 }
 
-impl Knob {
+impl KnobWithText {
     pub fn new() -> Self {
-        let center_x = KNOB_SIZE;
-        let center_y = LINE_HEIGHT + KNOB_SIZE / 2;
-        let center = Point::new((center_x).into(), (center_y).into());
-
         Self {
-            canvas: KnobCanvas {
-                cache: Cache::default(),
-                center,
-                radius: (KNOB_SIZE / 2) as f32 - 1.0,
-                style: Default::default(),
-            },
+            canvas: Knob::new(KnobVariant::Regular, Some(0.5), 0.5, 0.5),
         }
     }
 
@@ -63,7 +54,7 @@ impl Knob {
             .width(Length::Fixed(f32::from(CANVAS_SIZE)))
             .push(title)
             .push(
-                Container::new(self.canvas.view(theme))
+                Container::new(self.canvas.view())
                     .width(CANVAS_SIZE)
                     .height(CANVAS_SIZE),
             )
@@ -72,15 +63,49 @@ impl Knob {
     }
 }
 
-struct KnobCanvas {
+pub struct Knob {
+    variant: KnobVariant,
     cache: Cache,
     center: Point,
     radius: f32,
     style: KnobStyle,
+    /// Where to place anchor dot
+    anchor_dot_value: Option<f32>,
+    /// Value to reset to when double-clicking
+    reset_value: f32,
+    value: f32,
 }
 
-impl KnobCanvas {
-    fn view(&self, theme: &Theme) -> Element<Message, Theme> {
+impl Knob {
+    pub fn new(
+        variant: KnobVariant,
+        anchor_dot_value: Option<f32>,
+        reset_value: f32,
+        value: f32,
+    ) -> Self {
+        let center_x = KNOB_SIZE;
+        let center_y = LINE_HEIGHT + KNOB_SIZE / 2;
+        let center = Point::new((center_x).into(), (center_y).into());
+
+        Self {
+            variant,
+            cache: Cache::default(),
+            center,
+            radius: (KNOB_SIZE / 2) as f32 - 1.0,
+            style: Default::default(),
+            anchor_dot_value,
+            reset_value,
+            value,
+        }
+    }
+
+    pub fn set_value(&mut self, value: f32) {
+        self.value = value;
+
+        self.cache.clear();
+    }
+
+    pub fn view(&self) -> Element<Message, Theme> {
         Canvas::new(self)
             .width(Length::from(KNOB_SIZE * 2))
             .height(Length::from(KNOB_SIZE * 2))
@@ -157,18 +182,20 @@ impl KnobCanvas {
     }
 }
 
-struct KnobCanvasState {
-    value: f32,
+pub struct KnobState {
+    last_cursor_position: Point,
 }
 
-impl Default for KnobCanvasState {
+impl Default for KnobState {
     fn default() -> Self {
-        Self { value: 0.37 }
+        Self {
+            last_cursor_position: Point::new(0.0, 0.0),
+        }
     }
 }
 
-impl Program<Message, Theme> for KnobCanvas {
-    type State = KnobCanvasState;
+impl Program<Message, Theme> for Knob {
+    type State = KnobState;
 
     fn draw(
         &self,
@@ -181,13 +208,16 @@ impl Program<Message, Theme> for KnobCanvas {
             let appearance = StyleSheet::active(theme, self.style);
 
             self.draw_arc(frame, appearance.arc_empty_color, 1.0);
-            self.draw_arc(frame, appearance.arc_filled_color, state.value);
+            self.draw_arc(frame, appearance.arc_filled_color, self.value);
 
-            self.draw_notch(frame, appearance.notch_color, state.value);
+            self.draw_notch(frame, appearance.notch_color, self.value);
 
             self.draw_marker_dot(frame, 0.0, appearance.end_dot_color);
             self.draw_marker_dot(frame, 1.0, appearance.end_dot_color);
-            self.draw_marker_dot(frame, 0.5, appearance.anchor_dot_color);
+
+            if let Some(anchor_dot_value) = self.anchor_dot_value {
+                self.draw_marker_dot(frame, anchor_dot_value, appearance.anchor_dot_color);
+            }
         });
 
         vec![geometry]
@@ -228,4 +258,9 @@ pub struct Appearance {
     pub notch_color: Color,
     pub anchor_dot_color: Color,
     pub end_dot_color: Color,
+}
+
+pub enum KnobVariant {
+    Regular,
+    Bipolar { center: f32 },
 }
