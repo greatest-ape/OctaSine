@@ -1614,19 +1614,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "iced_audio"
-version = "0.12.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "354827beea5d8f08a51a331dee4af146737ec4f253d0c67bcf525ea662d345f6"
-dependencies = [
- "iced_core",
- "iced_glow",
- "iced_graphics",
- "iced_native",
- "iced_wgpu",
-]
-
-[[package]]
 name = "iced_aw"
 version = "0.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2315,7 +2302,6 @@ dependencies = [
  "fastrand 2.0.0",
  "flate2",
  "git-testament",
- "iced_audio",
  "iced_aw",
  "iced_baseview",
  "indexmap 2.0.0",

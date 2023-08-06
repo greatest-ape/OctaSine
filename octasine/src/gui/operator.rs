@@ -105,6 +105,20 @@ impl OperatorWidgets {
         self.wave_type.theme_changed();
         self.envelope.theme_changed();
         self.wave_display.theme_changed();
+
+        self.volume.theme_changed();
+        self.mix.theme_changed();
+        self.panning.theme_changed();
+        self.feedback.theme_changed();
+        self.frequency_ratio.theme_changed();
+        self.frequency_free.theme_changed();
+        self.frequency_fine.theme_changed();
+        self.mod_out_velocity_sensitivity.theme_changed();
+        self.feedback_velocity_sensitivity.theme_changed();
+
+        if let Some(mod_out) = self.mod_index.as_mut() {
+            mod_out.theme_changed();
+        }
     }
 
     pub fn view(&self, theme: &Theme) -> Element<Message, Theme> {

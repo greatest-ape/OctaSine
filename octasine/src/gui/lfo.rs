@@ -58,6 +58,10 @@ impl LfoWidgets {
         self.key_sync.theme_changed();
         self.active.theme_changed();
         self.shape.theme_changed();
+
+        self.frequency_ratio.theme_changed();
+        self.frequency_free.theme_changed();
+        self.amount.theme_changed();
     }
 
     pub fn view(&self, theme: &Theme) -> Element<Message, Theme> {

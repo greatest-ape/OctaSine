@@ -38,7 +38,6 @@ use super::{
 pub struct CornerWidgets {
     pub alternative_controls: bool,
     pub master_volume: OctaSineKnob<MasterVolumeValue>,
-    pub master_volume2: super::knob2::KnobWithText,
     pub master_frequency: OctaSineKnob<MasterFrequencyValue>,
     pub volume_velocity_sensitivity: OctaSineKnob<VelocitySensitivityValue>,
     pub modulation_matrix: ModulationMatrix,
@@ -70,12 +69,9 @@ impl CornerWidgets {
         let glide_mode = glide_mode_button(sync_handle);
         let glide_retrigger = glide_retrigger_button(sync_handle);
 
-        let master_volume2 = super::knob2::KnobWithText::new();
-
         Self {
             alternative_controls: false,
             master_volume,
-            master_volume2,
             master_frequency,
             volume_velocity_sensitivity,
             modulation_matrix,
@@ -91,9 +87,17 @@ impl CornerWidgets {
     }
 
     pub fn theme_changed(&mut self) {
-        self.master_volume2.theme_changed();
+        self.master_volume.theme_changed();
+        self.master_frequency.theme_changed();
+        self.volume_velocity_sensitivity.theme_changed();
+
         self.patch_picker.theme_changed();
         self.modulation_matrix.theme_changed();
+
+        self.master_pitch_bend_up.theme_changed();
+        self.master_pitch_bend_down.theme_changed();
+        self.glide_time.theme_changed();
+
         self.glide_bpm_sync.theme_changed();
         self.glide_mode.theme_changed();
         self.glide_retrigger.theme_changed();
@@ -263,7 +267,7 @@ impl CornerWidgets {
         let bottom = Row::new()
             .push(container_l1(container_l2(
                 Row::new()
-                    .push(container_l3(self.master_volume2.view(theme)))
+                    .push(container_l3(self.master_volume.view(theme)))
                     .push(space_l3())
                     .push(container_l3(voice_buttons))
                     .push(space_l3())

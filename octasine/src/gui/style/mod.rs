@@ -8,7 +8,6 @@ pub mod checkbox;
 pub mod colors;
 pub mod container;
 pub mod envelope;
-pub mod knob;
 pub mod knob2;
 pub mod menu;
 pub mod mod_matrix;

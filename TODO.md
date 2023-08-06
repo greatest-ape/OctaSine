@@ -1,5 +1,9 @@
 # TODO
 
+* Custom knobs
+  * Bipolar
+  * Aestetics
+
 * Envelopes:
   * Go to kill phase after release, in preparation for allowing release end
     value to be non-zero?

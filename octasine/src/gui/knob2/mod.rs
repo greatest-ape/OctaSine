@@ -9,7 +9,7 @@ use iced_baseview::{
     keyboard,
     mouse::{self, Button},
     widget::{
-        canvas::{self, path::Arc, Cache, Frame, Path, Program, Stroke},
+        canvas::{self, path::Arc, Cache, Frame, LineCap, Path, Program, Stroke},
         Canvas, Column, Container, Text,
     },
     Color, Element, Length, Point, Rectangle,
@@ -152,7 +152,7 @@ impl Knob {
         let stroke = Stroke::default()
             .with_color(color)
             .with_width(2.0)
-            .with_line_cap(iced_audio::knob::LineCap::Square);
+            .with_line_cap(LineCap::Square);
 
         frame.stroke(&path, stroke);
     }
@@ -180,7 +180,7 @@ impl Knob {
         let stroke = Stroke::default()
             .with_color(color)
             .with_width(2.0)
-            .with_line_cap(iced_audio::knob::LineCap::Round);
+            .with_line_cap(LineCap::Round);
 
         frame.stroke(&path, stroke);
     }
@@ -201,7 +201,7 @@ impl Knob {
         let stroke = Stroke::default()
             .with_color(color)
             .with_width(2.0)
-            .with_line_cap(iced_audio::knob::LineCap::Round);
+            .with_line_cap(LineCap::Round);
 
         frame.stroke(&path, stroke);
     }
@@ -245,9 +245,9 @@ impl Program<Message, Theme> for Knob {
         &self,
         _state: &Self::State,
         theme: &Theme,
-        bounds: iced_baseview::Rectangle,
-        _cursor: iced_baseview::widget::canvas::Cursor,
-    ) -> Vec<iced_baseview::widget::canvas::Geometry> {
+        bounds: Rectangle,
+        _cursor: canvas::Cursor,
+    ) -> Vec<canvas::Geometry> {
         let a = self.cache_theme_sensitive.draw(bounds.size(), |frame| {
             let appearance = StyleSheet::active(theme, ());
 
@@ -273,13 +273,10 @@ impl Program<Message, Theme> for Knob {
     fn update(
         &self,
         state: &mut Self::State,
-        event: iced_baseview::widget::canvas::Event,
-        bounds: iced_baseview::Rectangle,
-        _cursor: iced_baseview::widget::canvas::Cursor,
-    ) -> (
-        iced_baseview::widget::canvas::event::Status,
-        Option<Message>,
-    ) {
+        event: canvas::Event,
+        bounds: Rectangle,
+        _cursor: canvas::Cursor,
+    ) -> (Status, Option<Message>) {
         match event {
             canvas::Event::Mouse(mouse::Event::CursorMoved { position }) => {
                 if state.is_dragging {
@@ -348,7 +345,7 @@ impl Program<Message, Theme> for Knob {
             _ => (),
         }
 
-        (iced_baseview::widget::canvas::event::Status::Ignored, None)
+        (Status::Ignored, None)
     }
 }
 

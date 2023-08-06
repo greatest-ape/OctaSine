@@ -12,11 +12,11 @@ clap = ["atomic_refcell", "bytemuck", "clap-sys", "parking_lot"]
 # Enable VST2 plugin support
 vst2 = ["vst"]
 # Use glow (OpenGL) for graphics
-glow = ["gui", "iced_baseview/glow", "iced_audio/glow"]
+glow = ["gui", "iced_baseview/glow"]
 # Use wgpu for graphics
-wgpu = ["gui", "iced_baseview/wgpu", "iced_audio/wgpu"]
+wgpu = ["gui", "iced_baseview/wgpu"]
 # Internal use only
-gui = ["iced_baseview/canvas", "iced_audio", "iced_aw", "palette", "rwh04", "rwh05", "rfd", "tinyfiledialogs"]
+gui = ["iced_baseview/canvas", "iced_aw", "palette", "rwh04", "rwh05", "rfd", "tinyfiledialogs"]
 
 [lib]
 name = "octasine"
@@ -74,7 +74,6 @@ parking_lot = { version = "0.12", optional = true }
 
 # GUI
 
-iced_audio = { version = "0.12", default-features = false, optional = true }
 iced_aw = { version = "0.5", features = ["modal", "card"], optional = true }
 palette = { version = "0.6", optional = true }
 rfd = { version = "0.11", optional = true, default-features = false, features = ["xdg-portal"] }
