@@ -3,6 +3,7 @@ mod common;
 mod corner;
 mod envelope;
 mod knob;
+mod knob2;
 mod lfo;
 mod lfo_target_picker;
 mod mod_matrix;
