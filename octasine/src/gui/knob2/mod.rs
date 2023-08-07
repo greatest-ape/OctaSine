@@ -155,15 +155,10 @@ impl Knob {
             point.x += angle.cos() * distance;
             point.y += angle.sin() * distance;
 
-            builder.circle(point, 1.0)
+            builder.circle(point, 1.0);
         });
 
-        let stroke = Stroke::default()
-            .with_color(color)
-            .with_width(2.0)
-            .with_line_cap(LineCap::Round);
-
-        frame.stroke(&path, stroke);
+        frame.fill(&path, color);
     }
 
     fn is_cursor_over_knob(&self, bounds: Rectangle, cursor: Point) -> bool {
