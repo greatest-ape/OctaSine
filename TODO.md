@@ -1,7 +1,6 @@
 # TODO
 
 * Custom knobs
-  * Bipolar
   * Aestetics
 
 * Envelopes:

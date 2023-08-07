@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## Unreleased
+
+### Changed
+
+- Implement own knob widget to ease bug fixes and future updates. This removes
+  the dependency on iced_audio.
+
 ## 0.9.0 - 2023-08-03
 
 This release contains breaking changes. Voice phases are reset when they end,
