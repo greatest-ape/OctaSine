@@ -365,7 +365,7 @@ where
         tooltip_text: &str,
         knob_variant: KnobVariant,
         default_patch_value: f32,
-        tick_mark_center_value: f32,
+        anchor_dot_value: f32,
     ) -> Self {
         let parameter = parameter.into();
 
@@ -374,7 +374,7 @@ where
         let knob = Knob::new(
             parameter,
             knob_variant,
-            Some(tick_mark_center_value),
+            anchor_dot_value,
             default_patch_value,
             sync_handle.get_parameter(parameter),
         );

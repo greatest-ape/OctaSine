@@ -49,7 +49,7 @@ pub enum KnobVariant {
 pub struct Knob {
     parameter: WrappedParameter,
     variant: KnobVariant,
-    anchor_dot_value: Option<f32>,
+    anchor_dot_value: f32,
     reset_value: f32,
     value: f32,
 
@@ -62,7 +62,7 @@ impl Knob {
     pub fn new(
         parameter: WrappedParameter,
         variant: KnobVariant,
-        anchor_dot_value: Option<f32>,
+        anchor_dot_value: f32,
         reset_value: f32,
         value: f32,
     ) -> Self {
@@ -97,12 +97,12 @@ impl Knob {
             .into()
     }
 
-    fn draw_arc(&self, frame: &mut Frame, color: Color, from_value: f32, to_value: f32) {
+    fn draw_arc(&self, frame: &mut Frame, color: Color, start_value: f32, end_value: f32) {
         let arc = Arc {
             center: self.center,
             radius: KNOB_RADIUS as f32,
-            start_angle: arc_angle(from_value),
-            end_angle: arc_angle(to_value),
+            start_angle: arc_angle(start_value),
+            end_angle: arc_angle(end_value),
         };
 
         let path = Path::new(|builder| {
@@ -216,9 +216,7 @@ impl Program<Message, Theme> for Knob {
             self.draw_marker_dot(frame, 0.0, appearance.end_dot_color);
             self.draw_marker_dot(frame, 1.0, appearance.end_dot_color);
 
-            if let Some(anchor_dot_value) = self.anchor_dot_value {
-                self.draw_marker_dot(frame, anchor_dot_value, appearance.anchor_dot_color);
-            }
+            self.draw_marker_dot(frame, self.anchor_dot_value, appearance.anchor_dot_color);
         });
         let b = self.cache_value_sensitive.draw(bounds.size(), |frame| {
             let appearance = StyleSheet::active(theme, ());
