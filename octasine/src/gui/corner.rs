@@ -1,5 +1,5 @@
 use iced_baseview::{
-    alignment::Horizontal,
+    core::{alignment::Horizontal, Alignment, Element, Length},
     widget::tooltip::Position,
     widget::Button,
     widget::Container,
@@ -7,7 +7,6 @@ use iced_baseview::{
     widget::Space,
     widget::Text,
     widget::{Column, PickList},
-    Alignment, Element, Length,
 };
 
 use crate::{
@@ -103,7 +102,7 @@ impl CornerWidgets {
         self.glide_retrigger.theme_changed();
     }
 
-    pub fn view(&self, theme: &Theme) -> Element<'_, Message, Theme> {
+    pub fn view(&self, theme: &Theme) -> crate::gui::Element {
         let mod_matrix = Container::new(
             Column::new()
                 .push(Space::with_height(Length::Fixed(LINE_HEIGHT.into())))
@@ -241,7 +240,7 @@ impl CornerWidgets {
             )
         };
 
-        let top: Element<Message, Theme> = if !self.alternative_controls {
+        let top: crate::gui::Element = if !self.alternative_controls {
             Row::new()
                 .push(mod_matrix)
                 .push(Space::with_width(Length::Fixed(LINE_HEIGHT.into())))

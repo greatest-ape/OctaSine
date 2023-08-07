@@ -1,6 +1,6 @@
 use iced_baseview::{
     widget::scrollable::{Scrollbar, Scroller, StyleSheet},
-    Color,
+    core::Color,
 };
 
 use super::Theme;
@@ -15,13 +15,13 @@ impl StyleSheet for Theme {
                 use super::colors::light::*;
 
                 Scrollbar {
-                    background: GRAY_700.into(),
-                    border_radius: 5.0,
+                    background: Some(GRAY_700.into()),
+                    border_radius: 5.0.into(),
                     border_width: 1.0,
                     border_color: Color::TRANSPARENT,
                     scroller: Scroller {
                         color: GRAY_450,
-                        border_radius: 5.0,
+                        border_radius: 5.0.into(),
                         border_width: 1.0,
                         border_color: Color::TRANSPARENT,
                     },
@@ -31,13 +31,13 @@ impl StyleSheet for Theme {
                 use super::colors::dark::*;
 
                 Scrollbar {
-                    background: GRAY_400.into(),
-                    border_radius: 5.0,
+                    background: Some(GRAY_400.into()),
+                    border_radius: 5.0.into(),
                     border_width: 1.0,
                     border_color: GRAY_300,
                     scroller: Scroller {
                         color: GRAY_600,
-                        border_radius: 5.0,
+                        border_radius: 5.0.into(),
                         border_width: 1.0,
                         border_color: Color::TRANSPARENT,
                     },

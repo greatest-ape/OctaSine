@@ -1,9 +1,9 @@
 use std::marker::PhantomData;
 
 use compact_str::CompactString;
-use iced_baseview::alignment::Horizontal;
+use iced_baseview::core::{alignment::Horizontal, Element, Length};
 use iced_baseview::widget::Text;
-use iced_baseview::{widget::Button, Element, Length};
+use iced_baseview::{widget::Button};
 
 use crate::parameters::{ParameterValue, WrappedParameter};
 
@@ -34,7 +34,7 @@ impl<P: ParameterValue> ValueText<P> {
         self.value_text = P::new_from_patch(value).get_formatted();
     }
 
-    pub fn view(&self, theme: &Theme) -> Element<Message, Theme> {
+    pub fn view(&self, theme: &Theme) -> crate::gui::Element {
         Button::new(
             Text::new(self.value_text.clone())
                 .horizontal_alignment(Horizontal::Center)

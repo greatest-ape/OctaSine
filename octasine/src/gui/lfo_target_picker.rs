@@ -1,5 +1,5 @@
 use iced_baseview::widget::PickList;
-use iced_baseview::{Element, Length};
+use iced_baseview::core::{Element, Length};
 
 use crate::parameters::lfo_target::LfoTargetParameter;
 use crate::parameters::{
@@ -76,7 +76,7 @@ impl LfoTargetPicker {
         self.selected = Self::get_index_from_sync(self.lfo_index, sync_value);
     }
 
-    pub fn view(&self, theme: &Theme) -> Element<Message, Theme> {
+    pub fn view(&self, theme: &Theme) -> crate::gui::Element {
         let lfo_index = self.lfo_index;
         let parameter = self.parameter;
 

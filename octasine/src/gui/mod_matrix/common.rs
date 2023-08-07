@@ -1,4 +1,4 @@
-use iced_baseview::{Point, Size, Vector};
+use iced_baseview::core::{Point, Size, Vector};
 
 use super::SCALE;
 

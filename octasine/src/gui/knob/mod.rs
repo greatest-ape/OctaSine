@@ -3,7 +3,7 @@ pub mod plain;
 use iced_baseview::widget::tooltip::Position;
 use iced_baseview::widget::Container;
 use iced_baseview::{
-    alignment::Horizontal, widget::Column, widget::Text, Alignment, Element, Length,
+    core::alignment::Horizontal, widget::Column, widget::Text, core::Alignment, core::Element, core::Length,
 };
 
 use crate::parameters::glide_time::GlideTimeValue;
@@ -394,7 +394,7 @@ where
         self.knob.theme_changed();
     }
 
-    pub fn view<'a>(&'a self, theme: &Theme) -> Element<Message, Theme> {
+    pub fn view<'a>(&'a self, theme: &Theme) -> Element<Message, iced_baseview::Renderer<Theme>> {
         let title = Text::new(self.title.clone())
             .horizontal_alignment(Horizontal::Center)
             .font(theme.font_bold())

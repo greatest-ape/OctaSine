@@ -12,11 +12,11 @@ clap = ["atomic_refcell", "bytemuck", "clap-sys", "parking_lot"]
 # Enable VST2 plugin support
 vst2 = ["vst"]
 # Use glow (OpenGL) for graphics
-glow = ["gui", "iced_baseview/glow"]
+glow = ["gui"]
 # Use wgpu for graphics
 wgpu = ["gui", "iced_baseview/wgpu"]
 # Internal use only
-gui = ["iced_baseview/canvas", "iced_aw", "palette", "rwh04", "rwh05", "rfd", "tinyfiledialogs"]
+gui = ["iced_baseview", "iced_aw", "palette", "rwh04", "rwh05", "rfd", "tinyfiledialogs"]
 
 [lib]
 name = "octasine"
@@ -74,7 +74,7 @@ parking_lot = { version = "0.12", optional = true }
 
 # GUI
 
-iced_aw = { version = "0.5", features = ["modal", "card"], optional = true }
+iced_aw = { version = "0.6", features = ["modal", "card"], optional = true }
 palette = { version = "0.6", optional = true }
 rfd = { version = "0.11", optional = true, default-features = false, features = ["xdg-portal"] }
 rwh04 = { package = "raw-window-handle", version = "0.4", optional = true }
@@ -85,7 +85,7 @@ tinyfiledialogs = { version = "3", optional = true }
 git = "https://github.com/BillyDM/iced_baseview.git"
 rev = "9506c90"
 default-features = false
-features = ["canvas"]
+# features = ["canvas"]
 optional = true
 
 [target.'cfg(target_os="macos")'.dependencies]

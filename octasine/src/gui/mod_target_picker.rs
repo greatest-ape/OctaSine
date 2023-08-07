@@ -1,7 +1,7 @@
 use iced_baseview::widget::tooltip::Position;
 use iced_baseview::{
-    alignment::Horizontal, widget::Checkbox, widget::Column, widget::Space, widget::Text,
-    Alignment, Element, Length,
+    core::{alignment::Horizontal, Alignment, Element, Length},
+    widget::Checkbox, widget::Column, widget::Space, widget::Text,
 };
 
 use crate::parameters::operator_mod_target::ModTargetStorage;
@@ -70,7 +70,7 @@ where
         self.parameter_value = P::new_from_patch(value);
     }
 
-    pub fn view(&self, theme: &Theme) -> Element<Message, Theme> {
+    pub fn view(&self, theme: &Theme) -> crate::gui::Element {
         let title = Text::new(self.title.clone())
             .horizontal_alignment(Horizontal::Center)
             .font(theme.font_bold())

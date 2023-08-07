@@ -21,13 +21,14 @@ use anyhow::Context;
 use cfg_if::cfg_if;
 use compact_str::CompactString;
 use iced_aw::native::{Card, Modal};
-use iced_baseview::alignment::Horizontal;
-use iced_baseview::command::Action;
+use iced_baseview::core::alignment::Horizontal;
+use iced_baseview::graphics::Antialiasing;
+use iced_baseview::runtime::command::Action;
 use iced_baseview::widget::{Button, PickList, Text};
-use iced_baseview::{executor, window::WindowSubs, Application, Command, Subscription};
+use iced_baseview::{executor, window::WindowSubs, Application, runtime::Command, futures::Subscription};
 use iced_baseview::{
-    widget::Column, widget::Container, widget::Row, widget::Space, window::WindowQueue, Element,
-    Length, Point,
+    widget::Column, widget::Container, widget::Row, widget::Space,
+    core::Length, core::Point,
 };
 use serde::{Deserialize, Serialize};
 
@@ -42,6 +43,7 @@ use style::Theme;
 
 use self::corner::CornerWidgets;
 use self::operator::ModTargetPicker;
+use self::style::OPEN_SANS_SEMI_BOLD;
 use self::style::container::ContainerStyle;
 
 use crate::settings::Settings;
@@ -59,6 +61,11 @@ const OPEN_SANS_BYTES_SEMI_BOLD: &[u8] =
 const OPEN_SANS_BYTES_BOLD: &[u8] = include_bytes!("../../../contrib/open-sans/OpenSans-Bold.ttf");
 const OPEN_SANS_BYTES_EXTRA_BOLD: &[u8] =
     include_bytes!("../../../contrib/open-sans/OpenSans-ExtraBold.ttf");
+const OPEN_SANS_BYTES_VARIABLE: &[u8] =
+    include_bytes!("../../../contrib/open-sans/OpenSans-VariableFont.ttf");
+
+pub type Renderer = iced_baseview::widget::renderer::Renderer<Theme>;
+pub type Element<'a> = iced_baseview::core::Element<'a, Message, Renderer>;
 
 pub trait SnapPoint {
     fn snap(self) -> Self;
@@ -498,7 +505,17 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
             modal_action: None,
         };
 
-        (app, Command::none())
+        let commands = iced_baseview::runtime::font::load(OPEN_SANS_BYTES_VARIABLE).map(|result| {
+            if let Err(err) = result {
+                ::log::error!("Couldn't load font: {:?}", err);
+            } else {
+                println!("\nLoaded font\n");
+            }
+
+            Message::NoOp
+        });
+
+        (app, commands)
     }
 
     fn subscription(
@@ -510,6 +527,16 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
         Subscription::none()
     }
 
+    fn renderer_settings() -> iced_baseview::widget::renderer::Settings {
+        iced_baseview::widget::renderer::Settings {
+            // default_font: OPEN_SANS_SEMI_BOLD,
+            default_text_size: FONT_SIZE.into(),
+            antialiasing: Some(Antialiasing::MSAAx4),
+            ..Default::default()
+        }
+    }
+
+    /*
     #[cfg(feature = "wgpu")]
     fn renderer_settings() -> iced_baseview::renderer::Settings {
         iced_baseview::renderer::Settings {
@@ -522,7 +549,7 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
 
     /// Renderer settings with glow
     #[cfg(feature = "glow")]
-    fn renderer_settings() -> iced_baseview::renderer::Settings {
+    fn renderer_settings() -> iced_baseview::Settings {
         iced_baseview::renderer::Settings {
             default_font: Some(OPEN_SANS_BYTES_SEMI_BOLD),
             default_text_size: FONT_SIZE.into(),
@@ -533,10 +560,10 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
             text_multithreading: false,
         }
     }
+    */
 
     fn update(
         &mut self,
-        _window_queue: &mut WindowQueue,
         message: Self::Message,
     ) -> Command<Self::Message> {
         match message {
@@ -889,7 +916,7 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
         Command::none()
     }
 
-    fn view(&self) -> Element<'_, Self::Message, Self::Theme> {
+    fn view(&self) -> Element {
         let content = Container::new(
             Column::new()
                 .push(Space::with_height(Length::Fixed(LINE_HEIGHT.into())))
@@ -923,7 +950,9 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
         .height(Length::Fill)
         .style(ContainerStyle::L0);
 
-        Modal::new(self.modal_action.is_some(), content, || {
+        /*
+
+        let modal: iced_aw::native::Modal<'_, Message, Renderer> = Modal::new(self.modal_action.is_some(), content, {
             let modal_action = if let Some(modal_action) = self.modal_action.as_ref() {
                 modal_action
             } else {
@@ -957,7 +986,6 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                     Card::new(Text::new(heading), body)
                         .max_width(LINE_HEIGHT as f32 * 16.0)
                         .padding(LINE_HEIGHT as f32)
-                        .into()
                 }
                 ModalAction::SetParameterByChoices {
                     options, choice, ..
@@ -994,13 +1022,15 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                     Card::new(Text::new(heading), body)
                         .max_width(LINE_HEIGHT as f32 * 16.0)
                         .padding(LINE_HEIGHT as f32)
-                        .into()
                 }
             }
         })
         .backdrop(Message::ModalClose)
-        .on_esc(Message::ModalClose)
-        .into()
+        .on_esc(Message::ModalClose);
+
+        */
+
+        content.into()
     }
 
     fn title(&self) -> String {
@@ -1036,15 +1066,6 @@ pub fn get_iced_baseview_settings<H: GuiSyncHandle>(
             #[cfg(target_os = "windows")]
             scale: iced_baseview::baseview::WindowScalePolicy::ScaleFactor(1.0),
             title: plugin_name,
-            #[cfg(feature = "glow")]
-            gl_config: Some(iced_baseview::baseview::gl::GlConfig {
-                // 4x MSAA on Linux solves crashes for some people
-                #[cfg(target_os = "linux")]
-                samples: Some(4),
-                #[cfg(not(target_os = "linux"))]
-                samples: Some(8),
-                ..Default::default()
-            }),
         },
         iced_baseview: iced_baseview::settings::IcedBaseviewSettings {
             ignore_non_modifier_keys: true,

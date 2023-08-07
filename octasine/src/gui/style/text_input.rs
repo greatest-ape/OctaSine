@@ -1,4 +1,4 @@
-use iced_baseview::widget::text_input::{Appearance, StyleSheet};
+use iced_baseview::{widget::text_input::{Appearance, StyleSheet}, core::Color};
 
 use super::Theme;
 
@@ -12,7 +12,7 @@ impl StyleSheet for Theme {
 
                 Appearance {
                     background: GRAY_300.into(),
-                    border_radius: 3.0,
+                    border_radius: 3.0.into(),
                     border_width: 1.0,
                     border_color: GRAY_300,
                     icon_color: GRAY_300,
@@ -23,7 +23,7 @@ impl StyleSheet for Theme {
 
                 Appearance {
                     background: SURFACE.into(),
-                    border_radius: 3.0,
+                    border_radius: 3.0.into(),
                     border_width: 1.0,
                     border_color: BORDER,
                     icon_color: BORDER,
@@ -39,28 +39,28 @@ impl StyleSheet for Theme {
         self.active(style)
     }
 
-    fn placeholder_color(&self, _style: &Self::Style) -> iced_baseview::Color {
+    fn placeholder_color(&self, _style: &Self::Style) -> Color {
         match self {
             Self::Dark => super::colors::dark::GRAY_800,
             Self::Light => super::colors::light::GRAY_300,
         }
     }
 
-    fn value_color(&self, _style: &Self::Style) -> iced_baseview::Color {
+    fn value_color(&self, _style: &Self::Style) -> Color {
         match self {
             Self::Dark => super::colors::dark::TEXT,
             Self::Light => super::colors::light::TEXT,
         }
     }
 
-    fn selection_color(&self, _style: &Self::Style) -> iced_baseview::Color {
+    fn selection_color(&self, _style: &Self::Style) -> Color {
         match self {
             Self::Dark => super::colors::dark::GRAY_500,
             Self::Light => super::colors::light::GRAY_700,
         }
     }
 
-    fn disabled_color(&self, style: &Self::Style) -> iced_baseview::Color {
+    fn disabled_color(&self, style: &Self::Style) -> Color {
         self.value_color(style)
     }
 }

@@ -1,11 +1,12 @@
 use std::fmt::Display;
 
 use compact_str::CompactString;
-use iced_baseview::alignment::Horizontal;
+use iced_baseview::core::alignment::Horizontal;
 use iced_baseview::widget::tooltip::Position;
 use iced_baseview::widget::{PickList, Row};
 use iced_baseview::{
-    widget::Column, widget::Container, widget::Space, widget::Text, Element, Length,
+    core::{Element, Length},
+    widget::Column, widget::Container, widget::Space, widget::Text,
 };
 
 use super::boolean_button::{voice_mode_button, BooleanButton};
@@ -99,7 +100,7 @@ impl PatchPicker {
         self.voice_mode_button.theme_changed();
     }
 
-    pub fn view(&self, theme: &Theme) -> Element<Message, Theme> {
+    pub fn view(&self, theme: &Theme) -> crate::gui::Element {
         let patch_picker = PickList::new(
             &self.patch_options[..],
             Some(self.patch_options[self.patch_index].clone()),

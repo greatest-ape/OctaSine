@@ -2,8 +2,9 @@ mod common;
 mod draw;
 mod events;
 
-use iced_baseview::widget::canvas::{event, Cache, Canvas, Cursor, Geometry, Program};
-use iced_baseview::{widget::Container, Element, Length, Point, Rectangle, Size};
+use iced_baseview::widget::canvas::{event, Cache, Canvas, Geometry, Program};
+use iced_baseview::{widget::Container, };
+use iced_baseview::core::{Element, Length, Point, Rectangle, Size, mouse::Cursor};
 
 use crate::audio::voices::log10_table::Log10Table;
 use crate::parameters::operator_envelope::{
@@ -119,7 +120,7 @@ impl EnvelopeCanvas {
         envelope
     }
 
-    pub fn view(&self) -> Element<Message, Theme> {
+    pub fn view(&self) -> Element<Message, iced_baseview::Renderer<Theme>> {
         Container::new(
             Canvas::new(self)
                 .width(Length::Fixed(WIDTH.into()))
@@ -336,17 +337,18 @@ impl EnvelopeCanvas {
     }
 }
 
-impl Program<Message, Theme> for EnvelopeCanvas {
+impl Program<Message, iced_baseview::Renderer<Theme>> for EnvelopeCanvas {
     type State = EnvelopeCanvasState;
 
     fn draw(
         &self,
         state: &Self::State,
+        renderer: &iced_baseview::Renderer<Theme>,
         theme: &Theme,
         bounds: Rectangle,
         _cursor: Cursor,
     ) -> Vec<Geometry> {
-        let geometry = self.cache.draw(bounds.size(), |frame| {
+        let geometry = self.cache.draw(renderer, bounds.size(), |frame| {
             self.draw_time_markers(frame, theme);
             self.draw_stage_paths(frame, theme);
 
@@ -371,14 +373,14 @@ impl Program<Message, Theme> for EnvelopeCanvas {
         _cursor: Cursor,
     ) -> (event::Status, Option<Message>) {
         match event {
-            event::Event::Mouse(iced_baseview::mouse::Event::CursorMoved {
+            event::Event::Mouse(iced_baseview::core::mouse::Event::CursorMoved {
                 position: Point { x, y },
             }) => self.handle_cursor_moved(state, bounds, x, y),
-            event::Event::Mouse(iced_baseview::mouse::Event::ButtonPressed(
-                iced_baseview::mouse::Button::Left,
+            event::Event::Mouse(iced_baseview::core::mouse::Event::ButtonPressed(
+                iced_baseview::core::mouse::Button::Left,
             )) => self.handle_button_pressed(state, bounds),
-            event::Event::Mouse(iced_baseview::mouse::Event::ButtonReleased(
-                iced_baseview::mouse::Button::Left,
+            event::Event::Mouse(iced_baseview::core::mouse::Event::ButtonReleased(
+                iced_baseview::core::mouse::Button::Left,
             )) => self.handle_button_released(state),
             _ => (event::Status::Ignored, None),
         }

@@ -2,11 +2,13 @@ mod gen;
 
 use std::borrow::Borrow;
 
+use iced_baseview::core::mouse::Cursor;
 use iced_baseview::widget::canvas::{
-    path, Cache, Canvas, Cursor, Frame, Geometry, Path, Program, Stroke,
+    path, Cache, Canvas, Frame, Geometry, Path, Program, Stroke,
 };
 use iced_baseview::widget::tooltip::Position;
-use iced_baseview::{widget::Row, widget::Space, Color, Element, Length, Point, Rectangle, Size};
+use iced_baseview::{widget::Row, widget::Space, };
+use iced_baseview::core::{Color, Element, Length, Point, Rectangle, Size};
 
 use crate::parameters::list::OperatorParameter;
 use crate::parameters::operator_active::OperatorActiveValue;
@@ -281,7 +283,7 @@ impl WaveDisplay {
         self.canvas_right.cache.clear();
     }
 
-    pub fn view(&self, theme: &Theme) -> Element<Message, Theme> {
+    pub fn view(&self, theme: &Theme) -> crate::gui::Element {
         let canvas_left = tooltip(
             theme,
             "Left channel",
@@ -329,7 +331,7 @@ impl WaveDisplayCanvas {
         self.cache.clear();
     }
 
-    pub fn view(&self) -> Element<Message, Theme> {
+    pub fn view(&self) -> crate::gui::Element {
         Canvas::new(self)
             .width(Length::Fixed(WIDTH.into()))
             .height(Length::Fixed(HEIGHT.into()))
@@ -380,17 +382,18 @@ impl WaveDisplayCanvas {
     }
 }
 
-impl Program<Message, Theme> for WaveDisplayCanvas {
+impl Program<Message, crate::gui::Renderer> for WaveDisplayCanvas {
     type State = ();
 
     fn draw(
         &self,
         _state: &Self::State,
+        renderer: &crate::gui::Renderer,
         theme: &Theme,
         bounds: Rectangle,
         _cursor: Cursor,
     ) -> Vec<Geometry> {
-        let geometry = self.cache.draw(bounds.size(), |frame| {
+        let geometry = self.cache.draw(renderer, bounds.size(), |frame| {
             self.draw_background(frame, theme);
             self.draw_middle_line(frame, theme);
             self.draw_wave_line(frame, theme);

@@ -1,6 +1,6 @@
 use iced_baseview::{
     widget::button::{Appearance, StyleSheet},
-    Color,
+    core::Color,
 };
 
 use super::Theme;
@@ -22,8 +22,8 @@ impl StyleSheet for Theme {
                     use super::colors::light::*;
 
                     Appearance {
-                        background: SURFACE.into(),
-                        border_radius: 3.0,
+                        background: Some(SURFACE.into()),
+                        border_radius: 3.0.into(),
                         border_width: 1.0,
                         border_color: BORDER,
                         text_color: TEXT,
@@ -34,8 +34,8 @@ impl StyleSheet for Theme {
                     use super::colors::dark::*;
 
                     Appearance {
-                        background: SURFACE.into(),
-                        border_radius: 3.0,
+                        background: Some(SURFACE.into()),
+                        border_radius: 3.0.into(),
                         border_width: 0.0,
                         border_color: TEXT,
                         text_color: TEXT,
@@ -48,8 +48,8 @@ impl StyleSheet for Theme {
                     use super::colors::light::*;
 
                     Appearance {
-                        background: Color::TRANSPARENT.into(),
-                        border_radius: 3.0,
+                        background: None,
+                        border_radius: 3.0.into(),
                         border_width: 0.0,
                         border_color: Color::TRANSPARENT,
                         text_color: TEXT,
@@ -60,8 +60,8 @@ impl StyleSheet for Theme {
                     use super::colors::dark::*;
 
                     Appearance {
-                        background: Color::TRANSPARENT.into(),
-                        border_radius: 3.0,
+                        background: None,
+                        border_radius: 3.0.into(),
                         border_width: 0.0,
                         border_color: Color::TRANSPARENT,
                         text_color: TEXT,
@@ -79,7 +79,7 @@ impl StyleSheet for Theme {
                     use super::colors::light::*;
 
                     Appearance {
-                        background: SURFACE_HOVER.into(),
+                        background: Some(SURFACE_HOVER.into()),
                         ..self.active(style)
                     }
                 }
@@ -87,7 +87,7 @@ impl StyleSheet for Theme {
                     use super::colors::dark::*;
 
                     Appearance {
-                        background: SURFACE_HOVER.into(),
+                        background: Some(SURFACE_HOVER.into()),
                         text_color: HOVERED,
                         ..self.active(style)
                     }
@@ -98,7 +98,7 @@ impl StyleSheet for Theme {
                     use super::colors::light::*;
 
                     Appearance {
-                        background: SURFACE_HOVER.into(),
+                        background: Some(SURFACE_HOVER.into()),
                         ..self.active(style)
                     }
                 }
@@ -106,7 +106,7 @@ impl StyleSheet for Theme {
                     use super::colors::dark::*;
 
                     Appearance {
-                        background: SURFACE_HOVER.into(),
+                        background: Some(SURFACE_HOVER.into()),
                         text_color: HOVERED,
                         ..self.active(style)
                     }

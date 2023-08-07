@@ -1,5 +1,5 @@
 use iced_baseview::widget::canvas::{Frame, Path, Stroke, Text};
-use iced_baseview::{Point, Size, Vector};
+use iced_baseview::core::{Point, Size, Vector};
 
 use crate::gui::style::Theme;
 use crate::gui::{SnapPoint, FONT_SIZE};

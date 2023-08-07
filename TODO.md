@@ -1,5 +1,11 @@
 # TODO
 
+* iced 0.10
+  * Open Sans
+  * modal
+  * software renderer doesn't draw when parented
+  * software renderer segfaults when closing window
+
 * Custom knobs
   * Aestetics
 

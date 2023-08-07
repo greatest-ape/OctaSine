@@ -1,11 +1,11 @@
 pub mod canvas;
 
-use iced_baseview::alignment::Horizontal;
+use iced_baseview::core::alignment::Horizontal;
 use iced_baseview::widget::tooltip::Position;
-use iced_baseview::Font;
+use iced_baseview::core::Font;
 use iced_baseview::{
-    widget::Button, widget::Column, widget::Row, widget::Space, widget::Text, Alignment, Element,
-    Length,
+    widget::Button, widget::Column, widget::Row, widget::Space, widget::Text, core::Alignment, core::Element,
+    core::Length,
 };
 
 use crate::parameters::list::{OperatorParameter, Parameter};
@@ -77,8 +77,8 @@ impl Envelope {
         group == self.group && group != OperatorEnvelopeGroupValue::Off
     }
 
-    pub fn view(&self, theme: &Theme) -> Element<Message, Theme> {
-        let group_synced: Element<Message, Theme> = if self.group_synced {
+    pub fn view(&self, theme: &Theme) -> crate::gui::Element {
+        let group_synced: crate::gui::Element = if self.group_synced {
             Space::with_width(Length::Fixed(1.0)).into()
         } else {
             tooltip(
@@ -198,7 +198,7 @@ fn button_with_tooltip<'a>(
     button_text: &'static str,
     button_message: Message,
     tooltip_text: &'static str,
-) -> Element<'a, Message, Theme> {
+) -> crate::gui::Element<'a> {
     tooltip(
         theme,
         tooltip_text,

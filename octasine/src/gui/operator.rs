@@ -1,7 +1,8 @@
 use iced_baseview::widget::tooltip::Position;
 use iced_baseview::{
-    alignment::Horizontal, widget::Column, widget::Container, widget::Row, widget::Space,
-    widget::Text, Alignment, Element, Length,
+    core::{alignment::Horizontal, Alignment, Element, Length},
+    widget::Column, widget::Container, widget::Row, widget::Space,
+    widget::Text, 
 };
 
 use crate::parameters::velocity_sensitivity::VelocitySensitivityValue;
@@ -121,7 +122,7 @@ impl OperatorWidgets {
         }
     }
 
-    pub fn view(&self, theme: &Theme) -> Element<Message, Theme> {
+    pub fn view(&self, theme: &Theme) -> crate::gui::Element {
         let heading = {
             let mute_button = tooltip(theme, "Toggle mute", Position::Top, self.mute_button.view());
 

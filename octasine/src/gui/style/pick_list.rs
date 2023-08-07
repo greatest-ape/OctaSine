@@ -15,7 +15,7 @@ impl StyleSheet for Theme {
                     text_color: TEXT,
                     border_color: BORDER,
                     border_width: 1.0,
-                    border_radius: 3.0,
+                    border_radius: 3.0.into(),
                     placeholder_color: TEXT,
                     handle_color: TEXT,
                 }
@@ -28,7 +28,7 @@ impl StyleSheet for Theme {
                     text_color: TEXT,
                     border_color: TEXT,
                     border_width: 0.0,
-                    border_radius: 3.0,
+                    border_radius: 3.0.into(),
                     placeholder_color: TEXT,
                     handle_color: TEXT,
                 }

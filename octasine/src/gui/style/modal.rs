@@ -1,6 +1,6 @@
 use iced_aw::native::modal::StyleSheet;
 use iced_aw::style::modal::Appearance;
-use iced_baseview::Color;
+use iced_baseview::core::Color;
 
 use super::Theme;
 

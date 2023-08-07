@@ -1,10 +1,11 @@
+use iced_baseview::core::mouse::Cursor;
 use iced_baseview::widget::canvas::{
-    event, path, Cache, Canvas, Cursor, Frame, Geometry, Path, Program, Stroke,
+    event, path, Cache, Canvas, Frame, Geometry, Path, Program, Stroke,
 };
 use iced_baseview::widget::tooltip::Position;
 use iced_baseview::{
-    alignment::Horizontal, widget::Column, widget::Space, widget::Text, Alignment, Color, Element,
-    Length, Point, Rectangle, Size,
+    core::{alignment::Horizontal, Alignment, Color, Element, Length, Point, Rectangle, Size},
+    widget::Column, widget::Space, widget::Text
 };
 
 use crate::common::{Phase, WaveformChoices};
@@ -80,7 +81,7 @@ where
         }
     }
 
-    pub fn view(&self, theme: &Theme) -> Element<Message, Theme> {
+    pub fn view(&self, theme: &Theme) -> crate::gui::Element {
         let title = Text::new(&self.title)
             .horizontal_alignment(Horizontal::Center)
             .font(theme.font_bold())
@@ -131,7 +132,7 @@ where
         }
     }
 
-    pub fn view(&self) -> Element<Message, Theme> {
+    pub fn view(&self) -> crate::gui::Element {
         Canvas::new(self)
             .width(Length::Fixed(WIDTH.into()))
             .height(Length::Fixed(HEIGHT.into()))
@@ -212,7 +213,7 @@ where
     }
 }
 
-impl<P> Program<Message, Theme> for WavePickerCanvas<P>
+impl<P> Program<Message, crate::gui::Renderer> for WavePickerCanvas<P>
 where
     P: ParameterValue + Copy + 'static,
     P::Value: WaveformChoices,
@@ -222,11 +223,12 @@ where
     fn draw(
         &self,
         state: &Self::State,
+        renderer: &crate::gui::Renderer,
         theme: &Theme,
         bounds: Rectangle,
         _cursor: Cursor,
     ) -> Vec<Geometry> {
-        let geometry = self.cache.draw(bounds.size(), |frame| {
+        let geometry = self.cache.draw(renderer, bounds.size(), |frame| {
             self.draw_background(frame, theme);
             self.draw_middle_line(frame, theme);
             self.draw_shape_line(state, frame, theme);
@@ -244,7 +246,7 @@ where
         _cursor: Cursor,
     ) -> (event::Status, Option<Message>) {
         match event {
-            event::Event::Mouse(iced_baseview::mouse::Event::CursorMoved { position }) => {
+            event::Event::Mouse(iced_baseview::core::mouse::Event::CursorMoved { position }) => {
                 let cursor_within_bounds = bounds.contains(position);
 
                 if state.cursor_within_bounds != cursor_within_bounds {
@@ -255,15 +257,15 @@ where
 
                 (event::Status::Ignored, None)
             }
-            event::Event::Mouse(iced_baseview::mouse::Event::ButtonPressed(
-                iced_baseview::mouse::Button::Left | iced_baseview::mouse::Button::Right,
+            event::Event::Mouse(iced_baseview::core::mouse::Event::ButtonPressed(
+                iced_baseview::core::mouse::Button::Left | iced_baseview::core::mouse::Button::Right,
             )) if state.cursor_within_bounds => {
                 state.click_started = true;
 
                 (event::Status::Captured, None)
             }
-            event::Event::Mouse(iced_baseview::mouse::Event::ButtonReleased(
-                button @ (iced_baseview::mouse::Button::Left | iced_baseview::mouse::Button::Right),
+            event::Event::Mouse(iced_baseview::core::mouse::Event::ButtonReleased(
+                button @ (iced_baseview::core::mouse::Button::Left | iced_baseview::core::mouse::Button::Right),
             )) if state.click_started => {
                 if state.cursor_within_bounds {
                     let shape_index = P::Value::choices()
@@ -272,13 +274,13 @@ where
                         .unwrap();
 
                     let new_shape_index = match button {
-                        iced_baseview::mouse::Button::Left => {
+                        iced_baseview::core::mouse::Button::Left => {
                             (shape_index + 1) % P::Value::choices().len()
                         }
-                        iced_baseview::mouse::Button::Right if shape_index == 0 => {
+                        iced_baseview::core::mouse::Button::Right if shape_index == 0 => {
                             P::Value::choices().len() - 1
                         }
-                        iced_baseview::mouse::Button::Right => shape_index - 1,
+                        iced_baseview::core::mouse::Button::Right => shape_index - 1,
                         _ => unreachable!(),
                     };
 

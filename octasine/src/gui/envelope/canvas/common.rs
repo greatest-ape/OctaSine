@@ -1,5 +1,5 @@
 use iced_baseview::widget::canvas::{path, Frame, Path, Stroke};
-use iced_baseview::{Color, Point, Size, Vector};
+use iced_baseview::core::{Color, Point, Size, Vector};
 
 use crate::audio::voices::envelopes::VoiceOperatorVolumeEnvelope;
 use crate::audio::voices::log10_table::Log10Table;

@@ -5,10 +5,11 @@ mod mod_lines;
 mod operator_box;
 mod output_box;
 
+use iced_baseview::core::mouse::Cursor;
 use iced_baseview::widget::canvas::{
-    event, Cache, Canvas, Cursor, Frame, Geometry, Path, Program, Stroke,
+    event, Cache, Canvas, Frame, Geometry, Path, Program, Stroke,
 };
-use iced_baseview::{Color, Element, Length, Point, Rectangle, Size};
+use iced_baseview::core::{Color, Element, Length, Point, Rectangle, Size};
 
 use crate::parameters::{
     ModTargetStorage, Operator2ModulationTargetValue, Operator3ModulationTargetValue,
@@ -458,7 +459,7 @@ impl ModulationMatrix {
         self.cache.clear();
     }
 
-    pub fn view(&self) -> Element<Message, Theme> {
+    pub fn view(&self) -> Element<Message, iced_baseview::Renderer<Theme>> {
         Canvas::new(self)
             .width(Length::Fixed(WIDTH.into()))
             .height(Length::Fixed(HEIGHT.into()))
@@ -497,17 +498,18 @@ pub struct CanvasState {
     operator_2_mod_1_box: ModulationBoxCanvasState,
 }
 
-impl Program<Message, Theme> for ModulationMatrix {
+impl Program<Message, iced_baseview::Renderer<Theme>> for ModulationMatrix {
     type State = CanvasState;
 
     fn draw(
         &self,
         state: &Self::State,
+        renderer: &iced_baseview::Renderer<Theme>,
         theme: &Theme,
         bounds: Rectangle,
         _cursor: Cursor,
     ) -> Vec<Geometry> {
-        let geometry = self.cache.draw(bounds.size(), |frame| {
+        let geometry = self.cache.draw(renderer, bounds.size(), |frame| {
             self.draw_background(frame, theme);
 
             self.components.draw_lines(frame, theme);

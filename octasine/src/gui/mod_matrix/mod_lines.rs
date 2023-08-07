@@ -1,6 +1,6 @@
 use arrayvec::ArrayVec;
 use iced_baseview::widget::canvas::{path, Frame, Path, Stroke};
-use iced_baseview::Point;
+use iced_baseview::core::Point;
 
 use crate::gui::style::Theme;
 

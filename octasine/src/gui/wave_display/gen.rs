@@ -1,5 +1,5 @@
 use duplicate::duplicate_item;
-use iced_baseview::Point;
+use iced_baseview::core::Point;
 
 use crate::parameters::ParameterValue;
 use crate::simd::*;

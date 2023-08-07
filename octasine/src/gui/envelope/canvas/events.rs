@@ -1,5 +1,5 @@
 use iced_baseview::widget::canvas::event;
-use iced_baseview::{Point, Rectangle};
+use iced_baseview::core::{Point, Rectangle};
 
 use crate::gui::Message;
 use crate::parameters::operator_envelope::{ENVELOPE_MAX_DURATION, ENVELOPE_MIN_DURATION};

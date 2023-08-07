@@ -1,6 +1,6 @@
 use iced_baseview::{
     widget::container::{Appearance, StyleSheet},
-    Color,
+    core::Color,
 };
 
 use super::{colors, Theme};
@@ -27,36 +27,36 @@ impl StyleSheet for Theme {
                 match style {
                     Self::Style::Transparent => Appearance {
                         text_color: None,
-                        background: Color::TRANSPARENT.into(),
-                        border_radius: 0.0,
+                        background: None,
+                        border_radius: 0.0.into(),
                         border_width: 0.0,
                         border_color: Color::TRANSPARENT,
                     },
                     Self::Style::L0 => Appearance {
-                        background: BACKGROUND.into(),
+                        background: Some(BACKGROUND.into()),
                         text_color: TEXT.into(),
                         ..Default::default()
                     },
                     Self::Style::L1 => Appearance {
                         background: Some(GRAY_100.into()),
-                        border_radius: 4.0,
+                        border_radius: 4.0.into(),
                         ..Default::default()
                     },
                     Self::Style::L2 => Appearance {
                         background: Some(GRAY_200.into()),
-                        border_radius: 4.0,
+                        border_radius: 4.0.into(),
                         ..Default::default()
                     },
                     Self::Style::L3 => Appearance {
                         background: Some(GRAY_200.into()),
-                        border_radius: 4.0,
+                        border_radius: 4.0.into(),
                         ..Default::default()
                     },
                     Self::Style::Tooltip => Appearance {
-                        background: GRAY_200.into(),
+                        background: Some(GRAY_200.into()),
                         text_color: TEXT.into(),
                         border_width: 3.0,
-                        border_radius: 3.0,
+                        border_radius: 3.0.into(),
                         border_color: GRAY_200,
                     },
                 }
@@ -67,36 +67,36 @@ impl StyleSheet for Theme {
                 match style {
                     Self::Style::Transparent => Appearance {
                         text_color: None,
-                        background: Color::TRANSPARENT.into(),
-                        border_radius: 0.0,
+                        background: None,
+                        border_radius: 0.0.into(),
                         border_width: 0.0,
                         border_color: Color::TRANSPARENT,
                     },
                     Self::Style::L0 => Appearance {
-                        background: BACKGROUND.into(),
+                        background: Some(BACKGROUND.into()),
                         text_color: TEXT.into(),
                         ..Default::default()
                     },
                     Self::Style::L1 => Appearance {
                         background: Some(GRAY_900.into()),
-                        border_radius: 4.0,
+                        border_radius: 4.0.into(),
                         ..Default::default()
                     },
                     Self::Style::L2 => Appearance {
                         background: Some(Color::WHITE.into()),
-                        border_radius: 4.0,
+                        border_radius: 4.0.into(),
                         ..Default::default()
                     },
                     Self::Style::L3 => Appearance {
                         background: Some(Color::WHITE.into()),
-                        border_radius: 4.0,
+                        border_radius: 4.0.into(),
                         ..Default::default()
                     },
                     Self::Style::Tooltip => Appearance {
-                        background: BLUE.into(),
+                        background: Some(BLUE.into()),
                         text_color: Color::WHITE.into(),
                         border_width: 3.0,
-                        border_radius: 3.0,
+                        border_radius: 3.0.into(),
                         border_color: BLUE,
                     },
                 }

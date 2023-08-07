@@ -4,7 +4,7 @@
 
 set -e
 
-cargo xtask bundle octasine --profile "release-debug" --features "vst2"
+cargo xtask bundle octasine --profile "release-debug" --features "vst2 wgpu"
 
 TARGET="/Library/Audio/Plug-Ins/VST/OctaSine.vst"
 

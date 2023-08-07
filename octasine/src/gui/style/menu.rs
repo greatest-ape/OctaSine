@@ -1,4 +1,4 @@
-use iced_baseview::overlay::menu::{Appearance, StyleSheet};
+use iced_baseview::widget::overlay::menu::{Appearance, StyleSheet};
 
 use super::Theme;
 
@@ -17,7 +17,7 @@ impl StyleSheet for Theme {
                     selected_text_color: TEXT,
                     border_width: 1.0,
                     border_color: SURFACE,
-                    border_radius: 3.0,
+                    border_radius: 3.0.into(),
                 }
             }
             Self::Dark => {
@@ -30,7 +30,7 @@ impl StyleSheet for Theme {
                     selected_text_color: HOVERED,
                     border_width: 1.0,
                     border_color: GRAY_300,
-                    border_radius: 3.0,
+                    border_radius: 3.0.into(),
                 }
             }
         }

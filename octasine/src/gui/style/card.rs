@@ -1,6 +1,6 @@
 use iced_aw::native::card::StyleSheet;
 use iced_aw::style::card::Appearance;
-use iced_baseview::Color;
+use iced_baseview::core::Color;
 
 use super::Theme;
 

@@ -4,14 +4,14 @@ use std::{
 };
 
 use iced_baseview::{
-    event::Status,
-    keyboard,
-    mouse::{self, Button},
+    core::event::Status,
+    core::keyboard,
+    core::mouse::{self, Button, Cursor},
     widget::{
         canvas::{self, path::Arc, Cache, Frame, LineCap, Path, Program, Stroke},
         Canvas,
     },
-    Color, Element, Length, Point, Rectangle,
+    core::{Color, Element, Length, Point, Rectangle},
 };
 
 use crate::parameters::WrappedParameter;
@@ -90,7 +90,7 @@ impl Knob {
         self.cache_value_sensitive.clear();
     }
 
-    pub fn view(&self) -> Element<Message, Theme> {
+    pub fn view(&self) -> Element<Message, iced_baseview::Renderer<Theme>> {
         Canvas::new(self)
             .width(Length::from(KNOB_SIZE * 2))
             .height(Length::from(KNOB_SIZE * 2))
@@ -193,17 +193,18 @@ impl Default for KnobState {
     }
 }
 
-impl Program<Message, Theme> for Knob {
+impl Program<Message, iced_baseview::Renderer<Theme>> for Knob {
     type State = KnobState;
 
     fn draw(
         &self,
         _state: &Self::State,
+	renderer: &iced_baseview::Renderer<Theme>,
         theme: &Theme,
         bounds: Rectangle,
-        _cursor: canvas::Cursor,
+        _cursor: Cursor,
     ) -> Vec<canvas::Geometry> {
-        let a = self.cache_theme_sensitive.draw(bounds.size(), |frame| {
+        let a = self.cache_theme_sensitive.draw(renderer, bounds.size(), |frame| {
             let appearance = StyleSheet::active(theme, ());
 
             self.draw_arc(frame, appearance.arc_empty_color, 0.0, 1.0);
@@ -213,7 +214,7 @@ impl Program<Message, Theme> for Knob {
 
             self.draw_marker_dot(frame, self.anchor_dot_value, appearance.anchor_dot_color);
         });
-        let b = self.cache_value_sensitive.draw(bounds.size(), |frame| {
+        let b = self.cache_value_sensitive.draw(renderer, bounds.size(), |frame| {
             let appearance = StyleSheet::active(theme, ());
 
             let start_value = match self.variant {
@@ -233,7 +234,7 @@ impl Program<Message, Theme> for Knob {
         state: &mut Self::State,
         event: canvas::Event,
         bounds: Rectangle,
-        _cursor: canvas::Cursor,
+        _cursor: Cursor,
     ) -> (Status, Option<Message>) {
         match event {
             canvas::Event::Mouse(mouse::Event::CursorMoved { position }) => {

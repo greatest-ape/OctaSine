@@ -20,9 +20,10 @@ pub mod text_input;
 pub mod wave_display;
 pub mod wave_picker;
 
-use iced_baseview::Font;
+use iced_baseview::{core::Font, runtime::font::{Family, Weight, Stretch}};
 use serde::{Deserialize, Serialize};
 
+/*
 const OPEN_SANS_REGULAR: Font = Font::External {
     name: "Open Sans Regular",
     bytes: super::OPEN_SANS_BYTES_REGULAR,
@@ -38,6 +39,34 @@ const OPEN_SANS_BOLD: Font = Font::External {
 const OPEN_SANS_EXTRA_BOLD: Font = Font::External {
     name: "Open Sans Extra Bold",
     bytes: super::OPEN_SANS_BYTES_EXTRA_BOLD,
+};
+*/
+
+const OPEN_SANS: Family = Family::Name("Source Sans Pro");
+
+pub const OPEN_SANS_REGULAR: Font = Font {
+    family: OPEN_SANS,
+    weight: Weight::Normal,
+    stretch: Stretch::Normal,
+    monospaced: false,
+};
+pub const OPEN_SANS_SEMI_BOLD: Font = Font {
+    family: OPEN_SANS,
+    weight: Weight::Semibold,
+    stretch: Stretch::Normal,
+    monospaced: false,
+};
+pub const OPEN_SANS_BOLD: Font = Font {
+    family: OPEN_SANS,
+    weight: Weight::Bold,
+    stretch: Stretch::Normal,
+    monospaced: false,
+};
+pub const OPEN_SANS_EXTRA_BOLD: Font = Font {
+    family: OPEN_SANS,
+    weight: Weight::ExtraBold,
+    stretch: Stretch::Normal,
+    monospaced: false,
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]

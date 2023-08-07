@@ -10,8 +10,8 @@ members = [
 # [patch.'https://github.com/RustAudio/baseview']
 # baseview = { path = "../baseview" }
 
-# [patch.'https://github.com/BillyDM/iced_baseview']
-# iced_baseview = { path = "../iced_baseview" }
+[patch.'https://github.com/BillyDM/iced_baseview']
+iced_baseview = { path = "../iced_baseview" }
 
 # [patch.'https://github.com/iced-rs/iced_audio']
 # [patch.crates-io]

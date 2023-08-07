@@ -1,6 +1,6 @@
 use iced_baseview::{
     widget::checkbox::{Appearance, StyleSheet},
-    Color,
+    core::Color,
 };
 
 use super::Theme;
@@ -19,7 +19,7 @@ impl StyleSheet for Theme {
                     text_color: Some(TEXT),
                     border_width: 1.0,
                     border_color: BORDER,
-                    border_radius: 3.0,
+                    border_radius: 3.0.into(),
                 }
             }
             Self::Dark => {
@@ -31,7 +31,7 @@ impl StyleSheet for Theme {
                     text_color: Some(TEXT),
                     border_width: 1.0,
                     border_color: BORDER,
-                    border_radius: 3.0,
+                    border_radius: 3.0.into(),
                 }
             }
         }

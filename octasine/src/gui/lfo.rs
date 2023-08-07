@@ -1,8 +1,9 @@
 use iced_baseview::widget::tooltip::Position;
 use iced_baseview::widget::Container;
 use iced_baseview::{
-    alignment::Horizontal, alignment::Vertical, widget::Column, widget::Row, widget::Space,
-    widget::Text, Element, Length,
+    core::{alignment::Horizontal, alignment::Vertical, Element, Length},
+    widget::Column, widget::Row, widget::Space,
+    widget::Text,
 };
 
 use crate::parameters::{
@@ -64,7 +65,7 @@ impl LfoWidgets {
         self.amount.theme_changed();
     }
 
-    pub fn view(&self, theme: &Theme) -> Element<Message, Theme> {
+    pub fn view(&self, theme: &Theme) -> crate::gui::Element {
         let title = Text::new(format!("LFO {}", self.index + 1))
             .size(FONT_SIZE + FONT_SIZE / 2)
             .height(Length::Fixed(f32::from(FONT_SIZE + FONT_SIZE / 2)))

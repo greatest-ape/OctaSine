@@ -1,4 +1,4 @@
-use iced_baseview::Color;
+use iced_baseview::core::Color;
 
 use crate::gui::wave_display::{Appearance, StyleSheet};
 

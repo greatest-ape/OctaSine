@@ -2,7 +2,7 @@ use crate::gui::style::Theme;
 use crate::gui::{Message, SnapPoint, FONT_SIZE};
 use crate::parameters::{OperatorParameter, Parameter, WrappedParameter};
 use iced_baseview::widget::canvas::{event, Frame, Path, Stroke, Text};
-use iced_baseview::{mouse, Point, Rectangle, Size};
+use iced_baseview::core::{mouse, Point, Rectangle, Size};
 
 use super::OPERATOR_BOX_SCALE;
 use super::{common::*, StyleSheet};

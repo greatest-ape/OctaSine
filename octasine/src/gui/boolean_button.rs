@@ -1,8 +1,9 @@
-use iced_baseview::alignment::{Horizontal, Vertical};
+use iced_baseview::core::alignment::{Horizontal, Vertical};
+use iced_baseview::core::mouse::Cursor;
 use iced_baseview::widget::canvas::{
-    event, Cache, Canvas, Cursor, Frame, Geometry, Path, Program, Stroke, Text,
+    event, Cache, Canvas, Frame, Geometry, Path, Program, Stroke, Text,
 };
-use iced_baseview::{Color, Element, Length, Point, Rectangle, Size};
+use iced_baseview::core::{Color, Element, Length, Point, Rectangle, Size};
 
 use crate::parameters::glide_bpm_sync::GlideBpmSyncValue;
 use crate::parameters::glide_mode::{GlideMode, GlideModeValue};
@@ -284,7 +285,7 @@ impl BooleanButton {
         self.cache.clear();
     }
 
-    pub fn view(&self) -> Element<Message, Theme> {
+    pub fn view(&self) -> crate::gui::Element {
         let width = self.width;
         let height = self.height;
 
@@ -339,17 +340,18 @@ pub struct CanvasState {
     click_started: bool,
 }
 
-impl Program<Message, Theme> for BooleanButton {
+impl Program<Message, crate::gui::Renderer> for BooleanButton {
     type State = CanvasState;
 
     fn draw(
         &self,
         state: &Self::State,
+        renderer: &crate::gui::Renderer,
         theme: &Theme,
         bounds: Rectangle,
         _cursor: Cursor,
     ) -> Vec<Geometry> {
-        let geometry = self.cache.draw(bounds.size(), |frame| {
+        let geometry = self.cache.draw(renderer, bounds.size(), |frame| {
             self.draw_background(state, frame, theme);
             self.draw_border(state, frame, theme);
             self.draw_text(state, frame, theme);
@@ -366,7 +368,7 @@ impl Program<Message, Theme> for BooleanButton {
         _cursor: Cursor,
     ) -> (event::Status, Option<Message>) {
         match event {
-            event::Event::Mouse(iced_baseview::mouse::Event::CursorMoved { position }) => {
+            event::Event::Mouse(iced_baseview::core::mouse::Event::CursorMoved { position }) => {
                 let cursor_within_bounds = bounds.contains(position);
 
                 if state.cursor_within_bounds != cursor_within_bounds {
@@ -377,15 +379,15 @@ impl Program<Message, Theme> for BooleanButton {
 
                 (event::Status::Ignored, None)
             }
-            event::Event::Mouse(iced_baseview::mouse::Event::ButtonPressed(
-                iced_baseview::mouse::Button::Left | iced_baseview::mouse::Button::Right,
+            event::Event::Mouse(iced_baseview::core::mouse::Event::ButtonPressed(
+                iced_baseview::core::mouse::Button::Left | iced_baseview::core::mouse::Button::Right,
             )) if state.cursor_within_bounds => {
                 state.click_started = true;
 
                 (event::Status::Captured, None)
             }
-            event::Event::Mouse(iced_baseview::mouse::Event::ButtonReleased(
-                iced_baseview::mouse::Button::Left | iced_baseview::mouse::Button::Right,
+            event::Event::Mouse(iced_baseview::core::mouse::Event::ButtonReleased(
+                iced_baseview::core::mouse::Button::Left | iced_baseview::core::mouse::Button::Right,
             )) if state.click_started => {
                 if state.cursor_within_bounds {
                     let message = {
