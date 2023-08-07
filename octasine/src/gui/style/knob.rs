@@ -1,4 +1,4 @@
-use crate::gui::knob2::{Appearance, StyleSheet};
+use crate::gui::knob::plain::{Appearance, StyleSheet};
 use crate::gui::Theme;
 
 impl StyleSheet for Theme {

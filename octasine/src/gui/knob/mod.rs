@@ -1,3 +1,5 @@
+pub mod plain;
+
 use iced_baseview::widget::tooltip::Position;
 use iced_baseview::widget::Container;
 use iced_baseview::{
@@ -19,10 +21,11 @@ use crate::parameters::{
 use crate::sync::GuiSyncHandle;
 
 use super::common::tooltip;
-use super::knob2::{Knob, KnobVariant};
 use super::style::Theme;
 use super::value_text::ValueText;
 use super::{Message, LINE_HEIGHT};
+
+use plain::{Knob, KnobVariant};
 
 pub fn master_volume<H>(sync_handle: &H) -> OctaSineKnob<MasterVolumeValue>
 where

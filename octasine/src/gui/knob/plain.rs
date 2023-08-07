@@ -16,7 +16,7 @@ use iced_baseview::{
 
 use crate::parameters::WrappedParameter;
 
-use super::{style::Theme, Message, LINE_HEIGHT};
+use crate::gui::{style::Theme, Message, LINE_HEIGHT};
 
 const KNOB_SIZE: u16 = LINE_HEIGHT * 2;
 const KNOB_RADIUS: u16 = KNOB_SIZE / 2 - 1;
