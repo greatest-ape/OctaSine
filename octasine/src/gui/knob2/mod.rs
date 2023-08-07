@@ -43,7 +43,7 @@ pub struct Appearance {
 
 pub enum KnobVariant {
     Regular,
-    Bipolar { center: f32 },
+    Bipolar,
 }
 
 pub struct Knob {
@@ -218,7 +218,7 @@ impl Program<Message, Theme> for Knob {
 
             let start_value = match self.variant {
                 KnobVariant::Regular => 0.0,
-                KnobVariant::Bipolar { center } => center,
+                KnobVariant::Bipolar => self.anchor_dot_value,
             };
 
             self.draw_arc(frame, appearance.arc_filled_color, start_value, self.value);

@@ -46,7 +46,7 @@ where
         Parameter::Master(MasterParameter::Frequency),
         "FREQ",
         "Master frequency",
-        KnobVariant::Bipolar { center: 0.5 },
+        KnobVariant::Bipolar,
     )
 }
 
@@ -72,7 +72,7 @@ where
         Parameter::Master(MasterParameter::PitchBendRangeUp),
         "PB UP",
         "Pitch bench range - upward",
-        KnobVariant::Bipolar { center: 0.5 },
+        KnobVariant::Bipolar,
         MasterPitchBendRangeUpValue::default().to_patch(),
         0.5,
     )
@@ -89,7 +89,7 @@ where
         Parameter::Master(MasterParameter::PitchBendRangeDown),
         "PB DOWN",
         "Pitch bench range - downward",
-        KnobVariant::Bipolar { center: 0.5 },
+        KnobVariant::Bipolar,
         MasterPitchBendRangeDownValue::default().to_patch(),
         0.5,
     )
@@ -153,7 +153,7 @@ where
         Parameter::Operator(operator_index as u8, OperatorParameter::Panning),
         "PAN",
         "Panning",
-        KnobVariant::Bipolar { center: 0.5 },
+        KnobVariant::Bipolar,
     )
 }
 
@@ -196,18 +196,12 @@ pub fn operator_frequency_ratio<H>(
 where
     H: GuiSyncHandle,
 {
-    let default_value = OperatorFrequencyRatioValue::default().to_patch();
-
-    OctaSineKnob::new_with_values(
+    OctaSineKnob::new(
         sync_handle,
         Parameter::Operator(operator_index as u8, OperatorParameter::FrequencyRatio),
         "RATIO",
         "Frequency - fixed ratios",
-        KnobVariant::Bipolar {
-            center: default_value,
-        },
-        default_value,
-        default_value,
+        KnobVariant::Bipolar,
     )
 }
 
@@ -223,7 +217,7 @@ where
         Parameter::Operator(operator_index as u8, OperatorParameter::FrequencyFree),
         "FREE",
         "Frequency - free",
-        KnobVariant::Bipolar { center: 0.5 },
+        KnobVariant::Bipolar,
     )
 }
 
@@ -239,7 +233,7 @@ where
         Parameter::Operator(operator_index as u8, OperatorParameter::FrequencyFine),
         "FINE",
         "Frequency - fine tuning",
-        KnobVariant::Bipolar { center: 0.5 },
+        KnobVariant::Bipolar,
     )
 }
 
@@ -293,7 +287,7 @@ where
         Parameter::Lfo(lfo_index as u8, LfoParameter::FrequencyRatio),
         "RATIO",
         "Frequency - fixed ratios",
-        KnobVariant::Bipolar { center: 0.5 },
+        KnobVariant::Bipolar,
     )
 }
 
@@ -309,7 +303,7 @@ where
         Parameter::Lfo(lfo_index as u8, LfoParameter::FrequencyFree),
         "FREE",
         "Frequency - free",
-        KnobVariant::Bipolar { center: 0.5 },
+        KnobVariant::Bipolar,
     )
 }
 
