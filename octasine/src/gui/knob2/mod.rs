@@ -19,6 +19,7 @@ use crate::parameters::WrappedParameter;
 use super::{style::Theme, Message, LINE_HEIGHT};
 
 const KNOB_SIZE: u16 = LINE_HEIGHT * 2;
+const KNOB_RADIUS: u16 = KNOB_SIZE / 2 - 1;
 
 const ARC_EXTRA_ANGLE: f32 = PI * 0.5 / 3.0 * 2.0;
 const ARC_START_ANGLE: f32 = PI - ARC_EXTRA_ANGLE;
@@ -55,7 +56,6 @@ pub struct Knob {
     cache_theme_sensitive: Cache,
     cache_value_sensitive: Cache,
     center: Point,
-    radius: f32,
 }
 
 impl Knob {
@@ -66,10 +66,6 @@ impl Knob {
         reset_value: f32,
         value: f32,
     ) -> Self {
-        let center_x = KNOB_SIZE;
-        let center_y = LINE_HEIGHT + KNOB_SIZE / 2;
-        let center = Point::new((center_x).into(), (center_y).into());
-
         Self {
             parameter,
             variant,
@@ -79,8 +75,7 @@ impl Knob {
 
             cache_theme_sensitive: Cache::default(),
             cache_value_sensitive: Cache::default(),
-            center,
-            radius: (KNOB_SIZE / 2) as f32 - 1.0,
+            center: Point::new(KNOB_SIZE.into(), KNOB_SIZE.into()),
         }
     }
 
@@ -105,7 +100,7 @@ impl Knob {
     fn draw_arc(&self, frame: &mut Frame, color: Color, value: f32) {
         let arc = Arc {
             center: self.center,
-            radius: self.radius,
+            radius: KNOB_RADIUS as f32,
             start_angle: ARC_START_ANGLE,
             end_angle: arc_angle(value),
         };
@@ -126,8 +121,8 @@ impl Knob {
         let path = Path::new(|builder| {
             let angle = arc_angle(value);
 
-            let x_addition = angle.cos() * (self.radius - 2.0);
-            let y_addition = angle.sin() * (self.radius - 2.0);
+            let x_addition = angle.cos() * (KNOB_RADIUS - 2) as f32;
+            let y_addition = angle.sin() * (KNOB_RADIUS - 2) as f32;
 
             let mut point = self.center;
 
@@ -153,7 +148,7 @@ impl Knob {
     fn draw_marker_dot(&self, frame: &mut Frame, value: f32, color: Color) {
         let path = Path::new(|builder| {
             let angle = arc_angle(value);
-            let distance = self.radius + MARKER_DOT_DISTANCE as f32;
+            let distance = (KNOB_RADIUS + MARKER_DOT_DISTANCE) as f32;
 
             let mut point = self.center;
 
@@ -178,7 +173,7 @@ impl Knob {
                 y: cursor.y - bounds.y,
             };
 
-            relative_cursor_position.distance(self.center) <= self.radius
+            relative_cursor_position.distance(self.center) <= KNOB_RADIUS as f32
         } else {
             false
         }
