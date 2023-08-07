@@ -97,12 +97,12 @@ impl Knob {
             .into()
     }
 
-    fn draw_arc(&self, frame: &mut Frame, color: Color, value: f32) {
+    fn draw_arc(&self, frame: &mut Frame, color: Color, from_value: f32, to_value: f32) {
         let arc = Arc {
             center: self.center,
             radius: KNOB_RADIUS as f32,
-            start_angle: ARC_START_ANGLE,
-            end_angle: arc_angle(value),
+            start_angle: arc_angle(from_value),
+            end_angle: arc_angle(to_value),
         };
 
         let path = Path::new(|builder| {
@@ -211,7 +211,7 @@ impl Program<Message, Theme> for Knob {
         let a = self.cache_theme_sensitive.draw(bounds.size(), |frame| {
             let appearance = StyleSheet::active(theme, ());
 
-            self.draw_arc(frame, appearance.arc_empty_color, 1.0);
+            self.draw_arc(frame, appearance.arc_empty_color, 0.0, 1.0);
 
             self.draw_marker_dot(frame, 0.0, appearance.end_dot_color);
             self.draw_marker_dot(frame, 1.0, appearance.end_dot_color);
@@ -223,7 +223,12 @@ impl Program<Message, Theme> for Knob {
         let b = self.cache_value_sensitive.draw(bounds.size(), |frame| {
             let appearance = StyleSheet::active(theme, ());
 
-            self.draw_arc(frame, appearance.arc_filled_color, self.value);
+            let start_value = match self.variant {
+                KnobVariant::Regular => 0.0,
+                KnobVariant::Bipolar { center } => center,
+            };
+
+            self.draw_arc(frame, appearance.arc_filled_color, start_value, self.value);
             self.draw_notch(frame, appearance.notch_color, self.value);
         });
 

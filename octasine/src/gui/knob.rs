@@ -196,12 +196,18 @@ pub fn operator_frequency_ratio<H>(
 where
     H: GuiSyncHandle,
 {
-    OctaSineKnob::new(
+    let default_value = OperatorFrequencyRatioValue::default().to_patch();
+
+    OctaSineKnob::new_with_values(
         sync_handle,
         Parameter::Operator(operator_index as u8, OperatorParameter::FrequencyRatio),
         "RATIO",
         "Frequency - fixed ratios",
-        KnobVariant::Bipolar { center: 0.5 },
+        KnobVariant::Bipolar {
+            center: default_value,
+        },
+        default_value,
+        default_value,
     )
 }
 
