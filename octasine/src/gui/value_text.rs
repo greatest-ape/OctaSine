@@ -2,14 +2,14 @@ use std::marker::PhantomData;
 
 use compact_str::CompactString;
 use iced_baseview::core::{alignment::Horizontal, Element, Length};
+use iced_baseview::widget::Button;
 use iced_baseview::widget::Text;
-use iced_baseview::{widget::Button};
 
 use crate::parameters::{ParameterValue, WrappedParameter};
 
 use super::style::button::ButtonStyle;
-use super::{LINE_HEIGHT, LINE_HEIGHT_RELATIVE};
 use super::{style::Theme, GuiSyncHandle, Message};
+use super::{LINE_HEIGHT, LINE_HEIGHT_RELATIVE};
 
 #[derive(Debug, Clone)]
 pub struct ValueText<P: ParameterValue> {

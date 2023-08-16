@@ -3,7 +3,8 @@ pub mod plain;
 use iced_baseview::widget::tooltip::Position;
 use iced_baseview::widget::Container;
 use iced_baseview::{
-    core::alignment::Horizontal, widget::Column, widget::Text, core::Alignment, core::Element, core::Length,
+    core::alignment::Horizontal, core::Alignment, core::Element, core::Length, widget::Column,
+    widget::Text,
 };
 
 use crate::parameters::glide_time::GlideTimeValue;

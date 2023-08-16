@@ -5,7 +5,9 @@ use iced_baseview::widget::canvas::{
 use iced_baseview::widget::tooltip::Position;
 use iced_baseview::{
     core::{alignment::Horizontal, Alignment, Color, Element, Length, Point, Rectangle, Size},
-    widget::Column, widget::Space, widget::Text
+    widget::Column,
+    widget::Space,
+    widget::Text,
 };
 
 use crate::common::{Phase, WaveformChoices};
@@ -259,14 +261,16 @@ where
                 (event::Status::Ignored, None)
             }
             event::Event::Mouse(iced_baseview::core::mouse::Event::ButtonPressed(
-                iced_baseview::core::mouse::Button::Left | iced_baseview::core::mouse::Button::Right,
+                iced_baseview::core::mouse::Button::Left
+                | iced_baseview::core::mouse::Button::Right,
             )) if state.cursor_within_bounds => {
                 state.click_started = true;
 
                 (event::Status::Captured, None)
             }
             event::Event::Mouse(iced_baseview::core::mouse::Event::ButtonReleased(
-                button @ (iced_baseview::core::mouse::Button::Left | iced_baseview::core::mouse::Button::Right),
+                button @ (iced_baseview::core::mouse::Button::Left
+                | iced_baseview::core::mouse::Button::Right),
             )) if state.click_started => {
                 if state.cursor_within_bounds {
                     let shape_index = P::Value::choices()

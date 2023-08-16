@@ -1,9 +1,9 @@
 use iced_baseview::core::alignment::{Horizontal, Vertical};
 use iced_baseview::core::mouse::Cursor;
+use iced_baseview::core::{Color, Element, Length, Point, Rectangle, Size};
 use iced_baseview::widget::canvas::{
     event, Cache, Canvas, Frame, Geometry, Path, Program, Stroke, Text,
 };
-use iced_baseview::core::{Color, Element, Length, Point, Rectangle, Size};
 
 use crate::parameters::glide_bpm_sync::GlideBpmSyncValue;
 use crate::parameters::glide_mode::{GlideMode, GlideModeValue};
@@ -380,14 +380,16 @@ impl Program<Message, crate::gui::Renderer> for BooleanButton {
                 (event::Status::Ignored, None)
             }
             event::Event::Mouse(iced_baseview::core::mouse::Event::ButtonPressed(
-                iced_baseview::core::mouse::Button::Left | iced_baseview::core::mouse::Button::Right,
+                iced_baseview::core::mouse::Button::Left
+                | iced_baseview::core::mouse::Button::Right,
             )) if state.cursor_within_bounds => {
                 state.click_started = true;
 
                 (event::Status::Captured, None)
             }
             event::Event::Mouse(iced_baseview::core::mouse::Event::ButtonReleased(
-                iced_baseview::core::mouse::Button::Left | iced_baseview::core::mouse::Button::Right,
+                iced_baseview::core::mouse::Button::Left
+                | iced_baseview::core::mouse::Button::Right,
             )) if state.click_started => {
                 if state.cursor_within_bounds {
                     let message = {

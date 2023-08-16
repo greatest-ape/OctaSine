@@ -1,11 +1,11 @@
 pub mod canvas;
 
 use iced_baseview::core::alignment::Horizontal;
-use iced_baseview::widget::tooltip::Position;
 use iced_baseview::core::Font;
+use iced_baseview::widget::tooltip::Position;
 use iced_baseview::{
-    widget::Button, widget::Column, widget::Row, widget::Space, widget::Text, core::Alignment, core::Element,
-    core::Length,
+    core::Alignment, core::Element, core::Length, widget::Button, widget::Column, widget::Row,
+    widget::Space, widget::Text,
 };
 
 use crate::parameters::list::{OperatorParameter, Parameter};

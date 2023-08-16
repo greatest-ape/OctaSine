@@ -21,16 +21,17 @@ use anyhow::Context;
 use cfg_if::cfg_if;
 use compact_str::CompactString;
 use iced_aw::native::{Card, Modal};
-use iced_baseview::core::Pixels;
 use iced_baseview::core::alignment::Horizontal;
+use iced_baseview::core::Pixels;
 use iced_baseview::graphics::Antialiasing;
 use iced_baseview::runtime::command::Action;
 use iced_baseview::widget::text::LineHeight;
 use iced_baseview::widget::{Button, PickList, Text};
-use iced_baseview::{executor, window::WindowSubs, Application, runtime::Command, futures::Subscription};
 use iced_baseview::{
-    widget::Column, widget::Container, widget::Row, widget::Space,
-    core::Length, core::Point,
+    core::Length, core::Point, widget::Column, widget::Container, widget::Row, widget::Space,
+};
+use iced_baseview::{
+    executor, futures::Subscription, runtime::Command, window::WindowSubs, Application,
 };
 use serde::{Deserialize, Serialize};
 
@@ -45,8 +46,8 @@ use style::Theme;
 
 use self::corner::CornerWidgets;
 use self::operator::ModTargetPicker;
-use self::style::OPEN_SANS_SEMI_BOLD;
 use self::style::container::ContainerStyle;
+use self::style::OPEN_SANS_SEMI_BOLD;
 
 use crate::settings::Settings;
 
@@ -55,7 +56,8 @@ pub const GUI_HEIGHT: usize = 12 * 55;
 
 const FONT_SIZE: u16 = 9;
 const LINE_HEIGHT: u16 = 12;
-const LINE_HEIGHT_RELATIVE: LineHeight = LineHeight::Relative(LINE_HEIGHT as f32 / FONT_SIZE as f32);
+const LINE_HEIGHT_RELATIVE: LineHeight =
+    LineHeight::Relative(LINE_HEIGHT as f32 / FONT_SIZE as f32);
 
 const OPEN_SANS_BYTES_REGULAR: &[u8] =
     include_bytes!("../../../contrib/open-sans/OpenSans-Regular.ttf");
@@ -565,10 +567,7 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
     }
     */
 
-    fn update(
-        &mut self,
-        message: Self::Message,
-    ) -> Command<Self::Message> {
+    fn update(&mut self, message: Self::Message) -> Command<Self::Message> {
         match message {
             Message::Frame => {
                 if self.sync_handle.have_patches_changed() {

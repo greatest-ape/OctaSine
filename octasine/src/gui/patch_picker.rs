@@ -7,13 +7,16 @@ use iced_baseview::widget::tooltip::Position;
 use iced_baseview::widget::{PickList, Row};
 use iced_baseview::{
     core::{Element, Length},
-    widget::Column, widget::Container, widget::Space, widget::Text,
+    widget::Column,
+    widget::Container,
+    widget::Space,
+    widget::Text,
 };
 
 use super::boolean_button::{voice_mode_button, BooleanButton};
 use super::common::tooltip;
-use super::{LINE_HEIGHT, LINE_HEIGHT_RELATIVE};
 use super::{style::Theme, GuiSyncHandle, Message, FONT_SIZE};
+use super::{LINE_HEIGHT, LINE_HEIGHT_RELATIVE};
 
 const ACTIONS: &[Action] = &[
     Action::RenamePatch,

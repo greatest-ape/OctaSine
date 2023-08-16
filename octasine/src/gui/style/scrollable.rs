@@ -1,6 +1,6 @@
 use iced_baseview::{
-    widget::scrollable::{Scrollbar, Scroller, StyleSheet},
     core::Color,
+    widget::scrollable::{Scrollbar, Scroller, StyleSheet},
 };
 
 use super::Theme;

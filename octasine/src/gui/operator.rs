@@ -1,8 +1,11 @@
 use iced_baseview::widget::tooltip::Position;
 use iced_baseview::{
     core::{alignment::Horizontal, Alignment, Element, Length},
-    widget::Column, widget::Container, widget::Row, widget::Space,
-    widget::Text, 
+    widget::Column,
+    widget::Container,
+    widget::Row,
+    widget::Space,
+    widget::Text,
 };
 
 use crate::parameters::velocity_sensitivity::VelocitySensitivityValue;
@@ -18,10 +21,10 @@ use super::boolean_button::{operator_mute_button, BooleanButton};
 use super::common::{container_l1, container_l2, container_l3, space_l2, space_l3, tooltip};
 use super::envelope::Envelope;
 use super::knob::{self, OctaSineKnob};
-use super::{mod_target_picker, LINE_HEIGHT_RELATIVE};
 use super::style::Theme;
 use super::wave_display::WaveDisplay;
 use super::wave_picker::WavePicker;
+use super::{mod_target_picker, LINE_HEIGHT_RELATIVE};
 use super::{Message, FONT_SIZE, LINE_HEIGHT};
 
 pub enum ModTargetPicker {

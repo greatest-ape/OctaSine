@@ -20,7 +20,10 @@ pub mod text_input;
 pub mod wave_display;
 pub mod wave_picker;
 
-use iced_baseview::{core::Font, runtime::font::{Family, Weight, Stretch}};
+use iced_baseview::{
+    core::Font,
+    runtime::font::{Family, Stretch, Weight},
+};
 use serde::{Deserialize, Serialize};
 
 /*

@@ -1,7 +1,10 @@
 use iced_baseview::widget::tooltip::Position;
 use iced_baseview::{
     core::{alignment::Horizontal, Alignment, Element, Length},
-    widget::Checkbox, widget::Column, widget::Space, widget::Text,
+    widget::Checkbox,
+    widget::Column,
+    widget::Space,
+    widget::Text,
 };
 
 use crate::parameters::operator_mod_target::ModTargetStorage;

@@ -1,11 +1,11 @@
 use std::borrow::Cow;
 
 use iced_baseview::{
+    core::{Element, Length},
     widget::Column,
     widget::Row,
     widget::Space,
     widget::{tooltip::Position, Container, Tooltip},
-    core::{Element, Length},
 };
 
 use super::LINE_HEIGHT;

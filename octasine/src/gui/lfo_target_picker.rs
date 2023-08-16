@@ -1,6 +1,6 @@
-use iced_baseview::widget::PickList;
 use iced_baseview::core::{Element, Length};
 use iced_baseview::widget::text::LineHeight;
+use iced_baseview::widget::PickList;
 
 use crate::parameters::lfo_target::LfoTargetParameter;
 use crate::parameters::{

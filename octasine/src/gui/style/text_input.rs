@@ -1,4 +1,7 @@
-use iced_baseview::{widget::text_input::{Appearance, StyleSheet}, core::Color};
+use iced_baseview::{
+    core::Color,
+    widget::text_input::{Appearance, StyleSheet},
+};
 
 use super::Theme;
 

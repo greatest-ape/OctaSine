@@ -7,11 +7,11 @@ use iced_baseview::{
     core::event::Status,
     core::keyboard,
     core::mouse::{self, Button, Cursor},
+    core::{Color, Element, Length, Point, Rectangle},
     widget::{
         canvas::{self, path::Arc, Cache, Frame, LineCap, Path, Program, Stroke},
         Canvas,
     },
-    core::{Color, Element, Length, Point, Rectangle},
 };
 
 use crate::parameters::WrappedParameter;
@@ -199,32 +199,36 @@ impl Program<Message, iced_baseview::Renderer<Theme>> for Knob {
     fn draw(
         &self,
         _state: &Self::State,
-	renderer: &iced_baseview::Renderer<Theme>,
+        renderer: &iced_baseview::Renderer<Theme>,
         theme: &Theme,
         bounds: Rectangle,
         _cursor: Cursor,
     ) -> Vec<canvas::Geometry> {
-        let a = self.cache_theme_sensitive.draw(renderer, bounds.size(), |frame| {
-            let appearance = StyleSheet::active(theme, ());
+        let a = self
+            .cache_theme_sensitive
+            .draw(renderer, bounds.size(), |frame| {
+                let appearance = StyleSheet::active(theme, ());
 
-            self.draw_arc(frame, appearance.arc_empty_color, 0.0, 1.0);
+                self.draw_arc(frame, appearance.arc_empty_color, 0.0, 1.0);
 
-            self.draw_marker_dot(frame, 0.0, appearance.end_dot_color);
-            self.draw_marker_dot(frame, 1.0, appearance.end_dot_color);
+                self.draw_marker_dot(frame, 0.0, appearance.end_dot_color);
+                self.draw_marker_dot(frame, 1.0, appearance.end_dot_color);
 
-            self.draw_marker_dot(frame, self.anchor_dot_value, appearance.anchor_dot_color);
-        });
-        let b = self.cache_value_sensitive.draw(renderer, bounds.size(), |frame| {
-            let appearance = StyleSheet::active(theme, ());
+                self.draw_marker_dot(frame, self.anchor_dot_value, appearance.anchor_dot_color);
+            });
+        let b = self
+            .cache_value_sensitive
+            .draw(renderer, bounds.size(), |frame| {
+                let appearance = StyleSheet::active(theme, ());
 
-            let start_value = match self.variant {
-                KnobVariant::Regular => 0.0,
-                KnobVariant::Bipolar => self.anchor_dot_value,
-            };
+                let start_value = match self.variant {
+                    KnobVariant::Regular => 0.0,
+                    KnobVariant::Bipolar => self.anchor_dot_value,
+                };
 
-            self.draw_arc(frame, appearance.arc_filled_color, start_value, self.value);
-            self.draw_notch(frame, appearance.notch_color, self.value);
-        });
+                self.draw_arc(frame, appearance.arc_filled_color, start_value, self.value);
+                self.draw_notch(frame, appearance.notch_color, self.value);
+            });
 
         vec![a, b]
     }

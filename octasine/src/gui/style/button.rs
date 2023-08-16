@@ -1,6 +1,6 @@
 use iced_baseview::{
-    widget::button::{Appearance, StyleSheet},
     core::Color,
+    widget::button::{Appearance, StyleSheet},
 };
 
 use super::Theme;

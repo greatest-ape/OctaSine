@@ -1,6 +1,6 @@
 use iced_baseview::{
-    widget::container::{Appearance, StyleSheet},
     core::Color,
+    widget::container::{Appearance, StyleSheet},
 };
 
 use super::{colors, Theme};

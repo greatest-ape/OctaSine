@@ -1,6 +1,6 @@
 use iced_baseview::{
-    style::application::{Appearance, StyleSheet},
     core::Color,
+    style::application::{Appearance, StyleSheet},
 };
 
 use super::Theme;

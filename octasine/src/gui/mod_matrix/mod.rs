@@ -6,10 +6,8 @@ mod operator_box;
 mod output_box;
 
 use iced_baseview::core::mouse::Cursor;
-use iced_baseview::widget::canvas::{
-    event, Cache, Canvas, Frame, Geometry, Path, Program, Stroke,
-};
 use iced_baseview::core::{Color, Element, Length, Point, Rectangle, Size};
+use iced_baseview::widget::canvas::{event, Cache, Canvas, Frame, Geometry, Path, Program, Stroke};
 
 use crate::parameters::{
     ModTargetStorage, Operator2ModulationTargetValue, Operator3ModulationTargetValue,

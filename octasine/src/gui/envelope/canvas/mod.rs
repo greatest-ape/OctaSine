@@ -2,9 +2,9 @@ mod common;
 mod draw;
 mod events;
 
+use iced_baseview::core::{mouse::Cursor, Element, Length, Point, Rectangle, Size};
 use iced_baseview::widget::canvas::{event, Cache, Canvas, Geometry, Program};
-use iced_baseview::{widget::Container, };
-use iced_baseview::core::{Element, Length, Point, Rectangle, Size, mouse::Cursor};
+use iced_baseview::widget::Container;
 
 use crate::audio::voices::log10_table::Log10Table;
 use crate::parameters::operator_envelope::{

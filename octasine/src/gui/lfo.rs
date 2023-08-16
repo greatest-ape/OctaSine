@@ -3,7 +3,9 @@ use iced_baseview::widget::tooltip::Position;
 use iced_baseview::widget::Container;
 use iced_baseview::{
     core::{alignment::Horizontal, alignment::Vertical, Element, Length},
-    widget::Column, widget::Row, widget::Space,
+    widget::Column,
+    widget::Row,
+    widget::Space,
     widget::Text,
 };
 

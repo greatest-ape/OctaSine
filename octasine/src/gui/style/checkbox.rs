@@ -1,6 +1,6 @@
 use iced_baseview::{
-    widget::checkbox::{Appearance, StyleSheet},
     core::Color,
+    widget::checkbox::{Appearance, StyleSheet},
 };
 
 use super::Theme;
