@@ -31,7 +31,7 @@ use super::{
     mod_matrix::ModulationMatrix,
     patch_picker::PatchPicker,
     style::{container::ContainerStyle, Theme},
-    Message, FONT_SIZE, LINE_HEIGHT,
+    Message, FONT_SIZE, LINE_HEIGHT, LINE_HEIGHT_RELATIVE,
 };
 
 pub struct CornerWidgets {
@@ -127,6 +127,7 @@ impl CornerWidgets {
                 Button::new(
                     Text::new("CONTROLS")
                         .font(theme.font_regular())
+                        .line_height(LINE_HEIGHT_RELATIVE)
                         .height(Length::Fixed(LINE_HEIGHT.into()))
                         .horizontal_alignment(Horizontal::Center),
                 )
@@ -140,6 +141,7 @@ impl CornerWidgets {
                 Button::new(
                     Text::new("THEME")
                         .font(theme.font_regular())
+                        .line_height(LINE_HEIGHT_RELATIVE)
                         .height(Length::Fixed(LINE_HEIGHT.into()))
                         .horizontal_alignment(Horizontal::Center),
                 )
@@ -162,6 +164,7 @@ impl CornerWidgets {
                         Text::new("OctaSine")
                             .size(FONT_SIZE * 3 / 2)
                             .height(Length::Fixed(f32::from(FONT_SIZE * 3 / 2)))
+                            .line_height(LINE_HEIGHT_RELATIVE)
                             .width(Length::Fill)
                             .font(theme.font_heading())
                             .horizontal_alignment(Horizontal::Center),
@@ -183,6 +186,7 @@ impl CornerWidgets {
                 Text::new("GLIDE")
                     .horizontal_alignment(Horizontal::Center)
                     .font(theme.font_bold())
+                    .line_height(LINE_HEIGHT_RELATIVE)
                     .height(Length::Fixed(LINE_HEIGHT.into()))
                     .width(LINE_HEIGHT * 4),
             );
@@ -218,6 +222,7 @@ impl CornerWidgets {
             )
             .font(theme.font_regular())
             .text_size(FONT_SIZE)
+            .text_line_height(LINE_HEIGHT_RELATIVE)
             .padding(theme.picklist_padding())
             .width(Length::Fixed(f32::from(LINE_HEIGHT * 3)));
 

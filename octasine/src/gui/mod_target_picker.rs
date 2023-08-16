@@ -13,7 +13,7 @@ use crate::sync::GuiSyncHandle;
 
 use super::common::tooltip;
 use super::style::Theme;
-use super::{Message, FONT_SIZE, LINE_HEIGHT};
+use super::{Message, FONT_SIZE, LINE_HEIGHT, LINE_HEIGHT_RELATIVE};
 
 pub fn operator_2_target<H: GuiSyncHandle>(
     sync_handle: &H,
@@ -74,6 +74,7 @@ where
         let title = Text::new(self.title.clone())
             .horizontal_alignment(Horizontal::Center)
             .font(theme.font_bold())
+            .line_height(LINE_HEIGHT_RELATIVE)
             .height(Length::Fixed(LINE_HEIGHT.into()));
         let title = tooltip(
             theme,
@@ -101,6 +102,7 @@ where
             })
             .font(theme.font_regular())
             .size(FONT_SIZE)
+            .text_line_height(LINE_HEIGHT_RELATIVE)
             .text_size(FONT_SIZE)
             .spacing(4);
 

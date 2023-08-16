@@ -1,5 +1,6 @@
 use iced_baseview::widget::PickList;
 use iced_baseview::core::{Element, Length};
+use iced_baseview::widget::text::LineHeight;
 
 use crate::parameters::lfo_target::LfoTargetParameter;
 use crate::parameters::{
@@ -8,6 +9,7 @@ use crate::parameters::{
     WrappedParameter,
 };
 
+use super::LINE_HEIGHT;
 use super::{style::Theme, GuiSyncHandle, Message, FONT_SIZE};
 
 #[derive(Clone, PartialEq, Eq)]
@@ -97,6 +99,7 @@ impl LfoTargetPicker {
         )
         .font(theme.font_regular())
         .text_size(FONT_SIZE)
+        .text_line_height(LineHeight::Absolute(LINE_HEIGHT.into()))
         .padding(theme.picklist_padding())
         .width(Length::Fill)
         .into()

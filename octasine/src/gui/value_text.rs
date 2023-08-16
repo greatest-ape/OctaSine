@@ -8,7 +8,7 @@ use iced_baseview::{widget::Button};
 use crate::parameters::{ParameterValue, WrappedParameter};
 
 use super::style::button::ButtonStyle;
-use super::LINE_HEIGHT;
+use super::{LINE_HEIGHT, LINE_HEIGHT_RELATIVE};
 use super::{style::Theme, GuiSyncHandle, Message};
 
 #[derive(Debug, Clone)]
@@ -40,6 +40,7 @@ impl<P: ParameterValue> ValueText<P> {
                 .horizontal_alignment(Horizontal::Center)
                 .width(Length::Fill)
                 .font(theme.font_regular())
+                .line_height(LINE_HEIGHT_RELATIVE)
                 .height(Length::Fixed(LINE_HEIGHT.into())),
         )
         .padding(0)

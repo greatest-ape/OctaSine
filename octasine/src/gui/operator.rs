@@ -18,7 +18,7 @@ use super::boolean_button::{operator_mute_button, BooleanButton};
 use super::common::{container_l1, container_l2, container_l3, space_l2, space_l3, tooltip};
 use super::envelope::Envelope;
 use super::knob::{self, OctaSineKnob};
-use super::mod_target_picker;
+use super::{mod_target_picker, LINE_HEIGHT_RELATIVE};
 use super::style::Theme;
 use super::wave_display::WaveDisplay;
 use super::wave_picker::WavePicker;
@@ -141,7 +141,8 @@ impl OperatorWidgets {
                     .push(
                         Text::new(format!("OP {}", self.index + 1))
                             .size(FONT_SIZE + FONT_SIZE / 2)
-                            .height(Length::Fixed(f32::from(FONT_SIZE + FONT_SIZE / 2)))
+                            .height(Length::Fixed(f32::from(LINE_HEIGHT + LINE_HEIGHT / 2)))
+                            .line_height(LINE_HEIGHT_RELATIVE)
                             .font(theme.font_heading())
                             .horizontal_alignment(Horizontal::Center),
                     )

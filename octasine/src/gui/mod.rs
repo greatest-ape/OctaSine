@@ -21,9 +21,11 @@ use anyhow::Context;
 use cfg_if::cfg_if;
 use compact_str::CompactString;
 use iced_aw::native::{Card, Modal};
+use iced_baseview::core::Pixels;
 use iced_baseview::core::alignment::Horizontal;
 use iced_baseview::graphics::Antialiasing;
 use iced_baseview::runtime::command::Action;
+use iced_baseview::widget::text::LineHeight;
 use iced_baseview::widget::{Button, PickList, Text};
 use iced_baseview::{executor, window::WindowSubs, Application, runtime::Command, futures::Subscription};
 use iced_baseview::{
@@ -51,8 +53,9 @@ use crate::settings::Settings;
 pub const GUI_WIDTH: usize = 12 * 82;
 pub const GUI_HEIGHT: usize = 12 * 55;
 
-const FONT_SIZE: u16 = 12;
+const FONT_SIZE: u16 = 9;
 const LINE_HEIGHT: u16 = 12;
+const LINE_HEIGHT_RELATIVE: LineHeight = LineHeight::Relative(LINE_HEIGHT as f32 / FONT_SIZE as f32);
 
 const OPEN_SANS_BYTES_REGULAR: &[u8] =
     include_bytes!("../../../contrib/open-sans/OpenSans-Regular.ttf");

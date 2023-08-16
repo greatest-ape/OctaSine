@@ -2,6 +2,7 @@ use std::fmt::Display;
 
 use compact_str::CompactString;
 use iced_baseview::core::alignment::Horizontal;
+use iced_baseview::widget::text::LineHeight;
 use iced_baseview::widget::tooltip::Position;
 use iced_baseview::widget::{PickList, Row};
 use iced_baseview::{
@@ -11,7 +12,7 @@ use iced_baseview::{
 
 use super::boolean_button::{voice_mode_button, BooleanButton};
 use super::common::tooltip;
-use super::LINE_HEIGHT;
+use super::{LINE_HEIGHT, LINE_HEIGHT_RELATIVE};
 use super::{style::Theme, GuiSyncHandle, Message, FONT_SIZE};
 
 const ACTIONS: &[Action] = &[
@@ -107,6 +108,7 @@ impl PatchPicker {
             |option| Message::ChangePatch(option.index),
         )
         .font(theme.font_regular())
+        .text_line_height(LineHeight::Absolute(LINE_HEIGHT.into()))
         .text_size(FONT_SIZE)
         .padding(theme.picklist_padding())
         .width(Length::Fill);
@@ -114,6 +116,7 @@ impl PatchPicker {
         let action_picker = PickList::new(ACTIONS, None, Action::to_message)
             .font(theme.font_regular())
             .text_size(FONT_SIZE)
+            .text_line_height(LineHeight::Absolute(LINE_HEIGHT.into()))
             .padding(theme.picklist_padding())
             .placeholder("ACTIONS..")
             .width(Length::Fill);
@@ -137,8 +140,9 @@ impl PatchPicker {
                         .push(
                             Text::new("Patch")
                                 .size(f32::from(FONT_SIZE * 3 / 2))
-                                .height(Length::Fixed(f32::from(FONT_SIZE * 3 / 2)))
+                                .height(Length::Fixed(f32::from(LINE_HEIGHT * 3 / 2)))
                                 .font(theme.font_heading())
+                                .line_height(LINE_HEIGHT_RELATIVE)
                                 .horizontal_alignment(Horizontal::Center)
                                 .width(LINE_HEIGHT * 6),
                         )

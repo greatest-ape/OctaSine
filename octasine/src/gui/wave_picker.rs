@@ -15,7 +15,7 @@ use crate::sync::GuiSyncHandle;
 use super::common::tooltip;
 use super::style::Theme;
 use super::value_text::ValueText;
-use super::{Message, LINE_HEIGHT};
+use super::{Message, LINE_HEIGHT, LINE_HEIGHT_RELATIVE};
 
 const WIDTH: u16 = LINE_HEIGHT * 2;
 const HEIGHT: u16 = LINE_HEIGHT * 2;
@@ -85,6 +85,7 @@ where
         let title = Text::new(&self.title)
             .horizontal_alignment(Horizontal::Center)
             .font(theme.font_bold())
+            .line_height(LINE_HEIGHT_RELATIVE)
             .height(Length::Fixed(LINE_HEIGHT.into()));
         let title = tooltip(theme, "Wave form", Position::Top, title);
 

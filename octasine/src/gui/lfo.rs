@@ -1,3 +1,4 @@
+use iced_baseview::widget::text::LineHeight;
 use iced_baseview::widget::tooltip::Position;
 use iced_baseview::widget::Container;
 use iced_baseview::{
@@ -20,7 +21,7 @@ use super::knob::{self, OctaSineKnob};
 use super::lfo_target_picker::LfoTargetPicker;
 use super::style::Theme;
 use super::wave_picker::WavePicker;
-use super::{Message, FONT_SIZE, LINE_HEIGHT};
+use super::{Message, FONT_SIZE, LINE_HEIGHT, LINE_HEIGHT_RELATIVE};
 
 pub struct LfoWidgets {
     index: usize,
@@ -68,7 +69,8 @@ impl LfoWidgets {
     pub fn view(&self, theme: &Theme) -> crate::gui::Element {
         let title = Text::new(format!("LFO {}", self.index + 1))
             .size(FONT_SIZE + FONT_SIZE / 2)
-            .height(Length::Fixed(f32::from(FONT_SIZE + FONT_SIZE / 2)))
+            .height(Length::Fixed(f32::from(LINE_HEIGHT + LINE_HEIGHT / 2)))
+            .line_height(LINE_HEIGHT_RELATIVE)
             .font(theme.font_heading())
             .width(Length::Fixed(f32::from(LINE_HEIGHT * 9)))
             .horizontal_alignment(Horizontal::Center)
