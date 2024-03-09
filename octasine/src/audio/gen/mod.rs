@@ -64,7 +64,6 @@ impl<const W: usize> Default for VoiceData<W> {
         Self {
             voice_index: 0,
             key_velocity: [0.0; W],
-            /// Master volume is calculated per-voice, since it can be an LFO target
             master_volume: [0.0; W],
             operators: Default::default(),
         }

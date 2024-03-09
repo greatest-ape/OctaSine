@@ -400,14 +400,14 @@ dependencies = [
 [[package]]
 name = "baseview"
 version = "0.1.0"
-source = "git+https://github.com/RustAudio/baseview.git?rev=1d9806d#1d9806d5bd92275d0d8142d9c9c90198757b9b25"
+source = "git+https://github.com/RustAudio/baseview.git?rev=2c1b1a7#2c1b1a7b0fef1a29a5150a6a8f6fef6a0cbab8c4"
 dependencies = [
  "cocoa",
  "core-foundation",
  "keyboard-types",
  "nix 0.22.3",
  "objc",
- "raw-window-handle 0.4.3",
+ "raw-window-handle",
  "uuid",
  "winapi",
  "x11",
@@ -895,12 +895,6 @@ dependencies = [
  "generic-array",
  "typenum",
 ]
-
-[[package]]
-name = "cty"
-version = "0.2.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b365fabc795046672053e29c954733ec3b05e4be654ab130fe8f1f94d7051f35"
 
 [[package]]
 name = "d3d12"
@@ -1643,7 +1637,7 @@ dependencies = [
 [[package]]
 name = "iced_baseview"
 version = "0.0.3"
-source = "git+https://github.com/BillyDM/iced_baseview.git?rev=9506c90#9506c90c15f53a9ff72eb775e6a9d85a82b0bba4"
+source = "git+https://github.com/greatest-ape/iced_baseview.git?rev=055d88f#055d88f4f4e4eb601b1323ebc89ffed33293867a"
 dependencies = [
  "baseview",
  "cfg-if",
@@ -1656,8 +1650,7 @@ dependencies = [
  "iced_wgpu",
  "keyboard-types",
  "log",
- "raw-window-handle 0.4.3",
- "raw-window-handle 0.5.2",
+ "raw-window-handle",
  "thiserror",
 ]
 
@@ -1713,7 +1706,7 @@ dependencies = [
  "iced_style",
  "log",
  "lyon",
- "raw-window-handle 0.5.2",
+ "raw-window-handle",
  "thiserror",
 ]
 
@@ -1759,7 +1752,7 @@ dependencies = [
  "iced_graphics",
  "iced_native",
  "log",
- "raw-window-handle 0.5.2",
+ "raw-window-handle",
  "wgpu",
  "wgpu_glyph",
 ]
@@ -2328,8 +2321,7 @@ dependencies = [
  "palette",
  "parking_lot 0.12.1",
  "quickcheck",
- "raw-window-handle 0.4.3",
- "raw-window-handle 0.5.2",
+ "raw-window-handle",
  "rfd",
  "ringbuf",
  "seahash",
@@ -2737,15 +2729,6 @@ checksum = "9c8a99fddc9f0ba0a85884b8d14e3592853e787d581ca1816c91349b10e4eeab"
 
 [[package]]
 name = "raw-window-handle"
-version = "0.4.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b800beb9b6e7d2df1fe337c9e3d04e3af22a124460fb4c30fcc22c9117cefb41"
-dependencies = [
- "cty",
-]
-
-[[package]]
-name = "raw-window-handle"
 version = "0.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f2ff9a1f06a88b01621b7ae906ef0211290d1c8a168a15542486a8f61c0833b9"
@@ -2862,7 +2845,7 @@ dependencies = [
  "objc-foundation",
  "objc_id",
  "pollster",
- "raw-window-handle 0.5.2",
+ "raw-window-handle",
  "urlencoding",
  "wasm-bindgen",
  "wasm-bindgen-futures",
@@ -3759,7 +3742,7 @@ dependencies = [
  "naga",
  "parking_lot 0.12.1",
  "profiling",
- "raw-window-handle 0.5.2",
+ "raw-window-handle",
  "smallvec",
  "static_assertions",
  "wasm-bindgen",
@@ -3785,7 +3768,7 @@ dependencies = [
  "naga",
  "parking_lot 0.12.1",
  "profiling",
- "raw-window-handle 0.5.2",
+ "raw-window-handle",
  "smallvec",
  "thiserror",
  "web-sys",
@@ -3825,7 +3808,7 @@ dependencies = [
  "parking_lot 0.12.1",
  "profiling",
  "range-alloc",
- "raw-window-handle 0.5.2",
+ "raw-window-handle",
  "renderdoc-sys",
  "smallvec",
  "thiserror",

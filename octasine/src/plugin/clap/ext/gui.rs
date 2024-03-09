@@ -8,7 +8,7 @@ use clap_sys::{
     ext::gui::{clap_gui_resize_hints, clap_plugin_gui, clap_window},
     plugin::clap_plugin,
 };
-use rwh04::{HasRawWindowHandle, RawWindowHandle};
+use raw_window_handle::{HasRawWindowHandle, RawWindowHandle};
 
 use crate::{
     gui::{get_iced_baseview_settings, OctaSineIcedApplication, GUI_HEIGHT, GUI_WIDTH},
@@ -175,7 +175,7 @@ pub struct ParentWindow(clap_window);
 unsafe impl HasRawWindowHandle for ParentWindow {
     #[cfg(target_os = "macos")]
     fn raw_window_handle(&self) -> RawWindowHandle {
-        let mut handle = rwh04::AppKitHandle::empty();
+        let mut handle = raw_window_handle::AppKitWindowHandle::empty();
 
         unsafe {
             handle.ns_view = self.0.specific.cocoa;
@@ -186,7 +186,7 @@ unsafe impl HasRawWindowHandle for ParentWindow {
 
     #[cfg(target_os = "windows")]
     fn raw_window_handle(&self) -> RawWindowHandle {
-        let mut handle = rwh04::Win32Handle::empty();
+        let mut handle = raw_window_handle::Win32WindowHandle::empty();
 
         unsafe {
             handle.hwnd = self.0.specific.win32;
@@ -197,7 +197,7 @@ unsafe impl HasRawWindowHandle for ParentWindow {
 
     #[cfg(target_os = "linux")]
     fn raw_window_handle(&self) -> RawWindowHandle {
-        let mut handle = rwh04::XcbHandle::empty();
+        let mut handle = raw_window_handle::XcbWindowHandle::empty();
 
         unsafe {
             handle.window = self.0.specific.x11 as u32;

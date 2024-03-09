@@ -1055,7 +1055,7 @@ pub fn get_iced_baseview_settings<H: GuiSyncHandle>(
 }
 
 #[cfg(target_os = "macos")]
-struct CurrentWindowHandle(rwh05::RawWindowHandle);
+struct CurrentWindowHandle(raw_window_handle::RawWindowHandle);
 
 #[cfg(target_os = "macos")]
 impl CurrentWindowHandle {
@@ -1078,19 +1078,19 @@ impl CurrentWindowHandle {
                 return None;
             }
 
-            let mut handle = rwh05::AppKitWindowHandle::empty();
+            let mut handle = raw_window_handle::AppKitWindowHandle::empty();
 
             handle.ns_window = ns_window as *mut core::ffi::c_void;
             handle.ns_view = ns_view as *mut core::ffi::c_void;
 
-            Some(Self(rwh05::RawWindowHandle::AppKit(handle)))
+            Some(Self(raw_window_handle::RawWindowHandle::AppKit(handle)))
         }
     }
 }
 
 #[cfg(target_os = "macos")]
-unsafe impl rwh05::HasRawWindowHandle for CurrentWindowHandle {
-    fn raw_window_handle(&self) -> rwh05::RawWindowHandle {
+unsafe impl raw_window_handle::HasRawWindowHandle for CurrentWindowHandle {
+    fn raw_window_handle(&self) -> raw_window_handle::RawWindowHandle {
         self.0
     }
 }
