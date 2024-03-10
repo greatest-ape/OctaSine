@@ -1,6 +1,7 @@
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 
 use iced_baseview::{open_blocking, open_parented, window::WindowHandle};
+use parking_lot::Mutex;
 use raw_window_handle::{HasRawWindowHandle, RawWindowHandle};
 
 use crate::{
@@ -13,11 +14,8 @@ use crate::gui::OctaSineIcedApplication;
 
 pub struct Editor<H: GuiSyncHandle> {
     sync_state: H,
-    window_handle: Option<Arc<Mutex<WindowHandle<Message>>>>,
+    window_handle: Option<WindowHandleWrapper>,
 }
-
-// FIXME: this is very dubious
-unsafe impl<H: GuiSyncHandle> Send for Editor<H> { }
 
 impl<H: GuiSyncHandle> Editor<H> {
     pub fn new(sync_state: H) -> Self {
@@ -25,15 +23,6 @@ impl<H: GuiSyncHandle> Editor<H> {
             sync_state,
             window_handle: None,
         }
-    }
-
-    pub fn open_parented(&mut self, parent: ParentWindow, sync_handle: H) {
-        let window_handle = open_parented::<OctaSineIcedApplication<H>, ParentWindow>(
-            &parent,
-            get_iced_baseview_settings(sync_handle, PLUGIN_SEMVER_NAME.to_string()),
-        );
-
-        self.window_handle = Some(Arc::new(Mutex::new(window_handle)));
     }
 
     pub fn open_blocking(sync_handle: H) {
@@ -58,14 +47,19 @@ impl<H: GuiSyncHandle> vst::editor::Editor for Editor<H> {
             return false;
         }
 
-        self.open_parented(ParentWindow(parent), self.sync_state.clone());
+        let window_handle = open_parented::<OctaSineIcedApplication<H>, ParentWindow>(
+            &ParentWindow(parent),
+            get_iced_baseview_settings(self.sync_state.clone(), PLUGIN_SEMVER_NAME.to_string()),
+        );
+
+        self.window_handle = Some(WindowHandleWrapper::new(window_handle));
 
         true
     }
 
     fn close(&mut self) {
         if let Some(window_handle) = self.window_handle.take() {
-            window_handle.try_lock().unwrap().close_window();
+            window_handle.close();
         }
     }
 
@@ -73,6 +67,27 @@ impl<H: GuiSyncHandle> vst::editor::Editor for Editor<H> {
         self.window_handle.is_some()
     }
 }
+
+struct WindowHandleWrapper(Arc<Mutex<WindowHandle<Message>>>);
+
+impl WindowHandleWrapper {
+    fn new(window_handle: WindowHandle<Message>) -> Self {
+        Self(Arc::new(Mutex::new(window_handle)))
+    }
+
+    fn close(&self) {
+        self.0.lock().close_window();
+    }
+}
+
+// Partly dubious workaround for Send requirement on vst::Plugin and the (new)
+// baseview api contract requiring explicitly telling window to close.
+//
+// This is essentially a way of avoiding reimplementing vst2 support on top of
+// vst2-sys. It should be noted that WindowHandleWrapper.close() is only called
+// from a method that has mutable access to the editor object, e.g., Rust vst
+// API authors assume it will only be called by the correct thread.
+unsafe impl Send for WindowHandleWrapper { }
 
 pub struct ParentWindow(pub *mut ::core::ffi::c_void);
 

@@ -10,7 +10,7 @@ default = ["glow"]
 # Enable clap plugin support
 clap = ["atomic_refcell", "bytemuck", "clap-sys", "parking_lot"]
 # Enable VST2 plugin support
-vst2 = ["vst"]
+vst2 = ["vst", "parking_lot"]
 # Use glow (OpenGL) for graphics
 glow = ["gui", "iced_baseview/glow", "iced_audio/glow"]
 # Use wgpu for graphics
@@ -70,6 +70,8 @@ vst = { version = "0.4", optional = true }
 atomic_refcell = { version = "0.1", optional = true }
 bytemuck = { version = "1", optional = true }
 clap-sys = { version = "0.3", optional = true }
+
+# vst2 / clap
 parking_lot = { version = "0.12", optional = true }
 
 # GUI
