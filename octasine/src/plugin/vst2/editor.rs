@@ -87,7 +87,7 @@ impl WindowHandleWrapper {
 // vst2-sys. It should be noted that WindowHandleWrapper.close() is only called
 // from a method that has mutable access to the editor object, e.g., Rust vst
 // API authors assume it will only be called by the correct thread.
-unsafe impl Send for WindowHandleWrapper { }
+unsafe impl Send for WindowHandleWrapper {}
 
 pub struct ParentWindow(pub *mut ::core::ffi::c_void);
 
