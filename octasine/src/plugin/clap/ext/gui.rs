@@ -95,7 +95,6 @@ unsafe extern "C" fn adjust_size(
     false
 }
 
-#[cfg(not(target_os = "macos"))]
 unsafe extern "C" fn set_size(_plugin: *const clap_plugin, _width: u32, _height: u32) -> bool {
     false
 }
@@ -155,13 +154,6 @@ pub const CONFIG: clap_plugin_gui = clap_plugin_gui {
     can_resize: Some(can_resize),
     get_resize_hints: Some(get_resize_hints),
     adjust_size: Some(adjust_size),
-    // Hack to disable Bitwig GUI support on macOS until issues with
-    // cleaning up resources when destroying window are resolved.
-    // REAPER currently doesn't care if this field is a null pointer,
-    // while Bitwig disables GUI support if it is.
-    #[cfg(target_os = "macos")]
-    set_size: None,
-    #[cfg(not(target_os = "macos"))]
     set_size: Some(set_size),
     set_parent: Some(set_parent),
     set_transient: Some(set_transient),
