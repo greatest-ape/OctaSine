@@ -4,7 +4,7 @@
 
 set -e
 
-cargo xtask bundle octasine --profile "release-debug" --features "clap"
+cargo xtask bundle -p octasine --profile "release-debug" --features "clap"
 
 TARGET="/Library/Audio/Plug-Ins/CLAP/OctaSine.clap"
 

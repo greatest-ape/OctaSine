@@ -98,8 +98,8 @@ git checkout tags/v0.9.0
 * Build and install the plugin:
 
 ```cmd
-cargo xtask bundle octasine --release --features "vst2"
-cargo xtask bundle octasine --release --features "clap"
+cargo xtask bundle -p octasine --release --features "vst2"
+cargo xtask bundle -p octasine --release --features "clap"
 ```
 
 * Copy `target\bundled\octasine.dll` to your VST plugin folder.
@@ -138,8 +138,8 @@ git checkout tags/v0.9.0
 * Build and install the plugin
 
 ```sh
-cargo xtask bundle octasine --release --features "vst2"
-cargo xtask bundle octasine --release --features "clap"
+cargo xtask bundle -p octasine --release --features "vst2"
+cargo xtask bundle -p octasine --release --features "clap"
 ```
 
 * Copy `target/bundled/octasine.so` to your VST plugin folder 
