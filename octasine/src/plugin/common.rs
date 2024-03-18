@@ -26,19 +26,7 @@ impl MtsClient {
         let midi_note = c_char::from_ne_bytes(midi_note.min(127).to_ne_bytes());
         let midi_channel = midi_channel
             .map(|midi_channel| c_char::from_ne_bytes(midi_channel.min(15).to_ne_bytes()))
-            .unwrap_or_else(|| {
-                // Try to account for the fact that ARM c_char is unsigned,
-                // while the API wants to be passed -1 to indicate "no
-                // particular channel"
-                #[cfg(any(target_arch = "aarch64", target_arch = "arm"))]
-                {
-                    u8::from_ne_bytes((-1i8).to_ne_bytes())
-                }
-                #[cfg(not(any(target_arch = "aarch64", target_arch = "arm")))]
-                {
-                    -1i8
-                }
-            });
+            .unwrap_or(-1i8);
 
         MTS_NoteToFrequency(self.0, midi_note, midi_channel)
     }
