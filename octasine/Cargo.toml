@@ -51,7 +51,7 @@ indexmap = { version = "2", features = ["serde"] }
 log = { version = "0.4", default-features = false }
 log-panics = "2"
 memchr = "2"
-mts-esp-client-sys = { git = "https://github.com/greatest-ape/mts-esp-client-sys.git", rev = "da259c3" }
+mts-esp-client-sys = { git = "https://github.com/greatest-ape/mts-esp-client-sys.git", rev = "8e43f2a" }
 once_cell = "1"
 os_info = "3"
 ringbuf = "0.3"

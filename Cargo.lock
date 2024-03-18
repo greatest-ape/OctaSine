@@ -2219,7 +2219,7 @@ dependencies = [
 [[package]]
 name = "mts-esp-client-sys"
 version = "0.1.0"
-source = "git+https://github.com/greatest-ape/mts-esp-client-sys.git?rev=da259c3#da259c328e664d21b657311af827111fb934fff2"
+source = "git+https://github.com/greatest-ape/mts-esp-client-sys.git?rev=8e43f2a#8e43f2a0f9609322b4f93acfaff55776200fe387"
 dependencies = [
  "cc",
 ]
