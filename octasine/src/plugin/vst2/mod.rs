@@ -16,11 +16,14 @@ use crate::sync::SyncState;
 use crate::utils::{init_logging, update_audio_parameters};
 use crate::{common::*, crate_version};
 
-use super::common::{crate_version_to_vst2_format, PLUGIN_SEMVER_NAME, PLUGIN_UNIQUE_VST2_ID};
+use super::common::{
+    crate_version_to_vst2_format, MtsClient, PLUGIN_SEMVER_NAME, PLUGIN_UNIQUE_VST2_ID,
+};
 
 pub struct OctaSine {
     pub audio: Box<AudioState>,
     pub sync: Arc<SyncState<vst::plugin::HostCallback>>,
+    pub mts_client: MtsClient,
     #[cfg(feature = "gui")]
     editor: Option<editor::Editor<Arc<SyncState<vst::plugin::HostCallback>>>>,
 }
@@ -39,12 +42,15 @@ impl OctaSine {
 
         let sync = Arc::new(SyncState::new(host));
 
+        let mts_client = unsafe { MtsClient::new() };
+
         #[cfg(feature = "gui")]
         let editor = editor::Editor::new(sync.clone());
 
         Self {
             audio: Default::default(),
             sync,
+            mts_client,
             #[cfg(feature = "gui")]
             editor: Some(editor),
         }
