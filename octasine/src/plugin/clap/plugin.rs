@@ -36,6 +36,7 @@ use crate::{
     audio::{gen::process_f32_runtime_select, AudioState},
     common::{BeatsPerMinute, EventToHost, NoteEvent, NoteEventInner, SampleRate},
     parameters::ParameterKey,
+    plugin::common::MtsClient,
     sync::SyncState,
     utils::{init_logging, update_audio_parameters},
 };
@@ -55,6 +56,7 @@ pub struct OctaSine {
     pub gui_parent: Mutex<Option<ParentWindow>>,
     pub gui_window_handle: Mutex<Option<WindowHandle<crate::gui::Message>>>,
     pub clap_plugin: AtomicRefCell<clap_plugin>,
+    pub mts_client: MtsClient,
 }
 
 impl OctaSine {
@@ -67,6 +69,8 @@ impl OctaSine {
             producer: Mutex::new(gui_event_producer),
             host,
         };
+
+        let mts_client = unsafe { MtsClient::new() };
 
         let plugin = Self {
             host,
@@ -89,6 +93,7 @@ impl OctaSine {
                 get_extension: Some(Self::get_extension),
                 on_main_thread: Some(Self::on_main_thread),
             }),
+            mts_client,
         };
 
         let plugin = Arc::new(plugin);

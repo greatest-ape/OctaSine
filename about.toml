@@ -13,7 +13,8 @@ accepted = [
     "Unicode-DFS-2016",
     "zlib-acknowledgement",
     "MIT-0",
-    "CC0-1.0"
+    "CC0-1.0",
+    "0BSD"
 ]
 
 targets = [
