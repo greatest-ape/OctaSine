@@ -20,6 +20,10 @@ members = [
 # [patch.'https://github.com/greatest-ape/sleef-trig']
 # sleef-trig = { path = "../sleef-trig" }
 
+# Same as original repo, but forked for longevity
+[patch.'https://github.com/nicokoch/reflink.git']
+reflink = { git = "https://github.com/greatest-ape/reflink.git", rev = "e8d93b4" }
+
 [profile.release]
 debug = false
 lto = "thin"

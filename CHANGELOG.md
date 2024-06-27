@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## Unreleased
+
+### Fixed
+
+- Fix GUI issues when using the clap plugin in Bitwig
+- Fix issue with activating operator 2 modulation target from GUI modulation
+  matrix
+
 ## 0.9.0 - 2023-08-03
 
 This release contains breaking changes. Voice phases are reset when they end,
