@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+- Fix GUI issues when using the clap plugin in Bitwig
 - Fix issue with activating operator 2 modulation target from GUI modulation
   matrix
 
