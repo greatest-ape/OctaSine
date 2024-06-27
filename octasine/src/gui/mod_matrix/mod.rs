@@ -260,6 +260,7 @@ impl ModulationMatrixComponents {
         self.operator_4_mod_1_box.v = parameters.operator_4_targets;
         self.operator_3_mod_2_box.v = parameters.operator_3_targets;
         self.operator_3_mod_1_box.v = parameters.operator_3_targets;
+        self.operator_2_mod_1_box.v = parameters.operator_2_targets;
 
         self.operator_4_mix_out_line
             .update(parameters.operator_4_mix);
