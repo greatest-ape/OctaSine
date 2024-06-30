@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 - Fix GUI issues when using the clap plugin in Bitwig
 - Fix issue with activating operator 2 modulation target from GUI modulation
   matrix
+- Show file save/load dialogs on top of plugin window on macOS
 
 ## 0.9.0 - 2023-08-03
 

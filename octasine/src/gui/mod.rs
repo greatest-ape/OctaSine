@@ -16,6 +16,7 @@ mod wave_picker;
 
 use std::io::Write;
 use std::path::PathBuf;
+use std::ptr::NonNull;
 
 use anyhow::Context;
 use cfg_if::cfg_if;
@@ -721,7 +722,7 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                             let mut builder = rfd::AsyncFileDialog::new()
                                 .set_title(TITLE)
                                 .add_filter("Patch", &["fxp"])
-                                .set_file_name(&patch_filename);
+                                .set_file_name(&*patch_filename);
 
                             if let Some(h) = CurrentWindowHandle::get() {
                                 builder = builder.set_parent(&h);
@@ -736,7 +737,7 @@ impl<H: GuiSyncHandle> Application for OctaSineIcedApplication<H> {
                             let opt_path_buf = rfd::AsyncFileDialog::new()
                                 .set_title(TITLE)
                                 .add_filter("Patch", &["fxp"])
-                                .set_file_name(&patch_filename)
+                                .set_file_name(&*patch_filename)
                                 .save_file()
                                 .await
                                 .map(|handle| handle.path().to_owned());
@@ -1055,7 +1056,7 @@ pub fn get_iced_baseview_settings<H: GuiSyncHandle>(
 }
 
 #[cfg(target_os = "macos")]
-struct CurrentWindowHandle(raw_window_handle::RawWindowHandle);
+struct CurrentWindowHandle(rwh06::RawWindowHandle);
 
 #[cfg(target_os = "macos")]
 impl CurrentWindowHandle {
@@ -1078,19 +1079,18 @@ impl CurrentWindowHandle {
                 return None;
             }
 
-            let mut handle = raw_window_handle::AppKitWindowHandle::empty();
+            // Use ns_view here, not ns_window
+            let handle =
+                rwh06::AppKitWindowHandle::new(NonNull::new(ns_view as *mut core::ffi::c_void)?);
 
-            handle.ns_window = ns_window as *mut core::ffi::c_void;
-            handle.ns_view = ns_view as *mut core::ffi::c_void;
-
-            Some(Self(raw_window_handle::RawWindowHandle::AppKit(handle)))
+            Some(Self(rwh06::RawWindowHandle::AppKit(handle)))
         }
     }
 }
 
 #[cfg(target_os = "macos")]
-unsafe impl raw_window_handle::HasRawWindowHandle for CurrentWindowHandle {
-    fn raw_window_handle(&self) -> raw_window_handle::RawWindowHandle {
-        self.0
+impl rwh06::HasWindowHandle for CurrentWindowHandle {
+    fn window_handle(&self) -> Result<rwh06::WindowHandle<'_>, rwh06::HandleError> {
+        unsafe { Ok(rwh06::WindowHandle::borrow_raw(self.0)) }
     }
 }
