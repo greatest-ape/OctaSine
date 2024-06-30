@@ -10,6 +10,8 @@ All notable changes to this project will be documented in this file.
 - Fix issue with activating operator 2 modulation target from GUI modulation
   matrix
 - Show file save/load dialogs on top of plugin window on macOS
+- When saving patch bank/state, also save selected patch index (and restore it
+  on load)
 
 ## 0.9.0 - 2023-08-03
 
