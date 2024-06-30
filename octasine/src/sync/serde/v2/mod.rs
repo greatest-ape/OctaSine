@@ -24,6 +24,8 @@ const PREFIX_GZ: &[u8] = b"\n\nOCTASINE-DATA-V2-GZ\n\n";
 pub struct SerdePatchBank {
     octasine_version: Version,
     pub patches: Vec<SerdePatch>,
+    #[serde(default)]
+    pub selected_patch_index: Option<u8>,
 }
 
 impl SerdePatchBank {
@@ -33,6 +35,7 @@ impl SerdePatchBank {
         Self {
             octasine_version: get_octasine_version(),
             patches,
+            selected_patch_index: Some(bank.get_patch_index() as u8),
         }
     }
 
@@ -47,6 +50,7 @@ impl SerdePatchBank {
         Ok(Self {
             octasine_version,
             patches: v2_patches,
+            selected_patch_index: None,
         })
     }
 

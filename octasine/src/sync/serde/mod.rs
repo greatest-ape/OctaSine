@@ -7,7 +7,7 @@ use std::io::Write;
 use super::patch_bank::{Patch, PatchBank};
 
 /// Remember to update relevant metadata if changes were indeed made
-pub fn update_bank_from_bytes(bank: &PatchBank, bytes: &[u8]) -> anyhow::Result<()> {
+pub fn update_bank_from_bytes(bank: &PatchBank, bytes: &[u8]) -> anyhow::Result<Option<u8>> {
     let serde_bank = if v2::bytes_are_v2(bytes) {
         v2::SerdePatchBank::from_bytes(bytes)?
     } else {
@@ -34,7 +34,7 @@ pub fn update_bank_from_bytes(bank: &PatchBank, bytes: &[u8]) -> anyhow::Result<
         }
     }
 
-    Ok(())
+    Ok(serde_bank.selected_patch_index)
 }
 
 /// Remember to update relevant metadata if changes were indeed made
