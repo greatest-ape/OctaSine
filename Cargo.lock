@@ -2185,7 +2185,7 @@ dependencies = [
 
 [[package]]
 name = "octasine"
-version = "0.9.0"
+version = "0.9.1"
 dependencies = [
  "ahash",
  "anyhow",
@@ -2236,7 +2236,7 @@ dependencies = [
 
 [[package]]
 name = "octasine-cli"
-version = "0.9.0"
+version = "0.9.1"
 dependencies = [
  "anyhow",
  "clap",
