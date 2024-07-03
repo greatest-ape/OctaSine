@@ -358,7 +358,11 @@ impl PatchBank {
     pub fn import_bank_from_bytes(&self, bytes: &[u8]) -> anyhow::Result<()> {
         match update_bank_from_bytes(self, bytes) {
             Ok(opt_selected_patch_index) => {
-                self.set_patch_index(opt_selected_patch_index.map(|index| index as usize).unwrap_or(0));
+                self.set_patch_index(
+                    opt_selected_patch_index
+                        .map(|index| index as usize)
+                        .unwrap_or(0),
+                );
                 self.mark_parameters_as_changed();
                 self.patches_changed.store(true, Ordering::SeqCst);
                 self.envelope_viewports_changed
