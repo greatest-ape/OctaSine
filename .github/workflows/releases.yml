@@ -21,7 +21,7 @@ jobs:
         arguments: --all-features --workspace
 
   build-macos:
-    runs-on: macos-11
+    runs-on: macos-12
 
     steps:
     - uses: actions/checkout@v3
@@ -38,14 +38,14 @@ jobs:
     - name: Build and bundle plugin
       run: |
         echo -e "[octasine]\nname = \"OctaSine $OCTASINE_SEMVER_VERSION\"" > bundler.toml
-        export SDKROOT=$(xcrun -sdk macosx11.1 --show-sdk-path)
+        export SDKROOT=$(xcrun -sdk macosx12.3 --show-sdk-path)
         echo "SDKROOT=$SDKROOT"
-        export MACOSX_DEPLOYMENT_TARGET=$(xcrun -sdk macosx11.1 --show-sdk-platform-version)
+        export MACOSX_DEPLOYMENT_TARGET=$(xcrun -sdk macosx12.3 --show-sdk-platform-version)
         echo "MACOSX_DEPLOYMENT_TARGET=$MACOSX_DEPLOYMENT_TARGET"
         cargo xtask bundle-universal -p octasine --release --verbose --features "vst2"
         cargo xtask bundle-universal -p octasine --release --verbose --features "clap"
       env:
-        DEVELOPER_DIR: /Applications/Xcode_12.4.app/Contents/Developer
+        DEVELOPER_DIR: /Applications/Xcode_13.4.1.app/Contents/Developer
       shell: bash
 
     - name: Install cargo-about
