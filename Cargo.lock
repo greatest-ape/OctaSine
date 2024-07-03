@@ -2010,6 +2010,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "mts-esp-client-sys"
+version = "0.1.0"
+source = "git+https://github.com/greatest-ape/mts-esp-client-sys.git?rev=8e43f2a#8e43f2a0f9609322b4f93acfaff55776200fe387"
+dependencies = [
+ "cc",
+]
+
+[[package]]
 name = "naga"
 version = "0.11.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2214,6 +2222,7 @@ dependencies = [
  "log",
  "log-panics",
  "memchr",
+ "mts-esp-client-sys",
  "objc",
  "once_cell",
  "os_info",
@@ -2231,6 +2240,7 @@ dependencies = [
  "simplelog",
  "sleef-trig",
  "tinyfiledialogs",
+ "tune",
  "vst",
 ]
 
@@ -3311,6 +3321,12 @@ name = "ttf-parser"
 version = "0.21.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2c591d83f69777866b9126b24c6dd9a18351f177e49d625920d19f989fd31cf8"
+
+[[package]]
+name = "tune"
+version = "0.34.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "770d2459622c2065cee422be66409a0d6f8526e84883385880405af035da55cd"
 
 [[package]]
 name = "twox-hash"
