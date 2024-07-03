@@ -280,7 +280,7 @@ fn get_info_text() -> String {
         "OctaSine frequency modulation synthesizer
 Site: OctaSine.com
 Build: {}
-Copyright © 2019-2023 Joakim Frostegård",
+Copyright © 2019-2024 Joakim Frostegård",
         get_version_info()
     )
 }
